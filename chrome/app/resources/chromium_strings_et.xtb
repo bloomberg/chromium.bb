@@ -60,8 +60,6 @@
 <translation id="2886012850691518054">Valikuline: aidake muuta Chromiumi paremaks, saates Google'ile automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="2910007522516064972">Teave &amp;Chromiumi kohta</translation>
 <translation id="2966088006374919794">Chromium peab rakenduse <ph name="SCHEME" /> linkide käsitlemiseks käivitama välisrakenduse. Taotletud link on <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised
-ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="3032787606318309379">Chromiumi lisamine ...</translation>
 <translation id="3046695367536568084">Rakenduste kasutamiseks peate olema Chromiumi sisse logitud. See võimaldab Chromiumil sünkroonida teie rakendusi, järjehoidjaid, ajalugu, paroole ja muid seadeid erinevates seadmetes.</translation>
 <translation id="3068515742935458733">Aidake Chromiumi täiustada, saates Google'ile krahhiaruandeid ja lingi <ph name="UMA_LINK" /></translation>
@@ -87,7 +85,6 @@ ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on
 <translation id="358997566136285270">Chromiumi logo</translation>
 <translation id="3595526210123705352">Kui taaskäivitate Windows 8 režiimis, suletakse ja taaskäivitatakse teie Chromiumi rakendused.</translation>
 <translation id="3738139272394829648">Puudutage otsimiseks</translation>
-<translation id="3744899669254331632">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait saatis tagasi arusaamatud mandaadid, mida Chromium ei saa töödelda. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="3748537968684000502">Vaatate turvalist Chromiumi lehte.</translation>
 <translation id="378917192836375108">Chromium võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i kaudu helistada!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -132,6 +129,7 @@ ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on
 <translation id="5796460469508169315">Chromium on peaaegu valmis.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chromiumi värskendama.</translation>
+<translation id="5859963531214966875">Chromiumi tulevased versioonid ei toeta enam seda Linuxi süsteemi.</translation>
 <translation id="5862307444128926510">Tere tulemast Chromiumi</translation>
 <translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
 <translation id="5909170354645388250">Seda ei kasutata Chromiumis. See on kohatäide, mis sünkroonib ressursikaarte. See eeldab üht argumenti: $1.</translation>
@@ -151,6 +149,7 @@ ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on
 <translation id="6485906693002546646">Kasutate Chromiumi kraami sünkroonimiseks kontot <ph name="PROFILE_EMAIL" />. Sünkroonimiseelistuste värskendamiseks või Chromiumi kasutamiseks ilma Google'i kontota avage <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Desinstalli Chromium</translation>
 <translation id="6526111688217511984">Chromium vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
+<translation id="6593914713218535185">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi süsteemis.</translation>
 <translation id="6637001341228460105">Chromiumil on vaja mikrofonile juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="6638567566961868659">Otsige oma järjehoidjaid Chromiumi menüüst või järjehoidjaribalt.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
@@ -231,7 +230,6 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="8985587603644336029">Keegi on varem selles arvutis Chromiumi sisse loginud kasutajana <ph name="ACCOUNT_EMAIL_LAST" />. Kui see pole teie konto, looge uus Chromiumi kasutaja, et oma teave eraldi hoida.
 
 Kui logite siiski sisse, liidetakse Chromiumi teave, nagu järjehoidjad, ajalugu ja muud seaded, kontoga <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Veebibrauser</translation>
 <translation id="9013087743919948559">Chromiumi lisamine</translation>
 <translation id="9013262824292842194">Chromium nõuab Windows Vistat või Windows XP-d vähemalt hoolduspaketiga SP2.</translation>
 <translation id="9019929317751753759">Chromiumi turvalisemaks muutmiseks keelasime järgmise laienduse, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mis võidi lisada teie teadmata.</translation>
@@ -241,7 +239,6 @@ Kui logite siiski sisse, liidetakse Chromiumi teave, nagu järjehoidjad, ajalugu
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="918373042641772655">Kui katkestate ühenduse kasutajaga <ph name="USERNAME" />, siis kustutatakse sellesse seadmesse salvestatud ajalugu, järjehoidjad, seaded ja muud Chromiumi andmed. Google'i kontole salvestatud andmeid ei kustutata ja neid saab hallata <ph name="GOOGLE_DASHBOARD_LINK" />Google'i juhtpaneelil<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Administraator on installinud teie süsteemi Chromiumi ja see on kõikidele kasutajatele saadava. Süsteemi taseme Chromium asendab nüüd kasutaja taseme installi.</translation>
 <translation id="9197815481970649201">Olete nüüd Chromiumi sisse logitud</translation>
 <translation id="95514773681268843">Domeen <ph name="DOMAIN" /> nõuab, et loete enne selle seadme kasutamist läbi järgmised teenusetingimused ja nõustute nendega. Need tingimused ei laienda, muuda ega piira Chromium OS-i tingimusi.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

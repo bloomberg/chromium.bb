@@ -57,6 +57,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="2485422356828889247">Ondoa</translation>
 <translation id="2576431527583832481">Chrome imekuwa bora! Toleo jipya linapatikana.</translation>
 <translation id="2580411288591421699">Huwezi kusakinisha toleo la Google Chrome ambalo tayari linatumika. Tafadhali funga Google Chrome na ujaribu tena.</translation>
+<translation id="2582790009689336987">Kompyuta itaacha kupokea sasisho za Google Chrome hivi karibuni kwa sababu mfumo huu wa Linux hautatumika tena.</translation>
 <translation id="2588322182880276190">Nembo ya Chrome</translation>
 <translation id="2664962310688259219">Leseni za programu huria kwenye Chrome OS</translation>
 <translation id="2665296953892887393">Saidia kuboresha Google Chrome kwa kutuma ripoti za kuacha kufanya kazi na <ph name="UMA_LINK" /> kwenda Google</translation>
@@ -102,6 +103,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="4251615635259297716">Ungependa kuunganisha data yako ya Chrome kwenye akaunti hii?</translation>
 <translation id="4309555186815777032">(inahitaji uanzishaji upya wa <ph name="BEGIN_BUTTON" />Chrome<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Kompyuta hii haitapokea tena sasisho za Google Chrome hivi karibuni kwa sbabau mfumo huu wa Linux hautumika tena.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Tafadhali toka na uingie tena ili mabadiliko haya yafanye kazi.</translation>
 <translation id="4480040274068703980">Mfumo wa Uendeshaji wa Chrome haukuweza kusawazisha data yako kutokana na hitilafu wakati wa kuingia katika akaunti.</translation>
@@ -144,7 +146,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="5563479599352954471">Tafuta kwa mguso mmoja tu</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Pata maelezo kuhusu mada zilizo kwenye tovuti bila kuondoka kwenye ukurasa.</translation>
-<translation id="5626352146162055517">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chrome ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilirudisha kitambulisho kisichokuwa cha kawaida na batili. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chrome ilisimamisha muunganisho kabla data yoyote haijabadilishwa.</translation>
 <translation id="568643307450491754">Pata alamisho zako katika menyu ya Chrome au kwenye upau wa alamisho.</translation>
 <translation id="573759479754913123">Kuhusu Chrome OS</translation>
 <translation id="5749068826913805084">Chrome inahitaji idhini ya kufikia hifadhi ili ipakue faili.</translation>
@@ -157,7 +158,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="597770749449734237">Huwasha mikato ya kibodi ya ziada ambayo ni muhimu kwa kutatua Google Chrome.</translation>
 <translation id="6012342843556706400">Chrome inahitaji idhini ya kufikia mahali ili ipashiriki na tovuti hii.</translation>
 <translation id="6014844626092547096">Sasa umeingia kwenye Chrome! Usawazishaji umezimwa na msimamizi wako.</translation>
-<translation id="6049075767726609708">Msimamiaji kompyuta amesanidi Google Chrome kwenye mfumo huu na inapatikana kwa watumiaji wote. Google Chrome ya kiwango cha mfumo itachukua mahali pa usanidi wako wa kiwago cha mtumiaji sasa.</translation>
 <translation id="6113794647360055231">Chrome imeboreshwa zaidi</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Sasisha Chrome OS</translation>
@@ -217,7 +217,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="781069973841903133">Kufungua upya katika hali pana ya Chrome kutafunga na kufungua upya programu zako za Chrome.</translation>
 <translation id="7825851276765848807">Usanidi umeshindwa kwa sababu ya hitilafu isiyojulikana. Tafadhali pakua Google Chrome tena.</translation>
 <translation id="7890208801193284374">Kama unatumia kompyuta pamoja na wengine, marafiki na familia wanaweza kuvinjari tofauti na kusanidi Chrome jinsi wapendavyo.</translation>
-<translation id="7984945080620862648">Huwezi kutembelea <ph name="SITE" /> sasa hivi kwa sababu tovuti ilituma kitambulisho kilichoharibika ambacho Chrome haiwezi kuchakata. Hitilafu na uvamizi wa mtandao kwa kawaida huwa vya muda, kwa hivyo ukurasa huu huenda utafanya kazi baadaye.</translation>
 <translation id="8000275528373650868">Google Chrome inahitaji Windows Vista au Windows XP iliyo na SP2 au ya juu zaidi.</translation>
 <translation id="8005540215158006229">Chrome inakaribia kuwa tayari.</translation>
 <translation id="8008534537613507642">Sakinisha Chrome Upya</translation>
@@ -250,7 +249,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="8851136666856101339">kuu</translation>
 <translation id="8862326446509486874">Huna haki zifaazo ili kufanya usakinishaji wa kiwango cha mfumo. Jaribu kutumia kisakinishi kama msimamiaji kompyuta.</translation>
 <translation id="8889942196804715220">Fungua upya katika hali pana ya Chrome</translation>
-<translation id="8987477933582888019">Kivinjari cha Wavuti</translation>
 <translation id="9026991721384951619">Mfumo wa Uendeshaji wa Chrome haukuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
 <translation id="9102715433345326100">Faili hii ni hasidi, na Chrome imeizuia.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Onyo:<ph name="END_BOLD" /> Google Chrome haiwezi kuzuia viendelezi kurekodi historia yako ya utafutaji. Ili kuzima kiendelezi hiki katika hali fiche, acha kuchagua hiari hii.</translation>

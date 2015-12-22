@@ -57,6 +57,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2485422356828889247">Odstranjevanje</translation>
 <translation id="2576431527583832481">Chrome je izboljšan! Na voljo je nova različica.</translation>
 <translation id="2580411288591421699">Ni mogoče namestiti različice Google Chroma, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome in poskusite znova.</translation>
+<translation id="2582790009689336987">Ta računalnik kmalu ne bo več prejemal posodobitev za Google Chrome, ker ta sistem Linux ne bo več podprt.</translation>
 <translation id="2588322182880276190">Chromov logotip</translation>
 <translation id="2664962310688259219">Odprtokodne licence za Chrome OS</translation>
 <translation id="2665296953892887393">Pomagajte izboljšati Chrome – Googlu pošiljajte poročila o zrušitvah in ta dokument: <ph name="UMA_LINK" />.</translation>
@@ -102,6 +103,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4251615635259297716">Želite svoje podatke v Chromu povezati s tem računom?</translation>
 <translation id="4309555186815777032">(zahteva <ph name="BEGIN_BUTTON" />vnovični zagon<ph name="END_BUTTON" /> Chroma)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker ta sistem Linux ni več podprt.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="4480040274068703980">Chrome OS ni mogel sinhronizirati podatkov zaradi napake pri prijavi.</translation>
@@ -144,7 +146,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="5563479599352954471">Iskanje z enim dotikom</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran.</translation>
-<translation id="5626352146162055517">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chrome tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to poslalo nazaj nenavadne in nepravilne poverilnice. Do tega lahko pride, ko se napadalec izdaja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, ker je Chrome povezavo ustavil, preden je prišlo do izmenjave podatkov.</translation>
 <translation id="568643307450491754">Poiščite svoje zaznamke v meniju Chroma ali v vrstici z zaznamki.</translation>
 <translation id="573759479754913123">O sistemu Chrome OS</translation>
 <translation id="5749068826913805084">Chrome potrebuje za prenos datotek dostop do shrambe.</translation>
@@ -157,7 +158,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="597770749449734237">Omogoča dodatne bližnjične tipke, ko so koristne pri odpravljanju težav z Googlom Chrome.</translation>
 <translation id="6012342843556706400">Chrome potrebuje dostop do lokacije, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
 <translation id="6014844626092547096">Zdaj ste prijavljeni v Chrome. Sinhronizacijo je onemogočil skrbnik.</translation>
-<translation id="6049075767726609708">Skrbnik je namestil Google Chrome v ta sistem in je na voljo vsem uporabnikom. Sistemska različica programa Google Chrome bo zdaj nadomestila vašo uporabniško namestitev.</translation>
 <translation id="6113794647360055231">Chrome je pravkar postal še boljši</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
 <translation id="61852838583753520">Posodobitev &amp;sistema Chrome OS</translation>
@@ -217,7 +217,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="781069973841903133">Z vnovičnim zagonom v Chromovem prostornem načinu mode boste zaprli in znova zagnali Chromove aplikacije.</translation>
 <translation id="7825851276765848807">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Google Chrome.</translation>
 <translation id="7890208801193284374">Če računalnik souporabljate z drugimi, lahko prijatelji in sorodniki ločeno brskajo ter nastavijo Chrome tako, kot želijo.</translation>
-<translation id="7984945080620862648">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, saj je poslalo šifrirane poverilnice, ki jih Chrome ne more obdelati. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="8000275528373650868">Za Google Chrome potrebujete operacijski sistem Windows Vista ali Windows XP s servisnim paketom SP2 ali novejšim.</translation>
 <translation id="8005540215158006229">Chrome je skoraj pripravljen.</translation>
 <translation id="8008534537613507642">Vnovična namestitev Chroma</translation>
@@ -250,7 +249,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8851136666856101339">glavn</translation>
 <translation id="8862326446509486874">Nimate ustreznih pravic za namestitev na ravni sistema. Poskusite znova zagnati namestitveni program kot skrbnik.</translation>
 <translation id="8889942196804715220">Vnovični zagon v Chromovem prostornem načinu</translation>
-<translation id="8987477933582888019">Brskalnik</translation>
 <translation id="9026991721384951619">Chrome OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="9102715433345326100">Ta datoteka je zlonamerna, zato jo je Chrome blokiral.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Opozorilo:<ph name="END_BOLD" /> Google Chrome razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>

@@ -90,7 +90,6 @@
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
-<translation id="1445397020763995734">Tipul de cont pentru autentificarea Negotiate HTTP</translation>
 <translation id="1454846751303307294">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula JavaScript. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="1464848559468748897">Controlează comportamentul utilizatorilor în timpul unei sesiuni cu profiluri multiple pe dispozitivele <ph name="PRODUCT_OS_NAME" />.
 
@@ -262,18 +261,6 @@
       Dacă HardwareAccelerationModeEnabled este dezactivat, Disable3DAPIs este ignorat, fiind echivalent cu activarea Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2170233653554726857">Activați optimizarea pentru WPAD</translation>
-<translation id="2175836933294053665">Configurează o listă de marcaje gestionate.
-
-      Politica este o listă de marcaje, iar fiecare marcaj este un
-      dicționar care conține cheile „name” și „url”, care includ numele și
-      ținta marcajului. Un subdosar poate fi configurat definind un marcaj
-      fără o cheie „url”, dar cu o cheie „children” suplimentară care
-      la rândul ei include o listă de marcaje așa cum au fost definite mai sus (este posibil ca unele dintre acestea
-      să fie dosare). <ph name="PRODUCT_NAME" />
-      va modifica adresele URL incomplete ca și cum ar fi trimise prin caseta polivalentă, de
-      exemplu „google.com” devine „https://google.com/”.
-
-      Aceste marcaje sunt plasate într-un dosar Marcaje gestionate care nu poate fi modificat de utilizator, dar acesta poate alege să îl ascundă din bara de marcaje. Marcajele gestionate nu sunt sincronizate cu contul utilizatorului și nu pot fi modificate de extensii.</translation>
 <translation id="2188979373208322108">Activează bara de marcaje în <ph name="PRODUCT_NAME" />. Dacă activați această setare, <ph name="PRODUCT_NAME" /> va afișa o bară de marcaje. Dacă dezactivați această setare, utilizatorii nu vor vedea niciodată bara de marcaje. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă această setare este lăsată nesetată, utilizatorul poate decide să folosească sau nu această funcție.</translation>
 <translation id="2201555246697292490">Configurați lista albă a mesageriei native</translation>
 <translation id="2204753382813641270">Controlați ascunderea automată a raftului</translation>
@@ -543,38 +530,6 @@
       Dacă activezi această setare, orice pagină de autentificare prin portalul captiv (de ex., toate paginile începând cu pagina de conectare la portalul captiv până când <ph name="PRODUCT_NAME" /> detectează o conexiune stabilă la internet) va fi afișată într-o fereastră separată, ignorând toate setările și restricțiile politicii pentru utilizatorul actual.
 
       Dacă dezactivezi această setare sau nu o configurezi, orice pagină de autentificare prin portalul activ va fi afișată într-o filă nouă (obișnuită) a browserului, folosind setările de proxy ale utilizatorului actual.</translation>
-<translation id="3001569025430882724">Modifică regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />.
-
-      Această politică stabilește regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />, acțiune care are loc atunci când funcția de printare este folosită pentru prima dată cu un profil.
-
-      Când politica este configurată, <ph name="PRODUCT_NAME" /> va încerca să găsească o imprimantă care corespunde cu toate atributele specificate și o va selecta ca imprimantă prestabilită. Se va selecta prima imprimantă conformă cu politica; dacă mai multe imprimante sunt conforme cu politica, oricare dintre acestea poate fi selectată, în funcție de ordinea în care sunt descoperite imprimantele.
-
-      Dacă politica nu este configurată sau nu se găsește nicio imprimantă conformă cu politica în timpul limită, imprimanta prestabilită va fi imprimanta PDF încorporată sau, când imprimanta PDF nu este disponibilă, nu se va selecta nicio imprimantă.
-
-      Valoarea este analizată ca obiect JSON, în conformitate cu următoarea schemă:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Dacă se limitează căutarea imprimantei conforme cu politica la un anumit set de imprimante.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Expresia regulată care corespunde cu ID-ul imprimantei.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Expresia regulată care corespunde cu numele de afișare al imprimantei.",
-            "type": "string"
-          }
-        }
-      }
-
-      Imprimantele conectate la Google Cloud Print intră în categoria „cloud”, iar restul imprimantelor sunt clasificate ca „local”.
-      Dacă un câmp nu este completat, toate valorile coincid. De exemplu, dacă nu este specificată conectivitatea, Previzualizarea înainte de printare va iniția descoperirea tuturor tipurilor de imprimante, locale și din cloud.
-      Șabloanele expresiei regulate trebuie să respecte sintaxa JavaScript RegExp, iar valorile care coincid disting între scrierea cu majuscule și minuscule.</translation>
 <translation id="3021409116652377124">Dezactivează instrumentul de găsire de pluginuri</translation>
 <translation id="3030000825273123558">Activați raportarea statisticilor</translation>
 <translation id="3034580675120919256">Vă permite să setați dacă site-urile web au permisiunea de a rula JavaScript. Rularea JavaScript poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică este lăsată nesetată, va fi utilizată politica „AllowJavaScript”, dar utilizatorul va putea să o schimbe.</translation>
@@ -660,23 +615,6 @@
       Dacă această setare este activată sau nu este configurată, utilizatorii pot activa proxy-ul Cloud Print autentificându-se cu Contul Google.
 
       Dacă această setare este dezactivată, utilizatorii nu pot activa proxy-ul, iar computerul nu va putea să permită accesul <ph name="CLOUD_PRINT_NAME" /> la imprimantele sale.</translation>
-<translation id="3357181471604560535">Chromium și Google Chrome acceptă același set de
-      politici. Reține că acest document poate să includă politici care
-      vizează versiuni de software nelansate (adică, în cazul acestora, intrarea
-      „compatibilă cu” se referă la o versiune nelansată) și că astfel de politici pot
-      fi modificate sau eliminate fără notificare în prealabil.
-
-      Aceste politici sunt destinate exclusiv pentru a configura instanțe ale 
-      <ph name="PRODUCT_NAME" /> din
-      organizația ta. Folosirea acestor politici în afara organizației (de exemplu,
-      într-un program distribuit public) se consideră program malware și este
-      posibil să fie etichetată ca atare de Google și de furnizorii de programe antivirus.
-      Nu e nevoie ca aceste setări să fie configurate manual! Poți să descarci
-      șabloane ușor de folosit pentru Windows, Mac și Linux de la <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Este recomandat să configurezi politica în Windows prin GPO, cu toate că
-      gestionarea politicii prin registry este încă acceptată pentru instanțele Windows
-      care sunt asociate unui domeniu Active Directory.</translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3417418267404583991">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va permite invitaților să se conecteze. Conectările invitaților sunt sesiuni de utilizator anonime și nu necesită o parolă.
 
@@ -1197,9 +1135,6 @@
 
       Dacă politica nu este configurată sau nu este activată, <ph name="PRODUCT_NAME" /> va folosi setările existente pentru verificarea revocărilor online.</translation>
 <translation id="5732972008943405952">Importă datele salvate pentru completarea automată a formularelor din browserul prestabilit la prima lansare</translation>
-<translation id="5751004203256768694">Specifică tipul de cont pentru conturile transmise de aplicația de autentificare Android compatibilă cu autentificarea Negotiate HTTP (de exemplu, autentificare Kerberos). Aceste informații ar trebui să fie disponibile de la furnizorul aplicației de autentificare. Pentru mai multe detalii, consultă https://goo.gl/hajyfN.
-
-          Dacă nu se specifică nicio setare, autentificarea Negotiate HTTP va fi dezactivată pe Android.</translation>
 <translation id="5761030451068906335">Configurează setările de proxy pentru <ph name="PRODUCT_NAME" />. Această politică nu este gata pentru utilizare încă, deci vă rugăm să nu o utilizați.</translation>
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5770738360657678870">Canalul pentru dezvoltatori (poate fi instabil)</translation>
@@ -1948,12 +1883,26 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8544375438507658205">Motor de redare HTML prestabilit pentru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
 <translation id="8566842294717252664">Ascunde magazinul web în pagina Filă nouă și în lansatorul de aplicații</translation>
-<translation id="857925079934558818">Specifică dacă optimizarea False Start pentru TLS ar trebui dezactivată. Din motive ce țin de istoric, această politică este denumită DisableSSLRecordSplitting.
-
-      Dacă politica nu este configurată sau este dezactivată, optimizarea False Start pentru TLS va fi activată. Dacă este activată, optimizarea False Start pentru TLS va fi dezactivată.</translation>
 <translation id="8587229956764455752">Permite crearea de noi conturi de utilizator</translation>
 <translation id="8614804915612153606">Dezactivează actualizarea automată</translation>
 <translation id="8631434304112909927">până la versiunea <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blochează accesul la adresele URL incluse în listă.
+
+      Politica împiedică utilizatorul să încarce pagini web de la adresele URL incluse în lista neagră. Lista neagră este o listă cu șabloane de adrese URL care indică ce adrese URL vor fi adăugate în lista neagră.
+
+      Fiecare șablon de adrese URL poate fi un șablon pentru fișierele locale sau un șablon de adrese URL generic. Șabloanele pentru fișierele locale au formatul „file://path”, în care „path” trebuie să fie o cale absolută de blocat. Toate locațiile sistemului de fișiere pentru care acea cale este un prefix vor fi blocate.
+
+      Un șablon de adrese URL generic are formatul „scheme://host:port/path”.
+      Dacă există, numai schema specificată va fi blocată. Dacă prefixul scheme:// nu este specificat, toate schemele sunt blocate.
+      Gazda este obligatorie și poate fi un nume de gazdă sau o adresă IP. Subdomeniile unui nume de gazdă vor fi, de asemenea, blocate. Pentru a împiedica blocarea subdomeniilor, include un semn „.” înaintea numelui de gazdă. Numele de gazdă special „*” va bloca toate domeniile.
+      Portul opțional este un număr de port valid, de la 1 la 65535. Dacă nu este specificat niciun număr, toate porturile vor fi blocate.
+      Dacă este specificată calea opțională, numai căile cu acel prefix vor fi blocate.
+
+      Excepțiile pot fi definite în politica privind lista albă de adrese URL. Aceste politici sunt limitate la 1.000 de intrări. Intrările suplimentare vor fi ignorate.
+
+      Reține că nu este recomandat să blochezi adresele URL interne de tipul „chrome://*”, deoarece pot rezulta erori neașteptate.
+
+      Dacă această politică nu este configurată, în browser nu va fi adăugată nicio adresă URL în lista neagră.</translation>
 <translation id="8649763579836720255">Dispozitivele care rulează sistemul de operare Chrome pot utiliza atestarea de la distanță (Acces verificat) pentru a obține un certificat emis de Autoritatea de certificare a sistemului de operare Chrome, care confirmă că dispozitivul este eligibil pentru a reda conținut protejat. Acest proces presupune trimiterea informațiilor privind garantarea hardware-ului la Autoritatea de certificare a sistemului de operare Chrome, care identifică în mod unic dispozitivul.
 
           Dacă setarea nu este activată, dispozitivul nu va utiliza atestarea de la distanță pentru protejarea conținutului, iar dispozitivul nu va putea reda conținutul protejat.

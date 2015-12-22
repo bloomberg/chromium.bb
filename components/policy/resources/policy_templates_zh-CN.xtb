@@ -87,7 +87,6 @@
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
-<translation id="1445397020763995734">进行 HTTP 协商身份验证时使用的帐户类型</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="1464848559468748897">控制<ph name="PRODUCT_OS_NAME" />设备上多个人资料会话中的用户行为。
 
@@ -241,11 +240,6 @@
       如果 HardwareAccelerationModeEnabled 设为 false，系统将忽略 Disable3DAPIs（相当于 Disable3DAPIs 设为 true）。</translation>
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
-<translation id="2175836933294053665">以列表形式指定受管理的书签。
-
-      此政策包含一系列书签，其中每个书签都是包含“name”和“url”键的字典条目（这些键用于指定书签的名称和目标网址）。您还可以配置子文件夹，方法是定义一个书签，该书签不包含“url”键，但另外包含一个“children”键，“children”键中同样包含按上述方法定义的一系列书签（其中部分书签可能也包含文件夹）。<ph name="PRODUCT_NAME" /> 将修正不完整的网址（就像通过多功能框提交的网址不完整时一样），例如，“google.com”会改成“http://google.com/”。
-
-      这些书签位于“受管理的书签”文件夹中，用户无法修改这些书签，但可以选择在书签栏中不显示这些书签。受管理的书签不会同步到用户帐户，并且扩展程序无法对其进行修改。</translation>
 <translation id="2188979373208322108">在 <ph name="PRODUCT_NAME" />中启用书签栏。如果您启用了此设置，<ph name="PRODUCT_NAME" />就会显示书签栏。如果您停用了此设置，用户就从不会看到书签栏。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="2201555246697292490">配置本地消息传递主机白名单</translation>
 <translation id="2204753382813641270">控制文件架是否自动隐藏</translation>
@@ -510,38 +504,6 @@
       如果您启用了此设置，所有强制门户身份验证页面（即 <ph name="PRODUCT_NAME" /> 检测到成功的互联网连接之前，从强制门户登录页面开始的所有网页）都将在单独的窗口中显示，并忽略针对当前用户的所有政策设置和限制。
 
       如果您停用了此设置或未对其进行设置，所有强制门户身份验证页面都将在新的常规浏览器标签页中显示，并使用当前用户的代理服务器设置。</translation>
-<translation id="3001569025430882724">覆盖 <ph name="PRODUCT_NAME" /> 默认打印机选择规则。
-
-      此政策用于确定，当用户以相应个人资料首次在 <ph name="PRODUCT_NAME" /> 中使用打印功能时，系统遵循哪些规则来选择默认打印机。
-
-      如果此政策已设置，<ph name="PRODUCT_NAME" /> 将尝试找到一台与所有指定属性相符的打印机，并选择该打印机作为默认打印机。系统将选择找到的第一台与此政策相符的打印机（如果找到多台相符的打印机，则可能会选择其中任何一台，具体取决于找到这些打印机的顺序）。
-
-      如果此政策未设置或在规定的时间内未找到相符的打印机，系统将会选择内置的 PDF 打印机作为默认打印机，如果没有 PDF 打印机，则不选择任何打印机。
-
-      系统会按照以下范本将此政策的值作为 JSON 对象进行解析：
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "是否将搜索相符打印机的范围限定为特定的一组打印机。",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "用于比对打印机 ID 的正则表达式。",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "用于比对打印机显示名称的正则表达式。",
-            "type": "string"
-          }
-        }
-      }
-
-      连接到 Google 云打印的打印机会被视为“云端”打印机，其余打印机则归类为“本地”打印机。
-      如果未在某个字段中输入值，则意味着所有打印机都符合此项属性。例如，如果不指定网络连接状态，那么进行打印预览时，系统将会查找所有类型的打印机（本地打印机和云端打印机）。
-      正则表达式格式必须遵循 JavaScript RegExp 语法，并且进行比对时区分大小写。</translation>
 <translation id="3021409116652377124">停用插件查找器</translation>
 <translation id="3030000825273123558">启用指标报告</translation>
 <translation id="3034580675120919256">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。如果未设置此政策，系统将使用“AllowJavaScript”并允许用户更改此设置。</translation>
@@ -627,13 +589,6 @@
       如果已启用或未配置此设置，用户就可以用自己的 Google 帐户进行身份验证，从而启用云打印代理。
 
       如果已停用此设置，用户将无法启用代理，该计算机也就无法与 <ph name="CLOUD_PRINT_NAME" />共享其打印机。</translation>
-<translation id="3357181471604560535">Chromium 和 Google Chrome 所支持的政策完全相同。请注意，本文档中可能包含针对未发布的软件版本制定的政策（即它们的“supported on”条目指出的是未发布的版本），这些政策可能会随时变更或撤消，恕不另行事先通知。
-
-      这些政策只能用于配置您所在单位内部的 <ph name="PRODUCT_NAME" /> 实例。在您所在单位之外（例如在公开发布的程序中）使用这些政策时，会被视为恶意软件，并可能会被 Google 及防病毒软件供应商标记为恶意软件。
-
-      您无需手动配置这些设置！您可以从 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> 下载适用于 Windows、Mac 和 Linux 的易用模板。
-
-      虽然在已加入 Active Directory 网域的 Windows 实例上仍可以通过注册表配置政策，但我们建议您通过 GPO 在 Windows 上配置政策。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3417418267404583991">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将启用访客登录。访客登录是匿名用户会话，不需要密码。
 
@@ -1139,9 +1094,6 @@
 
       如果此政策未设置或设为 false，<ph name="PRODUCT_NAME" /> 将使用现有的在线撤消检查设置。</translation>
 <translation id="5732972008943405952">首次运行时，从默认浏览器导入自动填充表单数据</translation>
-<translation id="5751004203256768694">指定支持 HTTP 协商身份验证（例如 Kerberos 身份验证）的 Android 身份验证应用提供的帐户所属的类型。您应该可以从身份验证应用的供应商处获得此信息。如需更多详细信息，请访问 https://goo.gl/hajyfN。
-
-          如果此设置未指定，Android 设备上将停用 HTTP 协商身份验证。</translation>
 <translation id="5761030451068906335">配置 <ph name="PRODUCT_NAME" />的代理设置。
 
       此政策尚未做好投入使用的准备，请勿使用。</translation>
@@ -1880,12 +1832,26 @@
 <translation id="8544375438507658205">默认 HTML 呈现器为“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="8549772397068118889">访问非内容包内的网站时发出警告</translation>
 <translation id="8566842294717252664">在“打开新的标签页”页面和应用启动器中不显示网上应用店</translation>
-<translation id="857925079934558818">指定是否停用 TLS False Start 优化。由于历史原因，此政策被命名为 DisableSSLRecordSplitting。
-
-      如果此政策未设置或设为 false，系统将启用 TLS False Start。如果此政策设为 true，系统将停用 TLS False Start。</translation>
 <translation id="8587229956764455752">允许创建新的用户帐户</translation>
 <translation id="8614804915612153606">停用自动更新</translation>
 <translation id="8631434304112909927">到版本 <ph name="UNTIL_VERSION" /> 为止</translation>
+<translation id="863712305404093038">禁止用户访问列入黑名单的网址。
+
+      此政策用于禁止用户加载网址列入黑名单的网页。黑名单提供了一系列网址格式，用于指定哪些网址将被屏蔽。
+
+      每种网址格式可以是本地文件格式，也可以是通用网址格式。本地文件格式为“file://path”格式，其中 path 应该是要屏蔽的绝对路径。以指定路径为前缀的所有文件系统位置都将被屏蔽。
+
+      通用网址格式为“scheme://host:port/path”格式。
+      如果指定了通信协议，将只屏蔽指定的通信协议。如果未指定 scheme:// 前缀，将会屏蔽所有通信协议。
+      host（必须指定）可以是主机名或 IP 地址。主机名的子网域也将被屏蔽。如果不想屏蔽子网域，请在主机名前加上“.”。如果使用特殊主机名“*”，将会屏蔽所有网域。
+      port（可以不指定）是介于 1 到 65535 之间的有效端口号。如果未指定，将会屏蔽所有端口。
+      如果指定了 path（可以不指定），将只屏蔽带有该前缀的路径。
+
+      您可以在网址白名单政策中定义例外情况。这些政策的条目上限为 1000 条；超出的条目将被忽略。
+
+      请注意：建议不要屏蔽内部“chrome://*”网址，否则可能会导致意外错误。
+
+      如果此政策未设置，在该浏览器中将不会屏蔽任何网址。</translation>
 <translation id="8649763579836720255">Chrome 操作系统设备可使用远程凭证（经验证的访问凭证）来获取由 Chrome OS CA 颁发的证书，以证明该设备符合播放受保护内容的条件。此过程涉及向 Chrome OS CA 发送用于唯一标识设备的硬件背书信息。
 
           如果该设置为 False，设备将不使用远程凭证来保护内容，并且设备可能无法播放受保护内容。

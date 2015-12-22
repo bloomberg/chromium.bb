@@ -105,7 +105,6 @@
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
-<translation id="1445397020763995734">Jenis akaun untuk pengesahan Runding HTTP</translation>
 <translation id="1454846751303307294">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menjalankan JavaScript.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -291,19 +290,6 @@
       Jika HardwareAccelerationModeEnabled ditetapkan kepada palsu, Disable3DAPIs diabaikan dan keadaan itu sama seperti Disable3DAPIs ditetapkan kepada benar.</translation>
 <translation id="2168397434410358693">Kelewatan melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2170233653554726857">Dayakan pengoptimuman WPAD</translation>
-<translation id="2175836933294053665">Mengkonfigurasi senarai penanda halaman terurus.
-
-      Dasar terdiri daripada senarai penanda halaman manakala setiap penanda
-      halaman ialah kamus yang mengandungi kunci "nama" dan "url" yang
-      menggunakan nama penanda halaman dan sasarannya. Subfolder mungkin
-      dikonfigurasi dengan mentakrifkan penanda halaman tanpa kunci "url" tetapi
-      dengan kunci "anak" tambahan yang mengandungi senarai penanda
-      halamannya sendiri seperti yang ditakrifkan di atas (sesetengahnya mungkin
-      dalam bentuk folder juga). <ph name="PRODUCT_NAME" />
-      akan meminda URL yang tidak lengkap seolah-olah URL itu dihantar melalui 
-      Kotak Omni, sebagai contoh "google.com" akan menjadi "https://google.com/".
-
-      Penanda halaman ini diletakkan dalam folder Penanda halaman terurus yang tidak boleh diubah suai oleh pengguna, tetapi pengguna boleh memilih untuk menyembunyikannya daripada bar penanda halaman. Penanda halaman terurus tidak disegerakkan dengan akaun pengguna dan tidak boleh diubah suai oleh sambungan.</translation>
 <translation id="2188979373208322108">Mendayakan bar penanda halaman pada <ph name="PRODUCT_NAME" />.
 
       Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> akan memaparkan bar penanda halaman.
@@ -600,38 +586,6 @@
       Jika anda mendayakan tetapan ini, mana-mana halaman pengesahan portal tawanan (iaitu semua halaman web bermula daripada halaman log masuk portal tawanan sehingga <ph name="PRODUCT_NAME" /> mengesan sambungan internet yang berjaya dilakukan) akan dipaparkan dalam tetingkap yang lain dengan mengabaikan semua tetapan dasar dan sekatan untuk pengguna semasa.
 
       Jika anda melumpuhkan tetapan ini atau membiarkannya tidak ditetapkan, mana-mana halaman pengesahan portal tawanan akan ditunjukkan dalam tab penyemak imbas yang baharu (biasa), menggunakan tetapan proksi pengguna semasa.</translation>
-<translation id="3001569025430882724">Membatalkan peraturan pilihan pencetak lalai <ph name="PRODUCT_NAME" />.
-
-      Dasar ini menentukan peraturan untuk memilih pencetak lalai dalam <ph name="PRODUCT_NAME" /> yang berlaku apabila fungsi cetak mula-mula digunakan dengan sesuatu profil.
-
-      Apabila dasar ini ditetapkan, <ph name="PRODUCT_NAME" /> akan cuba mencari pencetak yang sepadan dengan semua atribut yang ditetapkan dan memilihnya sebagai pencetak lalai. Pencetak pertama yang ditemui yang sepadan dengan dasar akan dipilih. Sekiranya tiada padanan yang unik, sebarang pencetak yang sepadan boleh dipilih, bergantung pada tertib pencetak itu ditemui.
-
-      Jika dasar ini tidak ditetapkan atau pencetak yang sepadan tidak ditemui sehingga tamat masa, pencetak akan menggunakan pencetak PDF terbina dalam sebagai lalai atau apabila pencetak PDF tidak tersedia, pilihan tiada pencetak akan digunakan sebagai lalai.
-
-      Nilai akan dihuraikan sebagai objek JSON yang mematuhi skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Pencetak yang disambungkan ke Cetakan Awan Google dianggap sebagai "awan", pencetak yang selebihnya diklasifikasikan sebagai "setempat".
-      Apabila medan tidak dimasukkan, bermakna semua nilai sepadan, contohnya, tidak menentukan sambungan akan menyebabkan Pratonton Cetakan memulakan penemuan semua jenis pencetak, setempat dan awan.
-      Pola ungkapan biasa mesti mematuhi sintaks RegExp JavaScript dan padanan bersifat sensitif huruf.</translation>
 <translation id="3021409116652377124">Lumpuhkan pencari pemalam</translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
 <translation id="3034580675120919256">Membolehkan anda menetapkan sama ada laman web dibenarkan untuk menjalankan JavaScript. Menjalankan JavaScript boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
@@ -728,24 +682,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika tetapan ini didayakan atau tidak dikonfigurasi, pengguna boleh mendayakan proksi cetakan awan melalui pengesahan dengan akaun Google mereka.
 
       Jika tetapan ini dilumpuhkan, pengguna tidak dapat mendayakan proksi, dan mesin tidak akan dibenarkan untuk berkongsi pencetaknya dengan <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Chromium dan Google Chrome menyokong set dasar yang sama. Harap maklum 
-      bahawa dokumen ini mungkin menyertakan dasar yang disasarkan untuk versi 
-      perisian yang belum dikeluarkan (iaitu masukan 'disokong pada' merujuk kepada 
-      versi yang belum dikeluarkan) dan bahawa dasar sedemikian adalah tertakluk 
-      kepada perubahan atau pengalihan keluar tanpa memberikan notis terlebih dahulu.
-
-      Dasar ini bertujuan digunakan semata-mata untuk mengkonfigurasi tika dalaman
-      <ph name="PRODUCT_NAME" /> organisasi anda.
-      Penggunaan dasar ini di luar organisasi anda (contohnya, dalam atur cara yang 
-      diedarkan kepada orang ramai) dianggap perisian hasad dan besar kemungkinan 
-      akan dilabel sebagai perisian hasad oleh Google dan vendor antivirus.
-
-      Tetapan ini tidak perlu dikonfigurasikan secara manual! Templat yang mudah 
-      digunakan untuk Windows, Mac dan Linux tersedia untuk dimuat turun daripada <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Cara yang disyorkan untuk mengkonfigurasi dasar Windows ialah melalui GPO,
-      walaupun dasar peruntukan melalui pendaftaran masih disokong untuk tika
-      Windows yang bersambung kepada domain Direktori Aktif.</translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3417418267404583991">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu adalah sesi pengguna tanpa nama dan tidak memerlukan kata laluan.
 
@@ -1332,9 +1268,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> akan menggunakan tetapan semakan pembatalan dalam talian yang sedia ada.</translation>
 <translation id="5732972008943405952">Import data borang autolengkap daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
-<translation id="5751004203256768694">Menentukan jenis akaun bagi akaun yang diberikan oleh apl pengesahan Android yang menyokong pengesahan Runding HTTP (contohnya, pengesahan Kerberos). Maklumat ini sepatutnya boleh didapati daripada pembekal apl pengesahan. Untuk mendapatkan butiran lanjut, lihat https://goo.gl/hajyfN.
-
-          Jika tiada tetapan diberikan, maka pengesahan Runding HTTP akan dilumpuhkan pada Android.</translation>
 <translation id="5761030451068906335">Mengkonfigurasi tetapan proksi untuk <ph name="PRODUCT_NAME" />. Dasar ini belum sedia untuk digunakan lagi, jangan gunakannya.</translation>
 <translation id="5765780083710877561">Huraian:</translation>
 <translation id="5770738360657678870">Saluran Dev (mungkin tidak stabil)</translation>
@@ -2176,12 +2109,26 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="8544375438507658205">Pemapar HTML lalai untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Beri amaran apabila melawat tapak web di luar pek kandungan</translation>
 <translation id="8566842294717252664">Sembunyikan gedung web daripada Halaman Tab Baharu dan pelancar apl</translation>
-<translation id="857925079934558818">Menentukan sama ada pengoptimuman Mula Palsu TLS harus dilumpuhkan. Atas sebab sejarah, dasar ini dinamakan DisableSSLRecordSplitting.
-
-      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka Mula Palsu TLS akan didayakan. Jika dasar ditetapkan kepada benar, Mula Palsu TLS akan dilumpuhkan.</translation>
 <translation id="8587229956764455752">Benarkan ciptaan akaun pengguna baharu</translation>
 <translation id="8614804915612153606">Lumpuhkan Kemas Kini Auto</translation>
 <translation id="8631434304112909927">sehingga versi <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Menyekat akses kepada URL yang disenaraikan.
+
+      Dasar ini menghalang pengguna daripada memuatkan halaman web daripada URL yang disenaraihitamkan. Senarai hitam tersebut memberi senarai pola URL yang menentukan URL yang akan disenaraihitamkan.
+
+      Setiap pola URL boleh jadi pola untuk fail setempat atau pola URL generik. Pola fail setempat adalah dalam format 'file://path', di mana laluan sepatutnya adalah laluan mutlak untuk menyekat. Semua lokasi sistem fail yang mana laluan itu adalah awalan akan disekat.
+
+      Pola URL generik mempunyai format 'scheme://host:port/path'.
+      Jika ada, hanya skim yang ditentukan akan disekat. Semua skim akan disekat jika awalan scheme:// tidak dinyatakan.
+      Hos diperlukan dan boleh jadi nama hos atau alamat IP. Subdomain nama hos akan turut disekat. Untuk menghalang subdomain daripada disekat, masukkan '.' sebelum nama hos. Nama hos khas '*' akan menyekat semua domain.
+      Port pilihan ialah nombor port yang sah dari 1 hingga 65535. Jika tiada nombor ditetapkan, semua port akan disekat.
+      Jika laluan pilihan ditentukan, hanya laluan dengan awalan tersebut akan disekat.
+
+      Pengecualian boleh ditentukan dalam dasar senarai putih URL. Dasar ini terhad kepada 1,000 masukan; masukan berikutnya akan diabaikan.
+
+      Ambil perhatian bahawa anda tidak digalakkan untuk menyekat URL 'chrome://*' dalaman kerana tindakan ini boleh menyebabkan berlakunya ralat yang tidak dijangka.
+
+      Jika dasar ini tidak ditetapkan, tiada URL akan disenaraihitamkan dalam penyemak imbas.</translation>
 <translation id="8649763579836720255">Peranti OS Chrome boleh menggunakan pembuktian jauh (Akses Disahkan) untuk mendapatkan perakuan yang dikeluarkan oleh CA OS Chrome yang menyatakan peranti layak memainkan kandungan yang dilindungi.  Proses ini melibatkan penghantaran maklumat sokongan kepada CA OS Chrome yang mengenal pasti peranti tersebut secara unik.
 
           Jika tetapan ini palsu, peranti tidak akan menggunakan pembuktian jauh untuk perlindungan kandungan dan peranti mungkin tidak dapat memainkan kandungan yang dilindungi.

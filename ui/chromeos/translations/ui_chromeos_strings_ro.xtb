@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Se conectează la <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Eroare de activare a rețelei</translation>
+<translation id="4118990158415604803">Conectarea la alte rețele este dezactivată de administrator.</translation>
 <translation id="4237016987259239829">Eroare de conectare la rețea</translation>
 <translation id="4274292172790327596">Eroare nerecunoscută</translation>
 <translation id="4326192123064055915">Cafea</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Activează <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Răsturnat</translation>
 <translation id="6943836128787782965">Metoda GET a protocolului HTTP nu a reușit</translation>
+<translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
 <translation id="7165320105431587207">Rețeaua nu a putut fi configurată</translation>
 <translation id="7170041865419449892">Fără acoperire</translation>
 <translation id="7229570126336867161">Este necesar EVDO</translation>

@@ -90,7 +90,6 @@
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL server proxy</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
-<translation id="1445397020763995734">Jenis akun untuk autentikasi Negosiasi HTTP</translation>
 <translation id="1454846751303307294">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
 <translation id="1464848559468748897">Mengontrol perilaku pengguna di sesi multi profil di perangkat <ph name="PRODUCT_OS_NAME" />.
 
@@ -257,18 +256,6 @@
       Jika HardwareAccelerationModeEnabled disetel ke False, Disable3DAPI akan diabaikan dan setara dengan Disable3DAPI yang disetel ke True.</translation>
 <translation id="2168397434410358693">Menunda waktu menganggur saat menggunakan daya AC</translation>
 <translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
-<translation id="2175836933294053665">Mengonfigurasi daftar bookmark terkelola.
-
-      Kebijakan terdiri dari daftar bookmark yang masing-masing bookmark
-      adalah kamus yang berisi kunci "nama" dan "url", yang memegang nama bookmark
-      dan targetnya. Subfolder dapat dikonfigurasi dengan menentukan bookmark
-      tanpa kunci "url", namun dengan kunci "turunan" tambahan yang berisi
-      daftar bookmark yang telah ditentukan di atas (beberapa mungkin adalah
-      folder lagi). <ph name="PRODUCT_NAME" />
-      mengubah URL yang tidak lengkap hingga seolah-olah dikirimkan melalui Omnibox,
-      misalnya "google.com" menjadi "https://google.com/".
-
-      Bookmark ini ditempatkan di folder Bookmark terkelola yang tidak dapat diubah oleh pengguna, namun pengguna dapat memilih untuk menyembunyikannya dari bilah bookmark. Bookmark terkelola tidak disinkronkan dengan akun pengguna dan tidak dapat diubah oleh ekstensi.</translation>
 <translation id="2188979373208322108">Mengaktifkan bilah bookmark di <ph name="PRODUCT_NAME" />. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menampilkan bilah bookmark. Jika Anda menonaktifkan setelan ini, pengguna tidak akan pernah melihat bilah bookmark. Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpanya di <ph name="PRODUCT_NAME" />. Jika setelan ini tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.</translation>
 <translation id="2201555246697292490">Konfigurasikan daftar putih perpesanan asli</translation>
 <translation id="2204753382813641270">Kontrol sembunyi otomatis rak</translation>
@@ -537,38 +524,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika Anda mengaktifkan setelan ini, laman autentikasi portal tawanan apa pun (semua laman web mulai laman masuk portal tawanan hingga <ph name="PRODUCT_NAME" /> mendeteksi sambungan internet berhasil) akan ditampilkan dalam jendela yang terpisah dengan mengabaikan semua batasan dan setelan kebijakan bagi pengguna saat ini.
 
       Jika Anda menonaktifkan setelan ini atau tidak menyetelnya, laman autentikasi portal tawanan apa pun akan ditampilkan dalam tab browser baru (reguler), menggunakan setelan proxy pengguna saat ini.</translation>
-<translation id="3001569025430882724">Mengganti aturan pemilihan printer default di <ph name="PRODUCT_NAME" />.
-
-      Kebijakan ini menentukan aturan memilih printer default di <ph name="PRODUCT_NAME" />, yang terjadi ketika fungsi cetak digunakan dengan suatu profil untuk pertama kalinya.
-
-      Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan berusaha mencari printer yang cocok dengan semua atribut yang ditentukan, dan memilihnya sebagai printer default. Printer pertama yang ditemukan cocok dengan kebijakan ini akan dipilih, jika ada kecocokan yang tidak unik, printer apa pun yang cocok dapat dipilih, tergantung urutan saat printer ditemukan.
-
-      Jika kebijakan ini tidak disetel atau tidak ditemukan printer yang cocok hingga waktu tunggu berakhir, printer defaultnya adalah printer PDF yang sudah terpasang atau tidak ada printer yang dipilih, jika printer PDF tidak tersedia.
-
-      Nilai tersebut akan diuraikan sebagai objek JSON, sesuai dengan skema berikut:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Baik untuk membatasi penelusuran printer yang cocok ke rangkaian printer tertentu atau tidak.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Ekspresi reguler untuk mencocokkan ID printer.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Ekspresi reguler untuk mencocokkan nama tampilan printer.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printer yang tersambung ke Google Cloud Print dianggap sebagai "cloud", printer lainnya akan diklasifikasikan sebagai "local".
-      Menghilangkan suatu bidang artinya semua nilai yang cocok, misalnya, tidak menentukan konektivitas akan menyebabkan Pratinjau Cetak memulai penemuan semua jenis printer, local/lokal dan cloud/awan.
-      Pola ekspresi reguler harus mengikuti sintaksis JavaScript RegExp dan pencocokan peka huruf besar/kecil.</translation>
 <translation id="3021409116652377124">Nonaktifkan pencari plugin</translation>
 <translation id="3030000825273123558">Aktifkan pelaporan metrik</translation>
 <translation id="3034580675120919256">Memungkinkan Anda menyetel apakah situs web diizinkan menjalankan JavaScript. Menjalankan JavaScript dapat diizinkan atau ditolak untuk semua situs web. Jika kebijakan ini tidak disetel, 'AllowJavaScript' akan digunakan dan pengguna dapat mengubahnya.</translation>
@@ -654,24 +609,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mengaktifkan proxy cloud print lewat autentikasi dengan akun Google.
 
       Jika setelan ini dinonaktifkan, pengguna tidak dapat mengaktifkan proxy tersebut, dan komputer tidak akan diizinkan berbagi printernya dengan <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Baik Chromium dan Google Chrome mendukung rangkaian kebijakan
-      yang sama. Perhatikan bahwa dokumen ini dapat berisi kebijakan yang
-      ditargetkan untuk versi perangkat lunak yang belum dirilis (entri 'didukung di'
-      merujuk ke versi yang belum dirilis) dan oleh karena itu kebijakan semacam ini dapat
-      berubah atau dihapus tanpa pemberitahuan sebelumnya.
-
-      Kebijakan ini secara ketat ditujukan untuk mengonfigurasi contoh
-      <ph name="PRODUCT_NAME" /> ke internal
-      organisasi Anda. Penggunaan kebijakan ini di luar organisasi Anda (misalnya
-      dalam program yang didistribusikan secara publik) akan dianggap sebagai    perangkat lunak perusak dan mungkin
-      akan diberi label sebagai perangkat lunak perusak oleh Google dan vendor anti-virus.
-
-      Setelan ini tidak perlu dikonfigurasi secara manual!  Template
-      yang mudah digunakan untuk Windows, Mac, dan Linux tersedia untuk diunduh dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Cara yang disarankan untuk mengonfigurasi kebijakan ini di Windows adalah melalui GPO, meskipun
-      menyediakan kebijakan melalui registri masih didukung untuk Windows
-      yang bergabung dalam domain Active Directory.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
 <translation id="3417418267404583991">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mengaktifkan masuk sebagai tamu. Masuk sebagai tamu adalah sesi pengguna anonim dan tidak memerlukan sandi.
 
@@ -1182,9 +1119,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan menggunakan setelan pemeriksaan pembatalan online yang ada.</translation>
 <translation id="5732972008943405952">Mengimpor data formulir isiotomatis dari browser default saat pertama kali dijalankan</translation>
-<translation id="5751004203256768694">Menentukan jenis akun untuk akun yang diberikan oleh aplikasi autentikasi Android, yang mendukung autentikasi Negosiasi HTTP (misalnya autentikasi Kerberos). Informasi ini seharusnya tersedia dari penyedia aplikasi autentikasi. Untuk detail selengkapnya, lihat https://goo.gl/hajyfN.
-
-          Jika tidak ada setelan yang diberikan, autentikasi Negosiasi HTTP akan dinonaktifkan di Android.</translation>
 <translation id="5761030451068906335">Mengonfigurasi setelan proxy untuk <ph name="PRODUCT_NAME" />. Kebijakan ini belum siap untuk digunakan, jangan menggunakannya.</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
@@ -1930,12 +1864,26 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8544375438507658205">Pengurai HTML default untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
 <translation id="8566842294717252664">Menyembunyikan toko web dari Laman Tab Baru dan peluncur aplikasi</translation>
-<translation id="857925079934558818">Menentukan apakah pengoptimalan TLS False Start harus dinonaktifkan atau tidak. Karena alasan historis, kebijakan ini diberi nama DisableSSLRecordSplitting.
-
-      Jika kebijakan tidak disetel, atau disetel ke False, TLS False Start akan diaktifkan. Jika disetel ke True, TLS False Start akan dinonaktifkan.</translation>
 <translation id="8587229956764455752">Mengizinkan pembuatan akun pengguna baru</translation>
 <translation id="8614804915612153606">Nonaktifkan Pembaruan Otomatis</translation>
 <translation id="8631434304112909927">sampai versi <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Memblokir akses ke URL yang tercantum.
+
+      Kebijakan ini mencegah pengguna memuat laman web dari URL yang dimasukkan daftar hitam. Daftar hitam memberikan daftar pola URL yang menentukan URL yang akan dimasukkan dalam daftar hitam.
+
+      Setiap pola URL dapat berupa pola file lokal atau pola URL generik. Pola URL lokal memiliki format 'file://path', yang jalurnya harus jalur absolut untuk diblokir. Semua lokasi sistem file, jika jalur tersebut adalah awalannya, akan diblokir.
+
+      Pola URL generik memiliki format 'scheme://host:port/path'.
+      Jika disajikan, hanya skema yang ditentukan yang akan diblokir. Jika awalan scheme:// tidak ditentukan, semua skema akan diblokir.
+      Host bersifat wajib dan dapat berupa hostname atau alamat IP. Subdomain pada hostname juga akan diblokir. Agar subdomain tidak diblokir, sertakan '.' sebelum hostname. Hostname khusus '*' akan memblokir semua domain.
+      Port opsional adalah nomor port valid mulai 1 hingga 65535. Jika tidak ada yang ditetapkan, semua port akan diblokir.
+      Jika jalur opsional ditentukan, hanya jalur dengan awalan tersebut yang akan diblokir. 
+
+      Pengecualian dapat didefinisikan dalam kebijakan daftar putih URL. Kebijakan ini dibatasi hingga 1000 entri; entri berikutnya akan diabaikan.
+
+      Perlu diingat bahwa sebaiknya Anda tidak memblokir URL 'chrome://*' internal karena dapat menyebabkan kesalahan yang tidak terduga.
+
+      Jika kebijakan ini tidak disetel, tidak ada URL yang akan dimasukkan dalam daftar hitam pada browser.</translation>
 <translation id="8649763579836720255">Perangkat Chrome OS dapat menggunakan atestasi jarak jauh (Akses Terverifikasi) untuk mendapatkan sertifikat yang diberikan oleh Chrome OS CA yang menyatakan bahwa perangkat tersebut memenuhi syarat untuk memutar konten yang dilindungi. Proses ini mencakup pengiriman informasi dukungan perangkat keras ke Chrome OS CA yang mengidentifikasi perangkat tersebut secara unik.
 
           Jika disetel ke false, perangkat tidak akan menggunakan atestasi perlindungan konten jarak jauh dan tidak dapat memutar konten yang dilindungi.

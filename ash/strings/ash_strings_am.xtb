@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1012876632442809908">USB-C መሣሪያ (የፊት ወደብ)</translation>
 <translation id="1013923882670373915">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የፒን ኮድ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">የግቤት ስልቱ የሚቀየርበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="112308213915226829">መደርደሪያን በራስ ሰር ደብቅ</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ተሰናክሏል</translation>
 <translation id="1272079795634619415">አቁም</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">USB-C መሣሪያ (የግራ ወደብ)</translation>
 <translation id="1330145147221172764">የታይታ የቁልፍ ሰሌዳን አንቃ</translation>
 <translation id="1343000272198685031">የማይክሮፎን መሰኪያ</translation>
 <translation id="1346748346194534595">ቀኝ</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ነቅቷል</translation>
 <translation id="1812696562331527143">የግብዓት ስልትዎ ወደ <ph name="INPUT_METHOD_ID" /> ተቀይሯል*(<ph name="BEGIN_LINK" />3ኛ ወገን<ph name="END_LINK" />)።
 ለመቀየር Shift + Alt ይጫኑ።</translation>
+<translation id="1864454756846565995">USB-C መሣሪያ (የኋላ ወደብ)</translation>
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME" /> በማንጸባረቅ ላይ</translation>
 <translation id="1919743966458266018">የተግባር መሪው የሚከፈትበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">መተግበሪያዎች</translation>
 <translation id="2819276065543622893">አሁን ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="2825619548187458965">መደርደሪያ</translation>
+<translation id="2844169650293029770">USB-C መሣሪያ (የግራ ጎን የፊት ወደብ)</translation>
 <translation id="2872961005593481000">ዝጋ</translation>
 <translation id="2942516765047364088">የመደርደሪያ አቀማመጥ</translation>
 <translation id="2946640296642327832">ብሉቱዝን ያንቁ</translation>
@@ -74,6 +78,7 @@
 <translation id="3147142846278915599">ማስጀመሪያ (መተግበሪያዎችን በማመሳሰል ላይ...)</translation>
 <translation id="3157169093162779309">ተሽከርካሪ መቆለፊያን አንቃ</translation>
 <translation id="3294437725009624529">እንግዳ</translation>
+<translation id="3445925074670675829">USB-C መሣሪያ</translation>
 <translation id="3473479545200714844">የማያ ገጽ ማጉያ</translation>
 <translation id="3573179567135747900">ወደ «<ph name="FROM_LOCALE" />» መልሰህ ቀይር (ዳግም ማስጀመር ይፈልጋል)</translation>
 <translation id="3595596368722241419">ባትሪ ሙሉ ነው</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="5238774010593222950">ወደሌላ መለያ በመለያ መግባት አይቻልም።</translation>
 <translation id="532063867737390965">ይህ የአውታረ መረብ ቅንብር በአስተዳዳሪው ተሰናክሏል።</translation>
+<translation id="5331975486040154427">USB-C መሣሪያ (የግራ ጎን ኋላ ወደብ)</translation>
 <translation id="544691375626129091">ሁሉም የሚገኙ ተጤቃሚዎች አስቀድመው ወደዚህ ክፍለ-ጊዜ ታክለዋል።</translation>
 <translation id="5507786745520522457">የተንቀሳቃሽ ስልክ ውሂብ ያዋቅሩ</translation>
 <translation id="5543001071567407895">ኤስ ኤም ኤስ</translation>
@@ -162,6 +168,7 @@
 <translation id="6426039856985689743">የተንቀሳቃሽ ስልክ ውሂብን ያሰናክሉ</translation>
 <translation id="6452181791372256707">አይቀበሉ</translation>
 <translation id="6459472438155181876">ማያ ገጽ ወደ <ph name="DISPLAY_NAME" /> በመቀጠል ላይ</translation>
+<translation id="6490471652906364588">USB-C መሣሪያ (የቀኝ ወደብ)</translation>
 <translation id="6501401484702599040">ማያ ገጹን ወደ <ph name="RECEIVER_NAME" /> Cast በማድረግ ላይ</translation>
 <translation id="6550675742724504774">አማራጮች</translation>
 <translation id="6585808820553845416">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል።</translation>
@@ -182,6 +189,7 @@
 <translation id="7052914147756339792">ልጣፍ አዘጋጅ...</translation>
 <translation id="7097613348211027502">ChromeVox (የቃል ግብረመልስ) ነቅቷል። 
 ለማሰናከል Ctrl+Alt+Z ይጫኑ።</translation>
+<translation id="7098389117866926363">USB-C መሣሪያ (የግራ ወደብ ከኋላ በኩል)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
 <translation id="7209101170223508707">CAPS LOCK በርቷል።
@@ -220,6 +228,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
+<translation id="8938800817013097409">USB-C መሣሪያ (የቀኝ ወደብ ከኋላ በኩል)</translation>
 <translation id="8940956008527784070">ባትሪ ዝቅተኛ ነው (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>
 <translation id="9080206825613744995">ማይክሮፎን ስራ ላይ ነው።</translation>

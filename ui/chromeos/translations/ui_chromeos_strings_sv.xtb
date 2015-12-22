@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Fel vid nätverksaktivering</translation>
+<translation id="4118990158415604803">Administratören har inaktiverat anslutning till andra nätverk.</translation>
 <translation id="4237016987259239829">Fel vid nätverksanslutning</translation>
 <translation id="4274292172790327596">Okänt fel</translation>
 <translation id="4326192123064055915">Kaffe</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Uppochned</translation>
 <translation id="6943836128787782965">HTTP GET misslyckades</translation>
+<translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
 <translation id="7165320105431587207">Det gick inte att konfigurera nätverket</translation>
 <translation id="7170041865419449892">Utanför intervallet</translation>
 <translation id="7229570126336867161">Behöver EVDO</translation>

@@ -105,7 +105,6 @@
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
-<translation id="1445397020763995734">Loại tài khoản để xác thực dàn xếp HTTP</translation>
 <translation id="1454846751303307294">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép chạy JavaScript.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultJavaScriptSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -285,18 +284,6 @@
       Nếu HardwareAccelerationModeEnabled được đặt thành false thì Disable3DAPIs sẽ được bỏ qua và tương đương với Disable3DAPIs đang được đặt thành true.</translation>
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="2170233653554726857">Bật tối ưu hóa WPAD</translation>
-<translation id="2175836933294053665">Định cấu hình danh sách dấu trang được quản lý.
-
-      Chính sách này bao gồm danh sách các dấu trang trong đó mỗi dấu trang
-      là một từ điển chứa khóa "tên" và "url". Các khóa này lưu giữ mục tiêu và 
-      tên của dấu trang đó. Có thể định cấu hình thư mục con bằng cách 
-      xác định dấu trang không có khóa "url" nhưng có khóa "con" bổ sung chứa 
-      danh sách các dấu trang như được xác định ở trên (một số dấu trang 
-      trong đó có thể lại là thư mục). <ph name="PRODUCT_NAME" />
-      sửa đổi các URL không đầy đủ như thể các URL đó được gửi qua thanh
-      địa chỉ, ví dụ: "google.com" trở thành"https://google.com/".
-
-      Các dấu trang này được đặt trong thư mục Dấu trang được quản lý. Người dùng không thể sửa đổi thư mục này nhưng có thể chọn ẩn thư mục khỏi thanh dấu trang. Các dấu trang được quản lý không đồng bộ hóa với tài khoản người dùng và các tiện ích không thể sửa đổi chúng.</translation>
 <translation id="2188979373208322108">Bật thanh dấu trang trên <ph name="PRODUCT_NAME" />.
 
       Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ hiển thị thanh dấu trang.
@@ -595,38 +582,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn bật cài đặt này, mọi trang xác thực cổng cố định (nghĩa là tất cả các trang web bắt đầu từ trang đăng nhập cổng cố định cho đến <ph name="PRODUCT_NAME" /> phát hiện kết nối internet thành công) sẽ được hiển thị trong một cửa sổ riêng, bỏ qua tất cả cài đặt chính sách và hạn chế cho người dùng hiện tại.
 
       Nếu bạn tắt hoặc không thiết lập cài đặt này, mọi trang xác thực cổng cố định sẽ được hiển thị trong tab trình duyệt mới (thông thường) bằng các cài đặt proxy của người dùng hiện tại.</translation>
-<translation id="3001569025430882724">Ghi đè quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />.
-
-      Chính sách này xác định các quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" /> diễn ra vào lần đầu tiên chức năng in được sử dụng cùng với hồ sơ.
-
-      Khi chính sách này được thiết lập, <ph name="PRODUCT_NAME" /> sẽ tìm cách tìm máy in khớp với tất cả các thuộc tính được chỉ định và chọn máy in đó làm máy in mặc định. Máy in đầu tiên tìm được phù hợp với chính sách sẽ được chọn, trong trường hợp không có kết quả phù hợp duy nhất nào, máy in phù hợp bất kỳ có thể được chọn, tùy thuộc vào thứ tự máy in được khám phá.
-
-      Nếu chính sách này không được thiết lập hoặc không tìm thấy máy in phù hợp trong thời gian chờ thì máy in sẽ đặt mặc định thành máy in PDF được tích hợp sẵn hoặc không máy in nào được chọn, khi máy in PDF không khả dụng.
-
-      Giá trị được phân tích cú pháp dưới dạng đối tượng JSON, tuân theo giản đồ sau:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Máy in được kết nối với Google Cloud Print được coi là "đám mây", các máy in còn lại được phân loại là "cục bộ".
-      Bỏ một trường có nghĩa là tất cả các giá trị đều phù hợp, ví dụ: không chỉ định kết nối sẽ khiến Xem trước bản in bắt đầu khám phá tất cả các loại máy in, cục bộ và đám mây.
-      Mẫu cụm từ thông dụng phải tuân theo cú pháp JavaScript RegExp và các kết quả phù hợp có phân biệt chữ hoa/chữ thường.</translation>
 <translation id="3021409116652377124">Vô hiệu hóa trình tìm kiếm plugin</translation>
 <translation id="3030000825273123558">Bật báo cáo số liệu</translation>
 <translation id="3034580675120919256">Cho phép bạn đặt liệu các trang web có được phép chạy JavaScript hay không. Bạn có thể cho phép hoặc từ chối chạy JavaScript đối với tất cả các trang web.
@@ -721,24 +676,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này được bật hoặc không được định cấu hình, người dùng có thể bật proxy máy in máy chủ ảo bằng cách xác thực bằng tài khoản Google của họ.
 
       Nếu cài đặt này được bật, người dùng không thể bật proxy và máy sẽ không được phép chia sẻ máy in với <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Cả Chromium và Google Chrome đều hỗ trợ nhóm chính sách giống nhau. Xin
-      lưu ý rằng tài liệu này có thể bao gồm các chính sách dành
-      cho các phiên bản phần mềm chưa phát hành (nghĩa là mục 'được hỗ
-      trợ trên' của các chính sách này nói đến một phiên bản chưa phát hành)
-      và những chính sách như vậy sẽ chịu sự thay đổi hoặc xóa bỏ mà không báo trước.
-
-      Các chính sách này được sử dụng hoàn toàn cho mục đích định cấu hình các phiên
-      bản <ph name="PRODUCT_NAME" /> nội bộ trong tổ chức của bạn. Việc sử dụng các chính sách này
-      bên ngoài tổ chức của bạn (ví dụ: trong chương trình được phân phối công
-      khai) sẽ được coi là phần mềm độc hại và có thể bị Google và các nhà
-      cung cấp phần mềm diệt vi-rút gắn nhãn là phần mềm độc hại.
-
-      Bạn không cần định cấu hình các cài đặt này theo cách thủ công!  Các mẫu
-      dễ sử dụng dành cho Windows, Mac và Linux có sẵn để tải xuống từ <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Chúng tôi khuyên bạn định cấu hình chính sách trên Windows qua GPO, mặc dù
-      việc cung cấp chính sách qua cổng đăng ký vẫn được hỗ trợ cho các phiên bản
-      Windows tham gia miền Active Directory.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
 <translation id="3417418267404583991">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ bật tính năng đăng nhập với tư cách khách. Các đăng nhập với tư cách khách là các phiên người dùng ẩn danh và không yêu cầu mật khẩu.
 
@@ -1322,9 +1259,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách này không được đặt hoặc được đặt thành false thì <ph name="PRODUCT_NAME" /> sẽ sử dụng cài đặt kiểm tra thu hồi trực tuyến hiện có.</translation>
 <translation id="5732972008943405952">Nhập dữ liệu biểu mẫu tự động điền từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
-<translation id="5751004203256768694">Chỉ định loại tài khoản của các tài khoản được ứng dụng xác thực Android cung cấp có hỗ trợ xác thực dàn xếp HTTP (ví dụ: xác thực Kerberos). Thông tin này có sẵn từ nhà cung cấp ứng dụng xác thực. Để biết thêm chi tiết, hãy xem https://goo.gl/hajyfN.
-
-          Nếu không có cài đặt nào được cung cấp thì xác thực dàn xếp HTTP sẽ bị tắt trên Android.</translation>
 <translation id="5761030451068906335">Định cấu hình cài đặt proxy cho <ph name="PRODUCT_NAME" />.
 
       Chính sách chưa sẵn sàng để sử dụng, vui lòng không sử dụng chính sách này.</translation>
@@ -2154,12 +2088,26 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8544375438507658205">Trình hiển thị HTML mặc định dành cho <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang tab mới và trình chạy ứng dụng</translation>
-<translation id="857925079934558818">Chỉ định xem có nên tắt tính năng tối ưu hóa Khởi động giả TLS hay không. Do các nguyên nhân trước đây, chính sách này được đặt tên là DisableSSLRecordSplitting.
-
-      Nếu chính sách này chưa được đặt hoặc được đặt thành false, Khởi động giả TLS sẽ được bật. Nếu chính sách này được đặt thành true, Khởi động giả TLS sẽ bị tắt.</translation>
 <translation id="8587229956764455752">Cho phép tạo tài khoản người dùng mới</translation>
 <translation id="8614804915612153606">Tắt cập nhật tự động</translation>
 <translation id="8631434304112909927">cho đến phiên bản <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Chặn truy cập vào các URL được liệt kê.
+
+      Chính sách này ngăn người dùng tải trang web từ các URL được liệt kê trong danh sách cấm. Danh sách cấm cung cấp danh sách các mẫu URL giúp chỉ định các URL nào sẽ bị liệt kê vào danh sách cấm.
+
+      Mỗi mẫu URL có thể là mẫu cho các tệp cục bộ hoặc mẫu URL chung. Các mẫu tệp cục bộ có định dạng 'file://path', trong đó đường dẫn sẽ là một đường dẫn tuyệt đối để chặn. Tất cả các vị trí hệ thống tệp có đường dẫn đó là tiền tố sẽ bị chặn.
+
+      Mẫu URL chung có định dạng 'scheme://host:port/path'.
+      Nếu xuất hiện, chỉ giao thức truy cập được chỉ định mới bị chặn. Nếu tiền tố scheme:// không được chỉ định, tất cả giao thức truy cập sẽ bị chặn.
+      Cần có máy chủ và máy chủ này có thể là tên máy chủ hoặc địa chỉ IP. Tên miền phụ của tên máy chủ cũng sẽ bị chặn. Để ngăn việc chặn tên miền phụ, hãy bao gồm '.' trước tên máy chủ. Tên máy chủ đặc biệt '*' sẽ chặn tất cả các miền.
+      Cổng tùy chọn là một số cổng hợp lệ từ 1 đến 65535. Nếu chưa chỉ định cổng nào, tất cả các cổng sẽ bị chặn.
+      Nếu đường dẫn tùy chọn được chỉ định thì chỉ các đường dẫn có tiền tố đó mới bị chặn.
+
+      Có thể xác định các ngoại lệ trong chính sách về danh sách trắng URL. Các chính sách này chỉ áp dụng cho 1000 mục nhập, các mục tiếp theo sẽ bị bỏ qua.
+
+      Lưu ý rằng không nên chặn các URL 'chrome://*' nội bộ vì điều này có thể dẫn đến các lỗi không mong muốn.
+
+      Nếu chính sách này không được đặt thì sẽ không có URL nào được liệt kê vào danh sách cấm trong trình duyệt.</translation>
 <translation id="8649763579836720255">Thiết bị Chrome OS có thể sử dụng chứng thực từ xa (Quyền truy cập đã xác minh) để nhận được chứng chỉ do Chrome OS CA phát hành khẳng định rằng thiết bị đủ điều kiện để phát nội dung được bảo vệ. Quy trình này bao gồm gửi thông tin chứng thực phần cứng tới Chrome OS CA xác định duy nhất thiết bị.
 
           Nếu cài đặt này là false, thiết bị sẽ không sử dụng chứng thực từ xa để bảo vệ nội dung và thiết bị không thể phát nội dung được bảo vệ.

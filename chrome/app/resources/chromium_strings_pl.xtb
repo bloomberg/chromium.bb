@@ -60,7 +60,6 @@
 <translation id="2886012850691518054">Opcjonalnie: pomóż nam udoskonalać Chromium, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="2910007522516064972">&amp;Chromium – informacje</translation>
 <translation id="2966088006374919794">Chromium musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME" />. Żądany link to <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, strona odesłała nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy osoba atakująca podszywa się pod <ph name="SITE" /> albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="3032787606318309379">Dodawanie do Chromium...</translation>
 <translation id="3046695367536568084">Jeśli chcesz korzystać z aplikacji, musisz zalogować się w Chromium, by Twoje aplikacje, zakładki, historia, hasła i inne ustawienia były synchronizowane między urządzeniami.</translation>
 <translation id="3068515742935458733">Pomóż nam ulepszyć Chromium, przesyłając do Google raporty o awariach i <ph name="UMA_LINK" /></translation>
@@ -84,7 +83,6 @@
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3595526210123705352">Ponowne uruchomienie w trybie Windows 8 spowoduje zamknięcie i ponowne otwarcie aplikacji Chromium.</translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
-<translation id="3744899669254331632">Nie możesz teraz odwiedzić strony <ph name="SITE" />, ponieważ wysłała ona zaszyfrowane dane logowania, których Chromium nie może przetworzyć. Błędy sieciowe i ataki są zazwyczaj tymczasowe, więc prawdopodobnie strona będzie dostępna później.</translation>
 <translation id="3748537968684000502">Przeglądasz bezpieczną stronę Chromium.</translation>
 <translation id="378917192836375108">W Chromium możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić pod niego przez Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -129,6 +127,7 @@
 <translation id="5796460469508169315">Chromium jest prawie gotowy.</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
 <translation id="5823381412099532241">Nie udało się zaktualizować Chromium do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz zaktualizować Chromium.</translation>
+<translation id="5859963531214966875">Przyszłe wersje Chromium nie będą już obsługiwać tego systemu Linux.</translation>
 <translation id="5862307444128926510">Chromium – witamy!</translation>
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
 <translation id="5909170354645388250">Nie używany w Chromium. Symbol zastępczy umożliwiający synchronizację map zasobów. Oczekuje jednego argumentu: $1.</translation>
@@ -148,6 +147,7 @@
 <translation id="6485906693002546646">Używasz adresu <ph name="PROFILE_EMAIL" /> do synchronizowania danych w Chromium. Aby zaktualizować ustawienia synchronizacji lub używać Chromium bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odinstaluj Chromium</translation>
 <translation id="6526111688217511984">Chromium musi mieć dostęp do pamięci, by pobierać pliki.</translation>
+<translation id="6593914713218535185">Chromium może działać nieprawidłowo, bo nie jest już zgodny z tym systemem Linux.</translation>
 <translation id="6637001341228460105">Chromium potrzebuje dostępu do mikrofonu, by móc go udostępnić tej stronie.</translation>
 <translation id="6638567566961868659">Zakładki są dostępne w menu Chromium i na pasku zakładek.</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
@@ -228,7 +228,6 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="8985587603644336029">Ktoś zalogował się wcześniej w Chromium na tym komputerze jako <ph name="ACCOUNT_EMAIL_LAST" />. Jeśli to nie jest Twoje konto, utwórz nowego użytkownika Chromium, by Twoje informacje były przechowywane oddzielnie.
 
 Jeśli jednak zalogujesz się teraz, informacje Chromium, takie jak zakładki, historia i inne ustawienia, zostaną połączone z kontem <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Przeglądarka</translation>
 <translation id="9013087743919948559">Dodaj do Chromium</translation>
 <translation id="9013262824292842194">Chromium wymaga systemu Windows Vista bądź Windows XP z dodatkiem SP2 lub nowszym.</translation>
 <translation id="9019929317751753759">Aby poprawić bezpieczeństwo Chromium, wyłączyliśmy to rozszerzenie. Nie jest ono dostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i mogło zostać dodane bez Twojej wiedzy.</translation>
@@ -238,7 +237,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chromium, takie jak zakładki, h
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
 <translation id="918373042641772655">Odłączenie konta <ph name="USERNAME" /> spowoduje wyczyszczenie jego historii, zakładek, ustawień i innych danych Chromium zapisanych na tym urządzeniu. Dane przechowywane na koncie Google nie zostaną usunięte. Możesz nimi zarządzać w <ph name="GOOGLE_DASHBOARD_LINK" />Panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Administrator zainstalował Chromium w tym systemie i jest on dostępny dla wszystkich użytkowników. Chromium zainstalowany na poziomie systemu zastąpi Twoją instalację.</translation>
 <translation id="9197815481970649201">Jesteś teraz zalogowany w Chromium</translation>
 <translation id="95514773681268843">Domena <ph name="DOMAIN" /> wymaga, by przed korzystaniem z tego urządzenia przeczytać i zaakceptować Warunki korzystania z usługi. Nie rozszerzają, nie zmieniają ani nie ograniczają one Warunków korzystania z systemu Chromium OS.</translation>
 <translation id="985602178874221306">Autorzy Chromium</translation>

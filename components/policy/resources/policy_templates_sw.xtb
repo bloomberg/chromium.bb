@@ -103,7 +103,6 @@ Mfumo wa kipimo lazima uwe 100% au zaidi.</translation>
 <translation id="1426410128494586442">Ndio</translation>
 <translation id="1427655258943162134">Anwani au URL ya seva ya proksi</translation>
 <translation id="1435659902881071157">Usanidi wa mtandao wa kiwango cha kifaa</translation>
-<translation id="1445397020763995734">Aina ya Akaunti kwa uthibitishaji wa HTTP Negotiate</translation>
 <translation id="1454846751303307294">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo haziruhusiwi kuendesha JavaScript.
 
           Ikiwa sera hii itasalia kama haijawekwa thamani chaguo-msingi ya ulimwenguni itatumiwa aidha kutoka kwenye sera ya 'DefaultJavaScriptSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
@@ -282,18 +281,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Kipengee cha HardwareAccelerationModeEnabled kikiwekwa kuwa sivyo,  Disable3DAPIs hupuuzwa na ni sawa na Disable3DAPIs kuwekwa kuwa ndivyo.</translation>
 <translation id="2168397434410358693">Kutokuwa na shughuli kunachelewesha wakati wa kuendesha kwenye nishati ya AC</translation>
 <translation id="2170233653554726857">Washa uboreshaji wa WPAD</translation>
-<translation id="2175836933294053665">Husanidi orodha ya alamisho zinazodhibitiwa.
-
-      Sera ina orodha ya alamisho huku kila alamisho ikiwa ni kamusi
-      iliyo na vitufe "jina" na "url" ambavyo hushikilia jina la 
-kialamisho na shabaha yake. Folda ndogo inaweza kusanidiwa kwa kubainisha alamisho
-      bila kitufe cha "url" lakini kwa kitufe cha ziada cha "watoto" ambacho kina
-      orodha ya alamisho kama zilivyofafanuliwa hapo juu (baadhi ambazo zinaweza
-      kuwa folda tena). <ph name="PRODUCT_NAME" />
-      hurekebisha URL ambazo hazijakamilika zilizowasilishwa kupitia Sanduku kuu,
-      kwa mfano "google.com" huwa "https://google.com/".
-
-      Alamisho hizi huwekwa katika folda ya alamisho Zinazodhibitiwa ambayo haiwezi kurekebishwa na mtumiaji, lakini mtumiaji anaweza kuamua kuificha dhidi ya sehemu ya alamisho. Alamisho zinazodhibitiwa huwa hazisawazishwi kwenye akaunti ya mtumiaji na haziwezi kubadilishwa na viendelezi.</translation>
 <translation id="2188979373208322108">Inawezesha upau wa alamisho kwenye <ph name="PRODUCT_NAME" />.
 
       Ukiwezesha mpangilio huu, <ph name="PRODUCT_NAME" /> itaonyesha upau wa alamisho.
@@ -586,38 +573,6 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
      Ukiwasha mipangilio hii, kurasa zozote za kwanza za kuthibitisha kuingia kwenye wavuti (yaani kurasa zote za wavuti kuanzia ukurasa wa kuingia kwenye wavuti hadi <ph name="PRODUCT_NAME" /> igundue muunganisho bora wa intaneti) zitaonyeshwa kwenye dirisha tofauti bila kujali mipangilio na vikwazo vyote vya sera kwa mtumiaji wa sasa.
 
      Ukizima mipangilio hii au uiache bila kuiweka, kurasa zozote za kwanza za kuthibitisha kuingia kwenye wavuti zitaonyeshwa katika kichupo kipya cha kivinjari (cha kawaida), kwa kutumia mipangilio ya sasa ya seva mbadala ya mtumiaji.</translation>
-<translation id="3001569025430882724">Hubatilisha sheria za kuchagua printa chaguo-msingi za <ph name="PRODUCT_NAME" />.
-
-      Sera hii huamua sheria za kuchagua printa chaguo-msingi katika <ph name="PRODUCT_NAME" /> ambayo inatendeka mara ya kwanza chaguo la kukotoa la kuchapisha linapotumika pamoja na wasifu.
-
-      Sera hii ikiwekwa, <ph name="PRODUCT_NAME" /> itajaribu kutafuta printa inayolingana na vipengele vyote vilivyobainishwa, na kuichagua kuwa printa chaguo-msingi. Printa ya kwanza kupatikana inayolingana na sera huchaguliwa, katika hali ambayo hakuna kulingana kwa kipekee printa yoyote inayolingana inaweza kuchaguliwa, kutegemea mpangilio ambao printa zinagunduliwa.
-
-     Sera hii isipowekwa au printa inayolingana isipopatikana ndani ya muda uliowekwa, printa inarudi kwenye chaguo-msingi la awali la printa ya PDF iliyojengwa ndani au hakuna printa iliyochaguliwa, wakati printa ya PDF haipatikani.
-
-      Thamani huchanganuliwa kama kijenzi cha JSON, ikizingatia mpangilio ufuatao:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Ikiwa ni kuwekea vikwazo matokeo ya utafutaji wa printa inayolingana kuwa seti ya printa mahususi.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Kilinganishi kilingane na kitambulisho cha pinta.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Kilinganishi kilingane na jina la printa linaloonekana.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printa zilizounganishwa kwenye Google Cloud Print zinachukuliwa kuwa "wingu", nyingine zote zinatambuliwa kuwa za "ndani".
-      Kuacha sehemu kunamaanisha kwamba thamani zote zinalingana, kwa mfano, kukosa kubainisha muunganisho kutasababisha kipengele cha Onyesho la Kuchungulia la Printa kuanzisha ugunduzi wa aina zote za printa, za ndani ya wingu.
-      Ruwaza za kilinganishi lazima zizingatie sintaksia ya JavaScript RegExp na milingano inaathiriwa na herufi kubwa na ndogo.</translation>
 <translation id="3021409116652377124">Lemaza kipataji cha programu jalizi</translation>
 <translation id="3030000825273123558">Wezesha kuripoti kwa metriki</translation>
 <translation id="3034580675120919256">Inakuruhusu kuweka iwapo tovuti zinaruhusiwa kuendesha JavaScript. Kuendesha JavaScript kunaweza kuruhusiwa kwa tovuti zote au kukataliwa kwa tovuti zote.
@@ -713,21 +668,6 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
       Iwapo mpangilio huu utawashwa au hutasanidiwa, watumiaji wanaweza kutumia proksi ya kuchipisha ya wingu ili kuthibitisha akaunti ya Google.
 
       Iwapo mpangilio huu utafungwa, watumiaji hawawezi kuwasha proksi, na mashine haitaruhusiwa kushiriki printa zake na <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Chromium na Google Chrome zinatumia 
-      sera moja. Tafadhali kumbuka kwamba hati hii inaweza kujumuisha sera zinazolenga matoleo ya programu ambayo hayajatolewa (yaani uingizaji wao 'unaotumika kwenye' unamaanisha toleo ambalo halijatolewa) na kwamba sera kama hizo zinaweza kubadilika au kuondolewa bila ilani.
-
-      Sera hizi zinalenga kutumiwa mahususi kusanidi matukio ya
-      <ph name="PRODUCT_NAME" /> ya ndani kwenye 
-      shirika lako. Matumizi ya sera hizi nje ya shirika lako (kwa
-      mfano, katika programu inazosambazwa kwa umma) yanachukuliwa kuwa programu hasidi na
-      inaweza kuwekewa alama kuwa programu hasidi na Google na wauzaji wa kinga-virusi.
-
-      Si lazima usanidi programu hizi kwa njia ya kawaida!  Violezo vya
-      matumizi rahisi kwa Windows, Mac na Linux vinaweza kupakuliwa kutoka kwenye <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Njia inayopendekezwa ya kusanidi sera kwenye Windows ni kupitia GPO, ingawa
-      kuweka sera kupitia usajili bado kunatumika kwa matukio ya Windows
-      ambayo yameunganishwa kwenye kikoa cha Saraka Inayotumika.</translation>
 <translation id="3381968327636295719">Tumia kivinjari kipangishi kwa chaguo-msingi</translation>
 <translation id="3417418267404583991">Ikiwa sera hii itawekwa kwenye Ndivyo au haitasanidiwa, <ph name="PRODUCT_OS_NAME" /> haitawezesha uingiaji wa mgeni. Uingiaji wa mgeni ni vipindi visivyojulikana vya mtumiaji na havihitaji nenosiri..
 
@@ -1314,9 +1254,6 @@ Sera ya RemoteAccessHostMatchUsername inapaswa kutumiwa pamoja na RemoteAccessHo
 
       Sera hii isipowekwa, au ikiwekwa kuwa sivyo, basi <ph name="PRODUCT_NAME" /> itatumia mipangilio iliyopo ya kukagua ubatilishaji wa mtandaoni.</translation>
 <translation id="5732972008943405952">Leta data ya fomu ya kujaza otomatiki kutoka kwenye kivinjari chaguo-msingi wakati wa uendeshaji wa kwanza</translation>
-<translation id="5751004203256768694">Hubainisha aina ya akaunti ya akaunti zinazotolewa na programu ya uthibitishaji wa Android inayotumia uthibitishaji wa HTTP Negotiate (k.m. uthibitishaji wa Kerberos). Maelezo haya yanapaswa kupatikana kutoka kwa muuzaji wa programu ya uthibitishaji. Kwa maelezo zaidi angalia https://goo.gl/hajyfN.
-
-          Ikiwa mipangilio haijatolewa, uthibitishaji wa HTTP Negotiate utazimwa kwenye Android.</translation>
 <translation id="5761030451068906335">Inasanidi mipangilio ya proksi kwa <ph name="PRODUCT_NAME" />.
 
       Sera hii bado haijakuwa tayari kwa matumizi, tafadhali usiitumie.</translation>
@@ -2142,12 +2079,26 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8544375438507658205">Kionyeshi chaguo-msngi cha HTML kwa<ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Tahadharisha ninapotembelea tovuti zilizo nje ya vifurushi vya maudhui</translation>
 <translation id="8566842294717252664">Ficha duka la wavuti kwenye ukurasa mpya wa kichupo na kifungua programu cha Chrome</translation>
-<translation id="857925079934558818">Hubainisha iwapo uboreshaji wa kipengee cha TLS False Start unapaswa kuzimwa. Kwa sababu za kihistoria, sera hii inaitwa DisableSSLRecordSplitting.
-
-      Sera hii isipowekwa, au ikiwekwa kuwa sivyo, basi kipengee cha TLS False Start kitawashwa. Ikiwekwa kuwa ndivyo, kipengee cha TLS False Start kitazimwa.</translation>
 <translation id="8587229956764455752">Ruhusu uundaji wa akaunti mpya za mtumiaji</translation>
 <translation id="8614804915612153606">Inalemaza Kusasisha Otomatiki</translation>
 <translation id="8631434304112909927">mpaka toleo la <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Huzuia uwezo wa kufikia URL zilizoorodheshwa.
+
+      Sera hii humzuia mtumiaji asipakie kurasa za wavuti kutoka kwenye URL zilizozuiwa. Orodha hii hutoa orodha ya michoro ya URL inayobainisha URL zitakazozuiwa.
+
+      Kila mchoro wa URL unaweza kuwa mchoro au faili za ndani za mchoro zalishi wa URL. Michoro ya faili za ndani ina muundo wa 'file://path', ambapo njia inafaa iwe njia kamili ya kuzuia. Sehemu zote za mfumo wa faili ambazo njia hiyo ni kiambishi awali huzuiwa.
+
+      Picha zalishi ya URL ina mpango wa muundo wa //host:port/path'.
+      Kama ipo, ni mpango uliobainishwa pekee utakaozuiwa. Ikiwa kiambaishi awali cha mpango:// haujabainishwa, mipango yote huzuiwa.
+      Kipangishaji kinahitajika na kinaweza kuwa jina la mpangishaji au anwani ya IP. Vijikoa vya jina la mpangishaji pia vitazuiwa. Ili kuepuka kuzuia vijikoa, jumuisha,  a '.' kabla ya jina la mpangishaji. Jina maalum la mpangishaji '*' litazuia vikoa vyote.
+      Mlango wa hiari ni nambari halali ya mlango kuanzia 1 hadi 65535. Kama hakuna iliyobainishwa, milango yote huzuiwa.
+     Ikiwa njia hiari imebainishwa, ni njia zenye kiambishi awali hicho ambayo itazuiwa.
+
+      URL zisizofuata kanuni zinaweza kufafanuliwa kama sera ya URL iliyoidhinishwa. Sera hizi hazizidi maingizo 1000; maingizo yatakayofuata yatapuuzwa.
+
+      Kumbuka kwamba kama haipendekezwi kuzuia URL za 'chrome://*' za ndani kwa sababu hii inaweza kusababisha hitilafu zisizotarajiwa.
+
+      Kama sera hii haitawekwa hakuna URL itakayozuiwa katika kivinjari hiki.</translation>
 <translation id="8649763579836720255">Vifaa vyenye Chrome OS vinaweza kutumia uwezo wa kuthibitisha kutoka mbali (Ufikiaji Uliothibitishwa) kupata cheti kilichotolewa na Chrome OS CA kinachothibitisha kuwa kifaa kimekubaliwa kucheza maudhui yanayolindwa. Utaratibu huu unahusisha kutumia Chrome OS CA maelezo maalum ya kuthibitisha maunzi yanayokitambua kifaa husika. 
 
         Kama mipangilio hii si ya kweli, kifaa hakitatumia uwezo wa kuthibitisha kutoka mbali kulinda maudhui na huenda kifaa hakitaweza kucheza maudhui yanayolindwa.

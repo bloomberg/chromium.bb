@@ -56,6 +56,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2576431527583832481">Google Chrome s'est amélioré ! Une nouvelle version est désormais disponible.</translation>
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
+<translation id="2582790009689336987">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur ce système Linux.</translation>
 <translation id="2588322182880276190">Logo Google Chrome</translation>
 <translation id="2664962310688259219">Licences Chrome OS Open Source</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
@@ -102,6 +103,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="4309555186815777032">(nécessite le <ph name="BEGIN_BUTTON" />redémarrage<ph name="END_BUTTON" /> de Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="437002079035561265">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car ce système Linux n'est plus compatible.</translation>
 <translation id="4407807842708586359">Système d'exploitation Google Chrome</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="4480040274068703980">Impossible de synchroniser vos données dans Chrome OS, car une erreur s'est produite lors de la connexion.</translation>
@@ -144,8 +146,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5563479599352954471">Rechercher en un clic</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Pour en savoir plus sur des sujets évoqués sur des sites Web sans quitter la page.</translation>
-<translation id="5626352146162055517">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chrome
-  au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un attaquant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="568643307450491754">Retrouvez vos favoris dans le menu Chrome ou dans la barre de favoris.</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
@@ -158,7 +158,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="597770749449734237">Activez d'autres raccourcis clavier utiles pour déboguer Google Chrome.</translation>
 <translation id="6012342843556706400">Chrome doit disposer de l'accès à votre position pour la partager avec ce site.</translation>
 <translation id="6014844626092547096">Vous êtes maintenant connecté à Chrome. La synchronisation a été désactivée par votre administrateur.</translation>
-<translation id="6049075767726609708">Un administrateur a installé Google Chrome pour tous les utilisateurs de ce système. Votre version utilisateur de Google Chrome va être remplacée par la version système.</translation>
 <translation id="6113794647360055231">Chrome s'est amélioré</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
@@ -218,7 +217,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="781069973841903133">La relance en mode immersif dans Chrome va provoquer la fermeture et la réouverture de vos applications Chrome.</translation>
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
-<translation id="7984945080620862648">Vous ne pouvez pas consulter le site <ph name="SITE" /> pour le moment, car il a envoyé des identifiants brouillés qui ne peuvent être traités par Chrome. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page ultérieurement.</translation>
 <translation id="8000275528373650868">Google Chrome requiert Windows Vista ou Windows XP avec SP2 ou une version ultérieure.</translation>
 <translation id="8005540215158006229">Google Chrome est presque prêt</translation>
 <translation id="8008534537613507642">Réinstaller Chrome</translation>
@@ -251,7 +249,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour installer la version système. Relancez l'installation en vous connectant comme administrateur.</translation>
 <translation id="8889942196804715220">Relancer en mode immersif dans Chrome</translation>
-<translation id="8987477933582888019">Navigateur Web</translation>
 <translation id="9026991721384951619">Impossible de synchroniser vos données dans Chrome OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="9102715433345326100">Ce fichier est malveillant. Il a donc été bloqué dans Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Avertissement<ph name="END_BOLD" /> : Google Chrome ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode navigation privée, désélectionnez-la.</translation>

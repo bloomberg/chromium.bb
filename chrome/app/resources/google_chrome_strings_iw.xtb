@@ -53,6 +53,7 @@
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="2576431527583832481">‏‫Chrome ממשיך להשתפר! קיימת גירסה חדשה.</translation>
 <translation id="2580411288591421699">‏אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
+<translation id="2582790009689336987">‏בקרוב המחשב הזה יפסיק לקבל עדכונים של Google Chrome בשל הפסקת התמיכה במערכת Linux זו.</translation>
 <translation id="2588322182880276190">‏הלוגו של Chrome</translation>
 <translation id="2664962310688259219">‏רישיונות קוד פתוח של מערכת ההפעלה של Chrome</translation>
 <translation id="2665296953892887393">‏עזור לשפר את Google Chrome על ידי שליחת דוחות קריסה ו-<ph name="UMA_LINK" /> אל Google</translation>
@@ -98,6 +99,7 @@
 <translation id="4251615635259297716">‏האם לקשר את הנתונים שלך ב-Chrome לחשבון זה?</translation>
 <translation id="4309555186815777032">‏(נדרש <ph name="BEGIN_BUTTON" />אתחול<ph name="END_BUTTON" /> של Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">‏המחשב הזה יפסיק לקבל עדכונים של Google Chrome כי מערכת Linux זו אינה נתמכת עוד.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="4480040274068703980">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך עקב שגיאה בתהליך הכניסה.</translation>
@@ -136,8 +138,6 @@
 <translation id="5563479599352954471">חיפוש בנגיעה אחת</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
 <translation id="5620765574781326016">קרא מידע על נושאים באתרים בלי לעזוב את הדף.</translation>
-<translation id="5626352146162055517">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chrome ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה
-אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chrome הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="568643307450491754">‏מצא את הסימניות שלך בתפריט Chrome או בסרגל הסימניות.</translation>
 <translation id="573759479754913123">‏מידע על מערכת ההפעלה של Chrome</translation>
 <translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
@@ -150,7 +150,6 @@
 <translation id="597770749449734237">‏מפעיל מקשי קיצור נוספים השימושיים לתיקון באגים ב-‏Google Chrome.</translation>
 <translation id="6012342843556706400">‏Chrome זקוק לגישה אל המיקום כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6014844626092547096">‏אתה מחובר כעת ל-Chrome‏! הסנכרון הושבת על ידי מנהל המערכת שלך.</translation>
-<translation id="6049075767726609708">‏במערכת זו הותקן דפדפן Google Chrome על ידי מנהל והוא זמין עבור כל המשתמשים. Google Chrome ברמת המערכת יחליף כעת את ההתקנה שלך ברמת המשתמש.</translation>
 <translation id="6113794647360055231">‏Chrome השתפר</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">‏עדכן את מערכת ההפעלה של Chrome&amp;</translation>
@@ -210,7 +209,6 @@
 <translation id="781069973841903133">‏הפעלה מחדש במצב עשיר ב-Chrome תביא לסגירת היישומים שלך ב-Chrome והפעלתם מחדש.</translation>
 <translation id="7825851276765848807">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
 <translation id="7890208801193284374">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
-<translation id="7984945080620862648">‏לא ניתן לבקר כעת באתר <ph name="SITE" /> מכיוון שהאתר שלח אישורים משובשים ש-Chrome אינו יכול לעבד. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שדף זה יפעל מאוחר יותר.</translation>
 <translation id="8000275528373650868">‏להפעלת Google Chrome יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
 <translation id="8005540215158006229">‏Chrome כמעט מוכן.</translation>
 <translation id="8008534537613507642">‏התקן מחדש את Chrome</translation>
@@ -243,7 +241,6 @@
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">אין לך זכויות שמתאימות להתקנה ברמת המערכת. נסה להפעיל שוב את המתקין כמנהל מערכת.</translation>
 <translation id="8889942196804715220">‏הפעל מחדש במצב עשיר ב-Chrome</translation>
-<translation id="8987477933582888019">דפדפן אינטרנט</translation>
 <translation id="9026991721384951619">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="9102715433345326100">‏הקובץ הזה זדוני, ו-Chrome חסם אותו</translation>
 <translation id="9107728822479888688">‏<ph name="BEGIN_BOLD" />אזהרה:<ph name="END_BOLD" /> ‏‏Google Chrome‏ אינו יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית תוסף זה במצב גלישה פרטית, בטל אפשרות זו.</translation>

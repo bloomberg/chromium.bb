@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
 <translation id="1506061864768559482">Motor de búsqueda</translation>
 <translation id="1513352483775369820">Historial web y marcadores</translation>
+<translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1557201757634521564">Autodetectar codificación</translation>
 <translation id="1568822834048182062">Tus marcadores, tu historial, tus contraseñas y otras opciones se sincronizarán con tu cuenta de Google.</translation>
 <translation id="1620510694547887537">Cámara</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Salir del modo incógnito</translation>
 <translation id="3190152372525844641">Activa los permisos para Chrome en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de datos almacenados</translation>
-<translation id="3207960819495026254">Añadido a marcadores</translation>
 <translation id="3227137524299004712">Micrófono</translation>
 <translation id="3232754137068452469">Aplicación web</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4543087392704641517">Título de marcador</translation>
 <translation id="4543661749405994812">Copiar dirección de correo</translation>
 <translation id="4581964774250883625">Has entrado en el modo incógnito.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 enlace de Web física cercano}other{# enlaces de Web física cercanos}}</translation>
 <translation id="4645575059429386691">Administrado por uno de tus padres</translation>
 <translation id="4663756553811254707">Se han eliminado <ph name="NUMBER_OF_BOOKMARKS" /> marcadores</translation>
 <translation id="4665282149850138822">Se ha añadido <ph name="NAME" /> a la pantalla de inicio</translation>
@@ -248,7 +247,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
 <translation id="4927198283430892231">Las páginas guardadas ocupan <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="494334276486034338">Última sincronización: hace <ph name="HOURS" /> horas</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
 <translation id="4970484396410298643">Accede a las pestañas que tengas abiertas en tu ordenador desde aquí.
 
@@ -258,14 +256,9 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">¿No eres <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">No se han encontrado páginas web cercanas</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
-<translation id="5049968687459146030">Al habilitar la opción No realizar seguimiento, se incluirá una solicitud con el tráfico de navegación. El efecto dependerá de si algún sitio web responde a la solicitud y de cómo se interpreta.
-
-Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anuncios no basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación (por ejemplo, para mejorar la seguridad, para proporcionar contenido, anuncios y recomendaciones en sus sitios web o para generar estadísticas de informes).</translation>
 <translation id="5063480226653192405">Uso</translation>
-<translation id="5074309530946372881">Buscando páginas web cercanas</translation>
 <translation id="509605886816275399">¿Quieres guardar esta página sin conexión?</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
 <translation id="5127805178023152808">La sincronización está desactivada</translation>
@@ -286,7 +279,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="5275558766013849309">Las pestañas aparecerán junto a aplicaciones recientes.</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5304593522240415983">Este campo no puede estar vacío</translation>
-<translation id="5305985456140490686">Última sincronización: hace <ph name="MINUTES" /> minutos</translation>
 <translation id="5308933389783727448">Buscar páginas guardadas</translation>
 <translation id="5313967007315987356">Añadir sitio</translation>
 <translation id="5317780077021120954">Guardar</translation>
@@ -301,7 +293,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="5414836363063783498">Verificando…</translation>
 <translation id="5423934151118863508">Aquí aparecerán las páginas a las que accedes con más frecuencia</translation>
 <translation id="5424715742813396254">Editar nombre/contraseña o excepción guardados</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Editar página guardada</translation>
 <translation id="544291274896356069">Saldrás del modo incógnito si este enlace se abre en una aplicación externa. ¿Quieres continuar?</translation>
 <translation id="5487729733663684359">Ya no se admiten actualizaciones de Chrome para esta versión de Android.</translation>
@@ -467,6 +458,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Siempre</translation>
 <translation id="7562080006725997899">Borrando datos de navegación</translation>
+<translation id="7588950540487816470">Web física</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7599840151813361502">No se cerrará la sesión en tus <ph name="BEGIN_LINK" />cuentas de Google<ph name="END_LINK" /></translation>
 <translation id="7603403729818446828">Consulta tus pestañas con otras aplicaciones recientes en la pantalla Visión general de tu teléfono. Puedes controlar esta opción en las opciones de <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
@@ -501,7 +493,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
-<translation id="7977858705483383621">SafeSearch</translation>
 <translation id="7987073022710626672">Condiciones de servicio de Chrome</translation>
 <translation id="7989222512959629388">Guardando…</translation>
 <translation id="7998918019931843664">Volver a abrir pestaña cerrada</translation>
@@ -527,7 +518,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8275818695183729150">Permitir (para búsquedas en la barra de direcciones)</translation>
 <translation id="8310344678080805313">Pestañas estándar</translation>
-<translation id="8374420395168535396">Última sincronización: hace <ph name="DAYS" /> días</translation>
 <translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
 <translation id="8396312449826231789">Solo sitios aprobados</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
@@ -595,7 +585,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
 <translation id="945632385593298557">Acceder al micrófono</translation>
-<translation id="963967414714199900">Última sincronización: ahora</translation>
 <translation id="969096075394517431">Cambiar idiomas</translation>
 <translation id="971774202801778802">Añadir URL a marcadores</translation>
 <translation id="983192555821071799">Cerrar todas las pestañas</translation>

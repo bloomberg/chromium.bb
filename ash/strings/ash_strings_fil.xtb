@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="1012876632442809908">USB-C device (port sa harap)</translation>
 <translation id="1013923882670373915">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Napalitan na ang shortcut para sa paglipat sa susunod na pamamaraan ng pag-input. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Awtomatikong itago ang shelf</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Naka-disable ang on-screen na keyboard</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">USB-C device (port sa kaliwa)</translation>
 <translation id="1330145147221172764">I-enable ang on-screen na keyboard</translation>
 <translation id="1343000272198685031">Jack ng Mikropono</translation>
 <translation id="1346748346194534595">Kanan</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="1812696562331527143">Naging <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3rd party<ph name="END_LINK" />) ang iyong pamamaraan ng pag-input.
 Pindutin ang Shift + Alt upang magpalit.</translation>
+<translation id="1864454756846565995">USB-C device (port sa rear)</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Napalitan na ang shortcut para sa pagbubukas sa task manager. Mangyaring gamitin ang <ph name="NEW_SHORTCUT" /> sa halip na gamitin ang <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Mga awtomatikong pag-click</translation>
@@ -55,6 +58,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="2805756323405976993">Mga App</translation>
 <translation id="2819276065543622893">Masa-sign out ka ngayon.</translation>
 <translation id="2825619548187458965">Shelf</translation>
+<translation id="2844169650293029770">USB-C device (port sa kaliwang bahagi sa harap)</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2942516765047364088">Posisyon ng shelf</translation>
 <translation id="2946640296642327832">Paganahin ang Bluetooth</translation>
@@ -74,6 +78,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3147142846278915599">Launcher (nagsi-sync ng mga app...)</translation>
 <translation id="3157169093162779309">I-enable ang lock sa pag-rotate</translation>
 <translation id="3294437725009624529">Bisita</translation>
+<translation id="3445925074670675829">USB-C device</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="3573179567135747900">Palitan pabalik sa "<ph name="FROM_LOCALE" />" (kailangang i-restart)</translation>
 <translation id="3595596368722241419">Puno na ang baterya</translation>
@@ -125,6 +130,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="5238774010593222950">Hindi makapag-sign in sa ibang account.</translation>
 <translation id="532063867737390965">Na-disable ng administrator ang network setting na ito.</translation>
+<translation id="5331975486040154427">USB-C device (port sa kaliwang bahagi sa likod)</translation>
 <translation id="544691375626129091">Naidagdag na ang lahat ng available na user sa session na ito.</translation>
 <translation id="5507786745520522457">I-set up ang mobile data</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6426039856985689743">Huwag paganahin ang mobile data</translation>
 <translation id="6452181791372256707">Tanggihan</translation>
 <translation id="6459472438155181876">Pinapalawak ang screen sa <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">USB-C device (port sa kanan)</translation>
 <translation id="6501401484702599040">Kina-cast ang screen sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="6585808820553845416">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="7052914147756339792">Magtakda ng wallpaper...</translation>
 <translation id="7097613348211027502">Naka-enable ang ChromeVox (pasalitang feedback).
 Pindutin ang Ctrl+Alt+Z upang i-disable.</translation>
+<translation id="7098389117866926363">USB-C device (kaliwang port sa likod)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Naka-on ang CAPS LOCK.
@@ -220,6 +228,7 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>
+<translation id="8938800817013097409">USB-C device (kanang port sa likod)</translation>
 <translation id="8940956008527784070">Mahina na ang baterya (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Ginagamit ang mikropono.</translation>

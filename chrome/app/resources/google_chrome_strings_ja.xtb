@@ -53,6 +53,7 @@
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="2576431527583832481">Chrome のアップデートが見つかりました。新しいバージョンが利用可能です。</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
+<translation id="2582790009689336987">この Linux システムはサポートが終了するため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="2588322182880276190">Chrome ロゴ</translation>
 <translation id="2664962310688259219">Chrome OS オープンソース ライセンス</translation>
 <translation id="2665296953892887393">障害レポートと<ph name="UMA_LINK" />を Google に自動送信して Google Chrome の機能向上に役立てる</translation>
@@ -98,6 +99,7 @@
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
 <translation id="4309555186815777032">（Chrome を<ph name="BEGIN_BUTTON" />再起動<ph name="END_BUTTON" />する必要があります）</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">この Linux システムはサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="4480040274068703980">ログイン時にエラーが発生したため、Chrome OS はデータを同期できませんでした。</translation>
@@ -136,8 +138,6 @@
 <translation id="5563479599352954471">ワンタップで検索</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chrome から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる
-誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chrome によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="568643307450491754">ブックマークは Chrome メニューやブックマーク バーに表示されます。</translation>
 <translation id="573759479754913123">Chrome OS について</translation>
 <translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
@@ -150,7 +150,6 @@
 <translation id="597770749449734237">Google Chrome のデバッグに役立つ追加のキーボード ショートカットを有効にします。</translation>
 <translation id="6012342843556706400">このサイトと位置情報を共有するには Chrome に位置情報へのアクセスを許可する必要があります。</translation>
 <translation id="6014844626092547096">Chrome にログインしています。同期は管理者によって無効にされています。</translation>
-<translation id="6049075767726609708">このコンピュータには管理者権限のあるユーザーがインストールしたシステムレベル (コンピュータの全ユーザーが利用可) の Google Chromeがあります。ユーザー レベルの Google Chrome はシステム レベルの Google Chrome に置き換えられます。</translation>
 <translation id="6113794647360055231">進化する Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
@@ -210,7 +209,6 @@
 <translation id="781069973841903133">Chrome 没入モードで再起動すると、Chrome のアプリは閉じられ再起動されます。</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
 <translation id="7890208801193284374">パソコンを共有している場合、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
-<translation id="7984945080620862648"><ph name="SITE" /> から、Chrome で処理できないスクランブル化された認証情報が返されたため、現在このサイトにはアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、またページにアクセスできるようになる可能性があります。</translation>
 <translation id="8000275528373650868">Google Chrome のご利用には Windows Vista または Windows XP SP2 以降が必要です。</translation>
 <translation id="8005540215158006229">Chrome はすぐに利用できるようになります。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
@@ -243,7 +241,6 @@
 <translation id="8851136666856101339">本文</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="8889942196804715220">Chrome 没入モードで再起動</translation>
-<translation id="8987477933582888019">ウェブブラウザ</translation>
 <translation id="9026991721384951619">アカウントのログイン情報が最新ではないため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="9102715433345326100">不正なファイルです。Chrome はこのファイルをブロックしました。</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告:<ph name="END_BOLD" /> 拡張機能による閲覧履歴の記録は Google Chrome で停止することができません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>

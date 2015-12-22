@@ -55,6 +55,7 @@
 <translation id="2485422356828889247">আনইনস্টল</translation>
 <translation id="2576431527583832481">Chrome আরো ভাল হয়েছে! একটি নতুন সংস্করণ উপলব্ধ আছে৷</translation>
 <translation id="2580411288591421699">বর্তমানে Google Chrome এর যে সংস্করণটি চলছে সেটি ইনস্টল করতে পারে না৷ দয়া করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
+<translation id="2582790009689336987">এই কম্পিউটারটি শীঘ্রই Google Chrome এর আপডেটগুলি গ্রহণ করা বন্ধ করবে কারণ না কারণ এই Linux  সিস্টেম আর সমর্থন করা হবে না।</translation>
 <translation id="2588322182880276190">Chrome লোগো</translation>
 <translation id="2664962310688259219">Chrome OS মুক্ত উৎসের লাইসেন্সগুলি</translation>
 <translation id="2665296953892887393">Google এ <ph name="UMA_LINK" /> এবং ক্র্যাশ প্রতিবেদনগুলি পাঠিয়ে Google Chrome কে আরো ভাল করতে সহায়তা করুন৷</translation>
@@ -100,6 +101,7 @@
 <translation id="4251615635259297716">এই অ্যাকাউন্টে আপনার Chrome ডেটা লিঙ্ক করবেন?</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />পুনরায় চালু করা<ph name="END_BUTTON" /> প্রয়োজন)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">এই কম্পিউটারটি আর Google Chrome এর আপডেটগুলি গ্রহণ করবে না কারণ এই Linux  সিস্টেম আর সমর্থিত নয়৷</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে সাইন আউট এবং পুনরায় সাইন ইন করুন৷</translation>
 <translation id="4480040274068703980">সাইন ইনে ত্রুটির কারণে Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
@@ -140,7 +142,6 @@
 <translation id="5563479599352954471">একবার স্পর্শ করে অনুসন্ধান</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">পৃষ্ঠা থেকে না বেরিয়েই ওয়েবসাইটের বিষয়বস্তুগুলি সম্বন্ধে জানুন৷</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> সাধারণত আপনার তথ্য সুরক্ষিত রাখতে এনক্রিপশান (SSL) ব্যবহার করে৷ যখন Chrome <ph name="SITE" /> এর সাথে সংযোগ স্থাপন করার চেষ্টা করেছে তখন ওয়েবসাইটটি অস্বাভাবিক এবং ভুল শংসাপত্র পাঠিয়েছে৷ হয় একজন আক্রমণকারী <ph name="SITE" /> হওয়ার ভান করছে, অথবা একটি Wi-Fi সাইন ইন স্ক্রীন সংযোগকে বাধাপ্রদান করেছে৷ আপনার তথ্য এখনো নিরাপদ আছে কারণ কোনো ডেটা আদানপ্রদানের আগেই Chrome সংযোগটিকে বন্ধ করে দিয়েছে৷</translation>
 <translation id="568643307450491754">Chrome মেনুতে বা বুকমার্ক দণ্ডে আপনার বুকমার্ক খুঁজুন৷</translation>
 <translation id="573759479754913123">Chrome OS সম্পর্কে </translation>
 <translation id="5749068826913805084">ফাইল ডাউনলোড করতে Chrome এর জন্য সঞ্চয়স্থানের অ্যাক্সেস প্রয়োজন।</translation>
@@ -153,7 +154,6 @@
 <translation id="597770749449734237">Google Chrome ডিবাগ করার জন্য উপযোগী অতিরিক্ত কীবোর্ড শর্টকার্ট সক্ষম করে৷</translation>
 <translation id="6012342843556706400">এই সাইটের সাথে এটি ভাগ করতে Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="6014844626092547096">আপনি এখন Chrome এ সাইন ইন করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
-<translation id="6049075767726609708">একজ প্রশাসক এই সিস্টেমে Google Chrome ইনস্টল করেছে এবং এটি সমস্ত ব্যবহারকারীর কাছেই উপলব্ধ৷  সিস্টেম স্তরীয় Google Chrome আপনার ব্যবহারকারী-স্তরীয় ইনস্টলেশনকে এখনই প্রতিস্থাপিত করবে৷</translation>
 <translation id="6113794647360055231">Chrome আরো ভাল হয়ে উঠেছে</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
@@ -213,7 +213,6 @@
 <translation id="781069973841903133">Chrome ইমারসিভ মোড পুনরায় লঞ্চ করা হলে আপনার Chrome অ্যাপ্লিকেশানগুলি বন্ধ হয়ে পুনরায় লঞ্চ হবে।</translation>
 <translation id="7825851276765848807">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="7890208801193284374">যদি আপনি একটি কম্পিউটার ভাগ করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chrome এর সেটআপ করতে পারবেন৷</translation>
-<translation id="7984945080620862648">আপনি <ph name="SITE" /> এ যেতে পারবেন না কারণ অসম্পূর্ণ শংসাপত্র পাঠিয়েছে যেটি Chrome প্রক্রিয়া করতে পারে না।  নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত সাময়িকভাবে হয়, তাই এই পৃষ্ঠা সম্ভবত পরে কাজ করবে।</translation>
 <translation id="8000275528373650868">Google Chrome-এর জন্য SP2 বা উচ্চতর সহ Windows Vista বা Windows XP প্রয়োজন৷</translation>
 <translation id="8005540215158006229">Chrome প্রায় প্রস্তুত৷</translation>
 <translation id="8008534537613507642">Chrome পুনরায় ইন্সটল করুন</translation>
@@ -246,7 +245,6 @@
 <translation id="8851136666856101339">প্রধান</translation>
 <translation id="8862326446509486874">সিস্টেম-স্তরীয় ইনস্টলের জন্য আপনার কাছে যথাযথ অধিকারগুলি নেই৷ প্রশাসক হিসাবে আবার ইনস্টলারটি চালনার চেষ্টা করুন৷</translation>
 <translation id="8889942196804715220">Chrome এর ইমারসিভ মোডে পুনঃলঞ্চ করুন</translation>
-<translation id="8987477933582888019">ওয়েব ব্রাউজার</translation>
 <translation id="9026991721384951619">আপনার অ্যাকাউন্টের সাইন ইনের বিবরণটি সেকেলে হওয়ায় Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="9102715433345326100">এই ফাইলটি ক্ষতিকারক, এবং Chrome এটিকে অবরুদ্ধ করেছে৷</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" /> সতর্কতা: <ph name="END_BOLD" /> Google Chrome আপনার ব্রাউজিং ইতিহাস নথিবদ্ধ থেকে এক্সটেনশনগুলি সংরক্ষণ করতে পারেনা৷ এই এক্সটেনশন অজ্ঞাত মোডে অক্ষম করতে, এই বিকল্প নির্বাচন মুক্ত করুন৷</translation>

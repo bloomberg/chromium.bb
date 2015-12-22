@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">Unduhan <ph name="FILE_NAME" /> gagal karena masalah server.</translation>
 <translation id="1506061864768559482">Mesin telusur</translation>
 <translation id="1513352483775369820">Bookmark dan riwayat web</translation>
+<translation id="1553358976309200471">Perbarui browser Chrome</translation>
 <translation id="1557201757634521564">Deteksi otomatis enkode</translation>
 <translation id="1568822834048182062">Bookmark, riwayat, sandi, dan setelan lainnya akan disinkronkan ke Akun Google.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Tutup mode penyamaran</translation>
 <translation id="3190152372525844641">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data tersimpan</translation>
-<translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Aplikasi Web</translation>
 <translation id="3244271242291266297">BB</translation>
@@ -224,7 +224,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4543087392704641517">Judul bookmark</translation>
 <translation id="4543661749405994812">Salin alamat email</translation>
 <translation id="4581964774250883625">Anda masuk mode penyamaran.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 tautan Web Fisik di sekitar}other{# tautan Web Fisik di sekitar}}</translation>
 <translation id="4645575059429386691">Dikelola oleh orang tua Anda</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmark dihapus</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> telah ditambahkan ke layar Utama</translation>
@@ -248,7 +247,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4885273946141277891">Jumlah kemunculan Chrome tidak didukung.</translation>
 <translation id="4927198283430892231">Laman tersimpan saat ini menggunakan <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="494334276486034338">Terakhir disinkronkan: <ph name="HOURS" /> jam yang lalu</translation>
 <translation id="4943872375798546930">Tidak ada hasil</translation>
 <translation id="4970484396410298643">Akses tab yang telah Anda buka di komputer, di sini.
 
@@ -258,14 +256,9 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5000922062037820727">Diblokir (disarankan)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Bukan <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">Tidak ditemukan laman web di sekitar</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
-<translation id="5049968687459146030">Bila Anda mengaktifkan ‘Jangan Lacak’, berarti lalu lintas penjelajahan Anda akan disertai dengan sebuah permintaan. Dampak yang ditimbulkan dari permintaan tersebut bergantung pada apakah situs web menanggapi permintaan atau tidak, dan bagaimana permintaan diinterpretasikan.
-
-Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangkan iklan yang bukan didasarkan dari situs web lainnya yang Anda kunjungi. Masih ada banyak situs web yang akan mengumpulkan dan menggunakan data penjelajahan Anda - misalnya untuk meningkatkan keamanan, menyediakan konten, iklan, dan saran di situs web mereka, serta untuk membuat statistik pelaporan.</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
-<translation id="5074309530946372881">Mencari laman web di sekitar</translation>
 <translation id="509605886816275399">Simpan offline laman ini?</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="5127805178023152808">Sinkronisasi nonaktif</translation>
@@ -286,7 +279,6 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="5275558766013849309">Tab akan ditampilkan bersama aplikasi terkini.</translation>
 <translation id="5302048478445481009">Bahasa</translation>
 <translation id="5304593522240415983">Bidang ini tidak boleh kosong</translation>
-<translation id="5305985456140490686">Terakhir disinkronkan: <ph name="MINUTES" /> menit yang lalu</translation>
 <translation id="5308933389783727448">Telusuri laman tersimpan</translation>
 <translation id="5313967007315987356">Tambahkan situs</translation>
 <translation id="5317780077021120954">Simpan</translation>
@@ -301,7 +293,6 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="5414836363063783498">Memverifikasi...</translation>
 <translation id="5423934151118863508">Laman yang paling sering dikunjungi akan muncul di sini</translation>
 <translation id="5424715742813396254">Edit pengecualian atau nama/sandi yang tersimpan</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Edit laman tersimpan</translation>
 <translation id="544291274896356069">Mode penyamaran akan ditutup jika tautan ini dibuka di aplikasi eksternal. Lanjutkan?</translation>
 <translation id="5487729733663684359">Pembaruan Chrome tidak lagi didukung untuk versi Android.</translation>
@@ -467,6 +458,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7561196759112975576">Selalu</translation>
 <translation id="7562080006725997899">Menghapus data penjelajahan</translation>
+<translation id="7588950540487816470">Web Fisik</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>
 <translation id="7599840151813361502">Anda tidak akan dikeluarkan dari <ph name="BEGIN_LINK" />Akun Google<ph name="END_LINK" /></translation>
 <translation id="7603403729818446828">Lihat tab dengan aplikasi terbaru lainnya di layar Ringkasan ponsel. Anda dapat mengontrolnya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
@@ -501,7 +493,6 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="7961015016161918242">Tidak pernah</translation>
 <translation id="7963646190083259054">Vendor:</translation>
-<translation id="7977858705483383621">TelusurAman</translation>
 <translation id="7987073022710626672">Persyaratan Layanan Chrome</translation>
 <translation id="7989222512959629388">Menyimpan…</translation>
 <translation id="7998918019931843664">Buka kembali tab yang ditutup</translation>
@@ -527,7 +518,6 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="8275818695183729150">Izinkan (untuk penelusuran bilah alamat)</translation>
 <translation id="8310344678080805313">Tab standar</translation>
-<translation id="8374420395168535396">Terakhir disinkronkan: <ph name="DAYS" /> hari yang lalu</translation>
 <translation id="8374821112118309944">Anda perlu memperbarui TalkBack ke versi yang lebih baru.</translation>
 <translation id="8396312449826231789">Hanya situs yang disetujui</translation>
 <translation id="8413126021676339697">Tampilkan riwayat lengkap</translation>
@@ -595,7 +585,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Folder baru</translation>
 <translation id="945632385593298557">Akses mikrofon Anda</translation>
-<translation id="963967414714199900">Terakhir disinkronkan: baru saja</translation>
 <translation id="969096075394517431">Ubah bahasa</translation>
 <translation id="971774202801778802">URL bookmark</translation>
 <translation id="983192555821071799">Tutup semua tab</translation>

@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">서버 문제로 인해 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="1506061864768559482">검색엔진</translation>
 <translation id="1513352483775369820">북마크 및 방문 기록</translation>
+<translation id="1553358976309200471">Chrome 업데이트</translation>
 <translation id="1557201757634521564">인코딩 자동 감지</translation>
 <translation id="1568822834048182062">북마크, 방문 기록, 비밀번호, 기타 설정이 Google 계정에 동기화됩니다.</translation>
 <translation id="1620510694547887537">카메라</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="3198916472715691905">저장 데이터 <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3207960819495026254">북마크됨</translation>
 <translation id="3227137524299004712">마이크</translation>
 <translation id="3232754137068452469">웹 앱</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@
 <translation id="4543087392704641517">북마크 제목</translation>
 <translation id="4543661749405994812">이메일 주소 복사</translation>
 <translation id="4581964774250883625">시크릿 모드로 전환되었습니다.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{주변에 피지컬 웹 링크가 1개 있습니다.}other{주변에 피지컬 웹 링크가 #개 있습니다.}}</translation>
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 메인 스크린에 추가됨</translation>
@@ -248,7 +247,6 @@
 <translation id="4881695831933465202">열기</translation>
 <translation id="4885273946141277891">지원되지 않는 Chrome 인스턴스 수입니다.</translation>
 <translation id="4927198283430892231">현재 저장된 페이지의 크기는 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />입니다.</translation>
-<translation id="494334276486034338">최근 동기화: <ph name="HOURS" />시간 전</translation>
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
 <translation id="4970484396410298643">컴퓨터에서 열어 둔 탭을 여기에서 바로 액세스할 수 있습니다.
 
@@ -258,14 +256,9 @@
 <translation id="5000922062037820727">차단(권장)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205"><ph name="NOT_YOU_USER_NAME" />님이 아닌가요?</translation>
-<translation id="5026147292873308216">주변에 웹페이지가 없습니다.</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보</translation>
-<translation id="5049968687459146030">‘추적 안함’을 사용하도록 설정하면 요청이 사용자의 인터넷 사용 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 해석되는 방법에 따라 결과가 나타납니다.
-
-예를 들어 어떤 웹사이트는 사용자가 방문한 다른 웹사이트를 기반으로 하지 않는 광고를 표시하여 이 요청에 응답할 수 있습니다. 그러나 대부분의 웹사이트에서는 보안을 개선하거나 웹사이트에 콘텐츠, 광고, 권장사항 등을 제공하거나 보고서 통계를 생성하기 위해 사용자의 인터넷 사용 기록을 계속 수집하고 사용합니다.</translation>
 <translation id="5063480226653192405">사용</translation>
-<translation id="5074309530946372881">주변에서 웹페이지를 찾는 중입니다.</translation>
 <translation id="509605886816275399">이 페이지를 오프라인에 저장할까요?</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="5127805178023152808">동기화 사용 안함</translation>
@@ -286,7 +279,6 @@
 <translation id="5275558766013849309">탭은 최근 앱과 함께 보유할 수 있습니다.</translation>
 <translation id="5302048478445481009">언어</translation>
 <translation id="5304593522240415983">필수 입력란입니다.</translation>
-<translation id="5305985456140490686">최근 동기화: <ph name="MINUTES" />분 전</translation>
 <translation id="5308933389783727448">저장된 페이지 검색</translation>
 <translation id="5313967007315987356">사이트 추가</translation>
 <translation id="5317780077021120954">저장</translation>
@@ -301,7 +293,6 @@
 <translation id="5414836363063783498">확인 중...</translation>
 <translation id="5423934151118863508">자주 방문한 페이지가 여기에 표시됩니다.</translation>
 <translation id="5424715742813396254">저장된 이름/비밀번호 또는 예외 수정</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" />(<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">저장된 페이지 수정</translation>
 <translation id="544291274896356069">이 링크가 외부 애플리케이션에서 열리면 시크릿 모드가 종료됩니다. 계속하시겠습니까?</translation>
 <translation id="5487729733663684359">Chrome 업데이트는 더 이상 이 버전의 Android에서 지원되지 않습니다.</translation>
@@ -467,6 +458,7 @@
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7561196759112975576">항상</translation>
 <translation id="7562080006725997899">인터넷 사용 기록 삭제</translation>
+<translation id="7588950540487816470">피지컬 웹</translation>
 <translation id="7596558890252710462">운영체제</translation>
 <translation id="7599840151813361502"><ph name="BEGIN_LINK" />Google 계정<ph name="END_LINK" />에서 로그아웃되지 않습니다.</translation>
 <translation id="7603403729818446828">휴대전화의 최근 사용 화면에서 최근에 사용한 앱과 탭을 확인할 수 있습니다. 이 기능은 <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 관리할 수 있습니다.</translation>
@@ -501,7 +493,6 @@
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7963646190083259054">공급업체:</translation>
-<translation id="7977858705483383621">세이프서치</translation>
 <translation id="7987073022710626672">Chrome 서비스 약관</translation>
 <translation id="7989222512959629388">저장 중…</translation>
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
@@ -527,7 +518,6 @@
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8275818695183729150">허용(검색주소창 검색)</translation>
 <translation id="8310344678080805313">일반 탭</translation>
-<translation id="8374420395168535396">최근 동기화: <ph name="DAYS" />일 전</translation>
 <translation id="8374821112118309944">음성 안내 지원을 최신 버전으로 업데이트해야 합니다.</translation>
 <translation id="8396312449826231789">승인된 사이트만 허용</translation>
 <translation id="8413126021676339697">방문 기록 전체 보기</translation>
@@ -595,7 +585,6 @@
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">새 폴더</translation>
 <translation id="945632385593298557">마이크에 액세스</translation>
-<translation id="963967414714199900">최근 동기화: 방금 전</translation>
 <translation id="969096075394517431">언어 변경</translation>
 <translation id="971774202801778802">북마크 URL</translation>
 <translation id="983192555821071799">탭 모두 닫기</translation>

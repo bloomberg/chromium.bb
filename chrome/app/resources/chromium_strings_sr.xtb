@@ -62,7 +62,6 @@
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
 <translation id="2910007522516064972">О &amp;Chromium-у</translation>
 <translation id="2966088006374919794">Chromium мора да покрене спољну апликацију ради обраде <ph name="SCHEME" /> веза. Захтевана веза је <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> обично користи шифровање да би заштитио информације. Када је Chromium овог пута покушао да се повеже са <ph name="SITE" />, веб-сајт је вратио необичне и нетачне акредитиве. Или нападач покушава да се представи као <ph name="SITE" /> или је екран за Wi-Fi пријављивање прекинуо везу. Информације су и даље безбедне зато што је Chromium прекинуо везу пре него што су размењени било какви подаци.</translation>
 <translation id="3032787606318309379">Додавање у Chromium...</translation>
 <translation id="3046695367536568084">Треба да будете пријављени у Chromium да бисте користили апликације. То омогућава Chromium-у да синхронизује апликације, обележиваче, историју, лозинке и друга подешавања на свим уређајима.</translation>
 <translation id="3068515742935458733">Помозите нам да побољшамо Chromium тако што ћете Google-у слати извештаје о отказивању и <ph name="UMA_LINK" /></translation>
@@ -88,7 +87,6 @@
 <translation id="358997566136285270">Chromium логотип</translation>
 <translation id="3595526210123705352">Поновним покретањем у Windows 8 режиму затварате и поново покрећете Chromium апликације.</translation>
 <translation id="3738139272394829648">Додирни за претрагу</translation>
-<translation id="3744899669254331632">Тренутно не можете да посетите <ph name="SITE" /> јер је веб-сајт послао кодиране акредитиве које Chromium не може да обради. Грешке на мрежи и напади су углавном привремени, па ће страница вероватно прорадити касније.</translation>
 <translation id="3748537968684000502">Прегледате безбедну Chromium страницу.</translation>
 <translation id="378917192836375108">Chromium вам омогућава да кликнете на број телефона на вебу и да га позовете помоћу Skype-а!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -133,6 +131,7 @@
 <translation id="5796460469508169315">Chromium је скоро спреман.</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
 <translation id="5823381412099532241">Chromium не може сâм да се ажурира на најновију верзију, па пропуштате одличне нове функције и безбедносне исправке. Треба да ажурирате Chromium.</translation>
+<translation id="5859963531214966875">Будуће верзије Chromium-а више неће подржавати овај Linux систем.</translation>
 <translation id="5862307444128926510">Добро дошли у Chromium</translation>
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
 <translation id="5909170354645388250">Не користи се у Chromium-у. Резервисано место за очување синхронизације мапа ресурса. Очекује један аргумент: $1.</translation>
@@ -152,6 +151,7 @@
 <translation id="6485906693002546646">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chromium садржаја. Да бисте ажурирали подешавање синхронизације или користили Chromium без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Деинсталирај Chromium</translation>
 <translation id="6526111688217511984">Chromium-у је потребан приступ меморијском простору да би преузимао датотеке.</translation>
+<translation id="6593914713218535185">Chromium неће исправно функционисати зато што више није подржан на овом Linux систему.</translation>
 <translation id="6637001341228460105">Chromium захтева приступ микрофону да би га делио са овим сајтом.</translation>
 <translation id="6638567566961868659">Пронађите обележиваче у Chromium менију или на траци са обележивачима.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
@@ -232,7 +232,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8985587603644336029">Неко се претходно пријавио на Chromium на овом рачунару као <ph name="ACCOUNT_EMAIL_LAST" />. Ако то није ваш налог, направите новог Chromium корисника да би информације биле раздвојене.
 
 Ако се ипак пријавите, Chromium информације као што су обележивачи, историја и друга подешавања ће бити обједињене на <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Веб-прегледач</translation>
 <translation id="9013087743919948559">Додавање у Chromium</translation>
 <translation id="9013262824292842194">За Chromium је неопходан Windows Vista или Windows XP са SP2 или новија верзија.</translation>
 <translation id="9019929317751753759">Да бисмо учинили Chromium безбеднијим, онемогућили смо следећи додатак који <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не наводи и који је можда додат без вашег знања.</translation>
@@ -242,7 +241,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="918373042641772655">Ако прекинете везу са <ph name="USERNAME" />, обрисаћете историју, обележиваче, подешавања и друге Chromium податке сачуване на овом уређају. Подаци сачувани на Google налогу неће бити обрисани и можете њима да управљате на <ph name="GOOGLE_DASHBOARD_LINK" />Google контролној табли<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Администратор је инсталирао Chromium у овом систему и он је доступан за све кориснике. Chromium на нивоу система ће сада заменити инсталацију на нивоу корисника.</translation>
 <translation id="9197815481970649201">Сада сте пријављени на Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> захтева да прочитате и прихватите следеће Услове коришћења услуге пре него што почнете да користите овај уређај. Ови услови не представљају проширење, измену или ограничење Услова за Chromium ОС.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

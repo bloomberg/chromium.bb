@@ -53,6 +53,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2485422356828889247">Deinstallieren</translation>
 <translation id="2576431527583832481">Chrome ist jetzt noch besser! Es ist eine neue Version verfügbar.</translation>
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
+<translation id="2582790009689336987">Dieser Computer erhält demnächst keine Google Chrome-Updates mehr, da dieses Linux-System nicht mehr unterstützt wird.</translation>
 <translation id="2588322182880276190">Chrome-Logo</translation>
 <translation id="2664962310688259219">Open-Source-Lizenzen für Chrome OS</translation>
 <translation id="2665296953892887393">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Google Chrome an Google senden</translation>
@@ -98,6 +99,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="4251615635259297716">Ihre Chrome-Daten mit diesem Konto verknüpfen?</translation>
 <translation id="4309555186815777032">Ein <ph name="BEGIN_BUTTON" />Neustart<ph name="END_BUTTON" /> von Chrome ist erforderlich.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Für diesen Computer werden keine weiteren Google Chrome-Updates mehr bereitgestellt, da dieses Linux-System nicht mehr unterstützt wird.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Melden Sie sich ab und wieder an, damit diese Änderung wirksam wird.</translation>
 <translation id="4480040274068703980">Chrome OS konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
@@ -136,7 +138,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="5563479599352954471">Suchen durch einfaches Tippen</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Erfahren Sie mehr über Website-Themen, ohne die Seite zu verlassen.</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> schützt Ihre Informationen in der Regel durch Verschlüsselung. Als Chrome dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chrome die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
 <translation id="568643307450491754">Ihre Lesezeichen finden Sie im Chrome-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
@@ -149,7 +150,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="597770749449734237">Aktiviert zusätzliche Tastenkombinationen für die Fehlersuche in Google Chrome</translation>
 <translation id="6012342843556706400">Chrome benötigt Zugriff auf den Standort, um ihn für diese Website freizugeben.</translation>
 <translation id="6014844626092547096">Sie sind nun in Chrome angemeldet. Die Synchronisierung wurde von Ihrem Administrator deaktiviert.</translation>
-<translation id="6049075767726609708">Ein Administrator hat Google Chrome auf diesem System installiert. Es ist für alle Nutzer verfügbar. Durch die Installation von Google Chrome auf Systemebene wird Ihre Installation auf Nutzerebene jetzt ersetzt.</translation>
 <translation id="6113794647360055231">Chrome ist jetzt noch besser</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
@@ -209,7 +209,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="781069973841903133">Bei einem Neustart im immersiven Modus von Chrome werden Ihre Chrome-Apps geschlossen und neu gestartet.</translation>
 <translation id="7825851276765848807">Die Installation ist aufgrund eines unbekannten Fehlers fehlgeschlagen. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="7890208801193284374">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chrome jeweils nach ihren Wünschen einrichten.</translation>
-<translation id="7984945080620862648">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website verschlüsselte Anmeldedaten gesendet hat, die von Chrome nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="8000275528373650868">Für Google Chrome ist Windows Vista oder Windows XP SP2 oder höher erforderlich.</translation>
 <translation id="8005540215158006229">Chrome ist gleich bereit.</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
@@ -242,7 +241,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Sie verfügen nicht über die erforderlichen Rechte für eine systemweite Installation. Starten Sie das Installationsprogramm als Administrator.</translation>
 <translation id="8889942196804715220">Im immersiven Modus von Chrome neu starten</translation>
-<translation id="8987477933582888019">Webbrowser</translation>
 <translation id="9026991721384951619">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>
 <translation id="9102715433345326100">Diese Datei ist schädlich und wurde von Chrome blockiert.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Achtung:<ph name="END_BOLD" /> Google Chrome kann nicht verhindern, dass Ihr Browserverlauf von Erweiterungen protokolliert wird. Deaktivieren Sie diese Erweiterung für den Inkognitomodus, indem Sie das entsprechende Kästchen deaktivieren.</translation>

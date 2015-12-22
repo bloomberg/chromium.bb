@@ -60,8 +60,6 @@
 <translation id="2886012850691518054">‏אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת נתוני שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="2910007522516064972">‏מידע על &amp;Chromium‏</translation>
 <translation id="2966088006374919794">‏Chromium צריך להפעיל יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME" />. הקישור הנדרש הוא <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים
-חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="3032787606318309379">‏הוספה ל-Chromium</translation>
 <translation id="3046695367536568084">‏עליך להיות מחובר ל-Chromium כדי להשתמש ביישומים. כך Chromium יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בין מכשירים שונים.</translation>
 <translation id="3068515742935458733">‏עזור לשפר את Chromium על ידי שליחת דוחות קריסה ו-<ph name="UMA_LINK" /> אל Google</translation>
@@ -85,7 +83,6 @@
 <translation id="358997566136285270">‏לוגו של Chromium</translation>
 <translation id="3595526210123705352">‏הפעלה מחדש במצב Windows 8 תסגור ותפעיל מחדש את יישומי Chromium.</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
-<translation id="3744899669254331632">‏אינך יכול לבקר כרגע ב-<ph name="SITE" /> מפני שהאתר שלח פרטי כניסה מעורבלים ש-Chromium אינו יכול לעבד. שגיאות רשת והתקפות הן בדרך כלל זמניות, לכן סביר להניח שדף זה יפעל כהלכה בהמשך.</translation>
 <translation id="3748537968684000502">‏אתה מציג דף Chromium מאובטח.</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -130,6 +127,7 @@
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
 <translation id="5823381412099532241">‏העדכון העצמי של Chromium לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך לעדכן את Chromium.</translation>
+<translation id="5859963531214966875">‏גרסאות עתידיות של Chromium לא יתמכו עוד במערכת Linux זו.</translation>
 <translation id="5862307444128926510">‏ברוכים הבאים ל-Chromium‏</translation>
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5909170354645388250">‏אינו משמש ב-Chromium. מציין מיקום שנועד לסנכרון מפות משאבים. הוא מקבל ארגומנט אחד: $1.</translation>
@@ -149,6 +147,7 @@
 <translation id="6485906693002546646">‏אתה משתמש ב-<ph name="PROFILE_EMAIL" /> כדי לסנכרן את הפריטים שלך ב-Chromium. עבור אל '<ph name="SETTINGS_LINK" />' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chromium ללא חשבון Google.</translation>
 <translation id="6510925080656968729">‏הסר את התקנת Chromium</translation>
 <translation id="6526111688217511984">‏לצורך הורדת קבצים, Chromium זקוק לגישה לאחסון.</translation>
+<translation id="6593914713218535185">‏ייתכן ש-Chromium לא יפעל כראוי כי אינו נתמך עוד במערכת Linux זו.</translation>
 <translation id="6637001341228460105">‏Chromium זקוק לגישה אל המיקרופון כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6638567566961868659">‏מצא את הסימניות שלך בתפריט Chromium או בסרגל הסימניות.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
@@ -229,7 +228,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8985587603644336029">‏מישהו נכנס בעבר ל-Chromuim מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. אם זה לא החשבון שלך, צור משתמש חדש ל-Chromuim כדי לשמור על הפרדת המידע שלך.
 
 אם תמשיך בכניסה, המידע ב-Chromuim , כמו סימניות, היסטוריה והגדרות אחרות, ימוזג עם <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">דפדפן אינטרנט</translation>
 <translation id="9013087743919948559">‏הוסף ל-‏Chromium‏</translation>
 <translation id="9013262824292842194">‏להפעלת Chromium יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
 <translation id="9019929317751753759">‏כדי לשפר את האבטחה של Chromium, השבתנו את התוסף הבא שאינו רשום ב-<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוסף ללא ידיעתך.</translation>
@@ -239,7 +237,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="918373042641772655">‏ניתוק <ph name="USERNAME" /> ינקה את ההיסטוריה, הסימניות, ההגדרות ונתוני Chromium אחרים המאוחסנים במכשיר הזה. נתונים המאוחסנים בחשבון Google לא ינוקו, וניתן לנהל אותם <ph name="GOOGLE_DASHBOARD_LINK" />במרכז השליטה של Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">‏Chromium ‏(mDNS-In)</translation>
-<translation id="9191268552238695869">‏מנהל המערכת התקין Chromium במערכת זו, והוא זמין לכל המשתמשים. Chromium ברמת המערכת יחליף כעת את ההתקנה שלך ברמת המשתמש.</translation>
 <translation id="9197815481970649201">‏אתה מחובר כעת ל-Chromium</translation>
 <translation id="95514773681268843">‏<ph name="DOMAIN" /> דורש שתקרא ותקבל את התנאים וההגבלות הבאים לפני שתשתמש במכשיר הזה. תנאים אלה אינם מרחיבים, משנים או מגבילים את התנאים של מערכת ההפעלה של Chromium.</translation>
 <translation id="985602178874221306">‏מחברי Chromium</translation>

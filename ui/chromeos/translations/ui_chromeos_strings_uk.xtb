@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Під’єднання до <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Ківі</translation>
 <translation id="40400351611212369">Помилка активації мережі</translation>
+<translation id="4118990158415604803">Ваш адміністратор заборонив під’єднуватися до інших мереж.</translation>
 <translation id="4237016987259239829">Помилка з'єднання з мережею</translation>
 <translation id="4274292172790327596">Нерозпізнана помилка</translation>
 <translation id="4326192123064055915">Кава</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Активувати <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Догори дригом</translation>
 <translation id="6943836128787782965">Помилка HTTP</translation>
+<translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
 <translation id="7165320105431587207">Помилка налаштування мережі</translation>
 <translation id="7170041865419449892">За межами досяжності</translation>
 <translation id="7229570126336867161">Потрібна мережа EVDO</translation>

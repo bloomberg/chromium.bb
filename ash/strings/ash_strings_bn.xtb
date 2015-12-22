@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1012876632442809908">USB-C ডিভাইস (সামনের পোর্ট)</translation>
 <translation id="1013923882670373915">Bluetooth ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পিন কোড প্রবেশ করুন: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">পরবর্তী ইনপুট পদ্ধতিতে পরিবর্তন করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="112308213915226829">শেল্ফ স্বয়ংক্রিয়ভাবে লুকান</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">অন-স্ক্রীন কীবোর্ড অক্ষম করা রয়েছে</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">USB-C ডিভাইস (বাম পোর্ট)</translation>
 <translation id="1330145147221172764">অন-স্ক্রিন কীবোর্ড সক্ষম করুন</translation>
 <translation id="1343000272198685031">মাইক জ্যাক</translation>
 <translation id="1346748346194534595">ডান</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
 <translation id="1812696562331527143">আপনার ইনপুট পদ্ধতি <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />৩য় পক্ষ<ph name="END_LINK" />) এ পরিবর্তিত হয়েছে৷
 স্যুইচ করতে Shift + Alt টিপুন৷</translation>
+<translation id="1864454756846565995">USB-C ডিভাইস (পিছনের পোর্ট)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> তে প্রতিবিম্বিত হচ্ছে</translation>
 <translation id="1919743966458266018">কার্য পরিচালক খোলার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="1923539912171292317">স্বয়ংক্রিয় ক্লিকগুলি</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">অ্যাপ্স</translation>
 <translation id="2819276065543622893">আপনি এখনই সাইন আউট হবেন৷</translation>
 <translation id="2825619548187458965">শেল্ফ</translation>
+<translation id="2844169650293029770">USB-C ডিভাইস (বাম দিকের সামনের পোর্ট)</translation>
 <translation id="2872961005593481000">বন্ধ করুন</translation>
 <translation id="2942516765047364088">শেল্ফ অবস্থান</translation>
 <translation id="2946640296642327832">ব্লুটুথ সক্ষম করুন</translation>
@@ -74,6 +78,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
 <translation id="3157169093162779309">আবর্তন লক সক্ষম করুন</translation>
 <translation id="3294437725009624529">অতিথি</translation>
+<translation id="3445925074670675829">USB-C ডিভাইস</translation>
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
@@ -125,6 +130,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5222676887888702881">সাইন আউট</translation>
 <translation id="5238774010593222950">অন্য অ্যাকাউন্টে সাইন ইন করা যাবে না।</translation>
 <translation id="532063867737390965">এই নেটওয়ার্ক সেটিং প্রশাসকের দ্বারা অক্ষম করা হয়েছে।</translation>
+<translation id="5331975486040154427">USB-C ডিভাইস (বাম দিকের পিছনের পোর্ট)</translation>
 <translation id="544691375626129091">সমস্ত উপলব্ধ ব্যবহারকারীকে ইতিমধ্যেই এই সেশনে যোগ করা হয়েছে৷</translation>
 <translation id="5507786745520522457">মোবাইল ডেটা সেটআপ করুন</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6426039856985689743">মোবাইল ডেটা নিষ্ক্রিয় করুন</translation>
 <translation id="6452181791372256707">প্রত্যাখ্যান</translation>
 <translation id="6459472438155181876">স্ক্রীন <ph name="DISPLAY_NAME" /> তে প্রসারিত হচ্ছে</translation>
+<translation id="6490471652906364588">USB-C ডিভাইস (ডান পোর্ট)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> এ স্ক্রীন কাস্ট করা হচ্ছে</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
@@ -181,6 +188,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> কে <ph name="RECEIVER_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="7052914147756339792">ওয়ালপেপার সেট করুন...</translation>
 <translation id="7097613348211027502">ChromeVox (কথ্য প্রতিক্রিয়া) সক্ষম রয়েছে৷ অক্ষম করার জন্য Ctrl+Alt+Z টিপুন৷</translation>
+<translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাম পোর্ট)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
 <translation id="7209101170223508707">CAPS LOCK চালু আছে৷
@@ -219,6 +227,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8828714802988429505">৯০°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">স্ক্রীন সম্প্রসারণ করা হচ্ছে</translation>
+<translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
 <translation id="8940956008527784070">(<ph name="PERCENTAGE" />%) কম ব্যাটারি</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>

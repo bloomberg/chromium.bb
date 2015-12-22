@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite este código PIN no dispositivo: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">O atalho para alternar para o próximo método de entrada foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar estante automaticamente</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Teclado na tela desativado</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Dispositivo USB-C (porta da esquerda)</translation>
 <translation id="1330145147221172764">Ativar o teclado na tela</translation>
 <translation id="1343000272198685031">Entrada para microfone</translation>
 <translation id="1346748346194534595">Para a direita</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Teclado na tela ativado</translation>
 <translation id="1812696562331527143">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terceiros<ph name="END_LINK" />). 
 Pressione Shift + Alt para alternar.</translation>
+<translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">O atalho para abrir o gerenciador de tarefas foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
@@ -55,6 +58,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2819276065543622893">Você sairá agora.</translation>
 <translation id="2825619548187458965">Estante</translation>
+<translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2942516765047364088">Posição da estante</translation>
 <translation id="2946640296642327832">Ativar Bluetooth</translation>
@@ -73,6 +77,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3147142846278915599">Tela de início (sincronizando aplicativos...)</translation>
 <translation id="3157169093162779309">Ativar bloqueio de rotação</translation>
 <translation id="3294437725009624529">Visitante</translation>
+<translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Voltar a "<ph name="FROM_LOCALE" />" (exige reinicialização)</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
@@ -124,6 +129,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="5238774010593222950">Não é possível fazer login em outra conta.</translation>
 <translation id="532063867737390965">Essa configuração de rede foi desativada pelo administrador.</translation>
+<translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
 <translation id="5507786745520522457">Configurar dados de dispositivos móveis</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -161,6 +167,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6426039856985689743">Desativar dados móveis</translation>
 <translation id="6452181791372256707">Rejeitar</translation>
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Dispositivo USB-C (porta da direita)</translation>
 <translation id="6501401484702599040">Transmitindo tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="7097613348211027502">O ChromeVox (feedback falado) está ativado.
 
 Pressione Ctrl+Alt+Z para desativar.</translation>
+<translation id="7098389117866926363">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">A tecla CAPS LOCK está ativada. Pressione Alt + Pesquisar ou Shift para cancelar.</translation>
@@ -219,6 +227,7 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
 <translation id="8878886163241303700">Tela ampla</translation>
+<translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="8940956008527784070">Nível de bateria baixo (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">O microfone está sendo usado.</translation>

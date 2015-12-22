@@ -60,8 +60,6 @@
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="2910007522516064972">Giới thiệu về &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium cần chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME" />. Liên kết được yêu cầu là <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> lần này, trang web gửi lại thông tin đăng nhập
-không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="3032787606318309379">Đang thêm vào Chromium...</translation>
 <translation id="3046695367536568084">Bạn cần đăng nhập vào Chromium để sử dụng ứng dụng. Điều này cho phép Chromium đồng bộ hóa ứng dụng, dấu trang, lịch sử, mật khẩu và cài đặt khác trên các thiết bị.</translation>
 <translation id="3068515742935458733">Giúp cải thiện Chromium bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
@@ -87,7 +85,6 @@ không chính xác và bất thường. Điều này có thể xảy ra khi kẻ
 <translation id="358997566136285270">Biểu trưng Chromium</translation>
 <translation id="3595526210123705352">Khởi chạy lại ở chế độ Windows 8 sẽ đóng và khởi chạy lại các ứng dụng Chromium của bạn.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
-<translation id="3744899669254331632">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ vì trang web này đã gửi thông tin đăng nhập hỗn độn mà Chromium không thể xử lý. Lỗi mạng và các cuộc tấn công thường chỉ diễn ra tạm thời nên trang này có thể sẽ hoạt động sau.</translation>
 <translation id="3748537968684000502">Bạn đang xem trang Chromium an toàn.</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -132,6 +129,7 @@ không chính xác và bất thường. Điều này có thể xảy ra khi kẻ
 <translation id="5796460469508169315">Chromium gần như đã sẵn sàng.</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
 <translation id="5823381412099532241">Chromium không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cập nhật Chromium.</translation>
+<translation id="5859963531214966875">Các phiên bản Chromium trong tương lai sẽ không hỗ trợ hệ thống Linux này nữa.</translation>
 <translation id="5862307444128926510">Chào mừng bạn đến với Chromium</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="5909170354645388250">Không được sử dụng trong Chromium. Phần giữ chỗ để duy trì các bản đồ tài nguyên ở trạng thái đồng bộ hóa. Phần này mong đợi một đối số: $1.</translation>
@@ -151,6 +149,7 @@ không chính xác và bất thường. Điều này có thể xảy ra khi kẻ
 <translation id="6485906693002546646">Bạn đang sử dụng <ph name="PROFILE_EMAIL" /> để đồng bộ hóa nội dung Chromium của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chromium mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
 <translation id="6526111688217511984">Chromium cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
+<translation id="6593914713218535185">Chromium có thể không hoạt động đúng cách do không được hỗ trợ trên hệ thống Linux này nữa.</translation>
 <translation id="6637001341228460105">Chromium cần quyền truy cập vào micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="6638567566961868659">Tìm dấu trang của bạn trong menu Chromium hoặc trên thanh dấu trang.</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
@@ -231,7 +230,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="8985587603644336029">Ai đó trước đây đã đăng nhập vào Chromium trên máy tính này là <ph name="ACCOUNT_EMAIL_LAST" />. Nếu đó không phải là tài khoản của bạn, hãy tạo một người dùng Chromium mới để giữ thông tin của bạn riêng biệt.
 
 Đăng nhập bằng mọi cách sẽ kết hợp thông tin Chromium như dấu trang, lịch sử và các cài đặt khác vào <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Trình duyệt web</translation>
 <translation id="9013087743919948559">Thêm vào Chromium</translation>
 <translation id="9013262824292842194">Chromium yêu cầu Windows Vista hoặc Windows XP có SP2 trở lên.</translation>
 <translation id="9019929317751753759">Để làm cho Chromium an toàn hơn, chúng tôi đã vô hiệu hóa tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
@@ -241,7 +239,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
 <translation id="918373042641772655">Ngắt kết nối <ph name="USERNAME" /> sẽ xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chromium khác của bạn trên thiết bị này. Dữ liệu được lưu trữ trong tài khoản Google của bạn sẽ không bị xóa và có thể được quản lý trên <ph name="GOOGLE_DASHBOARD_LINK" />Trang tổng quan của Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Một quản trị viên đã cài đặt Chromium trên hệ thống này và Chromium hiện khả dụng cho tất cả người dùng. Chromium cấp hệ thống sẽ thay thế cài đặt cấp người dùng của bạn ngay bây giờ.</translation>
 <translation id="9197815481970649201">Bạn hiện đã đăng nhập vào Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> yêu cầu bạn đọc và chấp nhận Điều khoản dịch vụ sau đây trước khi sử dụng thiết bị này. Những điều khoản này không mở rộng, sửa đổi hoặc giới hạn Điều khoản Chromium OS.</translation>
 <translation id="985602178874221306">Tác giả Chromium</translation>

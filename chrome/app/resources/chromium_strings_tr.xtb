@@ -60,8 +60,6 @@
 <translation id="2886012850691518054">İsteğe Bağlı: Kullanıcı istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak göndererek Chromium'u iyileştirmemize yardımcı olun.</translation>
 <translation id="2910007522516064972">&amp;Chromium hakkında</translation>
 <translation id="2966088006374919794">Chromium'un, <ph name="SCHEME" /> bağlantılarını kullanabilmek için harici bir uygulamayı başlatması gerekiyor. İstenen bağlantı: <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Chromium bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı
-ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="3032787606318309379">Chromium'a ekleniyor ...</translation>
 <translation id="3046695367536568084">Uygulamaları kullanmak için Chromium'da oturum açmış olmanız gerekir. Oturum açmanız, Chromium'un uygulamalarınızı, yer işaretlerinizi, geçmişinizi, şifrelerinizi ve diğer ayarlarınızı tüm cihazlarınızda senkronize etmesine olanak sağlar.</translation>
 <translation id="3068515742935458733">Kilitlenme raporlarını ve <ph name="UMA_LINK" /> bilgilerini Google'a göndererek, Chromium'u daha iyi hale getirmeye yardımcı olun</translation>
@@ -85,7 +83,6 @@ ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi
 <translation id="358997566136285270">Chromium logosu</translation>
 <translation id="3595526210123705352">Windows 8 modunda yeniden başlatıldığında Chromium uygulamalarınız kapatılacak ve yeniden başlatılacaktır.</translation>
 <translation id="3738139272394829648">Dokun ve Ara</translation>
-<translation id="3744899669254331632">Web sitesi Chromium'un işleyemediği karışık kimlik bilgileri gönderdiğinden <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici türdendir, dolayısıyla bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="3748537968684000502">Güvenli bir Chromium sayfasını görüntülüyorsunuz.</translation>
 <translation id="378917192836375108">Chromium Web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -130,6 +127,7 @@ ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi
 <translation id="5796460469508169315">Chromium neredeyse hazır.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium en yeni sürüme güncellenemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chromium'u manuel olarak güncellemelisiniz.</translation>
+<translation id="5859963531214966875">Chromium'un gelecek sürümleri artık bu Linux sistemini desteklemeyecek.</translation>
 <translation id="5862307444128926510">Chromium'a Hoş Geldiniz</translation>
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
 <translation id="5909170354645388250">Chromium'da kullanılmaz. Kaynak haritaları senkronize halde tutmak için yer tutucu. Bir bağımsız değişkenini beklemektedir: $ 1.</translation>
@@ -149,6 +147,7 @@ ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi
 <translation id="6485906693002546646">Chromium öğelerinizi senkronize etmek için <ph name="PROFILE_EMAIL" /> adresini kullanıyorsunuz. Senkronizasyon tercihinizi güncellemek veya Chromium'u bir Google Hesabı olmadan kullanmak için şurayı ziyaret edin: <ph name="SETTINGS_LINK" /></translation>
 <translation id="6510925080656968729">Chromium'u Kaldır</translation>
 <translation id="6526111688217511984">Dosya indirmek için Chromium'un depolama alanına erişmesi gerekiyor.</translation>
+<translation id="6593914713218535185">Chromium artık bu Linux sisteminde desteklenmediği için doğru şekilde çalışmayabilir.</translation>
 <translation id="6637001341228460105">Chromium'un, bu siteyle paylaşmak için mikrofona erişmesi gerekiyor.</translation>
 <translation id="6638567566961868659">Yer işaretlerinizi Chromium menüsünde veya yer işaretleri çubuğunda bulabilirsiniz.</translation>
 <translation id="6676384891291319759">İnternet'e erişin</translation>
@@ -229,7 +228,6 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="8985587603644336029">Bu bilgisayarda daha önce birisi <ph name="ACCOUNT_EMAIL_LAST" /> olarak Chromium'da oturum açmış. Bu sizin hesabınız değilse, bilgilerinizi ayrı tutmak için yeni bir Chromium kullanıcısı oluşturun.
 
 Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarlarınız gibi Chromium bilgileriniz <ph name="ACCOUNT_EMAIL_NEW" /> ile birleştirilecektir.</translation>
-<translation id="8987477933582888019">Web Tarayıcı</translation>
 <translation id="9013087743919948559">Chromium'a ekle</translation>
 <translation id="9013262824292842194">Chromium; Windows Vista veya Windows XP SP2 ya da daha ileri bir sürümü gerektirir.</translation>
 <translation id="9019929317751753759">Chromium'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek aşağıdaki uzantıyı devre dışı bıraktık.</translation>
@@ -239,7 +237,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> kullanıcısının bağlantısını kesmek, geçmişinizi, yer işaretlerinizi, ayarlarınızı ve bu cihazda depolanan diğer Chromium verilerinizi temizler. Google Hesabınızda depolanan veriler temizlenmez ve <ph name="GOOGLE_DASHBOARD_LINK" />Google Hesap Özeti<ph name="END_GOOGLE_DASHBOARD_LINK" />'nden yönetilebilir.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Bir yönetici bu sistemde Chromium yükledi ve tüm kullanıcılar bunu kullanabilir. Sistem düzeyinde Chromium, kullanıcı düzeyindeki yüklemenin yerini alacak.</translation>
 <translation id="9197815481970649201">Şu anda Chromium'da oturum açtınız</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" />, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

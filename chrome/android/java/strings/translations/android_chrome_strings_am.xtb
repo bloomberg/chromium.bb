@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">በአገልጋይ ችግሮች ምክንያት <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
 <translation id="1506061864768559482">የፍለጋ ፕሮግራም</translation>
 <translation id="1513352483775369820">ዕልባቶች እና የድር ታሪክ</translation>
+<translation id="1553358976309200471">Chromeን አዘምን</translation>
 <translation id="1557201757634521564">ምስጠራን በራስ እወቅ</translation>
 <translation id="1568822834048182062">የእርስዎ እልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች ከGoogle መለያዎ ጋር ይመሳሰላሉ።</translation>
 <translation id="1620510694547887537">ካሜራ</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">ከማንነት የማያሳውቅ ሁነታ ይውጡ</translation>
 <translation id="3190152372525844641">በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ፍቃዶችን ለChrome ያብሩ።</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> የተከማቸ ውሂብ</translation>
-<translation id="3207960819495026254">ዕልባት ተደርጎበታል</translation>
 <translation id="3227137524299004712">ማይክሮፎን</translation>
 <translation id="3232754137068452469">የድር መተግበሪያ</translation>
 <translation id="3244271242291266297">ወወ</translation>
@@ -224,7 +224,6 @@
 <translation id="4543087392704641517">የዕልባት ርዕስ</translation>
 <translation id="4543661749405994812">የኢሜይል አድራሻ ቅዳ</translation>
 <translation id="4581964774250883625">ማንነት ወደማያሳውቅ ሁነታ ሄደዋል።</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 አካላዊ የድር አገናኝ በአቅራቢያ}one{# አካላዊ የድር አገናኞች በአቅራቢያ}other{# አካላዊ የድር አገናኞች በአቅራቢያ}}</translation>
 <translation id="4645575059429386691">በእርስዎ ወላጅ የሚቀናበር</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ዕልባቶች ተሰርዘዋል</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ወደ እርስዎ መነሻ ገፅ ታክሏል</translation>
@@ -248,7 +247,6 @@
 <translation id="4881695831933465202">ክፈት</translation>
 <translation id="4885273946141277891">የማይደገፍ የChrome አብነቶች ብዛት።</translation>
 <translation id="4927198283430892231">የተቀመጡ ገጾች አሁን እስከ <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> ቦታ ድረስ እየወሰዱ ነው።</translation>
-<translation id="494334276486034338">የተሰመረበት የመጨረሻ ጊዜ፦ ከ<ph name="HOURS" /> ሰዓቶች በፊት</translation>
 <translation id="4943872375798546930">ውጤቶች የሉም</translation>
 <translation id="4970484396410298643">በኮምፒውተርዎ ላይ የከፈቷቸውን ትሮችን እዚህ ይድረሱባቸው።
 
@@ -258,14 +256,9 @@
 <translation id="5000922062037820727">ታግዷል (የሚመከር)</translation>
 <translation id="5016205925109358554">ሰሪፍ</translation>
 <translation id="5017989644593831205"><ph name="NOT_YOU_USER_NAME" /> አይደሉም?</translation>
-<translation id="5026147292873308216">ምንም በአቅራቢያ የተገኙ ድረ-ገጾች የሉም</translation>
 <translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="5040262127954254034">ግላዊነት</translation>
-<translation id="5049968687459146030">«አትከታተል»ን ማንቃት ማለት አንድ ጥያቄ በአሰሳ ትራፊክዎ ላይ ይካተታል ማለት ነው። ማንኛውም ውጤት አንድ ድር ጣቢያ ለጥያቄው ምላሽ ከሰጠና ጥያቄውን በሚተረጎምበት መንገድ ላይ የሚወሰን ነው።
-
-ለምሳሌ፣ አንዳንድ ድር ጣቢያዎች ሌሎች በጎበኟቸው ድር ጣቢያዎች ላይ ያልተመሠረቱ ማስታወቂያዎችን በማሳየት ለዚህ ጥያቄ ምላሽ ሊሰጡ ይችላሉ። ብዙ ድር ጣቢያዎች አሁንም የአሰሳ ውሂብዎን ይሰበስቡና ይጠቀሙበታል - ለምሳሌ ደህንነትን ለማሻሻል፤ ይዘት፣ ማስታወቂያዎችና ምክሮች በድር ጣቢያዎቻቸው ላይ ለማቅረብ፤ እና የሪፖርት አደራረግ ስታቲስቲክስን ለማመንጨት።</translation>
 <translation id="5063480226653192405">አጠቃቀም</translation>
-<translation id="5074309530946372881">በአቅራቢያ ያሉ ድረ-ገጾችን በመፈለግ ላይ</translation>
 <translation id="509605886816275399">ይህ ገፅ ከመስመር ውጭ ይቀመጥ?</translation>
 <translation id="5100237604440890931">ተሰብስቧል - ለመዘርጋት ጠቅ ያድርጉ</translation>
 <translation id="5127805178023152808">አመሳስል ጠፍቷል</translation>
@@ -286,7 +279,6 @@
 <translation id="5275558766013849309">ትሮች ከቅርብ ጊዜ መተግበሪያዎች ጋር አብረው ይኖራሉ።</translation>
 <translation id="5302048478445481009">ቋንቋ</translation>
 <translation id="5304593522240415983">ይህ መስክ ባዶ ሊሆን አይችልም</translation>
-<translation id="5305985456140490686">የተመሳሰለበት የመጨረሻ ጊዜ፦ ከ<ph name="MINUTES" /> ደቂቃዎች በፊት</translation>
 <translation id="5308933389783727448">የተቀመጡ ገጾችን ፈልግ</translation>
 <translation id="5313967007315987356">ጣቢያ አክል</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
@@ -301,7 +293,6 @@
 <translation id="5414836363063783498">በማረጋገጥ ላይ…</translation>
 <translation id="5423934151118863508">በጣም በብዛት የተጎበኙ ገጾችዎ እዚህ ይመጣሉ</translation>
 <translation id="5424715742813396254">የተቀመጠ ስም/የይለፍ ቃል ወይም ለየት ያለውን ያርትዑ</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">የተቀመጠውን ገጽ ያርትዑ</translation>
 <translation id="544291274896356069">ይህ አገናኝ በውጫዊ መተግበሪያ ከተከፈተ ከማንነት የማያሳውቅ ሁነታ ይወጣል። ይቀጥሉ?</translation>
 <translation id="5487729733663684359">የChrome ዝማኔዎች ከአሁን በኋላ ለዚህ የAndroid ዝማኔዎች አይደገፉም።</translation>
@@ -467,6 +458,7 @@
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
 <translation id="7561196759112975576">ሁልጊዜ</translation>
 <translation id="7562080006725997899">የአሰሳ ውሂብን በማጽዳት ላይ</translation>
+<translation id="7588950540487816470">አካላዊ ድር</translation>
 <translation id="7596558890252710462">ስርዓተ ክወና</translation>
 <translation id="7599840151813361502">ከእርስዎ የ<ph name="BEGIN_LINK" />Google መለያዎች<ph name="END_LINK" /> እንዲወጡ አይደረጉም።</translation>
 <translation id="7603403729818446828">በስልክዎ የአጠቃላይ ዕይታ ማያ ገጽ ላይ የእርስዎን ትሮች ከሌሎች የቅርብ ጊዜ መተግበሪያዎች ጋር ይመልከቱ። ይህንን በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ መቆጣጠር ይችላሉ።</translation>
@@ -499,7 +491,6 @@
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
 <translation id="7961015016161918242">በፍጹም</translation>
 <translation id="7963646190083259054">አቅራቢ፦</translation>
-<translation id="7977858705483383621">SafeSearch</translation>
 <translation id="7987073022710626672">የChrome አገልግሎት ውል</translation>
 <translation id="7989222512959629388">በማስቀመጥ ላይ…</translation>
 <translation id="7998918019931843664">የተዘጋውን ትር ዳግም ይክፈቱ</translation>
@@ -525,7 +516,6 @@
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8275818695183729150">ፍቀድ (ለአድራሻ አሞሌ ፍለጋዎች)</translation>
 <translation id="8310344678080805313">መደበኛ ትሮች</translation>
-<translation id="8374420395168535396">የተሰመረበት የመጨረሻ ጊዜ፦ ከ<ph name="DAYS" /> ቀኖች በፊት</translation>
 <translation id="8374821112118309944">TalkBackን ወደ አዲስ ስሪት ማዘመን አለብዎት።</translation>
 <translation id="8396312449826231789">የተፈቀደላቸው ጣቢያዎች ብቻ</translation>
 <translation id="8413126021676339697">ሙሉ ታሪክ አሳይ</translation>
@@ -593,7 +583,6 @@
 <translation id="938850635132480979">ስህተት፦ <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">አዲስ ዓቃፊ</translation>
 <translation id="945632385593298557">የእርስዎን ማይክሮፎን ይድረሱ</translation>
-<translation id="963967414714199900">የተመሳሰለበት የመጨረሻ ጊዜ፦ አሁን</translation>
 <translation id="969096075394517431">ቋንቋዎችን ይቀይሩ</translation>
 <translation id="971774202801778802">የዕልባት ዩአርኤል</translation>
 <translation id="983192555821071799">ሁሉንም ትሮች ይዝጉ</translation>

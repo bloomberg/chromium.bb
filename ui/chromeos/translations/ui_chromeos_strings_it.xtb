@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Connessione a: <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Errore di attivazione della rete</translation>
+<translation id="4118990158415604803">La connessione ad altre reti è stata disattivata dall'amministratore.</translation>
 <translation id="4237016987259239829">Errore di connessione di rete</translation>
 <translation id="4274292172790327596">Errore non riconosciuto</translation>
 <translation id="4326192123064055915">Caffè</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Attiva <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Capovolta</translation>
 <translation id="6943836128787782965">Recupero HTTP non riuscito</translation>
+<translation id="7066646422045619941">Questa rete è stata disattivata dall'amministratore.</translation>
 <translation id="7165320105431587207">Impossibile configurare la rete</translation>
 <translation id="7170041865419449892">Fuori dal raggio d'azione</translation>
 <translation id="7229570126336867161">Occorre EVDO</translation>

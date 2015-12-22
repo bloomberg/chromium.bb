@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Verbinding maken met <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Fout bij netwerkactivering</translation>
+<translation id="4118990158415604803">Verbinding met andere netwerken is uitgeschakeld door je beheerder.</translation>
 <translation id="4237016987259239829">Fout bij netwerkverbinding</translation>
 <translation id="4274292172790327596">Onbekende fout</translation>
 <translation id="4326192123064055915">Koffie</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> activeren</translation>
 <translation id="6935521024859866267">Ondersteboven</translation>
 <translation id="6943836128787782965">Ophalen van HTTP mislukt</translation>
+<translation id="7066646422045619941">Dit netwerk is uitgeschakeld door je beheerder.</translation>
 <translation id="7165320105431587207">Kan netwerk niet configureren</translation>
 <translation id="7170041865419449892">Geen bereik</translation>
 <translation id="7229570126336867161">EVDO vereist</translation>

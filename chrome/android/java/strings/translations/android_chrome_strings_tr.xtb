@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">Sunucu sorunları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="1506061864768559482">Arama motoru</translation>
 <translation id="1513352483775369820">Yer işaretleri ve web geçmişi</translation>
+<translation id="1553358976309200471">Chrome'u güncelle</translation>
 <translation id="1557201757634521564">Kodlamayı otomatik olarak algıla</translation>
 <translation id="1568822834048182062">Yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız Google Hesabınızla senkronize edilecek.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Gizli moddan çık</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izinleri açın.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> depolanmış veri</translation>
-<translation id="3207960819495026254">Yer işareti koyuldu</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Web Uygulaması</translation>
 <translation id="3244271242291266297">AA</translation>
@@ -224,7 +224,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4543087392704641517">Yer işareti başlığı</translation>
 <translation id="4543661749405994812">E-posta adresini kopyala</translation>
 <translation id="4581964774250883625">Gizli moda geçtiniz.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{Yakınlarda 1 Fiziksel Web bağlantısı var}other{Yakınlarda # Fiziksel Web bağlantısı var}}</translation>
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> yer işareti silindi</translation>
 <translation id="4665282149850138822"><ph name="NAME" />, Ana ekranınıza eklendi</translation>
@@ -248,7 +247,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4881695831933465202">Aç</translation>
 <translation id="4885273946141277891">Desteklenmeyen sayıda Chrome örneği var.</translation>
 <translation id="4927198283430892231">Kaydedilen sayfalar şu anda <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> yer kaplıyor.</translation>
-<translation id="494334276486034338">Son senkronizasyon: <ph name="HOURS" /> saat önce</translation>
 <translation id="4943872375798546930">Sonuç yok</translation>
 <translation id="4970484396410298643">Bilgisayarınızda açtığınız sekmelere doğrudan buradan erişin.
  
@@ -258,14 +256,9 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5000922062037820727">Engellendi (önerilir)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205"><ph name="NOT_YOU_USER_NAME" /> değil misiniz?</translation>
-<translation id="5026147292873308216">Yakınlarda hiç web sayfası bulunamadı</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
-<translation id="5049968687459146030">"Do Not Track" seçeneğinin etkinleştirilmesi, göz atma trafiğinize bir istek eklenmesi demektir. Her türlü etki, bir web sitesinin isteğe cevap verip vermemesine ve isteğin nasıl yorumlandığına bağlıdır.
-
-Örneğin bazı web siteleri bu isteği size daha önce gezdiğiniz web sitelerine dayalı olmayan reklamları göstererek yanıtlayabilir. Birçok web sitesi (örneğin güvenliği iyileştirmek, kendi web sitelerinde içerik, reklam, öneri sağlamak ve raporlama istatistikleri oluşturmak gibi amaçlarla) göz atma verilerinizi toplayıp kullanmayı sürdürecektir.</translation>
 <translation id="5063480226653192405">Kullanım</translation>
-<translation id="5074309530946372881">Yakınlardaki web sayfaları aranıyor</translation>
 <translation id="509605886816275399">Bu sayfa çevrimdışı olarak kaydedilsin mi?</translation>
 <translation id="5100237604440890931">Daraltıldı - Genişletmek için tıklayın.</translation>
 <translation id="5127805178023152808">Senkronizasyon kapalı</translation>
@@ -286,7 +279,6 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5275558766013849309">Sekmeler son kullanılan uygulamalarla birlikte görüntülenecek.</translation>
 <translation id="5302048478445481009">Dil</translation>
 <translation id="5304593522240415983">Bu alan boş olamaz</translation>
-<translation id="5305985456140490686">Son senkronizasyon: <ph name="MINUTES" /> dakika önce</translation>
 <translation id="5308933389783727448">Kaydedilen sayfalarda ara</translation>
 <translation id="5313967007315987356">Site ekle</translation>
 <translation id="5317780077021120954">Kaydet</translation>
@@ -301,7 +293,6 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5414836363063783498">Doğrulanıyor…</translation>
 <translation id="5423934151118863508">En çok ziyaret ettiğiniz sayfalar burada görünecektir</translation>
 <translation id="5424715742813396254">Kayıtlı adı/şifreyi veya istisnayı düzenleyin</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Kaydedilen sayfayı düzenle</translation>
 <translation id="544291274896356069">Bu bağlantı harici bir uygulamada açılırsa gizli moddan çıkılacak. Devam edilsin mi?</translation>
 <translation id="5487729733663684359">Chrome güncellemeleri Android'in bu sürümü için artık desteklenmiyor.</translation>
@@ -467,6 +458,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Her zaman</translation>
 <translation id="7562080006725997899">Göz atma verileri temizleniyor</translation>
+<translation id="7588950540487816470">Fiziksel Web</translation>
 <translation id="7596558890252710462">İşletim sistemi</translation>
 <translation id="7599840151813361502"><ph name="BEGIN_LINK" />Google Hesaplarınızdaki<ph name="END_LINK" /> oturumlarınız kapatılmaz</translation>
 <translation id="7603403729818446828">Telefonunuzun Genel Bakış ekranında, son kullanılan diğer uygulamalarla birlikte sekmelerinizi görün. Bu özelliği <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da kontrol edebilirsiniz.</translation>
@@ -501,7 +493,6 @@ Yine de, görünmez değilsiniz. Gizli moda geçmeniz web'de yaptıklarınızı 
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="7963646190083259054">Firma:</translation>
-<translation id="7977858705483383621">Güvenli Arama</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
 <translation id="7989222512959629388">Kaydediliyor…</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
@@ -527,7 +518,6 @@ Yine de, görünmez değilsiniz. Gizli moda geçmeniz web'de yaptıklarınızı 
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8275818695183729150">İzin ver (adres çubuğu aramaları için)</translation>
 <translation id="8310344678080805313">Standart sekmeler</translation>
-<translation id="8374420395168535396">Son senkronizasyon: <ph name="DAYS" /> gün önce</translation>
 <translation id="8374821112118309944">TalkBack'i daha yeni bir sürüme güncellemeniz gerekiyor.</translation>
 <translation id="8396312449826231789">Sadece onaylı siteler</translation>
 <translation id="8413126021676339697">Tüm geçmişi göster</translation>
@@ -595,7 +585,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="938850635132480979">Hata: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Yeni klasör</translation>
 <translation id="945632385593298557">Mikrofonunuza erişim</translation>
-<translation id="963967414714199900">Son senkronizasyon: Az önce</translation>
 <translation id="969096075394517431">Dilleri değiştir</translation>
 <translation id="971774202801778802">Yer işareti URL'si</translation>
 <translation id="983192555821071799">Tüm sekmeleri kapat</translation>

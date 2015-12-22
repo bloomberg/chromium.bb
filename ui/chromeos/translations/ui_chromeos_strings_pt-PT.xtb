@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Quivi</translation>
 <translation id="40400351611212369">Erro na Ativação de Rede</translation>
+<translation id="4118990158415604803">O administrador desativou a ligação a outras redes.</translation>
 <translation id="4237016987259239829">Erro de ligação à rede</translation>
 <translation id="4274292172790327596">Erro não reconhecido</translation>
 <translation id="4326192123064055915">Café</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Ao Contrário</translation>
 <translation id="6943836128787782965">A obtenção de HTTP falhou</translation>
+<translation id="7066646422045619941">Esta rede foi desativada pelo administrador.</translation>
 <translation id="7165320105431587207">Não foi possível configurar a rede</translation>
 <translation id="7170041865419449892">Fora de alcance</translation>
 <translation id="7229570126336867161">Requer EVDO</translation>

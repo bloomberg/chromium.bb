@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1012876632442809908">USB-C ഉപകരണം (മുൻവശത്തെ പോർട്ട്)</translation>
 <translation id="1013923882670373915">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പിൻ കോഡ് നൽകുക: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">അടുത്ത ഇൻപുട്ട് രീതിയിലേക്ക് മാറാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="112308213915226829">ഷെൽഫ് യാന്ത്രികമായി മറയ്‌ക്കുക</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">USB-C ഉപകരണം (ഇടത് പോർട്ട്)</translation>
 <translation id="1330145147221172764">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="1343000272198685031">Mic Jack</translation>
 <translation id="1346748346194534595">ശരി</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="1812696562331527143">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />മൂന്നാം കക്ഷി<ph name="END_LINK" />) എന്നതിലേയ്‌ക്ക് മാറ്റി.
 സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
+<translation id="1864454756846565995">USB-C ഉപകരണം (പുറകിലെ പോർട്ട്)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
 <translation id="1919743966458266018">ടാസ്‌ക് മാനേജർ തുറക്കാനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">ആപ്സ്</translation>
 <translation id="2819276065543622893">നിങ്ങൾ ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യും.</translation>
 <translation id="2825619548187458965">ഷെൽഫ്</translation>
+<translation id="2844169650293029770">USB-C ഉപകരണം (ഇടത് വശത്ത് മുൻഭാഗത്തെ പോർട്ട്)</translation>
 <translation id="2872961005593481000">അടയ്ക്കുക</translation>
 <translation id="2942516765047364088">ഷെൽഫ് സ്ഥാനം</translation>
 <translation id="2946640296642327832">Bluetooth പ്രാപ്‌തമാക്കുക</translation>
@@ -74,6 +78,7 @@
 <translation id="3147142846278915599">ലോഞ്ചർ (അപ്ലിക്കേഷൻ സമന്വയിപ്പിക്കുന്നു...)</translation>
 <translation id="3157169093162779309">റൊട്ടേഷൻ ലോക്ക് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="3294437725009624529">അതിഥി</translation>
+<translation id="3445925074670675829">USB-C ഉപകരണം</translation>
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" എന്നതിലേക്ക് തിരികെ മാറുക (റീസ്റ്റാര്‍ട്ട് ആവശ്യമാണ്)</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">പുറത്തുകടക്കുക</translation>
 <translation id="5238774010593222950">മറ്റൊരു അക്കൗണ്ടിൽ സൈൻ ഇൻ ചെയ്യാനാകില്ല.</translation>
 <translation id="532063867737390965">അഡ്‌മിനിസ്‌ട്രേറ്റർ, ഈ നെറ്റ്‌വർക്ക് ക്രമീകരണം പ്രവർത്തനരഹിതമാക്കി.</translation>
+<translation id="5331975486040154427">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="544691375626129091">ലഭ്യമായ എല്ലാ ഉപയോക്താക്കളേയും ഈ സെഷനിൽ ഇതിനകം ചേർത്തു.</translation>
 <translation id="5507786745520522457">മൊബൈൽ ഡാറ്റ സജ്ജീകരിക്കുക</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -161,6 +167,7 @@
 <translation id="6426039856985689743">മൊബൈൽ ഡാറ്റ അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="6452181791372256707">നിരസിക്കുക</translation>
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
+<translation id="6490471652906364588">USB-C ഉപകരണം (വലത് പോർട്ട്)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="6550675742724504774">ഐച്ഛികങ്ങള്‍‌</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
@@ -180,6 +187,7 @@
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് <ph name="TAB_NAME" /> കാസ്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="7052914147756339792">വാൾപേപ്പർ സജ്ജമാക്കുക...</translation>
 <translation id="7097613348211027502">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്) പ്രവർത്തനക്ഷമമാണ്. പ്രവർത്തനരഹിതമാക്കാൻ Ctrl+Alt+Z അമർത്തുക.</translation>
+<translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
 <translation id="7209101170223508707">CAPS LOCK ഓണാണ്.
@@ -218,6 +226,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">തിരയൽ+Esc</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
+<translation id="8938800817013097409">USB-C ഉപകരണം (പുറകിൽ വലതുവശത്തെ പോർട്ട്)</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">മൈക്രോഫോൺ ഉപയോഗത്തിലാണ്.</translation>

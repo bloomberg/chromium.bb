@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo radās servera problēmas.</translation>
 <translation id="1506061864768559482">Meklētājprogramma</translation>
 <translation id="1513352483775369820">Grāmatzīmes un tīmekļa vēsture</translation>
+<translation id="1553358976309200471">Atjaunināt Chrome</translation>
 <translation id="1557201757634521564">Kodējuma automātiska noteikšana</translation>
 <translation id="1568822834048182062">Jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi tiks sinhronizēti ar jūsu Google kontu.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Iziet no inkognito režīma</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļaujas pārlūkam Chrome.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> saglabātu datu</translation>
-<translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
 <translation id="3232754137068452469">Tīmekļa lietotne</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4543087392704641517">Vienumu atzīmēt kā grāmatzīmi</translation>
 <translation id="4543661749405994812">Kopēt e-pasta adresi</translation>
 <translation id="4581964774250883625">Jūs esat aktivizējis inkognito režīmu.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{Tuvumā atrodas 1 fiziskā tīmekļa saite.}zero{Tuvumā atrodas # fiziskā tīmekļa saites.}one{Tuvumā atrodas # fiziskā tīmekļa saite.}other{Tuvumā atrodas # fiziskā tīmekļa saites.}}</translation>
 <translation id="4645575059429386691">Pārvalda viens no jūsu vecākiem</translation>
 <translation id="4663756553811254707">Dzēstas <ph name="NUMBER_OF_BOOKMARKS" /> grāmatzīmes</translation>
 <translation id="4665282149850138822">Vietne <ph name="NAME" /> tika pievienota sākuma ekrānam.</translation>
@@ -248,7 +247,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4885273946141277891">Neatbalstīts Chrome instanču skaits</translation>
 <translation id="4927198283430892231">Saglabāto lapu aizņemtā krātuves vieta: <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="494334276486034338">Pēdējoreiz sinhronizēts: pirms <ph name="HOURS" /> stundām</translation>
 <translation id="4943872375798546930">Nav rezultātu</translation>
 <translation id="4970484396410298643">Tieši šeit piekļūstiet cilnēm, kas atvērtas datorā.
 
@@ -258,14 +256,9 @@ Vienkārši atveriet pārlūku Chrome savā datorā, atveriet izvēlni un atlasi
 <translation id="5000922062037820727">Bloķēta (ieteicams)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Vai neesat <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">Tuvumā nav atrasta neviena tīmekļa lapa.</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5040262127954254034">Privātums</translation>
-<translation id="5049968687459146030">Iespējojot opciju “Nesekot”, jūsu pārlūkošanas datplūsmā tiks iekļauts pieprasījums. Rezultāts būs atkarīgs no tā, vai vietne nodrošinās atbildi uz pieprasījumu un kā pieprasījums tiks interpretēts.
-
-Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums tādas reklāmas, kuru pamatā nav citas jūsu apmeklētās vietnes. Tomēr daudzas vietnes apkopos un izmantos jūsu pārlūkošanas datus, piemēram, lai uzlabotu drošību, nodrošinātu konkrētu saturu, reklāmas un ieteikumus savās vietnēs un ģenerētu pārskatu statistiku.</translation>
 <translation id="5063480226653192405">Lietojums</translation>
-<translation id="5074309530946372881">Notiek tuvumā esošu tīmekļa lapu meklēšana.</translation>
 <translation id="509605886816275399">Vai saglabāt šo lapu bezsaistē?</translation>
 <translation id="5100237604440890931">Sakļauts — noklikšķiniet, lai izvērstu.</translation>
 <translation id="5127805178023152808">Sinhronizācija izslēgta</translation>
@@ -286,7 +279,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums tā
 <translation id="5275558766013849309">Cilnes tiks rādītas kopā ar pēdējām izmantotajām lietotnēm.</translation>
 <translation id="5302048478445481009">Valoda</translation>
 <translation id="5304593522240415983">Šis lauks nevar būt tukšs.</translation>
-<translation id="5305985456140490686">Pēdējoreiz sinhronizēts: pirms <ph name="MINUTES" /> minūtēm</translation>
 <translation id="5308933389783727448">Meklēt saglabātajās lapās</translation>
 <translation id="5313967007315987356">Pievienot vietni</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
@@ -301,7 +293,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums tā
 <translation id="5414836363063783498">Notiek verifikācija...</translation>
 <translation id="5423934151118863508">Šeit tiks parādītas jūsu visvairāk apmeklētās lapas.</translation>
 <translation id="5424715742813396254">Saglabātā vārda/paroles vai izņēmuma rediģēšana</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Rediģēt saglabātu lapu</translation>
 <translation id="544291274896356069">Atverot šo saiti ārējā lietojumprogrammā, tiks aizvērts inkognito režīms. Vai turpināt?</translation>
 <translation id="5487729733663684359">Chrome atjauninājumi vairs netiek atbalstīti šajā Android versijā.</translation>
@@ -467,6 +458,7 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Vienmēr</translation>
 <translation id="7562080006725997899">Notiek pārlūkošanas datu notīrīšana</translation>
+<translation id="7588950540487816470">Fiziskais tīmeklis</translation>
 <translation id="7596558890252710462">Operētājsistēma</translation>
 <translation id="7599840151813361502">Jūs netiksiet izrakstīts no saviem <ph name="BEGIN_LINK" />Google kontiem<ph name="END_LINK" />.</translation>
 <translation id="7603403729818446828">Skatiet cilnes ar citām jaunākajām lietotnēm tālruņa ekrānā Pārskats. Šo opciju var pārvaldīt sadaļā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
@@ -501,7 +493,6 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7961015016161918242">Nekad</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
-<translation id="7977858705483383621">Droša meklēšana</translation>
 <translation id="7987073022710626672">Lietošanas noteikumi</translation>
 <translation id="7989222512959629388">Notiek saglabāšana...</translation>
 <translation id="7998918019931843664">Vēlreiz atvērt aizvērto cilni</translation>
@@ -527,7 +518,6 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8275818695183729150">Atļaut (meklēšanas vaicājumiem adreses joslā)</translation>
 <translation id="8310344678080805313">Standarta cilnes</translation>
-<translation id="8374420395168535396">Pēdējoreiz sinhronizēts: pirms <ph name="DAYS" /> dienām</translation>
 <translation id="8374821112118309944">Jums ir jāatjaunina lietotne TalkBack uz jaunāku versiju.</translation>
 <translation id="8396312449826231789">Tikai apstiprinātas vietnes</translation>
 <translation id="8413126021676339697">Rādīt pilnu vēsturi</translation>
@@ -595,7 +585,6 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="938850635132480979">Kļūda: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Jauna mape</translation>
 <translation id="945632385593298557">Piekļuve mikrofonam</translation>
-<translation id="963967414714199900">Pēdējoreiz sinhronizēts: tikko</translation>
 <translation id="969096075394517431">Mainīt valodas</translation>
 <translation id="971774202801778802">Grāmatzīmes URL</translation>
 <translation id="983192555821071799">Aizvērt visas cilnes</translation>

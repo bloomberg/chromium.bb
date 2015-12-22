@@ -102,7 +102,6 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 <translation id="1426410128494586442">Ano</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) proxy serveru</translation>
 <translation id="1435659902881071157">Konfigurace sítě na úrovni zařízení</translation>
-<translation id="1445397020763995734">Typ účtu pro ověření protokolu HTTP Negotiate</translation>
 <translation id="1454846751303307294">Umožňuje nastavit seznam vzorů adres URL stránek, kterým není povoleno spouštět JavaScript.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultJavaScriptSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -263,11 +262,6 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 <translation id="2166715102875984646">Deaktivovat podporu rozhraní API pro 3D grafiku</translation>
 <translation id="2168397434410358693">Prodleva nečinnosti při napájení ze sítě</translation>
 <translation id="2170233653554726857">Povolení optimalizace WPAD</translation>
-<translation id="2175836933294053665">Umožňuje nakonfigurovat seznam spravovaných záložek.
-
-Hodnotou této zásady je seznam záložek. Každá záložka je slovník, který obsahuje název záložky a cílovou adresu URL (klíče „name“ a „url“). Lze nakonfigurovat také podsložku (definováním záložky bez klíče „url“ a s dodatečnými dílčími klíči, které samy mohou obsahovat seznam záložek podle výše uvedeného popisu a v některých případech se může jednat opět o složky). Neúplné adresy URL <ph name="PRODUCT_NAME" /> doplní stejně, jako kdybyste je odeslali pomocí omniboxu. Například adresa google.com bude doplněna na https://google.com/.
-
-Tyto záložky budou umístěny do složky Spravované záložky, kterou uživatel nemůže upravovat. Může ji však na liště záložek skrýt. Spravované záložky se nesynchronizují do uživatelského účtu a nelze je upravovat pomocí rozšíření.</translation>
 <translation id="2188979373208322108">Aktivuje v aplikaci <ph name="PRODUCT_NAME" /> panel záložek.
 
       Pokud toto nastavení aktivujete, zobrazí aplikace <ph name="PRODUCT_NAME" /> panel záložek.
@@ -566,38 +560,6 @@ Tato zásada bude použita pouze v případě, že je proxy server nakonfigurov�
 Pokud toto nastavení povolíte, všechny stránky ověření captive portálu (tj. všechny webové stránky počínaje přihlašovací stránkou captive portálu až do doby, dokud prohlížeč <ph name="PRODUCT_NAME" /> nezjistí úspěšné připojení k internetu) budou zobrazeny v samostatném okně ignorujícím všechna nastavení zásad a omezení aktuálního uživatele.
 
 Pokud toto nastavení zakážete nebo ponecháte bez nastavení, stránky ověření captive portálu budou zobrazeny v běžné nové kartě prohlížeče s použitím nastavení proxy serveru aktuálního uživatele.</translation>
-<translation id="3001569025430882724">Přepíše v prohlížeči <ph name="PRODUCT_NAME" /> pravidla výběru výchozí tiskárny.
-
-      Tato zásada určuje pravidla pro výběr výchozí tiskárny v prohlížeči <ph name="PRODUCT_NAME" />, který se provede při prvním použití funkce tisku v profilu.
-
-      Je-li tato zásada nastavena, <ph name="PRODUCT_NAME" /> se pokusí najít tiskárnu, která odpovídá všem zadaným atributům, a vybrat ji jako výchozí. Bude vybrána první tiskárna, která tuto zásadu splňuje. Pokud zásadě odpovídá více tiskáren, může být v závislosti na tom, v jakém pořadí jsou tiskárny objeveny, vybrána kterákoliv z nich.
-
-      Pokud tato zásada není nastavena nebo do vypršení časového limitu odpovídající tiskárna není nalezena, vybere se integrovaná virtuální tiskárna na vytváření souborů PDF. Pokud tiskárna na vytváření souborů PDF není k dispozici, nebude vybrána žádná tiskárna.
-
-      Hodnota se analyzuje jako objekt JSON odpovídající následujícímu schématu:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Informace o tom, zda má být vyhledávání odpovídající tiskárny omezeno na konkrétní množinu tiskáren.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regulární výraz, kterému musí odpovídat ID tiskárny.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulární výraz, kterému musí odpovídat zobrazovaný název tiskárny.",
-            "type": "string"
-          }
-        }
-      }
-
-      Tiskárny připojené ke službě Google Cloud Print jsou považovány za cloudové („cloud“), ostatní jsou klasifikovány jako místní („local“).
-      Vynechání pole znamená, že v něm budou vyhovovat všechny hodnoty. Pokud například nezadáte způsob připojení, při náhledu tisku se spustí vyhledávání všech typů tiskáren: místních i cloudových.
-      Regulární výrazy musejí odpovídat syntaxi objektů RegExp jazyka JavaScript a při vyhledávání shod se rozlišují velká a malá písmena.</translation>
 <translation id="3021409116652377124">Deaktivovat nástroj pro vyhledávání pluginů</translation>
 <translation id="3030000825273123558">Povolit hlášení o metrikách</translation>
 <translation id="3034580675120919256">Umožňuje nastavit, zda mohou webové stránky spouštět JavaScript. Spouštění JavaScriptu lze buď povolit pro všechny weby, nebo naopak pro všechny weby zakázat.
@@ -693,13 +655,6 @@ Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
       Pokud je toto nastavení aktivované nebo není nakonfigurované, mohou uživatelé proxy server pro tisk z cloudu aktivovat ověřením pomocí účtu Google.
 
       Pokud je toto nastavení deaktivováno, uživatelé proxy server nebudou moci aktivovat a počítač nebude moci sdílet připojené tiskárny se službou <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Prohlížeče Chromium a Google Chrome podporují stejné zásady. Upozorňujeme, že tento dokument může obsahovat zásady, které jsou určeny pro dosud nevydané verze softwaru (tj. jejich údaj „Podpora“ odkazuje na dosud nevydanou verzi) a že tyto zásady mohou být bez předchozího oznámení změněny nebo odstraněny.
-
-Tyto zásady jsou určeny pouze ke konfiguraci interních instancí prohlížeče <ph name="PRODUCT_NAME" /> ve vaší organizaci. Použití zásad mimo organizaci (např. ve veřejně distribuovaném programu) je považováno za malware a pravděpodobně bude společností Google a dodavateli antivirového softwaru takto i označeno.
-
-Tato nastavení není potřeba konfigurovat ručně. Na adrese <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> jsou k dispozici ke stažení snadno použitelné šablony pro Windows, Mac a Linux.
-
-Doporučený způsob nastavení zásad ve Windows je prostřednictvím objektu zásad skupiny (GPO). V instancích Windows připojených k doméně Active Directory je však stále podporováno spravování zásad prostřednictvím registrů.</translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
 <translation id="3417418267404583991">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, povolí systém <ph name="PRODUCT_OS_NAME" /> přihlášení hosta. Přihlášení hosta jsou anonymní uživatelské relace a nevyžadují heslo.
 
@@ -1283,9 +1238,6 @@ Pokud se prohlížeči <ph name="PRODUCT_NAME" /> údaje o stavu odvolání zís
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlížeč <ph name="PRODUCT_NAME" /> použije existující online nastavení kontroly odvolání.</translation>
 <translation id="5732972008943405952">Importovat při prvním spuštění údaje automatického vyplňování formulářů z výchozího prohlížeče</translation>
-<translation id="5751004203256768694">Udává typ účtů poskytovaných ověřovací aplikací Android, která podporuje ověření protokolu HTTP Negotiate (např. ověření protokolem Kerberos). Tyto informace by měl poskytnout dodavatel ověřovací aplikace. Další podrobnosti viz https://goo.gl/hajyfN.
-
-          Pokud nezadáte žádné nastavení, bude ověření protokolu HTTP Negotiate v systému Android zakázáno.</translation>
 <translation id="5761030451068906335">Nakonfiguruje nastavení proxy serveru pro službu <ph name="PRODUCT_NAME" />.
 
       Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.</translation>
@@ -2110,12 +2062,22 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
 <translation id="8544375438507658205">Výchozí modul vykreslení HTML pro plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Při návštěvě webů mimo obsahové balíčky zobrazit upozornění</translation>
 <translation id="8566842294717252664">Skrýt internetový obchod z karty Nová stránka a ze spouštěče aplikací</translation>
-<translation id="857925079934558818">Určuje, zda má být zakázána optimalizace TLS False Start. Z historických důvodů se tato zásada nazývá DisableSSLRecordSplitting.
-
-Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimalizace TLS False Start bude aktivována. Je-li nastavena na hodnotu True, tato optimalizace bude zakázána.</translation>
 <translation id="8587229956764455752">Povolit vytváření nových uživatelských účtů</translation>
 <translation id="8614804915612153606">Zakáže automatické aktualizace</translation>
 <translation id="8631434304112909927">naposledy ve verzi <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blokování přístupu k adresám URL uvedeným v seznamu.
+
+Tato zásada zabraňuje uživatelům načítat webové stránky ze zakázaných adres URL. Seznam zakázaných položek obsahuje vzory adres URL. Ty určují, které adresy URL budou zakázány.
+
+Každý vzor adresy URL může být určen místním souborům nebo obecné adrese URL. Vzory místních souborů jsou ve formátu „file://cesta“, kde „cesta“ je absolutní cesta, kterou chcete zablokovat. Všechna umístění v systému souborů začínající touto cestou budou zablokována.
+
+Vzor obecné adresy URL má formát „schéma://hostitel:port/cesta“. Pokud je uvedeno schéma, budou zablokovány pouze adresy s daným schématem. Pokud předpona schéma:// není určena, budou zablokována všechna schémata. Jako povinnou položku hostitele lze zvolit název hostitele nebo IP adresu. Blokovány budou i subdomény názvu hostitele. Chcete-li blokování subdomén zamezit, přidejte před název hostitele tečku (.). Všechny domény lze zablokovat pomocí zvláštního názvu hostitele (*). Jako port lze zvolit platné číslo portu v rozmezí od 1 do 65535. Není-li uvedeno, budou zablokovány všechny porty. Je-li uvedena volitelná cesta, budou zablokovány pouze cesty s příslušnou předponou.
+
+Výjimky lze zadat v zásadě pro povolené adresy URL. Počet záznamů v těchto zásadách je omezen na 1000. Všechny další záznamy budou ignorovány.
+
+Blokování interních adres URL s předponou „chrome://*“ nedoporučujeme, protože může docházet k neočekávaným chybám.
+
+Není-li zásada nastavena, nebude v prohlížeči zakázána žádná adresa URL.</translation>
 <translation id="8649763579836720255">Zařízení se systémem Chrome OS mohou pomocí vzdáleného ověření identity (ověřeného přístupu) získat certifikát vydaný certifikační autoritou Chrome OS, který hodnotí, zda je zařízení vhodné k přehrání chráněného obsahu. Proces zahrnuje odeslání informací o podpoře hardwaru certifikační autoritě Chrome OS, která zařízení jedinečně identifikuje.
 
           Pokud zásadu nastavíte na hodnotu False, zařízení nebude u chráněného obsahu používat vzdálené ověření identity, a chráněný obsah proto nemusí být možné přehrát.

@@ -62,8 +62,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium måste starta ett externt program för att kunna hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> använder normalt kryptering (SSL) för att skydda din information. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga
-och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="3032787606318309379">Lägger till i Chromium ...</translation>
 <translation id="3046695367536568084">Du måste vara inloggad i Chromium för att kunna använda appar. När du är inloggad kan du synkronisera appar, bokmärken, historik, lösenord och andra inställningar mellan dina enheter.</translation>
 <translation id="3068515742935458733">Hjälp oss att göra Chromium bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google</translation>
@@ -89,7 +87,6 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="358997566136285270">Chromium-logotyp</translation>
 <translation id="3595526210123705352">Om du startar om i Windows 8-läge stängs dina appar i Chromium och startas om.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
-<translation id="3744899669254331632">Du kan inte besöka <ph name="SITE" /> just nu eftersom webbplatsen skickade krypterade användaruppgifter som Chromium inte kan bearbeta. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen fungera senare.</translation>
 <translation id="3748537968684000502">Du tittar på en säker Chromium-sida.</translation>
 <translation id="378917192836375108">I Chromium kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -134,6 +131,7 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="5796460469508169315">Chromium är nästan klart.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium kunde inte uppdateras till den senaste versionen. Du går miste om nya funktioner och säkerhetsuppdateringar. Du måste uppdatera Chromium.</translation>
+<translation id="5859963531214966875">Future versions of Chromium will no longer support this Linux system.</translation>
 <translation id="5862307444128926510">Välkommen till Chromium</translation>
 <translation id="5877064549588274448">Kanalen har ändrats. Starta om enheten om du vill tillämpa ändringarna.</translation>
 <translation id="5909170354645388250">Används inte i Chromium. Platshållare för att hålla resurskartor synkroniserade. Ett argument förväntas: $1.</translation>
@@ -153,6 +151,7 @@ och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att
 <translation id="6485906693002546646">Du synkroniserar dina grejer i Chromium med <ph name="PROFILE_EMAIL" />. Om du vill ändra synkroniseringsinställningen eller använda Chromium utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Avinstallera Chromium</translation>
 <translation id="6526111688217511984">Chromium måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
+<translation id="6593914713218535185">Chromium may not function correctly because it is no longer supported on this Linux system.</translation>
 <translation id="6637001341228460105">Chromium behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>
 <translation id="6638567566961868659">Hitta dina bokmärken i Chromium-menyn eller i bokmärkesfältet:</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
@@ -233,7 +232,6 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="8985587603644336029">Någon har tidigare loggat in i Chromium på den här datorn som <ph name="ACCOUNT_EMAIL_LAST" />. Om det inte är ditt konto skapar du en ny Chromium-användare för att hålla din information privat för dig.
 
 Om du loggar in ändå kommer information som bokmärken, historik och andra inställningar i Chromium att synkroniseras med <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Webbläsare</translation>
 <translation id="9013087743919948559">Lägg till i Chromium</translation>
 <translation id="9013262824292842194">För Chromium krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
 <translation id="9019929317751753759">Vi har gjort Chromium säkrare genom att inaktivera följande tillägg som inte anges i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
@@ -243,7 +241,6 @@ Om du loggar in ändå kommer information som bokmärken, historik och andra ins
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="918373042641772655">Om du kopplar från <ph name="USERNAME" /> rensas din historik, dina bokmärken, dina inställningar och annan Chromium-data som du har lagrat på enheten. Data som lagras i Google-kontot rensas inte utan kan hanteras via <ph name="GOOGLE_DASHBOARD_LINK" />Google Översikt<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">En administratör har installerat Chromium på den här datorn och det är tillgängligt för alla användare. Chromium på systemnivå ersätter din installation på användarnivå nu.</translation>
 <translation id="9197815481970649201">Du är nu inloggad i Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Chromium OS.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

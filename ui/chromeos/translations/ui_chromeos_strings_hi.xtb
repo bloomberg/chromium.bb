@@ -23,6 +23,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="3958548648197196644">कीवी</translation>
 <translation id="40400351611212369">नेटवर्क सक्रियण त्रुटि</translation>
+<translation id="4118990158415604803">अन्य नेटवर्क से कनेक्ट करना आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="4237016987259239829">नेटवर्क कनेक्शन त्रुटि</translation>
 <translation id="4274292172790327596">अपरिचित त्रुटि</translation>
 <translation id="4326192123064055915">कॉफ़ी</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> को सक्रिय करें</translation>
 <translation id="6935521024859866267">ऊपरी भाग नीचे</translation>
 <translation id="6943836128787782965">HTTP विफल हुआ</translation>
+<translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="7165320105431587207">नेटवर्क कॉन्फ़िगर करने में विफल</translation>
 <translation id="7170041865419449892">सीमा से बाहर</translation>
 <translation id="7229570126336867161">EVDO की आवश्यकता है</translation>

@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Burung Kiwi</translation>
 <translation id="40400351611212369">Kesalahan Aktivasi Jaringan</translation>
+<translation id="4118990158415604803">Terhubung ke jaringan lainnya dinonaktifkan oleh administrator Anda.</translation>
 <translation id="4237016987259239829">Kesalahan Koneksi Jaringan</translation>
 <translation id="4274292172790327596">Kesalahan tak dikenal</translation>
 <translation id="4326192123064055915">Kopi</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Terbalik</translation>
 <translation id="6943836128787782965">HTTP gagal</translation>
+<translation id="7066646422045619941">Jaringan ini dinonaktifkan oleh administrator Anda.</translation>
 <translation id="7165320105431587207">Gagal mengonfigurasi jaringan</translation>
 <translation id="7170041865419449892">Di luar jangkauan</translation>
 <translation id="7229570126336867161">Memerlukan EVDO</translation>

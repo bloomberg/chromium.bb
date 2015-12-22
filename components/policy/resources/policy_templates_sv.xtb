@@ -105,7 +105,6 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
-<translation id="1445397020763995734">Kontotyp för HTTP Negotiate-autentisering</translation>
 <translation id="1454846751303307294">Policyn gör att du kan ställa in en lista med webbadressmönster som anger webbplatser som inte får köra JavaScript.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har ställts in. Annars används användarens personliga konfiguration.</translation>
@@ -291,18 +290,6 @@
       Om HardwareAccelerationModeEnabled är inställd på falskt ignoreras Disable3DAPIs och det motsvarar att Disable3DAPIs är inställd på sant.</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
-<translation id="2175836933294053665">Konfigurerar en lista med hanterade bokmärken.
-
-      Den här principen består av en lista med bokmärken där varje bokmärke
-      är en ordlista med nycklarna name och url, som har bokmärkets namn och
-      mål som värden. Det går att konfigurera en undermapp genom att ange ett
-      bokmärke utan nyckeln url men med en extra nyckel, children, som i sig 
-      innehåller en lista med bokmärken enligt definitionen ovan (varav några
-      kan vara mappar, och så vidare). <ph name="PRODUCT_NAME" />
-      kompletterar ofullständiga webbadresser som om de skickats via adressfältet
-      – google.com blir till exempel https://google.com/.
-
-      Bokmärkena läggs i en mapp med hanterade bokmärken som användaren inte kan ändra. Användaren kan däremot välja att dölja mappen i bokmärkesfältet. Hanterade bokmärken synkroniseras inte till användarkontot och inga tillägg kan ändra dem.</translation>
 <translation id="2188979373208322108">Policyn aktiverar bokmärkesfältet i <ph name="PRODUCT_NAME" />.
 
       Om du aktiverar inställningen visas ett bokmärkesfält i <ph name="PRODUCT_NAME" />.
@@ -603,38 +590,6 @@
       Om du aktiverar inställningen kommer autentiseringssidor för en infångstportal (dvs. alla webbsidor som startar från en inloggningssida för en infångstportal tills <ph name="PRODUCT_NAME" /> kan identifiera en lyckad internetanslutning) att visas i ett separat fönster och ignorera alla policyinställningar och begränsningar för den aktuella användaren.
 
       Om du inaktiverar inställningen eller inte anger den kommer autentiseringssidor för infångstportaler att visas på en (vanlig) ny flik i webbläsaren med den aktuella användarens proxyinställningar.</translation>
-<translation id="3001569025430882724">Åsidosätter skrivarens standardurvalsregler för <ph name="PRODUCT_NAME" />.
-
-      Genom denna princip fastställs reglerna för valet av standardskrivare i <ph name="PRODUCT_NAME" />, vilket sker första gången som utskriftsfunktionen används av en profil.
-
-      När den här principen är inställd försöker <ph name="PRODUCT_NAME" /> hitta en skrivare som uppfyller alla de angivna attributen och välja denna som standardskrivare. Den första skrivare som hittas och överensstämmer med principen är den som väljs. Om matchningen inte är unik väljs en skrivare ut som uppfyller attributen efter den ordning i vilken skrivarna hittades.
-
-      Om denna princip inte ställs in eller om ingen skrivare som uppfyller attributen hittas innan tidsfristen löper ut ställs den inbyggda PDF-skrivaren in som standardskrivare. Om en PDF-skrivare inte finns tillgänglig väljs ingen skrivare.
-
-      Värdet analyseras som ett JSON-objekt enligt följande schema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Huruvida sökningen efter en skrivare som uppfyller attributen ska begränsas till en specifik uppsättning av skrivare.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Reguljärt uttryck som ska överensstämma med skrivar-id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Reguljärt uttryck som ska överensstämma med skrivarens visningsnamn.",
-            "type": "string"
-          }
-        }
-      }
-
-      Skrivare som är anslutna till Google Cloud Print betraktas som moln medan övriga skrivare klassificeras som lokala.
-      Om ett fält utelämnas innebär det att alla värden överensstämmer. Om till exempel anslutningen inte anges hittar förhandsgranskningen alla typer av skrivare, såväl lokala skrivare som sådana i moln.
-      Reguljära uttryck måste följa JavaScript RegExp-syntaxen. Träffar är skiftlägeskänsliga.</translation>
 <translation id="3021409116652377124">Inaktivera plugin-sökaren</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
 <translation id="3034580675120919256">Policyn gör att du kan ange om webbplatser får köra JavaScript. Du kan tillåta JavaScript på alla webbplatser eller blockera JavaScript på alla webbplatser.
@@ -730,25 +685,6 @@
       Om inställningen är aktiverad eller inte har konfigurerats kan användarna aktivera molnutskriftsproxyn genom autentisering med deras Google-konton.
 
       Om inställningen inte är inaktiverad kan användarna inte aktivera proxyn och datorn tillåts inte att dela skrivare med <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Både Chromium och Google Chrome har stöd för samma uppsättning med
-      policyer. Tänk på att det här dokumentet kan innehålla policyer som är
-      inriktade på programversioner som inte har lanserats (dvs. posten Stöds på
-      syftar på en version som inte har lanserats) och att sådana policyer 
-      omfattas av ändringar eller borttagning utan föregående meddelande.
-
-      Dessa policyer är enbart avsedda att användas för att konfigurera instanser
-      av <ph name="PRODUCT_NAME" /> internt inom din
-      organisation. Användning av dessa policyer utanför organisationen (till
-      exempel i ett offentligt distribuerat program) anses utgöra skadlig
-      programvara och kommer förmodligen att märkas som skadlig programvara
-      av Google och antivirusprogram.
-
-      Dessa inställningar behöver inte konfigureras manuellt. Du kan ladda ned
-      lättanvända mallar för Windows, Mac och Linux på <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Vi rekommenderar att du konfigurerar policyn på Windows via GPO, men
-      administrationspolicyn via registret stöds fortfarande för Windows-instanser
-      som är kopplade till en Active Directory-domän.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME" />. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
 
@@ -1341,9 +1277,6 @@
 
       Om ingen inställning görs för principen eller om den har värdet falskt använder <ph name="PRODUCT_NAME" /> de befintliga inställningarna för kontroller för återkallning online.</translation>
 <translation id="5732972008943405952">Importera formuläruppgifter för Autofyll från standardwebbläsaren första gången den körs</translation>
-<translation id="5751004203256768694">Anger kontotypen för konton som tillhandahålls av Androids autentiseringsapp som har stöd för autentisering av HTTP Negotiate (t.ex. Kerberos-autentisering). Informationen ska vara tillgänglig från leverantören av autentiseringsappen. Mer information finns på https://goo.gl/hajyfN.
-
-          Om inställningen inte anges är HTTP Negotiate-autentisering inaktiverat på Android.</translation>
 <translation id="5761030451068906335">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME" />. Använd inte policyn. Den är inte redo ännu.</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
@@ -2187,12 +2120,26 @@
 <translation id="8544375438507658205">HTML-standardrenderare för <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varna när du besöker webbplatser utanför innehållspaket</translation>
 <translation id="8566842294717252664">Dölj webbutiken från sidan ny flik och startprogrammet för appar</translation>
-<translation id="857925079934558818">Anger om optimeringen av falsk start i TLS ska inaktiveras. Av historiska skäl har principen namnet DisableSSLRecordSplitting.
-
-      Om principen inte har konfigurerats eller har ställts in på falskt aktiveras falsk start i TLS. Om principen har ställts in på sant inaktiveras falsk start i TLS.</translation>
 <translation id="8587229956764455752">Tillåt att nya användarkonton skapas</translation>
 <translation id="8614804915612153606">Inaktiverar automatisk uppdatering</translation>
 <translation id="8631434304112909927">till och med version <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blocks access to the listed URLs.
+
+      This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
+
+      Each URL pattern can either be a pattern for local files or a generic URL pattern. Local file patterns are of the format 'file://path', where path should be an absolute path to block. All file system locations for which that path is a prefix will be blocked.
+
+      A generic URL pattern has the format 'scheme://host:port/path'.
+      If present, only the specified scheme will be blocked. If the scheme:// prefix is not specified, all schemes are blocked.
+      The host is required and can be a hostname or an IP address. Subdomains of a hostname will also be blocked. To prevent blocking subdomains, include a '.' before the hostname. The special hostname '*' will block all domains.
+      The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
+      If the optional path is specified, only paths with that prefix will be blocked.
+
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
+
+      Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
+
+      If this policy is not set no URL will be blacklisted in the browser.</translation>
 <translation id="8649763579836720255">Chrome OS-enheter kan använda fjärrstyrd attestering (verifierad åtkomst) för att få ett certifikat utfärdat av Chrome OS CA som intygar att enheten kvalificerar för att spela upp skyddat innehåll.  Processen innebär att skicka maskinvaruinformation till Chrome OS CA som unikt identifierar enheten.
 
           Om inställningen är Falskt kommer enheten inte att använda fjärrstyrd attestering för innehållsskydd och skyddat innehåll kanske inte kan spelas upp på enheten.

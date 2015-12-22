@@ -60,7 +60,6 @@
 <translation id="2886012850691518054">Opcional: ajudeu a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="2910007522516064972">Quant a &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358">Normalment, al lloc web <ph name="SITE" /> es fa servir l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chromium ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chromium ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="3032787606318309379">S'està afegint a Chromium...</translation>
 <translation id="3046695367536568084">Heu de tenir la sessió iniciada a Chromium per poder utilitzar aplicacions. D'aquesta manera, Chromium podrà sincronitzar les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres paràmetres amb la resta de dispositius.</translation>
 <translation id="3068515742935458733">Ajudeu a millorar Chromium; envieu informes d'error i <ph name="UMA_LINK" /> a Google.</translation>
@@ -86,7 +85,6 @@
 <translation id="358997566136285270">Logotip de Chromium</translation>
 <translation id="3595526210123705352">En tornar a iniciar en mode Windows 8 es tancaran i es tornaran a iniciar les vostres aplicacions Chromium.</translation>
 <translation id="3738139272394829648">Toca per cercar</translation>
-<translation id="3744899669254331632">En aquest moments no podeu visitar la pàgina <ph name="SITE" /> perquè el lloc web ha enviat credencials aleatòries que Chromium no pot processar. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="3748537968684000502">Esteu visualitzant una pàgina segura de Chromium.</translation>
 <translation id="378917192836375108">Chromium us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" />: Chromium</translation>
@@ -131,6 +129,7 @@
 <translation id="5796460469508169315">Chromium ja està quasi llest.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">No s'ha pogut fer l'actualització de Chromium a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Heu d'actualitzar Chromium.</translation>
+<translation id="5859963531214966875">Les versions futures de Chromium ja no admetran aquest sistema Linux.</translation>
 <translation id="5862307444128926510">Us donem la benvinguda a Chromium</translation>
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5909170354645388250">No s'utilitza a Chromium. Espai reservat per mantenir els mapes de recursos sincronitzats. Espera un argument: $1.</translation>
@@ -150,6 +149,7 @@
 <translation id="6485906693002546646">Utilitzeu <ph name="PROFILE_EMAIL" /> per sincronitzar el contingut de Chromium. Per modificar la preferència de sincronització o per utilitzar Chromium sense cap compte de Google, dirigiu-vos a <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Desinstal·la Chromium</translation>
 <translation id="6526111688217511984">Chromium necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
+<translation id="6593914713218535185">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb aquest sistema Linux.</translation>
 <translation id="6637001341228460105">Chromium necessita accedir al micròfon per compartir-lo amb aquest lloc.</translation>
 <translation id="6638567566961868659">Cerqueu les adreces d'interès al menú de Chromium o a la Barra d'adreces d'interès.</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
@@ -230,7 +230,6 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="8985587603644336029">Algú ha iniciat anteriorment la sessió a Chromium en aquest ordinador com a <ph name="ACCOUNT_EMAIL_LAST" />. Si no és el vostre compte, creeu un usuari de Chromium per mantenir la informació separada.
 
 En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name="ACCOUNT_EMAIL_NEW" /> la informació de Chromium com ara adreces d'interès, historial i altres configuracions.</translation>
-<translation id="8987477933582888019">Navegador web</translation>
 <translation id="9013087743919948559">Addició a Chromium</translation>
 <translation id="9013262824292842194">Chromium requereix Windows Vista o Windows XP amb SP2 o superior.</translation>
 <translation id="9019929317751753759">Per tal que Chromium sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
@@ -240,7 +239,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="918373042641772655">Si desconnecteu <ph name="USERNAME" /> s'esborraran l'historial, les adreces d'interès, la configuració i la resta de dades de Chromium que hàgiu desat en aquest dispositiu. Les dades emmagatzemades al compte de Google no s'esborraran, i es poden gestionar des del <ph name="GOOGLE_DASHBOARD_LINK" />Tauler de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Un administrador ha instal·lat Chromium en aquest sistema i està disponible per a tots els usuaris. El Chromium a nivell de sistema substituirà ara la vostra instal·lació a nivell d'usuari.</translation>
 <translation id="9197815481970649201">S'ha iniciat la sessió a Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> exigeix que llegiu i accepteu els Termes i condicions següents abans no utilitzeu el dispositiu. Aquestes condicions no amplien, modifiquen ni restringeixen les condicions de Chromium OS.</translation>
 <translation id="985602178874221306">Els autors de Chromium</translation>

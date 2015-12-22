@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="1012876632442809908">Zariadenie USB-C (port vpredu)</translation>
 <translation id="1013923882670373915">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení toto číslo PIN: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Skratka prepnutia na ďalšiu metódu vstupu bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Automatické skrývanie poličky</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Klávesnica na obrazovke je zakázaná</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Zariadenie USB-C (port vľavo)</translation>
 <translation id="1330145147221172764">Zobraziť klávesnicu na obrazovke</translation>
 <translation id="1343000272198685031">Konektor mikrofónu</translation>
 <translation id="1346748346194534595">Doprava</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
 <translation id="1812696562331527143">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tretia strana<ph name="END_LINK" />).
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
+<translation id="1864454756846565995">Zariadenie USB-C (port vzadu)</translation>
 <translation id="1882897271359938046">Zrkadlenie na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Skratka otvorenia správcu úloh bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatické kliknutia</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">Aplikácie</translation>
 <translation id="2819276065543622893">Teraz prebehne odhlásenie.</translation>
 <translation id="2825619548187458965">Polička</translation>
+<translation id="2844169650293029770">Zariadenie USB-C (port vľavo vpredu)</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2942516765047364088">Pozícia poličky</translation>
 <translation id="2946640296642327832">Povoliť rozhranie Bluetooth</translation>
@@ -74,6 +78,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3147142846278915599">Spúšťač (synchronizujú sa aplikácie...)</translation>
 <translation id="3157169093162779309">Zapnúť zámku otáčania</translation>
 <translation id="3294437725009624529">Hosť</translation>
+<translation id="3445925074670675829">Zariadenie USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
@@ -125,6 +130,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="5238774010593222950">Nie je možné prihlásiť sa do iného účtu.</translation>
 <translation id="532063867737390965">Toto nastavenie siete zakázal správca.</translation>
+<translation id="5331975486040154427">Zariadenie USB-C (port vľavo vzadu)</translation>
 <translation id="544691375626129091">Do tejto relácie už boli pridaní všetci dostupní používatelia</translation>
 <translation id="5507786745520522457">Nastaviť mobilné dáta</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6426039856985689743">Zakázať mobilné dátové pripojenie</translation>
 <translation id="6452181791372256707">Odmietnuť</translation>
 <translation id="6459472438155181876">Rozšírenie obrazovky na displej <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Zariadenie USB-C (port vpravo)</translation>
 <translation id="6501401484702599040">Prenášanie obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
@@ -182,6 +189,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="7052914147756339792">Nastavenie tapety...</translation>
 <translation id="7097613348211027502">Hlasová odozva ChromeVox je aktívna.
 Deaktivujete ju stlačením kombinácie klávesov Ctrl+Alt+Z.</translation>
+<translation id="7098389117866926363">Zariadenie USB-C (ľavý port vzadu)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Kláves CAPS LOCK je zapnutý.
@@ -220,6 +228,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="8828714802988429505">90 °</translation>
 <translation id="8850991929411075241">Hľadať+Esc</translation>
 <translation id="8878886163241303700">Rozšírenie obrazovky</translation>
+<translation id="8938800817013097409">Zariadenie USB-C (pravý port vzadu)</translation>
 <translation id="8940956008527784070">Kapacita batérie je nízka (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofón sa používa.</translation>

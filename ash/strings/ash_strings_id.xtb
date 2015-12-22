@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="1012876632442809908">Perangkat USB-C (port depan)</translation>
 <translation id="1013923882670373915">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukan kode PIN ini pada perangkat tersebut: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Pintasan untuk beralih ke metode masukan berikutnya telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Perangkat USB-C (port sebelah kiri)</translation>
 <translation id="1330145147221172764">Aktifkan keyboard di layar</translation>
 <translation id="1343000272198685031">Colokan Mikrofon</translation>
 <translation id="1346748346194534595">Kanan</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Keyboard di layar diaktifkan</translation>
 <translation id="1812696562331527143">Metode masukan Anda telah berubah menjadi <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />pihak ketiga<ph name="END_LINK" />).
 Tekan Shift + Alt untuk beralih.</translation>
+<translation id="1864454756846565995">Perangkat USB-C (port belakang)</translation>
 <translation id="1882897271359938046">Mencerminkan ke <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengelola tugas telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik otomatis</translation>
@@ -55,6 +58,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2819276065543622893">Anda akan dikeluarkan sekarang.</translation>
 <translation id="2825619548187458965">Rak</translation>
+<translation id="2844169650293029770">Perangkat USB-C (port depan sebelah kiri)</translation>
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="2942516765047364088">Posisi rak</translation>
 <translation id="2946640296642327832">Aktifkan Bluetooth</translation>
@@ -74,6 +78,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3147142846278915599">Peluncur (menyinkronkan aplikasi...)</translation>
 <translation id="3157169093162779309">Aktifkan penguncian rotasi</translation>
 <translation id="3294437725009624529">Tamu</translation>
+<translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
@@ -125,6 +130,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="5222676887888702881">Keluar</translation>
 <translation id="5238774010593222950">Tidak dapat masuk ke akun lain.</translation>
 <translation id="532063867737390965">Setelan jaringan ini dinonaktifkan oleh administrator.</translation>
+<translation id="5331975486040154427">Perangkat USB-C (port belakang sebelah kiri)</translation>
 <translation id="544691375626129091">Semua pengguna yang tersedia telah ditambahkan ke sesi ini.</translation>
 <translation id="5507786745520522457">Siapkan data seluler</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6426039856985689743">Nonaktifkan data seluler</translation>
 <translation id="6452181791372256707">Tolak</translation>
 <translation id="6459472438155181876">Memperpanjang layar ke <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Perangkat USB-C (port sebelah kanan)</translation>
 <translation id="6501401484702599040">Mentransmisi layar ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="7052914147756339792">Setel wallpaper...</translation>
 <translation id="7097613348211027502">ChromeVox (masukan lisan) diaktifkan.
 Tekan Ctrl+Alt+Z untuk menonaktifkan.</translation>
+<translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK aktif.
@@ -220,6 +228,7 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Memperluas layar</translation>
+<translation id="8938800817013097409">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="8940956008527784070">Baterai lemah (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon sedang digunakan.</translation>

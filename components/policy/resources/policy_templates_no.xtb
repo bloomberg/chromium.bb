@@ -100,7 +100,6 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxytjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
-<translation id="1445397020763995734">Kontotype for HTTP-forhandlingsautentisering</translation>
 <translation id="1454846751303307294">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke tillates å kjøre JavaScript.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
@@ -276,18 +275,6 @@
       Hvis HardwareAccelerationModeEnabled settes til false (usann), ignoreres Disable3DAPIs, og det gir samme effekt som å sette Disable3DAPIs til true (sann).</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
 <translation id="2170233653554726857">Slå på WPAD-optimalisering</translation>
-<translation id="2175836933294053665">Konfigurerer en liste over administrerte bokmerker.
-
-      Regelen består av en liste med bokmerker. Hvert bokmerke er en
-      katalog som inneholder nøklene «name» og «url», der bokmerkets
-      navn og mål er lagret. Du kan konfigurere undermapper ved å definere
-      bokmerker uten «url»-nøkler, men med ekstra «underordnede» nøkler som
-      selv inneholder lister over bokmerker, som beskrevet ovenfor (noen av
-      disse kan også være mapper). Med <ph name="PRODUCT_NAME" />
-      korrigeres ufullstendige nettadresser som om de hadde blitt lagt inn via
-      multifunksjonsfeltet (f.eks. «google.com» blir til «https://google.com/»).
-
-      Disse bokmerkene legges i en administrert bokmerkemappe som ikke kan endres av brukeren, men brukeren kan velge å skjule den fra bokmerkeraden. Administrerte bokmerker synkroniseres ikke med brukerkontoer og kan ikke modifiseres med utvidelser.</translation>
 <translation id="2188979373208322108">Aktiverer bokmerkeraden i <ph name="PRODUCT_NAME" />.
 
       Hvis du aktiverer denne innstillingen, viser <ph name="PRODUCT_NAME" /> en bokmerkerad.
@@ -535,7 +522,7 @@
       Hvis du ikke denne regelen ikke spesifiseres, er effekten den samme som om den var slått på. Se beskrivelsen ovenfor.</translation>
 <translation id="2850122204195089673">Gjør det enhetlige skrivebordet tilgjengelig, og slå det på som standard.</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
-<translation id="2872961005593481000">Avslutt</translation>
+<translation id="2872961005593481000">Slå av</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
 <translation id="2884728160143956392">Tillat informasjonskapsler som kun gjelder for den aktuelle økten på disse nettstedene</translation>
 <translation id="2893546967669465276">Send systemlogger til administrasjonstjeneren</translation>
@@ -576,38 +563,6 @@
       Hvis du slår på denne regelen, blir alle obligatoriske autentiseringssider (det vil si alle nettsider fra den obligatoriske påloggingssiden og frem til <ph name="PRODUCT_NAME" /> registrerer at enheten er koblet til Internett) vist i separate vinduer, og alle administratorinnstillinger og begrensninger for den aktive brukeren blir ignorert.
 
       Hvis du slår av denne regelen eller ikke spesifiserer den, blir alle obligatoriske autentiseringssider vist i (vanlige) nye nettleserfaner, med den aktive brukerens proxy-tjenerinnstillinger.</translation>
-<translation id="3001569025430882724">Overstyrer reglene for valg av standardskriver for <ph name="PRODUCT_NAME" />.
-
-      Denne regelen definerer hvordan standardskriveren velges i <ph name="PRODUCT_NAME" />, noe som skjer den første gangen utskriftsfunksjonen brukes med en profil.
-
-      Når denne regelen er angitt, prøver <ph name="PRODUCT_NAME" /> å finne en skriver som samsvarer med alle de spesifiserte egenskapene. Denne skriveren velges da som standardskriver. Den første skriveren som blir funnet, og som samsvarer med regelen, blir valgt. Hvis flere samsvarende skrivere blir funnet, kan hvilken som helst skriver velges, avhengig av hvilken rekkefølge skriverne ble funnet i.
-
-      Hvis denne regelen ikke angis, eller hvis ingen samsvarende skrivere blir funnet før søket blir tidsavbrutt, brukes den innebygde PDF-skriveren som standard. Hvis PDF-skriveren ikke er tilgjengelig, blir ingen skriver valgt.
-
-      Verdien parses som et JSON-objekt med dette oppsettet:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Hvorvidt søket etter samsvarende skrivere skal begrenses til et spesifikt sett med skrivere.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regulært uttrykk for å finne samsvar med skriverens ID.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulært uttrykk for å finne samsvar med skriverens visningsnavn.",
-            "type": "string"
-          }
-        }
-      }
-
-      Skrivere som er koblet til Google Cloud Print, klassifiseres som «cloud». Resten av skriverne klassifiseres som «local».
-      Hvis et felt utelates, betyr det at alle verdier samsvarer. Hvis for eksempel tilkoblingstypen ikke spesifiseres, søkes det etter alle typer skrivere i forhåndsvisningen av utskriften, både lokalt og i nettskyen.
-      Mønstrene for de regulære uttrykkene må følge JavaScript RegExp-syntaksen, og det skilles mellom store og små bokstaver.</translation>
 <translation id="3021409116652377124">Deaktiver programtilleggssøk</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
@@ -694,26 +649,6 @@
 <translation id="3273221114520206906">Standard JavaScript-innstilling</translation>
 <translation id="3288595667065905535">Utgivelseskanal</translation>
 <translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME" /> til å fungere som mellomtjener mellom <ph name="CLOUD_PRINT_NAME" /> og tidligere skrivere tilkoblet denne datamaskinen. Hvis innstillingen er aktivert eller ikke konfigurert, kan brukerne aktivere mellomtjener for Google Cloud Print ved hjelp av autentisering i Google-kontoen. Hvis denne innstillingen er deaktivert, kan ikke brukere aktivere mellomtjeneren, og får ikke tilgang til å dele datamaskinens skrivere med <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Både Chromium og Google Chrome støtter det samme regelsettet.
-      Vær oppmerksom på at dette dokumentet kan inneholde regler som er
-      laget for upubliserte programvareversjoner («støttes på»-oppføringen
-      viser til en upublisert versjon), og at slike innstillinger kan
-      endres eller fjernes uten varsel.
-
-      Det er bare meningen å bruke disse reglene til å konfigurere forekomster 
-      av <ph name="PRODUCT_NAME" /> internt i organisasjonen
-      din. Hvis disse reglene brukes utenfor organisasjonen din (for
-      eksempel i offentlig distribuerte programmer), blir de betraktet som skadelig 
-      programvare, og de blir sannsynligvis definert som skadelig programvare av 
-      Google og leverandører av antivirusprogramvare.
-
-      Det er ikke nødvendig å konfigurere disse innstillingene manuelt. 
-      Brukervennlige maler for Windows, Mac og Linux kan lastes ned fra <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Det anbetales at regler i Windows konfigureres via GPO 
-      (gruppepolicyobjekter), selv om det fortsatt er støtte for å spesifisere regler
-      via registeret for Windows-forekomster som er knyttet til 
-      Active Directory-domener.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME" /> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
 
@@ -1276,9 +1211,6 @@
 
       Hvis denne regelen ikke er spesifisert, eller hvis den er satt til «false», bruker <ph name="PRODUCT_NAME" /> de gjeldende alternativene for opphevelsessjekking på nettet.</translation>
 <translation id="5732972008943405952">Importér autofylldata for skjemaer fra standardnettleseren ved den første kjøringen</translation>
-<translation id="5751004203256768694">Spesifiserer kontotypen for kontoene som gjøres tilgjengelige av Android-autentiseringsappen som støtter HTTP-forhandlingsautentisering (f.eks. Kerberos-autentisering). Denne informasjonen skal være tilgjengelig fra leverandøren av autentiseringsappen. For mer detaljert informasjon, se https://goo.gl/hajyfN.
-
-          Hvis du ikke velger noen innstilling, er HTTP-forhandlingsautentisering slått av på Android.</translation>
 <translation id="5761030451068906335">Konfigurerer innstillinger for mellomtjener i <ph name="PRODUCT_NAME" />. Disse retningslinjene er ikke klare for bruk ennå, så vi ber deg om ikke å bruke dem.</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
@@ -2105,12 +2037,24 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="8544375438507658205">Standard gjengivelse av HTML for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
-<translation id="857925079934558818">Angir om optimalisering for falsk start av TLS skal slås av eller ikke. Av historiske grunner heter denne innstillingen DisableSSLRecordSplitting.
-
-      Hvis denne regelen ikke spesifiseres, eller hvis den settes til false (usann), slås falsk start av TLS på. Hvis den settes til true (sann), slås falsk start av TLS av.</translation>
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>
 <translation id="8631434304112909927">frem til versjon <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blokkerer tilgangen til de spesifiserte nettadressene.
+
+      Denne regelen hindrer brukerne i å laste inn nettsider fra svartelistede nettadresser. Svartelisten er en liste over nettadressemønstre som spesifiserer hvilke nettadresser som skal være svartelistet.
+
+      Hvert nettadressemønster kan enten være et mønster for lokale filer eller et generisk nettadressemønster. Mønstre for lokale filer har formatet «fil://bane», der banen skal være en absolutt bane som skal blokkeres. Alle filsystemplasseringer denne banen er et prefiks for, blir blokkert.
+
+      Generiske nettadressemønstre har formatet «protokoll://vert:port/bane».
+      Bare den spesifiserte protokollen blir blokkert, hvis den er til stede. Hvis protokoll://-prefikset ikke er spesifisert, blokkeres alle protokoller.
+      Verten er obligatorisk og kan være et vertsnavn eller en IP-adresse. Underdomenene under vertsnavnet blir også blokkert. For å unngå blokkering av underdomener, ta med et «.» før vertsnavnet. Spesialvertsnavnet «*» blokkerer alle domener.
+      Porten er valgfri og er et gyldig portnummer fra 1 til 65535. Hvis verdien for porten ikke spesifiseres, blokkeres alle portene.
+      Banen er valgfri, og hvis den spesifiseres, blokkeres bare banene med dette prefikset.
+
+      Unntak kan defineres i godkjenningslisten for nettadresser. Disse reglene er begrenset til 1000 oppføringer. Oppføringer etter dette blir ignorert.
+
+      Hvis denne regelen ikke spesifiseres, blir ingen nettadresser svartelistet i nettleseren.</translation>
 <translation id="8649763579836720255">Chrome OS-enheter can bruke ekstern godkjenning (godkjent tilgang) for å få et sertifikat utstedt av Chrome OS CA, som bekrefter at enheten er kvalifisert til å spille av beskyttet innhold. Denne prosessen involverer sending av godkjenningsinformasjon for maskinvaren til Chrome OS CA, som unikt identifiserer enheten.
 
           Hvis denne innstillingen angis til «false», kommer ikke enheten til å bruke ekstern godkjenning for innholdsbeskyttelse, og enheten kan sannsynligvis ikke spille av beskyttet innhold.

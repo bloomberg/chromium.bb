@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1012876632442809908">Συσκευή USB-C (μπροστινή θύρα)</translation>
 <translation id="1013923882670373915">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτόν τον κωδικό PIN στη συγκεκριμένη συσκευή: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Η συντόμευση για εναλλαγή στην επόμενη μέθοδο εισαγωγής άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Αυτόματη απόκρυψη ραφιού</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Το πληκτρολόγιο οθόνης είναι απενεργοποιημένο</translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Συσκευή USB-C (αριστερή θύρα)</translation>
 <translation id="1330145147221172764">Ενεργοποίηση πληκτρολογίου οθόνης</translation>
 <translation id="1343000272198685031">Mic Jack</translation>
 <translation id="1346748346194534595">Δεξιά</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Το πληκτρολόγιο οθόνης είναι ενεργοποιημένο</translation>
 <translation id="1812696562331527143">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />τρίτου μέρους<ph name="END_LINK" />).
 Πατήστε Shift + Alt για εναλλαγή.</translation>
+<translation id="1864454756846565995">Συσκευή USB-C (πίσω θύρα)</translation>
 <translation id="1882897271359938046">Κατοπτρισμός σε <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Η συντόμευση για το άνοιγμα της Διαχείρισης Εργασιών άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Αυτόματα κλικ</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">Εφαρμογές </translation>
 <translation id="2819276065543622893">Θα αποσυνδεθείτε τώρα.</translation>
 <translation id="2825619548187458965">Ράφι</translation>
+<translation id="2844169650293029770">Συσκευή USB-C (αριστερή μπροστινή θύρα)</translation>
 <translation id="2872961005593481000">Τερματισμός λειτουργίας</translation>
 <translation id="2942516765047364088">Θέση ραφιού</translation>
 <translation id="2946640296642327832">Ενεργοποίηση Bluetooth</translation>
@@ -74,6 +78,7 @@
 <translation id="3147142846278915599">Εφαρμογή εκκίνησης (συγχρονισμός εφαρμογών…)</translation>
 <translation id="3157169093162779309">Ενεργοποίηση κλειδώματος περιστροφής</translation>
 <translation id="3294437725009624529">Επισκέπτης</translation>
+<translation id="3445925074670675829">Συσκευή USB-C</translation>
 <translation id="3473479545200714844">Μεγεθυντής οθόνης</translation>
 <translation id="3573179567135747900">Αλλάξτε το πάλι σε "<ph name="FROM_LOCALE" />" (απαιτείται επανεκκίνηση)</translation>
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">Έξοδος</translation>
 <translation id="5238774010593222950">Δεν είναι δυνατή η σύνδεση σε διαφορετικό λογαριασμό.</translation>
 <translation id="532063867737390965">Αυτή η ρύθμιση δικτύου απενεργοποιήθηκε από το διαχειριστή.</translation>
+<translation id="5331975486040154427">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="544691375626129091">Όλοι οι διαθέσιμοι χρήστες έχουν ήδη προστεθεί σε αυτήν την περίοδο σύνδεσης.</translation>
 <translation id="5507786745520522457">Ρύθμιση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@
 <translation id="6426039856985689743">Απενεργοποίηση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="6452181791372256707">Απόρριψη</translation>
 <translation id="6459472438155181876">Επέκταση οθόνης σε <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Συσκευή USB-C (δεξιά θύρα)</translation>
 <translation id="6501401484702599040">Μετάδοση οθόνης σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Επιλογές</translation>
 <translation id="6585808820553845416">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@
 <translation id="7052914147756339792">Ορισμός ταπετσαρίας...</translation>
 <translation id="7097613348211027502">Το ChromeVox (προφορικά σχόλια) έχει ενεργοποιηθεί.
 Πατήστε Ctrl+Alt+Z για απενεργοποίηση.</translation>
+<translation id="7098389117866926363">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Επαναφορά στην προηγούμενη ανάλυση σε <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Το πλήκτρο CAPS LOCK έχει ενεργοποιηθεί.
@@ -220,6 +228,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Πλήκτρο αναζήτησης+Esc</translation>
 <translation id="8878886163241303700">Επέκταση οθόνης</translation>
+<translation id="8938800817013097409">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="8940956008527784070">Χαμηλή στάθμη μπαταρίας (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Το μικρόφωνο χρησιμοποιείται.</translation>

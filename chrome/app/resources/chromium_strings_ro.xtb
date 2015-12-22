@@ -60,7 +60,6 @@
 <translation id="2886012850691518054">Opțional: contribuie la îmbunătățirea Chromium prin trimiterea automată de statistici privind utilizarea și rapoarte de blocare la Google.</translation>
 <translation id="2910007522516064972">Despre &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necesită lansarea unei aplicații externe pentru a gestiona linkuri <ph name="SCHEME" />. Linkul solicitat este <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358">Site-ul <ph name="SITE" /> utilizează în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="3032787606318309379">Se adaugă la Chromium...</translation>
 <translation id="3046695367536568084">Trebuie să vă conectați la Chromium pentru a folosi aplicațiile. Astfel, Chromium vă poate sincroniza aplicațiile, marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="3068515742935458733">Contribuie la îmbunătățirea proiectului Chromium trimițând rapoarte de eroare și <ph name="UMA_LINK" /> la Google</translation>
@@ -86,7 +85,6 @@
 <translation id="358997566136285270">Sigla Chromium</translation>
 <translation id="3595526210123705352">Repornirea în modul Windows 8 va închide și va relansa aplicațiile Chromium.</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
-<translation id="3744899669254331632">Nu poți accesa acum <ph name="SITE" />, deoarece site-ul a trimis date de conectare într-un format necunoscut pe care Chromium nu le poate procesa. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="3748537968684000502">Acum afișați o pagină Chromium securizată.</translation>
 <translation id="378917192836375108">Chromium vă permite să faceți clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -131,6 +129,7 @@
 <translation id="5796460469508169315">Chromium este aproape configurat.</translation>
 <translation id="5820394555380036790">Sistemul de operare Chromium</translation>
 <translation id="5823381412099532241">Chromium nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chromium.</translation>
+<translation id="5859963531214966875">Versiunile Chromium ulterioare nu vor mai accepta acest sistem Linux.</translation>
 <translation id="5862307444128926510">Bun venit la Chromium</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="5909170354645388250">Nu se utilizează în Chromium. Substituent pentru a păstra hărțile cu resurse sincronizate. Este necesar un singur argument: $1.</translation>
@@ -150,6 +149,7 @@
 <translation id="6485906693002546646">În prezent, folosiți <ph name="PROFILE_EMAIL" /> pentru a sincroniza datele Chromium. Pentru a actualiza preferințele de sincronizare sau pentru a folosi Chromium fără un Cont Google, accesați <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Dezinstalați Chromium</translation>
 <translation id="6526111688217511984">Pentru a descărca fișiere, Chromium necesită acces la stocare.</translation>
+<translation id="6593914713218535185">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe acest sistem Linux.</translation>
 <translation id="6637001341228460105">Chromium are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="6638567566961868659">Găsiți marcajele în meniul Chromium sau în bara de marcaje.</translation>
 <translation id="6676384891291319759">Accesează internetul</translation>
@@ -230,7 +230,6 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8985587603644336029">Un alt utilizator s-a conectat anterior la Chromium de pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Dacă acesta nu este contul dvs., creați un nou utilizator Chromium, pentru a vă păstra separat datele.
 
 Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istoricul și alte setări vor fi îmbinate cu <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Browser web</translation>
 <translation id="9013087743919948559">Adăugați la Chromium</translation>
 <translation id="9013262824292842194">Chromium necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
 <translation id="9019929317751753759">Pentru mai multă siguranță în Chromium, am dezactivat următoarea extensie care nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugată fără știrea ta.</translation>
@@ -240,7 +239,6 @@ Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istori
 <translation id="911206726377975832">Ștergi și datele de navigare?</translation>
 <translation id="918373042641772655">Dacă deconectați utilizatorul <ph name="USERNAME" />, vor fi șterse istoricul, marcajele, setările și alte date Chromium salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK" />Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Un administrator a instalat Chromium pe acest sistem, iar acesta este disponibil pentru toți utilizatorii. Chromium instalat la nivel de sistem va înlocui acum instalarea la nivel de utilizator.</translation>
 <translation id="9197815481970649201">Acum te-ai conectat la Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> necesită să citiți și să acceptați Termenii și condițiile următoare înainte de a utiliza acest dispozitiv. Acești termeni nu extind, nu modifică și nu limitează Termenii pentru sistemul de operare Chromium.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

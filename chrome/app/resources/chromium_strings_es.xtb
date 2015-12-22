@@ -62,8 +62,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2886012850691518054">Opcional: ayudar a mejorar Chromium enviando automáticamente a Google estadísticas de uso e informes de errores</translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para gestionar enlaces <ph name="SCHEME" />. El enlace solicitado es <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales
-e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Chromium detuvo la conexión antes de que se intercambiaran datos.</translation>
 <translation id="3032787606318309379">Añadiendo a Chromium...</translation>
 <translation id="3046695367536568084">Para usar las aplicaciones, debes iniciar sesión en Chromium. De ese modo, Chromium podrá sincronizar tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones en distintos dispositivos.</translation>
 <translation id="3068515742935458733">Ayudar a mejorar Chromium enviando informes sobre fallos y <ph name="UMA_LINK" /> a Google</translation>
@@ -89,7 +87,6 @@ e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad 
 <translation id="358997566136285270">Logotipo de Chromium</translation>
 <translation id="3595526210123705352">Si vuelves a iniciar el navegador en el modo de Windows 8, todas tus aplicaciones de Chromium se cerrarán y volverán a iniciarse.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
-<translation id="3744899669254331632">No puedes acceder a <ph name="SITE" /> en este momento porque el sitio web ha enviado credenciales codificadas que Chromium no puede procesar. Los ataques y los errores de red suelen ser temporales, por lo que es probable que esta página funcione más tarde.</translation>
 <translation id="3748537968684000502">Estás viendo una página de Chromium segura.</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -134,6 +131,7 @@ e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad 
 <translation id="5796460469508169315">Chromium está casi listo.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium no ha podido actualizarse automáticamente a la última versión, por lo que te estás perdiendo algunos magníficos parches de seguridad y fantásticas funciones nuevas. Tendrás que actualizar Chromium.</translation>
+<translation id="5859963531214966875">Las próximas versiones de Chromium dejarán de ser compatibles con este sistema Linux.</translation>
 <translation id="5862307444128926510">Te damos la bienvenida a Chromium</translation>
 <translation id="5877064549588274448">Se ha cambiado el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5909170354645388250">No se utiliza en Chromium. Marcador de posición para mantener sincronizados los mapas de recursos. Se espera un único argumento: $1.</translation>
@@ -153,6 +151,7 @@ e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad 
 <translation id="6485906693002546646">Estás utilizando <ph name="PROFILE_EMAIL" /> para sincronizar tu contenido de Chromium. Para actualizar tus preferencias de sincronización o utilizar Chromium sin una cuenta de Google, accede a <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="6526111688217511984">Chromium necesita acceso de almacenamiento para descargar archivos.</translation>
+<translation id="6593914713218535185">Es posible que Chromium no funcione correctamente porque ya no es compatible con este sistema Linux.</translation>
 <translation id="6637001341228460105">Chromium necesita acceder al micrófono para compartirlo con este sitio web.</translation>
 <translation id="6638567566961868659">Busca tus marcadores en el menú de Chromium o en la barra de marcadores.</translation>
 <translation id="6676384891291319759">Accede a Internet.</translation>
@@ -234,7 +233,6 @@ Chromium no puede recuperar tu configuración.</translation>
 <translation id="8985587603644336029">Anteriormente, alguien inició sesión como <ph name="ACCOUNT_EMAIL_LAST" /> en Chromium en este ordenador. Si esta no es tu cuenta, crea un nuevo usuario de Chromium para mantener tu información por separado.
 
 Si decides iniciar sesión de todas formas, se fusionará la información de Chromium, como marcadores, historial y otras opciones con la de <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Navegador web</translation>
 <translation id="9013087743919948559">Añadir a Chromium</translation>
 <translation id="9013262824292842194">Chromium está disponible para Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="9019929317751753759">Para aumentar la seguridad de Chromium, hemos inhabilitado la siguiente extensión que no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que puede haberse añadido sin tu conocimiento.</translation>
@@ -244,7 +242,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
 <translation id="918373042641772655">Si desvinculas a <ph name="USERNAME" />, se borrarán tu historial, tus marcadores, tu configuración y otros datos de Chromium almacenados en este dispositivo. No obstante, no se borrarán los datos almacenados en tu cuenta de Google y se podrán administrar en el <ph name="GOOGLE_DASHBOARD_LINK" />Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (tráfico mDNS entrante)</translation>
-<translation id="9191268552238695869">Un administrador ha instalado Chromium en este sistema y está disponible para todos los usuarios. La versión de Chromium a nivel de usuario se sustituirá por la versión a nivel de sistema.</translation>
 <translation id="9197815481970649201">Has iniciado sesión en Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> requiere que leas y aceptes las siguientes Condiciones de servicio para poder utilizar este dispositivo. Estas condiciones no amplían, modifican ni limitan los términos de Chromium OS.</translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>

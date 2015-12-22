@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Notiek savienojuma izveide ar <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="40400351611212369">Tīkla aktivizācijas kļūda</translation>
+<translation id="4118990158415604803">Jūsu administrators atspējoja savienojuma izveidi ar citiem tīkliem.</translation>
 <translation id="4237016987259239829">Tīkla savienojuma kļūda</translation>
 <translation id="4274292172790327596">Neatpazīta kļūda</translation>
 <translation id="4326192123064055915">Kafija</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Aktivizēt <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Otrādi</translation>
 <translation id="6943836128787782965">Neizdevās iegūt HTTP</translation>
+<translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7165320105431587207">Neizdevās konfigurēt tīklu</translation>
 <translation id="7170041865419449892">Ārpus diapazona</translation>
 <translation id="7229570126336867161">Nepieciešams EVDO</translation>

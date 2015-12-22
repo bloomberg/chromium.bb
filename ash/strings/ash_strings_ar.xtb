@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1012876632442809908">‏جهاز USB-C (المنفذ الأمامي)</translation>
 <translation id="1013923882670373915">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. الرجاء إدخال رقم التعريف الشخصي هذا في هذا الجهاز: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">لقد تغيّر اختصار التبديل إلى أسلوب الإدخال التالي. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">الإخفاء التلقائي للرف</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">تم تعطيل لوحة المفاتيح على الشاشة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">‏جهاز USB-C (المنفذ الأيسر)</translation>
 <translation id="1330145147221172764">تمكين لوحة المفاتيح على الشاشة</translation>
 <translation id="1343000272198685031">مقبس الميكرفون</translation>
 <translation id="1346748346194534595">يمين</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">تم تمكين لوحة المفاتيح على الشاشة</translation>
 <translation id="1812696562331527143">‏تم تغيير أسلوب الإدخال إلى <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />جهة خارجية<ph name="END_LINK" />).
 اضغط على Shift + Alt للتبديل.</translation>
+<translation id="1864454756846565995">‏جهاز USB-C (المنفذ الخلفي)</translation>
 <translation id="1882897271359938046">نسخ إلى <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">لقد تغيّر اختصار فتح إدارة المهام. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">النقرات التلقائية</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">تطبيقات</translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
 <translation id="2825619548187458965">الرف</translation>
+<translation id="2844169650293029770">‏جهاز USB-C (المنفذ الأمامي الأيسر)</translation>
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
 <translation id="2942516765047364088">وضع الرف</translation>
 <translation id="2946640296642327832">تمكين البلوتوث</translation>
@@ -73,6 +77,7 @@
 <translation id="3147142846278915599">‏Launcher (مزامنة التطبيقات...)</translation>
 <translation id="3157169093162779309">تمكين قفل التدوير</translation>
 <translation id="3294437725009624529">ضيف</translation>
+<translation id="3445925074670675829">‏جهاز USB-C</translation>
 <translation id="3473479545200714844">مكبّر الشاشة</translation>
 <translation id="3573179567135747900">التغيير مرة أخرى إلى "<ph name="FROM_LOCALE" />" (يتطلب إعادة التشغيل)</translation>
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
@@ -124,6 +129,7 @@
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="5238774010593222950">تعذر تسجيل الدخول لحساب آخر.</translation>
 <translation id="532063867737390965">تم تعطيل إعداد هذه الشبكة هذا من قِبل المشرف.</translation>
+<translation id="5331975486040154427">‏جهاز USB-C (المنفذ الخلفي الأيسر)</translation>
 <translation id="544691375626129091">تمت إضافة كل المستخدمين المتوفرين لهذه الجلسة.</translation>
 <translation id="5507786745520522457">تثبيت بيانات الجوّال</translation>
 <translation id="5543001071567407895">‏الرسائل القصيرة SMS</translation>
@@ -161,6 +167,7 @@
 <translation id="6426039856985689743">تعطيل بيانات الجوال</translation>
 <translation id="6452181791372256707">رفض</translation>
 <translation id="6459472438155181876">تمديد الشاشة إلى <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">‏جهاز USB-C (المنفذ الأيمن)</translation>
 <translation id="6501401484702599040">إرسال الشاشة إلى <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">خيارات</translation>
 <translation id="6585808820553845416">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -180,6 +187,7 @@
 <translation id="7034339000180558234">إرسال <ph name="TAB_NAME" /> إلى <ph name="RECEIVER_NAME" />.</translation>
 <translation id="7052914147756339792">تعيين خلفية...</translation>
 <translation id="7097613348211027502">‏تم تمكين ChromeVox (التعليقات المنطوقة). يمكنك الضغط على Ctrl+Alt+Z لتعطيلها.</translation>
+<translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">‏المفتاح CAPS LOCK في وضع التشغيل. اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift لإلغاء التشغيل.</translation>
@@ -217,6 +225,7 @@
 <translation id="8828714802988429505">90 درجة</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">توسيع الشاشة</translation>
+<translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
 <translation id="8940956008527784070">طاقة البطارية منخفضة (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9080206825613744995">الميكروفون قيد الاستخدام</translation>

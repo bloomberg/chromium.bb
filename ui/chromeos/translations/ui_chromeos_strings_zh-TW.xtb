@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">正在連線至：<ph name="NAME" /></translation>
 <translation id="3958548648197196644">奇異果</translation>
 <translation id="40400351611212369">網路啟用錯誤</translation>
+<translation id="4118990158415604803">您的管理員已停用與其他網路的連線。</translation>
 <translation id="4237016987259239829">網路連線錯誤</translation>
 <translation id="4274292172790327596">不明錯誤</translation>
 <translation id="4326192123064055915">咖啡</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">上下顛倒</translation>
 <translation id="6943836128787782965">HTTP 擷取失敗</translation>
+<translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7165320105431587207">無法設定網路</translation>
 <translation id="7170041865419449892">超出範圍</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>

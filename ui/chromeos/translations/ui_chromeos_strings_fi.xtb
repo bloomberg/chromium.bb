@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Yhdistetään verkkoon <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiivi</translation>
 <translation id="40400351611212369">Verkon aktivointivirhe</translation>
+<translation id="4118990158415604803">Järjestelmänvalvoja on estänyt yhteyden muodostamisen muihin verkkoihin.</translation>
 <translation id="4237016987259239829">Verkon yhteysvirhe</translation>
 <translation id="4274292172790327596">Tunnistamaton virhe</translation>
 <translation id="4326192123064055915">Kahvi</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Ylösalaisin</translation>
 <translation id="6943836128787782965">HTTP get -toiminto epäonnistui</translation>
+<translation id="7066646422045619941">Järjestelmänvalvoja on poistanut tämän verkon käytöstä.</translation>
 <translation id="7165320105431587207">Verkon asetuksien määrittäminen epäonnistui</translation>
 <translation id="7170041865419449892">Katvealueella</translation>
 <translation id="7229570126336867161">EVDO tarvitaan</translation>

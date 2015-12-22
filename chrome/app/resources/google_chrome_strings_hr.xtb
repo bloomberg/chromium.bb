@@ -53,6 +53,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="2576431527583832481">Chrome je postao još bolji! Dostupna je nova verzija.</translation>
 <translation id="2580411288591421699">Nije moguće instalirati istu verziju programa Google Chrome koja je trenutačno pokrenuta. Zatvorite Google Chrome i pokušajte ponovo.</translation>
+<translation id="2582790009689336987">Ovo će računalo uskoro prestati primati ažuriranja za Google Chrome jer taj sustav Linuxa više neće biti podržan.</translation>
 <translation id="2588322182880276190">Logotip Chrome</translation>
 <translation id="2664962310688259219">Licence otvorenog izvornog koda OS-a Chrome</translation>
 <translation id="2665296953892887393">Pomognite nam poboljšati Google Chrome šaljući izvješća o rušenju programa i <ph name="UMA_LINK" /> Googleu</translation>
@@ -98,6 +99,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="4251615635259297716">Želite li povezati svoje podatke sustava Chrome s tim računom?</translation>
 <translation id="4309555186815777032">(potrebno je <ph name="BEGIN_BUTTON" />ponovo pokrenuti<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Ovo računalo više neće primati ažuriranja Google Chromea jer taj sustav Linuxa više nije podržan.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="4480040274068703980">OS Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
@@ -136,8 +138,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="5563479599352954471">Pretraživanje jednim dodirom</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Ne morate napustiti stranicu da biste saznali koje su teme web-lokacija.</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> obično upotrebljava enkripciju radi zaštite vaših podataka. Prilikom ovog pokušaja povezivanja Chromea s web-lokacijom <ph name="SITE" /> ta je web-lokacija vratila neuobičajene
-i netočne vjerodajnice. To može značiti da se neki napadač pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Chrome zaustavio povezivanje prije razmjene podataka.</translation>
 <translation id="568643307450491754">Pronađite oznake u izborniku Chrome ili na traci oznaka.</translation>
 <translation id="573759479754913123">O OS-u Chrome</translation>
 <translation id="5749068826913805084">Chrome treba pristup pohrani radi preuzimanja datoteka.</translation>
@@ -150,7 +150,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="597770749449734237">Omogućuje dodatne tipkovne prečace korisne za otklanjanje pogrešaka u Google Chromeu.</translation>
 <translation id="6012342843556706400">Chrome treba imati pristup lokaciji da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="6014844626092547096">Sada ste prijavljeni na Chrome! Administrator je onemogućio sinkronizaciju.</translation>
-<translation id="6049075767726609708">Administrator je na ovaj sustav instalirao program Google Chrome koji je dostupan svim korisnicima. Google Chrome na razini sustava će sada zamijeniti Vašu instalaciju na razini korisnika.</translation>
 <translation id="6113794647360055231">Chrome je upravo postao bolji</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Ažuriraj OS &amp;Chrome</translation>
@@ -210,7 +209,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="781069973841903133">Ponovnim pokretanjem u interaktivnom načinu Chromea vaše će se Chromeove aplikacije zatvoriti i ponovo pokrenuti.</translation>
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene pogreške. Ponovo preuzmite Google Chrome.</translation>
 <translation id="7890208801193284374">Ako dijelite računalo, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chrome prema svojim željama.</translation>
-<translation id="7984945080620862648">Trenutačno ne možete posjetiti <ph name="SITE" /> jer je web-lokacija poslala kodirane vjerodajnice koje Chrome ne može obraditi. Mrežne pogreške i napadi uglavnom su privremeni, tako da će ta stranica vjerojatno kasnije funkcionirati.</translation>
 <translation id="8000275528373650868">Google Chrome zahtijeva sustav Windows Vista ili Windows XP sa SP2 ili novijim.</translation>
 <translation id="8005540215158006229">Chrome je skoro spreman.</translation>
 <translation id="8008534537613507642">Ponovo instaliraj Chrome</translation>
@@ -243,7 +241,6 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="8851136666856101339">glav</translation>
 <translation id="8862326446509486874">Nemate odgovarajuća prava za instaliranje na razini sustava. Pokušajte ponovno pokrenuti program za instalaciju kao administrator.</translation>
 <translation id="8889942196804715220">Ponovo pokreni u interaktivnom načinu Chromea</translation>
-<translation id="8987477933582888019">Web-preglednik</translation>
 <translation id="9026991721384951619">OS Chrome nije mogao sinkronizirati vaše podatke jer su vaši podaci za prijavu na račun zastarjeli.</translation>
 <translation id="9102715433345326100">Datoteka je zlonamjerna i Chrome ju je blokirao.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Upozorenje:<ph name="END_BOLD" /> Google Chrome ne može spriječiti proširenja da evidentiraju vašu povijest pregledavanja. Da biste onemogućili proširenje u anonimnom načinu, isključite tu opciju.</translation>

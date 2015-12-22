@@ -53,6 +53,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2576431527583832481">O Google Chrome ficou ainda melhor! Uma nova versão está disponível.</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome que está em execução. Feche o Google Chrome e tente novamente.</translation>
+<translation id="2582790009689336987">Em breve, este computador parará de receber atualizações do Google Chrome, porque este sistema Linux não será mais compatível.</translation>
 <translation id="2588322182880276190">Logotipo do Google Chrome</translation>
 <translation id="2664962310688259219">Licenças de código aberto do Chrome OS</translation>
 <translation id="2665296953892887393">Ajude a melhorar o Google Chrome. Envie relatórios de erros e  <ph name="UMA_LINK" /> para o Google</translation>
@@ -99,6 +100,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="4309555186815777032">(requer a <ph name="BEGIN_BUTTON" />reinicialização<ph name="END_BUTTON" /> do Google Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="437002079035561265">Este computador não receberá mais atualizações do Google Chrome, porque este sistema Linux não é mais compatível.</translation>
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="4480040274068703980">O Chrome OS não pôde sincronizar seus dados devido a um erro durante o login.</translation>
@@ -137,8 +139,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Saiba mais sobre tópicos em websites sem sair da página.</translation>
-<translation id="5626352146162055517">O site <ph name="SITE" /> geralmente usa criptografia para proteger suas informações. Quando o Google Chrome tentou se conectar a <ph name="SITE" /> desta vez, o website retornou credenciais
-incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser <ph name="SITE" /> ou quando uma tela de login por Wi-Fi interrompeu a conexão. Suas informações ainda estão protegidas, porque o Chrome interrompeu a conexão antes que os dados fossem trocados.</translation>
 <translation id="568643307450491754">Encontre seus favoritos no menu do Google Chrome ou na barra de favoritos.</translation>
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
@@ -151,7 +151,6 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="597770749449734237">Permite atalhos adicionais do teclado que são úteis para a depuração do Google Chrome.</translation>
 <translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
 <translation id="6014844626092547096">Agora, você está conectado ao Google Chrome. A sincronização está desativada por seu administrador.</translation>
-<translation id="6049075767726609708">Um administrador instalou o Google Chrome no sistema e ele está disponível para todos os usuários. O Google Chrome no nível do sistema substituirá sua instalação no nível do usuário agora.</translation>
 <translation id="6113794647360055231">O Chrome ficou ainda melhor</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Atualizar o Chrome OS</translation>
@@ -211,7 +210,6 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="781069973841903133">A reinicialização no modo imersivo do Google Chrome fecha e reinicia seus aplicativos do Google Chrome.</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="7890208801193284374">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Google Chrome da maneira que desejarem.</translation>
-<translation id="7984945080620862648">Não é possível acessar <ph name="SITE" /> no momento, porque o website enviou credenciais codificadas que o Google Chrome não pode processar. Ataques e erros de rede geralmente são temporários. Portanto, essa página provavelmente funcionará mais tarde.</translation>
 <translation id="8000275528373650868">O Google Chrome requer o Windows Vista ou o Windows XP com SP2 ou superior.</translation>
 <translation id="8005540215158006229">O Google Chrome está quase pronto.</translation>
 <translation id="8008534537613507642">Reinstalar o Google Chrome</translation>
@@ -244,7 +242,6 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>
 <translation id="8889942196804715220">Reiniciar no modo imersivo do Google Chrome</translation>
-<translation id="8987477933582888019">Navegador da Web</translation>
 <translation id="9026991721384951619">O Chrome OS não pôde sincronizar seus dados porque os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="9102715433345326100">Este arquivo é malicioso e foi bloqueado pelo Google Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Aviso:<ph name="END_BOLD" /> O Google Chrome não impede que as extensões gravem seu histórico de navegação. Para desativar esta extensão no modo anônimo, desmarque esta opção.</translation>

@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av tjenerproblemer.</translation>
 <translation id="1506061864768559482">Søkemotor</translation>
 <translation id="1513352483775369820">Bokmerker og nettlogg</translation>
+<translation id="1553358976309200471">Oppdater Chrome</translation>
 <translation id="1557201757634521564">Gjenkjenn omgjøring til kode automatisk</translation>
 <translation id="1568822834048182062">Bokmerkene, loggen, passordene og de andre innstillingene dine blir synkronisert til Google-kontoen din.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Avslutt inkognitomodus</translation>
 <translation id="3190152372525844641">Slå på tillatelsene for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> lagrede data</translation>
-<translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Nettprogram</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4543087392704641517">Bokmerketittel</translation>
 <translation id="4543661749405994812">Kopiér e-postadressen</translation>
 <translation id="4581964774250883625">Du er nå i inkognitomodus.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 link til det fysiske nettet i nærheten}other{# linker til det fysiske nettet i nærheten}}</translation>
 <translation id="4645575059429386691">Administreres av foreldrene dine</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmerker ble slettet</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ble lagt til på startskjermen</translation>
@@ -248,7 +247,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4885273946141277891">For mange Chrome-forekomster.</translation>
 <translation id="4927198283430892231">Lagrede sider tar for tiden opp <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="494334276486034338">Sist synkronisert: for <ph name="HOURS" /> timer siden</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="4970484396410298643">Du kan bruke fanene du har åpne på datamaskinen, direkte herfra.
 
@@ -258,14 +256,9 @@ Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».
 <translation id="5000922062037820727">Blokkert (anbefales)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Er du ikke <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">Det ble ikke funnet noen nettsider i nærheten</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
-<translation id="5049968687459146030">Hvis du slår på «Deaktivering av sporing», blir en forespørsel sendt sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
-
-Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg annonser som ikke er basert på andre nettsteder du har besøkt. Mange nettsteder samler likevel inn og bruker nettlesingsdataene dine – for eksempel for å forbedre sikkerheten, for å levere innhold, annonser og anbefalinger på nettstedene sine og for å generere rapporteringsstatistikk.</translation>
 <translation id="5063480226653192405">Bruk</translation>
-<translation id="5074309530946372881">Leter etter nettsider i nærheten</translation>
 <translation id="509605886816275399">Vil du lagre denne siden utenfor nettet?</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
@@ -286,7 +279,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="5275558766013849309">Nylig brukte faner og apper vises sammen.</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5304593522240415983">Dette feltet må fylles ut</translation>
-<translation id="5305985456140490686">Sist synkronisert: for <ph name="MINUTES" /> minutter siden</translation>
 <translation id="5308933389783727448">Søk i de lagrede sidene</translation>
 <translation id="5313967007315987356">Legg til et nettsted</translation>
 <translation id="5317780077021120954">Lagre</translation>
@@ -301,7 +293,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="5414836363063783498">Bekrefter …</translation>
 <translation id="5423934151118863508">Sidene du besøker mest, vises her</translation>
 <translation id="5424715742813396254">Rediger lagret navn/passord eller unntak</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Endre den lagrede siden</translation>
 <translation id="544291274896356069">Inkognitomodus forlates hvis denne linken åpnes i et eksternt program. Vil du fortsette?</translation>
 <translation id="5487729733663684359">Denne Android-versjonen har ikke lenger støtte for Chrome-oppdateringer.</translation>
@@ -467,6 +458,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Alltid</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
+<translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7599840151813361502">Du logges ikke av <ph name="BEGIN_LINK" />Google-kontoene<ph name="END_LINK" /> dine</translation>
 <translation id="7603403729818446828">Se fanene dine sammen med andre nylig brukte apper på oversiktsskjermen på telefonen. Du kan kontrollere dette i <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" />.</translation>
@@ -501,7 +493,6 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="7947953824732555851">Godta og logg på</translation>
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
-<translation id="7977858705483383621">Sikkert Søk</translation>
 <translation id="7987073022710626672">Vilkår for bruk av Chrome</translation>
 <translation id="7989222512959629388">Lagrer …</translation>
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
@@ -527,7 +518,6 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8275818695183729150">Tillat (for søk fra adressefeltet)</translation>
 <translation id="8310344678080805313">Standardfaner</translation>
-<translation id="8374420395168535396">Sist synkronisert: for <ph name="DAYS" /> dager siden</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
 <translation id="8396312449826231789">Bare godkjente nettsteder</translation>
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
@@ -595,7 +585,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="938850635132480979">Feil: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Ny mappe</translation>
 <translation id="945632385593298557">Tilgang til mikrofonen din</translation>
-<translation id="963967414714199900">Sist synkronisert: akkurat nå</translation>
 <translation id="969096075394517431">Endre språk</translation>
 <translation id="971774202801778802">Bokmerkenettadresse</translation>
 <translation id="983192555821071799">Lukk alle faner</translation>

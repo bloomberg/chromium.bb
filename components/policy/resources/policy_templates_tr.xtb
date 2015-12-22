@@ -104,7 +104,6 @@
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1427655258943162134">Proxy sunucunun adresi veya URL'si</translation>
 <translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
-<translation id="1445397020763995734">HTTP Pazarlık kimlik doğrulaması için hesap türü</translation>
 <translation id="1454846751303307294">JavaScript'i çalıştırmasına izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultJavaScriptSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -291,20 +290,6 @@
       HardwareAccelerationModeEnabled yanlış seçeneğine ayarlanırsa Disable3DAPI'lar yoksayılır, bu da Disable3DAPI öğelerinin doğru seçeneğine ayarlanmasıyla eşdeğerdir.</translation>
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
-<translation id="2175836933294053665">Yönetilen yer işaretlerinin bir listesini yapılandırır.
-
-      Bu politika, yer işaretlerinin listesini içerir ve her bir yer işareti, kendi
-      adını ve hedefini belirten "ad" ve "URL" anahtarlarını içeren bir sözlüktür.
-      Bir yer işaretini, "URL" anahtarı olmadan ancak yukarıda tanımlandığı gibi
-      yer işaretlerinin listesini içeren ek bir "alt öğe" anahtarı ile tanımlayarak
-      bir alt klasör yapılandırılabilir (bunlardan bazıları yine klasör olabilir). <ph name="PRODUCT_NAME" />,
-      eksik URL'leri Çok Amaçlı Adres Çubuğu'ndan gönderilmiş gibi düzeltir;
-      örneğin, "google.com" ifadesi "https://google.com/" haline gelir.
-
-      Bu yer işaretleri kullanıcı tarafından değiştirilemeyen, Yönetilen bir yer
-      işaretleri klasörüne yerleştirilir, ancak kullanıcı bunu yer işaretleri
-      çubuğunda gizlemeyi seçebilir. Yönetilen yer işaretleri kullanıcı hesabıyla
-      senkronize edilmez ve uzantılar tarafından değiştirilemez.</translation>
 <translation id="2188979373208322108"><ph name="PRODUCT_NAME" /> ürünündeki yer işareti çubuğunu etkinleştirir.
 
       Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> ürününde bir yer işareti çubuğu gösterilir.
@@ -603,38 +588,6 @@
       Bu ayarı etkinleştirirseniz, geçerli kullanıcıya yönelik tüm politika ayarları ve kısıtlamalar yoksayılarak, giriş portalı kimlik doğrulama sayfaları (yani giriş portalı oturum açma sayfasından itibaren <ph name="PRODUCT_NAME" /> başarılı bir İnternet bağlantısı algılayana kadar tüm web sayfaları) ayrı bir pencerede görüntülenir.
 
       Bu ayarı devre dışı bırakırsanız veya hiç ayarlamazsanız, giriş portalı kimlik doğrulama sayfaları, geçerli kullanıcının proxy ayarları kullanılarak yeni bir (normal) tarayıcı sekmesinde görüntülenir.</translation>
-<translation id="3001569025430882724"><ph name="PRODUCT_NAME" /> varsayılan yazıcı seçim kurallarını geçersiz kılar.
-
-      Bu politika, <ph name="PRODUCT_NAME" /> cihazında varsayılan yazıcıyı seçmeye ilişkin kuralları belirler. Bu seçim, yazdırma işlevi bir profilde ilk kez kullanıldığında yapılır.
-
-      Bu politika ayarlandığında, <ph name="PRODUCT_NAME" /> belirtilen tüm özelliklerle eşleşen bir yazıcı bulmaya ve onu varsayılan yazıcı olarak seçmeye çalışır. Politikayla eşleştiği belirlenen ilk yazıcı seçilir; benzersiz olmayan eşleme olması durumunda, yazıcıların bulunma sırasına göre eşleşen herhangi bir yazıcı seçilebilir.
-
-      Bu politika ayarlanmazsa veya zaman aşımı süresi içinde eşleşen bir yazıcı bulunamazsa, yazıcı varsayılan olarak dahili PDF yazıcısını kullanır veya PDF yazıcısı yoksa hiçbir yazıcı seçilmez.
-
-      Değer, aşağıdaki düzene uygun şekilde JSON nesnesi olarak ayrıştırılır:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Eşleşen yazıcı arama işleminin belirli bir yazıcı grubuyla sınırlı olup olmayacağını belirler.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Yazıcı kimliğiyle eşleşecek normal ifade.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Yazıcı görünen adıyla eşleşecek normal ifade.",
-            "type": "string"
-          }
-        }
-      }
-
-      Google Cloud Print'e bağlı yazıcılar "bulut" yazıcı sayılır, geri kalan yazıcılar "yerel" olarak sınıflandırılır.
-      Bir alanın atlanması, tüm değerlerin eşleneceği anlamına gelir. Örneğin, bağlantı belirtilmezse Baskı Önizleme'nin yerel veya buluttaki her tür yazıcının bulunması işlemini başlatmasına neden olur.
-      Normal ifade kalıpları JavaScript RegExp söz dizimine uygun olmalıdır. Eşleşmeler büyük/küçük harfe duyarlıdır.</translation>
 <translation id="3021409116652377124">Eklenti bulucuyu devre dışı bırak</translation>
 <translation id="3030000825273123558">Ölçüm raporlamayı etkinleştir</translation>
 <translation id="3034580675120919256">Web sitelerinin JavaScript çalıştırmalarına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Tüm sitelerin JavaScript çalıştırmasına izin verilebilir veya tüm siteler için bu reddedilebilir.
@@ -730,27 +683,6 @@
       Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar kendi Google hesaplarından kimlik doğrulama ile bulut (cloud) yazdırma proxy'sini etkinleştirebilirler.
 
       Bu ayar devre dışı bırakılırsa, kullanıcılar proxy'yi etkinleştiremezler ve makinenin, yazıcılarını <ph name="CLOUD_PRINT_NAME" /> ile paylaşmasına izin verilmez.</translation>
-<translation id="3357181471604560535">Hem Chromium hem de Google Chrome aynı politika grubunu
-      destekler. Bu dokümanın, piyasaya çıkmamış yazılım sürümleri
-      için hedeflenmiş (yani "desteklenen" girişleri piyasaya çıkmamış
-      bir sürüme işaret eden) politikalar içerebileceğini ve bu tür
-      politikaların önceden bildirilmeksizin değiştirilebileceğini veya
-      kaldırılabileceğini lütfen unutmayın.
-
-      Bu politikalar sadece kuruluşunuz dahilindeki <ph name="PRODUCT_NAME" />
-      örneklerini yapılandırmak için kullanılabilir. Bu politikaların
-      kuruluşunuzun dışında (örneğin, genel olarak dağıtılan bir programda)
-      kullanılması kötü amaçlı yazılım olarak kabul edilmesine yol açar ve 
-      muhtemelen Google ile virüsten korunma yazılımı tedarikçileri
-      tarafından da kötü amaçlı yazılım olarak sınıflandırılır.
-
-      Bu ayarların manuel olarak yapılandırılması gerekmez!
-      Windows, Mac ve Linux için kullanımı kolay şablonlar
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> adresinden indirilebilir.
-
-      Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır,
-      ancak bir Active Directory alan adına katılmış Windows örnekleri için
-      kayıt defteri yoluyla politikanın hazırlanması da desteklenir.</translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
 <translation id="3417418267404583991">Bu politika true olarak ayarlanırsa veya hiçbir şekilde ayarlanmazsa, <ph name="PRODUCT_OS_NAME" /> misafir modunda giriş yapılmasına izin verir. misafir girişleri adsız kullanıcı oturumlarıdır ve şifre gerektirmez.
 
@@ -1335,9 +1267,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmazsa veya yanlış değerine ayarlanırsa <ph name="PRODUCT_NAME" />, varolan çevrimiçi iptal kontrolü ayarlarını kullanır.</translation>
 <translation id="5732972008943405952">İlk çalıştırmada, otomatik doldurma formu verilerini varsayılan tarayıcıdan içe aktar</translation>
-<translation id="5751004203256768694">HTTP Pazarlık kimlik doğrulamasını (örneğin, Kerberos kimlik doğrulaması) destekleyen Android kimlik doğrulama uygulaması tarafından sağlanan hesapların hesap türünü belirtir. Bu bilgiler Kimlik Doğrulama uygulamasının tedarikçisinden edinilebilir. Daha fazla bilgi için https://goo.gl/hajyfN adresine bakın.
-
-          Hiçbir ayar sağlanmamışsa HTTP Pazarlık kimlik doğrulaması Android'de devre dışı bırakılır.</translation>
 <translation id="5761030451068906335"><ph name="PRODUCT_NAME" /> için proxy ayarlarını yapılandırır. Bu politika henüz kullanıma hazır değildir, lütfen kullanmayın.</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
@@ -2170,12 +2099,26 @@ politikayı geçersiz kılamaz.
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> için varsayılan HTML oluşturucusu</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>
-<translation id="857925079934558818">TLS Yanlış Başlatma optimizasyonunun devre dışı bırakılıp bırakılmayacağını belirtir. Geçmişteki sebeplerden dolayı, bu politikaya DisableSSLRecordSplitting adı verilmiştir.
-
-      Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa TLS Yanlış Başlatma özeliği etkinleştirilir. Doğru seçeneğine ayarlanırsa TLS Yanlış Başlatma özelliği devre dışı olur.</translation>
 <translation id="8587229956764455752">Yeni kullanıcı hesapları oluşturulmasına izin ver</translation>
 <translation id="8614804915612153606">Otomatik Güncellemeyi devre dışı bırakır</translation>
 <translation id="8631434304112909927"><ph name="UNTIL_VERSION" /> sürümüne kadar</translation>
+<translation id="863712305404093038">Listelenen URL'lere erişimi engeller.
+
+      Bu politika, kullanıcının kara listeye alınmış URL'lere ait web sayfalarını yüklemesini engeller. Kara liste, hangi URL'lerin kara listeye alınacağını belirten URL kalıplarının listesini sağlar.
+
+      Her bir URL kalıbı, yerel dosyalar için bir kalıp veya genel bir URL kalıbı olabilir. Yerel dosya kalıpları "file://path" biçimindedir; burada yol (path) engellenecek mutlak bir yol olmalıdır. Önek olarak o yolu taşıyan tüm dosya sistemi konumları engellenir.
+
+      Genel URL kalıbı "scheme://host:port/path" biçimindedir.
+      Varsa, sadece belirtilen şema engellenir. scheme:// öneki belirtilmezse, tüm şemalar engellenir.
+      Ana makine (host) gereklidir ve bir ana makine adı veya IP adresi olabilir. Bir ana makinenin alt alan adları da engellenir. Alt alanların engellenmesini önlemek için ana makine adından önce bir "." ekleyin. Özel ana makine adı "*" tüm alan adlarını engeller.
+      İsteğe bağlı bağlantı noktası 1 ile 65535 arasında geçerli bir bağlantı noktasıdır. Hiçbir değer belirtilmezse, tüm bağlantı noktaları engellenir.
+      İsteğe bağlı yol belirtilirse, sadece o öneke sahip yollar engellenir.
+
+      İstisnalar URL beyaz liste politikasında tanımlanabilir. Bu politikalar 1000 girişle sınırlıdır; ondan sonra yapılan girişler yoksayılır.
+
+      Dahili "chrome://*" URL'lerinin engellenmesinin, beklenmeyen hatalara yol açabileceği için önerilmediğini unutmayın.
+
+      Bu politika ayarlanmazsa, tarayıcıda hiçbir URL kara listeye alınmaz.</translation>
 <translation id="8649763579836720255">Chrome OS cihazları, cihazın korumalı içerikleri oynatabileceğini onaylayan Chrome OS CA'sı (sertifika yetkilisi) tarafından yayınlanan bir sertifika almak için uzaktan onay (Doğrulanmış Erişim) işlevini kullanabilir. Bu işlem Chrome OS CA'ya, cihazı benzersiz şekilde tanımlayan donanım onay bilgilerinin gönderilmesini içerir.
 
           Bu ayar yanlış seçeneğine ayarlanırsa cihaz, içerik koruma için uzaktan onay işlevini kullanmaz ve korumalı içeriği oynatamaz.

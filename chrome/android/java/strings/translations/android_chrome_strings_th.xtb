@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเซิร์ฟเวอร์มีปัญหา</translation>
 <translation id="1506061864768559482">เครื่องมือค้นหา</translation>
 <translation id="1513352483775369820">บุ๊กมาร์กและประวัติเว็บ</translation>
+<translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1557201757634521564">ตรวจหาการเข้ารหัสโดยอัตโนมัติ</translation>
 <translation id="1568822834048182062">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ของคุณจะได้รับการซิงค์กับบัญชี Google ของคุณ</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
 <translation id="3190152372525844641">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905">ข้อมูลที่จัดเก็บมี <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
 <translation id="3232754137068452469">เว็บแอป</translation>
 <translation id="3244271242291266297">ดด</translation>
@@ -224,7 +224,6 @@
 <translation id="4543087392704641517">ชื่อบุ๊กมาร์ก</translation>
 <translation id="4543661749405994812">คัดลอกที่อยู่อีเมล</translation>
 <translation id="4581964774250883625">คุณเข้าสู่โหมดไม่ระบุตัวตนแล้ว</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{มีลิงก์ Physical Web 1 ลิงก์อยู่ใกล้เคียง}other{มีลิงก์ Physical Web # ลิงก์อยู่ใกล้เคียง}}</translation>
 <translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
@@ -248,7 +247,6 @@
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
 <translation id="4927198283430892231">ตอนนี้หน้าที่บันทึกไว้ใช้พื้นที่เก็บข้อมูลถึง <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> แล้ว</translation>
-<translation id="494334276486034338">ซิงค์ครั้งล่าสุด: <ph name="HOURS" /> ชั่วโมงที่ผ่านมา</translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
 <translation id="4970484396410298643">เข้าถึงแท็บที่คุณได้เปิดไว้ในคอมพิวเตอร์ได้ที่นี่
 
@@ -258,14 +256,9 @@
 <translation id="5000922062037820727">ถูกบล็อก (แนะนำ)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">หากคุณไม่ใช่ <ph name="NOT_YOU_USER_NAME" /></translation>
-<translation id="5026147292873308216">ไม่พบหน้าเว็บอยู่ใกล้เคียง</translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
-<translation id="5049968687459146030">การเปิดใช้ "ไม่ติดตาม" หมายความว่าจะมีการรวมคำขอหนึ่งไว้กับการเข้าชมของคุณ ผลกระทบทั้งหมดขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอนั้นไหม และวิธีตีความคำขอ
-
-ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้โดยแสดงให้คุณเห็นโฆษณาที่ไม่ได้อิงอยู่กับเว็บไซต์อื่นๆ ที่คุณเข้าชม เว็บไซต์จำนวนมากจะยังคงรวบรวมและใช้ข้อมูลการท่องเว็บของคุณเพื่อปรับปรุงความปลอดภัย เพื่อแสดงเนื้อหา โฆษณา และคำแนะนำในเว็บไซต์นั้นๆ และเพื่อสร้างสถิติในการรายงาน เป็นต้น</translation>
 <translation id="5063480226653192405">การใช้</translation>
-<translation id="5074309530946372881">กำลังค้นหาหน้าเว็บที่อยู่ใกล้เคียง</translation>
 <translation id="509605886816275399">บันทึกหน้านี้เป็นแบบออฟไลน์ไหม</translation>
 <translation id="5100237604440890931">ยุบ - คลิกเพื่อขยาย</translation>
 <translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
@@ -286,7 +279,6 @@
 <translation id="5275558766013849309">แท็บจะแสดงร่วมกับแอปล่าสุด</translation>
 <translation id="5302048478445481009">ภาษา </translation>
 <translation id="5304593522240415983">ต้องกรอกข้อมูลในช่องนี้</translation>
-<translation id="5305985456140490686">ซิงค์ครั้งล่าสุด: <ph name="MINUTES" /> นาทีที่ผ่านมา</translation>
 <translation id="5308933389783727448">ค้นหาหน้าที่บันทึกไว้</translation>
 <translation id="5313967007315987356">เพิ่มเว็บไซต์</translation>
 <translation id="5317780077021120954">บันทึก</translation>
@@ -301,7 +293,6 @@
 <translation id="5414836363063783498">กำลังยืนยัน…</translation>
 <translation id="5423934151118863508">หน้าที่มีการเข้าชมมากที่สุดของคุณจะปรากฏที่นี่</translation>
 <translation id="5424715742813396254">แก้ไขชื่อ/รหัสผ่านหรือข้อยกเว้นที่บันทึกไว้</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">แก้ไขหน้าที่บันทึกไว้</translation>
 <translation id="544291274896356069">ออกจากโหมดไม่ระบุตัวตนถ้ามีการเปิดลิงก์นี้ในแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
 <translation id="5487729733663684359">ไม่มีการสนับสนุนการอัปเดต Chrome บน Android เวอร์ชันนี้อีกต่อไป</translation>
@@ -467,6 +458,7 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">ทุกครั้ง</translation>
 <translation id="7562080006725997899">กำลังล้างข้อมูลการท่องเว็บ</translation>
+<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7596558890252710462">ระบบปฏิบัติการ</translation>
 <translation id="7599840151813361502">คุณจะไม่ออกจากระบบ<ph name="BEGIN_LINK" />บัญชี Google<ph name="END_LINK" /> โดยอัตโนมัติ</translation>
 <translation id="7603403729818446828">ดูแท็บด้วยแอปล่าสุดอื่นๆ บนหน้าจอภาพรวมของโทรศัพท์ คุณสามารถควบคุมคุณลักษณะนี้ได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
@@ -501,7 +493,6 @@
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7961015016161918242">ไม่เคย</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>
-<translation id="7977858705483383621">ค้นหาปลอดภัย</translation>
 <translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
 <translation id="7989222512959629388">กำลังบันทึก…</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
@@ -527,7 +518,6 @@
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8275818695183729150">อนุญาต (สำหรับการค้นหาในแถบที่อยู่เว็บ)</translation>
 <translation id="8310344678080805313">แท็บมาตรฐาน</translation>
-<translation id="8374420395168535396">ซิงค์ครั้งล่าสุด: <ph name="DAYS" /> วันที่ผ่านมา</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
 <translation id="8396312449826231789">เฉพาะไซต์ที่อนุมัติ</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
@@ -595,7 +585,6 @@
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>
 <translation id="945632385593298557">เข้าถึงไมโครโฟน</translation>
-<translation id="963967414714199900">ซิงค์ครั้งล่าสุด: เมื่อสักครู่</translation>
 <translation id="969096075394517431">เปลี่ยนภาษา</translation>
 <translation id="971774202801778802">URL ของบุ๊กมาร์ก</translation>
 <translation id="983192555821071799">ปิดแท็บทั้งหมด</translation>

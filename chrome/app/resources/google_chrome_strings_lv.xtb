@@ -55,6 +55,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2485422356828889247">Atinstalēt</translation>
 <translation id="2576431527583832481">Pārlūkprogramma Chrome ir uzlabota! Ir pieejama jauna versija.</translation>
 <translation id="2580411288591421699">Nevar instalēt to pašu Google Chrome versiju, kas jau darbojas. Lūdzu, aizveriet Google Chrome un mēģiniet vēlreiz.</translation>
+<translation id="2582790009689336987">Šajā datorā drīzumā vairs netiks saņemti Google Chrome atjauninājumi, jo šī Linux sistēma vairs netiks atbalstīta.</translation>
 <translation id="2588322182880276190">Chrome logotips</translation>
 <translation id="2664962310688259219">Chrome OS atklātā pirmkoda licences</translation>
 <translation id="2665296953892887393">Palīdzēt uzlabot pārlūku Google Chrome, nosūtot Google serveriem avāriju pārskatus un <ph name="UMA_LINK" /></translation>
@@ -100,6 +101,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="4251615635259297716">Vai saistīt Chrome datus ar šo kontu?</translation>
 <translation id="4309555186815777032">(ir <ph name="BEGIN_BUTTON" />jārestartē<ph name="END_BUTTON" /> pārlūks Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Šajā datorā vairs netiks saņemti Google Chrome atjauninājumi, jo šī Linux sistēma vairs netiek atbalstīta.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4480040274068703980">Chrome OS nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
@@ -140,9 +142,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="5563479599352954471">Meklējiet ar vienu pieskārienu</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS ienākošā datplūsma)</translation>
 <translation id="5620765574781326016">Uzziniet vairāk par vietnēs aprakstītajām tēmām, neaizverot lapu.</translation>
-<translation id="5626352146162055517">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūkā Chrome tika mēģināts izveidot savienojumu ar vietni <ph name="SITE" />, šoreiz tā atgrieza
-neparastus
- un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģināja uzdoties par vietni <ph name="SITE" />, vai arī tika pārtraukts savienojums ar Wi-Fi pierakstīšanās ekrānu. Jūsu informācija joprojām ir drošībā, jo pārlūkā Chrome tika apturēts savienojums, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="568643307450491754">Skatiet savas grāmatzīmes Chrome izvēlnē vai grāmatzīmju joslā.</translation>
 <translation id="573759479754913123">Par &amp;Chrome OS</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
@@ -155,7 +154,6 @@ neparastus
 <translation id="597770749449734237">Iespējo papildu īsinājumtaustiņus, kas ir noderīgi pārlūka Chromium atkļūdošanā.</translation>
 <translation id="6012342843556706400">Pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietai, lai kopīgotu to ar šo vietni.</translation>
 <translation id="6014844626092547096">Jūs esat pierakstījies pārlūkā Chrome. Jūsu administrators ir atspējojis sinhronizēšanu.</translation>
-<translation id="6049075767726609708">Administrators šai sistēmai ir instalējis Google Chrome, un tas ir pieejams visiem lietotājiem. Google Chrome lietotāja līmeņa instalācija tagad aizvietota ar sistēmas līmeņa instalāciju.</translation>
 <translation id="6113794647360055231">Pārlūkā Chrome ir veikti uzlabojumi</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Atjaunināt &amp;Chrome OS</translation>
@@ -215,7 +213,6 @@ neparastus
 <translation id="781069973841903133">Atkārtoti palaižot pārlūku Chrome iekļaujošajā režīmā, Chrome lietotnes tiks aizvērtas un atkārtoti palaistas.</translation>
 <translation id="7825851276765848807">Instalēšana neizdevās nenoteiktas kļūdas dēļ. Lūdzu, lejupielādējiet pārlūkprogrammu Google Chrome vēlreiz.</translation>
 <translation id="7890208801193284374">Ja jūsu datoru izmanto arī jūsu draugi un ģimenes locekļi, viņi var iestatīt pārlūku Chrome atbilstoši savām vēlmēm un pārlūkot saturu atsevišķos kontos.</translation>
-<translation id="7984945080620862648">Pašlaik nevarat apmeklēt vietni <ph name="SITE" />, jo tā nosūtīja bojātus akreditācijas datus, ko nevar apstrādāt pārlūkā Chrome. Tīkla kļūdas un uzbrukumi parasti ir īslaicīgi, tāpēc šī lapa vēlāk, visticamāk, darbosies.</translation>
 <translation id="8000275528373650868">Pārlūkprogrammas Google Chrome izmantošanai nepieciešama operētājsistēma Windows Vista vai Windows XP ar SP2, vai jaunāka tās versija.</translation>
 <translation id="8005540215158006229">Chrome ir gandrīz gatavs.</translation>
 <translation id="8008534537613507642">Pārinstalēt Chrome</translation>
@@ -248,7 +245,6 @@ neparastus
 <translation id="8851136666856101339">galvenais</translation>
 <translation id="8862326446509486874">Jums nav vajadzīgo tiesību, lai instalētu sistēmas līmenī. Mēģiniet vēlreiz palaist instalēšanas programmu kā administrators.</translation>
 <translation id="8889942196804715220">Atkārtoti palaist Chrome iekļaujošajā režīmā</translation>
-<translation id="8987477933582888019">Tīmekļa pārlūks</translation>
 <translation id="9026991721384951619">Chrome OS nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="9102715433345326100">Šis fails ir ļaunprātīgs, un Chrome to bloķēja.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Brīdinājums!<ph name="END_BOLD" /> Google Chrome nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi šai opcijai.</translation>

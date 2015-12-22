@@ -23,6 +23,7 @@
 <translation id="3901991538546252627"><ph name="NAME" />-এ সংযোগ করা হচ্ছে</translation>
 <translation id="3958548648197196644">কিউই</translation>
 <translation id="40400351611212369">নেটওয়ার্ক সক্রিয়করণে ত্রুটি</translation>
+<translation id="4118990158415604803">অন্যান্য নেটওয়ার্কে সংযোগ স্থাপন আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে।</translation>
 <translation id="4237016987259239829">নেটওয়ার্ক  সংযোগ ত্রুটি</translation>
 <translation id="4274292172790327596">অস্বীকৃত ত্রুটি</translation>
 <translation id="4326192123064055915">কফি</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">সক্রিয় করুন <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">ওলট পালট</translation>
 <translation id="6943836128787782965">HTTP ব্যর্থ হয়েছে</translation>
+<translation id="7066646422045619941">এই নেটওয়ার্কটি আপনার প্রশাসকের দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="7165320105431587207">নেটওয়ার্ক কনফিগার করা যায়নি</translation>
 <translation id="7170041865419449892">সীমার বাইরে</translation>
 <translation id="7229570126336867161">EVDO এর প্রয়োজন</translation>

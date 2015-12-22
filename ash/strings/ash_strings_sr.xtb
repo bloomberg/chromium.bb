@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="1012876632442809908">Уређај са USB прикључком типа C (предњи порт)</translation>
 <translation id="1013923882670373915">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите овај PIN кôд на том уређају: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Пречица за прелазак на следећи метод уноса је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Аутоматски сакриј полицу</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Тастатура на екрану је онемогућена</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Уређај са USB прикључком типа C (леви порт)</translation>
 <translation id="1330145147221172764">Омогући тастатуру на екрану</translation>
 <translation id="1343000272198685031">Утикач за микрофон</translation>
 <translation id="1346748346194534595">Удесно</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
 <translation id="1812696562331527143">Метод уноса је промењен у <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />трећа страна<ph name="END_LINK" />).
 Притисните Shift + Alt да бисте пребацили.</translation>
+<translation id="1864454756846565995">Уређај са USB прикључком типа C (задњи порт)</translation>
 <translation id="1882897271359938046">Пресликавање у <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Пречица за отварање менаџера задатака је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Аутоматски кликови</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">Апликације</translation>
 <translation id="2819276065543622893">Бићете одмах одјављени.</translation>
 <translation id="2825619548187458965">Полица</translation>
+<translation id="2844169650293029770">Уређај са USB прикључком типа C (леви предњи порт)</translation>
 <translation id="2872961005593481000">Искључи</translation>
 <translation id="2942516765047364088">Положај полице</translation>
 <translation id="2946640296642327832">Омогући Bluetooth</translation>
@@ -74,6 +78,7 @@
 <translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="3157169093162779309">Омогући закључавање ротације</translation>
 <translation id="3294437725009624529">Гост</translation>
+<translation id="3445925074670675829">Уређај са USB прикључком типа C</translation>
 <translation id="3473479545200714844">Лупа екрана</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="5238774010593222950">Не можете да се пријавите на још један налог.</translation>
 <translation id="532063867737390965">Администратор је онемогућио ово подешавање мреже.</translation>
+<translation id="5331975486040154427">Уређај са USB прикључком типа C (леви задњи порт)</translation>
 <translation id="544691375626129091">Сви доступни корисници су већ додати у ову сесију.</translation>
 <translation id="5507786745520522457">Подешавање мобилне везе за пренос података</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@
 <translation id="6426039856985689743">Онемогући податке за мобилне уређаје</translation>
 <translation id="6452181791372256707">Одбиј</translation>
 <translation id="6459472438155181876">Проширивање екрана у <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Уређај са USB прикључком типа C (десни порт)</translation>
 <translation id="6501401484702599040">Екран се пребацује на <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="6585808820553845416">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -181,6 +188,7 @@
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> се пребацује на <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Подеси позадину...</translation>
 <translation id="7097613348211027502">ChromeVox (говорне повратне информације) је омогућен. Притисните Ctrl+Alt+Z да бисте га онемогућили.</translation>
+<translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK је укључен.
@@ -219,6 +227,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Проширени екран</translation>
+<translation id="8938800817013097409">Уређај са USB прикључком типа C (задњи десни порт)</translation>
 <translation id="8940956008527784070">Батерија је скоро празна (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Микрофон се користи.</translation>

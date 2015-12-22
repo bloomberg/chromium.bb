@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Киви</translation>
 <translation id="40400351611212369">Грешка при активацији мреже</translation>
+<translation id="4118990158415604803">Администратор је онемогућио повезивање са другим мрежама.</translation>
 <translation id="4237016987259239829">Грешка мрежне везе</translation>
 <translation id="4274292172790327596">Непозната грешка</translation>
 <translation id="4326192123064055915">Кафа</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Наопачке</translation>
 <translation id="6943836128787782965">HTTP get није успео</translation>
+<translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7165320105431587207">Конфигурација мреже није успела</translation>
 <translation id="7170041865419449892">Изван опсега</translation>
 <translation id="7229570126336867161">Потребан је EVDO</translation>

@@ -62,7 +62,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
 <translation id="2966088006374919794">Chromium mora zagnati zunanji program za obdelavo povezav <ph name="SCHEME" />. Zahtevana povezava je <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chromium tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to poslalo nazaj nenavadne in nepravilne poverilnice. Do tega lahko pride, ko se napadalec izdaja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, ker je Chromium povezavo ustavil, preden je prišlo do izmenjave podatkov.</translation>
 <translation id="3032787606318309379">Dodajanje v Chromium ...</translation>
 <translation id="3046695367536568084">Če želite uporabljati aplikacije, morate biti prijavljeni v Chromium. Ko se prijavite, lahko Chromium sinhronizira aplikacije, zaznamke, zgodovino in druge nastavitve v različnih napravah.</translation>
 <translation id="3068515742935458733">Pomagajte izboljšati Chromium – Googlu pošiljajte poročila o zrušitvah in ta dokument: <ph name="UMA_LINK" />.</translation>
@@ -88,7 +87,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="358997566136285270">Logotip Chromiuma</translation>
 <translation id="3595526210123705352">Če znova zaženete v načinu sistema Windows 8, se bodo aplikacije za Chromium zaprle in znova zagnale.</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
-<translation id="3744899669254331632">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, ker je poslalo šifrirane poverilnice, ki jih Chromium ne more obdelati. Napake v omrežju in napadi so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="3748537968684000502">Ogledujete si varno stran Chromiuma.</translation>
 <translation id="378917192836375108">Chromium omogoča, da v spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -133,6 +131,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5796460469508169315">Chromium je skoraj pripravljen.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chromium morate posodobiti.</translation>
+<translation id="5859963531214966875">Prihodnje različice Chromiuma ne bodo več podpirale tega sistema Linux.</translation>
 <translation id="5862307444128926510">Pozdravljeni v Chromiumu</translation>
 <translation id="5877064549588274448">Kanal spremenjen. Znova zaženite napravo, da uveljavite spremembe.</translation>
 <translation id="5909170354645388250">Ne uporablja se v Chromiumu. Ograda za usklajenost zemljevidov sredstev. Pričakovan je en argument: $1.</translation>
@@ -152,6 +151,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="6485906693002546646">Za sinhronizacijo stvari v Chromiumu uporabljate <ph name="PROFILE_EMAIL" />. Če želite posodobiti nastavitve sinhroniziranja ali uporabljati Chromium brez Google Računa, odprite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odstranitev Chromiuma</translation>
 <translation id="6526111688217511984">Chromium potrebuje za prenos datotek dostop do shrambe.</translation>
+<translation id="6593914713218535185">Chromium morda ne bo deloval pravilno, ker ni več podprt v tem sistemu Linux.</translation>
 <translation id="6637001341228460105">Chromium potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
 <translation id="6638567566961868659">Poiščite svoje zaznamke v meniju Chromiuma ali v vrstici z zaznamki.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>
@@ -232,7 +232,6 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="8985587603644336029">Nekdo se je prijavil v Chromium v tem računalniku kot <ph name="ACCOUNT_EMAIL_LAST" />. Če to ni vaš račun, ustvarite novega uporabnika za Chromium, da bodo vaši podatki ločeni.
 
 Če se boste kljub temu prijavili, se bodo podatki iz Chromiuma, na primer zaznamki, zgodovina in druge nastavitve, združili v računu <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Brskalnik</translation>
 <translation id="9013087743919948559">Dodaj v Chromium</translation>
 <translation id="9013262824292842194">Za Chromium potrebujete operacijski sistem Windows Vista ali Windows XP s servisnim paketom SP2 ali novejšim.</translation>
 <translation id="9019929317751753759">Zaradi večje varnosti smo v Chromiumu onemogočili to razširitev, ki ni navedena tukaj in je bila morda dodana brez vaše vednosti: <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />.</translation>
@@ -242,7 +241,6 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
 <translation id="918373042641772655">Če prekinete povezavo za <ph name="USERNAME" />, boste izbrisali zgodovino, zaznamke, nastavitve in druge Chromiumove podatke, ki so shranjeni v tej napravi. Podatki, shranjeni v Google Računu, se ne bodo izbrisali in jih je mogoče upravljati na <ph name="GOOGLE_DASHBOARD_LINK" />Google Nadzorni plošči<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Skrbnik je v tem sistemu namestil Chromium, ki je na voljo vsem uporabnikom. Chromium na ravni sistema bo nadomestil vašo različico na ravni uporabnika.</translation>
 <translation id="9197815481970649201">Prijavljeni ste v Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Chromium OS.</translation>
 <translation id="985602178874221306">Ustvarjalci Chromiuma</translation>

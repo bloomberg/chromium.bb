@@ -57,6 +57,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2576431527583832481">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
+<translation id="2582790009689336987">This computer will soon stop receiving Google Chrome updates because this Linux system will no longer be supported.</translation>
 <translation id="2588322182880276190">Logotypen för Chrome</translation>
 <translation id="2664962310688259219">Licenser för öppen källkod för Chrome OS</translation>
 <translation id="2665296953892887393">Hjälp oss att göra Google Chrome bättre genom att skicka felrapporter och <ph name="UMA_LINK" /> till Google.</translation>
@@ -102,6 +103,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="4251615635259297716">Koppla dina uppgifter i Chrome till det här kontot</translation>
 <translation id="4309555186815777032">(Chrome måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">This computer will no longer receive Google Chrome updates because this Linux system is no longer supported.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4480040274068703980">Det gick inte att synkronisera data med Chrome OS på grund av ett inloggningsfel.</translation>
@@ -144,8 +146,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Läs mer om vilka ämnen som webbplatser handlar om utan att lämna sidan.</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> använder normalt kryptering (SSL) för att skydda din information. När Chrome försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga
-  och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chrome avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="568643307450491754">Hitta dina bokmärken på Chrome-menyn eller i bokmärkesfältet.</translation>
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5749068826913805084">Chrome måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
@@ -158,7 +158,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="597770749449734237">Aktiverar fler kortkommandon som kan vara till hjälp när du felsöker Google Chrome.</translation>
 <translation id="6012342843556706400">Chrome behöver tillgång till platsinformation för att kunna dela den på den här webbplatsen.</translation>
 <translation id="6014844626092547096">Nu är du inloggad på Chrome. Synkronisering har inaktiverats av administratören.</translation>
-<translation id="6049075767726609708">En administratör har installerat Google Chrome på systemet så att det är tillgängligt för alla användare. Systemnivåversionen av Google Chrome ersätter nu installationen på användarnivå.</translation>
 <translation id="6113794647360055231">Vi har gjort Chrome ännu bättre</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Uppdatera &amp;Chrome OS</translation>
@@ -218,7 +217,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="781069973841903133">Om du startar om Chrome i integrerat läge stängs och startas appar i Chrome om.</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Ladda ned Google Chrome igen.</translation>
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
-<translation id="7984945080620862648">Det går inte att besöka <ph name="SITE" /> just nu på grund av att webbplatsen skickade röriga användaruppgifter som Chrome inte kan behandla. Nätverksfel och attacker är vanligtvis tillfälliga, så sidan fungerar troligen senare.</translation>
 <translation id="8000275528373650868">För Google Chrome krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
 <translation id="8005540215158006229">Chrome är nästan klar.</translation>
 <translation id="8008534537613507642">Installera om Chrome</translation>
@@ -251,7 +249,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8851136666856101339">huvud</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
 <translation id="8889942196804715220">Starta om i integrerat läge i Chrome</translation>
-<translation id="8987477933582888019">Webbläsare</translation>
 <translation id="9026991721384951619">Det gick inte att synkronisera data med Chrome OS eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="9102715433345326100">Filen är skadlig och har blockerats av Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Varning!<ph name="END_BOLD" /> Google Chrome kan inte förhindra tillägg från att registrera din webbhistorik. Om du vill inaktivera det här tillägget i inkognitoläge avmarkerar du detta tillval.</translation>

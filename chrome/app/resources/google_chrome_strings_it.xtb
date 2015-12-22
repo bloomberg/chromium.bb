@@ -53,6 +53,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2485422356828889247">Disinstalla</translation>
 <translation id="2576431527583832481">Chrome è stato migliorato. È disponibile una nuova versione.</translation>
 <translation id="2580411288591421699">Impossibile installare la stessa versione di Google Chrome attualmente in esecuzione. Chiudi Google Chrome e riprova.</translation>
+<translation id="2582790009689336987">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome perché questo sistema Linux non sarà più supportato.</translation>
 <translation id="2588322182880276190">Logo di Chrome</translation>
 <translation id="2664962310688259219">Licenze open source di Chrome OS</translation>
 <translation id="2665296953892887393">Aiutaci a migliorare Google Chrome inviando a Google rapporti sugli arresti anomali e <ph name="UMA_LINK" /></translation>
@@ -98,6 +99,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="4251615635259297716">Collegare i tuoi dati Chrome a questo account?</translation>
 <translation id="4309555186815777032">(è necessario <ph name="BEGIN_BUTTON" />riavviare<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché questo sistema Linux non è più supportato.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
 <translation id="4480040274068703980">Impossibile sincronizzare i dati in Chrome OS a causa di un errore durante l'accesso.</translation>
@@ -136,8 +138,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="5563479599352954471">Ricerca con un tocco</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Leggi gli argomenti sui siti web senza uscire dalla pagina.</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Questa volta, quando Chrome ha provato a connettersi a <ph name="SITE" />, il sito web ha restituito credenziali
-insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chrome ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="568643307450491754">Trova i tuoi Preferiti nel menu Chrome o sulla barra dei Preferiti.</translation>
 <translation id="573759479754913123">Informazioni su Chrome OS</translation>
 <translation id="5749068826913805084">Chrome deve avere accesso allo spazio di archiviazione per poter scaricare file.</translation>
@@ -150,7 +150,6 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="597770749449734237">Consente di attivare altre scorciatoie da tastiera utili per il debug di Google Chrome.</translation>
 <translation id="6012342843556706400">Chrome deve avere accesso alla posizione per condividerla con questo sito.</translation>
 <translation id="6014844626092547096">Hai eseguito l'accesso a Chrome. La sincronizzazione è stata disattivata dall'amministratore.</translation>
-<translation id="6049075767726609708">Un amministratore ha installato su questo sistema Google Chrome per tutti gli utenti. L'installazione di Google Chrome a livello di sistema sostituirà l'installazione a livello di utente.</translation>
 <translation id="6113794647360055231">Da oggi Chrome è ancora meglio</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Aggiorna &amp;Chrome OS</translation>
@@ -210,7 +209,6 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="781069973841903133">Il riavvio in modalità immersiva di Chrome comporterà la chiusura e il riavvio delle tue app di Chrome.</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
 <translation id="7890208801193284374">Se condividi un computer, i tuoi amici e la tua famiglia possono navigare separatamente e configurare Chrome in base alle proprie esigenze.</translation>
-<translation id="7984945080620862648">Al momento non puoi visitare il sito web <ph name="SITE" /> perché ha inviato strane credenziali che Chrome non riesce a elaborare. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
 <translation id="8000275528373650868">Google Chrome richiede Windows Vista o Windows XP con SP2 o versioni successive.</translation>
 <translation id="8005540215158006229">Chrome è quasi pronto.</translation>
 <translation id="8008534537613507642">Reinstalla Chrome</translation>
@@ -243,7 +241,6 @@ insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacc
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Non disponi dei diritti appropriati per l'installazione a livello di sistema. Prova a eseguire nuovamente il programma di installazione come Amministratore.</translation>
 <translation id="8889942196804715220">Riavvia in modalità immersiva di Chrome</translation>
-<translation id="8987477933582888019">Browser web</translation>
 <translation id="9026991721384951619">Impossibile sincronizzare i dati in Chrome OS perché i dati di accesso dell'account sono obsoleti.</translation>
 <translation id="9102715433345326100">Il file è dannoso ed è stato bloccato da Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Avviso.<ph name="END_BOLD" /> Google Chrome non è in grado di impedire alle estensioni di registrare la tua cronologia di navigazione. Per disattivare questa estensione in modalità di navigazione in incognito, deseleziona questa opzione.</translation>

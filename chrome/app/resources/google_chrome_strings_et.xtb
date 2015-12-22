@@ -55,6 +55,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="2576431527583832481">Chrome muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
 <translation id="2580411288591421699">Töötava Google Chrome'i versiooniga sama versiooni ei saa installida. Sulgege Google Chrome ja proovige uuesti.</translation>
+<translation id="2582790009689336987">See arvuti ei saa peagi enam Google Chrome'i värskendusi, kuna seda Linuxi süsteemi enam ei toetata.</translation>
 <translation id="2588322182880276190">Chrome'i logo</translation>
 <translation id="2664962310688259219">Chrome OS-i avatud lähtekoodi litsentsid</translation>
 <translation id="2665296953892887393">Aidake Google Chrome'i täiustada, saates Googl'ile krahhiaruandeid ja lingi <ph name="UMA_LINK" /></translation>
@@ -100,6 +101,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="4251615635259297716">Kas soovite linkida Chrome'i andmed selle kontoga?</translation>
 <translation id="4309555186815777032">(nõuab Chrome'i <ph name="BEGIN_BUTTON" />taaskäivitamist<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">See arvuti ei saa enam Google Chrome'i värskendusi, kuna seda Linuxi süsteemi enam ei toetata.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
 <translation id="4480040274068703980">Chrome OS ei saanud teie andmeid sünkroonida sisselogimisvea tõttu.</translation>
@@ -140,8 +142,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="5563479599352954471">Otsing ühe puudutusega</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Lisateave veebisaitide teemade kohta ilma lehelt lahkumata.</translation>
-<translation id="5626352146162055517">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chrome püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised
-  ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chrome peatas ühenduse enne andmevahetust.</translation>
 <translation id="568643307450491754">Otsige oma järjehoidjaid Chrome'i menüüst või järjehoidjaribalt.</translation>
 <translation id="573759479754913123">Teave Chrome OS-i kohta</translation>
 <translation id="5749068826913805084">Chrome vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
@@ -154,7 +154,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="597770749449734237">Lubab täiendavaid klaviatuuri otseteid, millest on abi Google Chrome'i silumisel.</translation>
 <translation id="6012342843556706400">Chrome vajab selle saidiga jagamiseks juurdepääsu asukohale.</translation>
 <translation id="6014844626092547096">Olete nüüd Chrome'i sisse logitud. Administraator on sünkroonimise keelanud.</translation>
-<translation id="6049075767726609708">Administraator on installinud Google Chrome'i sellesse süsteemi ja see on saadaval kõigile kasutajatele. Süsteemitasandi Google Chrome asendab nüüd teie kasutajatasandi installi.</translation>
 <translation id="6113794647360055231">Chrome muutus just paremaks</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Värskenda &amp;Chrome OS-i</translation>
@@ -214,7 +213,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="781069973841903133">Chrome'i immersiivses režiimis uuesti käivitamisel suletakse teie Chrome'i rakendused ja käivitatakse need uuesti.</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
 <translation id="7890208801193284374">Kui jagate oma arvutit, siis saavad sõbrad ja pereliikmed eraldi sirvida ning seadistada Chrome'i just nii, nagu neile meeldib.</translation>
-<translation id="7984945080620862648">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait saatis tagasi arusaamatud mandaadid, mida Chrome ei saa töödelda. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="8000275528373650868">Google Chrome vajab operatsioonisüsteemi Windows Vista või Windows XP hoolduspaketiga SP2 või uuem.</translation>
 <translation id="8005540215158006229">Chrome on peaaegu valmis.</translation>
 <translation id="8008534537613507642">Installi Chrome uuesti</translation>
@@ -247,7 +245,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8851136666856101339">pea</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
 <translation id="8889942196804715220">Käivita uuesti Chrome'i immersiivses režiimis</translation>
-<translation id="8987477933582888019">Veebibrauser</translation>
 <translation id="9026991721384951619">Chrome OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="9102715433345326100">See fail on pahatahtlik ja Chrome on selle blokeerinud.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Hoiatus:<ph name="END_BOLD" /> Google Chrome ei saa takistada rakendusi teie sirvimisajalugu talletamast. Kui soovite laienduse inkognitorežiimis keelata, siis tühistage see valik.</translation>

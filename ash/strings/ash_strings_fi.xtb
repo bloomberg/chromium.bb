@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1012876632442809908">C-tyypin USB-laite (etuportti)</translation>
 <translation id="1013923882670373915">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Anna tämä PIN-koodi kyseisellä laitteella: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Seuraavaan syöttötapaan vaihtamisen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Ruutunäppäimistö poistettiin käytöstä</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">C-tyypin USB-laite (vasemman sivun portti)</translation>
 <translation id="1330145147221172764">Ota ruutunäppäimistö käyttöön</translation>
 <translation id="1343000272198685031">Mikrofoniliitäntä</translation>
 <translation id="1346748346194534595">Oikealle</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
 <translation id="1812696562331527143">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />kolmas osapuoli<ph name="END_LINK" />).
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
+<translation id="1864454756846565995">C-tyypin USB-laite (takaportti)</translation>
 <translation id="1882897271359938046">Peilataan: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Tehtävänhallinnan avaamisen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="1923539912171292317">Automaattiset klikkaukset</translation>
@@ -55,6 +58,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2805756323405976993">Sovellukset</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
 <translation id="2825619548187458965">Hylly</translation>
+<translation id="2844169650293029770">C-tyypin USB-laite (vasemman sivun etummainen portti)</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="2942516765047364088">Hyllyn sijainti</translation>
 <translation id="2946640296642327832">Ota Bluetooth käyttöön</translation>
@@ -73,6 +77,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
 <translation id="3157169093162779309">Ota näytön kierron lukitus käyttöön</translation>
 <translation id="3294437725009624529">Vieras</translation>
+<translation id="3445925074670675829">C-tyypin USB-laite</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE" /> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="3595596368722241419">Akku täynnä</translation>
@@ -124,6 +129,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="5238774010593222950">Kirjautuminen toiseen tiliin ei onnistu.</translation>
 <translation id="532063867737390965">Järjestelmänvalvoja on ottanut tämän verkkoasetuksen pois käytöstä.</translation>
+<translation id="5331975486040154427">C-tyypin USB-laite (vasemman sivun taaimmainen portti)</translation>
 <translation id="544691375626129091">Kaikki käytettävissä olevat käyttäjät on jo lisätty tähän istuntoon.</translation>
 <translation id="5507786745520522457">Ota mobiiliverkon data käyttöön</translation>
 <translation id="5543001071567407895">Tekstiviesti</translation>
@@ -161,6 +167,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="6426039856985689743">Poista mobiilitiedonsiirto käytöstä</translation>
 <translation id="6452181791372256707">Hylkää</translation>
 <translation id="6459472438155181876">Ruutua laajennetaan: <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">C-tyypin USB-laite (oikean sivun portti)</translation>
 <translation id="6501401484702599040">Näkymä peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
 <translation id="6550675742724504774">Asetukset</translation>
 <translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -180,6 +187,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="7034339000180558234">Välilehti <ph name="TAB_NAME" /> peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
 <translation id="7052914147756339792">Aseta taustakuva...</translation>
 <translation id="7097613348211027502">ChromeVox (äänipalaute) on käytössä. Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
+<translation id="7098389117866926363">C-tyypin USB-laite (vasemmanpuoleinen takaportti)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK on päällä. Peruuta painamalla Alt + hakupainike tai Shift.</translation>
@@ -217,6 +225,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Haku+Esc</translation>
 <translation id="8878886163241303700">Laajennettu näyttö</translation>
+<translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
 <translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofoni on käytössä.</translation>

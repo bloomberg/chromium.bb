@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">未能成功下载 <ph name="FILE_NAME" />，因为服务器出现了问题。</translation>
 <translation id="1506061864768559482">搜索引擎</translation>
 <translation id="1513352483775369820">书签和网络历史记录</translation>
+<translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自动检测编码</translation>
 <translation id="1568822834048182062">系统会将您保存的书签、历史记录、密码和其他设置同步到您的 Google 帐户。</translation>
 <translation id="1620510694547887537">摄像头</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
-<translation id="3207960819495026254">已加书签</translation>
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3232754137068452469">网络应用</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@
 <translation id="4543087392704641517">书签标题</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
 <translation id="4581964774250883625">您已进入隐身模式。</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{附近有 1 个播报的实物网链接}other{附近有 # 个播报的实物网链接}}</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
@@ -248,7 +247,6 @@
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4927198283430892231">保存的网页目前占用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> 的空间。</translation>
-<translation id="494334276486034338">上次同步时间：<ph name="HOURS" /> 小时前</translation>
 <translation id="4943872375798546930">找不到结果</translation>
 <translation id="4970484396410298643">您可以在此处直接访问计算机上打开的标签页。
 
@@ -258,14 +256,9 @@
 <translation id="5000922062037820727">已阻止（推荐）</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">不是<ph name="NOT_YOU_USER_NAME" />？</translation>
-<translation id="5026147292873308216">在附近未发现任何播报的网页</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
-<translation id="5049968687459146030">如果您启用“请勿跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
-
-例如：在收到该请求后，某些网站可能会向您展示与您访问过的其他网站并不相关的广告。许多网站仍会出于一些目的收集并使用您的浏览数据 - 例如，为了提高安全性；为了在其网站上提供相关内容、广告和推荐内容；以及为了生成报告统计信息。</translation>
 <translation id="5063480226653192405">使用情况</translation>
-<translation id="5074309530946372881">正在查找附近播报的网页</translation>
 <translation id="509605886816275399">要离线保存此网页吗？</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
@@ -286,7 +279,6 @@
 <translation id="5275558766013849309">标签页将与最近用过的应用一起显示。</translation>
 <translation id="5302048478445481009">语言</translation>
 <translation id="5304593522240415983">此字段不能为空</translation>
-<translation id="5305985456140490686">上次同步时间：<ph name="MINUTES" /> 分钟前</translation>
 <translation id="5308933389783727448">搜索保存的网页</translation>
 <translation id="5313967007315987356">添加网站</translation>
 <translation id="5317780077021120954">保存</translation>
@@ -301,7 +293,6 @@
 <translation id="5414836363063783498">正在验证…</translation>
 <translation id="5423934151118863508">您最常访问的网页将列在此处</translation>
 <translation id="5424715742813396254">修改已保存的名称/密码或例外情况</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">修改保存的网页</translation>
 <translation id="544291274896356069">如果在外部应用中打开此链接，您将退出隐身模式。是否继续？</translation>
 <translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
@@ -467,6 +458,7 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">永远</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
+<translation id="7588950540487816470">实物网</translation>
 <translation id="7596558890252710462">操作系统</translation>
 <translation id="7599840151813361502">您不会因此而退出自己的 <ph name="BEGIN_LINK" />Google 帐户<ph name="END_LINK" /></translation>
 <translation id="7603403729818446828">您目前打开的标签页和最近用过的其他应用都会显示在您手机的“概览”屏幕上。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />部分控制此功能。</translation>
@@ -501,7 +493,6 @@
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7963646190083259054">供应商：</translation>
-<translation id="7977858705483383621">安全搜索</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="7989222512959629388">正在保存…</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
@@ -527,7 +518,6 @@
 <translation id="8261506727792406068">删除</translation>
 <translation id="8275818695183729150">允许（针对地址栏搜索）</translation>
 <translation id="8310344678080805313">标准标签页</translation>
-<translation id="8374420395168535396">上次同步时间：<ph name="DAYS" /> 天前</translation>
 <translation id="8374821112118309944">您需要将“话语提示”更新到更高版本。</translation>
 <translation id="8396312449826231789">只能访问经过批准的网站</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
@@ -595,7 +585,6 @@
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">新建文件夹</translation>
 <translation id="945632385593298557">使用您的麦克风</translation>
-<translation id="963967414714199900">上次同步时间：刚才</translation>
 <translation id="969096075394517431">更改语言</translation>
 <translation id="971774202801778802">书签网址</translation>
 <translation id="983192555821071799">关闭所有标签页</translation>

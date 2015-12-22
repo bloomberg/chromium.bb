@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">伺服器發生問題，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="1506061864768559482">搜尋引擎</translation>
 <translation id="1513352483775369820">書籤與網頁紀錄</translation>
+<translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自動偵測編碼</translation>
 <translation id="1568822834048182062">系統會將您的書籤、歷史紀錄、密碼和其他設定與您的 Google 帳戶同步處理。</translation>
 <translation id="1620510694547887537">攝影機</translation>
@@ -117,6 +118,7 @@
 <translation id="271033894570825754">新</translation>
 <translation id="2718352093833049315">僅限連上 Wi-Fi 網路時</translation>
 <translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
+<translation id="2762000892062317888">剛剛</translation>
 <translation id="2770465223704140727">從清單中移除</translation>
 <translation id="278029852808208386">找不到藍牙裝置，請<ph name="BEGIN_LINK" />重新搜尋<ph name="END_LINK" />。</translation>
 <translation id="2816165854387457183">偵測到連線速度緩慢。</translation>
@@ -143,7 +145,6 @@
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這些權限。</translation>
 <translation id="3198916472715691905">儲存了 <ph name="STORAGE_AMOUNT" /> 的資料</translation>
-<translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3232754137068452469">網路應用程式</translation>
 <translation id="3244271242291266297">月</translation>
@@ -224,7 +225,6 @@
 <translation id="4543087392704641517">書籤標題</translation>
 <translation id="4543661749405994812">複製電子郵件地址</translation>
 <translation id="4581964774250883625">您已啟用無痕模式。</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{附近有 1 個實體化網路連結}other{附近有 # 個實體化網路連結}}</translation>
 <translation id="4645575059429386691">您的家長已停用這項功能</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
@@ -248,7 +248,6 @@
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
 <translation id="4927198283430892231">已儲存的網頁目前佔用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />。</translation>
-<translation id="494334276486034338">上次同步處理時間：<ph name="HOURS" /> 小時前</translation>
 <translation id="4943872375798546930">沒有結果</translation>
 <translation id="4970484396410298643">您可以在這裡使用您在電腦上開啟的所有分頁。
 
@@ -258,14 +257,9 @@
 <translation id="5000922062037820727">已封鎖 (建議)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">您不是<ph name="NOT_YOU_USER_NAME" />嗎？</translation>
-<translation id="5026147292873308216">找不到附近的網頁</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
-<translation id="5049968687459146030">啟用「不追蹤」功能即表示要求將會包含在您的瀏覽流量中，其效用取決於網站是否回應要求以及如何解讀要求。
-
-舉例來說，部分網站可能會以顯示廣告的方式回應這類要求，而這些廣告並非根據您所造訪的其他網站紀錄而產生。許多網站仍會收集您的瀏覽資料，並將這些資料用於下列目的：提高網站安全性、在網站上提供更相關的內容、廣告和推薦項目，以及產生報告統計資料。</translation>
 <translation id="5063480226653192405">用量</translation>
-<translation id="5074309530946372881">正在尋找附近的網頁</translation>
 <translation id="509605886816275399">要離線儲存這個網頁嗎？</translation>
 <translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
 <translation id="5127805178023152808">同步功能已停用</translation>
@@ -286,7 +280,6 @@
 <translation id="5275558766013849309">分頁和最近使用的應用程式將會並列顯示。</translation>
 <translation id="5302048478445481009">語言</translation>
 <translation id="5304593522240415983">這個欄位不能留空</translation>
-<translation id="5305985456140490686">上次同步處理時間：<ph name="MINUTES" /> 分鐘前</translation>
 <translation id="5308933389783727448">搜尋儲存的網頁</translation>
 <translation id="5313967007315987356">新增網站</translation>
 <translation id="5317780077021120954">儲存</translation>
@@ -301,7 +294,6 @@
 <translation id="5414836363063783498">驗證中…</translation>
 <translation id="5423934151118863508">這裡會顯示您最常造訪的網頁</translation>
 <translation id="5424715742813396254">編輯已儲存的名稱/密碼或例外</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">編輯已儲存的網頁</translation>
 <translation id="544291274896356069">如果使用外部應用程式開啟這個連結，無痕模式就會結束。要繼續嗎？</translation>
 <translation id="5487729733663684359">這個 Android 版本已停止支援 Chrome 更新。</translation>
@@ -467,6 +459,7 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">永遠使用</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
+<translation id="7588950540487816470">實體化網路</translation>
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="7599840151813361502">您不會因此登出 <ph name="BEGIN_LINK" />Google 帳戶<ph name="END_LINK" /></translation>
 <translation id="7603403729818446828">手機的「總覽」畫面會顯示您的分頁和其他最近使用過的應用程式。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中控管這項功能。</translation>
@@ -501,7 +494,6 @@
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7961015016161918242">永不</translation>
 <translation id="7963646190083259054">供應商：</translation>
-<translation id="7977858705483383621">安全搜尋</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
 <translation id="7989222512959629388">儲存中…</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
@@ -527,7 +519,6 @@
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8275818695183729150">允許 (從網址列搜尋)</translation>
 <translation id="8310344678080805313">標準分頁</translation>
-<translation id="8374420395168535396">上次同步處理時間：<ph name="DAYS" /> 天前</translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
 <translation id="8396312449826231789">僅限核准的網站</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
@@ -595,7 +586,6 @@
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">新增資料夾</translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
-<translation id="963967414714199900">上次同步處理時間：剛剛完成</translation>
 <translation id="969096075394517431">變更語言</translation>
 <translation id="971774202801778802">書籤網址</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>

@@ -100,7 +100,6 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adres of URL van proxyserver</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
-<translation id="1445397020763995734">Accounttype voor HTTP Negotiate-verificatie</translation>
 <translation id="1454846751303307294">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd die JavaScript niet mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultJavaScriptSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -284,11 +283,6 @@
       Als 'HardwareAccelerationModeEnabled' op 'onwaar' wordt ingesteld, wordt 'Disable3DAPIs' genegeerd. Dit is hetzelfde als 'Disable3DAPIs' instellen op 'waar'.</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
-<translation id="2175836933294053665">Configureert een lijst met beheerde bladwijzers.
-
-      Het beleid bestaat uit een lijst met bladwijzers waarbij elke bladwijzer een woordenboek is met daarin de sleutels 'name' en 'url' voor de naam en het doel van de url. Er kan een submap worden geconfigureerd door een bladwijzer te definiëren zonder een 'url'-sleutel maar met een extra 'children'-sleutel die zelf een lijst met bladwijzers bevat, zoals hierboven wordt beschreven (en die ook mappen kan bevatten). <ph name="PRODUCT_NAME" /> vult onvolledige URL's aan alsof ze via de omnibox zijn opgegeven. Voorbeeld: 'google.com' wordt 'https://google.com/'.
-
-      Deze bladwijzers worden in een beheermap voor bladwijzers geplaatst die niet kan worden bewerkt door de gebruiker. De gebruiker kan er wel voor kiezen de beheermap te verbergen op de bladwijzerbalk. Beheerde bladwijzers worden niet gesynchroniseerd met het gebruikersaccount en kunnen niet worden aangepast door extensies.</translation>
 <translation id="2188979373208322108">Hiermee wordt de bladwijzerbalk ingeschakeld in <ph name="PRODUCT_NAME" />.
 
       Als je deze instelling inschakelt, geeft <ph name="PRODUCT_NAME" /> een bladwijzerbalk weer.
@@ -586,38 +580,6 @@
       Als je deze instelling inschakelt, worden captive portal-verificatiepagina's (alle webpagina's vanaf de captive portal-inlogpagina totdat <ph name="PRODUCT_NAME" /> een internetverbinding detecteert) in een afzonderlijk venster weergegeven, waarbij alle beleidsinstellingen en beperkingen voor de huidige gebruiker worden genegeerd.
 
       Als je deze instelling uitschakelt of niet instelt, worden captive portal-verificatiepagina's weergegeven in een (normaal) nieuw browsertabblad, waarbij de proxy-instellingen van de huidige gebruiker worden gebruikt.</translation>
-<translation id="3001569025430882724">Negeert de regels van <ph name="PRODUCT_NAME" /> voor selectie van de standaardprinter.
-
-      Dit beleid bepaalt de regels voor het selecteren van de standaardprinter in <ph name="PRODUCT_NAME" />, wat gebeurt wanneer de afdrukfunctie voor het eerst in een profiel wordt gebruikt.
-
-      Waneer dit beleid is ingesteld, probeert <ph name="PRODUCT_NAME" /> een printer te vinden die overeenkomt met alle opgegeven kenmerken en selecteert deze als standaardprinter. De eerste gevonden printer die overeenkomt met dit beleid, wordt geselecteerd. Als meerdere printers overeenkomen, kan elke willekeurige overeenkomende printer worden geselecteerd, afhankelijk van de volgorde waarin de printers worden gevonden.
-
-      Als dit beleid niet is ingesteld, of als er geen overeenkomende printer binnen de time-outperiode wordt gevonden, wordt de printer standaard ingesteld op de ingebouwde pdf-printer, of er wordt geen printer geselecteerd, als de pdf-printer niet beschikbaar is.
-
-      De waarde wordt geparseerd als JSON-object, overeenkomend met het volgende schema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Het zoeken naar een overeenkomende printer al of niet beperken tot een specifieke reeks printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Reguliere expressie voor overeenkomende printer-ID.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Reguliere expressie voor overeenkomende printerweergavenaam.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printers die zijn gekoppeld aan Google Cloudprinter, worden als 'cloud' beschouwd. De overige printers worden als 'local' geclassificeerd.
-      Wanneer een veld wordt overgeslagen, betekent dit dat alle waarden overeenkomen. Het niet-opgeven van de verbinding zorgt er bijvoorbeeld voor dat 'Voorbeeld afdrukken' het detecteren van alle soorten printers start (zowel lokale als cloudprinters).
-      Reguliere expressiepatronen moeten de JavaScript RegExp-syntaxis volgen en namen komen alleen overeen als ook het hoofdlettergebruik klopt (hoofdlettergevoelig).</translation>
 <translation id="3021409116652377124">Plug-inzoeker uitschakelen</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
 <translation id="3034580675120919256">Hiermee kun je instellen of JavaScript op websites mag worden uitgevoerd. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.
@@ -713,24 +675,6 @@
       Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers de proxy voor Cloudprinter inschakelen met authenticatie via hun Google-account.
 
       Als deze instelling is uitgeschakeld, kunnen gebruikers de proxy niet inschakelen en kan de computer zijn printers niet delen met <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Chromium en Google Chrome ondersteunen dezelfde reeks
-      beleidsregels. Dit document bevat mogelijk beleidsregels die voor niet-
-      uitgebrachte softwareversies zijn bedoeld (het item 'ondersteund op' verwijst
-      naar een niet-uitgebrachte versie) en dergelijke beleidsregels kunnen zonder
-      kennisgeving worden gewijzigd of verwijderd.
-
-      Deze beleidsregels zijn uitsluitend bedoeld voor het configureren van
-      instanties van <ph name="PRODUCT_NAME" /> binnen je organisatie. Gebruik van deze beleidsregels
-      buiten je organisatie (bijvoorbeeld in een openbaar gedistribueerd
-      programma) wordt beschouwd als malware en wordt waarschijnlijk gelabeld
-      als malware door Google en antivirusproviders.
-
-      Je hoeft deze instellingen niet handmatig te configureren. Je kunt
-      gebruiksvriendelijke sjablonen voor Windows, Mac en Linux downloaden via <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      De aanbevolen manier om beleidsregels te configureren op Windows, is via
-      GPO, maar het toewijzen van beleidsregels via een register wordt nog
-      steeds ondersteund voor Windows-instanties die zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="3381968327636295719"> gebruiken</translation>
 <translation id="3417418267404583991">Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, staat <ph name="PRODUCT_OS_NAME" /> gasten toe zich aan te melden. Gastensessies zijn anonieme sessies waar geen wachtwoord voor hoeft te worden ingevoerd.
 
@@ -1319,9 +1263,6 @@
 
       Als dit beleid niet is ingesteld of is ingesteld op 'onwaar', gebruikt <ph name="PRODUCT_NAME" /> de bestaande instellingen voor online intrekkingscontrole.</translation>
 <translation id="5732972008943405952">Formuliergegevens voor Automatisch aanvullen importeren uit standaardbrowser bij eerste uitvoering</translation>
-<translation id="5751004203256768694">Hiermee wordt het accounttype gespecificeerd van de accounts die worden geleverd door de verificatie-app voor Android die HTTP Negotiate-verificatie ondersteunt (zoals Kerberos-verificatie). Deze informatie is beschikbaar via de leverancier van de verificatie-app. Ga voor meer informatie naar https://goo.gl/hajyfN.
-
-          Als er geen instelling is opgegeven, wordt HTTP Negotiate-verificatie uitgeschakeld voor Android.</translation>
 <translation id="5761030451068906335">Hiermee configureer je de proxyinstellingen voor <ph name="PRODUCT_NAME" />. Dit beleid is nog niet klaar voor gebruik, gebruik het dus niet.</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
 <translation id="5770738360657678870">Ontwikkelaarskanaal (mogelijk instabiel)</translation>
@@ -2155,12 +2096,22 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden</translation>
 <translation id="8566842294717252664">De Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher</translation>
-<translation id="857925079934558818">Geeft aan of de optimalisatie van TLS False Start moet worden uitgeschakeld. Vanwege historische redenen wordt dit beleid DisableSSLRecordSplitting genoemd.
-
-      Als dit beleid niet is ingesteld of is ingesteld op 'onwaar', wordt TLS False Start ingeschakeld. Als dit beleid is ingesteld op 'waar', wordt TLS False Start uitgeschakeld.</translation>
 <translation id="8587229956764455752">Het maken van nieuwe gebruikersaccounts toestaan</translation>
 <translation id="8614804915612153606">Schakelt 'Automatisch updaten' uit</translation>
 <translation id="8631434304112909927">tot versie <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blokkeert de toegang tot de vermelde URL's.
+
+Met  dit beleid wordt voorkomen dat de gebruiker webpagina's laadt die op de zwarte lijst staan. De zwarte lijst biedt een lijst met URL-patronen die aangeven welke URL's op de zwarte lijst komen te staan.
+
+Elk URL-patroon kan een patroon voor lokale bestanden of een algemeen URL-patroon zijn. Lokale bestandspatronen hebben de indeling 'bestand://pad', waarbij 'pad' een absoluut pad moet zijn om te blokkeren. Alle bestandssysteemlocaties waarvoor dat pad een voorvoegsel is, worden geblokkeerd.
+
+Een algemeen URL-patroon heeft de indeling 'schema://host:poort/pad'. Indien aanwezig, wordt alleen het opgegeven schema geblokkeerd. Als het voorvoegsel schema:// niet wordt opgegeven, worden alle schema's geblokkeerd. De host is vereist en kan een hostnaam of IP-adres zijn. Subdomeinen van een hostnaam worden ook geblokkeerd. Als je wilt voorkomen dat subdomeinen worden geblokkeerd, voeg je '.' toe vóór de hostnaam. De speciale hostnaam '*' blokkeert alle domeinen. De optionele poort is een geldig poortnummer tussen 1 en 65535. Als geen poortnummer is opgegeven, worden alle poorten geblokkeerd. Als het optionele pad is opgegeven, worden alleen paden met dat voorvoegsel geblokkeerd.
+
+Uitzonderingen  kunnen worden gedefinieerd in het beleid voor de witte lijst voor URL's. Dit beleid is beperkt tot 1000 items. Daaropvolgende items worden genegeerd.
+
+Het wordt afgeraden interne URL's met 'chrome://*' te blokkeren omdat dit tot onverwachte fouten kan leiden.
+
+Als  dit beleid niet is ingesteld, wordt geen enkele URL op de zwarte lijst van de browser geplaatst.</translation>
 <translation id="8649763579836720255">Chrome OS-apparaten kunnen externe verificatie (geverifieerde toegang) gebruiken om een certificaat te ontvangen dat is uitgegeven door de certificaatautoriteit voor Chrome OS en waarin het apparaat uniek wordt geïdentificeerd.
 
           Als deze instelling is ingesteld op 'niet waar', gebruikt het apparaat geen externe verificatie om inhoud te beveiligen en kan het apparaat beveiligde inhoud mogelijk niet afspelen.

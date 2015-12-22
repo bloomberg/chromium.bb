@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="1012876632442809908">USB-C-enhed (port foran)</translation>
 <translation id="1013923882670373915">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Genvejen til at skifte til den næste indtastningsmetode er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">USB-C-enhed (venstre port)</translation>
 <translation id="1330145147221172764">Aktivér skærmtastatur</translation>
 <translation id="1343000272198685031">Stik til mikrofon</translation>
 <translation id="1346748346194534595">Højre</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredjepart<ph name="END_LINK" />).
 Tryk på Shift+Alt for at ændre den.</translation>
+<translation id="1864454756846565995">USB-C-enhed (port bagpå)</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Genvejen til at åbne Jobliste er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
@@ -55,6 +58,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
 <translation id="2825619548187458965">Hylde</translation>
+<translation id="2844169650293029770">USB-C-enhed (porten foran i venstre side)</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2942516765047364088">Hyldeplacering</translation>
 <translation id="2946640296642327832">Aktivér Bluetooth</translation>
@@ -74,6 +78,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
 <translation id="3157169093162779309">Aktivér låsning af rotation</translation>
 <translation id="3294437725009624529">Gæst</translation>
+<translation id="3445925074670675829">USB-C-enhed</translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
 <translation id="3573179567135747900">Skift tilbage til "<ph name="FROM_LOCALE" />" (kræver genstart)</translation>
 <translation id="3595596368722241419">Batteri helt opladet</translation>
@@ -125,6 +130,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="5238774010593222950">Det er ikke muligt at logge på en anden konto.</translation>
 <translation id="532063867737390965">Denne netværksindstilling er deaktiveret af administratoren.</translation>
+<translation id="5331975486040154427">USB-C-enhed (porten bagpå i venstre side)</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
 <translation id="5507786745520522457">Konfigurer mobildata</translation>
 <translation id="5543001071567407895">sms</translation>
@@ -162,6 +168,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
 <translation id="6452181791372256707">Afvis</translation>
 <translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">USB-C-enhed (højre port)</translation>
 <translation id="6501401484702599040">Caster skærmen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="7052914147756339792">Vælg baggrund...</translation>
 <translation id="7097613348211027502">ChromeVox (talefeedback) er aktiveret.
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
+<translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
@@ -220,6 +228,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Søg+Esc</translation>
 <translation id="8878886163241303700">Udvider skærm</translation>
+<translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofonen er i brug.</translation>

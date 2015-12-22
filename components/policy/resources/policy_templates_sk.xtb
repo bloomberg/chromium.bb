@@ -104,7 +104,6 @@
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1427655258943162134">Adresa alebo webová adresa servera proxy</translation>
 <translation id="1435659902881071157">Konfigurácia siete na úrovni zariadenia</translation>
-<translation id="1445397020763995734">Typ účtu pre overenie HTTP Negotiate</translation>
 <translation id="1454846751303307294">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré nemôžu spúšťať kód JavaScript.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultJavaScriptSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
@@ -286,18 +285,6 @@
       Ak povolenie HardwareAccelerationModeEnabled nastavíte na možnosť False, povolenie Disable3DAPIs sa bude ignorovať a bude sa zhodovať s povolením Disable3DAPIs nastaveným na možnosť True.</translation>
 <translation id="2168397434410358693">Oneskorenie režimu nečinnosti pri používaní napájacieho zdroja</translation>
 <translation id="2170233653554726857">Povoliť optimalizáciu pomocou protokolu WPAD</translation>
-<translation id="2175836933294053665">Konfiguruje zoznam spravovaných záložiek.
-
-      Toto pravidlo pozostáva zo zoznamu záložiek, zatiaľ čo každá záložka je
-      slovník s kľúčmi „name“ a „url“, v ktorých je uložený názov a cieľ
-      záložky. Podpriečinok je možné nakonfigurovať definovaním záložky
-      bez kľúča „url“, ale s ďalším kľúčom „children“, ktorý sám
-      obsahuje zoznam záložiek podľa určenia vyššie (niektoré z nich môžu byť
-      znova priečinky). <ph name="PRODUCT_NAME" />
-      opravuje neúplné webové adresy tak, ako by boli odoslané prostredníctvom všeobecného poľa,
-      napríklad adresu google.com zmení na https://google.com/.
-
-      Tieto záložky sú umiestnené do priečinka Spravované záložky, ktorý používateľ nemôže zmeniť. Môže ho však na paneli so záložkami skryť. Spravované záložky sa nesynchronizujú do účtu používateľa a nemôžu byť upravené rozšíreniami.</translation>
 <translation id="2188979373208322108">Povoľuje v prehliadači <ph name="PRODUCT_NAME" /> panel so záložkami.
 
       Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> zobrazí panel so záložkami.
@@ -600,38 +587,6 @@
       Ak toto nastavenie povolíte, všetky overovacie stránky prihlasovacieho portálu (t. j. všetky webové stránky od prihlasovacej stránky tohto portálu až do momentu, kedy prehliadač <ph name="PRODUCT_NAME" /> zistí úspešné pripojenie k internetu) budú zobrazené v samostatnom okne ignorujúcom všetky nastavenia pravidiel a obmedzenia aktuálneho používateľa.
 
       Ak toto nastavenie zakážete alebo pravidlo nenastavíte, akékoľvek overovacie stránky prihlasovacieho portálu sa budú zobrazovať v bežnej novej karte prehliadača s použitím nastavení proxy servera aktuálneho používateľa.</translation>
-<translation id="3001569025430882724">Prepíše pravidlá výberu predvolenej tlačiarne prehliadača <ph name="PRODUCT_NAME" />.
-
-      Toto pravidlo určuje pravidlá na výber predvolenej tlačiarne v prehliadači <ph name="PRODUCT_NAME" />, ktorý sa uskutoční pri prvom použití funkcie tlače v profile.
-
-      Keď je toto pravidlo nastavené, <ph name="PRODUCT_NAME" /> sa pokúsi nájsť tlačiareň zodpovedajúcu všetkým špecifikovaným atribútom a vyberie ju ako predvolenú tlačiareň. Vyberie sa prvá tlačiareň, ktorá zodpovedá tomuto pravidlu. V prípade nejedinečnej zhody je možné vybrať akúkoľvek tlačiareň, a to v závislosti od poradia, v akom boli nájdené.
-
-      Ak pravidlo nie je nastavené alebo ak sa nenájde žiadna zodpovedajúca tlačiareň v časovom limite, ako predvolená tlačiareň bude nastavená vstavaná tlačiareň PDF alebo žiadna (v prípade, že tlačiareň PDF nie je k dispozícii).
-
-      Hodnota sa analyzuje ako objekt JSON v súlade s nasledujúcou schémou:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Či obmedziť vyhľadávanie zodpovedajúcej tlačiarne na konkrétnu skupinu tlačiarní.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Bežný výraz ID zodpovedajúcej tlačiarne.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Bežný výraz zodpovedajúci zobrazenému názvu tlačiarne.",
-            "type": "string"
-          }
-        }
-      }
-
-      Tlačiarne pripojené do služby Google Cloud Print sa považujú za tlačiarne v cloude, zvyšné tlačiarne sú označené ako miestne.
-      Ak vynecháte určité pole, budú mu zodpovedať všetky príslušné hodnoty. Ak napríklad nešpecifikujete pripojenie, nástroj Print Preview spustí hľadanie všetkých druhov tlačiarní – miestnych aj v cloude.
-      Vzory bežných výrazov musia zodpovedať syntaxi JavaScript RegExp a vo všetkých zodpovedajúcich výrazoch sa rozlišujú veľké a malé písmená.</translation>
 <translation id="3021409116652377124">Zakázať nástroj na hľadanie doplnkov</translation>
 <translation id="3030000825273123558">Povoliť hlásenia o metrikách</translation>
 <translation id="3034580675120919256">Umožní nastaviť, či môžu webové stránky spúšťať kód JavaScript. Spúšťanie kódu JavaScript sa dá pre všetky webové stránky buď umožniť, alebo naopak zamietnuť.
@@ -726,14 +681,6 @@
       Ak je toto nastavenie povolené alebo nebolo nakonfigurované, používatelia môžu povoliť server proxy pre tlač z cloudu prostredníctvom overenia totožnosti pomocou účtu Google.
 
       Ak je toto nastavenie zakázané, používatelia nebudú môcť povoliť server proxy a počítač nebude môcť zdieľať pripojené tlačiarne so službou <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Prehliadače Chromium a Google Chrome podporujú rovnaké
-      pravidlá. Upozorňujeme, že tento dokument môže obsahovať pravidlá, ktoré sú určené pre zatiaľ nevydané verzie softvéru (t. j. ich záznam „Podporované na“ odkazuje na zatiaľ nevydanú verziu), a že tieto pravidlá môžu byť zmenené alebo odstránené bez predchádzajúceho upozornenia.
-
-      
-Tieto pravidlá sú výhradne určené na použitie pri konfigurácii inštancií prehliadača <ph name="PRODUCT_NAME" /> vo vašej organizácii. Použitie týchto pravidiel mimo vašej organizácie (napr. vo verejne distribuovanom programe) je považované za malvér. Google a dodávatelia antivírusových softvérov ho pravdepodobne budú preto označovať ako malvér.
-
-      Tieto nastavenia nie je potrebné konfigurovať ručne. Jednoducho použiteľné šablóny pre Windows, Mac a Linux sú k dispozícii na stiahnutie na adrese <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-Odporúčaný spôsob nastavenia pravidiel v systéme Windows je nastavenie prostredníctvom objektu pravidiel skupiny (GPO). Spravovanie pravidiel prostredníctvom registrov je však v inštanciách systému Windows pripojených k doméne Active Directory naďalej podporované.</translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
 
@@ -1317,9 +1264,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak toto pravidlo nie je nastavené alebo ak je nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> použije existujúce nastavenia kontroly odvolania online.</translation>
 <translation id="5732972008943405952">Importovať údaje automatického dopĺňania formulárov z predvoleného prehliadača pri prvom spustení</translation>
-<translation id="5751004203256768694">Určí typ účtov poskytnutých aplikáciou pre Android na overenie totožnosti, ktorá podporuje HTTP Negotiate (napr. overenie totožnosti Kerberos). Tieto informácie by ste mali mať k dispozícii od poskytovateľa danej aplikácie na overenie totožnosti. Ďalšie podrobnosti získate na adrese https://goo.gl/hajyfN.
-
-          Ak neposkytnete žiadne nastavenie, overenie HTTP Negotiate bude v systéme Android zakázané.</translation>
 <translation id="5761030451068906335">Nakonfiguruje nastavenia servera proxy pre prehliadač <ph name="PRODUCT_NAME" />. Toto pravidlo ešte nie je pripravené na používanie, preto ho radšej nepoužívajte.</translation>
 <translation id="5765780083710877561">Popis:</translation>
 <translation id="5770738360657678870">Verzia pre vývojárov (môže byť nestabilná)</translation>
@@ -2157,12 +2101,26 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8544375438507658205">Predvolený vykresľovací modul HTML pre doplnok <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Upozorniť na návštevu stránky, ktorá je mimo balíkov obsahu</translation>
 <translation id="8566842294717252664">Skryť internetový obchod zo stránky na novej karte a zo spúšťača aplikácií</translation>
-<translation id="857925079934558818">Určuje, či má byť optimalizácia funkcie TLS False Start zakázaná. Z historických dôvodov je toto pravidlo pomenované DisableSSLRecordSplitting.
-
-      Ak toto pravidlo nie je nastavené alebo je nastavené na možnosť False, funkcia TLS False Start bude povolená. Ak je nastavené na možnosť True, funkcia TLS False Start bude zakázaná.</translation>
 <translation id="8587229956764455752">Povoliť vytváranie nových používateľských účtov</translation>
 <translation id="8614804915612153606">Zakáže automatickú aktualizáciu</translation>
 <translation id="8631434304112909927">po verziu <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blokuje prístup k webovým adresám uvedeným v zozname.
+
+      Toto pravidlo bráni používateľom načítať webové stránky zo zoznamu zakázaných webových adries. Zoznam zakázaných položiek obsahuje vzory webových adries. Tie určujú, ktoré webové adresy budú zakázané.
+
+      Každý vzor webovej adresy môže byť buď vzorom pre miestne súbory, alebo všeobecným vzorom pre webové adresy. Vzory miestnych súborov sú vo formáte file://cesta. Ak chcete zablokovať prístup, cesta musí byť absolútna. Všetky umiestnenia v systéme súborov s touto predponou budú zablokované.
+
+      Všeobecný vzor webovej adresy má formát schéma://hostiteľ:port/cesta.
+      Ak je určená schéma dostupná, bude zablokovaná iba ona. Ak nie je určená predpona schéma://, budú blokované všetky schémy.
+      Hostiteľ sa vyžaduje a môže ísť o názov hostiteľa alebo adresu IP. Blokované budú aj subdomény názvu hostiteľa. Ak chcete zabrániť blokovaniu subdomén, zadajte pred názov hostiteľa bodku „.“. Špeciálny názov hostiteľa „*“ zablokuje všetky domény.
+      Ako port je možné zvoliť platné číslo portu v rozpätí od 1 do 65535. Ak to nie je bližšie určené, blokované budú všetky porty.
+      Ak je určená voliteľná cesta, budú blokované iba cesty s príslušnou predponou.
+
+      Výnimky môžu byť definované v pravidle zoznamu povolených webových adries.Počet záznamov v týchto pravidlách je obmedzený na 1 000. Všetky ďalšie záznamy sa budú ignorovať.
+
+      Upozorňujeme, že sa neodporúča blokovať interné webové adresy „chrome://*“, pretože by to mohlo viesť k neočakávaným chybám.
+
+      Ak toto pravidlo nebude nastavené, nebude v prehliadači zakázaná žiadna webová adresa.</translation>
 <translation id="8649763579836720255">Zariadenia OS Chrome môžu používať vzdialené overenie (overený prístup) na získanie certifikátu vydaného certifikačnou autoritou OS Chrome, ktorý potvrdzuje, že zariadenie môže prehrávať chránený obsah. Tento proces zahrnuje odoslanie informácií o hardvére certifikačnej autorite OS Chrome, ktoré dané zariadenie jedinečne identifikujú.
 
           Ak je toto nastavenie nastavené na hodnotu False, dané zariadenie nepoužije vzdialené overenie na ochranu obsahu a pravdepodobne nebude môcť prehrávať chránený obsah.

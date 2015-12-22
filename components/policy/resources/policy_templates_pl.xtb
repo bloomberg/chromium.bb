@@ -88,7 +88,6 @@
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres URL serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
-<translation id="1445397020763995734">Rodzaj konta na potrzeby negocjowanego uwierzytelniania HTTP</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="1464848559468748897">Kontroluje zachowanie użytkownika w sesji wieloprofilowej na urządzeniach z <ph name="PRODUCT_OS_NAME" />.
 
@@ -250,18 +249,6 @@
       Jeśli zasada HardwareAccelerationModeEnabled jest wyłączona, zasada Disable3DAPIs jest ignorowana, a włączona jest zasada równoważna wobec Disable3DAPI.</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
-<translation id="2175836933294053665">Konfiguruje listę zarządzanych zakładek.
-
-      Ta zasada składa się z listy zakładek, z których każda jest słownikiem
-      zawierającym klucze „name” i „url” z nazwą i adresem docelowym
-      zakładki. Można utworzyć podfolder, definiując zakładkę
-      bez klucza „url”, ale z dodatkowym kluczem „children”, który zawiera
-      listę zakładek taką jak opisano powyżej (niektóre z nich same mogą być
-      folderami). <ph name="PRODUCT_NAME" />
-      uzupełnia niekompletne adresy URL tak samo jak po wpisaniu w omniboksie
-      – na przykład „google.com” zamienia na „https://google.com/”.
-
-      Te zakładki są umieszczane w folderze Zakładki zarządzane, którego użytkownik nie może modyfikować, ale może go ukryć na pasku zakładek. Zakładki zarządzane nie synchronizują się z kontem użytkownika, a rozszerzenia nie mogą ich modyfikować.</translation>
 <translation id="2188979373208322108">Włącza pasek zakładek w przeglądarce <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie pokazywany pasek zakładek. W przypadku wyłączenia ustawienia pasek nie będzie wyświetlany. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tego ustawienia użytkownik może zdecydować, czy chce używać tej funkcji.</translation>
 <translation id="2201555246697292490">Skonfiguruj białą listę wiadomości natywnych</translation>
 <translation id="2204753382813641270">Steruj autoukrywaniem półki</translation>
@@ -532,38 +519,6 @@
       Jeśli włączysz to ustawienie, wszystkie strony uwierzytelniania portalu przechwytującego (czyli wszystkie strony internetowe wyświetlane od momentu pojawienia się strony logowania portalu przechwytującego do momentu, gdy <ph name="PRODUCT_NAME" /> wykryje nawiązanie połączenia z internetem) będą wyświetlać się w osobnym oknie, ignorując wszelkie ustawienia zasad i ograniczeń dla bieżącego użytkownika.
 
       Jeśli wyłączysz to ustawienie lub go nie skonfigurujesz, wszystkie strony uwierzytelniania portalu przechwytującego będą wyświetlać się w nowej karcie przeglądarki, używając ustawień serwera proxy dla bieżącego użytkownika.</translation>
-<translation id="3001569025430882724">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
-
-      Ta zasada określa reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />. Przeglądarka dokonuje wyboru, gdy użytkownik profilu po raz pierwszy użyje funkcji drukowania.
-
-      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> spróbuje znaleźć drukarkę odpowiadającą wszystkim określonym atrybutom, a następnie wybierze ją jako domyślną. Wybierana jest pierwsza znaleziona drukarka, która odpowiada atrybutom zasady. Jeśli przeglądarka znajdzie kilka równoważnych wyników, wybrana może być dowolna spełniająca wymogi drukarka – znaczenie ma tutaj kolejność ich wykrywania.
-
-      W przypadku braku ustawień lub jeśli w ciągu określonego czasu oczekiwania przeglądarka nie znajdzie drukarki spełniającej wymogi, domyślnie wybierana jest wbudowana drukarka PDF, a jeśli nie jest ona dostępna, drukarka nie jest wybierana.
-
-      Wartość jest przetwarzana w postaci obiektu JSON zgodnie z tym schematem:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Drukarki połączone z Google Cloud Print określane są jako „cloud” (w chmurze), a pozostałe – jako „local” (lokalne).
-      Pominięcie któregoś pola oznacza, że brane są pod uwagę wszystkie wartości, np. jeśli nie określisz typu połączenia, funkcja podglądu wydruku zacznie wykrywać wszystkie rodzaje drukarek – lokalne i w chmurze.
-      Forma wyrażeń regularnych musi odpowiadać składni JavaScript RegExp. Przy znajdowaniu wyników znaczenie ma też wielkość liter.</translation>
 <translation id="3021409116652377124">Wyłącz znajdowanie wtyczek</translation>
 <translation id="3030000825273123558">Włącz raportowanie statystyk</translation>
 <translation id="3034580675120919256">Umożliwia określenie, czy w witrynach może być wykonywany kod JavaScript. Wykonanie kodu JavaScript może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „AllowJavaScript”, a użytkownik będzie mógł je zmienić.</translation>
@@ -649,27 +604,6 @@
       Jeśli to ustawienie jest włączone lub nieskonfigurowane, użytkownicy mogą włączyć serwer proxy drukowania w chmurze, uwierzytelniając się na swoim koncie Google.
 
       W przypadku wyłączenia ustawienia użytkownicy nie mogą włączyć serwera proxy ani udostępnić w <ph name="CLOUD_PRINT_NAME" /> drukarek podłączonych do komputera.</translation>
-<translation id="3357181471604560535">Zarówno Chromium, jak i Google Chrome obsługują jednakowy zestaw
-      zasad. Ten dokument może zawierać zasady przeznaczone dla
-      nieopublikowanych wersji oprogramowania (tzn. wpis „obsługiwana w”
-      w informacjach o zasadzie odnosi się do wersji, która nie została wydana).
-      Takie zasady możemy zmienić lub usunąć bez wcześniejszego
-      powiadomienia.
-
-      Zasady te są przeznaczone do konfigurowania
-      <ph name="PRODUCT_NAME" /> tylko na wewnętrzny użytek Twojej organizacji.
-      Użycie ich poza nią (np. w programie rozpowszechnianym publicznie)
-      spowoduje uznanie oprogramowania za złośliwe – prawdopodobnie
-      tak zostanie ono oznaczone przez Google i programy antywirusowe.
-
-      Nie musisz konfigurować tych ustawień ręcznie.
-      Możesz pobrać łatwe w użyciu szablony na Windows, Maca
-      i Linuksa ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Zalecamy skonfigurowanie zasady w systemie Windows
-      za pośrednictwem obiektu zasad grupy (GPO), mimo że
-      obsługa zasady przez rejestr jest nadal możliwa w systemach Windows
-      połączonych z domeną Active Directory.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
 
@@ -1182,9 +1116,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, <ph name="PRODUCT_NAME" /> będzie korzystać z istniejących ustawień sprawdzania online, czy certyfikaty nie zostały unieważnione.</translation>
 <translation id="5732972008943405952">Importuj dane autouzupełniania formularzy z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
-<translation id="5751004203256768694">Określa rodzaj konta w przypadku kont z aplikacji uwierzytelniającej na Androida, które obsługuje negocjowane uwierzytelnianie HTTP (np. uwierzytelnianie Kerberos). Tę informację powinien udostępnić dostawca aplikacji uwierzytelniającej. Więcej informacji znajdziesz na https://goo.gl/hajyfN.
-
-          W przypadku braku ustawień negocjowane uwierzytelnianie HTTP w Androidzie jest wyłączone.</translation>
 <translation id="5761030451068906335">Konfiguruje ustawienia serwera proxy w <ph name="PRODUCT_NAME" />. Zasada nie jest jeszcze gotowa, więc nie należy jej używać.</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5770738360657678870">Wersja deweloperska (może być niestabilna)</translation>
@@ -1920,12 +1851,26 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
-<translation id="857925079934558818">Określa, czy ma być wyłączona optymalizacja TLS False Start. Z powodów historycznych ta zasada ma nazwę DisableSSLRecordSplitting.
-
-      Jeśli ta zasada jest nieskonfigurowana lub jest wyłączona, to TLS False Start będzie włączone. Jeśli jest włączona, TLS False Start będzie wyłączone.</translation>
 <translation id="8587229956764455752">Pozwól na tworzenie nowych kont użytkowników</translation>
 <translation id="8614804915612153606">Wyłącza automatyczne aktualizacje</translation>
 <translation id="8631434304112909927">do wersji <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blokuje dostęp do określonych adresów URL.
+
+      Ta zasada sprawia, że użytkownik nie może załadować stron internetowych z czarnej listy adresów URL. Czarna lista zawiera wzorce adresów URL, które mają być blokowane.
+
+      Każdy wzorzec adresu URL może odnosić się do plików lokalnych lub ogólnych zasobów URL internetu. Wzorce dla plików lokalnych mają format „plik://ścieżka”, gdzie ścieżka musi być bezwzględnym adresem do zablokowania. Zablokowane zostaną wszystkie lokalizacje plików w systemie, dla których dana ścieżka jest prefiksem.
+
+      Ogólny wzorzec adresu URL ma format „schemat://host:port/ścieżka”.
+      Zostanie zablokowany tylko określony schemat, jeśli został podany. Jeśli prefiks schemat:// nie został określony, zablokowane zostaną wszystkie schematy.
+      Host jest wymagany. Może nim być nazwa hosta lub adres IP. Blokowane będą też subdomeny nazwy hosta. Jeśli nie chcesz, by subdomeny były blokowane, wpisz „.” przed nazwą hosta. Specjalna nazwa hosta „*” blokuje wszystkie domeny.
+      Opcjonalny port to prawidłowy numer portu z zakresu od 1 do 65535. Jeśli go nie wpiszesz, zostaną zablokowane wszystkie porty.
+      W przypadku określenia opcjonalnej ścieżki zablokowane zostaną tylko ścieżki z danym prefiksem.
+
+      Wyjątki można zdefiniować w zasadzie białej listy adresów URL. W zasadach tego typu można podać maksymalnie 1000 pozycji. Pozycje dodane po przekroczeniu tego limitu będą ignorowane.
+
+      Uwaga: nie zalecamy blokowania wewnętrznych adresów URL „chrome://*”, bo w rezultacie mogą wystąpić nieoczekiwane błędy.
+
+      Jeśli ta zasada nie zostanie ustawiona, czarna lista adresów URL w przeglądarce będzie pusta.</translation>
 <translation id="8649763579836720255">Urządzenia z Chrome OS mogą używać zaświadczeń zdalnych (zweryfikowanego dostępu), by uzyskać certyfikat Chrome OS CA, który zaświadcza, że urządzenie jest uprawnione do odtwarzania materiałów chronionych. Ten proces obejmuje wysłanie do Chrome OS CA informacji polecających sprzęt, które jednoznacznie identyfikują urządzenie.
 
           Jeśli w tym ustawieniu wybierzesz wartość Fałsz, urządzenie nie będzie korzystać z zaświadczeń zdalnych do ochrony treści i może nie móc odtwarzać materiałów chronionych.

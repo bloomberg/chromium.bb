@@ -61,8 +61,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2886012850691518054">Facultatif : aidez-nous à améliorer Chromium en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
 <translation id="2910007522516064972">À propos de &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium nécessite le lancement d'une application externe pour gérer les liens <ph name="SCHEME" />. Le lien demandé est <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium
-au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un attaquant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours…</translation>
 <translation id="3046695367536568084">Vous devez être connecté à Chromium pour utiliser les applications. Cela permet de synchroniser vos applications, vos favoris, votre historique, vos mots de passe et d'autres paramètres dans Chromium sur tous vos appareils.</translation>
 <translation id="3068515742935458733">Aidez-nous à améliorer Chromium en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
@@ -88,7 +86,6 @@ au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été
 <translation id="358997566136285270">Logo Chromium</translation>
 <translation id="3595526210123705352">Le redémarrage en mode Windows 8 entraîne la fermeture, puis la réouverture des applications Chromium.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
-<translation id="3744899669254331632"><ph name="SITE" /> est actuellement inaccessible. Le site Web a envoyé des identifiants brouillés inutilisables par Chromium. Les erreurs de réseau et les attaques étant généralement temporaires, cette page devrait à nouveau fonctionner ultérieurement.</translation>
 <translation id="3748537968684000502">Cette page Chromium est sécurisée.</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
@@ -133,6 +130,7 @@ au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été
 <translation id="5796460469508169315">Chromium est presque prêt</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">La mise à jour de Chromium a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez mettre Chromium à jour.</translation>
+<translation id="5859963531214966875">Les futures versions de Chromium ne seront plus compatibles avec ce système Linux.</translation>
 <translation id="5862307444128926510">Bienvenue dans Chromium</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="5909170354645388250">Non utilisé dans Chromium. Espace réservé pour conserver la synchronisation des cartes de ressources. Un argument est attendu : $1.</translation>
@@ -152,6 +150,7 @@ au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été
 <translation id="6485906693002546646">Vous utilisez le compte <ph name="PROFILE_EMAIL" /> pour synchroniser votre contenu dans Chromium. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chromium sans compte Google, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Désinstaller Chromium</translation>
 <translation id="6526111688217511984">Pour télécharger des fichiers, Chromium a besoin d'accéder à l'espace de stockage.</translation>
+<translation id="6593914713218535185">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur ce système Linux.</translation>
 <translation id="6637001341228460105">Chromium doit accéder au micro pour le partager avec ce site.</translation>
 <translation id="6638567566961868659">Retrouvez vos favoris dans le menu Chromium ou dans la barre de favoris.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
@@ -232,7 +231,6 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="8985587603644336029">Un utilisateur s'est récemment connecté à Chromium sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. S'il ne s'agit pas de votre compte, veuillez créer un utilisateur Chromium pour séparer vos informations.
 
 Si vous vous connectez quand même, toutes les informations Chromium, comme les favoris, l'historique et les autres paramètres, seront fusionnées avec <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Navigateur Web</translation>
 <translation id="9013087743919948559">Ajouter à Chromium</translation>
 <translation id="9013262824292842194">Chromium requiert Windows Vista ou Windows XP avec SP2 ou une version ultérieure.</translation>
 <translation id="9019929317751753759">Afin de rendre Chromium plus sûr, nous avons désactivé l'extension suivante qui n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui a pu être ajoutée à votre insu.</translation>
@@ -242,7 +240,6 @@ Si vous vous connectez quand même, toutes les informations Chromium, comme les
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
 <translation id="918373042641772655">La déconnexion de <ph name="USERNAME" /> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chromium stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">Un administrateur a installé Chromium sur ce système. Il est maintenant disponible pour tous les utilisateurs. L'installation de Chromium au niveau du système remplace désormais l'installation au niveau de l'utilisateur.</translation>
 <translation id="9197815481970649201">Vous êtes connecté à Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> exige que vous lisiez et acceptiez les présentes conditions d'utilisation pour utiliser cet appareil. Ces dernières n'étendent, ne modifient ni ne restreignent les conditions d'utilisation de Chromium OS.</translation>
 <translation id="985602178874221306">Auteurs de Chromium</translation>

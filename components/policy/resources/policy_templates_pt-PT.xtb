@@ -97,7 +97,6 @@
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede ao nível do aparelho</translation>
-<translation id="1445397020763995734">Tipo de conta para Negociar autenticação HTTP</translation>
 <translation id="1454846751303307294">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a executar JavaScript. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultJavaScriptSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="1464848559468748897">Controle o comportamento do utilizador numa sessão multiperfil em dispositivos <ph name="PRODUCT_OS_NAME" />.
 
@@ -264,18 +263,6 @@
       Se a política HardwareAccelerationModeEnabled estiver definida como falsa, a política Disable3DAPIs é ignorada e é equivalente à definição da política Disable3DAPIs como verdadeira.</translation>
 <translation id="2168397434410358693">Atraso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
-<translation id="2175836933294053665">Configura uma lista de marcadores geridos.
-
-      A política consiste numa lista de marcadores, em que cada marcador é um
-      dicionário que contém as chaves "nome" e "url" que, por sua vez, contêm o
-      nome e o destino do marcador. É possível configurar uma subpasta ao definir um
-      marcador sem uma chave "url", mas com uma chave "subordinados" que contém
-      uma lista de marcadores conforme definido acima (alguns deles também
-      podem ser pastas). O <ph name="PRODUCT_NAME" />
-      corrige os URLs incompletos como se tivessem sido enviados através da Caixa geral,
-      por exemplo, "google.com" fica "https://google.com/".
-
-      Estes marcadores são colocados na pasta Marcadores geridos, que o utilizador não pode modificar, mas pode optar por ocultar da barra de marcadores. Os marcadores geridos não são sincronizados com a conta do utilizador e não podem ser modificados pelas extensões.</translation>
 <translation id="2188979373208322108">Ativa a barra de marcadores no <ph name="PRODUCT_NAME" />. Se ativar esta definição, o <ph name="PRODUCT_NAME" /> apresentará uma barra de marcadores. Se desativar esta definição, a barra de marcadores nunca será apresentada aos utilizadores. Se ativar ou desativar esta definição, os utilizadores não a poderão alterar ou substituir no <ph name="PRODUCT_NAME" />. Se deixar esta definição por definir, o utilizador pode optar por utilizar ou não esta função.</translation>
 <translation id="2201555246697292490">Configurar a lista de autorizações de mensagens nativas</translation>
 <translation id="2204753382813641270">Controlar a ocultação automática da prateleira</translation>
@@ -542,38 +529,6 @@
       Se ativar esta definição, todas as páginas de autenticação do portal cativo (ou seja, todas as páginas Web desde a página de início de sessão do portal cativo até que o <ph name="PRODUCT_NAME" /> detete uma ligação à Internet bem-sucedida) são apresentadas numa janela separada e são ignoradas todas as restrições e definições da política para o utilizador atual.
 
       Se desativar esta definição ou não a definir, todas as páginas de autenticação do portal cativo são apresentadas num separador de navegador novo (normal), com as definições de proxy do utilizador atual.</translation>
-<translation id="3001569025430882724">Substitui as regras de seleção da impressora predefinida do <ph name="PRODUCT_NAME" />.
-
-      Esta política determina as regras para a seleção da impressora predefinida no <ph name="PRODUCT_NAME" /> que ocorre quando a função de impressão é utilizada com um perfil pela primeira vez.
-
-      Quando esta política está definida, o <ph name="PRODUCT_NAME" /> tenta localizar uma impressora que corresponda a todos os atributos especificados e selecioná-la como a impressora predefinida. É selecionada a primeira impressora localizada que corresponda à política. Se a correspondência não for única, pode ser selecionada qualquer impressora correspondente, dependendo da ordem pela qual as impressoras são detetadas.
-
-      Se esta política não estiver definida ou não for encontrada uma impressora correspondente no limite de tempo, é predefinida a impressora PDF incorporada ou não é selecionada qualquer impressora quando a impressora PDF não está disponível.
-
-      O valor é analisado como um objeto JSON, em conformidade com o esquema seguinte:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Limitar ou não a pesquisa da impressora correspondente a um conjunto específico de impressoras.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Expressão regular para corresponder ao ID da impressora.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Expressão regular para corresponder ao nome a apresentar da impressora.",
-            "type": "string"
-          }
-        }
-      }
-
-      As impressoras ligadas ao Google Cloud Print são consideradas como "na nuvem" e as restantes são classificadas como "local".
-      Omitir um campo significa que todos os valores são correspondentes, por exemplo, não especificar a conetividade faz com que a Pré-visualização da impressão inicie a deteção de todos os tipos de impressoras, locais e na nuvem.
-      Os padrões da expressão regular têm de seguir a sintaxe JavaScript RegExp e as correspondências são sensíveis a maiúsculas e minúsculas.</translation>
 <translation id="3021409116652377124">Desativar localizador de plug-ins</translation>
 <translation id="3030000825273123558">Ativar relatório de métricas</translation>
 <translation id="3034580675120919256">Permite definir se os Web sites estão autorizados a executar JavaScript. A execução de JavaScript pode ser permitida para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "AllowJavaScript" e o utilizador poderá alterá-la.</translation>
@@ -659,25 +614,6 @@
 Se esta definição estiver ativada ou por configurar, os utilizadores podem ativar o proxy do "cloud print" através da autenticação junto da respetiva Conta Google.
 
 Se esta definição estiver desativada, os utilizadores não podem ativar o proxy e o computador não poderá partilhar as impressoras nele instaladas com o <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Tanto o Chromium como o Google Chrome suportam o mesmo conjunto
-     de políticas. Tenha em atenção que este documento pode incluir políticas
-     direcionadas para versões de software não lançadas (ou seja, a entrada
-     "suportado em" refere-se a uma versão não lançada) e que tais políticas
-     estão sujeitas a alteração ou remoção sem aviso prévio.
-
-      A utilização destas políticas destina-se unicamente à configuração de
-      instâncias do <ph name="PRODUCT_NAME" /> internas à sua entidade. A utilização destas políticas fora da
-      sua entidade (por exemplo, num programa distribuído publicamente) é
-      considerada um programa malicioso e, provavelmente, é etiquetada como
-      programa malicioso pela Google e pelos fornecedores de antivírus.
-
-      Estas definições não precisam de ser configuradas manualmente! Existem
-      modelos de fácil utilização para Windows, Mac e Linux que podem ser
-      transferidos a partir de <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      A forma recomendada para configurar a política no Windows é através do GPO,
-      embora o fornecimento da política através de registo ainda seja suportado para
-      instâncias do Windows que estejam associadas a um domínio do Active Directory.</translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
 <translation id="3417418267404583991">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> irá ativar os inícios de sessão de convidado. Os inícios de sessão de convidado são sessões de utilizadores anónimos e não necessitam de uma palavra-passe.
 
@@ -1188,9 +1124,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não estiver definida ou estiver definida como falsa, o <ph name="PRODUCT_NAME" /> utilizará as definições de verificação da revogação online existentes.</translation>
 <translation id="5732972008943405952">Importar dados do formulário de preenchimento automático a partir do navegador predefinido na primeira execução</translation>
-<translation id="5751004203256768694">Especifica o tipo de conta das contas fornecidas pela aplicação de autenticação Android que suporta o protocolo Negociar autenticação HTTP (por exemplo, autenticação Kerberos). Estas informações devem ser disponibilizadas pelo fornecedor da aplicação de autenticação. Para mais informações, consulte https://goo.gl/hajyfN.
-
-          Se não for fornecida nenhuma definição, a opção Negociar autenticação HTTP é desativada no Android.</translation>
 <translation id="5761030451068906335">Configura as definições de proxy para <ph name="PRODUCT_NAME" />. Esta política ainda não está pronta para ser utilizada, por isso, não a utilize.</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5770738360657678870">Canal para programadores (pode ser instável)</translation>
@@ -1936,12 +1869,26 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8544375438507658205">Processador de HTML predefinido para <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar quando estiver a visitar sites fora dos pacotes de conteúdo</translation>
 <translation id="8566842294717252664">Ocultar a Web Store da página Novo separador e do iniciador de aplicações</translation>
-<translation id="857925079934558818">Especifica se a otimização TLS False Start deve ser desativada. Por razões históricas, o nome desta política é DisableSSLRecordSplitting.
-
-      Se a política não for definida ou for definida como falsa, o TLS False Start estará ativado. Se for definida como verdadeira, o TLS False Start estará desativado.</translation>
 <translation id="8587229956764455752">Permitir a criação de novas contas de utilizador</translation>
 <translation id="8614804915612153606">Desativar a Atualização Automática</translation>
 <translation id="8631434304112909927">até à versão <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Bloqueia o acesso aos URLs listados.
+
+      Esta política impede que o utilizador carregue páginas Web a partir de URLs incluídos na lista negra. A lista negra fornece uma lista de padrões de URL que especifica que URLs são nela incluídos.
+
+      Cada padrão de URL pode ser um padrão para ficheiros locais ou um padrão de URL genérico. Os padrões de ficheiros locais têm o formato "ficheiro://caminho", em que o caminho deve ser um caminho absoluto a bloquear. Todas as localizações do sistema de ficheiros para as quais esse caminho seja um prefixo são bloqueadas.
+
+      Um padrão de URL genérico tem o formato "esquema://anfitrião:porta/caminho".
+      Caso presente, só este esquema é bloqueado. Caso o prefixo esquema:// não seja especificado, todos os esquemas são bloqueados.
+      O anfitrião é obrigatório e pode ser um nome de anfitrião ou um endereço IP. Os subdomínios de um nome de anfitrião também são bloqueados. Para evitar o bloqueio de subdomínios, inclua um "." antes do nome do anfitrião. O nome de anfitrião especial "*" bloqueia todos os domínios.
+      A porta opcional é um número de porta válido entre 1 e 65535. Se não tiver sido especificado nenhum número, todas as portas são bloqueadas.
+      Se o caminho opcional for especificado, apenas os caminhos com esse prefixo são bloqueados.
+
+      É possível definir exceções na política de lista de autorizações de URLs. Estas políticas estão limitadas a 1000 entradas; as entradas subsequentes são ignoradas.
+
+      Tenha em atenção que não é recomendado bloquear URLs "chrome://*" internos, uma vez que isto pode causar erros inesperados.
+
+      Se esta política não for definida, a lista negra do navegador não inclui qualquer URL.</translation>
 <translation id="8649763579836720255">Os dispositivos SO Chrome podem utilizar a comprovação remota (Acesso confirmado) para obter um certificado emitido pela AC do SO Chrome que declara que o dispositivo é elegível para reproduzir conteúdo protegido. Este processo envolve o envio de informações de garantia de hardware para a AC do SO Chrome, que identifica de forma única o dispositivo.
 
           Se esta definição for falsa, o dispositivo não utilizará a comprovação remota para proteção de conteúdo e o dispositivo poderá não conseguir reproduzir conteúdo protegido.

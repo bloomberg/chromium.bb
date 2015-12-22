@@ -89,7 +89,6 @@
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1427655258943162134">Proxyszerver címe vagy URL-je</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
-<translation id="1445397020763995734">Fióktípus a HTTP-hitelesítés egyeztetéséhez</translation>
 <translation id="1454846751303307294">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem futtathatnak JavaScriptet. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultJavaScriptSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="1464848559468748897">A felhasználói viselkedés vezérlése többprofilos munkamenet során <ph name="PRODUCT_OS_NAME" />-eszközökön.
 
@@ -257,20 +256,6 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
       Ha a HardwareAccelerationModeEnabled értéke false (hamis), a rendszer figyelmen kívül hagyja a Disable3DAPIs értékét, ami megegyezik azzal, mintha a Disable3DAPIs értéke true (igaz) lenne.</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
-<translation id="2175836933294053665">A kezelt könyvjelzők listájának konfigurálása.
-
-      A házirend könyvjelzők listájából áll, és mindegyik
-      könyvjelző a könyvjelző „nevét” és cél „url-t” tartalmazó
-      szótár. Almappát úgy konfigurálhat, hogy „url” kulcs nélküli
-      könyvjelzőt határoz meg, amely azonban rendelkezik egy további,
-      „gyermek” kulccsal. E „gyermek” kulcs maga tartalmazza a könyvjelzők
-       (melyek közül néhány mappa is lehet) fentiekben meghatározottak
-      szerinti listáját. A <ph name="PRODUCT_NAME" />
-      úgy egészíti ki a nem teljes URL-eket, mintha azok a cím- és
-      keresősávon keresztül lettek volna beküldve. Így például a „google.com”
-      „https://google.com/”-má válik.
-
-      Ezeket a könyvjelzőket a rendszer a Kezelt könyvjelzők mappába helyezi, amelyet a felhasználó nem módosíthat, ám elrejthet a könyvjelzősávról. A kezelt könyvjelzőket a rendszer nem szinkronizálja a felhasználó fiókjával, és bővítmények sem módosíthatják őket.</translation>
 <translation id="2188979373208322108">Elérhetővé teszi a könyvjelzősávot a(z) <ph name="PRODUCT_NAME" /> szolgáltatásban. Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> megjeleníti a könyvjelzősávot. Ha letiltja ezt a beállítást, a felhasználók soha nem látják a könyvjelzősávot. Ha engedélyezi vagy letiltja a beállítást, a felhasználók nem módosíthatják és nem írhatják felül a(z) <ph name="PRODUCT_NAME" /> ezen beállítását. Ha a beállítás konfigurálatlanul marad, a felhasználó dönthet a funkció használatával kapcsolatban.</translation>
 <translation id="2201555246697292490">Natív üzenetkezelő engedélyezőlista konfigurálása</translation>
 <translation id="2204753382813641270">Polc automatikus elrejtésének szabályozása</translation>
@@ -536,38 +521,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha engedélyezi ezt a beállítást, a hitelesítési portál mindegyik hitelesítési oldala (azaz az összes weboldal a hitelesítési portál bejelentkezési oldalától addig, amíg a <ph name="PRODUCT_NAME" /> sikeresen felállított internetkapcsolatot észlel) külön ablakban jelenik meg, figyelmen kívül hagyva a házirendek beállításait és az aktuális felhasználóra vonatkozó korlátozásokat.
 
       Ha letiltja a beállítást, vagy ha nem állítja be, akkor a hitelesítési portál hitelesítési oldalai új (normál) böngészőlapon jelennek meg, figyelembe véve az aktuális felhasználó proxybeállításait</translation>
-<translation id="3001569025430882724">Felülbírálja a <ph name="PRODUCT_NAME" /> alapértelmezett nyomtatóválasztási szabályait.
-
-      Ez a házirend határozza meg az alapértelmezett nyomtató kiválasztásának szabályait a <ph name="PRODUCT_NAME" /> böngészőben, ami akkor következik be, amikor először használják a nyomtatási funkciót egy profillal.
-
-      Ha a házirend be van állítva, a <ph name="PRODUCT_NAME" /> megpróbál keresni egy olyan nyomtatót, amely az összes megadott attribútumnak megfelel, és kiválasztja azt alapértelmezett nyomtatóként. A böngésző a házirendnek megfelelő első nyomtatót választja ki, nem egyedi egyezés esetén pedig – a nyomtatók felfedezési sorrendjétől függően – bármelyik egyező nyomtató kiválasztható.
-
-      Ha a házirend nincs beállítva, vagy ha a böngésző nem talál egyező nyomtatót az időkorláton belül, akkor a nyomtató alapértelmezésként a beépített PDF-nyomtató lesz, illetve ha nem áll rendelkezésre PDF-nyomtató, akkor a böngésző nem választ ki nyomtatót.
-
-      Az érték szintaktikai elemzése JSON-objektumként történik, az alábbi sémának megfelelően:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Kell-e korlátozni az egyező nyomtatók keresését a nyomtatók egy adott készletére.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Reguláris kifejezés, amely a nyomtató azonosítójával egyezik",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Reguláris kifejezés, amely a nyomtató megjelenített nevével egyezik.",
-            "type": "string"
-          }
-        }
-      }
-
-      A Google Cloud Printhez csatlakoztatott nyomtatók a „felhőben” vannak, míg a többi nyomtató „helyi”.
-      Egy mező kihagyása azt jelenti, hogy bármilyen érték egyezésnek tekinthető. Ha például nem adja meg a kapcsolatot, akkor a Nyomtatási előnézet elindítja az összes nyomtató felfedezését: a helyiekét és a felhőben lévőkét egyaránt.
-      A reguláris kifejezések mintái követik a JavaScript RegExp szintaxist, és megkülönböztetik a kis- és nagybetűket.</translation>
 <translation id="3021409116652377124">Bővítménykereső letiltása</translation>
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
 <translation id="3034580675120919256">Meghatározhatja, hogy a webhelyek futtathatnak-e JavaScriptet. A JavaScript futtatását engedélyezheti vagy letilthatja minden webhely számára. Ha a házirend beállítatlanul marad, a rendszer az "AllowJavaScript" értéket használja, amelyet a felhasználó módosíthat.</translation>
@@ -653,24 +606,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha ez a beállítás be van kapcsolva vagy nincs megadva, a felhasználók Google Fiókjuk érvényesítésével bekapcsolhatják a cloud print proxyt.
 
       Ha a beállítás ki van kapcsolva, a felhasználók nem kapcsolhatják be a proxyt, és a számítógép számára nem lesz engedélyezett a nyomtatók megosztása a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatással.</translation>
-<translation id="3357181471604560535">A Chromium és a Google Chrome ugyanazt a házirendkészletet támogatja
-      Felhívjuk figyelmét, hogy e dokumentumban lehetnek olyan házirendek,
-      melyek kiadatlan verziókat céloznak meg (azaz a „támogatott a következőkön” bejegyzés
-      kiadatlan verzióra hivatkozik), és az ilyen házirendeket előzetes értesítés
-      nélkül bármikor módosíthatjuk vagy eltávolíthatjuk.
-
-      E házirendek szigorúan a szervezetén belül használt
-      <ph name="PRODUCT_NAME" />-példányok konfigurálására szolgálnak.
-      Ha a szervezetén kívül használja ezeket a házirendeket (például
-      egy nyilvánosan terjesztett programban), az rosszindulatú felhasználásnak minősül,
-      és a Google, valamint a víruskeresőket készítő cégek rosszindulatú programként jelölhetik meg.
-
-      Ezeket a beállításokat nem kell manuálisan konfigurálni!  A következő webhelyről
-      könnyen használható sablonokat tölthet le Windows, Mac és Linux rendszerekre: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Windows alatt ajánlott csoportházirend-objektumok révén konfigurálni a házirendeket, de
-      az Active Directory-domainekhez csatlakozó Windows-példányok esetében
-      a konfigurálás a beállításjegyzéken keresztül is végrehajtható.</translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
 <translation id="3417418267404583991">Ha a házirend beállítása igaz, vagy nincs megadva az értéke, akkor a(z) <ph name="PRODUCT_OS_NAME" /> engedélyezi a Vendég módban való bejelentkezéseket. A vendégbejelentkezések névtelen felhasználói munkamenetek, amelyek nem kérik jelszó magadását.
 
@@ -1181,9 +1116,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Ha a házirend nincs beállítva, vagy ha az értéke hamis, akkor a <ph name="PRODUCT_NAME" /> a meglévő online visszavonás-ellenőrzési beállításokat használja.</translation>
 <translation id="5732972008943405952">Automatikus kitöltés űrlapadatainak importálása az alapértelmezett böngészőből az első indításkor</translation>
-<translation id="5751004203256768694">Megadja a HTTP egyeztető hitelesítést (pl. a Kerberos-hitelesítést) támogató androidos hitelesítőalkalmazás által biztosított fiókok fióktípusát. Ezt az információt a hitelesítőalkalmazás szállítója bocsátja rendelkezésre. További részletekért lásd: https://goo.gl/hajyfN.
-
-          Ha nincs megadva beállítás, akkor a böngésző letiltja az HTTP-egyeztető hitelesítést az Androidon.</translation>
 <translation id="5761030451068906335">Konfigurálja a(z) <ph name="PRODUCT_NAME" /> proxybeállításait. Ez a házirend még nem áll készen a használatra, úgyhogy kérjük, ne használja.</translation>
 <translation id="5765780083710877561">Leírás:</translation>
 <translation id="5770738360657678870">Fejlesztői csatorna (instabil lehet)</translation>
@@ -1929,12 +1861,26 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="8544375438507658205">Alapértelmezett HTML-megjelenítő a <ph name="PRODUCT_FRAME_NAME" /> számára</translation>
 <translation id="8549772397068118889">Figyelmeztetés tartalomcsomagokon kívüli webhelyek felkeresése esetén</translation>
 <translation id="8566842294717252664">Az Internetes áruház elrejtése az Új lap oldalon és az alkalmazásindítón</translation>
-<translation id="857925079934558818">Meghatározza, hogy a TLS False Start-optimalizálást le kell-e tiltani. Történeti okokból a házirend neve DisableSSLRecordSplitting.
-
-      Ha a házirend nincs beállítva, illetve értéke hamis, akkor a TLS False Start engedélyezve lesz. Ha értéke igaz a TLS False Start le lesz tiltva.</translation>
 <translation id="8587229956764455752">Új felhasználói fiókok létrehozásának engedélyezése</translation>
 <translation id="8614804915612153606">Letiltja az automatikus frissítést</translation>
 <translation id="8631434304112909927">a(z) <ph name="UNTIL_VERSION" /> verzióig</translation>
+<translation id="863712305404093038">Letiltja a hozzáférést a felsorolt URL-ekhez.
+
+      A házirend megakadályozza, hogy a felhasználó betöltse a tiltólistán szereplő URL-eket. A tiltólistán URL-minták találhatók, amelyek meghatározzák, hogy mely URL-ek lesznek letiltva.
+
+      Az URL-minták vagy helyi fájlokra vonatkozó, vagy általános URL-minták lehetnek. A helyi fájlokra vonatkozó minták formátuma „fájl://elérési út”, ahol az elérési útnak abszolút útvonalnak kell lennie. A fájlrendszer minden olyan helye le lesz tiltva, amelynek az előtagja az elérési út.
+
+      Az általános URL-minta formátuma a következő: „protokoll://gazdagép:port/elérési út”.
+      Ha meg van adva, akkor csak az adott protokoll lesz letiltva. Ha a protokoll:// előtag nincs megadva, akkor a böngésző minden protokollt letilt.
+      A gazdagép megadása kötelező: lehet gazdagépnév vagy IP-cím. A gazdagépnév aldomainjei sem lesznek elérhetők. Ha meg szeretné előzni az aldomainek letiltását, írjon egy „.” karaktert a gazdagépnév elé. A „*” gazdagépnév minden domaint letilt.
+      A port megadása nem kötelező, száma 1 és 65535 között kell, hogy legyen. Ha nincs megadva, minden portot letilt a böngésző.
+      Ha megadja a (nem kötelező) elérési utat, akkor csak az adott előtaggal rendelkező útvonalak válnak elérhetetlenné.
+
+      Kivételeket az URL-ek engedélyezőlistáját meghatározó házirendben lehet megadni. E házirendekben legfeljebb 1000 bejegyzés vehető fel, a további bejegyzéseket figyelmen kívül hagyja a böngésző.
+
+      Vegye figyelembe, hogy nem ajánlott tiltani a belső „chrome://*” URL-eket, mivel ez váratlan hibákat eredményezhet.
+
+      Ha ez a házirend nincs konfigurálva, akkor egyetlen URL se kerül tiltólistára a böngészőben.</translation>
 <translation id="8649763579836720255">A Chrome OS-eszközök távoli hitelesítést (ellenőrzött hozzáférés) használhatnak, hogy a Chrome OS CA által kiállított tanúsítványt kapjanak, amely megerősíti, hogy az eszközön lejátszható védett tartalom is. A folyamat hardver-jóváhagyási információk küldését is magában foglalja a Chrome OS CA-nak, amely egyedileg beazonosítja az eszközt.
 
           Ha „hamis” értékre van állítva, az eszköz nem fog távoli hitelesítést használni a tartalomvédelem érdekében, és az eszközön valószínűleg nem lehet majd védett tartalmat lejátszani.

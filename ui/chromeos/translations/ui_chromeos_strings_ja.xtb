@@ -23,6 +23,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> に接続しています</translation>
 <translation id="3958548648197196644">キウイ</translation>
 <translation id="40400351611212369">ネットワーク有効化エラー</translation>
+<translation id="4118990158415604803">他のネットワークへの接続は管理者によって無効にされています。</translation>
 <translation id="4237016987259239829">ネットワーク接続エラー</translation>
 <translation id="4274292172790327596">不明なエラー</translation>
 <translation id="4326192123064055915">コーヒー</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> を有効にする</translation>
 <translation id="6935521024859866267">逆さま</translation>
 <translation id="6943836128787782965">HTTP を取得できませんでした</translation>
+<translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
 <translation id="7165320105431587207">ネットワークを設定できませんでした</translation>
 <translation id="7170041865419449892">圏外</translation>
 <translation id="7229570126336867161">EVDO が必要です</translation>

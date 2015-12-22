@@ -90,7 +90,6 @@
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa ili URL proxy poslužitelja</translation>
 <translation id="1435659902881071157">Mrežna konfiguracija na razini uređaja</translation>
-<translation id="1445397020763995734">Vrsta računa za pregovaranje o HTTP autentifikaciji</translation>
 <translation id="1454846751303307294">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije kojima nije dopušteno pokretanje JavaScripta. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultJavaScriptSetting", ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="1464848559468748897">Upravlja ponašanjem korisnika u sesiji s više profila na uređajima sa sustavom <ph name="PRODUCT_OS_NAME" />.
 
@@ -257,18 +256,6 @@
       Ako se pravilo HardwareAccelerationModeEnabled postavi na "netočno", Disable3DAPIs se zanemaruje i to je isto kao da se Disable3DAPIs postavi na "točno".</translation>
 <translation id="2168397434410358693">Odgoda neaktivnosti za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="2170233653554726857">Omogući WPAD optimizaciju</translation>
-<translation id="2175836933294053665">Konfigurira popis upravljanih oznaka.
-
-      Pravilo se sastoji od popisa oznaka, od kojih je svaka oznaka rječnik koji
-      sadrži ključeve "name" i "url" koji označavaju naziv i cilj oznake.
-      Podmapa se može konfigurirati tako da se definira oznaka bez
-      ključa "url", ali s dodatnim ključem "children" koji u sebi sadrži
-      popis oznaka kako je prethodno definirano (podmape i same mogu
-      ponovo biti mape). <ph name="PRODUCT_NAME" />
-      dopunjava nepotpune URL-ove kao da su poslani putem višenamjenskog
-      okvira, na primjer, "google.com" postat će "https://google.com/".
-
-      Te se oznake smještaju u mapu upravljanih oznaka koju korisnik ne može izmijeniti, ali je može sakriti s trake oznaka. Upravljane oznake ne sinkroniziraju se s korisničkim računom i proširenja ih ne mogu mijenjati.</translation>
 <translation id="2188979373208322108">Omogućuje traku oznaka u proizvodu <ph name="PRODUCT_NAME" />. Ako omogućite ovu postavku, usluga <ph name="PRODUCT_NAME" /> prikazivat će traku oznaka. Ako onemogućite ovu postavku, korisnicima nikad neće biti prikazana traka oznaka. Ako omogućite ili onemogućite ovu postavku, korisnici ju neće moći promijeniti niti poništiti u proizvodu <ph name="PRODUCT_NAME" />. Ako ova postavka nije postavljena, korisnici mogu odlučiti žele li upotrebljavati tu funkciju.</translation>
 <translation id="2201555246697292490">Konfiguriraj popis dopuštenih za lokalno slanje poruka</translation>
 <translation id="2204753382813641270">Kontroliraj automatsko skrivanje police</translation>
@@ -536,38 +523,6 @@
       Ako omogućite tu postavku, sve autentifikacijske stranice zaštitnog portala (tj., sve web-stranice koje se pokreću sa stranice za prijavu na zaštitnom portalu dok <ph name="PRODUCT_NAME" /> ne otkrije uspješnu internetsku vezu) prikazivat će se u zasebnom prozoru, zanemarujući sve postavke i ograničenja pravila za trenutačnog korisnika.
 
       Ako onemogućite tu postavku ili je ostavite nepostavljenu, sve autentifikacijske stranice zaštitnog portala prikazivat će se u (uobičajenoj) novoj kartici preglednika, na temelju trenutačnih korisničkih postavki proxyja.</translation>
-<translation id="3001569025430882724">Nadjačava zadana pravila za odabir pisača u proizvodu <ph name="PRODUCT_NAME" />.
-
-      Tim se pravilom daju odrednice za odabir zadanog pisača u proizvodu <ph name="PRODUCT_NAME" /> prilikom prve upotrebe funkcije ispisa na profilu.
-
-      Kada se to pravilo postavi, <ph name="PRODUCT_NAME" /> pokušat će pronaći pisač koji odgovara svim navedenim atributima i odabrati ga kao zadani. Odabire se prvi pisač koji odgovara pravilu, a u slučaju da se pronađe više odgovarajućih pisača, može se odabrati bilo koji pisač ovisno o redoslijedu njihovog otkrivanja.
-
-      Ako se to pravilo ne postavi ili se ne pronađe odgovarajući pisač u okviru vremenskog ograničenja, upotrebljavat će se ugrađeni PDF pisač ili se neće odabrati nijedan pisač ako PDF pisač nije dostupan.
-
-      Vrijednost se raščlanjuje kao JSON objekt prema sljedećoj shemi:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Treba li se ograničiti traženje odgovarajućeg pisača na određeni skup pisača.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regularni izraz koji se treba podudarati s ID-jem pisača.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regularni izraz koji se treba podudarati sa zaslonskim nazivom pisača.",
-            "type": "string"
-          }
-        }
-      }
-
-      Pisači povezani s Google Cloud Printom smatraju se pisačima u oblaku ("cloud"), dok su ostali pisači klasificirani kao lokalni ("local").
-      Izostavljanje polja znači da su podudarne sve vrijednosti. Na primjer, ako se ne odredi povezivanje, pregled ispisa pokrenut će otkrivanje svih vrsta pisača, kako lokalnih tako i onih u oblaku.
-      Uzorci regularnih izraza moraju slijediti sintaksu JavaScript RegExp, a u podudaranjima se razlikuju mala i velika slova.</translation>
 <translation id="3021409116652377124">Onemogući alat za traženje dodataka</translation>
 <translation id="3030000825273123558">Omogući izvješće o metrici</translation>
 <translation id="3034580675120919256">Omogućuje da postavite smiju li web-lokacije pokretati JavaScript. Pokretanje JavaScripta može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AllowJavaScript", a korisnik će to moći promijeniti.</translation>
@@ -649,24 +604,6 @@
 <translation id="3273221114520206906">Zadana postavka JavaScripta</translation>
 <translation id="3288595667065905535">Kanal izdanja</translation>
 <translation id="3292147213643666827">Omogućuje da se proizvod <ph name="PRODUCT_NAME" /> ponaša kao proxy između pisača iz oblaka <ph name="CLOUD_PRINT_NAME" /> i pisača iz starog sustava povezanih s računalom. Ako je ova postavka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom putem svojih Google računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">I Chromium i Google Chrome podržavaju isti skup pravila.
-      Napominjemo da ovaj dokument može sadržavati pravila koja se
-      odnose na neobjavljene verzije softvera (to jest, unos "podržano na"
-      odnosi se na neobjavljene verzije) i da su ta pravila podložna promjeni ili
-      uklanjanju bez prethodne najave.
-
-      Ta su pravila namijenjena isključivo konfiguriranju instanci preglednika
-      <ph name="PRODUCT_NAME" /> za unutarnju upotrebu u vašoj
-      organizaciji. Upotreba tih pravila izvan vaše organizacije (na primjer,
-      u javno distribuiranom programu) smatra se zlonamjernim softverom, pa će
-      je Google i dobavljači antivirusnih programa vjerojatno označiti kao takvu.
-
-      Te se postavke ne moraju konfigurirati ručno! Jednostavne predloške za
-      Windows, Mac i Linux možete preuzeti na web-lokaciji <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a,
-      iako se pružanje pravila putem registra i dalje podržava za instance
-      Windowsa pridružene domeni aktivnog direktorija.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
@@ -1094,7 +1031,7 @@
           Kada pravilo nije postavljeno, dijaloški se okvir ne prikazuje.
 
           Vrijednost pravila treba se postaviti u milisekundama. Vrijednosti se prilagođavaju kako bi bile manje ili jednake odgodi neaktivnosti.</translation>
-<translation id="5307432759655324440">Dostupnost anonimnog načina rada</translation>
+<translation id="5307432759655324440">Pristupačnost anonimnog načina rada</translation>
 <translation id="5318185076587284965">Omogući hostu za daljinski pristup upotrebu relejnih poslužitelja</translation>
 <translation id="5330684698007383292">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje sljedećim vrstama sadržaja</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
@@ -1181,9 +1118,6 @@
 
       Ako to pravilo nije postavljeno ili je postavljeno kao netočno, tada će <ph name="PRODUCT_NAME" /> upotrijebiti postojeće mrežne postavke provjere opoziva.</translation>
 <translation id="5732972008943405952">Uvoz podataka za automatsko popunjavanje obrazaca iz zadanog preglednika pri prvom pokretanju</translation>
-<translation id="5751004203256768694">Određuje vrstu računa za račune koje pruža Androidova aplikacija za autentifikaciju koja podržava pregovaranje o HTTP autentifikaciji (npr., autentifikacija Kerberos). Te informacije pruža dobavljač aplikacije za autentifikaciju. Više informacija potražite na https://goo.gl/hajyfN.
-
-          Ako se ne navede nijedna postavka, na Androidu nije omogućeno pregovaranje o HTTP autentifikaciji.</translation>
 <translation id="5761030451068906335">Konfigurira proxy postavke za uslugu <ph name="PRODUCT_NAME" />. To pravilo nije još spremno za upotrebu, nemojte ga upotrebljavati.</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5770738360657678870">Razvojni kanal (možda je nestabilan)</translation>
@@ -1924,12 +1858,26 @@
 <translation id="8544375438507658205">Zadani alat za prikazivanje HTML-a za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja</translation>
 <translation id="8566842294717252664">Skrivanje web-trgovine na web-stranici nove kartice i pokretaču aplikacija</translation>
-<translation id="857925079934558818">Određuje treba li se onemogućiti optimizacija TLS False Starta. Iz povijesnih razloga to se pravilo zove DisableSSLRecordSplitting.
-
-      Ako se to pravilo ne postavi ili se postavi na "False", TLS False Start bit će omogućen. Ako se postavi na "True", TLS False Start neće biti omogućen.</translation>
 <translation id="8587229956764455752">Dopusti stvaranje novih korisničkih računa</translation>
 <translation id="8614804915612153606">Onemogućuje automatsko ažuriranje</translation>
 <translation id="8631434304112909927">do verzije <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blokiranje pristupa navedenim URL-ovima.
+
+      To pravilo korisniku sprječava učitavanje web-stranica s popisa nedopuštenih URL-ova. To je popis uzoraka URL-ova koji navodi URL-ove koji nisu dopušteni.
+
+      Svaki uzorak URL-a može biti uzorak za lokalne datoteke ili generički uzorak URL-a. Format uzorka lokalnih datoteka glasi "file://path", pri čemu je "path" apsolutni put koji se blokira. Blokirat će se sve lokacije datoteka sustava koje u prefiksu imaju taj put.
+
+      Format generičkog uzorka URL-a glasi "scheme://host:port/path".
+      Blokirat će se samo navedena shema ako je prisutna. Ako prefiks "scheme://" nije naveden, blokirat će se sve sheme.
+      Host je obavezan i to može biti naziv hosta ili IP adresa. Poddomene naziva hosta također će se blokirati. Da biste spriječili blokiranje poddomena, stavite "." ispred naziva hosta. Poseban naziv hosta "*" blokirat će sve domene.
+      Neobavezni priključak važeći je broj priključka od 1 do 65535. Ako se ne navede nijedan, blokirat će se svi priključci.
+      Ako se navede neobavezan put, blokirat će se samo putovi s tim prefiksom.
+
+      Izuzeci se mogu definirati u pravilu popisa dopuštenih URL-ova. Ta su pravila ograničena na 1000 unosa, a daljnji se unosi zanemaruju.
+
+      Ne preporučujemo blokiranje internih URL-ova "chrome://*" jer to može dovesti do neočekivanih pogrešaka.
+
+      Ako se pravilo ne postavi, neće nijedan URL biti na popisu nedopuštenih u pregledniku.</translation>
 <translation id="8649763579836720255">Uređaji s OS-om Chrome mogu upotrebljavati daljinsku ovjeru (potvrđeni pristup) kako bi dobili certifikat koji izdaje tijelo za izdavanje certifikata OS-a Chrome koje potvrđuje da uređaj ispunjava uvjete za reprodukciju zaštićenog sadržaja. Taj proces uključuje slanje informacija o potvrdi hardvera tijelu za izdavanje certifikata OS-a Chrome koje jedinstveno identificira uređaj.
 
           Ako je ta postavka netočna, uređaj neće upotrebljavati daljinsku ovjeru za zaštitu sadržaja i uređaj možda neće moći reproducirati zaštićeni sadržaj.

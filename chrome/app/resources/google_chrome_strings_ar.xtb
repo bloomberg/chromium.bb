@@ -55,6 +55,7 @@
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2576431527583832481">‏لقد أصبح Chrome أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
 <translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
+<translation id="2582790009689336987">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقي تحديثات Google Chrome نظرًا لأن نظام Linux هذا لم يعد مدعومًا.</translation>
 <translation id="2588322182880276190">‏شعار Chrome</translation>
 <translation id="2664962310688259219">‏تراخيص مفتوحة المصدر لنظام التشغيل Chrome</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
@@ -100,6 +101,7 @@
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
 <translation id="4309555186815777032">‏(<ph name="BEGIN_BUTTON" />إعادة تشغيل<ph name="END_BUTTON" /> Chrome مطلوبة)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">‏لم يعد يتلقى جهاز الكمبيوتر هذا تحديثات Google Chrome؛ لأن نظام Linux هذا لم يعد مدعومًا.</translation>
 <translation id="4407807842708586359">‏نظام تشغيل Google Chrome</translation>
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="4480040274068703980">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
@@ -140,8 +142,6 @@
 <translation id="5563479599352954471">للبحث بلمسة واحدة</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">تعرّف على موضوعات على مواقع الويب دون مغادرة الصفحة.</translation>
-<translation id="5626352146162055517">‏يستخدم <ph name="SITE" /> التشفير عادةً لحماية معلوماتك. عندما حاول Chrome الاتصال بـ <ph name="SITE" /> في هذه المرة، أرجع موقع الويب مرة أخرى
-  بيانات اعتماد غير عادية وغير صحيحة. والسبب إما أن أحد المهاجمين يحاول التظاهر بأنه <ph name="SITE" />، أو أن شاشة تسجيل دخول Wi-Fi قاطعت الاتصال. لا تزال معلوماتك في أمان لأن Chrome أوقف الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="568643307450491754">‏ابحث عن الإشارات المرجعية في قائمة Chrome أو على شريط الإشارات المرجعية.</translation>
 <translation id="573759479754913123">‏حول نظام التشغيل Chrome</translation>
 <translation id="5749068826913805084">‏يحتاج Chrome الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
@@ -154,7 +154,6 @@
 <translation id="597770749449734237">‏لتمكين اختصارات لوحة مفاتيح إضافية والتي تكون مفيدة لتصحيح أخطاء Google Chrome.</translation>
 <translation id="6012342843556706400">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الموقع لمشاركته مع موقع الويب هذا.</translation>
 <translation id="6014844626092547096">‏لقد سجلت الدخول الآن إلى Chrome! عطّل المشرف المزامنة.</translation>
-<translation id="6049075767726609708">‏قام أحد المشرفين بتثبيت Google Chrome على هذا الجهاز، وهو متاح لجميع المستخدمين. سيحل Google Chrome على مستوى النظام محل النسخة المثبتة على مستوى المستخدم لديك الآن.</translation>
 <translation id="6113794647360055231">‏Chrome أصبح أفضل</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">‏تحديث ن&amp;ظام التشغيل Google Chrome</translation>
@@ -214,7 +213,6 @@
 <translation id="781069973841903133">‏ستؤدي إعادة التشغيل في وضع Chrome المجسم إلى إغلاق تطبيقات Chrome وإعادة تشغيلها.</translation>
 <translation id="7825851276765848807">‏فشل التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="7890208801193284374">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chrome على النحو الذي يريدونه.</translation>
-<translation id="7984945080620862648">‏لا يمكنك زيارة <ph name="SITE" /> الآن لأن موقع الويب أرسل بيانات اعتماد مختلطة يتعذر على Chrome معالجتها. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة لاحقًا على الأرجح.</translation>
 <translation id="8000275528373650868">‏يتطلب Google Chrome نظام التشغيل Windows Vista أو Windows XP المزود بحزمة الخدمة SP2 أو الأعلى منها.</translation>
 <translation id="8005540215158006229">‏Chrome جاهز تقريبًا.</translation>
 <translation id="8008534537613507642">‏إعادة تثبيت Chrome</translation>
@@ -247,7 +245,6 @@
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
 <translation id="8889942196804715220">‏إعادة التشغيل في وضع Chrome المجسم</translation>
-<translation id="8987477933582888019">متصفح الويب</translation>
 <translation id="9026991721384951619">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="9102715433345326100">‏يُعد الملف برنامجًا ضارًا، وقد أجرى Chrome حظره.</translation>
 <translation id="9107728822479888688">‏<ph name="BEGIN_BOLD" />تحذير:<ph name="END_BOLD" /> لا يستطيع Google Chrome منع الإضافات من تسجيل سجل التصفح الخاص بك. لتعطيل هذا الإضافة في وضع التصفح المتخفي، ألغ تحديد هذا الخيار.</translation>

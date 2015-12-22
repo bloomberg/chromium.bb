@@ -53,6 +53,7 @@
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2576431527583832481">Chrome 浏览器刚刚经过了改进！新版本已推出。</translation>
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
+<translation id="2582790009689336987">Google Chrome 将不再支持此 Linux 系统，因此这台计算机很快将停止接收 Google Chrome 更新。</translation>
 <translation id="2588322182880276190">Chrome 徽标</translation>
 <translation id="2664962310688259219">Chrome操作系统开放源代码许可</translation>
 <translation id="2665296953892887393">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Google Chrome。</translation>
@@ -99,6 +100,7 @@
 <translation id="4309555186815777032">（需要<ph name="BEGIN_BUTTON" />重新启动<ph name="END_BUTTON" /> Chrome）</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="437002079035561265">Google Chrome 不再支持此 Linux 系统，因此这台计算机将不再接收 Google Chrome 更新。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="4480040274068703980">登录时出现错误，Chrome操作系统无法同步您的数据。</translation>
@@ -137,7 +139,6 @@
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> 通常使用加密技术来保护您的信息。Chrome 此次尝试连接到 <ph name="SITE" /> 时，此网站返回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chrome 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="568643307450491754">在 Chrome 菜单或书签栏中查找您的书签。</translation>
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
@@ -150,7 +151,6 @@
 <translation id="597770749449734237">启用其他有助于调试 Google Chrome 的键盘快捷键。</translation>
 <translation id="6012342843556706400">Chrome 需要具有位置信息使用权，才能批准此网站的分享请求。</translation>
 <translation id="6014844626092547096">您现在已登录 Chrome！不过，管理员已停用同步功能。</translation>
-<translation id="6049075767726609708">管理员已为该系统安装了 Google Chrome 浏览器，并且所有用户均可使用它。因此，原来针对个别用户安装的浏览器现在可供系统上的所有用户使用。</translation>
 <translation id="6113794647360055231">Chrome现在更好用了</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">更新 Chrome 操作系统(&amp;C)</translation>
@@ -210,7 +210,6 @@
 <translation id="781069973841903133">在 Chrome 沉浸模式下重新启动将关闭并重新启动您的 Chrome 应用。</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="7890208801193284374">如果您与亲朋好友共用计算机，他们将能够使用单独的帐户进行浏览，并可随心所欲地设置Chrome。</translation>
-<translation id="7984945080620862648">您目前无法访问<ph name="SITE" />，因为此网站发送了Chrome无法处理的杂乱凭据。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="8000275528373650868">Google Chrome 浏览器要求操作系统必须为 Windows Vista 或者 Windows XP SP2 或更高版本。</translation>
 <translation id="8005540215158006229">Chrome 浏览器即将准备就绪。</translation>
 <translation id="8008534537613507642">重新安装Chrome</translation>
@@ -243,7 +242,6 @@
 <translation id="8851136666856101339">主体内容</translation>
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
 <translation id="8889942196804715220">在 Chrome 沉浸模式下重新启动</translation>
-<translation id="8987477933582888019">网络浏览器</translation>
 <translation id="9026991721384951619">您的帐户登录详细信息已过期，Chrome操作系统无法同步您的数据。</translation>
 <translation id="9102715433345326100">这是恶意文件，Chrome 已将其拦截。</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告<ph name="END_BOLD" />：Google Chrome 浏览器无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>

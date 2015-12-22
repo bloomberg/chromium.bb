@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1012876632442809908">Thiết bị USB-C (cổng phía trước)</translation>
 <translation id="1013923882670373915">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã PIN này trên thiết bị đó: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Phím tắt để chuyển sang phương thức nhập tiếp theo đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Thiết bị USB-C (cổng bên trái)</translation>
 <translation id="1330145147221172764">Bật bàn phím ảo</translation>
 <translation id="1343000272198685031">Giắc cắm micrô</translation>
 <translation id="1346748346194534595">Phải</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="1812696562331527143">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />bên thứ ba<ph name="END_LINK" />).
 Nhấn Shift + Alt để chuyển đổi.</translation>
+<translation id="1864454756846565995">Thiết bị USB-C (cổng phía sau)</translation>
 <translation id="1882897271359938046">Đang phản chiếu tới <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Phím tắt để mở trình quản lý tác vụ đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
@@ -55,6 +58,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2805756323405976993">Ứng dụng</translation>
 <translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
 <translation id="2825619548187458965">Giá</translation>
+<translation id="2844169650293029770">Thiết bị USB-C (cổng phía trước, bên trái)</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2942516765047364088">Vị trí giá</translation>
 <translation id="2946640296642327832">Bật bluetooth</translation>
@@ -74,6 +78,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3147142846278915599">Trình khởi chạy (đang đồng bộ hóa ứng dụng...)</translation>
 <translation id="3157169093162779309">Bật khóa xoay</translation>
 <translation id="3294437725009624529">Khách</translation>
+<translation id="3445925074670675829">Thiết bị USB-C</translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
 <translation id="3573179567135747900">Thay đổi lại thành "<ph name="FROM_LOCALE" />" (yêu cầu khởi động lại)</translation>
 <translation id="3595596368722241419">Pin đầy</translation>
@@ -125,6 +130,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="5238774010593222950">Không thể đăng nhập vào tài khoản khác.</translation>
 <translation id="532063867737390965">Cài đặt mạng này bị quản trị viên tắt.</translation>
+<translation id="5331975486040154427">Thiết bị USB-C (cổng phía sau, bên trái)</translation>
 <translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
 <translation id="5507786745520522457">Thiết lập dữ liệu di động</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6426039856985689743">Tắt dữ liệu di động</translation>
 <translation id="6452181791372256707">Từ chối</translation>
 <translation id="6459472438155181876">Đang mở rộng màn hình tới <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Thiết bị USB-C (cổng bên phải)</translation>
 <translation id="6501401484702599040">Đang truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6585808820553845416">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="7052914147756339792">Đặt hình nền...</translation>
 <translation id="7097613348211027502">Đã bật ChromeVox (phản hồi bằng giọng nói).
 Nhấn Ctrl+Alt+Z để tắt.</translation>
+<translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK đang bật.
@@ -220,6 +228,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Mở rộng màn hình</translation>
+<translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Micrô đang được sử dụng.</translation>

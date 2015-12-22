@@ -53,6 +53,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="2576431527583832481">Chrome telah dipertingkatkan! Versi baharu kini boleh didapati.</translation>
 <translation id="2580411288591421699">Tidak dapat memasang versi Google Chrome yang sama yang kini dijalankan. Sila tutup Google Chrome dan cuba semula.</translation>
+<translation id="2582790009689336987">Tidak lama lagi, komputer ini akan berhenti menerima kemas kini Google Chrome kerana sistem Linux ini tidak akan disokong lagi.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2664962310688259219">Lesen sumber terbuka Chrome OS</translation>
 <translation id="2665296953892887393">Bantu jadikan Google Chrome lebih baik dengan menghantar laporan ranap dan <ph name="UMA_LINK" /> kepada Google.</translation>
@@ -98,6 +99,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="4251615635259297716">Paut data Chrome anda ke akaun ini?</translation>
 <translation id="4309555186815777032">(memerlukan Chrome <ph name="BEGIN_BUTTON" />mula semula<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
+<translation id="437002079035561265">Komputer ini tidak akan menerima kemas kini Google Chrome lagi kerana sistem Linux ini tidak disokong lagi.</translation>
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="4480040274068703980">OS Chrome tidak dapat menyegerakkan data anda disebabkan oleh ralat melog masuk.</translation>
@@ -136,8 +138,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="5563479599352954471">Carian dengan satu sentuhan</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Ketahui tentang topik di tapak web tanpa meninggalkan halaman.</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chrome cuba menyambung ke <ph name="SITE" /> pada kali ini, tapak web tersebut mengembalikan bukti kelayakan yang luar biasa
- dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai <ph name="SITE" /> atau skrin log masuk Wi-Fi telah memutuskan sambungan. Maklumat anda masih selamat kerana Chrome menghentikan sambungan sebelum sebarang pertukaran data berlaku.</translation>
 <translation id="568643307450491754">Cari penanda halaman anda dalam menu Chrome atau pada bar penanda halaman.</translation>
 <translation id="573759479754913123">Mengenai Chrome OS</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses storan untuk memuat turun fail.</translation>
@@ -150,7 +150,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="597770749449734237">Mendayakan pintasan papan kekunci tambahan yang berguna untuk menyahpepijat Google Chrome.</translation>
 <translation id="6012342843556706400">Chrome memerlukan akses lokasi untuk mengongsikannya dengan tapak ini.</translation>
 <translation id="6014844626092547096">Anda sedang dilog masuk ke Chrome! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
-<translation id="6049075767726609708">Pentadbir telah memasang Google Chrome pada sistem ini, dan ia adalah tersedia untuk semua pengguna. Google Chrome peringkat sistem akan menggantikan pemasangan peringkat pengguna anda sekarang.</translation>
 <translation id="6113794647360055231">Chrome kini lebih baik</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Kemas kini &amp;Chrome OS</translation>
@@ -210,7 +209,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="781069973841903133">Langkah melancarkan semula dalam mod benaman Chrome akan menyebabkan apl Chrome anda ditutup dan dilancarkan semula.</translation>
 <translation id="7825851276765848807">Gagal pemasangan disebabkan ralat yang tidak dinyatakan. Sila muat turun semula Google Chrome.</translation>
 <translation id="7890208801193284374">Jika anda berkongsi komputer, rakan dan keluarga boleh menyemak imbas secara berasingan dan menyediakan Chrome sebagaimana yang mereka mahukan.</translation>
-<translation id="7984945080620862648">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menghantar bukti kelayakan yang dicampuradukkan yang tidak boleh diproses oleh Chrome. Ralat rangkaian dan serangan biasanya bersifat sementara oleh itu, halaman ini mungkin akan berfungsi sebentar lagi.</translation>
 <translation id="8000275528373650868">Google Chrome memerlukan Windows Vista atau Windows XP dengan SP2 atau lebih tinggi.</translation>
 <translation id="8005540215158006229">Chrome hampir sedia.</translation>
 <translation id="8008534537613507642">Pasang Semula Chrome</translation>
@@ -243,7 +241,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="8851136666856101339">utama</translation>
 <translation id="8862326446509486874">Anda tidak mempunyai hak wajar untuk pemasangan peringkat sistem. Cuba jalankan pemasang semula sebagai Pentadbir.</translation>
 <translation id="8889942196804715220">Lancarkan semula dalam mod benaman Chrome</translation>
-<translation id="8987477933582888019">Penyemak imbas web</translation>
 <translation id="9026991721384951619">OS Chrome tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="9102715433345326100">Fail ini bersifat hasad dan Chrome telah menyekatnya.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Amaran:<ph name="END_BOLD" /> Google Chrome tidak dapat menghalang sambungan daripada merekodkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>

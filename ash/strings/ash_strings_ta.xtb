@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="1012876632442809908">USB-C சாதனம் (முன்பக்கப் போர்ட்)</translation>
 <translation id="1013923882670373915">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்த PIN குறியீட்டை உள்ளிடவும்: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">அடுத்த உள்ளீட்டு முறைக்கு மாறுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">ஆன்ஸ்க்ரீன் விசைப்பலகை முடக்கப்பட்டது</translation>
 <translation id="1272079795634619415">நிறுத்து</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">USB-C சாதனம் (இடது போர்ட்)</translation>
 <translation id="1330145147221172764">திரை விசைப்பலகை இயக்கு</translation>
 <translation id="1343000272198685031">மைக் ஜேக்</translation>
 <translation id="1346748346194534595">வலது</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">ஆன்ஸ்க்ரீன் விசைப்பலகை இயக்கப்பட்டது</translation>
 <translation id="1812696562331527143">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />மூன்றாம் தரப்பு<ph name="END_LINK" />) க்கு மாற்றப்பட்டது.
 மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
+<translation id="1864454756846565995">USB-C சாதனம் (பின்பக்கப் போர்ட்)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ஐப் பிரதிபலிக்கிறது</translation>
 <translation id="1919743966458266018">காரிய நிர்வாகியைத் திறப்பதற்கான குறுக்குவழி மாற்றப்பட்டது. <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">ஆப்ஸ்</translation>
 <translation id="2819276065543622893">இப்போது வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="2825619548187458965">அடுக்கு</translation>
+<translation id="2844169650293029770">USB-C சாதனம் (இடது பக்கம் முன்னே இருக்கும் போர்ட்)</translation>
 <translation id="2872961005593481000">நிறுத்து</translation>
 <translation id="2942516765047364088">அடுக்கின் நிலை</translation>
 <translation id="2946640296642327832">புளூடூத்தை இயக்கு</translation>
@@ -74,6 +78,7 @@
 <translation id="3147142846278915599">துவக்கி (பயன்பாடுகளை ஒத்திசைக்கிறது...)</translation>
 <translation id="3157169093162779309">சுழற்றல் பூட்டை இயக்கு</translation>
 <translation id="3294437725009624529">விருந்தினர்</translation>
+<translation id="3445925074670675829">USB-C சாதனம்</translation>
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">வெளியேறு</translation>
 <translation id="5238774010593222950">மற்றொரு கணக்கில் உள்நுழைய முடியாது.</translation>
 <translation id="532063867737390965">இந்த நெட்வொர்க் அமைப்பு நிர்வாகியால் முடக்கப்பட்டுள்ளது.</translation>
+<translation id="5331975486040154427">USB-C சாதனம் (இடது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
 <translation id="544691375626129091">எல்லா பயனர்களும் ஏற்கனவே இந்த அமர்வில் சேர்க்கப்பட்டுள்ளனர்.</translation>
 <translation id="5507786745520522457">மொபைல் தரவை அமை</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@
 <translation id="6426039856985689743">மொபைல் தரவை முடக்கு</translation>
 <translation id="6452181791372256707">நிராகரி</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> க்கு திரை விரிவாக்கப்படுகிறது</translation>
+<translation id="6490471652906364588">USB-C சாதனம் (வலது போர்ட்)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />க்குத் திரையை அனுப்புகிறது</translation>
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
@@ -182,6 +189,7 @@
 <translation id="7052914147756339792">வால்பேப்பரை அமை...</translation>
 <translation id="7097613348211027502">ChromeVox (பேச்சுவடிவ கருத்து) இயக்கப்பட்டது.
 முடக்குவதற்கு, Ctrl+Alt+Z ஐ அழுத்தவும்.</translation>
+<translation id="7098389117866926363">USB-C சாதனம் (பின்பக்கம் உள்ள இடது போர்ட்)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
 <translation id="7209101170223508707">CAPS LOCK இயக்கத்தில் உள்ளது.
@@ -220,6 +228,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">திரையை விரிவாக்குகிறது</translation>
+<translation id="8938800817013097409">USB-C சாதனம் (பின்பக்கம் உள்ள வலது போர்ட்)</translation>
 <translation id="8940956008527784070">பேட்டரி குறைவு (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">புளூடூத்</translation>
 <translation id="9080206825613744995">மைக்ரோஃபோன் பயன்பாட்டில் உள்ளது.</translation>

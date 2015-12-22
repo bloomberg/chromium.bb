@@ -39,6 +39,7 @@
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> konnte aufgrund von Serverproblemen nicht heruntergeladen werden.</translation>
 <translation id="1506061864768559482">Suchmaschine</translation>
 <translation id="1513352483775369820">Lesezeichen und Webprotokoll</translation>
+<translation id="1553358976309200471">Chrome aktualisieren</translation>
 <translation id="1557201757634521564">Codierung automatisch erkennen</translation>
 <translation id="1568822834048182062">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
 <translation id="3190152372525844641">Berechtigungen für Chrome in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gespeicherte Daten</translation>
-<translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Web-App</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4543087392704641517">Lesezeichentitel</translation>
 <translation id="4543661749405994812">E-Mail-Adresse kopieren</translation>
 <translation id="4581964774250883625">Sie befinden sich jetzt im Inkognitomodus.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 Physical Web-Link in der Nähe}other{# Physical Web-Links in der Nähe}}</translation>
 <translation id="4645575059429386691">Von deinen Eltern verwaltet</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
@@ -248,7 +247,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4885273946141277891">Nicht unterstützte Anzahl von Chrome-Instanzen</translation>
 <translation id="4927198283430892231">Die gespeicherten Seiten belegen momentan <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="494334276486034338">Letzte Synchronisierung: vor <ph name="HOURS" /> Stunden</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
 <translation id="4970484396410298643">Greifen Sie hier auf die Tabs zu, die Sie auf Ihrem Computer geöffnet haben.
 
@@ -258,14 +256,9 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
 <translation id="5016205925109358554">Serifenschrift</translation>
 <translation id="5017989644593831205">Sie sind nicht <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">Es wurden keine Webseiten in der Nähe gefunden.</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5040262127954254034">Datenschutz</translation>
-<translation id="5049968687459146030">Wenn Sie das Kästchen "Do Not Track" anklicken, wird mit Ihren Browserzugriffen eine Anforderung gesendet. Wie sich diese Anforderung auswirkt, hängt davon ab, ob eine Website darauf reagiert und wie die Anforderung interpretiert wird.
-
-Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf basiert, welche Websites Sie zuvor besucht haben. Viele Websites erfassen weiterhin Ihre Browserdaten und verwenden sie, um beispielsweise die Sicherheit zu verbessern oder Inhalte, Anzeigen und Empfehlungen bereitzustellen und Statistiken für Berichte zu erstellen.</translation>
 <translation id="5063480226653192405">Verwendung</translation>
-<translation id="5074309530946372881">Suche nach Webseiten in der Nähe läuft.</translation>
 <translation id="509605886816275399">Diese Seite offline speichern?</translation>
 <translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
 <translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>
@@ -286,7 +279,6 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="5275558766013849309">Tabs und letzte Apps werden zusammengefasst.</translation>
 <translation id="5302048478445481009">Sprache</translation>
 <translation id="5304593522240415983">Dieses Feld darf nicht leer sein.</translation>
-<translation id="5305985456140490686">Letzte Synchronisierung: vor <ph name="MINUTES" /> Minuten</translation>
 <translation id="5308933389783727448">Gespeicherte Seiten durchsuchen</translation>
 <translation id="5313967007315987356">Website hinzufügen</translation>
 <translation id="5317780077021120954">Speichern</translation>
@@ -301,7 +293,6 @@ Einige Websites schalten möglicherweise Anzeigen, deren Auswahl nicht darauf ba
 <translation id="5414836363063783498">Überprüfung...</translation>
 <translation id="5423934151118863508">Hier werden Ihre am meisten aufgerufenen Seiten angezeigt.</translation>
 <translation id="5424715742813396254">Gespeicherten Eintrag oder Ausnahme bearbeiten</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Gespeicherte Seite bearbeiten</translation>
 <translation id="544291274896356069">Der Inkognitomodus wird beendet, wenn dieser Link in einer externen App geöffnet wird. Vorgang fortsetzen?</translation>
 <translation id="5487729733663684359">Chrome-Updates werden für diese Version von Android nicht mehr unterstützt.</translation>
@@ -467,6 +458,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Immer</translation>
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
+<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
 <translation id="7599840151813361502">Sie werden nicht von Ihren <ph name="BEGIN_LINK" />Google-Konten<ph name="END_LINK" /> abgemeldet.</translation>
 <translation id="7603403729818446828">Auf dem Übersichtsbildschirm Ihres Smartphones sehen Sie Ihre Tabs mit anderen kürzlich verwendeten Apps. Sie können diese Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> anpassen.</translation>
@@ -501,7 +493,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7961015016161918242">Nie</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
-<translation id="7977858705483383621">SafeSearch</translation>
 <translation id="7987073022710626672">Chrome-Nutzungsbedingungen</translation>
 <translation id="7989222512959629388">Wird gespeichert...</translation>
 <translation id="7998918019931843664">Geschlossenen Tab wieder öffnen</translation>
@@ -527,7 +518,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8275818695183729150">Zulassen (für Suchanfragen in der Adressleiste)</translation>
 <translation id="8310344678080805313">Standard-Tabs</translation>
-<translation id="8374420395168535396">Letzte Synchronisierung: vor <ph name="DAYS" /> Tagen</translation>
 <translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>
 <translation id="8396312449826231789">Nur genehmigte Websites</translation>
 <translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>
@@ -595,7 +585,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="945632385593298557">Mikrofonzugriff</translation>
-<translation id="963967414714199900">Letzte Synchronisierung: gerade eben</translation>
 <translation id="969096075394517431">Sprachen ändern</translation>
 <translation id="971774202801778802">URL als Lesezeichen speichern</translation>
 <translation id="983192555821071799">Alle Tabs schließen</translation>

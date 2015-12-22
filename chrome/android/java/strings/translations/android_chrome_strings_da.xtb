@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">Download af <ph name="FILE_NAME" /> mislykkedes på grund af serverproblemer.</translation>
 <translation id="1506061864768559482">Søgemaskine</translation>
 <translation id="1513352483775369820">Bogmærker og webhistorik</translation>
+<translation id="1553358976309200471">Opdater Chrome</translation>
 <translation id="1557201757634521564">Registrer kodning automatisk</translation>
 <translation id="1568822834048182062">Dine bogmærker, din historik og dine andre indstillinger synkroniseres med din Google-konto.</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -117,6 +118,7 @@
 <translation id="271033894570825754">Nyt</translation>
 <translation id="2718352093833049315">Kun på Wi-Fi</translation>
 <translation id="2748463065602559597">Du får vist en sikker Google Chrome-side.</translation>
+<translation id="2762000892062317888">lige nu</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="278029852808208386">Der blev ikke fundet nogen enheder. <ph name="BEGIN_LINK" />Søg igen<ph name="END_LINK" />.</translation>
 <translation id="2816165854387457183">Der er registreret en langsom forbindelse.</translation>
@@ -143,7 +145,6 @@
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gemte data</translation>
-<translation id="3207960819495026254">Bogmærket</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3232754137068452469">Webapp</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +225,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4543087392704641517">Bogmærkets titel</translation>
 <translation id="4543661749405994812">Kopiér e-mailadresse</translation>
 <translation id="4581964774250883625">Du er inkognito.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{Der blev registreret Fysisk web-link i nærheden}one{Der blev registreret # Fysisk web-link i nærheden}other{Der blev registreret # Fysisk web-links i nærheden}}</translation>
 <translation id="4645575059429386691">Administreret af en af dine forældre</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> blev føjet til din startskærm</translation>
@@ -248,7 +248,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4885273946141277891">Der er flere forekomster af Chrome, end der understøttes.</translation>
 <translation id="4927198283430892231">Gemte sider fylder i øjeblikket <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> .</translation>
-<translation id="494334276486034338">Seneste synkronisering: For <ph name="HOURS" /> timer siden</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="4970484396410298643">Få adgang til de faner, der er åbne på din computer, lige her.
 
@@ -258,14 +257,9 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="5000922062037820727">Blokeret (anbefales)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Er du ikke <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">Der blev ikke fundet nogen websider i nærheden</translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
-<translation id="5049968687459146030">Aktivering af "Do Not Track" betyder, at en anmodning medtages i din browsertrafik. Effekten afhænger af, om et website reagerer på anmodningen, og hvordan anmodningen fortolkes.
-
-Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, som ikke er baseret på andre websites, du har besøgt. Mange websites vil fortsat indsamle og bruge browserdata til f.eks. at forbedre sikkerheden, til at føje indhold, annoncer og anbefalinger til websitet og til at generere rapporteringsstatistik.</translation>
 <translation id="5063480226653192405">Forbrug</translation>
-<translation id="5074309530946372881">Leder efter websider i nærheden</translation>
 <translation id="509605886816275399">Vil du gemme denne side offline?</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="5127805178023152808">Synkronisering er slået fra</translation>
@@ -286,7 +280,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="5275558766013849309">Faner findes sammen med de seneste apps.</translation>
 <translation id="5302048478445481009">Sprog</translation>
 <translation id="5304593522240415983">Dette felt må ikke være tomt</translation>
-<translation id="5305985456140490686">Seneste synkronisering: For <ph name="MINUTES" /> minutter siden</translation>
 <translation id="5308933389783727448">Søg efter gemte sider</translation>
 <translation id="5313967007315987356">Tilføj website</translation>
 <translation id="5317780077021120954">Gem</translation>
@@ -301,7 +294,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="5414836363063783498">Bekræfter...</translation>
 <translation id="5423934151118863508">Dine mest besøgte sider vises her</translation>
 <translation id="5424715742813396254">Rediger gemt navn/adgangskode eller undtagelse</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Rediger den gemte side</translation>
 <translation id="544291274896356069">Du forlader inkognitotilstand, hvis dette link åbnes i en ekstern applikation. Vil du fortsætte?</translation>
 <translation id="5487729733663684359">Chrome understøtter ikke længere denne version af Android.</translation>
@@ -467,6 +459,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Altid</translation>
 <translation id="7562080006725997899">Browserdata ryddes</translation>
+<translation id="7588950540487816470">Fysisk web</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7599840151813361502">Du bliver ikke logget ud af dine <ph name="BEGIN_LINK" />Google-konti<ph name="END_LINK" /></translation>
 <translation id="7603403729818446828">Se dine faner med andre apps, du har brugt for nylig, på skærmen Oversigt på din telefon. Du kan administrere dette under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
@@ -501,7 +494,6 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
-<translation id="7977858705483383621">Beskyttet søgning</translation>
 <translation id="7987073022710626672">Chromes servicevilkår</translation>
 <translation id="7989222512959629388">Gemmer…</translation>
 <translation id="7998918019931843664">Åbn lukket fane igen</translation>
@@ -527,7 +519,6 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8275818695183729150">Tillad (for søgninger i adresselinjen)</translation>
 <translation id="8310344678080805313">Standardfaner</translation>
-<translation id="8374420395168535396">Seneste synkronisering: For <ph name="DAYS" /> dage siden</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
 <translation id="8396312449826231789">Kun godkendte websites</translation>
 <translation id="8413126021676339697">Vis hele historikken</translation>
@@ -595,7 +586,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="938850635132480979">Fejl: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Ny mappe</translation>
 <translation id="945632385593298557">Adgang til din mikrofon</translation>
-<translation id="963967414714199900">Seneste synkronisering: For et øjeblik siden</translation>
 <translation id="969096075394517431">Skift sprog</translation>
 <translation id="971774202801778802">Bogmærkets webadresse</translation>
 <translation id="983192555821071799">Luk alle faner</translation>

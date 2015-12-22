@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME" /></translation>
 <translation id="3958548648197196644">กีวี</translation>
 <translation id="40400351611212369">ข้อผิดพลาดการเปิดใช้งานเครือข่าย</translation>
+<translation id="4118990158415604803">ผู้ดูแลระบบปิดใช้การเชื่อมต่อเครือข่ายอื่นๆ</translation>
 <translation id="4237016987259239829">ข้อผิดพลาดการเชื่อมต่อเครือข่าย</translation>
 <translation id="4274292172790327596">ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="4326192123064055915">กาแฟ</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">เปิดใช้งาน <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">กลับหัว</translation>
 <translation id="6943836128787782965">การรับ HTTP ล้มเหลว</translation>
+<translation id="7066646422045619941">ผู้ดูแลระบบปิดใช้เครือข่ายนี้</translation>
 <translation id="7165320105431587207">ล้มเหลวในการกำหนดค่าเครือข่าย</translation>
 <translation id="7170041865419449892">อยู่นอกระยะสัญญาณ</translation>
 <translation id="7229570126336867161">ต้องใช้ EVDO</translation>

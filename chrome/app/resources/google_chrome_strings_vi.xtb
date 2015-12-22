@@ -55,6 +55,7 @@
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="2576431527583832481">Chrome được cải tiến hơn! Đã có phiên bản mới.</translation>
 <translation id="2580411288591421699">Không thể cài đặt phiên bản Google Chrome giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome và thử lại.</translation>
+<translation id="2582790009689336987">Máy tính này sắp dừng nhận bản cập nhật của Google Chrome do hệ thống Linux này sẽ không được hỗ trợ nữa.</translation>
 <translation id="2588322182880276190">Biểu trưng Chrome</translation>
 <translation id="2664962310688259219">Giấy phép nguồn mở Chrome OS</translation>
 <translation id="2665296953892887393">Giúp cải thiện Google Chrome bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
@@ -101,6 +102,7 @@
 <translation id="4309555186815777032">(yêu cầu Chrome <ph name="BEGIN_BUTTON" />khởi động lại<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="437002079035561265">Máy tính này sẽ không còn nhận được bản cập nhật của Google Chrome do hệ thống Linux này không được hỗ trợ nữa.</translation>
 <translation id="4407807842708586359">Hệ điều hành Google Chrome</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="4480040274068703980">Chrome OS không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
@@ -141,8 +143,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5563479599352954471">Tìm kiếm bằng một lần chạm</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Tìm hiểu về các chủ đề trên trang web mà không phải rời khỏi trang.</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chrome cố gắng kết nối với <ph name="SITE" /> lần này, trang web gửi lại thông tin đăng nhập
-  không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chrome đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="568643307450491754">Tìm dấu trang của bạn trong menu Chrome hoặc trên thanh dấu trang.</translation>
 <translation id="573759479754913123">Giới thiệu về Chrome OS</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
@@ -155,7 +155,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="597770749449734237">Bật các phím tắt bổ sung hữu ích để gỡ lỗi Google Chrome.</translation>
 <translation id="6012342843556706400">Chrome cần quyền truy cập vị trí để chia sẻ vị trí với trang web này.</translation>
 <translation id="6014844626092547096">Bạn hiện đã đăng nhập vào Chrome! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>
-<translation id="6049075767726609708">Quản trị viên đã cài đặt Google Chrome trên hệ thống này và Google Chrome khả dụng cho tất cả người dùng. Ngay bây giờ, Google Chrome cấp hệ thống sẽ thay thế cài đặt cấp người dùng của bạn.</translation>
 <translation id="6113794647360055231">Chrome được cải tiến hơn</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Cập nhật &amp;hệ điều hành Chrome</translation>
@@ -215,7 +214,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="781069973841903133">Khởi chạy lại ở chế độ chìm của Chrome sẽ đóng và khởi chạy lại ứng dụng Chrome của bạn.</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
 <translation id="7890208801193284374">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chrome theo ý của họ.</translation>
-<translation id="7984945080620862648">Bạn không thể truy cập <ph name="SITE" /> ngay bây giờ do trang web gửi thông tin đăng nhập đã thu thập mà Chrome không thể xử lý. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời, do đó trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="8000275528373650868">Google Chrome yêu cầu Windows Vista hoặc Windows XP với SP2 trở lên.</translation>
 <translation id="8005540215158006229">Chrome sắp sẵn sàng.</translation>
 <translation id="8008534537613507642">Cài đặt lại Chrome</translation>
@@ -248,7 +246,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8851136666856101339">chính</translation>
 <translation id="8862326446509486874">Bạn không có quyền thích hợp để cài đặt cấp hệ thống. Thử chạy lại trình cài đặt với vai trò Quản trị viên.</translation>
 <translation id="8889942196804715220">Khởi chạy lại ở chế độ chìm của Chrome</translation>
-<translation id="8987477933582888019">Trình duyệt web</translation>
 <translation id="9026991721384951619">Chrome OS không thể đồng bộ hóa dữ liệu của bạn do chi tiết đăng nhập tài khoản của bạn đã lỗi thời.</translation>
 <translation id="9102715433345326100">Đây là tệp độc hại và Chrome đã chặn tệp này.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Cảnh báo:<ph name="END_BOLD" /> Google Chrome không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>

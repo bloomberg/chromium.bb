@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa de problemes amb el servidor.</translation>
 <translation id="1506061864768559482">Motor de cerca</translation>
 <translation id="1513352483775369820">Adreces interès i historial web</translation>
+<translation id="1553358976309200471">Actualitza Chrome</translation>
 <translation id="1557201757634521564">Detecta automàticament la codificació</translation>
 <translation id="1568822834048182062">Les adreces d'interès, l'historial, les contrasenyes i altres configuracions es sincronitzaran amb el vostre compte de Google.</translation>
 <translation id="1620510694547887537">Càmera</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Surt del mode d'incògnit</translation>
 <translation id="3190152372525844641">Activeu els permisos per a Chrome a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dades desades</translation>
-<translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
 <translation id="3227137524299004712">Micròfon</translation>
 <translation id="3232754137068452469">Aplicació web</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4543087392704641517">Títol de l'adreça d'interès</translation>
 <translation id="4543661749405994812">Copia l'adreça electrònica</translation>
 <translation id="4581964774250883625">Heu passat al mode d'incògnit.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 enllaç de web físic a prop}other{# enllaços de web físic a prop}}</translation>
 <translation id="4645575059429386691">Gestionat pels pares</translation>
 <translation id="4663756553811254707">S'han suprimit <ph name="NUMBER_OF_BOOKMARKS" /> adreces d'interès</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> s'ha afegit a la pantalla d'inici</translation>
@@ -248,7 +247,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4885273946141277891">No s'admet aquest nombre d'instàncies de Chrome.</translation>
 <translation id="4927198283430892231">En aquests moments, les pàgines desades ocupen <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="494334276486034338">Última sincronització: fa <ph name="HOURS" /> hores</translation>
 <translation id="4943872375798546930">No hi ha resultats</translation>
 <translation id="4970484396410298643">Accediu a les pestanyes que teniu obertes a l'ordinador des d'aquí mateix.
 
@@ -258,14 +256,9 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 <translation id="5000922062037820727">Bloquejat (recomanat)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">No sou <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">No s'ha trobat cap pàgina web a prop</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
-<translation id="5049968687459146030">Si activeu l'opció No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta.
-
-Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud mostrant-vos anuncis que no estiguin basats en altres llocs web que hàgiu visitat. Molts llocs web continuaran recopilant i utilitzant les vostres dades de navegació, per exemple, per millorar la seguretat, per proporcionar contingut, anuncis i recomanacions als seus llocs web, i per generar estadístiques.</translation>
 <translation id="5063480226653192405">Ús</translation>
-<translation id="5074309530946372881">S'estan cercant pàgines web a prop</translation>
 <translation id="509605886816275399">Voleu desar aquesta pàgina perquè estigui disponible sense connexió?</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="5127805178023152808">Sincronització desactivada</translation>
@@ -286,7 +279,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="5275558766013849309">Les pestanyes conviuran amb les aplicacions recents.</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5304593522240415983">Aquest camp no pot estar en blanc</translation>
-<translation id="5305985456140490686">Última sincronització: fa <ph name="MINUTES" /> minuts</translation>
 <translation id="5308933389783727448">Cerca a les pàgines desades</translation>
 <translation id="5313967007315987356">Afegeix un lloc</translation>
 <translation id="5317780077021120954">Desa</translation>
@@ -301,7 +293,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="5414836363063783498">S'està verificant...</translation>
 <translation id="5423934151118863508">Les pàgines més visitades es mostraran aquí</translation>
 <translation id="5424715742813396254">Editar el nom, la contrasenya o l'excepció desats</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Editeu la pàgina desada</translation>
 <translation id="544291274896356069">Si obriu aquest enllaç en una aplicació externa abandonareu el mode d'incògnit. Voleu continuar?</translation>
 <translation id="5487729733663684359">Aquesta versió d'Android ja no admet les actualitzacions de Chrome.</translation>
@@ -467,6 +458,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="7562080006725997899">S'estan esborrant les dades de navegació</translation>
+<translation id="7588950540487816470">El Web físic</translation>
 <translation id="7596558890252710462">Sistema operatiu</translation>
 <translation id="7599840151813361502">No es tancarà la sessió dels <ph name="BEGIN_LINK" />comptes de Google<ph name="END_LINK" />.</translation>
 <translation id="7603403729818446828">A la pantalla Visió general del telèfon podeu veure les pestanyes juntament amb altres aplicacions recents. Podeu controlar aquesta funció a la <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
@@ -501,7 +493,6 @@ Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis 
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7963646190083259054">Proveïdor:</translation>
-<translation id="7977858705483383621">SafeSearch</translation>
 <translation id="7987073022710626672">Condicions del servei de Chrome</translation>
 <translation id="7989222512959629388">S'està desant...</translation>
 <translation id="7998918019931843664">Torna a obrir la pestanya tancada</translation>
@@ -527,7 +518,6 @@ Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis 
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8275818695183729150">Permet (per a les cerques a la barra d'adreces)</translation>
 <translation id="8310344678080805313">Pestanyes estàndard</translation>
-<translation id="8374420395168535396">Última sincronització: fa <ph name="DAYS" /> dies</translation>
 <translation id="8374821112118309944">Heu de fer l'actualització de TalkBack a una versió més recent</translation>
 <translation id="8396312449826231789">Només els llocs aprovats</translation>
 <translation id="8413126021676339697">Mostra l'historial complet</translation>
@@ -595,7 +585,6 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Carpeta nova</translation>
 <translation id="945632385593298557">Accés al micròfon</translation>
-<translation id="963967414714199900">Última sincronització: ara mateix</translation>
 <translation id="969096075394517431">Canvia els idiomes</translation>
 <translation id="971774202801778802">URL de l'adreça d'interès</translation>
 <translation id="983192555821071799">Tanca totes les pestanyes</translation>

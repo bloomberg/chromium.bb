@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1012876632442809908">Dispositivo USB-C (puerto delantero)</translation>
 <translation id="1013923882670373915">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Ingresa el siguiente código de PIN en el dispositivo: <ph name="PINCODE" />.</translation>
 <translation id="1021311941847921177">Se modificó el acceso directo para cambiar al siguiente método de entrada. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar la biblioteca automáticamente</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Dispositivo USB-C (puerto izquierdo)</translation>
 <translation id="1330145147221172764">Habilitar el teclado en pantalla</translation>
 <translation id="1343000272198685031">Conector para micrófono</translation>
 <translation id="1346748346194534595">Derecha</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1812696562331527143">Tu método de introducción cambió a <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tercero<ph name="END_LINK" />).
 Para cambiarlo, presiona Shift + Alt.</translation>
+<translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Se modificó el acceso directo para abrir el administrador de tareas. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
@@ -55,6 +58,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2819276065543622893">Saldrás de la sesión ahora.</translation>
 <translation id="2825619548187458965">Biblioteca</translation>
+<translation id="2844169650293029770">Dispositivo USB-C (puerto lateral izquierdo delantero)</translation>
 <translation id="2872961005593481000">Cerrar</translation>
 <translation id="2942516765047364088">Posición de la biblioteca</translation>
 <translation id="2946640296642327832">Activar Bluetooth</translation>
@@ -74,6 +78,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="3147142846278915599">Selector (sincronizando aplicaciones…)</translation>
 <translation id="3157169093162779309">Habilitar bloqueo de rotación</translation>
 <translation id="3294437725009624529">Invitado</translation>
+<translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Volver a "<ph name="FROM_LOCALE" />" (debes reiniciar).</translation>
 <translation id="3595596368722241419">Batería completa</translation>
@@ -125,6 +130,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="5222676887888702881">Salir</translation>
 <translation id="5238774010593222950">No se puede acceder a otra cuenta.</translation>
 <translation id="532063867737390965">El administrador inhabilitó esta configuración de red.</translation>
+<translation id="5331975486040154427">Dispositivo USB-C (puerto lateral izquierdo trasero)</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se agregaron a esta sesión.</translation>
 <translation id="5507786745520522457">Configurar datos móviles</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6426039856985689743">Inhabilitar datos de dispositivos móviles</translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
 <translation id="6501401484702599040">Transmitiendo pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="6585808820553845416">La sesión terminará en <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -181,6 +188,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="7034339000180558234">Transmitiendo <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
 <translation id="7097613348211027502">ChromeVox (comentarios por voz) está habilitado. Presiona Ctrl + Alt + Z para inhabilitarlo.</translation>
+<translation id="7098389117866926363">Dispositivo USB-C (puerto izquierdo en la parte posterior)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="7209101170223508707">El BLOQUEO DE MAYÚSCULAS está activado.
@@ -219,6 +227,7 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Tecla de búsqueda + Esc</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
+<translation id="8938800817013097409">Dispositivo USB-C (puerto derecho en la parte posterior)</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">El micrófono está en uso.</translation>

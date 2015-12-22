@@ -8,8 +8,10 @@
 <translation id="106701514854093668">Marcadores de escritorio</translation>
 <translation id="1080116354587839789">Ajustar al ancho</translation>
 <translation id="108346963417674655">No se puede conectar de manera segura al servidor. Es posible que este sitio web haya funcionado anteriormente, pero hay un problema con el servidor. La conexión con este tipo de sitios debilita la seguridad para todos los usuarios y, por lo tanto, se inhabilitó.</translation>
+<translation id="1091911885099639251">Verificando la tarjeta</translation>
 <translation id="1103523840287552314">Siempre traducir <ph name="LANGUAGE" /></translation>
 <translation id="1105117579475534983">Página web bloqueada</translation>
+<translation id="1107591249535594099">Si marcas esta opción, Chrome almacenará una copia de la tarjeta en el dispositivo para completar más rápidamente los formularios.</translation>
 <translation id="1113869188872983271">&amp;Deshacer Reorganizar</translation>
 <translation id="111844081046043029">¿Estás seguro de que deseas abandonar esta página?</translation>
 <translation id="112840717907525620">Caché de política correcta</translation>
@@ -29,6 +31,7 @@
 <translation id="1339601241726513588">Inscripción de dominio:</translation>
 <translation id="1344588688991793829">Configuración de la función Autocompletar de Chromium…</translation>
 <translation id="1375198122581997741">Acerca de la versión</translation>
+<translation id="1413809658975081374">Error de privacidad</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1455235771979731432">Se produjo un problema al verificar la tarjeta. Verifica la conexión a Internet y vuelve a intentarlo.</translation>
@@ -51,6 +54,7 @@
 <translation id="1737968601308870607">Incluir error</translation>
 <translation id="1753706481035618306">Número de página</translation>
 <translation id="1763864636252898013">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo del dispositivo no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
+<translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Solicitud o parámetros de solicitud no válidos</translation>
 <translation id="1871208020102129563">El proxy está configurado para usar servidores proxy fijos, no una URL de script .pac.</translation>
 <translation id="194030505837763158">Ir a <ph name="LINK" /></translation>
@@ -81,12 +85,15 @@
 <translation id="2279770628980885996">Se encontró una situación inesperada mientras el servidor intentaba cumplir con la solicitud.</translation>
 <translation id="2282872951544483773">Experimentos no disponibles</translation>
 <translation id="229702904922032456">Un certificado raíz o intermedio venció.</translation>
+<translation id="230155334948463882">¿Una tarjeta nueva?</translation>
 <translation id="2328300916057834155">Marcador no válido ignorado en el índice <ph name="ENTRY_INDEX" /></translation>
 <translation id="2345460471437425338">El certificado del host no es correcto.</translation>
 <translation id="2354001756790975382">Otros marcadores</translation>
+<translation id="2359808026110333948">Continuar</translation>
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="237718015863234333">No hay alternativas de interfaz de usuario disponibles.</translation>
 <translation id="2384307209577226199">Empresa (predeterminada)</translation>
+<translation id="238526402387145295">No puedes visitar <ph name="SITE" /> ahora porque el sitio web <ph name="BEGIN_LINK" />utiliza HSTS<ph name="END_LINK" />. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
 <translation id="2386255080630008482">Se ha revocado el certificado del servidor.</translation>
 <translation id="2392959068659972793">Mostrar políticas sin valor establecido</translation>
 <translation id="2396249848217231973">&amp;Deshacer Eliminar</translation>
@@ -144,6 +151,7 @@
 <translation id="3286538390144397061">Reiniciar ahora</translation>
 <translation id="333371639341676808">Evita que esta página cree cuadros de diálogo adicionales.</translation>
 <translation id="3340978935015468852">configuración</translation>
+<translation id="3355823806454867987">Cambiar la configuración del proxy...</translation>
 <translation id="3369192424181595722">Error de reloj</translation>
 <translation id="3369366829301677151">Actualizar y verificar tu <ph name="CREDIT_CARD" /></translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
@@ -151,6 +159,7 @@
 <translation id="3380365263193509176">Error desconocido</translation>
 <translation id="3380864720620200369">ID de cliente:</translation>
 <translation id="3393716657345709557">No se ha encontrado la entrada solicitada en la memoria caché.</translation>
+<translation id="340013220407300675">Es posible que usuarios no autorizados estén intentando robar tu información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por ejemplo, contraseñas, mensajes o tarjetas de crédito).</translation>
 <translation id="3427342743765426898">&amp;Rehacer Editar</translation>
 <translation id="3435896845095436175">Habilitar</translation>
 <translation id="3447661539832366887">El propietario del dispositivo desactivó el juego de dinosaurios.</translation>
@@ -158,7 +167,9 @@
 <translation id="3452404311384756672">Obtener intervalo:</translation>
 <translation id="3462200631372590220">Ocultar detalles avanzados</translation>
 <translation id="3528171143076753409">El certificado del servidor no es de confianza.</translation>
+<translation id="3539171420378717834">Conservar una copia de la tarjeta en el dispositivo.</translation>
 <translation id="3542684924769048008">Utilizar la contraseña para:</translation>
+<translation id="3566021033012934673">La conexión no es privada</translation>
 <translation id="3583757800736429874">&amp;Rehacer Mover</translation>
 <translation id="3586931643579894722">Ocultar detalles</translation>
 <translation id="3608308818141211642">El cliente y el servidor no admiten un conjunto de cifrado o una versión de protocolo SSL en común. Es probable que esto suceda porque el servidor necesita el sistema RC4 y este ya no se considera seguro.</translation>
@@ -170,6 +181,7 @@
 <translation id="370665806235115550">Cargando...</translation>
 <translation id="3712624925041724820">Licencias agotadas</translation>
 <translation id="3739623965217189342">Vínculo copiado</translation>
+<translation id="3744899669254331632">No puedes visitar <ph name="SITE" /> en este momento porque el sitio web envió credenciales encriptadas que Chromium no puede procesar. Los ataques y errores de red generalmente son temporales, por lo que esta página probablemente funcionará de nuevo más tarde.</translation>
 <translation id="3748412725338508953">Demasiados redireccionamientos.</translation>
 <translation id="375403751935624634">Falló la traducción debido a un error de servidor.</translation>
 <translation id="3759461132968374835">No has notificado ningún bloqueo recientemente. Los bloqueos que se hayan producido mientras la función de notificación de bloqueos estaba desactivada no aparecerán en esta página.</translation>
@@ -177,6 +189,7 @@
 <translation id="3858027520442213535">Actualizar fecha y hora</translation>
 <translation id="3884278016824448484">Hay un identificador de dispositivo en conflicto.</translation>
 <translation id="3885155851504623709">Parroquia</translation>
+<translation id="3901925938762663762">Caducó la tarjeta.</translation>
 <translation id="3903912596042358459">El servidor se niega a cumplir esta solicitud</translation>
 <translation id="3934680773876859118">No se pudo cargar el documento PDF</translation>
 <translation id="3940082421246752453">El servidor no admite la versión HTTP utilizada en la solicitud.</translation>
@@ -192,7 +205,6 @@
 <translation id="4103249731201008433">El número de serie del dispositivo no es válido.</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver las URL en lista negra y otras políticas que estableció el administrador del sistema.</translation>
 <translation id="4117700440116928470">No se admite el alcance de la política.</translation>
-<translation id="4120075327926916474">¿Deseas que Chrome guarde esta información de tarjeta de crédito para completar formularios web?</translation>
 <translation id="4147376274874979956">No es posible acceder al archivo.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">¿Quieres que Chromium guarde esta tarjeta?</translation>
@@ -240,11 +252,12 @@
 <translation id="4926049483395192435">Debe especificarse un valor.</translation>
 <translation id="4980112683975062744">Se han recibido encabezados duplicados desde el servidor.</translation>
 <translation id="498957508165411911">¿Quieres traducir del <ph name="ORIGINAL_LANGUAGE" /> al <ph name="TARGET_LANGUAGE" />?</translation>
+<translation id="5002932099480077015">Si se habilita esta opción, Chrome almacenará una copia de la tarjeta en el dispositivo para llenar más rápidamente los formularios.</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
 <translation id="5023310440958281426">Revisa las políticas del administrador.</translation>
+<translation id="5029568752722684782">Borrar la copia</translation>
 <translation id="5031870354684148875">Acerca de Google Traductor</translation>
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
-<translation id="5065199687811594072">¿Quieres que Chromium guarde la información de esta tarjeta de crédito para completar formularios web?</translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chromium no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
@@ -297,6 +310,7 @@
 <translation id="6042308850641462728">Más</translation>
 <translation id="6060685159320643512">Cuidado, estos experimentos pueden dañarte</translation>
 <translation id="6066742401428748382">El acceso a la página web fue denegado</translation>
+<translation id="6093795393556121384">Se verificó tu tarjeta.</translation>
 <translation id="6099520380851856040">Se produjo a las <ph name="CRASH_TIME" /></translation>
 <translation id="6151417162996330722">El certificado de servidor tiene un período de validez demasiado extenso.</translation>
 <translation id="6154808779448689242">El token de política devuelto no coincide con el token actual.</translation>
@@ -307,6 +321,7 @@
 <translation id="6237614789842758826">Haz una búsqueda en Google.</translation>
 <translation id="6259156558325130047">&amp;Rehacer Reorganizar</translation>
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
+<translation id="6264485186158353794">Volver a seguridad</translation>
 <translation id="6268647269805730940">No se completaron los primeros pasos de ejecución del dispositivo.</translation>
 <translation id="6282194474023008486">Código postal</translation>
 <translation id="6321917430147971392">Revisa la configuración de DNS.</translation>
@@ -318,17 +333,20 @@
 <translation id="6391832066170725637">No se ha podido encontrar el archivo o el directorio.</translation>
 <translation id="641480858134062906">Se produjo un error al cargar <ph name="URL" />.</translation>
 <translation id="6445051938772793705">País</translation>
+<translation id="6451458296329894277">Confirmar reenvío del formulario</translation>
 <translation id="6458467102616083041">Se ignora porque la política inhabilita la búsqueda predeterminada.</translation>
 <translation id="647261751007945333">Políticas de dispositivos</translation>
 <translation id="6489534406876378309">Comenzar a cargar fallos</translation>
 <translation id="6500116422101723010">El servidor no puede procesar la solicitud en este momento. Este código indica que el problema es temporal y que el servidor volverá a funcionar luego de una demora.</translation>
 <translation id="6512448926095770873">Abandonar esta página</translation>
 <translation id="6516193643535292276">No se pudo conectar a Internet</translation>
+<translation id="6518133107902771759">Verificar</translation>
 <translation id="6529602333819889595">&amp;Rehacer Eliminar</translation>
 <translation id="6533019874004191247">URL no compatible</translation>
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="6626108645084335023">Esperando el sondeo del DNS</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Búsqueda</translation>
+<translation id="6634865548447745291">No puedes visitar <ph name="SITE" /> ahora porque <ph name="BEGIN_LINK" />este certificado se revocó<ph name="END_LINK" />. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
 <translation id="6637478299472506933">Error en la descarga</translation>
 <translation id="6640442327198413730">Falta un recurso en la memoria caché</translation>
 <translation id="6644283850729428850">Esta política no ha sido aprobada.</translation>
@@ -338,6 +356,7 @@
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6771079623344431310">No se pudo establecer conexión con el servidor proxy</translation>
 <translation id="6781404225664080496">Se interrumpieron temporalmente las solicitudes a esta URL.</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">La página web en <ph name="URL" /> no está disponible en este momento. Es posible que esté sobrecargado o no disponible por mantenimiento.</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6839929833149231406">Área</translation>
@@ -351,6 +370,7 @@
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Se especifican servidores proxy fijos y URL de secuencias de comandos .pac.</translation>
+<translation id="6989763994942163495">Mostrar configuración avanzada...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250">Intentaste acceder a <ph name="DOMAIN" />, pero el certificado de servidor tenía un período de validez demasiado extenso para ser fiable.</translation>
 <translation id="7052500709156631672">La puerta de enlace o servidor proxy recibió una respuesta no válida de un servidor de canal de subida.</translation>
@@ -368,12 +388,14 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> acerca de este problema.</translation>
 <translation id="7225807090967870017">Id. de compilación</translation>
 <translation id="725866823122871198">No se puede establecer una conexión privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora del equipo (<ph name="DATE_AND_TIME" />) son incorrectas.</translation>
+<translation id="7265986070661382626">No puedes visitar <ph name="SITE" /> ahora porque el sitio web <ph name="BEGIN_LINK" />utiliza fijación de certificados<ph name="END_LINK" />. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
 <translation id="7269802741830436641">Esta página web tiene un bucle de redirección</translation>
 <translation id="7275334191706090484">Marcadores administrados</translation>
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="7334320624316649418">&amp;Rehacer Reorganizar</translation>
 <translation id="7353601530677266744">Línea de comandos</translation>
 <translation id="7378627244592794276">No</translation>
+<translation id="7378810950367401542">/</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
 <translation id="7424977062513257142">Una página incrustada en esta página web dice:</translation>
@@ -391,11 +413,14 @@
 <translation id="7578104083680115302">Paga con rapidez en sitios y apps a través de varios dispositivos con tarjetas que guardaste en Google.</translation>
 <translation id="7592362899630581445">El certificado del servidor no cumple con las restricciones de nombre.</translation>
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE" /></translation>
+<translation id="7606563002701561706">Marcadores mejorados</translation>
 <translation id="7610193165460212391">El valor <ph name="VALUE" /> está fuera del rango.</translation>
 <translation id="7614030880636783720">La conexión Wi-Fi y los datos móviles no se encuentran disponibles. Una vez que el dispositivo se conecte a una red, podrás cargar la página.</translation>
 <translation id="7637571805876720304">¿Confirmas que quieres quitar la tarjeta de crédito de Chromium?</translation>
 <translation id="7643817847124207232">Se ha perdido la conexión a Internet.</translation>
+<translation id="765676359832457558">Ocultar configuración avanzada...</translation>
 <translation id="7674629440242451245">Si estás interesado en probar nuevas e interesantes funciones de Chrome, visita nuestro canal de programadores en chrome.com/dev.</translation>
+<translation id="7704050614460855821"><ph name="BEGIN_LINK" />Continuar a <ph name="SITE" /> (no seguro)<ph name="END_LINK" /></translation>
 <translation id="7752995774971033316">Sin administrar</translation>
 <translation id="7761701407923456692">El certificado del servidor no coincide con la dirección URL.</translation>
 <translation id="777702478322588152">Prefectura</translation>
@@ -425,8 +450,8 @@
 <translation id="8201077131113104583">URL de actualización no válida para la extensión con ID "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8204086856545141093">Una política bloqueó las solicitudes al servidor.</translation>
 <translation id="820791781874064845">Esta página web fue bloqueada por una extensión.</translation>
-<translation id="8208216423136871611">No guardar</translation>
 <translation id="8218327578424803826">Ubicación asignada:</translation>
+<translation id="8241707690549784388">La página que buscas ha utilizado la información que has especificado. Volver a la página podría provocar la repetición de alguna acción. ¿Deseas continuar?</translation>
 <translation id="8249320324621329438">Se obtuvo por última vez:</translation>
 <translation id="8289355894181816810">Comunícate con el administrador de red si no entiendes bien lo que significa.</translation>
 <translation id="8294431847097064396">Fuente</translation>
@@ -440,6 +465,7 @@
 <translation id="8437238597147034694">&amp;Deshacer Mover</translation>
 <translation id="8488350697529856933">Se aplica a</translation>
 <translation id="8494979374722910010">Se ha producido un error al intentar conectar con el servidor.</translation>
+<translation id="8508677083825928015">Solicitar los recursos previamente para cargar las páginas más rápido</translation>
 <translation id="8515737884867295000">Error de autenticación basada en el certificado</translation>
 <translation id="8530504477309582336">Google Payments no admite este tipo de tarjeta. Selecciona otra tarjeta.</translation>
 <translation id="8553075262323480129">Falló la traducción debido a que no se pudo determinar el idioma de la página.</translation>

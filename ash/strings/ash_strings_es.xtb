@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="1012876632442809908">Dispositivo USB-C (puerto frontal)</translation>
 <translation id="1013923882670373915">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce el código PIN <ph name="PINCODE" /> en el dispositivo</translation>
 <translation id="1021311941847921177">La combinación de teclas para cambiar al siguiente método de introducción ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ocultar automáticamente estantería</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Dispositivo USB-C (puerto izquierdo)</translation>
 <translation id="1330145147221172764">Habilitar teclado en pantalla</translation>
 <translation id="1343000272198685031">Clavija para micrófono</translation>
 <translation id="1346748346194534595">Derecha</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1812696562331527143">Tu método de entrada ha cambiado a <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />externo<ph name="END_LINK" />).
 Para cambiarlo, pulsa Mayús + Alt.</translation>
+<translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La combinación de teclas para abrir el Administrador de tareas ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
@@ -55,6 +58,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2819276065543622893">Tu sesión se cerrará ahora.</translation>
 <translation id="2825619548187458965">Estantería</translation>
+<translation id="2844169650293029770">Dispositivo USB tipo C (puerto frontal izquierdo)</translation>
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="2942516765047364088">Posición de la estantería</translation>
 <translation id="2946640296642327832">Habilitar Bluetooth</translation>
@@ -74,6 +78,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3147142846278915599">Menú de aplicaciones (sincronizando aplicaciones...)</translation>
 <translation id="3157169093162779309">Habilitar bloqueo de rotación</translation>
 <translation id="3294437725009624529">Invitado</translation>
+<translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Cambiar de nuevo por "<ph name="FROM_LOCALE" />" (requiere reiniciar)</translation>
 <translation id="3595596368722241419">Batería al máximo</translation>
@@ -125,6 +130,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="5238774010593222950">No puedo iniciar sesión en otra cuenta.</translation>
 <translation id="532063867737390965">El administrador ha inhabilitado la configuración de red.</translation>
+<translation id="5331975486040154427">Dispositivo USB tipo C (puerto trasero izquierdo)</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se han añadido a esta sesión.</translation>
 <translation id="5507786745520522457">Configurar datos móviles</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6426039856985689743">Inhabilitar datos móviles</translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
 <translation id="6501401484702599040">Enviando la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Configuración</translation>
 <translation id="6585808820553845416">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
 <translation id="7097613348211027502">ChromeVox (mensajes de voz) está habilitado.
 Pulsa Ctrl+Alt+Z para inhabilitarlo.</translation>
+<translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">El BLOQUEO DE MAYÚSCULAS está activado.
@@ -220,6 +228,7 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Buscar+Esc</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
+<translation id="8938800817013097409">Dispositivo USB tipo C (puerto derecho situado en la parte trasera)</translation>
 <translation id="8940956008527784070">Poca batería (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">El micrófono se está utilizando.</translation>

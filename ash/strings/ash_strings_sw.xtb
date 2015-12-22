@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1012876632442809908">Kifaa cha USB-C (mlango wa mbele)</translation>
 <translation id="1013923882670373915">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka msimbo huu wa PIN kwenye kifaa hicho: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Njia ya mkato ya kutumia mbinu ya kuingiza data inayofuata imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ficha rafu kiotomatiki</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Kibodi ya skrini imezimwa</translation>
 <translation id="1272079795634619415">Simamisha</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Kifaa cha USB-C (mlango wa kushoto)</translation>
 <translation id="1330145147221172764">Washa kibodi ya skrini</translation>
 <translation id="1343000272198685031">Pini ya Maikrofoni</translation>
 <translation id="1346748346194534595">Kulia</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Kibodi ya skrini imewashwa</translation>
 <translation id="1812696562331527143">Mbinu yako ingizo imebadilika hadi <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />mhusika mwingine<ph name="END_LINK" />).
 Bonyeza Shift + Alt ili kubadilisha.</translation>
+<translation id="1864454756846565995">Kifaa cha USB-C (mlango wa nyuma)</translation>
 <translation id="1882897271359938046">Inaakisi kwenye <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Njia ya mkato ya kufungua kidhibiti cha shughuli kwenye Chrome imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Mibofyo ya kiotomatiki</translation>
@@ -55,6 +58,7 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="2805756323405976993">Programu</translation>
 <translation id="2819276065543622893">Utaondolewa kwenye akaunti sasa hivi.</translation>
 <translation id="2825619548187458965">Rafu</translation>
+<translation id="2844169650293029770">Kifaa cha USB-C (mlango wa upande wa kushoto mbele)</translation>
 <translation id="2872961005593481000">Zima</translation>
 <translation id="2942516765047364088">Nafasi ya rafu</translation>
 <translation id="2946640296642327832">Wezesha Bluetooth</translation>
@@ -74,6 +78,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="3147142846278915599">Kifungua programu (inasawazisha programu...)</translation>
 <translation id="3157169093162779309">Washa kufuli la kuzungusha</translation>
 <translation id="3294437725009624529">Mgeni</translation>
+<translation id="3445925074670675829">Kifaa cha USB-C</translation>
 <translation id="3473479545200714844">Kikuza skrini</translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
@@ -125,6 +130,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="5238774010593222950">Huwezi kuingia katika akaunti nyingine.</translation>
 <translation id="532063867737390965">Msimamizi amezima mipangilio ya mtandao huu.</translation>
+<translation id="5331975486040154427">Kifaa cha USB-C (mlango wa upande wa kushoto nyuma)</translation>
 <translation id="544691375626129091">Tayari watumiaji wanaopatikana wameongezwa kwenye kikao hiki.</translation>
 <translation id="5507786745520522457">Sanidi data ya simu ya mkononi.</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6426039856985689743">Lemaza data ya simu</translation>
 <translation id="6452181791372256707">Kataa</translation>
 <translation id="6459472438155181876">Inapanua skrini kwenye <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Kifaa cha USB-C (mlango wa kulia)</translation>
 <translation id="6501401484702599040">Inatuma skrini kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Chaguo</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -181,6 +188,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="7034339000180558234">Inatuma <ph name="TAB_NAME" /> kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Weka Mandhari...</translation>
 <translation id="7097613348211027502">ChromeVox (maoni yaliyotamkwa) yamewashwa. Bonyeza Ctrl+Alt+Z ili uzime.</translation>
+<translation id="7098389117866926363">Kifaa cha USB-C (mlango wa kushoto nyuma)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Inarejesha katika ubora wa zamani baada ya <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK imeamilishwa. 
@@ -219,6 +227,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Kuongeza skrini</translation>
+<translation id="8938800817013097409">Kifaa cha USB-C (mlango wa kulia nyuma)</translation>
 <translation id="8940956008527784070">Betri inaisha (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Maikrofoni inatumika</translation>

@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Csatlakozás a következőhöz: <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Hálózati aktivációs hiba</translation>
+<translation id="4118990158415604803">A rendszergazda nem teszi lehetővé a csatlakozást más hálózatokhoz.</translation>
 <translation id="4237016987259239829">Hálózati kapcsolat hibája</translation>
 <translation id="4274292172790327596">Azonosítatlan hiba</translation>
 <translation id="4326192123064055915">Kávé</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktiválása</translation>
 <translation id="6935521024859866267">Fejjel lefelé</translation>
 <translation id="6943836128787782965">A HTTP-lekérés nem sikerült</translation>
+<translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
 <translation id="7165320105431587207">Nem sikerült konfigurálni a hálózatot</translation>
 <translation id="7170041865419449892">Tartományon kívül</translation>
 <translation id="7229570126336867161">EVDO szükséges</translation>

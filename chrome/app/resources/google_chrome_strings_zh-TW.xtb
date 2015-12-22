@@ -53,6 +53,7 @@
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2576431527583832481">Chrome 現在變得更進步了！歡迎您升級使用新版本。</translation>
 <translation id="2580411288591421699">您無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
+<translation id="2582790009689336987">Google Chrome 將停止支援這種 Linux 系統，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>
 <translation id="2588322182880276190">Chrome 標誌</translation>
 <translation id="2664962310688259219">Chrome 作業系統開放原始碼授權</translation>
 <translation id="2665296953892887393">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Google Chrome 更臻完美</translation>
@@ -98,6 +99,7 @@
 <translation id="4251615635259297716">要將您的 Chrome 資料連結至這個帳戶嗎？</translation>
 <translation id="4309555186815777032">(必須<ph name="BEGIN_BUTTON" />重新啟動<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Google Chrome 已停止支援這種 Linux 系統，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
 <translation id="4480040274068703980">登入時發生錯誤，因此 Chrome 作業系統無法同步處理您的資料。</translation>
@@ -138,8 +140,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> 通常會使用加密方式保護您的資訊。目前當 Chrome 嘗試連線到 <ph name="SITE" /> 時，該網站會傳回異常且錯誤的憑證。
-這可能是因為有攻擊者試圖偽裝成 <ph name="SITE" />，或是 Wi-Fi 登入畫面造成連線中斷。請放心，Chrome 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
@@ -152,7 +152,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="597770749449734237">啟用其他鍵盤快速鍵，在對 Google Chrome 偵錯時更實用。</translation>
 <translation id="6012342843556706400">Chrome 需要存取位置資訊，才能與這個網站分享。</translation>
 <translation id="6014844626092547096">您現在已登入 Chrome！但管理員已關閉同步功能。</translation>
-<translation id="6049075767726609708">管理員已經在此系統安裝 Google Chrome，且供所有使用者使用。系統層級的 Google Chrome 將取代使用者層級的版本。</translation>
 <translation id="6113794647360055231">Chrome 變得更好用了</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">更新 Chrome 作業系統(&amp;C)</translation>
@@ -212,7 +211,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="781069973841903133">如果選擇在 Chrome 沈浸模式中重新啟動，您的 Chrome 應用程式將會關閉並重新啟動。</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
 <translation id="7890208801193284374">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome。</translation>
-<translation id="7984945080620862648">您目前無法造訪 <ph name="SITE" />，因為這個網站傳送的憑證經過編碼，導致 Chrome 無法處理。網路錯誤和攻擊行為通常是暫時性的，所以這個網頁可能稍後就能正常使用。</translation>
 <translation id="8000275528373650868">Google Chrome 支援的作業系統為 Windows Vista 或 Windows XP SP2 以上版本。</translation>
 <translation id="8005540215158006229">Chrome 即將準備就緒。</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>
@@ -245,7 +243,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8851136666856101339">主要元素</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="8889942196804715220">在 Chrome 沈浸模式中重新啟動</translation>
-<translation id="8987477933582888019">網路瀏覽器</translation>
 <translation id="9026991721384951619">您的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理您的資料。</translation>
 <translation id="9102715433345326100">這個檔案是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告：<ph name="END_BOLD" />Google Chrome 無法阻止擴充功能記錄您的瀏覽紀錄，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>

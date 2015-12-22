@@ -87,7 +87,6 @@ Se questa norma non viene impostata, verrà utilizzata la norma "AllowPlugins" e
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
-<translation id="1445397020763995734">Tipo di account per l'autenticazione Negotiate HTTP</translation>
 <translation id="1454846751303307294">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultJavaScriptSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="1464848559468748897">Consente di controllare il comportamento degli utenti in una sessione multiprofilo su dispositivi <ph name="PRODUCT_OS_NAME" />.
 
@@ -244,11 +243,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se la norma HardwareAccelerationModeEnabled è impostata su false, la norma Disable3DAPIs viene ignorata ed equivale all'impostazione su true della norma Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="2170233653554726857">Attiva ottimizzazione WPAD</translation>
-<translation id="2175836933294053665">Consente di configurare un elenco di preferiti gestiti.
-
-      La norma è costituita da un elenco di preferiti, in cui ogni preferito rappresenta un dizionario contenente le chiavi "name" e "URL", che indicano il nome e la destinazione del preferito. È possibile configurare una sottocartella definendo un preferito senza chiave "url", ma con una chiave aggiuntiva "children" contenente un elenco di preferiti come definito in alto (alcuni preferiti potrebbero essere cartelle a loro volta). <ph name="PRODUCT_NAME" /> corregge gli URL incompleti come se fossero stati inviati tramite la omnibox, ad esempio, "google.com" diventa "https://google.com/".
-
-      Questi preferiti vengono inseriti in una cartella Preferiti gestiti che non può essere modificata dall'utente, ma che l'utente può decidere di nascondere nella barra dei Preferiti. I preferiti gestiti non vengono sincronizzati con l'account utente e non possono essere modificati dalle estensioni.</translation>
 <translation id="2188979373208322108">Consente di attivare la barra dei Preferiti in <ph name="PRODUCT_NAME" />. Se attivi questa impostazione verrà visualizzata una barra dei Preferiti in <ph name="PRODUCT_NAME" />. Se disattivi questa impostazione, gli utenti non potranno mai visualizzare la barra dei Preferiti. Se l'impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se questa impostazione non viene impostata, gli utenti potranno decidere se utilizzare o meno questa funzione.</translation>
 <translation id="2201555246697292490">Configura whitelist messaggi nativi</translation>
 <translation id="2204753382813641270">Controlla la visualizzazione automatica dello shelf</translation>
@@ -516,38 +510,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa impostazione viene attivata, qualsiasi pagina di autenticazione tramite captive portal (vale a dire tutte le pagine web per cui viene inizialmente visualizzata una pagina di accesso tramite captive portal finché <ph name="PRODUCT_NAME" /> rileva una connessione Internet attiva) viene visualizzata in una finestra separata e vengono ignorate tutte le impostazioni delle norme/le restrizioni relative all'utente corrente.
 
       Se questa impostazione viene disattivata o non viene configurata, qualsiasi pagina di autenticazione tramite captive portal viene visualizzata in una nuova (e normale) scheda del browser utilizzando le impostazioni proxy dell'utente corrente.</translation>
-<translation id="3001569025430882724">Consente di sostituire le regole di selezione della stampante predefinita <ph name="PRODUCT_NAME" />.
-
-      Questa norma determina le regole per selezionare la stampante predefinita in <ph name="PRODUCT_NAME" />. Questa operazione viene eseguita la prima volta che la funzione di stampa è utilizzata con un profilo.
-
-      Quando questa norma è impostata, <ph name="PRODUCT_NAME" /> cercherà di trovare una stampante che corrisponda a tutti gli attributi specificati e la selezionerà come stampante predefinita. Viene selezionata la prima stampante rilevata corrispondente a questa norma; in caso di più corrispondenze può essere selezionata una qualsiasi tra le stampanti, in base all'ordine di rilevamento.
-
-      Se questa norma non è impostata o non viene trovata una stampante corrispondente prima della scadenza del timeout, verrà selezionata come predefinita la stampante PDF integrata; se non è presente la stampante PDF integrata, non verrà selezionata alcuna stampante.
-
-      Il valore è analizzato come oggetto JSON in base al seguente schema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Le stampanti connesse a Google Cloud Print sono considerate "cloud", mentre le altre stampanti sono classificate come "locali".
-      L'omissione di un campo implica la corrispondenza di tutti i valori; ad esempio, se non si specifica la connettività, l'Anteprima di stampa avvierà il rilevamento di tutti i tipi di stampanti, locali e cloud.
-      I modelli di espressione regolare devono seguire la sintassi JavaScript RegExp; le corrispondenze distinguono tra maiuscole e minuscole.</translation>
 <translation id="3021409116652377124">Disabilita ricerca plug-in</translation>
 <translation id="3030000825273123558">Attiva rapporti sulle metriche</translation>
 <translation id="3034580675120919256">Permette di stabilire se consentire o meno l'esecuzione di JavaScript nei siti web. L'esecuzione di JavaScript può essere consentita o negata per tutti i siti web. Se questa norma non viene impostata, verrà utilizzato il valore "AllowJavaScript", che potrà essere modificato dagli utenti.</translation>
@@ -633,13 +595,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se l'impostazione è attivata o non è configurata, gli utenti possono attivare il proxy Cloud Print attraverso l'autenticazione con il proprio account Google.
 
       Se l'impostazione è disattivata, gli utenti non possono attivare il proxy e il computer non può condividere le stampanti con <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Chromium e Google Chrome supportano lo stesso insieme di norme. Questo documento potrebbe includere norme destinate a versioni software non ancora introdotte (la relativa voce "supported on" ["supportata su"] si riferisce a una versione non rilasciata) e tali norme sono soggette a modifica o rimozione senza preavviso.
-
-      Queste norme·devono essere utilizzate esclusivamente·per·la·configurazione·delle istanze·di <ph name="PRODUCT_NAME" /> all'interno dell'organizzazione. L'utilizzo di queste norme al di fuori dell'organizzazione (ad esempio, in un programma distribuito pubblicamente) viene considerato malware e potrebbe essere contrassegnato come tale da Google e dai fornitori di programmi antivirus.
-
-      Non è necessario configurare manualmente queste impostazioni. È possibile scaricare modelli di facile utilizzo per Windows, Mac e Linux da <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Su Windows è consigliabile configurare le norme tramite Criteri di gruppo, anche se la specifica di norme tramite il registro di sistema è ancora supportata per le istanze di Windows che fanno parte di un dominio Active Directory.</translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
 <translation id="3417418267404583991">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_OS_NAME" /> verranno attivati gli accessi come ospite. Gli accessi come ospite sono sessioni utente anonime che non richiedono password.
 
@@ -1139,9 +1094,6 @@ Se questa norma non viene impostata, il comportamento delle norme più specifich
 
       Se questa norma non viene impostata o se viene impostata su false, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni di controllo delle revoche online esistenti.</translation>
 <translation id="5732972008943405952">Importa i dati della Compilazione automatica dei moduli dal browser predefinito alla prima esecuzione</translation>
-<translation id="5751004203256768694">Consente di specificare il tipo di account degli account forniti dall'applicazione di autenticazione di Android che supporta l'autenticazione Negotiate HTTP (ad esempio, l'autenticazione Kerberos). Queste informazioni dovrebbero essere messe a disposizione dal fornitore dell'applicazione di autenticazione. Per ulteriori informazioni, visitare la pagina https://goo.gl/hajyfN.
-
-          Se non vengono fornite impostazioni, l'autenticazione HTTP Negotiate è disattivata in Android.</translation>
 <translation id="5761030451068906335">Consente di configurare le impostazioni proxy per <ph name="PRODUCT_NAME" />. Questa norma non è ancora pronta per essere utilizzata, pertanto invitiamo a non utilizzarla.</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
@@ -1865,12 +1817,26 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8544375438507658205">Renderer HTML predefinito per <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avvisa quando vengono visitati siti non presenti nei pacchetti di contenuti</translation>
 <translation id="8566842294717252664">Nascondi il Web Store nella pagina Nuova scheda e in Avvio applicazioni</translation>
-<translation id="857925079934558818">Consente di specificare se disattivare o meno l'ottimizzazione TLS False Start. Il nome di questa norma è DisableSSLRecordSplitting per motivi storici.
-
-      Se la norma non viene impostata, o viene impostata su false, l'ottimizzazione TLS False Start viene attivata. Se viene impostata su true, l'ottimizzazione TLS False Start viene disattivata.</translation>
 <translation id="8587229956764455752">Consenti la creazione di nuovi account utente</translation>
 <translation id="8614804915612153606">Disattiva l'aggiornamento automatico</translation>
 <translation id="8631434304112909927">fino alla versione <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Consente di impedire l'accesso agli URL elencati.
+
+      Questa norma consente di impedire all'utente di caricare le pagine web degli URL vietati. Nella lista nera è presente un elenco di pattern URL che indicano gli URL vietati.
+
+      Ogni pattern URL può essere generico oppure riguardare file locali. I pattern relativi a file locali sono nel formato "file://percorso", dove "percorso" deve essere un percorso assoluto da bloccare. Vengono bloccati tutti i percorsi del file system che hanno come prefisso il percorso indicato.
+
+      Un pattern URL generico è nel formato "schema://host:porta/percorso".
+      Se indicato, viene bloccato soltanto lo scherma specificato. Se non viene specificato il prefisso schema://, vengono bloccati tutti gli schemi.
+      Il valore "host" è obbligatorio e può essere un nome host o un indirizzo IP. Vengono bloccati anche i sottodomini di un nome host. Per impedire il blocco dei sottodomini, inserisci un segno "." davanti al nome host. Il nome host speciale "*" consente di bloccare tutti i domini.
+      La porta facoltativa è un numero di porta valido compreso tra 1 e 65535. Se non vengono specificate porte, vengono bloccate tutte le porte.
+      Se viene specificato il percorso facoltativo, vengono bloccati soltanto i percorsi con il prefisso indicato.
+
+      È possibile definire eccezioni nella norma relativa alla whitelist di URL. Per queste norme è possibile definire massimo 1000 voci; le voci in più vengono ignorate.
+
+      È sconsigliato bloccare gli URL interni "chrome://*" perché potrebbero verificarsi errori imprevisti.
+
+      Se questa norma non viene impostata, non sarà vietato alcun URL nel browser.</translation>
 <translation id="8649763579836720255">I dispositivi Chrome OS possono utilizzare un'attestazione remota (Accesso verificato) per ottenere un certificato emesso dalla CA di Chrome OS in cui si afferma che il dispositivo è idoneo a riprodurre contenuti protetti. Questo processo comporta l'invio alla CA di Chrome OS di informazioni di approvazione dell'hardware che identificano in modo univoco il dispositivo.
 
 Se questa impostazione viene impostata su false, il dispositivo non utilizzerà l'attestazione remota per la protezione dei contenuti e il dispositivo potrebbe non essere in grado di riprodurre i contenuti protetti.

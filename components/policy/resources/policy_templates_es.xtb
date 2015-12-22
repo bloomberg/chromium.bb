@@ -104,7 +104,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Dirección o URL de servidor proxy</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivos</translation>
-<translation id="1445397020763995734">Tipo de cuenta para la autenticación HTTP Negotiate</translation>
 <translation id="1454846751303307294">Permite definir una lista de patrones de URL para especificar los sitios que no pueden ejecutar JavaScript.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultJavaScriptSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -287,11 +286,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Si se ha asignado el valor false a la política HardwareAccelerationModeEnabled, se ignorará Disable3DAPIs y se le asigna el valor true a Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Retraso de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
-<translation id="2175836933294053665">Configura una lista de marcadores administrados.
-
-      La política es una lista de marcadores, mientras que cada marcador es un diccionario que contiene las claves name y url, que definen el nombre y la URL de destino del marcador. Para configurar una subcarpeta, define un marcador sin la clave url y utiliza una clave secundaria adicional que contenga una lista de marcadores en sí misma como se definía anteriormente (algunos de los cuales pueden ser carpetas de nuevo). <ph name="PRODUCT_NAME" /> completará las URL incompletas como si se hubieran enviado a través del omnibox. Por ejemplo, "google.com" se convertirá en "https://google.com/".
-
-      Estos marcadores se incluyen en una carpeta de marcadores administrados que el usuario no puede modificar, pero que puede ocultar de la barra de marcadores. Los marcadores administrados no se sincronizan con la cuenta del usuario y las extensiones no pueden modificarlos.</translation>
 <translation id="2188979373208322108">Permite habilitar la barra de marcadores en <ph name="PRODUCT_NAME" />.
 
       Si habilitas esta opción, se mostrará una barra de marcadores en <ph name="PRODUCT_NAME" />.
@@ -592,38 +586,6 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
       Si habilitas esta opción, las páginas de autenticación de portal cautivo (es decir, las páginas web que empiezan con una página de inicio de sesión de portal cautivo hasta que <ph name="PRODUCT_NAME" /> detecta que la conexión a Internet se ha realizado correctamente) se mostrarán en una ventana independiente ignorando la configuración de la política y las restricciones del usuario actual.
 
       Si inhabilitas esta opción o no la configuras, las páginas de autenticación de portal cautivo se mostrarán en una nueva pestaña del navegador (como habitualmente) utilizando la configuración del proxy del usuario actual.</translation>
-<translation id="3001569025430882724">Anula las reglas de <ph name="PRODUCT_NAME" /> para la selección de impresora predeterminada.
-
-      Esta política determina las reglas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" />. Esto ocurre la primera vez que se utiliza la función de imprimir con un perfil.
-
-      Cuando se configura esta política, <ph name="PRODUCT_NAME" /> intentará encontrar una impresora con todos los atributos especificados y la seleccionará como impresora predeterminada. Se seleccionará la primera impresora detectada cuyas características coincidan con la política. Si coinciden más de una impresora, puedes seleccionar cualquiera de ellas en función del orden en el que se detecten.
-
-      Si no se establece esta política o no se encuentra ninguna impresora que coincida durante el tiempo de espera, se utilizará la impresora de PDF integrada de forma predeterminada o no seleccionará ninguna impresora si la impresora de PDF no está disponible.
-
-      El valor se analiza como objeto JSON, siguiendo el siguiente esquema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Las impresoras conectadas a Google Cloud Print se consideran "cloud" y el resto de las impresoras se clasifican como "local".
-      La omisión de algún campo significa que todos los valores coinciden. Por ejemplo, si no se especifica la conectividad, la vista previa de impresión buscará todo tipo de impresoras, tanto "local" como "cloud".
-      Los patrones de expresión regular deben seguir la sintaxis JavaScript RegExp y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="3021409116652377124">Inhabilitar el buscador de complementos</translation>
 <translation id="3030000825273123558">Habilitar los informes estadísticos</translation>
 <translation id="3034580675120919256">Permite establecer si los sitios web pueden utilizar o no JavaScript. La ejecución de JavaScript se permite o se deniega a todos los sitios web.
@@ -719,24 +681,6 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
       Si esta opción se habilita o no se configura, los usuarios podrán habilitar el proxy de Google Cloud Print si realizan el proceso de autenticación con sus cuentas de Google.
 
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y el ordenador no podrá compartir las impresoras conectadas con <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Tanto Chromium como Google Chrome admiten el mismo conjunto de
-      políticas. Ten en cuenta que en este documento se pueden incluir políticas
-      específicas de versiones de software no publicadas (es decir, que su entrada "compatible con"
-      hace referencia a una versión no publicada) y que dichas políticas pueden
-      modificarse o retirarse sin previo aviso.
-
-      Estas políticas están destinadas exclusivamente a la configuración de instancias de
-      <ph name="PRODUCT_NAME" /> internas de tu
-      organización. El uso de estas políticas fuera de tu organización (por
-      ejemplo, en un programa distribuido públicamente) se considera software malicioso y
-      es probable que Google y los proveedores de antivirus lo designen como tal.
-
-      No es necesario configurar estas opciones manualmente. Hay 
-      disponibles plantillas fáciles de utilizar para Windows, Mac y Linux en la página <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      La forma recomendada de configurar la política en Windows es a través de GPO, aunque
-      aún se admite la asignación de la política a través del registro para instancias de Windows
-      vinculadas a un dominio de Active Directory.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
 <translation id="3417418267404583991">Si esta política no se configura o el valor correspondiente se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no necesitan contraseña.
 
@@ -1325,9 +1269,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si no se establece esta política o si se establece en false, <ph name="PRODUCT_NAME" /> utilizará la configuración para comprobar la revocación online actual.</translation>
 <translation id="5732972008943405952">Importar los datos autocompletados del navegador predeterminado en la primera ejecución</translation>
-<translation id="5751004203256768694">Especifica el tipo de cuenta de las cuentas proporcionadas por la aplicación de autenticación de Android que admita la autenticación HTTP Negotiate (p. ej., autenticación Kerberos). Esta información debe estar disponible desde el proveedor de la aplicación de autenticación. Para obtener más información, consulta la página https://goo.gl/hajyfN.
-
-          Si no se proporciona ninguna opción, la autenticación HTTP Negotiate se inhabilitará en Android.</translation>
 <translation id="5761030451068906335">Permite establecer los valores de configuración de proxy de <ph name="PRODUCT_NAME" />.
 
       Esta política aún no está lista para su uso, así que no debes utilizarla.</translation>
@@ -2159,12 +2100,26 @@ Si no se establece esta política, cualquier complemento que coincida con los pa
 <translation id="8544375438507658205">Procesador de HTML predeterminado de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Advertir cuando se visitan sitios no incluidos en paquetes de contenido</translation>
 <translation id="8566842294717252664">Oculta tienda web en página Nueva pestaña y en menú de aplicaciones</translation>
-<translation id="857925079934558818">Especifica si la optimización de inicio falso de TLS se debe inhabilitar. Por razones históricas, esta política se denomina DisableSSLRecordSplitting.
-
-      Si esta política no se establece o se le asigna el valor false, se habilitará el inicio falso de TLS. Si se asigna el valor true a esta política, se inhabilitará el inicio falso de TLS.</translation>
 <translation id="8587229956764455752">Permitir la creación de nuevas cuentas de usuario</translation>
 <translation id="8614804915612153606">Inhabilitar las actualizaciones automáticas</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Bloquea el acceso a la lista de URLs.
+
+      Esta política evita que el usuario cargue páginas web de las URL incluidas en una lista negra. La lista negra ofrece una lista de los patrones de URL que especifican las URL que se mostrarán en una lista negra.
+
+      Cada patrón de URL puede ser tanto un patrón para archivos locales como un patrón de URL genérica. Los patrones de archivos locales tienen el formato "file://path", donde "path" debería ser una ruta absoluta para bloquear. Se bloquearán todas las ubicaciones del sistema de archivos en las que esta ruta sea un prefijo.
+
+      Los patrones de URL genérica tienen el formato "scheme://host:port/path".
+      Si está presente, solo se bloqueará el esquema especificado. Si no se ha especificado el prefijo scheme://, se bloquearán todos los esquemas.
+      Se necesita el host y puede ser un nombre de host o una dirección IP. También se bloquearán los subdominios de un nombre de host. Para evitar que se bloqueen subdominios, debes incluir un símbolo "." delante del nombre de host. El símbolo "*" del nombre de host especial bloqueará todos los dominios.
+      El puerto opcional es un número de puerto válido comprendido entre 1 y 65.535. Si no se especifica ninguno, se bloquearán todos los puertos.
+      Si se especifica la ruta opcional, solo se bloquearán las rutas con ese prefijo.
+
+      Las excepciones se pueden definir en la política de listas blancas de URL. Estas políticas se limitan a 1000 entradas, y se ignorarán las entradas que superen este número.
+
+      No se recomienda bloquear las URL internas "chrome://*", porque podrían producirse errores inesperados.
+
+      Si no se configura esta política, no se mostrará ninguna URL en la lista negra del navegador.</translation>
 <translation id="8649763579836720255">Los dispositivos Chrome OS pueden utilizar la confirmación remota (acceso verificado) para obtener un certificado emitido por la autoridad de certificación de Chrome OS que afirme que el dispositivo puede reproducir contenido protegido. Este proceso implica el envío de información de aprobación del hardware a la autoridad de certificación de Chrome OS que identifica el dispositivo de forma única.
 
           Si esta opción está establecida en False, el dispositivo no utilizará la confirmación remota para la protección del contenido y es posible que el dispositivo no pueda reproducir contenido protegido.

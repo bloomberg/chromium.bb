@@ -39,6 +39,7 @@
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
+<translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1557201757634521564">Auto-detect encoding</translation>
 <translation id="1568822834048182062">Your bookmarks, history, passwords and other settings will be synced to your Google Account.</translation>
 <translation id="1620510694547887537">Camera</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Leave incognito mode</translation>
 <translation id="3190152372525844641">Turn on permissions for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
-<translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3232754137068452469">Web App</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4543087392704641517">Bookmark title</translation>
 <translation id="4543661749405994812">Copy email address</translation>
 <translation id="4581964774250883625">You’ve gone incognito.</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 Physical Web link nearby}other{# Physical Web links nearby}}</translation>
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
@@ -248,7 +247,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4881695831933465202">Open</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
 <translation id="4927198283430892231">Saved pages are currently taking up <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="494334276486034338">Last synced: <ph name="HOURS" /> hours ago</translation>
 <translation id="4943872375798546930">No results</translation>
 <translation id="4970484396410298643">Access the tabs that you have open on your computer, right here.
 
@@ -258,14 +256,9 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5000922062037820727">Blocked (recommended)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Not <ph name="NOT_YOU_USER_NAME" />?</translation>
-<translation id="5026147292873308216">There are no nearby web pages found</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
-<translation id="5049968687459146030">Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
-
-For example, some websites may respond to this request by showing you ads that aren’t based on other websites you’ve visited. Many websites will still collect and use your browsing data - for example to improve security, to provide content, ads and recommendations on their websites, and to generate reporting statistics.</translation>
 <translation id="5063480226653192405">Usage</translation>
-<translation id="5074309530946372881">Looking for nearby web pages</translation>
 <translation id="509605886816275399">Save this page offline?</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="5127805178023152808">Sync is off</translation>
@@ -286,7 +279,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="5275558766013849309">Tabs will live together with recent apps.</translation>
 <translation id="5302048478445481009">Language</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>
-<translation id="5305985456140490686">Last synced: <ph name="MINUTES" /> minutes ago</translation>
 <translation id="5308933389783727448">Search saved pages</translation>
 <translation id="5313967007315987356">Add site</translation>
 <translation id="5317780077021120954">Save</translation>
@@ -301,7 +293,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="5414836363063783498">Verifying…</translation>
 <translation id="5423934151118863508">Your most visited pages will appear here</translation>
 <translation id="5424715742813396254">Edit saved name/password or exception</translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Edit saved page</translation>
 <translation id="544291274896356069">Leaving incognito mode if this link is opened in an external application. Continue?</translation>
 <translation id="5487729733663684359">Chrome updates are no longer supported for this version of Android.</translation>
@@ -467,6 +458,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Always</translation>
 <translation id="7562080006725997899">Clear browsing data</translation>
+<translation id="7588950540487816470">Physical web</translation>
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="7599840151813361502">You won’t be signed out of your <ph name="BEGIN_LINK" />Google Accounts<ph name="END_LINK" /></translation>
 <translation id="7603403729818446828">See your tabs with other recent apps on your phone’s Overview screen. You can control this in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
@@ -501,7 +493,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7961015016161918242">Never</translation>
 <translation id="7963646190083259054">Vendor:</translation>
-<translation id="7977858705483383621">SafeSearch</translation>
 <translation id="7987073022710626672">Chrome Terms of Service</translation>
 <translation id="7989222512959629388">Saving…</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
@@ -527,7 +518,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8275818695183729150">Allow (for address bar searches)</translation>
 <translation id="8310344678080805313">Standard tabs</translation>
-<translation id="8374420395168535396">Last synced: <ph name="DAYS" /> days ago</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8396312449826231789">Only approved sites</translation>
 <translation id="8413126021676339697">Show full history</translation>
@@ -593,7 +583,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">New folder</translation>
 <translation id="945632385593298557">Access your microphone</translation>
-<translation id="963967414714199900">Last synced: just now</translation>
 <translation id="969096075394517431">Change languages</translation>
 <translation id="971774202801778802">Bookmark URL</translation>
 <translation id="983192555821071799">Close all tabs</translation>

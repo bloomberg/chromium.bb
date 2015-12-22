@@ -105,7 +105,6 @@ Pour voir plus d'options et des exemples détaillés, accédez à l'adresse :
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
-<translation id="1445397020763995734">Type de compte pour l'authentification HTTP "Negotiate"</translation>
 <translation id="1454846751303307294">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -290,19 +289,6 @@ Pour plus d'options et obtenir des exemples détaillés, accédez au site :
       Si la règle HardwareAccelerationModeEnabled est définie sur "False", la règle Disable3DAPIs est ignorée, ce qui équivaut à définir Disable3DAPIs sur "True".</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
-<translation id="2175836933294053665">Configure une liste de favoris gérés.
-
-      La règle se compose d'une liste de favoris, et chaque favori est
-      un dictionnaire comprenant les clés "name" et "url" qui contiennent
-      le nom du favori et son URL cible. Un sous-dossier peut également être
-      configuré en définissant un favori sans clé "url, mais avec des clés
-      "children" supplémentaires qui contiennent elles-mêmes une liste de favoris,
-      comme il est défini ci-dessus (dont certains peuvent de nouveau être des
-      dossiers). <ph name="PRODUCT_NAME" /> modifiera les URL incomplètes comme si elles avaient été
-      envoyées via l'omnibox. Par exemple, "google.com" devient
-      "https://google.com/".
-
-      Ces favoris sont placés dans un dossier "Favoris gérés" qui ne peut pas être modifié par l'utilisateur. Ce dernier peut toutefois choisir de le masquer de la barre des favoris. Les favoris gérés ne sont pas synchronisés avec le compte de l'utilisateur et ne peuvent pas être modifiés par des extensions.</translation>
 <translation id="2188979373208322108">Active la barre des favoris sur <ph name="PRODUCT_NAME" />. 
 
 Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> affiche une barre de favoris. 
@@ -603,38 +589,6 @@ Pour plus d'exemples détaillés, accédez à l'adresse :
       Si vous activez cette règle, toutes les pages d'authentification du portail captif (c'est-à-dire toutes les pages Web à partir de la page de connexion jusqu'à ce que <ph name="PRODUCT_NAME" /> détecte une connexion Internet réussie) s'afficheront dans une fenêtre distincte, sans tenir compte des règles et des restrictions en place pour l'utilisateur actuel.
 
       Si vous désactivez cette règle ou si elle n'est pas configurée, toutes les pages d'authentification du portail captif s'afficheront sous un nouvel onglet normal, conformément aux paramètres de proxy de l'utilisateur actuel.</translation>
-<translation id="3001569025430882724">Remplace les instructions de sélection de l'imprimante par défaut pour <ph name="PRODUCT_NAME" />.
-
-      Cette règle détermine les instructions de sélection de l'imprimante par défaut dans <ph name="PRODUCT_NAME" />, la première fois que la fonction d'impression est utilisée avec un profil donné.
-
-      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaiera de trouver une imprimante correspondant à tous les attributs spécifiés et en fera l'imprimante par défaut. La première imprimante retenue d'après ces critères sera sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles sera sélectionnée (selon l'ordre dans lequel elles auront été découvertes).
-
-      Si cette règle n'est pas définie ou si aucune imprimante n'est retenue dans le délai imparti, l'imprimante par défaut est l'imprimante PDF intégrée à l'outil. Si l'imprimante PDF n'est pas disponible, aucune imprimante n'est sélectionnée.
-
-      La valeur est analysée en tant qu'objet JSON, conformément au schéma suivant :
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Pour limiter ou ne pas limiter la recherche d'une imprimante correspondant aux critères spécifiés à un groupe d'imprimantes spécifique",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Expression régulière correspondant à l'ID de l'imprimante",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Expression régulière correspondant au nom à afficher de l'imprimante",
-            "type": "string"
-          }
-        }
-      }
-
-      Les imprimantes connectées à Google Cloud Print sont considérées comme étant de type "cloud", et les autres sont de type "local".
-      Si vous ne renseignez pas un champ, cela signifie que toutes les valeurs seront prises en compte. Par exemple, si vous ne spécifiez pas de connectivité, l'aperçu avant impression proposera toutes sortes d'imprimantes, à la fois de type "local" et "cloud".
-      Les schémas d'expressions régulières doivent suivre la syntaxe JavaScript RegExp, et les résultats sont sensibles à la casse.</translation>
 <translation id="3021409116652377124">Désactiver l'outil de recherche de plug-ins</translation>
 <translation id="3030000825273123558">Activer la génération de rapports sur les statistiques</translation>
 <translation id="3034580675120919256">Permet de définir si les sites Web sont autorisés à exécuter JavaScript. L'exécution de JavaScript peut être soit autorisée pour tous les sites, soit refusée pour tous les sites. 
@@ -730,24 +684,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si ce paramètre est activé ou s'il n'est pas configuré, l'utilisateur peut activer le proxy d'impression sur le cloud en se connectant à son compte Google.
 
       Si ce paramètre est désactivé, l'utilisateur ne peut pas activer le proxy et la machine n'est pas autorisée à partager ses imprimantes avec <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Chromium et Google Chrome sont dotés du même ensemble de règles.
-      Veuillez noter que ce document peut contenir des règles
-      destinées à des versions logicielles inédites (leur entrée sur la compatibilité
-      correspond à une version inédite) et ces règles peuvent être 
-      modifiées ou changées sans préavis.
-
-      Ces règles sont strictement réservées à la configuration des instances de
-      <ph name="PRODUCT_NAME" /> au sein de votre organisation. 
-      L'utilisation de ces règles en dehors de votre organisation (par
-      exemple, dans un programme diffusé au public) sera considérée
-      comme malveillante et certainement identifiée comme telle par Google et les fournisseurs d'antivirus.
-
-      Il est inutile de modifier manuellement ces paramètres. Vous pouvez télécharger
-      des modèles faciles à utiliser pour Windows, Mac et Linux depuis le site <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Il est conseillé de configurer les règles sur Windows via GPO, même si
-      la gestion des règles via le registre est toujours possible pour les instances de Windows
-      associées à un domaine Active Directory.</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
 
@@ -1343,9 +1279,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", les paramètres de vérification en ligne de la révocation sont utilisés dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5732972008943405952">Importer les données de saisie automatique du navigateur par défaut à la première exécution</translation>
-<translation id="5751004203256768694">Indique le type des comptes fournis par l'application d'authentification Android compatible avec l'authentification HTTP "Negotiate" (authentification Kerberos, par exemple). Ces informations devraient être disponibles auprès du fournisseur de l'application d'authentification. Pour en savoir plus, consultez le site https://goo.gl/hajyfN.
-
-          Si aucun paramètre n'est fourni, l'authentification HTTP "Negotiate" est désactivée sur Android.</translation>
 <translation id="5761030451068906335">Configurer les paramètres de proxy pour <ph name="PRODUCT_NAME" />. Cette règle n'est pas encore prête, veuillez donc ne pas l'utiliser pour le moment.</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
@@ -2184,12 +2117,26 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8544375438507658205">Moteur de rendu HTML par défaut pour <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Prévenir en cas de consultation de sites en dehors des packs de contenu</translation>
 <translation id="8566842294717252664">Masquer le Chrome Web Store sur la page Nouvel onglet et dans le lanceur d'applications</translation>
-<translation id="857925079934558818">Indique si l'optimisation de TLS False Start doit être désactivée. Pour des raisons historiques, cette règle se nomme DisableSSLRecordSplitting.
-
-      Si cette règle n'est pas configurée, ou si elle est définie sur "False", TLS False Start est activé. Si elle est définie sur "True", TLS False Start est désactivé.</translation>
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
 <translation id="8614804915612153606">Désactive les mises à jour automatiques</translation>
 <translation id="8631434304112909927">jusqu'à la version <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Bloque l'accès aux URL répertoriées.
+
+      Cette règle empêche l'utilisateur de charger des pages Web à partir d'URL figurant sur la liste noire. La liste noire contient une liste de formats d'URL qui définissent quelles URL sont ajoutées à la liste noire.
+
+      Chaque format d'URL peut être soit un format pour fichiers locaux, soit un format d'URL générique. Les fichiers locaux suivent le format "file://path". Le chemin spécifié doit alors correspondre au chemin absolu à bloquer. Toutes les adresses du système de fichiers ayant ce chemin pour préfixe seront bloquées.
+
+      Le format pour une URL générique est "scheme://host:port/path".
+      Seul le schéma spécifié sera bloqué. Si le préfixe "scheme://" n'est pas spécifié, tous les schémas sont bloqués.
+      L'hôte doit être précisé sous la forme d'un nom d'hôte ou d'une adresse IP. Les sous-domaines d'un nom d'hôte seront également bloqués. Afin d'éviter le blocage des sous-domaines, ajoutez un "." devant le nom d'hôte. Le nom d'hôte spécial "*" bloque tous les domaines.
+      Le port facultatif est un numéro de port valide de 1 à 65535. Si aucun port n'est spécifié, tous les ports sont bloqués.
+      Si le chemin facultatif est spécifié, seuls les chemins contenant ce préfixe sont bloqués.
+
+      Vous pouvez définir des exceptions dans la règle s'appliquant aux URL sur liste blanche. Cette règle étant limitée à 1 000 entrées, les entrées suivantes seront ignorées.
+
+      Sachez qu'il est déconseillé de bloquer les URL internes "chrome://*", car cela peut provoquer des erreurs inattendues.
+
+      Si cette règle n'est pas configurée, aucune URL n'est mise sur liste noire dans le navigateur.</translation>
 <translation id="8649763579836720255">Il est possible d'utiliser l'attestation à distance (accès vérifié) pour les appareils Chrome OS afin d'obtenir un certificat délivré par Chrome OS CA qui atteste que vous pouvez lire du contenu protégé sur cet appareil. Ce processus implique l'envoi d'informations relatives au matériel à Chrome OS CA qui permettent d'identifier l'appareil de façon unique.
 
           Si ce paramètre est défini sur "False", l'attestation à distance n'est pas utilisée pour la protection du contenu, et vous ne pourrez peut-être pas lire du contenu protégé.

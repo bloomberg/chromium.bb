@@ -53,6 +53,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="2485422356828889247">Poista</translation>
 <translation id="2576431527583832481">Chromesta tuli juuri entistä parempi! Uusi versio on saatavilla.</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
+<translation id="2582790009689336987">Google Chromen päivitykset eivät pian ole saatavilla tällä tietokoneella, koska tämän Linux-järjestelmän tuki loppuu.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
 <translation id="2664962310688259219">Chrome-käyttöjärjestelmän avoimen lähdekoodin lisenssit</translation>
 <translation id="2665296953892887393">Auta parantamaan Google Chromea lähettämällä kaatumisilmoitukset ja <ph name="UMA_LINK" /> Googlelle</translation>
@@ -99,6 +100,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="4309555186815777032">(vaatii Chromen <ph name="BEGIN_BUTTON" />uudelleenkäynnistyksen<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="437002079035561265">Google Chromen päivitykset eivät enää ole saatavilla tällä tietokoneella, koska tämän Linux-järjestelmän tuki on loppunut.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
 <translation id="4480040274068703980">Chrome-käyttöjärjestelmä ei voi synkronoida tietoja kirjautumisvirheen vuoksi.</translation>
@@ -137,8 +139,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="5563479599352954471">Etsi yhdellä kosketuksella</translation>
 <translation id="5566025111015594046">Google Chrome (saapuva mDNS)</translation>
 <translation id="5620765574781326016">Tutustu verkkosivuston aiheisiin poistumatta sivulta.</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chrome yritti yhdistää sivustoon <ph name="SITE" /> tällä kertaa, sivusto palautti epätavalliset
-  ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph name="SITE" /> tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chrome katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="568643307450491754">Etsi kirjanmerkit Chrome-valikosta tai kirjanmerkkipalkista.</translation>
 <translation id="573759479754913123">Tietoja Chrome-käyttöjärjestelmästä</translation>
 <translation id="5749068826913805084">Chrome tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
@@ -151,7 +151,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="597770749449734237">Ottaa käyttöön lisää pikanäppäimiä, joiden avulla voi suorittaa Google Chromen vianetsintää.</translation>
 <translation id="6012342843556706400">Chrome tarvitsee sijainnin käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
 <translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
-<translation id="6049075767726609708">Järjestelmänvalvoja on asentanut Google Chromen tähän järjestelmään ja selain on kaikkien käyttäjien käytettävissä. Järjestelmätason Google Chrome korvaa käyttäjätason asennuksen.</translation>
 <translation id="6113794647360055231">Chrome on nyt entistä parempi</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Päivitä &amp;Chrome-käyttöjärjestelmä</translation>
@@ -211,7 +210,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="781069973841903133">Jos käynnistät Chromen uudelleen immersiivisessä tilassa, Chrome-sovellukset suljetaan ja käynnistetään uudelleen.</translation>
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
 <translation id="7890208801193284374">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromesta juuri itselleen sopivan.</translation>
-<translation id="7984945080620862648">Et voi siirtyä sivustoon <ph name="SITE" /> juuri nyt, koska sivusto lähetti sekoitetut tiedot, joita Chrome ei voi käsitellä. Verkkovirheet ja hyökkäykset ovat yleensä väliaikaisia, joten sivu luultavasti toimii myöhemmin.</translation>
 <translation id="8000275528373650868">Google Chrome edellyttää, että käyttöjärjestelmä on Windows Vista tai Windows XP (SP2 tai uudempi).</translation>
 <translation id="8005540215158006229">Chrome on melkein valmis.</translation>
 <translation id="8008534537613507642">Asenna Chrome uudelleen</translation>
@@ -244,7 +242,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="8851136666856101339">pää</translation>
 <translation id="8862326446509486874">Sinulla ei ole käyttöoikeuksia järjestelmätason asennukseen. Kokeile asennusohjelman suorittamista uudelleen järjestelmänvalvojana.</translation>
 <translation id="8889942196804715220">Käynnistä Chrome uudelleen immersiivisessä tilassa</translation>
-<translation id="8987477933582888019">Selain</translation>
 <translation id="9026991721384951619">Chrome-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="9102715433345326100">Tämä tiedosto on haitallinen, ja Chrome on estänyt sen.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Varoitus:<ph name="END_BOLD" /> Google Chrome ei voi estää laajennuksia tallentamasta selaushistoriaasi. Voit poistaa tämän laajennuksen käytöstä incognito-tilassa poistamalla tämän valinnan.</translation>

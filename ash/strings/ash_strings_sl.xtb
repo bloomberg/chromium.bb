@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1012876632442809908">Naprava USB-C (sprednja vrata)</translation>
 <translation id="1013923882670373915">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi dovoljenje za seznanjanje. V napravi vnesite ta PIN: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Bližnjica za preklop na naslednji način vnosa je spremenjena. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Samodejno skrivanje police</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Zaslonska tipkovnica onemogočena</translation>
 <translation id="1272079795634619415">Ustavi</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Naprava USB-C (leva vrata)</translation>
 <translation id="1330145147221172764">Omogoči zaslonsko tipkovnico</translation>
 <translation id="1343000272198685031">Vtič za mikrofon</translation>
 <translation id="1346748346194534595">V desno</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Zaslonska tipkovnica omogočena</translation>
 <translation id="1812696562331527143">Način vnosa se je spremenil v <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />drug ponudnik<ph name="END_LINK" />).
 Pritisnite Shift + Alt, da ga preklopite.</translation>
+<translation id="1864454756846565995">Naprava USB-C (vrata zadaj)</translation>
 <translation id="1882897271359938046">Zrcaljenje na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Bližnjica za odpiranje upravitelja opravil je spremenjena. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Samodejni kliki</translation>
@@ -55,6 +58,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2819276065543622893">Zdaj boste odjavljeni.</translation>
 <translation id="2825619548187458965">Polica</translation>
+<translation id="2844169650293029770">Naprava USB-C (vrata levo spredaj)</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="2942516765047364088">Položaj police</translation>
 <translation id="2946640296642327832">Omogoči Bluetooth</translation>
@@ -74,6 +78,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="3147142846278915599">Zaganjalnik (sinhronizacija aplikacij ...)</translation>
 <translation id="3157169093162779309">Omogočanje zaklepanja sukanja</translation>
 <translation id="3294437725009624529">Gost</translation>
+<translation id="3445925074670675829">Naprava USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Spremeni nazaj v jezik »<ph name="FROM_LOCALE" />« (potreben vnovični zagon)</translation>
 <translation id="3595596368722241419">Baterija je polna</translation>
@@ -125,6 +130,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5238774010593222950">Prijava v drug račun ni mogoča.</translation>
 <translation id="532063867737390965">To omrežno nastavitev je onemogočil skrbnik.</translation>
+<translation id="5331975486040154427">Naprava USB-C (vrata levo zadaj)</translation>
 <translation id="544691375626129091">Vsi razpoložljivi uporabniki so že bili dodani tej seji.</translation>
 <translation id="5507786745520522457">Nastavitev prenosa podatkov v mobilnih omrežjih</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6426039856985689743">Onemogoči mobilno podatkovno povezavo</translation>
 <translation id="6452181791372256707">Zavrni</translation>
 <translation id="6459472438155181876">Razširitev zaslon na <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Naprava USB-C (desna vrata)</translation>
 <translation id="6501401484702599040">Predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6585808820553845416">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="7052914147756339792">Nastavi sliko za ozadje ...</translation>
 <translation id="7097613348211027502">ChromeVox (izgovorjava povratnih informacij) je omogočen.
 Če ga želite onemogočiti, pritisnite Ctrl + Alt + Z.</translation>
+<translation id="7098389117866926363">Naprava USB-C (vrata levo zadaj)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Tipka CAPS LOCK je vklopljena.
@@ -220,6 +228,7 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Iskanje + Esc</translation>
 <translation id="8878886163241303700">Razširjanje zaslona</translation>
+<translation id="8938800817013097409">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="8940956008527784070">Akumulator je skoraj prazen (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon je v uporabi.</translation>

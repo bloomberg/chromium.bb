@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="1001534784610492198">‏آرشیو نصب کننده خراب یا نامعتبر است. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
+<translation id="1001534784610492198">‏آرشیو نصب کننده خراب یا نامعتبر است. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="1013290471399003443">‏Chrome تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور، اطلاعات «شفافیت گواهی‌نامه» معتبری ارائه کرد.</translation>
 <translation id="1016765312371154165">‏Chrome به درستی بسته نشده است.</translation>
 <translation id="103396972844768118">‏اطلاعات مهم درباره داده‌های Chrome</translation>
@@ -53,6 +53,7 @@
 <translation id="2485422356828889247">حذف نصب</translation>
 <translation id="2576431527583832481">‏‫Chrome بهتر شده است! نسخه جدید آن در دسترس است.</translation>
 <translation id="2580411288591421699">‏نمی‌توان همان نسخه Google Chrome را که اکنون در حال اجراست نصب کرد. لطفاً Google Chrome را ببندید و دوباره سعی کنید.</translation>
+<translation id="2582790009689336987">‏این رایانه به زودی دریافت به‌روزرسانی‌های Google Chrome را متوقف می‌کند، زیرا این سیستم Linux دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="2588322182880276190">‏نشان‌واره Chrome</translation>
 <translation id="2664962310688259219">‏مجوزهای منبع باز سیستم عامل Chrome</translation>
 <translation id="2665296953892887393">‏با ارسال گزارش‌های خرابی و <ph name="UMA_LINK" /> به Google، به بهبود Google Chrome کمک کنید.</translation>
@@ -73,7 +74,7 @@
 <translation id="3197823471738295152">دستگاه شما به‌روزرسانی شده است.</translation>
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
 <translation id="3360895254066713204">‏راهنمای Chrome</translation>
-<translation id="3396977131400919238">‏هنگام نصب یک خطای سیستم عامل رخ داد. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
+<translation id="3396977131400919238">‏هنگام نصب یک خطای سیستم عامل رخ داد. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="3398288718845740432">‏پنهان در منوی Chrome</translation>
 <translation id="3451115285585441894">‏افزودن به Chrome...</translation>
 <translation id="345171907106878721">‏افرودن خودتان به Chrome</translation>
@@ -92,13 +93,14 @@
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
 <translation id="4147555960264124640">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. <ph name="LEARN_MORE" /></translation>
-<translation id="4149882025268051530">‏نصب کننده در خارج کردن آرشیو از حالت فشرده ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
+<translation id="4149882025268051530">‏نصب کننده در خارج کردن آرشیو از حالت فشرده ناموفق بود. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="4167057906098955729">‏می‌توانید همه اعلان‌هایتان از برنامه‌های Chrome، افزودنی‌ها و وب‌سایت‌ها را در اینجا مشاهده کنید.</translation>
 <translation id="423410644998903704">‏Chrome باید به مجوزها دسترسی داشته باشد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
 <translation id="4251615635259297716">‏داده‌های Chrome شما به این حساب مرتبط شوند؟</translation>
 <translation id="4309555186815777032">‏(Chrome باید <ph name="BEGIN_BUTTON" />راه‌اندازی مجدد<ph name="END_BUTTON" /> شود)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="437002079035561265">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند، زیرا این سیستم Linux دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
 <translation id="4480040274068703980">‏به دلیل وجود یک خطای ورود به سیستم، سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود.</translation>
@@ -137,10 +139,9 @@
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
 <translation id="5566025111015594046">‏Google Chrome (ورودی mDNS)</translation>
 <translation id="5620765574781326016">بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی به دست آورید.</translation>
-<translation id="5626352146162055517">‏<ph name="SITE" /> معمولاً از رمزگذاری برای محافظت از اطلاعات شما استفاده می‌کند. اما این بار که Chrome تلاش کرد تا به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. ممکن است مهاجمی در تلاش باشد که خود را به جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi ممکن است در ارتباط اختلال ایجاد کرده باشد. اطلاعات شما همچنان ایمن است، زیرا Chrome قبل از هرگونه تبادل اطلاعات، اتصال را قطع کرد.</translation>
 <translation id="568643307450491754">‏نشانک‌های خود را در منوی Chrome یا از نوار نشانک‌ها پیدا کنید.</translation>
 <translation id="573759479754913123">‏درباره سیستم عامل Chrome</translation>
-<translation id="5749068826913805084">‏Chrome برای دانلود فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
+<translation id="5749068826913805084">‏Chrome برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
 <translation id="5785746630574083988">‏راه‌اندازی مجدد در حالت Windows 8 برنامه‌های Chrome شما را می‌بندد یا دوباره راه‌اندازی می‌کند.</translation>
 <translation id="5855036575689098185">‏نرم‌افزار در حال اجرا در رایانه شما با Google Chrome سازگار نیست.</translation>
 <translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
@@ -150,7 +151,6 @@
 <translation id="597770749449734237">‏میان‌برهای اضافی صفحه‌کلید را که برای اشکال زدایی Google Chrome مفید هستند، فعال می‌کند.</translation>
 <translation id="6012342843556706400">‏Chrome باید به موقعیت مکانی دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="6014844626092547096">‏اکنون وارد Chrome شدید! سرپرست سیستم شما همگام‌سازی را از کار انداخته است.</translation>
-<translation id="6049075767726609708">‏یک سرپرست Google Chrome را روی این سیستم نصب کرده است، و برای همه کاربران در دسترس است. اکنون Google Chrome در سطح سیستم جایگزین این برنامه نصب شده در سطح کاربر خواهد شد.</translation>
 <translation id="6113794647360055231">‏Chrome اکنون بهتر شده است</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">‏به‌روزرسانی سیستم عامل Ch&amp;rome</translation>
@@ -160,7 +160,7 @@
 <translation id="6368958679917195344">‏Chrome OS با یک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگر امکان‌پذیر است.</translation>
 <translation id="6400076122676892962">‏دریافت به‌روزرسانی‌های Google Chrome به زودی در این رایانه متوقف خواهد شد زیرا Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ و ۱۰٫۸ دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="6470176598693778404">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند زیرا Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ و ۱۰٫۸ دیگر پشتیبانی نمی‌شود.</translation>
-<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏در حال حاضر یک دانلود در حال انجام است. آیا می‌خواهید دانلود را لغو کنید و از Google Chrome خارج شوید؟}one{‏در حال حاضر # دانلود در حال انجام است. آیا می‌خواهید دانلود را لغو کنید و از Google Chrome خارج شوید؟}other{‏در حال حاضر # دانلود در حال انجام است. آیا می‌خواهید دانلودها را لغو کنید و از Google Chrome خارج شوید؟}}</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏در حال حاضر یک بارگیری در حال انجام است. آیا می‌خواهید بارگیری را لغو کنید و از Google Chrome خارج شوید؟}one{‏در حال حاضر # بارگیری در حال انجام است. آیا می‌خواهید بارگیری را لغو کنید و از Google Chrome خارج شوید؟}other{‏در حال حاضر # بارگیری در حال انجام است. آیا می‌خواهید بارگیری‌ها را لغو کنید و از Google Chrome خارج شوید؟}}</translation>
 <translation id="6598387184982954187">‏شما از <ph name="PROFILE_EMAIL" /> برای همگام‌سازی موارد Chrome خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chrome بدون حساب Google، به <ph name="SETTINGS_LINK" /> مراجعه کنید.</translation>
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
 <translation id="6626317981028933585">‏متأسفانه تنظیمات Mozilla Firefox شما هنگام باز بودن مرورگر در دسترس نیست. برای واردکردن آن تنظیمات در Google Chrome، کارهای خود را ذخیره کنید و همه پنجره‌های Firefox را ببندید. سپس ادامه را کلیک کنید.</translation>
@@ -208,9 +208,8 @@
 <translation id="7788788617745289808">‏Chrome باید به دوربین دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="7808348361785373670">‏حذف از Chrome...</translation>
 <translation id="781069973841903133">‏راه‌اندازی مجدد در حالت تمرکز بر محتوای Chrome برنامه‌های Chrome شما را می‌بندد و دوباره راه‌اندازی می‌کند.</translation>
-<translation id="7825851276765848807">‏بدلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
+<translation id="7825851276765848807">‏بدلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="7890208801193284374">‏اگر رایانه‌ای را به صورت مشترک استفاده می‌کنید، دوستان و خانواده می‌توانند به صورت جداگانه مرور کنند و Chrome را به صورتی که مایلند تنظیم کنند.</translation>
-<translation id="7984945080620862648">‏در حال حاضر نمی‌توانید از <ph name="SITE" /> بازدید کنید زیرا این وب‌سایت اعتبارنامه‌های درهمی ارسال کرده است که Chrome نمی‌تواند پردازش کند. معمولاً خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="8000275528373650868">‏Google Chrome به Windows Vista یا Windows XP با SP2 یا بالاتر نیاز دارد.</translation>
 <translation id="8005540215158006229">‏Chrome تقریباً آماده است.</translation>
 <translation id="8008534537613507642">‏نصب مجدد Chrome</translation>
@@ -243,7 +242,6 @@
 <translation id="8851136666856101339">اصلی</translation>
 <translation id="8862326446509486874">شما حقوق لازم برای نصب در سطح سیستم را ندارید. دوباره به‌عنوان سرپرست نصب کننده را اجرا کنید.</translation>
 <translation id="8889942196804715220">‏راه‌اندازی مجدد در حالت تمرکز بر محتوای Chrome</translation>
-<translation id="8987477933582888019">مرورگر وب</translation>
 <translation id="9026991721384951619">‏سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود زیرا جزئیات ورود به سیستم حساب شما به‌روز نیست.</translation>
 <translation id="9102715433345326100">‏این فایل خرابکار است و Chrome آن را مسدود کرده است.</translation>
 <translation id="9107728822479888688">‏<ph name="BEGIN_BOLD" />هشدار:<ph name="END_BOLD" /> Google Chrome نمی‌تواند مانع از ثبت سابقه مرور شما توسط افزونه‌ها شود. برای غیرفعال کردن این افزونه در حالت ناشناس، این گزینه را از حالت انتخاب خارج کنید.</translation>

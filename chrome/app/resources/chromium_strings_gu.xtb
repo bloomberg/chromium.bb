@@ -62,8 +62,6 @@
 <translation id="2886012850691518054">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રેશ રીપોર્ટ્સ આપમેળે Google ને મોકલીને Chromium ને વધુ સારું બનાવવમાં સહાય કરો.</translation>
 <translation id="2910007522516064972">&amp;Chromium વિશે</translation>
 <translation id="2966088006374919794">Chromium <ph name="SCHEME" /> લિંક્સને હેન્ડલ કરવા માટે કોઈ બાહ્ય એપ્લિકેશન શરૂ કરવાની જરૂર છે. વિનંતી કરેલી લિંક <ph name="PROTOLINK" /> છે.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> સામાન્ય રીતે તમારી માહિતીને સુરક્ષિત રાખવા માટે એન્ક્રિપ્શનનો ઉપયોગ કરે છે. જ્યારે આ સમયે Chromium દ્વારા <ph name="SITE" /> થી કનેક્ટ કરવાનો પ્રયાસ થયો, વેબસાઇટે અસામાન્ય અને ખોટા ઓળખાણપત્રોને 
-પાછા મોકલ્યાં. આવું ત્યારે થઇ શકે જ્યારે કોઈ હુમલાખોર <ph name="SITE" /> હોવાનો ડોળ કરવાનો પ્રયાસ કરી રહ્યો હોય, અથવા કોઈ Wi-Fi સાઇન-ઇન સ્ક્રીને કનેક્શનમાં વિક્ષેપ પાડ્યો હોય. તમારી માહિતી હજી પણ સુરક્ષિત છે કારણ કે Chromium એ કોઈપણ ડેટા વિનિમય થાય તે પહેલાં જ કનેક્શન રોકી દીધું છે.</translation>
 <translation id="3032787606318309379">Chromium માં ઉમેરી રહ્યું છે...</translation>
 <translation id="3046695367536568084">એપ્લિકેશનોનો ઉપયોગ કરવા માટે તમારે Chromium માં સાઇન ઇન કરવાની જરૂર છે. આ Chromium ને તમારી એપ્લિકેશનો, બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને સમગ્ર ઉપકરણો પર અન્ય સેટિંગ્સને સમન્વયિત કરવાની મંજૂરી આપે છે.</translation>
 <translation id="3068515742935458733">ક્રેશ રિપોર્ટ્સ અને <ph name="UMA_LINK" /> Google ને મોકલીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો.</translation>
@@ -90,7 +88,6 @@
 <translation id="358997566136285270">Chromium લોગો</translation>
 <translation id="3595526210123705352">Windows 8 મોડમાં ફરીથી લોંચ કરવું તમારી Chromium એપ્લિકેશન્સને બંધ કરીને ફરીથી લોંચ કરશે.</translation>
 <translation id="3738139272394829648">શોધવા માટે ટચ કરો</translation>
-<translation id="3744899669254331632">તમે અત્યારે <ph name="SITE" /> ની મુલાકાત લઈ શકતા નથી કારણ કે વેબસાઇટે સ્ક્રૅમ્બલ કરેલ ઓળખાણપત્રો મોકલ્યાં છે જેના પર Chromium પ્રક્રિયા કરી શકતું નથી. નેટવર્ક ભૂલો અને હુમલાઓ સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પૃષ્ઠ સંભવતઃ પછીથી કાર્ય કરશે.</translation>
 <translation id="3748537968684000502">તને એક સુરક્ષિત Chromium પૃષ્ઠ જોઈ રહ્યાં છો.</translation>
 <translation id="378917192836375108">Chromium થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -135,6 +132,7 @@
 <translation id="5796460469508169315">Chromium લગભગ તૈયાર છે.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5823381412099532241">Chromium પોતાને નવીનતમ સંસ્કરણ પર અપડેટ કરી શક્યું નથી, જેથી તમે અદ્ભુત નવી સુવિધાઓ અને સુરક્ષા સુધારાઓ ગુમાવી રહ્યાં છો. તમારે Chromium અપડેટ કરવાની જરૂર છે.</translation>
+<translation id="5859963531214966875">Chromium ના ભાવિ સંસ્કરણો હવે આ Linux સિસ્ટમનું સમર્થન કરશે નહીં.</translation>
 <translation id="5862307444128926510">Chromium માં સ્વાગત છે</translation>
 <translation id="5877064549588274448">ચેનલ બદલી. ફેરફારો લાગુ કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
 <translation id="5909170354645388250">Chromium માં ઉપયોગમાં નથી. સંસાધન નકશાને સમન્વયનમાં રાખવા માટે પ્લેસહોલ્ડર. તે એક તર્કની અપેક્ષા કરે છે: $1.</translation>
@@ -154,6 +152,7 @@
 <translation id="6485906693002546646">તમે તમારી Chromium સામગ્રીનું સમન્વયન કરવા માટે <ph name="PROFILE_EMAIL" /> નો ઉપયોગ કરી રહ્યાં છો. તમારી સમન્વયન પસંદગીને અપડેટ કરવા માટે અથવા Chromium ને Google એકાઉન્ટ વગર ઉપયોગ કરવા માટે, <ph name="SETTINGS_LINK" /> ની મુલાકાત લો.</translation>
 <translation id="6510925080656968729">Chromium ને અનઇન્સ્ટોલ કરો</translation>
 <translation id="6526111688217511984">ફાઇલો ડાઉનલોડ કરવા માટે Chromium ને સ્ટોરેજ ઍક્સેસની જરૂર છે.</translation>
+<translation id="6593914713218535185">Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે કારણ કે તે હવે આ Linux સિસ્ટમ પર સમર્થિત નથી.</translation>
 <translation id="6637001341228460105">Chromium ને આ સાઇટ સાથે માઇક્રોફોન શેર કરવા માટે તેની ઍક્સેસની જરૂર છે.</translation>
 <translation id="6638567566961868659">Chromium મેનૂમાં અથવા બુકમાર્ક્સ બાર પર તમારા બુકમાર્ક્સ શોધો.</translation>
 <translation id="6676384891291319759">ઇંટરનેટ ઍક્સેસ કરો</translation>
@@ -234,7 +233,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8985587603644336029">કોઇએ પહેલાં Chromium માં આ કમ્પ્યુટર પર <ph name="ACCOUNT_EMAIL_LAST" /> તરીકે સાઇન ઇન કર્યું છે. જો તે તમારું એકાઉન્ટ નથી, તો તમારી માહિતીને અલગ રાખવા માટે નવો Chromium વપરાશકર્તા બનાવો.
 
 કોઈપણ રીતે સાઇન ઇન કરવું બુકમાર્ક્સ, ઇતિહાસ, અને અન્ય સેટિંગ્સ જેવી Chromium માહિતીને <ph name="ACCOUNT_EMAIL_NEW" /> માં મર્જ કરશે.</translation>
-<translation id="8987477933582888019">વેબ બ્રાઉઝર</translation>
 <translation id="9013087743919948559">Chromium માં ઉમેરો</translation>
 <translation id="9013262824292842194">Chromium ને Windows Vista અથવા SP1 વાળા Windows XP અથવા તે પછીનાની આવશ્યકતા છે.</translation>
 <translation id="9019929317751753759">Chromium ને સુરક્ષિત બનાવવા માટે, અમે નીચેના એક્સ્ટેન્શનને અક્ષમ કર્યું છે કે જે <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યું હોઈ શકે છે.</translation>
@@ -244,7 +242,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ કાઢી નાખીએ?</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> ને ડિસ્કનેક્ટ કરવું આ ઉપકરણ પર સંગ્રહિત તમારા ઇતિહાસ, બુકમાર્ક્સ, સેટિંગ્સ અને અન્ય Chromium ડેટાને સાફ કરશે. તમારા Google એકાઉન્ટમાં સંગ્રહિત ડેટા સાફ થશે નહીં અને તે <ph name="GOOGLE_DASHBOARD_LINK" />Google ડેશબોર્ડ<ph name="END_GOOGLE_DASHBOARD_LINK" /> પર સંચાલિત કરી શકાય છે.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">વ્યવસ્થાપકે આ સિસ્ટમ પર Chromium ઇન્સ્ટોલ કરેલું છે અને તે બધા વપરાશકર્તાઓ માટે ઉપલબ્ધ છે. સિસ્ટમ-સ્તર Chromium હવે તમારા વપરાશકર્તા-સ્તરના ઇન્સ્ટોલેશનને બદલી દેશે.</translation>
 <translation id="9197815481970649201">તમે હમણાં Chromium માં સાઇન ઇન કર્યું છે</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> માટે જરૂરી છે કે તમે આ ઉપકરણનો ઉપયોગ કરતાં પહેલાં નીચેની સેવાની શરતોને વાંચો અને સ્વીકારો. આ શરતો Chromium OS શરતોને વિસ્તૃત, સંશોધિત અથવા મર્યાદિત કરતી નથી.</translation>
 <translation id="985602178874221306">Chromium લેખકો</translation>

@@ -90,7 +90,6 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller webadresse på proxyserveren</translation>
 <translation id="1435659902881071157">Netværkskonfiguration på enhedsniveau</translation>
-<translation id="1445397020763995734">Kontotype for forhandlet godkendelse via HTTP</translation>
 <translation id="1454846751303307294">Gør det muligt at oprette en liste over webadressemønstre for at angive websites, som ikke må køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="1464848559468748897">Kontrollér brugeradfærden i en session med flere profiler på <ph name="PRODUCT_OS_NAME" />-enheder.
 
@@ -257,18 +256,6 @@
       Hvis HardwareAccelerationModeEnabled er angivet til Falsk, ignoreres Disable3DAPIs, og det svarer til, at Disable3DAPIs er angivet til Sand.</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2170233653554726857">Aktivér WPAD-optimering</translation>
-<translation id="2175836933294053665">Konfigurerer en liste over administrerede bogmærker.
-
-      Politikken består af en liste over bogmærker, hvorimod hvert bogmærke er en
-      ordbog med nøglerne "navn" og "webadresse", som indeholder bogmærkets
-      navn og mål. En undermappe kan konfigureres ved at definere et bogmærke
-      uden nøglen "webadresse", men med den yderligere nøgle "børn", som selv
-      indeholder en liste over bogmærker, som beskrevet ovenfor (nogle af disse kan være
-      mapper). <ph name="PRODUCT_NAME" />
-      ændrer ufuldstændige webadresser, som om de blev indsendt via omnifeltet, 
-      så f.eks. "google.com" bliver til "https://google.com/".
-
-      Disse bogmærker placeres i mappen Administrerede bogmærker, som ikke kan ændres af brugeren. Brugeren kan dog vælge at skjule den fra bogmærkelinjen. Administrerede bogmærker synkroniseres ikke med brugerens konto, og de kan ikke ændres af udvidelser.</translation>
 <translation id="2188979373208322108">Aktiverer bogmærkelinjen i <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, viser <ph name="PRODUCT_NAME" /> en bogmærkelinje. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se bogmærkelinjen. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte det i <ph name="PRODUCT_NAME" />. Hvis denne indstilling ikke angives, kan brugeren vælge at bruge denne funktion eller ej.</translation>
 <translation id="2201555246697292490">Konfigurer hvidlisten for indbyggede beskedhosts</translation>
 <translation id="2204753382813641270">Administrer, hvornår hylden skjules automatisk</translation>
@@ -536,38 +523,6 @@
       Hvis du aktiverer denne indstilling, vises alle godkendelsessider med loginportal (dvs. alle websider, der kræver adgang via en loginside, indtil <ph name="PRODUCT_NAME" /> registrerer en internetforbindelse) i et separat vindue, og alle politikindstillinger og -begrænsninger for den aktuelle bruger ignoreres.
 
       Hvis du deaktiverer denne indstilling eller undlader at indstille den, vises alle godkendelsessider i loginportalen i en (almindelig) ny browserfane ved hjælp af brugerens proxyindstillinger.</translation>
-<translation id="3001569025430882724">Tilsidesætter regler for valg af standardprinter i <ph name="PRODUCT_NAME" />.
-
-      Denne politik fastlægger reglerne for valg af standardprinter i <ph name="PRODUCT_NAME" />, som vælges, første gang udskrivningsfunktionen anvendes fra en profil.
-
-      Når denne politik er angivet, forsøger <ph name="PRODUCT_NAME" /> at finde en printer, der har alle de angivne attributter, og vælge den som standardprinter. Den først fundne printer, der stemmer overens med politikken, vælges. Hvis der ikke kan findes et fuldstændigt match, kan enhver printer vælges ud fra den rækkefølge, som printerne blev fundet i.
-
-      Hvis ikke denne politik angives, eller hvis der ikke findes nogen printer, som stemmer overens med politikken, inden timeouten udløber, vælges en indbygget PDF-printer som standard. Hvis der ikke er nogen tilgængelig PDF-printer, vælges der ikke nogen printer.
-
-      Værdien parses som et JSON-objekt i overensstemmelse med følgende skema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Hvorvidt søgningen efter en printer, der opfylder attributten skal begrænses til en specifik printeropsætning.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regulært udtryk, som matcher printer-id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulært udtryk, som matcher printerens viste navn.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printere, der er forbundet til Google Cloudprinter, klassificeres som "cloud", mens de resterende printere klassificeres som "local".
-      Hvis et felt udelades, matcher alle værdier. Hvis du f.eks. ikke specificerer forbindelsen, vil et tryk på Vis udskrift starte en søgning efter alle typer printere – både lokalt og i skyen.
-      Almindelige søgemønstre skal overholde JavaScript RegExp-syntaksen, og der skelnes mellem store og små bogstaver.</translation>
 <translation id="3021409116652377124">Deaktiver pluginsøgning</translation>
 <translation id="3030000825273123558">Aktivér metrics-rapportering</translation>
 <translation id="3034580675120919256">Giver dig mulighed for at angive, om websites må køre JavaScript. Kørsel af JavaScript kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes "AllowJavaScript", og brugeren vil kunne ændre det.</translation>
@@ -657,13 +612,6 @@
       Hvis indstillingen er aktiveret eller ikke konfigureret, kan brugerne aktivere proxyen til Cloudprinter ved at godkende med deres Google-konto.
 
       Hvis denne indstilling er deaktiveret, kan brugerne ikke aktivere proxyen, og det vil ikke være tilladt for maskinen at dele sine printere med <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Både Chromium og Google Chrome understøtter den samme række politikker. Bemærk, at dette dokument kan indeholde politikker, som er målrettet mod ikke-udgivne softwareversioner (dvs. angivelsen af "understøttes på" henviser til en ikke-udgivet version. Sådanne politikker kan ændres eller fjernes uden varsel.
-
-Disse politikker er udelukkende beregnet til at konfigurere forekomster af <ph name="PRODUCT_NAME" /> internt til din organisation. Brug af disse politikker uden for din organisation (f.eks. i et offentligt distribueret program) betragtes som malware og vil formentlig blive registreret som malware af Google og antivirusleverandører.
-
-Disse indstillinger behøver ikke at blive konfigureret manuelt. Brugervenlige skabeloner til Windows, Mac og Linux kan downloades på <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via GPO, selvom levering af politikker via registrering fortsat understøttes for forekomster i Windows, der er tilknyttet et Active Directory-domæne.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
 
@@ -1185,9 +1133,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis denne politik ikke er angivet eller angivet som falsk, vil <ph name="PRODUCT_NAME" /> anvende de eksisterende indstillinger for onlinesøgning efter tilbagekaldelser.</translation>
 <translation id="5732972008943405952">Importér formulardata for AutoFyld fra standardbrowseren ved første visning</translation>
-<translation id="5751004203256768694">Angiver kontotypen for de konti, der leveres af Android-godkendelsesappen, som understøtter forhandlet godkendelse via HTTP (f.eks. Kerberos-godkendelse). Disse oplysninger kan indhentes fra leverandøren af godkendelsesappen. Få flere oplysninger på https://goo.gl/hajyfN.
-
-          Hvis der ikke er angivet nogen indstilling, deaktiveres forhandlet godkendelse via HTTP i Android.</translation>
 <translation id="5761030451068906335">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME" />. Denne politik er ikke klar til brug endnu, så brug den ikke.</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5770738360657678870">Udviklerkanal (kan være ustabil)</translation>
@@ -1947,12 +1892,26 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8544375438507658205">Standard HTML-gengivelse for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
 <translation id="8566842294717252664">Skjul webshoppen fra siden Ny fane og applisten</translation>
-<translation id="857925079934558818">Angiver, om TLS False Start-optimeringen skal deaktiveres. Af historiske årsager har denne politik fået navnet DisableSSLRecordSplitting.
-
-      Hvis politikken ikke indstilles eller indstilles til falsk, aktiveres TLS False Start. Hvis den indstilles til sand, deaktiveres TLS False Start.</translation>
 <translation id="8587229956764455752">Tillad oprettelse af nye brugerkonti</translation>
 <translation id="8614804915612153606">Deaktiverer Automatisk opdatering</translation>
 <translation id="8631434304112909927">indtil version <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Adgangen blokeres til de angivne webadresser.
+
+      Sortlisten viser en liste over webadressemønstre, der angiver, hvilke webadresser der føjes til sortlisten.
+
+      De enkelte webadressemønstre kan enten være et mønster for lokale filer eller et generisk webadressemønster. Mønstre for lokale filer vises i formatet "file://sti", hvor hele stien til den webadresse, der skal blokeres, skal angives. Alle filsystemer, hvor denne sti er angivet som præfiks, blokeres.
+
+      Et generisk webadressemønster har formatet "skema://host:port/sti"'.
+      Hvis der er angivet et skema, vil kun det pågældende skema blive blokeret. Hvis præfikset skema:// ikke er angivet, blokeres alle skemaer.
+      Hosten skal angives i form af et hostname eller en IP-adresse. Underdomæner af et hostname vil ligeledes blive blokeret. For at forhindre blokering af underdomæner skal du medtage et "." før navnet på hosten. Det særlige hostname "*" blokerer alle domæner.
+      Den valgfrie port er et gyldigt portnummer mellem 1 og 65535. Hvis der ikke er angivet et portnummer, blokeres de alle sammen.
+      Hvis den valgfrie sti er angivet, er det kun stier med det pågældende præfiks, som blokeres.
+
+      Undtagelser kan defineres i politikken for hvidlistede webadresser. Der er en maksimumsgrænse på 1000 poster for disse politikker. Alle efterfølgende poster ignoreres.
+
+      Bemærk, at det frarådes at blokere interne webadresser af typen "chrome://*", da dette kan føre til uventede fejl.
+
+      Hvis denne politik ikke er angivet, føjes der ikke nogen webadresser til sortlisten i browseren.</translation>
 <translation id="8649763579836720255">Chrome OS-enheder kan bruge ekstern attestation (bekræftet adgang) til at få udstedt et certifikat af Chrome OS CA, som bekræfter, at enheden er kvalificeret til at afspille beskyttet indhold. Denne proces involverer afsendelse af oplysninger om hardwaregodkendelse til Chrome OS CA, som identificerer enheden.
 
           Hvis denne indstilling er angivet som falsk, anvender enheden ikke ekstern attestation til indholdsbeskyttelse, og enheden kan muligvis ikke afspille beskyttet indhold.

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1012876632442809908">Urządzenie USB-C (przedni port)</translation>
 <translation id="1013923882670373915">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten kod PIN: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Zmieniliśmy skrót, który aktywuje następną metodę wprowadzania. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Autoukrywanie półki</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Klawiatura ekranowa wyłączona</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Urządzenie USB-C (lewy port)</translation>
 <translation id="1330145147221172764">Włącz klawiaturę ekranową</translation>
 <translation id="1343000272198685031">Gniazdo mikrofonu</translation>
 <translation id="1346748346194534595">W prawo</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1812696562331527143">Metoda wprowadzania została zmieniona na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />innej firmy<ph name="END_LINK" />).
 Naciśnij Shift + Alt, by ją przełączyć.</translation>
+<translation id="1864454756846565995">Urządzenie USB-C (tylny port)</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Zmieniliśmy skrót, który otwiera menedżera zadań. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
@@ -55,6 +58,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
 <translation id="2825619548187458965">Półka</translation>
+<translation id="2844169650293029770">Urządzenie USB-C (przedni port na lewym boku)</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2942516765047364088">Pozycja półki</translation>
 <translation id="2946640296642327832">Włącz Bluetooth</translation>
@@ -74,6 +78,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
 <translation id="3157169093162779309">Włącz blokadę obracania</translation>
 <translation id="3294437725009624529">Gość</translation>
+<translation id="3445925074670675829">Urządzenie USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
 <translation id="3595596368722241419">Bateria naładowana</translation>
@@ -125,6 +130,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="5238774010593222950">Nie możesz zalogować się na inne konto.</translation>
 <translation id="532063867737390965">To ustawienie sieci zostało wyłączone przez administratora.</translation>
+<translation id="5331975486040154427">Urządzenie USB-C (tylny port na lewym boku)</translation>
 <translation id="544691375626129091">Wszyscy dostępni użytkownicy zostali już dodani do tej sesji.</translation>
 <translation id="5507786745520522457">Skonfiguruj komórkową transmisję danych</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6426039856985689743">Wyłącz komórkową transmisję danych</translation>
 <translation id="6452181791372256707">Odrzuć</translation>
 <translation id="6459472438155181876">Rozszerzanie ekranu na <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Urządzenie USB-C (prawy port)</translation>
 <translation id="6501401484702599040">Przesyłam ekran do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opcje</translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="7052914147756339792">Ustaw tapetę...</translation>
 <translation id="7097613348211027502">ChromeVox (potwierdzenia głosowe) jest włączony.
 Aby wyłączyć, naciśnij Ctrl+Alt+Z.</translation>
+<translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK jest włączony.
@@ -220,6 +228,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Szukaj+Esc</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>
+<translation id="8938800817013097409">Urządzenie USB-C (prawy port z tyłu)</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon jest używany.</translation>

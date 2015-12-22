@@ -57,6 +57,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2485422356828889247">Pašalinti</translation>
 <translation id="2576431527583832481">„Chrome“ patobulėjo! Galima nauja versija.</translation>
 <translation id="2580411288591421699">Negalima įdiegti tos pačios „Google Chrome“ versijos, kuri dabar paleista. Uždarykite „Google Chrome“ ir bandykite dar kartą.</translation>
+<translation id="2582790009689336987">Netrukus šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebepalaikoma ši „Linux“ sistema.</translation>
 <translation id="2588322182880276190">„Chrome“ logotipas</translation>
 <translation id="2664962310688259219">„Chrome“ OS atvirojo šaltinio licencijos</translation>
 <translation id="2665296953892887393">Padėkite tobulinti „Google Chrome“ siųsdami „Google“ strigčių ataskaitas ir <ph name="UMA_LINK" /></translation>
@@ -103,6 +104,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="4309555186815777032">(„Chrome“ būtina <ph name="BEGIN_BUTTON" />paleisti iš naujo<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="437002079035561265">Šiame kompiuteryje nebebus gaunami „Google Chrome“ naujiniai, nes nebepalaikoma „Linux sistema.</translation>
 <translation id="4407807842708586359">„Google Chrome OS“</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4480040274068703980">„Chrome“ OS negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
@@ -145,8 +147,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="5563479599352954471">Paieška vienu palietimu</translation>
 <translation id="5566025111015594046">„Google Chrome“ (mDNS-In)</translation>
 <translation id="5620765574781326016">Sužinokite apie temas svetainėse neišėję iš puslapio.</translation>
-<translation id="5626352146162055517">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chrome“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus
-ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chrome“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="568643307450491754">Žymes rasite „Chrome“ meniu arba žymių juostoje.</translation>
 <translation id="573759479754913123">Apie „Chrome“ OS</translation>
 <translation id="5749068826913805084">„Chrome“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
@@ -159,7 +159,6 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="597770749449734237">Įgalinami papildomi spartieji klavišai, naudingi derinant „Google Chrome“.</translation>
 <translation id="6012342843556706400">„Chrome“ reikia galimybės pasiekti vietovės informaciją, kad ją būtų galima bendrinti su šia svetaine.</translation>
 <translation id="6014844626092547096">Dabar esate prisijungę prie „Chrome“. Administratorius neleidžia sinchronizuoti.</translation>
-<translation id="6049075767726609708">Administratorius šioje sistemoje jau įdiegė „Google Chrome“ ir ji prieinama visiems naudotojams. Sistemos lygio „Google Chrome“ pakeis naudotojo lygio diegimą.</translation>
 <translation id="6113794647360055231">„Chrome“ dabar dar tobulesnė</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" />– „Google Chrome“</translation>
 <translation id="61852838583753520">Atnaujinti „&amp;Chrome“ OS</translation>
@@ -219,7 +218,6 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="781069973841903133">Iš naujo paleidžiant „Chrome“ įtraukiančiuoju režimu bus uždarytos ir iš naujo paleistos „Chrome“ programos.</translation>
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
-<translation id="7984945080620862648">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes ji atsiuntė užšifruotus prisijungimo duomenis, kurių „Chrome“ negali apdoroti. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="8000275528373650868">„Google Chrome“ reikalinga „Windows Vista“ arba „Windows XP“ operacinė sistema su SP2 arba naujesniu pakeitimų paketu.</translation>
 <translation id="8005540215158006229">„Chrome“ beveik paruošta.</translation>
 <translation id="8008534537613507642">Iš naujo įdiegti „Chrome“</translation>
@@ -252,7 +250,6 @@ ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimest
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Neturite reikiamų teisių sistemai įdiegti. Pamėginkite įdiegimo priemonę dar kartą paleisti kaip administratorius.</translation>
 <translation id="8889942196804715220">Iš naujo paleisti „Chrome“ įtraukiančiuoju režimu</translation>
-<translation id="8987477933582888019">Žiniatinklio naršyklė</translation>
 <translation id="9026991721384951619">„Chrome“ OS negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="9102715433345326100">Šis failas yra kenkėjiškas, todėl „Chrome“ jį užblokavo.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Įspėjimas:<ph name="END_BOLD" /> „Google Chrome“ negali neleisti plėtiniams įrašyti jūsų naršymo istorijos. Jei norite neleisti šio plėtinio inkognito režimu, panaikinkite šios parinkties pasirinkimą.</translation>

@@ -53,6 +53,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="2576431527583832481">Chrome ara és millor. Hi ha una versió nova disponible.</translation>
 <translation id="2580411288591421699">No es pot instal·lar la mateixa versió de Google Chrome que s'executa actualment. Tanqueu Google Chrome i torneu-ho a provar.</translation>
+<translation id="2582790009689336987">Aquest ordinador aviat deixarà de rebre actualitzacions de Google Chrome perquè aquest sistema Linux ja no serà compatible.</translation>
 <translation id="2588322182880276190">Logotip de Chrome</translation>
 <translation id="2664962310688259219">Llicències de programari lliure de Chrome OS</translation>
 <translation id="2665296953892887393">Ajudeu a millorar Google Chrome; envieu informes d'error i <ph name="UMA_LINK" /> a Google.</translation>
@@ -98,6 +99,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="4251615635259297716">Voleu enllaçar les vostres dades de Chrome amb aquest compte?</translation>
 <translation id="4309555186815777032">(cal <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome perquè aquest sistema Linux ja no és compatible.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
 <translation id="4480040274068703980">Chrome OS no ha pogut sincronitzar les vostres dades a causa d'un error en iniciar la sessió.</translation>
@@ -136,7 +138,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5563479599352954471">Cercar amb un toc</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina.</translation>
-<translation id="5626352146162055517">Normalment, al lloc web <ph name="SITE" /> es fa servir l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chrome ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chrome ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="568643307450491754">Trobareu les adreces d'interès al menú de Chrome o a la barra d'adreces d'interès.</translation>
 <translation id="573759479754913123">Quant a Chrome OS</translation>
 <translation id="5749068826913805084">Chrome necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
@@ -149,7 +150,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="597770749449734237">Activa tecles de drecera addicionals que siguin útils per depurar Google Chrome.</translation>
 <translation id="6012342843556706400">Chrome necessita accés a la ubicació per compartir-la amb aquest lloc web.</translation>
 <translation id="6014844626092547096">Heu iniciat la sessió a Chrome. El vostre administrador ha desactivat la sincronització.</translation>
-<translation id="6049075767726609708">Un administrador ha instal·lat Google Chrome en aquest sistema i ja està disponible per a tots els usuaris. Ara substituirem la instal·lació de Google Chrome en l'àmbit del sistema per la instal·lació en l'àmbit dels usuaris.</translation>
 <translation id="6113794647360055231">Chrome és millor que mai</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Actualitza &amp;SO Chrome</translation>
@@ -209,7 +209,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="781069973841903133">Si reinicieu Chrome en mode envoltant, les aplicacions de Chrome es tancaran i es tornaran a iniciar.</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
 <translation id="7890208801193284374">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chrome com vulguin.</translation>
-<translation id="7984945080620862648">En aquest moment no podeu visitar <ph name="SITE" /> perquè el lloc web ha enviat credencials barrejades que Chrome no pot processar. Els errors i els atacs de xarxa solen ser temporals, de manera que és probable que aquesta pàgina torni a funcionar més tard.</translation>
 <translation id="8000275528373650868">Google Chrome requereix Windows Vista o Windows XP amb SP2 o superior.</translation>
 <translation id="8005540215158006229">Chrome ja està quasi llest</translation>
 <translation id="8008534537613507642">Torna a instal·lar Chrome</translation>
@@ -242,7 +241,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8851136666856101339">principal</translation>
 <translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
 <translation id="8889942196804715220">Torna a iniciar en mode envoltant de Chrome</translation>
-<translation id="8987477933582888019">Navegador web</translation>
 <translation id="9026991721384951619">Chrome OS no ha pogut sincronitzar les vostres dades perquè les dades d'inici de sessió del compte no estan actualitzades.</translation>
 <translation id="9102715433345326100">Aquest fitxer és maliciós i Chrome l'ha bloquejat.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advertiment:<ph name="END_BOLD" /> Google Chrome no pot evitar que les extensions registrin l'historial de navegació. Per desactivar l'extensió en mode d'incògnit, anul·leu la selecció de l'opció corresponent.</translation>

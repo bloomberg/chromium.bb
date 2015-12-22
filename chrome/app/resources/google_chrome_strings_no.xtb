@@ -53,6 +53,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="2485422356828889247">Avinstaller</translation>
 <translation id="2576431527583832481">Chrome har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="2580411288591421699">Google Chrome-versjonen du prøver å installere, kjører allerede. Lukk Google Chrome og forsøk å installere på nytt.</translation>
+<translation id="2582790009689336987">Denne datamaskinen kommer snart til å slutte å motta oppdateringer av Google Chrome fordi dette Linux-systemet ikke støttes lenger.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
 <translation id="2664962310688259219">Åpen kildekode-lisenser for Chrome OS</translation>
 <translation id="2665296953892887393">Bidra til å gjøre Google Chrome bedre ved å sende programstopprapporter og <ph name="UMA_LINK" /> til Google</translation>
@@ -98,6 +99,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="4251615635259297716">Vil du koble Chrome-dataene dine til denne kontoen?</translation>
 <translation id="4309555186815777032">(krever at Chrome <ph name="BEGIN_BUTTON" />startes på nytt<ph name="END_BUTTON" />)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">Denne datamaskinen kommer ikke til å motta oppdateringer av Google Chrome fordi dette Linux-systemet ikke støttes lenger.</translation>
 <translation id="4407807842708586359">Google Chromes operativsystem</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
 <translation id="4480040274068703980">Chrome OS kunne ikke synkronisere dataene dine på grunn av en feil under pålogging.</translation>
@@ -136,8 +138,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="5563479599352954471">Søk med ett trykk</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
 <translation id="5620765574781326016">Finn ut mer om emner på nettsteder uten å forlate siden.</translation>
-<translation id="5626352146162055517"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chrome prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig
-og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chrome stoppet tilkoblingen før noen data ble utvekslet.</translation>
 <translation id="568643307450491754">Finn bokmerkene dine i Chrome-menyen eller på bokmerkeraden.</translation>
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5749068826913805084">Chrome må ha lagringstilgang for å laste ned filer.</translation>
@@ -150,7 +150,6 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="597770749449734237">Slår på flere hurtigtaster som er nyttige til feilsøking av Google Chrome.</translation>
 <translation id="6012342843556706400">Chrome må ha tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="6014844626092547096">Du er nå logget på Chrome. Synkronisering er deaktivert av administratoren din.</translation>
-<translation id="6049075767726609708">En administrator har installert Google Chrome på dette systemet, og det er tilgjengelig for alle brukere. Systemnivåinstallasjonen av Google Chrome vil erstatte brukernivåinstallasjonen nå.</translation>
 <translation id="6113794647360055231">Nå er Chrome blitt enda bedre</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Oppdater &amp;Chrome OS</translation>
@@ -210,7 +209,6 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="781069973841903133">Hvis du starter på nytt i maksimert modus i Chrome, blir Chrome-appene dine lukket og startet på nytt.</translation>
 <translation id="7825851276765848807">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Google Chrome på nytt.</translation>
 <translation id="7890208801193284374">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil.</translation>
-<translation id="7984945080620862648">Du kan ikke gå til <ph name="SITE" /> akkurat nå fordi nettstedet sendte kryptert legitimasjon som Chrome ikke kan behandle. Nettverksfeil og -angrep er som regel kortvarige, så denne siden fungerer nok igjen senere.</translation>
 <translation id="8000275528373650868">Google Chrome krever Windows Vista eller Windows XP med SP2 eller nyere.</translation>
 <translation id="8005540215158006229">Chrome er nesten klar.</translation>
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
@@ -243,7 +241,6 @@ og feil legitimasjon. Dette kan skje når en angriper prøver å utgi seg for å
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>
 <translation id="8889942196804715220">Start på nytt i Chrome i maksimert modus</translation>
-<translation id="8987477933582888019">Nettleser</translation>
 <translation id="9026991721384951619">Chrome OS kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="9102715433345326100">Denne filen er skadelig, og Chrome har blokkert den.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advarsel:<ph name="END_BOLD" /> Google Chrome kan ikke forhindre utvidelser fra å lagre nettleserloggen din. Du kan deaktivere denne utvidelsen i inkognitomodus ved å oppheve merkingen av dette alternativet.</translation>

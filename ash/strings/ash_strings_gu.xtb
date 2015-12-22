@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1012876632442809908">USB-C ઉપકરણ (આગળનું પોર્ટ)</translation>
 <translation id="1013923882670373915">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ PIN કોડ દાખલ કરો: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">આગલી ઇનપુટ પદ્ધતિ પર સ્વિચ કરવા માટેની પદ્ધતિ બદલી છે. કૃપા કરીને <ph name="NEW_SHORTCUT" /> ની બદલે <ph name="OLD_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="112308213915226829">સ્વતઃછુપાવો શેલ્ફ</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">ઓન-સ્ક્રીન કીબોર્ડ અક્ષમ કર્યું</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">USB-C ઉપકરણ (ડાબું પોર્ટ)</translation>
 <translation id="1330145147221172764">ઑન-સ્ક્રીન કીબોર્ડ સક્ષમ કરો</translation>
 <translation id="1343000272198685031">માઇક જેક</translation>
 <translation id="1346748346194534595">જમણે</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="1812696562331527143">તમારી ઇનપુટ પદ્ધતિ  <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3જા પક્ષ<ph name="END_LINK" />)માં બદલાઇ ગયેલ છે.
 સ્વિચ કરવા માટે Shift + Alt દબાવો.</translation>
+<translation id="1864454756846565995">USB-C ઉપકરણ (પાછળનું પોર્ટ)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> પર પ્રતિબિંબિત થઈ રહ્યું છે</translation>
 <translation id="1919743966458266018">ટાસ્ક સંચાલક ખોલવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="NEW_SHORTCUT" /> ની બદલે <ph name="OLD_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="1923539912171292317">આપમેળે ક્લિક્સ</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">એપ્સ</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
 <translation id="2825619548187458965">શેલ્ફ</translation>
+<translation id="2844169650293029770">USB-C ઉપકરણ (ડાબી બાજુનું આગળનું પોર્ટ)</translation>
 <translation id="2872961005593481000">શટ ડાઉન કરો</translation>
 <translation id="2942516765047364088">શેલ્ફ સ્થિતી</translation>
 <translation id="2946640296642327832">Bluetooth સક્ષમ કરો</translation>
@@ -74,6 +78,7 @@
 <translation id="3147142846278915599">લોન્ચર (એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે..)</translation>
 <translation id="3157169093162779309">પરિભ્રમણ લૉક સક્ષમ કરો</translation>
 <translation id="3294437725009624529">અતિથિ</translation>
+<translation id="3445925074670675829">USB-C ઉપકરણ</translation>
 <translation id="3473479545200714844">સ્ક્રીન બૃહદદર્શક</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછાં જાઓ (પુનર્પ્રારંભની જરૂર છે)</translation>
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="5238774010593222950">બીજા એકાઉન્ટમાં સાઇન-ઇન કરી શકતાં નથી.</translation>
 <translation id="532063867737390965">આ નેટવર્ક સેટિંગ વ્યવસ્થાપક દ્વારા અક્ષમ કરેલ છે.</translation>
+<translation id="5331975486040154427">USB-C ઉપકરણ (ડાબી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="544691375626129091">બધા ઉપલબ્ધ વપરાશકર્તાઓ પહેલેથી જ આ સત્ર પર ઉમેરવામાં આવ્યા છે.</translation>
 <translation id="5507786745520522457">મોબાઇલ ડેટા સેટ કરો</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@
 <translation id="6426039856985689743">મોબાઇલ ડેટાને અક્ષમ કરો</translation>
 <translation id="6452181791372256707">નકારો</translation>
 <translation id="6459472438155181876">સ્ક્રીનને <ph name="DISPLAY_NAME" /> પર વિસ્તૃત કરી રહ્યાં છે</translation>
+<translation id="6490471652906364588">USB-C ઉપકરણ (જમણું પોર્ટ)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> પર સ્ક્રીન કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="6550675742724504774">વિકલ્પો</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે.</translation>
@@ -181,6 +188,7 @@
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> પર <ph name="TAB_NAME" /> ને કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="7052914147756339792">વૉલપેપર સેટ કરો...</translation>
 <translation id="7097613348211027502">ChromeVox (બોલાયેલ પ્રતિસાદ) સક્ષમ છે. અક્ષમ કરવા માટે Ctrl+Alt+Z દબાવો.</translation>
+<translation id="7098389117866926363">USB-C ઉપકરણ (પાછળની બાજુએ ડાબું પોર્ટ)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK ચાલુ છે.
@@ -219,6 +227,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
+<translation id="8938800817013097409">USB-C ઉપકરણ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">માઇકોફોન ઉપયોગમાં છે.</translation>

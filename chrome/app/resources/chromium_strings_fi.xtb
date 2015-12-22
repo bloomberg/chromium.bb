@@ -60,8 +60,6 @@
 <translation id="2886012850691518054">Valinnainen: Lähetä Googlelle automaattisesti käyttötilastoja ja virheraportteja Chromiumin kehittämiseksi.</translation>
 <translation id="2910007522516064972">Tietoja &amp;Chromiumista</translation>
 <translation id="2966088006374919794">Chromiumin täytyy käynnistää ulkopuolinen sovellus <ph name="SCHEME" />-linkkien käsittelyä varten. Pyyntöön liittyvä linkki on <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti yhdistää sivustoon <ph name="SITE" /> tällä kertaa, sivusto palautti epätavalliset
-ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph name="SITE" /> tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="3032787606318309379">Lisätään Chromiumiin...</translation>
 <translation id="3046695367536568084">Sovellusten käyttö edellyttää kirjautumista Chromiumiin. Näin Chromium voi synkronoida sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi eri laitteiden välillä.</translation>
 <translation id="3068515742935458733">Auta parantamaan Chromiumia lähettämällä kaatumisilmoitukset ja <ph name="UMA_LINK" /> Googlelle</translation>
@@ -87,7 +85,6 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="358997566136285270">Chromium-logo</translation>
 <translation id="3595526210123705352">Jos käynnistät selaimen uudelleen Windows 8 -tilassa, Chromium-sovelluksesi suljetaan ja käynnistetään uudelleen.</translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
-<translation id="3744899669254331632">Et voi siirtyä sivustoon <ph name="SITE" /> tällä hetkellä, koska sivusto lähetti salatut kirjautumistiedot, joita Chromium ei osaa käsitellä. Verkkovirheet ja hyökkäykset ovat yleensä väliaikaisia, joten sivu toimii luultavasti myöhemmin.</translation>
 <translation id="3748537968684000502">Katselet suojattua Chromium-sivua.</translation>
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -132,6 +129,7 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="5796460469508169315">Chromium on lähes valmis.</translation>
 <translation id="5820394555380036790">Chromium-käyttöjärjestelmä</translation>
 <translation id="5823381412099532241">Chromium ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Päivitä Chromium.</translation>
+<translation id="5859963531214966875">Chromiumin tulevat versiot eivät enää tue tätä Linux-järjestelmää.</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
 <translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
 <translation id="5909170354645388250">Ei käytössä Chromiumissa. Paikkamerkki resurssikarttojen synkronoimiseksi. Odottaa yhtä argumenttia: $1.</translation>
@@ -151,6 +149,7 @@ ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph nam
 <translation id="6485906693002546646">Synkronoit Chromiumin tietosi osoitteella <ph name="PROFILE_EMAIL" />. Voit vaihtaa synkronoinnin asetuksia tai siirtyä käyttämään Chromiumia ilman Google-tiliä käymällä <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Poista Chromium</translation>
 <translation id="6526111688217511984">Chromium tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
+<translation id="6593914713218535185">Chromium ei ehkä toimi oikein, koska sen käyttöä tällä Linux-järjestelmällä ei enää tueta.</translation>
 <translation id="6637001341228460105">Chromium tarvitsee mikrofonin käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="6638567566961868659">Etsi kirjanmerkit Chromium-valikosta tai kirjanmerkkipalkista.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
@@ -231,7 +230,6 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="8985587603644336029">Joku on jo kirjautunut tällä tietokoneella Chromiumiin käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Jos se ei ole sinun käyttäjätilisi, luo uusi Chromium-käyttäjä, jos haluat pitää tiedot erillään.
 
 Jos kirjaudut silti sisään, Chromium-tiedot, kuten kirjanmerkit, historia ja asetukset, yhdistetään tilin <ph name="ACCOUNT_EMAIL_NEW" /> tietoihin.</translation>
-<translation id="8987477933582888019">Selain</translation>
 <translation id="9013087743919948559">Lisää Chromiumiin</translation>
 <translation id="9013262824292842194">Chromium edellyttää, että käyttöjärjestelmä on Windows Vista tai Windows XP SP2 tai uudempi.</translation>
 <translation id="9019929317751753759">Paransimme Chromiumin turvallisuutta poistamalla käytöstä sovelluksia, joita <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ei tarjoa ja jotka on voitu lisätä ilman lupaasi.</translation>
@@ -241,7 +239,6 @@ Jos kirjaudut silti sisään, Chromium-tiedot, kuten kirjanmerkit, historia ja a
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="918373042641772655">Jos irrotat tilin <ph name="USERNAME" />, historiasi, kirjanmerkkisi ja muut laitteelle tallennetut Chromium-tiedot poistetaan. Google-tiliisi tallennetut tiedot säilyvät ennallaan, ja voit hallinnoida niitä <ph name="GOOGLE_DASHBOARD_LINK" />Google Hallintapaneelin kautta<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (saapuva mDNS)</translation>
-<translation id="9191268552238695869">Järjestelmänvalvoja on asentanut Chromiumin tämän tietokoneen kaikille käyttäjille. Järjestelmätason Chromium-asennus korvaa käyttäjätason Chromium-asennuksen nyt.</translation>
 <translation id="9197815481970649201">Olet nyt kirjautuneena Chromiumiin</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> edellyttää, että luet ja hyväksyt seuraavat käyttöehdot ennen tämän laitteen käyttöä. Nämä ehdot eivät laajenna, muokkaa tai rajoita Chromium-käyttöliittymän ehtoja.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

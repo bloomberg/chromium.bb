@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Error de activación de red</translation>
+<translation id="4118990158415604803">El administrador ha inhabilitado la conexión a otras redes.</translation>
 <translation id="4237016987259239829">Error de conexión de red</translation>
 <translation id="4274292172790327596">Error desconocido</translation>
 <translation id="4326192123064055915">Café</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Boca abajo</translation>
 <translation id="6943836128787782965">Error al obtener HTTP</translation>
+<translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7165320105431587207">Error al configurar la red</translation>
 <translation id="7170041865419449892">Fuera del alcance</translation>
 <translation id="7229570126336867161">Es necesario el estándar EVDO.</translation>

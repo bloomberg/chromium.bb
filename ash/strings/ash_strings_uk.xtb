@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="1012876632442809908">Пристрій із портом USB типу C (на передній панелі)</translation>
 <translation id="1013923882670373915">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей PIN-код: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Комбінація клавіш для вибору наступного методу введення змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Екранну клавіатуру вимкнено</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Пристрій із портом USB типу C (ліворуч)</translation>
 <translation id="1330145147221172764">Увімкнути екранну клавіатуру</translation>
 <translation id="1343000272198685031">Роз’єм для мікрофона</translation>
 <translation id="1346748346194534595">Праворуч</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Екранну клавіатуру ввімкнено</translation>
 <translation id="1812696562331527143">Метод введення змінено на <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />третя сторона<ph name="END_LINK" />).
 Щоб переключитися, натисніть Shift + Alt.</translation>
+<translation id="1864454756846565995">Пристрій із портом USB типу C (на задній панелі)</translation>
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Комбінація клавіш для запуску Диспетчера завдань змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Автоматичні кліки</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2819276065543622893">Зараз ви вийдете.</translation>
 <translation id="2825619548187458965">Полиця</translation>
+<translation id="2844169650293029770">Пристрій, під’єднаний до порту USB-C (ліворуч на передній панелі)</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
 <translation id="2942516765047364088">Розташування полиці</translation>
 <translation id="2946640296642327832">Увімкнути Bluetooth</translation>
@@ -74,6 +78,7 @@
 <translation id="3147142846278915599">Панель запуску (синхронізація додатків…)</translation>
 <translation id="3157169093162779309">Заблокувати обертання</translation>
 <translation id="3294437725009624529">Гість</translation>
+<translation id="3445925074670675829">Пристрій із портом USB типу C</translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="3573179567135747900">Повернутися до мови "<ph name="FROM_LOCALE" />" (потрібно перезавантажитися)</translation>
 <translation id="3595596368722241419">Акумулятор заряджено</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5238774010593222950">Неможливо ввійти в інший обліковий запис.</translation>
 <translation id="532063867737390965">Адміністратор вимкнув налаштування мережі.</translation>
+<translation id="5331975486040154427">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
 <translation id="544691375626129091">Усіх доступних користувачів уже додано до цього сеансу.</translation>
 <translation id="5507786745520522457">Налаштувати мобільне передавання даних</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@
 <translation id="6426039856985689743">Вимкнути передавання мобільних даних</translation>
 <translation id="6452181791372256707">Відхилити</translation>
 <translation id="6459472438155181876">Розширення екрана на <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Пристрій із портом USB типу C (праворуч)</translation>
 <translation id="6501401484702599040">Вміст екрана транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6550675742724504774">Параметри</translation>
 <translation id="6585808820553845416">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@
 <translation id="7052914147756339792">Установити фоновий малюнок...</translation>
 <translation id="7097613348211027502">ChromeVox (голосові підказки) увімкнено.
 Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
+<translation id="7098389117866926363">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Клавішу CAPS LOCK увімкнено.
@@ -220,6 +228,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search (Пошук)+Esc</translation>
 <translation id="8878886163241303700">Розширення екрана</translation>
+<translation id="8938800817013097409">Пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
 <translation id="8940956008527784070">Низький заряд акумулятора (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Мікрофон використовується.</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1012876632442809908">USB-C-apparaat (poort aan voorkant)</translation>
 <translation id="1013923882670373915">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende pincode in op dat apparaat: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">De sneltoets om naar de volgende invoermethode te schakelen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Plank automatisch verbergen</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Schermtoetsenbord uitgeschakeld</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">USB-C-apparaat (poort aan linkerkant)</translation>
 <translation id="1330145147221172764">Schermtoetsenbord inschakelen</translation>
 <translation id="1343000272198685031">Microfoonaansluiting</translation>
 <translation id="1346748346194534595">Rechts</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Schermtoetsenbord ingeschakeld</translation>
 <translation id="1812696562331527143">Je invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />derden<ph name="END_LINK" />).
 Druk op Shift + Alt om te schakelen.j</translation>
+<translation id="1864454756846565995">USB-C-apparaat (poort aan achterkant)</translation>
 <translation id="1882897271359938046">Spiegelen naar <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">De sneltoets om Taakbeheer te openen is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatische klikken</translation>
@@ -55,6 +58,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2819276065543622893">Je wordt nu uitgelogd.</translation>
 <translation id="2825619548187458965">Plank</translation>
+<translation id="2844169650293029770">USB-C-apparaat (poort links aan de voorkant)</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2942516765047364088">Positie van plank</translation>
 <translation id="2946640296642327832">Bluetooth inschakelen</translation>
@@ -74,6 +78,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3147142846278915599">Launcher (apps synchroniseren...)</translation>
 <translation id="3157169093162779309">Draaivergrendeling inschakelen</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="3445925074670675829">USB-C-apparaat</translation>
 <translation id="3473479545200714844">Vergrootglas</translation>
 <translation id="3573179567135747900">Teruggaan naar '<ph name="FROM_LOCALE" />' (opnieuw starten vereist)</translation>
 <translation id="3595596368722241419">Accu is vol</translation>
@@ -125,6 +130,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="5238774010593222950">Kan niet inloggen op een ander account.</translation>
 <translation id="532063867737390965">Deze netwerkinstelling is uitgeschakeld door de beheerder.</translation>
+<translation id="5331975486040154427">USB-C-apparaat (poort links aan de achterkant)</translation>
 <translation id="544691375626129091">Alle beschikbare gebruikers zijn al aan deze sessie toegevoegd.</translation>
 <translation id="5507786745520522457">Mobiele gegevens instellen</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6426039856985689743">Mobiele gegevens uitschakelen</translation>
 <translation id="6452181791372256707">Weigeren</translation>
 <translation id="6459472438155181876">Scherm uitbreiden naar <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">USB-C-apparaat (poort aan rechterkant)</translation>
 <translation id="6501401484702599040">Scherm casten naar <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="7052914147756339792">Achtergrond instellen...</translation>
 <translation id="7097613348211027502">ChromeVox (gesproken feedback) is ingeschakeld.
 Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
+<translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK is ingeschakeld.
@@ -220,6 +228,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Zoeken+Esc</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
+<translation id="8938800817013097409">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="8940956008527784070">Accu is bijna leeg (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Microfoon wordt gebruikt.</translation>

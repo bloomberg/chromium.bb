@@ -105,7 +105,6 @@
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
-<translation id="1445397020763995734">Uri ng account para sa pagpapatotoo na HTTP Negotiate</translation>
 <translation id="1454846751303307294">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na hindi pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -287,18 +286,6 @@
       Kung nakatakda sa false ang HardwareAccelerationModeEnabled, babalewalain ag Disable3DAPIs at magiging katumbas nito ang pagkakatakda ng Disable3DAPIs sa true.</translation>
 <translation id="2168397434410358693">Idle delay kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="2170233653554726857">I-enable ang pag-optimize ng WPAD</translation>
-<translation id="2175836933294053665">Kino-configure ang isang listahan ng mga pinamamahalaang bookmark.
-
-      Ang patakaran ay binubuo ng isang listahan ng mga bookmark kung saan ang bawat bookmark ay isang
-      diksyunaryong naglalaman ng mga key na "pangalan" at "url" na nagtataglay ng pangalan ng bookmark
-      at ng target nito. Maaaring ma-configure ang isang subfolder sa pamamagitan ng pagtukoy sa isang bookmark
-      nang walang key na "url" ngunit mayroong karagdagang key na "children" na naglalaman mismo
-      ng listahan ng mga bookmark gaya ng tinukoy sa itaas (ang ilan sa mga ito ay maaaring
-      mga folder muli). Inaayos ng
-      <ph name="PRODUCT_NAME" /> ang mga hindi kumpletong URL na para bang isinumite ang mga ito sa pamamagitan ng Omnibox,
-      halimbawa, nagiging "https://google.com/" ang "google.com."
-
-      Inilalagay ang mga bookmark na ito sa isang folder ng Mga pinamamahalaang bookmark na hindi mababago ng user, ngunit magagawang piliin ng user na itago ito mula sa bookmark bar. Hindi naka-sync ang mga pinamamahalaang bookmark sa user account at hindi maaaring mabago ng mga extension ang mga ito.</translation>
 <translation id="2188979373208322108">Pinapagana ang bar ng bookmark sa <ph name="PRODUCT_NAME" />.
 
       Kung pinagana mo ang setting na ito, magpapakita ng isang bar ng bookmark ang <ph name="PRODUCT_NAME" />.
@@ -598,38 +585,6 @@
       Kung ie-enable mo ang setting na ito, ipapakita sa isang hiwalay na window ang anumang mga page ng pagpapatotoo ng captive portal (ibig sabihin, lahat ng web page simula sa page ng pag-signin ng captive portal hanggang sa maka-detect ang <ph name="PRODUCT_NAME" /> ng matagumpay na koneksyon sa internet) nang binabalewala ang lahat ng setting at paghihigpit ng patakaran para sa kasalukuyang user.
 
       Kung idi-disable mo ang setting na ito o kung iiwanan mo itong hindi nakatakda, ipapakita ang anumang mga page ng pagpapatotoo ng captive portal sa isang (regular) bagong tab ng browser, gamit ang mga setting ng proxy ng kasalukuyang user.</translation>
-<translation id="3001569025430882724">Ino-override ang mga panuntunan sa pagpili ng default na printer ng <ph name="PRODUCT_NAME" />.
-
-      Tinutukoy ng patakarang ito ang mga panuntunan para sa pagpili ng default na printer sa <ph name="PRODUCT_NAME" /> na nangyayari sa unang pagkakataon na gamitin ang function na pag-print sa isang profile.
-
-      Kapag nakatakda ang patakarang ito, susubukan ng <ph name="PRODUCT_NAME" /> na maghanap ng printer na tumutugma sa lahat ng tinukoy na attribute, at pipiliin ito bilang default na printer. Pipiliin ang unang printer na makikitang tutugma sa patakaran, at kung sakaling hindi natatangi ang pagtutugma, maaaring pumili ng anumang tumutugmang printer, depende sa pagkakasunud-sunod ng pagkakatuklas sa mga printer.
-
-      Kung hindi itatakda ang patakarang ito o hindi makakakita ng tumutugmang printer bago mag-timeout, magiging default na printer ang built-in na PDF printer o walang pipiliing printer, kapag hindi available ang PDF printer.
-
-      Ipa-parse ang value bilang JSON object, na sumusunod sa schema na nasa ibaba:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Ang mga printer na nakakonekta sa Google Cloud Print ay itinuturing na "cloud," at ang iba pang mga printer ay inuuri bilang "lokal."
-      Nangangahulugan ang paglalaktaw ng field na tumutugma ang lahat ng value, halimbawa, magpapasimula ang Preview ng Pag-print ng pagtuklas sa lahat ng uri ng mga printer, lokal at cloud, kapag hindi tumukoy ng connectivity.
-      Dapat sundin ng mga pattern ng karaniwang expression ang JavaScript RegExp syntax at case-sensitive ang mga pagtutugma.</translation>
 <translation id="3021409116652377124">Huwag paganahin ang tagahanap ng plugin</translation>
 <translation id="3030000825273123558">Paganahin ang pag-uulat ng mga sukatan</translation>
 <translation id="3034580675120919256">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na magpatakbo ng JavaScript. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapatakbo ng JavaScript.
@@ -725,29 +680,6 @@
       Kung pinagana o hindi naka-configure ang setting na ito, mapapagana ng mga user ang proxy ng cloud print proxy sa pamamagitan ng pagpapatotoo sa kanilang Google Account.
 
       Kung hindi pinapagana ang setting na ito, hindi mapapagana ng mga user ang proxy, at hindi papayagan ang machine na ibahagi ang mga printer nito sa <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Sinusuportahan ng Chromium at Google Chrome ang parehong hanay ng
-      mga patakaran. Pakitandaan na maaaring kasama sa dokumentong ito ang mga 
-      patakaran na naka-target para sa mga bersyon ng software na hindi na-release
-      (ibig sabihin, tumutukoy ang kanilang entry na 'sinusuportahan noong' sa isang
-      hindi na-release na bersyon) at ang mga naturang patakaran ay maaaring 
-      magbago o maalis nang walang paunang abiso. 
-
-      Ang mga patakarang ito ay mahigpit na nilalayong gamitin upang mag-configure
-      ng mga paglitaw ng <ph name="PRODUCT_NAME" /> na panloob sa iyong
-      organisasyon. Ang paggamit ng mga patakaran na ito sa labas ng iyong 
-      organisasyon (halimbawa, sa isang program na ibinabahagi sa publiko) ay 
-      maituturing na malware at malamang na ma-label bilang malware ng Google at ng
-      mga vendor ng anti-virus.
-
-      Hindi kailangang i-configure nang manu-mano ang mga setting na ito!
-      Available sa pag-download ang mga madaling gamitin na template para sa
-      Windows, Mac at Linux sa <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Ang inirerekomendang paraan sa pag-configure ng patakaran sa Windows ay sa
-      pamamagitan ng GPO, bagama't ang
-      patakaran sa pagpoprobisyon sa pamamagitan ng registry ay sinusuportahan pa 
-      rin para sa paglitaw ng Windows
-      na kasama sa isang Active Directory na domain.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
 
@@ -1331,9 +1263,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi nakatakda ang patakarang ito, o kung nakatakda sa false, gagamitin ng <ph name="PRODUCT_NAME" /> ang umiiral nang mga setting ng online na pagsusuri sa pagbawi.</translation>
 <translation id="5732972008943405952">I-import ang data ng form ng autofill mula sa default na browser sa unang pagtakbo</translation>
-<translation id="5751004203256768694">Tinutukoy ang uri ng account ng mga account na ibinibigay ng app sa pagpapatotoo ng Android na sumusuporta sa pagpapatotoo na HTTP Negotiate (hal., pagpapatotoo sa Kerberos). Available dapat ang impormasyong ito mula sa supplier ng app sa pagpapatotoo. Para sa higit pang mga detalye, pumunta sa https://goo.gl/hajyfN.
-
-          Kung walang ibibigay na setting, madi-disable sa Android ang pagpapatotoo na HTTP Negotiate.</translation>
 <translation id="5761030451068906335">Kino-configure ang mga proxy setting para sa <ph name="PRODUCT_NAME" />. Hindi pa handang gamitin ang patakarang ito, mangyaring huwag itong gamitin.</translation>
 <translation id="5765780083710877561">Paglalarawan:</translation>
 <translation id="5770738360657678870">Dev channel (maaaring hindi stable)</translation>
@@ -2173,12 +2102,26 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
-<translation id="857925079934558818">Tinutukoy kung dapat i-disable ang pag-optimize ng TLS False Start. Para sa mga makasaysayang dahilan, pinangalanang DisableSSLRecordSplitting ang patakarang ito.
-
-      Kung hindi itatakda ang patakaran, o kung itatakda ito sa false, mae-enable ang TLS False Start. Kung itatakda ito sa true, madi-disable ang TLS False Start.</translation>
 <translation id="8587229956764455752">Payagan ang paglikha ng mga bagong user account</translation>
 <translation id="8614804915612153606">Hindi Pinapagana ang Awtomatikong Pag-update</translation>
 <translation id="8631434304112909927">hanggang bersyon <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Nagba-block ng access sa mga nakalistang URL.
+
+      Pinipigilan ng patakarang ito ang user na mag-load ng mga web page mula sa mga na-blacklist na URL. Nagbibigay ang blacklist ng isang listahan ng mga pattern ng URL, na tinutukoy ang mga iba-blacklist na URL.
+
+      Ang bawat pattern ng URL ay maaaring maging isang pattern para sa mga lokal na file o isang karaniwang pattern ng URL. Nasa format na 'file://path' ang mga pattern ng lokal na file, kung saan dapat i-block ang path na isang ganap na path. Iba-block ang lahat ng lokasyon ng file system kung saan ginagamit na prefix ang nabanggit na path.
+
+      May format na 'scheme://host:port/path' ang isang karaniwang pattern ng URL.
+      Kung mayroon, tanging ang tutukuying scheme lang ang iba-block. Kung hindi tutukuyin ang scheme:// na prefix, iba-block ang lahat ng scheme.
+      Kinakailangan ng host, at maaari itong maging isang hostname o IP address. Iba-block din ang mga subdomain ng isang hostname. Upang hindi ma-block ang mga subdomain, maglagay ng '.' bago ang hostname. Iba-block ng espesyal na hostname na '*' ang lahat ng domain.
+      Ang opsyonal na port ay isang wastong port number na nasa pagitan ng 1 at 65535. Kung walang tutukuyin, iba-block ang lahat ng port.
+      Kung tutukuyin ang opsyonal na path, ang mga path lang na gumagamit sa nabanggit na prefix ang iba-block.
+
+      Maaaring ilarawan ang mga exception sa patakaran sa pag-whitelist ng URL. Hanggang 1000 entry lang ang mga patakarang ito; babalewalain ang mga susunod na entry.
+
+      Tandaang hindi inirerekomendang i-block ang mga internal na 'chrome://*' na URL, dahil maaaring magresulta ang mga ito sa mga hindi inaasahang error.
+
+      Kung hindi itatakda ang patakarang ito, walang iba-blacklist na URL sa browser.</translation>
 <translation id="8649763579836720255">Ang mga Chrome OS device ay maaaring gumamit ng malayuang attestation (Verified Access) upang kumuha ng certificate na ibinibigay ng Chrome OS CA na ihinahayag na karapat-dapat ang device na mag-play ng pinoprotektahang nilalaman.  Kabilang sa prosesong ito ang pagpapadala ng impormasyon sa pag-endorso sa hardware sa Chrome OS CA na natatanging tumutukoy sa device.
 
           Kung false ang setting na ito, hindi gagamit ng malayuang attestation ang device para sa pagprotekta sa nilalaman at maaaring hindi makapag-play ang device ng pinoprotektahang nilalaman.

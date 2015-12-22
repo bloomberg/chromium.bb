@@ -104,7 +104,6 @@
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
-<translation id="1445397020763995734">Account type for HTTP Negotiate authentication</translation>
 <translation id="1454846751303307294">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -286,18 +285,6 @@
       If HardwareAccelerationModeEnabled is set to false, Disable3DAPIs is ignored and it is equivalent to Disable3DAPIs being set to true.</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="2170233653554726857">Enable WPAD optimisation</translation>
-<translation id="2175836933294053665">Configures a list of managed bookmarks.
-
-      The policy consists of a list of bookmarks whereas each bookmark is a
-      dictionary containing the keys "name" and "url" which hold the bookmark's
-      name and its target. A subfolder may be configured by defining a bookmark
-      without an "url" key but with an additional "children" key which itself
-      contains a list of bookmarks as defined above (some of which may be
-      folders again). <ph name="PRODUCT_NAME" />
-      amends incomplete URLs as if they were submitted via the Omnibox, for
-      example "google.com" becomes "https://google.com/".
-
-      These bookmarks are placed in a Managed bookmarks folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.</translation>
 <translation id="2188979373208322108">Enables the bookmark bar on <ph name="PRODUCT_NAME" />.
 
       If you enable this setting, <ph name="PRODUCT_NAME" /> will show a bookmark bar.
@@ -598,38 +585,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you enable this setting, any captive portal authentication pages (i.e. all web pages starting from captive portal sign in page until <ph name="PRODUCT_NAME" /> detects successful Internet connection) will be displayed in a separate window ignoring all policy settings and restrictions for the current user.
 
       If you disable this setting or leave it unset, any captive portal authentication pages will be shown in a (regular) new browser tab, using the current user's proxy settings.</translation>
-<translation id="3001569025430882724">Overrides <ph name="PRODUCT_NAME" /> default printer selection rules.
-
-      This policy determines the rules for selecting the default printer in <ph name="PRODUCT_NAME" /> which happens the first time the print function is used with a profile.
-
-      When this policy is set, <ph name="PRODUCT_NAME" /> will attempt to find a printer matching all of the specified attributes and select it as default printer. The first printer found matching the policy is selected, in case of non-unique match any matching printer can be selected, depending on the order printers are discovered.
-
-      If this policy is not set or matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected, when PDF printer is not available.
-
-      The value is parsed as JSON object, conforming to the following schema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printers connected to Google Cloud Print are considered "cloud", the rest of the printers are classified as "local".
-      Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers, local and cloud.
-      Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensitive.</translation>
 <translation id="3021409116652377124">Disable plug-in finder</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
@@ -725,24 +680,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
 
       If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Both Chromium and Google Chrome support the same set of
-      policies. Please note that this document may include policies that are
-      targeted for unreleased software versions (i.e. their 'supported on' entry
-      refers to an unreleased version) and that such policies are subject to
-      change or removal without prior notice.
-
-      These policies are strictly intended to be used to configure instances of
-      <ph name="PRODUCT_NAME" /> internal to your
-      organisation. Use of these policies outside of your organisation (for
-      example, in a publicly distributed program) is considered malware and will
-      likely be labelled as malware by Google and anti-virus vendors.
-
-      These settings don't need to be configured manually! Easy-to-use
-      templates for Windows, Mac and Linux are available for download from <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      The recommended way to configure policy on Windows is via GPO, although
-      provisioning policy via registry is still supported for Windows instances
-      that are joined to an Active Directory domain.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
@@ -1337,9 +1274,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is not set or it is set to false then <ph name="PRODUCT_NAME" /> will use the existing online revocation checking settings.</translation>
 <translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
-<translation id="5751004203256768694">Specifies the account type of the accounts provided by the Android authentication app that supports HTTP Negotiate authentication (e.g. Kerberos authentication). This information should be available from the supplier of the authentication app. For more details see https://goo.gl/hajyfN.
-
-          If no setting is provided, HTTP Negotiate authentication is disabled on Android.</translation>
 <translation id="5761030451068906335">Configures the proxy settings for <ph name="PRODUCT_NAME" />.
 
       This policy isn't ready for usage yet, please don't use it.</translation>
@@ -2184,12 +2118,26 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
-<translation id="857925079934558818">Specifies whether the TLS False Start optimization should be disabled. For historical reasons, this policy is named DisableSSLRecordSplitting.
-
-      If the policy is not set or is set to false, then TLS False Start will be enabled. If it is set to true, TLS False Start will be disabled.</translation>
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
 <translation id="8614804915612153606">Disables Auto Update</translation>
 <translation id="8631434304112909927">until version <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blocks access to the listed URLs.
+
+      This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
+
+      Each URL pattern can either be a pattern for local files or a generic URL pattern. Local file patterns are of the format 'file://path', where path should be an absolute path to block. All file system locations for which that path is a prefix will be blocked.
+
+      A generic URL pattern has the format 'scheme://host:port/path'.
+      If present, only the specified scheme will be blocked. If the scheme:// prefix is not specified, all schemes are blocked.
+      The host is required and can be a hostname or an IP address. Subdomains of a hostname will also be blocked. To prevent blocking subdomains, include a '.' before the hostname. The special hostname '*' will block all domains.
+      The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
+      If the optional path is specified, only paths with that prefix will be blocked.
+
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
+
+      Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
+
+      If this policy is not set, no URL will be blacklisted in the browser.</translation>
 <translation id="8649763579836720255">Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts that the device is eligible to play protected content. This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
 
           If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1012876632442809908">อุปกรณ์ USB-C (พอร์ตด้านหน้า)</translation>
 <translation id="1013923882670373915">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่ โปรดป้อนรหัส PIN นี้บนอุปกรณ์นั้น: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">มีการเปลี่ยนแปลงทางลัดที่ใช้สลับไปยังวิธีการป้อนข้อมูลถัดไป โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="112308213915226829">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">ปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">อุปกรณ์ USB-C (พอร์ตด้านซ้าย)</translation>
 <translation id="1330145147221172764">เปิดใช้แป้นพิมพ์บนหน้าจอ</translation>
 <translation id="1343000272198685031">ช่องเสียบไมโครโฟน</translation>
 <translation id="1346748346194534595">ขวา</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">เปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="1812696562331527143">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />บุคคลที่สาม<ph name="END_LINK" />)
 กด Shift + Alt เพื่อสลับ</translation>
+<translation id="1864454756846565995">อุปกรณ์ USB-C (พอร์ตด้านหลัง)</translation>
 <translation id="1882897271359938046">กำลังแสดงผลไปที่ <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">มีการเปลี่ยนแปลงทางลัดที่ใช้เปิดตัวจัดการงาน โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="1923539912171292317">การคลิกอัตโนมัติ</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">แอป</translation>
 <translation id="2819276065543622893">คุณจะออกจากระบบในตอนนี้</translation>
 <translation id="2825619548187458965">ชั้นวาง</translation>
+<translation id="2844169650293029770">อุปกรณ์ USB-C (พอร์ตด้านหน้าซ้าย)</translation>
 <translation id="2872961005593481000">ปิด</translation>
 <translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
 <translation id="2946640296642327832">เปิดใช้งานบลูทูธ</translation>
@@ -74,6 +78,7 @@
 <translation id="3147142846278915599">Launcher (กำลังซิงค์แอป...)</translation>
 <translation id="3157169093162779309">เปิดใช้ล็อกการหมุน</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
+<translation id="3445925074670675829">อุปกรณ์ USB-C</translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
 <translation id="3573179567135747900">เปลี่ยนกลับเป็น "<ph name="FROM_LOCALE" />" (จำเป็นต้องรีสตาร์ต)</translation>
 <translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5238774010593222950">ไม่สามารถลงชื่อเข้าใช้บัญชีอื่น</translation>
 <translation id="532063867737390965">การตั้งค่าเครือข่ายนี้ปิดใช้โดยผู้ดูแลระบบ</translation>
+<translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
 <translation id="5507786745520522457">ตั้งค่าข้อมูลมือถือ</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@
 <translation id="6426039856985689743">ปิดการใช้งานข้อมูลมือถือ</translation>
 <translation id="6452181791372256707">ปฏิเสธ</translation>
 <translation id="6459472438155181876">ขยายหน้าจอไปยัง <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">อุปกรณ์ USB-C (พอร์ตด้านขวา)</translation>
 <translation id="6501401484702599040">กำลังแคสต์หน้าจอไปยัง <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="6585808820553845416">เซสชันจะสิ้นสุดใน <ph name="SESSION_TIME_REMAINING" /></translation>
@@ -182,6 +189,7 @@
 <translation id="7052914147756339792">ตั้งค่าวอลเปเปอร์...</translation>
 <translation id="7097613348211027502">เปิดใช้ ChromeVox (การตอบสนองด้วยเสียง) อยู่
 กด Ctrl+Alt+Z เพื่อปิด</translation>
+<translation id="7098389117866926363">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">CAPS LOCK เปิดอยู่
@@ -220,6 +228,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">กำลังขยายหน้าจอ</translation>
+<translation id="8938800817013097409">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="8940956008527784070">แบตเตอรี่ต่ำ (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="9080206825613744995">ใช้ไมโครโฟนอยู่</translation>

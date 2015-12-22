@@ -60,7 +60,6 @@
 <translation id="2886012850691518054">Opcional: Ayúdanos a mejorar Chromium enviando estadísticas de uso e informes de errores a Google de manera automática.</translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para utilizar vínculos <ph name="SCHEME" />. El vínculo solicitado es <ph name="PROTOLINK" />.</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Chromium intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco usuales. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Chromium detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="3032787606318309379">Agregar a Chromium...</translation>
 <translation id="3046695367536568084">Para usar las aplicaciones, debes acceder a Chromium. De este modo, Chromium puede sincronizar las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración en los dispositivos.</translation>
 <translation id="3068515742935458733">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Chromium.</translation>
@@ -84,7 +83,6 @@
 <translation id="358997566136285270">Logotipo de Chromium</translation>
 <translation id="3595526210123705352">Si reinicias en el modo Windows 8, se cerrarán y volverán a iniciar las aplicaciones de Chromium.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
-<translation id="3744899669254331632">No puedes visitar <ph name="SITE" /> en este momento porque el sitio web envió credenciales encriptadas que Chromium no puede procesar. Los ataques y errores de red generalmente son temporales, por lo que esta página probablemente funcionará de nuevo más tarde.</translation>
 <translation id="3748537968684000502">Estás viendo una página de Chromium segura.</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y comunicarte con este por Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -224,7 +222,6 @@
 <translation id="8985587603644336029">Alguien accedió anteriormente a Chromium en esta computadora como <ph name="ACCOUNT_EMAIL_LAST" />. Si esta no es tu cuenta, crea un nuevo usuario de Chromium para mantener tu información por separado.
 
 Si accedes de todos modos, se fusionará la información de Chromium, como los marcadores, el historial y otros parámetros de configuración en <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
-<translation id="8987477933582888019">Navegador web</translation>
 <translation id="9013087743919948559">Agregar a Chromium</translation>
 <translation id="9013262824292842194">Para usar Chromium Frame, se necesita Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="9019929317751753759">Para que Chromium sea más seguro, inhabilitamos algunas extensiones que no aparecen en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
@@ -234,7 +231,6 @@ Si accedes de todos modos, se fusionará la información de Chromium, como los m
 <translation id="911206726377975832">¿También eliminar datos de navegación?</translation>
 <translation id="918373042641772655">Si desconectas <ph name="USERNAME" />, se borrará el historial, los marcadores, la configuración y otros datos de Chromium almacenados en este dispositivo. Los datos almacenados en la cuenta de Google no se borrarán y se pueden administrar en el <ph name="GOOGLE_DASHBOARD_LINK" />Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (tráfico mDNS entrante)</translation>
-<translation id="9191268552238695869">Un administrador instaló Chromium en este sistema, y ​​está disponible para todos los usuarios. Ahora Chromium en el nivel del sistema reemplaza tu instalación en el nivel de usuario.</translation>
 <translation id="9197815481970649201">Accediste a Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> requiere que leas y aceptes las siguientes Condiciones del servicio antes de usar este dispositivo. Estas condiciones no amplían, modifican ni limitan las Condiciones de Chromium OS.</translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>

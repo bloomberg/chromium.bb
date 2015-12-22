@@ -105,7 +105,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
-<translation id="1445397020763995734">Vrsta računa za preverjanje pristnosti z razširitvijo HTTP Negotiate</translation>
 <translation id="1454846751303307294">Omogoča nastavitev seznama vzorcev URL-jev, s katerimi so določena spletna mesta, ki jim ni dovoljeno izvajanje JavaScripta.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -287,18 +286,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če je pravilnik HardwareAccelerationModeEnabled onemogočen, se pravilnik Disable3DAPIs prezre in je enako, kot če je pravilnik Disable3DAPIs omogočen.</translation>
 <translation id="2168397434410358693">Časovni zamik nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
-<translation id="2175836933294053665">Konfigurira seznam upravljanih zaznamkov.
-
-      Ta pravilnik vsebuje seznam zaznamkov, pri čemer je vsak od njih
-      slovar s ključema »ime« in »URL«, ki vsebujeta ime
-      zaznamka in njegov cilj. Konfigurirana je lahko podmapa z določitvijo zaznamka
-      brez ključa »URL«, vendar z dodatnim ključem »podrejeno«, ki tudi
-      vsebuje seznam zaznamkov, kot so določeni zgoraj (nekateri od njih so morda tudi
-      mape). <ph name="PRODUCT_NAME" />
-      dopolni nepopolne URL-je, kot bi bili poslani prek iskalne vrstice. Tako
-      »google.com« na primer postane »https://google.com/«.
-
-      Ti zaznamki so dani v upravljano mapo z zaznamki, ki je uporabnik ne more spreminjati, lahko pa izbere, da je na vrstici z zaznamki skrita. Upravljani zaznamki se ne sinhronizirajo z računom uporabnika in razširitve jih ne morejo spreminjati.</translation>
 <translation id="2188979373208322108">Omogoča vrstico zaznamkov v brskalniku <ph name="PRODUCT_NAME" />.
 
      Če to nastavitev omogočite, bo <ph name="PRODUCT_NAME" /> prikazoval vrstico z zaznamki.
@@ -599,38 +586,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če omogočite to nastavitev, bodo morebitne strani prestreznega portala za preverjanje pristnosti (tj. vse spletne strani od strani za prijavo v prestrezni portal do trenutka, ko brskalnik <ph name="PRODUCT_NAME" /> zazna uspešno povezavo z internetom) prikazane v ločenem oknu, ki prezre vse nastavitev in omejitve pravilnika za trenutnega uporabnika.
 
       Če to nastavitev onemogočite ali je ne nastavite, bodo morebitne strani prestreznega portala za preverjanje pristnosti prikazane na (običajnem) novem zavihku brskalnika z nastavitvami strežnika proxy trenutnega uporabnika.</translation>
-<translation id="3001569025430882724">Preglasi pravila za izbiro privzetega tiskalnika za <ph name="PRODUCT_NAME" />.
-
-      Ta pravilnik določa pravila za izbiro privzetega tiskalnika v brskalniku <ph name="PRODUCT_NAME" />, do česar pride, ko je funkcija tiskanja prvič uporabljena s profilom.
-
-      Če je ta pravilnik nastavljen, <ph name="PRODUCT_NAME" /> poskusi poiskati tiskalnik, ki se ujema z vsemi določenimi atributi, in ga izbere kot privzetega. Izbran je prvi tiskalnik, ki se ujema s pravilnikom. V primeru neenoličnega ujemanja je lahko izbran kateri koli tiskalnik, ki se ujema, odvisno od vrstnega reda odkrivanja tiskalnikov.
-
-      Če ta pravilnik ni nastavljen ali v časovni omejitvi ni najden tiskalnik, ki se ujema, je tiskalnik privzeto vgrajeni tiskalnik PDF. Če ta ni na voljo, ni izbran noben tiskalnik.
-
-      Vrednost je razčlenjena kot predmet JSON skladno s to shemo:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Ali naj se iskanje tiskalnika, ki se ujema, omeji na določeno skupino tiskalnikov.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regularni izraz, ki se ujema z ID-jem tiskalnika.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regularni izraz, ki se ujema s prikaznim imenom tiskalnika.",
-            "type": "string"
-          }
-        }
-      }
-
-      Tiskalniki, povezani z Google Tiskanjem v oblaku, so »v oblaku«, ostali tiskalniki pa »lokalni«.
-      Če izpustite polje, se ujemajo vse vrednosti. Če na primer ne določite povezave, predogled tiskanja začne odkrivanje vseh vrst tiskalnikov – lokalnih in v oblaku.
-      Vzorci regularnega izraza morajo upoštevati sintakso JavaScript RegExp in pri ujemanjih se razlikuje med malimi in velikimi črkami.</translation>
 <translation id="3021409116652377124">Onemogoči iskalnik vtičnikov</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
 <translation id="3034580675120919256">Omogoča nastavitev, ali lahko spletna mesta izvajajo JavaScript. Izvajanje JavaScripta je lahko dovoljeno ali zavrnjeno za vsa spletna mesta.
@@ -726,24 +681,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev omogočena ali ni nastavljena, lahko uporabniki s preverjanjem pristnosti prek računa za Google omogočijo proxy za tiskanje v oblaku.
 
       Če je ta nastavitev onemogočena, uporabniki ne morejo omogočiti proxyja, računalnik pa tiskalnikov ne bo smel dati v skupno rabo s storitvijo <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Chromium in Google Chrome podpirata isto skupino
-      pravilnikov. Upoštevajte, da so lahko v tem dokumentu pravilniki,
-      namenjeni za neizdane različice programske opreme (tj. njihov vnos »podprto v različici«
-      se nanaša na neizdano različico) in take pravilnike lahko
-      brez obvestila spremenimo ali odstranimo.
-
-      Ti pravilniki so namenjeni izključno za konfiguriranje primerkov brskalnika
-      <ph name="PRODUCT_NAME" /> znotraj vaše organizacije.
-      Uporaba teh pravilnikov zunaj organizacije (npr. v javno
-      objavljenem programu) se obravnava kot zlonamerna programska oprema
-      ter jo bodo Google in ponudniki protivirusnih programov označili kot zlonamerno.
-
-      Teh nastavitev ni treba konfigurirati ročno. Za Windows, Mac OS in Linux
-      so na voljo predloge, ki jih je mogoče preprosto uporabljati in jih lahko prenesete tukaj: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Čeprav priporočamo, da v sistemu Windows pravilnik konfigurirate prek predmeta pravilnika skupine,
-      je za primerke sistema Windows, ki so pridruženi v domeno Active Directory,
-      še vedno podprta priprava pravilnikov za uporabo prek registra.</translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
 <translation id="3417418267404583991">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_OS_NAME" /> omogoči prijave gostov. Prijave gostov so anonimne seje uporabnikov in ne zahtevajo gesla.
 
@@ -1334,9 +1271,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen ali je nastavljen na »false«, bo <ph name="PRODUCT_NAME" /> uporabil obstoječe nastavitve za preverjanje preklica v spletu.</translation>
 <translation id="5732972008943405952">Uvoz podatkov za samodejno izpolnjevanje obrazcev iz privzetega brskalnika ob prvem zagonu</translation>
-<translation id="5751004203256768694">Določa vrsto računov, ki jih ponuja aplikacija za preverjanje pristnosti za Android, ki podpira preverjanje pristnosti z razširitvijo HTTP Negotiate (npr. preverjanje pristnosti Kerberos). Ti podatki bi morali biti na voljo od ponudnika aplikacije za preverjanje pristnosti. Več informacij je na voljo na https://goo.gl/hajyfN.
-
-          Če ni določena nobena nastavitev, je v Androidu onemogočeno preverjanje pristnosti z razširitvijo HTTP Negotiate.</translation>
 <translation id="5761030451068906335">Določi nastavitve proxyja za <ph name="PRODUCT_NAME" />.
 
       Ta pravilnik še ni primeren za uporabo, zato ga ne uporabljajte.</translation>
@@ -2182,12 +2116,26 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na strani »Nov zavihek« in v zaganjalniku aplikacij</translation>
-<translation id="857925079934558818">Določa, ali je onemogočena optimizacija funkcije »False Start« protokola TLS. Ta pravilnik se iz zgodovinskih razlogov imenuje DisableSSLRecordSplitting.
-
-      Če ta pravilnik ni nastavljen ali je onemogočen, je omogočena funkcija »False Start« protokola TLS. Če je omogočen, je funkcija »False Start« protokola TLS onemogočena.</translation>
 <translation id="8587229956764455752">Omogoči ustvarjanje novih uporabniških računov</translation>
 <translation id="8614804915612153606">Onemogoči samodejno posodabljanje</translation>
 <translation id="8631434304112909927">do različice <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blokira dostop do navedenih URL-jev.
+
+      Pravilnik uporabniku ne dovoli, da bi nalagal spletne strani s seznama blokiranih URL-jev. Seznam blokiranih posreduje seznam vzorcev URL-jev, ki določajo, kateri URL-ji bodo uvrščeni na seznam blokiranih.
+
+      Vsak vzorec URL-ja je lahko vzorec lokalnih datotek ali splošni vzorec URL-ja. Vzorci lokalnih datotek so oblike »file://path«, pri čemer mora biti pot absolutna pot za blokiranje. Vse lokacije datotečnega sistema, ki imajo za predpono to pot, bodo blokirane.
+
+      Splošni vzorec URL-ja ima obliko »scheme://host:port/path«.
+      Če je na voljo, bo blokirana samo določena shema. Če predpona za »scheme://« ni določena, so blokirane vse sheme.
+      Gostitelj je obvezen in je lahko ime gostitelja ali naslov IP. Prav tako bodo blokirane poddomene imena gostitelja. Če želite preprečiti blokiranje poddomen, pred ime gostitelja vključite ».«. Posebno ime gostitelja »*« blokira vse domene.
+      Izbirna vrata so veljavna številka vrat od 1 do 65535. Če ni določenih vrat, so blokirana vsa vrata.
+      Če je določena izbirna pot, bodo blokirane samo poti s tisto predpono.
+
+      Izjeme je mogoče opredeliti v pravilniku o seznamu dovoljenih URL-jev. Ti pravilniki so omejeni na 1000 vnosov; nadaljnji vnosi bodo prezrti.
+
+      Notranjih URL-jev »chrome://*« ni priporočljivo blokirati, ker bo morda to povzročilo nepričakovane napake.
+
+      Če pravilnik ni nastavljen, noben URL v brskalniku ne bo uvrščen na seznam blokiranih.</translation>
 <translation id="8649763579836720255">Naprave Chrome OS lahko uporabljajo oddaljeno potrjevanje (potrjen dostop) za pridobitev potrdil, ki ga izda overitelj sistema Chrome OS, ki potrjuje, da je naprava primerna za predvajanje zaščitene vsebine. Pri tem postopku se overitelju sistema Chrome OS pošljejo potrditveni podatki strojne opreme, ki enolično določajo napravo.
 
           Če je ta možnost nastavljena na »false«, naprava za zaščito vsebine ne bo uporabljala oddaljenega potrjevanja in naprava morda ne bo mogla predvajati zaščitene vsebine.

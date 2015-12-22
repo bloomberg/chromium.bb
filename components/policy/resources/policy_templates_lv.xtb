@@ -105,7 +105,6 @@
 <translation id="1426410128494586442">Jā</translation>
 <translation id="1427655258943162134">Starpniekservera adrese vai URL</translation>
 <translation id="1435659902881071157">Ierīces līmeņa tīkla konfigurācija</translation>
-<translation id="1445397020763995734">Konta veids HTTP autentifikācijas saskaņošanai</translation>
 <translation id="1454846751303307294">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts izpildīt JavaScript.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultJavaScriptSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -288,18 +287,6 @@
       Ja politikai HardwareAccelerationModeEnabled ir iestatīta vērtība Nepatiesa, politika Disable3DAPIs tiek ignorēta un ir spēkā tādi paši iestatījumi kā tad, ja politikai Disable3DAPIs būtu iestatīta vērtība Patiesa.</translation>
 <translation id="2168397434410358693">Aizkave līdz dīkstāvei, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2170233653554726857">WPAD optimizācijas iespējošana</translation>
-<translation id="2175836933294053665">Tiek konfigurēts pārvaldīto grāmatzīmju saraksts.
-
-      Politika sastāv no grāmatzīmju saraksta, kurā katra grāmatzīme
-      ir vārdnīca ar atslēgām “nosaukums” un “url”, kas ietver grāmatzīmes
-      nosaukumu un tās mērķi. Lai konfigurētu apakšmapi, var definēt grāmatzīmi
-      bez atslēgas “url”, bet ar papildu atslēgu “pakārtots”, kas ietver
-      grāmatzīmju sarakstu, kā definēts iepriekš (dažas no tām arī var būt
-      mapes). <ph name="PRODUCT_NAME" />
-      papildina nepilnīgus vietrāžus URL tā, it kā tie būtu ierakstīti universālajā lodziņā,
-      piemēram, “google.lv” tiek pārveidots par “https://google.lv/”.
-
-      Šīs grāmatzīmes tiek ievietotas mapē Pārvaldītās grāmatzīmes, ko lietotājs nevar mainīt, taču lietotājs tās var paslēpt no grāmatzīmju joslas. Pārvaldītās grāmatzīmes netiek sinhronizētas ar lietotāja kontu, un paplašinājumi tās nevar mainīt.</translation>
 <translation id="2188979373208322108">Iespējo <ph name="PRODUCT_NAME" /> grāmatzīmju joslu.
 
       Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> grāmatzīmju josla tiks rādīta.
@@ -600,38 +587,6 @@
       Ja iespējosiet šo iestatījumu, visas caurlaides lapu autentifikācijas lapas (t.i., visas tīmekļa lapas no caurlaides lapas pierakstīšanās lapas līdz brīdim, kad pārlūkā <ph name="PRODUCT_NAME" /> būs konstatēts sekmīgi izveidots interneta savienojums) tiks parādītas atsevišķā logā, ignorējot visus pašreizējam lietotājam piemērotos politiku iestatījumus un ierobežojumus.
 
       Ja atspējosiet šo iestatījumu vai atstāsiet to neiestatītu, visas caurlaides lapas autentifikācijas lapas tiks rādītās (parastā) jaunā pārlūka cilnē, izmantojot pašreizējos lietotāja starpniekservera iestatījumus.</translation>
-<translation id="3001569025430882724">Ignorē <ph name="PRODUCT_NAME" /> noklusējuma printera atlases kārtulas.
-
-      Ar šo politiku tiek noteiktas kārtulas, kā atlasīt <ph name="PRODUCT_NAME" /> noklusējuma printeri, pirmo reizi profilā izmantojot drukāšanas funkciju.
-
-      Ja šī politika ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiek mēģināts atrast printeri, kas atbilst visiem norādītajiem atribūtiem, un attiecīgais printeris tiek atlasīts kā noklusējuma vērtība. Ja politikai atbilst vairāki printeri nenoteiktā secībā, tiek atlasīts pirmais atrastais politikai atbilstošais printeris.
-
-      Ja šī politika nav iestatīta vai noteiktajā laikā netiek atrasts atbilstošs printeris, kā printera noklusējuma vērtība tiek iestatīts PDF printeris. Ja PDF printeris nav pieejams, netiek atlasīts neviens printeris.
-
-      Vērtība tiek parsēta kā JSON objekts atbilstoši šai shēmai:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Vai ierobežot atbilstoša printera meklēšanu konkrētu printeru kopā.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regulārā izteiksme, kurai ir jāatbilst printera ID.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulārā izteiksme, kurai ir jāatbilst printera rādāmajam nosaukumam.",
-            "type": "string"
-          }
-        }
-      }
-
-      Printeri, kam ir izveidots savienojums ar Google mākoņdruku, tiek uzskatīti par “cloud” (mākonī esošiem); pārējie printeri tiek klasificēti kā “local” (vietējie).
-      Neaizpildot lauku, tam atbilst visas vērtības, piemēram, nenorādot savienojamību, drukas priekšskatījumā tiek uzsākta visu veidu printeru atklāšana — gan vietējo, gan mākoņa.
-      Regulārās izteiksmes shēmām ir jāatbilst JavaScript RegExp sintaksei, un atbilstības ir reģistrjutīgas.</translation>
 <translation id="3021409116652377124">Atspējo spraudņu meklētāju</translation>
 <translation id="3030000825273123558">Iespējot metrikas ziņošanu</translation>
 <translation id="3034580675120919256">Ļauj iestatīt, vai vietnēm ir atļauts izpildīt JavaScript. JavaScript izpilde var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
@@ -727,13 +682,6 @@
       Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var iespējot mākoņdrukas starpniekserveri, autentifikācijai izmantojot savu Google kontu.
 
       Ja šis iestatījums ir atspējots, lietotāji nevarēs iespējot starpniekserveri un ierīce nevarēs koplietot tai pievienotos printerus ar <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Gan pārlūkā Chromium, gan Google Chrome tiek atbalstītas vienas un tās pašas politikas. Lūdzu, ņemiet vērā, ka šajā dokumentā var būt ietvertas politikas, kas paredzētas neizlaistām programmatūras versijām (t.i., sadaļā “Saderīga ar” ir minēta neizlaista versija), un šīs politikas var mainīt vai noņemt bez iepriekšēja brīdinājuma.
-
-      Šīs politikas ir paredzētas tikai iekšējai pārlūka <ph name="PRODUCT_NAME" /> konfigurēšanai jūsu organizācijā. Ja izmantosiet šīs politikas ārpus savas organizācijas (piemēram, publiski izplatītā programmā), programma tiks uzskatīta par ļaunprātīgu programmatūru un, visticamāk, Google un pretvīrusu programmatūras piedāvātāji to uzskatīs par ļaunprātīgu programmatūru.
-
-      Šie iestatījumi nav jākonfigurē manuāli! Vietnē <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> var lejupielādēt ērti lietojamas veidnes Windows, Mac un Linux datoriem.
-
-      Operētājsistēmā Windows politiku konfigurēšanai ieteicams izmantot GPO, taču Windows sistēmās, kas ir pievienotas Active Directory domēnam, politiku izvietošanai var izmantot arī reģistru.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
 <translation id="3417418267404583991">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> iespējo viesu pieteikšanās sesijas. Viesu pieteikšanās sesijas ir anonīmu lietotāju sesijas, un tām nav jāizmanto parole.
 
@@ -1324,9 +1272,6 @@
 
       Ja šī politika nav iestatīta vai tai ir iestatīta vērtība Nepatiesa, <ph name="PRODUCT_NAME" /> izmantos esošos tiešsaistes atcelšanas pārbaudes iestatījumus.</translation>
 <translation id="5732972008943405952">Veidlapu automātiskās aizpildes datu importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
-<translation id="5751004203256768694">Norāda Android autentifikācijas lietotnes nodrošināto kontu veidu, kuros tiek atbalstīta HTTP saskaņošanas autentifikācija (piemēram, Kerberos autentifikācija). Šai informācijai ir jābūt pieejamai no autentifikācijas lietotnes nodrošinātāja. Plašāku informāciju skatiet vietnē https://goo.gl/hajyfN.
-
-          Ja iestatījums netiek norādīts, HTTP autentifikācijas saskaņošana operētājsistēmā Android tiek atspējota.</translation>
 <translation id="5761030451068906335">Konfigurē pakalpojuma <ph name="PRODUCT_NAME" /> starpniekservera iestatījumus. Šī politika nav vēl gatava lietošanai; nelietojiet to.</translation>
 <translation id="5765780083710877561">Apraksts:</translation>
 <translation id="5770738360657678870">Izstrādātāju versija (var būt nestabila)</translation>
@@ -2169,12 +2114,28 @@
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> noklusējuma HTML renderētājs</translation>
 <translation id="8549772397068118889">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
 <translation id="8566842294717252664">Interneta veikala ikonas nerādīšana jaunas cilnes lapā un lietotņu palaidējā</translation>
-<translation id="857925079934558818">Norāda, vai funkcija TLS False Start optimizācija ir jāatspējo. Vēsturisku iemeslu dēļ šīs politikas nosaukums ir DisableSSLRecordSplitting.
-
-      Ja šī politika nav iestatīta vai tās vērtība ir Nepatiesa, TLS False Start tiks iespējota. Ja ir iestatīta vērtība Patiesa, TLS False Start tiks atspējota.</translation>
 <translation id="8587229956764455752">Atļaut jaunu lietotāju kontu izveidi</translation>
 <translation id="8614804915612153606">Atspējot automātisko atjaunināšanu</translation>
 <translation id="8631434304112909927">līdz <ph name="UNTIL_VERSION" /> versijai</translation>
+<translation id="863712305404093038">Tiek bloķēta piekļuve norādītajiem vietrāžiem URL.
+
+      Šī politika neļauj lietotājam ielādēt tīmekļa lapas no melnajā sarakstā iekļautajiem vietrāžiem URL. Melnajā sarakstā ir iekļauts URL šablonu saraksts, kas nosaka, kuri vietrāži URL nav atļauti.
+
+
+      URL šablons var būt lokālo failu šablons vai vispārīgs URL šablons. Lokālo failu šabloni ir jānorāda formātā “file://ceļš”, kurā “ceļš” ir bloķējamais absolūtais ceļš. Tiks bloķētas visas failu sistēmas atrašanās vietas, kurām šis ceļš ir prefikss.
+
+
+      Vispārīga URL šablona formāts “shēma://saimniekdators:ports/ceļš”.
+      Ja būs norādīta konkrēta shēma, tiks bloķēta tikai šī shēma. Ja prefikss shēma:// nebūs norādīts, tiks bloķētas visas shēmas.
+      Saimniekdators ir jānorāda obligāti; tas var būt saimniekdatora nosaukums vai IP adrese. Tiks bloķēti arī saimniekdatora nosaukuma apakšdomēni. Lai novērstu apakšdomēnu bloķēšanu, pirms saimniekdatora nosaukuma iekļaujiet “.”. Īpašais saimniekdatora nosaukums “*” bloķēs visus domēnus.
+      Porta numuram (nav obligāts) ir jābūt derīgam porta numuram no 1 līdz 65535. Ja tas netiks norādīts, tiks bloķēti visi porti.
+      Ja būs norādīts ceļš (nav obligāts), tiks bloķēti tikai ceļi ar šo prefiksu.
+
+
+      Izņēmumus var definēt URL baltā saraksta politikā. Šīm politikām ir 1000 ierakstu ierobežojums; pārējie ieraksti tiks ignorēti.
+
+
+      Ja šī politika nav iestatīta, pārlūkā netiks bloķēts neviens vietrādis URL.</translation>
 <translation id="8649763579836720255">Chrome OS ierīcēs var izmantot attālo apstiprināšanu (verificēta piekļuve), lai saņemtu Chrome OS sertifikāta izdevējiestādes izsniegtu sertifikātu, kas apstiprina, ka ierīcē ir atļauts atskaņot aizsargātu saturu. Šī procesa laikā aparatūras apstiprinājuma informācija tiek nosūtīta Chrome OS sertifikāta izdevējiestādei, kas unikāli identificē ierīci.
 
           Ja šis iestatījums ir “False”, ierīcē satura aizsardzībai netiks izmantota attālā apstiprināšana un, iespējams, nevarēs atskaņot aizsargāto saturu.

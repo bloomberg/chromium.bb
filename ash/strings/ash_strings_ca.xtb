@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1012876632442809908">Dispositiu USB-C (port frontal)</translation>
 <translation id="1013923882670373915">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu aquest codi PIN al dispositiu: <ph name="PINCODE" />.</translation>
 <translation id="1021311941847921177">La drecera per canviar al mètode d'introducció següent ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Amaga el prestatge automàticament</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Teclat en pantalla desactivat</translation>
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Dispositiu USB-C (port esquerre)</translation>
 <translation id="1330145147221172764">Activa el teclat en pantalla</translation>
 <translation id="1343000272198685031">Connector per al micròfon</translation>
 <translation id="1346748346194534595">A la dreta</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
 <translation id="1812696562331527143">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />tercers<ph name="END_LINK" />).
 Premeu Maj+Alt per canviar-lo.</translation>
+<translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La drecera per obrir el gestor de tasques ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automàtics</translation>
@@ -55,6 +58,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2805756323405976993">Aplicacions</translation>
 <translation id="2819276065543622893">Ara se us tancarà la sessió.</translation>
 <translation id="2825619548187458965">Prestatge</translation>
+<translation id="2844169650293029770">Dispositiu USB-C (port frontal esquerre)</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2942516765047364088">Posició del prestatge</translation>
 <translation id="2946640296642327832">Activa Bluetooth</translation>
@@ -74,6 +78,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3147142846278915599">Launcher (s'estan sincronitzant les aplicacions...)</translation>
 <translation id="3157169093162779309">Activeu el bloqueig de la rotació</translation>
 <translation id="3294437725009624529">Convidat</translation>
+<translation id="3445925074670675829">Dispositiu USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
@@ -125,6 +130,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="5238774010593222950">No es pot iniciar la sessió a un altre compte.</translation>
 <translation id="532063867737390965">L'administrador ha desactivat aquesta configuració de xarxa.</translation>
+<translation id="5331975486040154427">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="544691375626129091">Ja s'han afegit tots els usuaris disponibles a aquesta sessió.</translation>
 <translation id="5507786745520522457">Configura les dades mòbils</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6426039856985689743">Desactiva les dades mòbils</translation>
 <translation id="6452181791372256707">Rebutja</translation>
 <translation id="6459472438155181876">S'està ampliant la pantalla a <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Dispositiu USB-C (port dret)</translation>
 <translation id="6501401484702599040">S'està emetent la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Opcions</translation>
 <translation id="6585808820553845416">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="7052914147756339792">Estableix fons de pantalla...</translation>
 <translation id="7097613348211027502">ChromeVox (comentaris de veu) està activat.
 Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
+<translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Bloq Maj està activat.
@@ -220,6 +228,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Cerca + Esc</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>
+<translation id="8938800817013097409">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="8940956008527784070">Bateria baixa (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">S'està fent servir el micròfon.</translation>

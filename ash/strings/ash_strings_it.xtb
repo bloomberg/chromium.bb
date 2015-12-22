@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1012876632442809908">Dispositivo USB-C (porta anteriore)</translation>
 <translation id="1013923882670373915">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questo codice PIN sul dispositivo: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">La scorciatoia per passare al metodo di immissione successivo è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Nascondi automaticamente shelf</translation>
@@ -8,6 +9,7 @@
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Dispositivo USB-C (porta a sinistra)</translation>
 <translation id="1330145147221172764">Attiva tastiera sullo schermo</translation>
 <translation id="1343000272198685031">Jack per microfono</translation>
 <translation id="1346748346194534595">Destra</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1812696562331527143">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3a parte<ph name="END_LINK" />).
 Premi Maiusc+Alt per cambiare metodo.</translation>
+<translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La scorciatoia per aprire Task Manager è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clic automatici</translation>
@@ -55,6 +58,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2805756323405976993">App</translation>
 <translation id="2819276065543622893">Verrai disconnesso ora.</translation>
 <translation id="2825619548187458965">Shelf</translation>
+<translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2942516765047364088">Posizione shelf</translation>
 <translation id="2946640296642327832">Attiva Bluetooth</translation>
@@ -74,6 +78,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="3157169093162779309">Attiva blocco rotazione</translation>
 <translation id="3294437725009624529">Ospite</translation>
+<translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
 <translation id="3595596368722241419">Batteria carica</translation>
@@ -125,6 +130,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="5238774010593222950">Impossibile accedere a un altro account.</translation>
 <translation id="532063867737390965">Questa impostazione di rete è stata disattivata dall'amministratore.</translation>
+<translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="544691375626129091">A questa sessione sono già stati aggiunti tutti gli utenti disponibili.</translation>
 <translation id="5507786745520522457">Imposta dati mobili</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6426039856985689743">Disattiva dati mobili</translation>
 <translation id="6452181791372256707">Rifiuto</translation>
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Dispositivo USB-C (porta a destra)</translation>
 <translation id="6501401484702599040">Trasmissione dello schermo a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="6550675742724504774">Opzioni</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -182,6 +189,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="7052914147756339792">Imposta sfondo...</translation>
 <translation id="7097613348211027502">ChromeVox (lettura vocale) attivo.
 Premi Ctrl+Alt+Z per disattivarlo.</translation>
+<translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">La funzione BLOC MAIUSC è attiva.
@@ -220,6 +228,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Tasto di ricerca+ESC</translation>
 <translation id="8878886163241303700">Estensione schermo</translation>
+<translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="8940956008527784070">Batteria in esaurimento (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Il microfono è in uso.</translation>

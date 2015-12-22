@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Conectando-se a <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Erro de ativação de rede</translation>
+<translation id="4118990158415604803">A conexão com outras redes foi desativada pelo seu administrador.</translation>
 <translation id="4237016987259239829">Erro de conexão da rede</translation>
 <translation id="4274292172790327596">Erro desconhecido</translation>
 <translation id="4326192123064055915">Café</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Ponta-cabeça</translation>
 <translation id="6943836128787782965">HTTP falhou</translation>
+<translation id="7066646422045619941">Esta rede foi desativada pelo seu administrador.</translation>
 <translation id="7165320105431587207">Falha ao configurar rede</translation>
 <translation id="7170041865419449892">Fora de alcance</translation>
 <translation id="7229570126336867161">EVDO ausente</translation>

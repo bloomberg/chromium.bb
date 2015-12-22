@@ -90,7 +90,6 @@
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1427655258943162134">Välityspalvelimen osoite tai URL-osoite</translation>
 <translation id="1435659902881071157">Laitetason verkon määritys</translation>
-<translation id="1445397020763995734">HTTP Negotiate -todennuksen tilityyppi</translation>
 <translation id="1454846751303307294">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="1464848559468748897">Hallinnoi käyttäjien toimia monen profiilin käyttökerralla tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävillä laitteilla.
 
@@ -253,18 +252,6 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos käytännön HardwareAccelerationModeEnabled arvoksi asetetaan Epätosi, Disable3DAPIs ohitetaan, jolloin lopputulos vastaa Disable3DAPIs-käytännön arvoa Tosi.</translation>
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
-<translation id="2175836933294053665">Määrittää hallinnoitujen kirjanmerkkien listan.
-
-      Käytäntö koostuu kirjanmerkkilistasta. Jokainen kirjanmerkki lisätään
-      listaan sanastomerkintänä, joka sisältää avaimet name
-      (kirjanmerkin nimi) ja url (kohdeosoite). Kirjanmerkkinä voidaan käyttää alikansiota jättämällä
-      avain url pois mutta lisäämällä avain children,
-      johon kirjanmerkkilista määritellään yllä kuvatulla tavalla. Myös alikansion kirjanmerkit voivat olla
-      alikansioita. <ph name="PRODUCT_NAME" />
-      täydentää listan URL-osoitteet omniboxiin kirjoitettujen osoitteiden tavoin.
-      Esimerkiksi osoite google.com täydennetään muotoon https://google.com/.
-
-      Nämä kirjanmerkit lisätään Hallinnoidut kirjanmerkit -kansioon. Käyttäjä ei voi muokata niitä, mutta hän voi piilottaa kansion kirjanmerkkipalkista. Hallinnoituja kirjanmerkkejä ei synkronoida käyttäjän tiliin, eivätkä laajennukset voi muokata niitä.</translation>
 <translation id="2188979373208322108">Ottaa käyttöön kirjanmerkkipalkin tuotteessa <ph name="PRODUCT_NAME" />. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> näyttää kirjanmerkkipalkin. Jos poistat asetuksen käytöstä, kirjanmerkkipalkkia ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos asetusta ei ole määritetty, käyttäjä voi käyttää toimintoa halutessaan.</translation>
 <translation id="2201555246697292490">Määritä sallittujen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="2204753382813641270">Hallinnoi hyllyn automaattista piilottamista</translation>
@@ -532,38 +519,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos asetus on käytössä, captive portal -todennussivut (eli kaikki sivut, jotka näytetään kirjautumissivulta lähtien, kunnes <ph name="PRODUCT_NAME" /> havaitsee internetyhteyden), näytetään erillisessä ikkunassa, jossa ohitetaan aktiivisen käyttäjän kaikki käytäntöasetukset ja rajoitukset.
 
       Jos asetus poistetaan käytöstä tai sitä ei aseteta, captive portal -todennussivut näytetään uudessa (tavallisessa) välilehdessä käyttäen aktiivisen käyttäjän välityspalvelinasetuksia.</translation>
-<translation id="3001569025430882724">Ohittaa tuotteen <ph name="PRODUCT_NAME" /> oletustulostimen valinnan säännöt.
-
-      Tämä käytäntö määrittää säännöt, joiden perusteella <ph name="PRODUCT_NAME" /> valitsee oletustulostimen. Tämä tapahtuu silloin, kun tulostustoimintoa käytetään profiilin kautta ensimmäistä kertaa.
-
-      Kun käytäntö on määritetty, <ph name="PRODUCT_NAME" /> pyrkii löytämään tulostimen, joka täyttää kaikki määritevaatimukset, ja valitsemaan sen oletustulostimeksi. Valinta kohdistuu ensimmäiseen tulostimeen, joka vastaa käytäntöä. Jos useita tulostimia löydetään, mikä tahansa niistä voi tulla valituksi, riippuen niiden löytämisjärjestyksestä.
-
-      Jos käytäntöä ei ole määritetty tai sopivaa tulostinta ei löydetty ennen aikakatkaisua, tulostin valitsee oletukseksi sisäänrakennetun tulostuksen PDF:ään tai se ei valitse mitään, jos PDF-tulostinta ei ole saatavilla.
-
-      Arvo merkitään JSON-objektin muodossa seuraavan mallin mukaisesti:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Rajoitetaanko sopivan tulostimen etsintä tiettyyn tulostinjoukkoon.",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Säännöllinen lauseke, joka vastaa tulostimen tunnusta.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Säännöllinen lauseke, joka vastaa tulostimen näyttönimeä.",
-            "type": "string"
-          }
-        }
-      }
-
-      Google Cloud Printiin yhdistetyt tulostimet ovat pilvitulostimia, ja muut tulostimet ovat paikallisia tulostimia.
-      Kentän tyhjäksi jättäminen tarkoittaa, että kaikki arvot hyväksytään siihen. Jos esimerkiksi yhteydet jätetään tyhjäksi, tulostuksen esikatselu pyrkii löytämään sekä pilvitulostimia että paikallisia tulostimia.
-      Säännöllisten lausekkeiden muodon tulee noudattaa JavaScript RegExp -syntaksia, ja kirjainkoolla on väliä osumissa.</translation>
 <translation id="3021409116652377124">Poista laajennuksien haku käytöstä</translation>
 <translation id="3030000825273123558">Ota tilastoraportit käyttöön</translation>
 <translation id="3034580675120919256">Voit määrittää, saavatko sivustot suorittaa JavaScriptiä. JavaScriptin suorittaminen voidaan joko sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole asetettu, käytetään AllowJavaScript-määritystä, ja käyttäjä voi muuttaa sitä.</translation>
@@ -649,24 +604,6 @@ Jos tätä käytäntöä ei määritetä, käyttäjät voivat valita, haluavatko
 Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voivat ottaa pilvitulostuksen välityspalvelimen käyttöön todentamalla sen Google-tilinsä avulla.
 
 Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta käyttöön eikä kone voi jakaa tulostimiaan palvelussa <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3357181471604560535">Sekä Chromium että Google Chrome tukevat samoja
-      käytäntöjä. Tämä asiakirja voi sisältää käytäntöjä, jotka viittaavat
-      julkaisemattomiin ohjelmistoversioihin (esimerkiksi niiden tuetut versiot
-      voivat sisältää julkaisemattomia versioita), ja tällaisia käytäntöjä saatetaan
-      muuttaa tai poistaa ilman ennakkoilmoitusta.
-
-      Näiden käytäntöjen tarkoitus on ainoastaan määrittää asetukset, joita
-      <ph name="PRODUCT_NAME" /> käyttää
-      organisaation sisällä. Niiden käyttöä organisaation ulkopuolella (esimerkiksi
-      julkisesti jaeltavassa ohjelmassa) pidetään haitallisena, joten
-      Google ja virustorjuntapalvelut todennäköisesti merkitsevät näitä käytäntöjä käyttävät ohjelmat haittaohjelmiksi.
-
-      Näitä asetuksia ei tarvitse määrittää manuaalisesti. 
-      Windowsille, Macille ja Linuxille on saatavilla helppokäyttöisiä malleja osoitteesta <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Windowsissa käytäntöjen määrittämiseen suositellaan Ryhmäkäytäntöä, mutta
-      käytäntöjen määrittämistä rekisterin kautta tuetaan kuitenkin Windowsin esiintymissä,
-      jotka on liitetty Active Directory -toimialueeseen.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
 <translation id="3417418267404583991">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii vieraskirjautumisen. Vieraskirjautuminen on anonyymi käyttökerta, johon ei tarvita salasanaa.
 
@@ -1179,9 +1116,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 
       Jos tätä käytäntöä ei ole määritetty tai sen arvoksi on asetettu epätosi, <ph name="PRODUCT_NAME" /> käyttää olemassa olevia verkon peruuttamisen tarkistusasetuksia.</translation>
 <translation id="5732972008943405952">Tuo automaattisen täytön lomaketiedot oletusselaimesta ensimmäisen käynnistyksen yhteydessä</translation>
-<translation id="5751004203256768694">Määrittää tilityypin, jota käytetään HTTP Negotiate -todennusta (esim. Kerberos) tukevassa Android-todennussovelluksessa. Tämän tiedon pitäisi olla saatavilla todennussovelluksen tarjoajalta. Lisätietoja on osoitteessa https://goo.gl/hajyfN.
-
-          Jos asetusta ei määritetä, Negotiate-todennus poistetaan käytöstä Android-laitteilla.</translation>
 <translation id="5761030451068906335">Määrittää välityspalvelimen asetukset tuotteelle <ph name="PRODUCT_NAME" />. Tämä käytäntö ei ole vielä valmis käyttöön – älä käytä sitä.</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>
 <translation id="5770738360657678870">Kehittäjäversio (saattaa olla epävakaa)</translation>
@@ -1924,12 +1858,26 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8544375438507658205">HTML-osoitteiden oletushahmonnin tuotteelle <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>
-<translation id="857925079934558818">Määrittää, poistetaanko TLS False Start -optimointi käytöstä. Historiallisista seikoista johtuen tämän käytännön nimi on DisableSSLRecordSplitting.
-
-      Jos tätä käytäntöä ei aseteta tai jos sen arvo on Epätosi, TLS False Start otetaan käyttöön. Jos käytännön arvo on Tosi, TLS False Start poistetaan käytöstä.</translation>
 <translation id="8587229956764455752">Salli uusien käyttäjätilien luominen</translation>
 <translation id="8614804915612153606">Poistaa automaattisen päivityksen käytöstä</translation>
 <translation id="8631434304112909927">versioon <ph name="UNTIL_VERSION" /> saakka</translation>
+<translation id="863712305404093038">Estää luettelossa olevien URL-osoitteiden käytön.
+
+      Tämä käytäntö estää käyttäjää lataamasta mustalle listalle merkityistä URL-osoitteista. Mustalle listalle merkitään URL-osoitemallit, joiden perusteella URL-osoitteita kielletään.
+
+      URL-osoitemalli voi olla paikallisiin tiedostoihin viittaava tai yleinen URL-osoitemalli. Paikallisiin tiedostoihin viittaavat mallit ovat muotoa file://polku, jossa polku on estettävä absoluuttinen polku. Esto koskee tiedostojärjestelmän kaikkia sijainteja, jotka alkavat kyseisellä polulla.
+
+      Yleinen URL-osoitemalli on muotoa protokolla://isäntä:portti/polku.
+      Esto koskee vain määriteltyä protokollaa. Jos protokolla://-alkuosaa ei määritellä, esto koskee kaikkia protokollia.
+      Isäntä on pakollinen määrite, ja se voi olla isäntänimi tai IP-osoite. Esto koskee myös merkityn isäntänimen aliverkkotunnuksia. Aliverkkotunnusten esto voidaan kiertää merkitsemällä isäntänimen alkuun piste (.). Jos isäntänimeksi merkitään tähti (*), esto koskee kaikkia isäntänimiä.
+      Portti on valinnainen määrite. Se voi olla mikä tahansa kelvollinen portti väliltä 1 – 65 535. Jos porttia ei määritetä, esto koskee kaikkia portteja.
+      Polku on valinnainen määrite. Jos se merkitään, esto koskee vain sijainteja, jotka alkavat annetulla polulla.
+
+      Poikkeuksia on mahdollista merkitä sallittujen URL-osoitteiden luettelossa. Käytännössä huomioidaan vain 1 000 ensimmäistä merkintää.
+
+      Sisäisten, ”chrome://*”-alkuisten URL-osoitteiden estämistä ei suositella. Tällainen esto voi johtaa odottamattomiin virheisiin.
+
+      Jos tätä käytäntöä ei aseteta, selaimessa ei estetä minkään URL-osoitteiden lataamista.</translation>
 <translation id="8649763579836720255">Chrome-käyttöjärjestelmää käyttävät laitteet voivat käyttää etävahvistusta (vahvistetut käyttöoikeudet), jotta saavat Chrome-käyttöjärjestelmän CA:n lähettämän todistuksen, joka vahvistaa, että laitteella voi toistaa suojattua sisältöä. Tähän prosessiin kuuluu laitteistosuositusten lähettäminen Chrome-käyttöjärjestelmän CA:lle, joka tunnistaa jokaisen yksittäisen laitteen.
 
           Jos tämän asetuksen arvoksi on asetettu epätosi, laite ei käytä etävahvistusta sisällön suojaamiseen eikä laite välttämättä voi toistaa suojattua sisältöä.

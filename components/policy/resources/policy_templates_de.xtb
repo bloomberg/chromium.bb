@@ -88,7 +88,6 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
-<translation id="1445397020763995734">Kontotyp zur Aushandlung der HTTP-Authentifizierung</translation>
 <translation id="1454846751303307294">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript untersagt ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="1464848559468748897">Steuert das Nutzerverhalten in einer Sitzung mit mehreren Profilen auf Geräten mit <ph name="PRODUCT_OS_NAME" />
 
@@ -252,18 +251,6 @@ Diese Richtlinien sind nur aktiv, wenn der Chrome Remote Desktop-Host installier
       Wenn "HardwareAccelerationModeEnabled" auf "false" gesetzt ist, wird "Disable3DAPIs" ignoriert, als ob "Disable3DAPIs" auf "true" gesetzt wäre.</translation>
 <translation id="2168397434410358693">Inaktivitätsverzögerung im Netzbetrieb</translation>
 <translation id="2170233653554726857">WPAD-Optimierung aktivieren</translation>
-<translation id="2175836933294053665">Mit dieser Richtlinie wird eine Liste verwalteter Lesezeichen konfiguriert.
-
-      Die Richtlinie besteht aus einer Liste von Lesezeichen, wobei jedes der Lesezeichen ein
-      Wörterbuch darstellt, das die Schlüssel "name" und "url" enthält. Diese geben jeweils den
-      Namen und das Ziel an. Es ist möglich, einen Unterordner zu konfigurieren, indem ein Lesezeichen
-      ohne den "url"-Schlüssel, jedoch mit einem zusätzlichen "children"-Schlüssel definiert wird, der selbst
-      eine Liste mit Lesezeichen enthält, die wie oben beschrieben definiert sind. Einige davon können
-      wieder Ordner sein. <ph name="PRODUCT_NAME" /> ergänzt unvollständige
-      URLs automatisch so wie in der Omnibox. Beispielsweise
-      wird aus "google.de" die URL "https://google.de/".
-
-      Diese Lesezeichen werden in einem Ordner mit verwalteten Lesezeichen abgelegt, der vom Nutzer zwar nicht geändert, jedoch in der Lesezeichenleiste ausgeblendet werden kann. Verwaltete Lesezeichen werden nicht mit dem Nutzerkonto synchronisiert und können nicht von Erweiterungen geändert werden.</translation>
 <translation id="2188979373208322108">Aktiviert die Lesezeichenleiste in <ph name="PRODUCT_NAME" />. Wenn Sie diese Einstellung aktivieren, so erscheint in <ph name="PRODUCT_NAME" /> eine Lesezeichenleiste. Sollten Sie sie deaktivieren, sehen Nutzer die Leiste nicht. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen. Wenn diese Einstellung nicht konfiguriert ist, kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte.</translation>
 <translation id="2201555246697292490">Weiße Liste für natives Messaging konfigurieren</translation>
 <translation id="2204753382813641270">Automatisches Ausblenden der Ablage verwalten</translation>
@@ -531,38 +518,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wenn diese Einstellung aktiviert ist, werden alle Seiten der Captive-Portal-Authentifizierung – also alle Webseiten ab der Anmeldeseite, bis <ph name="PRODUCT_NAME" /> eine funktionierende Internetverbindung erkennt – in einem separaten Fenster angezeigt und alle Richtlinieneinstellungen und -beschränkungen für den aktuellen Nutzer ignoriert.
 
       Wenn Sie diese Einstellung deaktivieren oder nicht konfigurieren, werden alle Seiten der Captive-Portal-Authentifizierung auf einem regulären neuen Browsertab angezeigt und es kommen die Proxy-Einstellungen des aktuellen Nutzers zum Einsatz.</translation>
-<translation id="3001569025430882724">Überschreibt die Regeln von <ph name="PRODUCT_NAME" /> zur Auswahl des Standarddruckers.
-
-      Diese Richtlinie legt die Regeln für die Auswahl des Standarddruckers in <ph name="PRODUCT_NAME" /> fest. Diese Auswahl erfolgt, wenn in einem Profil zum ersten Mal die Druckfunktion genutzt wird.
-
-      Wenn diese Richtlinie konfiguriert ist, sucht <ph name="PRODUCT_NAME" /> einen passenden Drucker, der alle angegebenen Merkmale aufweist, und wählt diesen als Standarddrucker aus. Der erste Drucker, der die Richtlinie erfüllt, wird ausgewählt. Falls keine eindeutige Übereinstimmung gefunden wird, kann jeder übereinstimmende Drucker ausgewählt werden. Das hängt von der Reihenfolge ab, in der die Drucker gefunden werden.
-
-      Wenn diese Richtlinie nicht konfiguriert wurde oder kein passender Drucker innerhalb des Zeitlimits gefunden wird, wird als Standarddrucker der integrierte PDF-Drucker oder – falls dieser nicht verfügbar ist – gar kein Drucker ausgewählt.
-
-      Der Wert wird als JSON-Objekt gemäß des folgenden Schemas geparst:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Suche nach dem passenden Drucker auf eine bestimmte Reihe von Druckern beschränken?",
-            "type": {
-              "enum": [ "local", "cloud" ]
-            }
-          },
-          "idPattern": {
-            "description": "Regulärer Ausdruck für Drucker-ID",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regulärer Ausdruck für den angezeigten Namen des Druckers",
-            "type": "string"
-          }
-        }
-      }
-
-      Die mit Google Cloud Print verbundenen Drucker werden als "cloud" bezeichnet. Die anderen Drucker werden als "local" klassifiziert.
-      Wird ein Feld ausgelassen, bedeutet das, alle Werte stimmen überein. Beispiel: Wenn Sie keinen Wert für die Konnektivität angeben, wird die Erkennung sämtlicher Druckertypen, "local" und "cloud", über die Druckvorschau gestartet.
-      Die Muster für reguläre Ausdrücke müssen der JavaScript-RegExp-Syntax folgen und die Groß-/Kleinschreibung ist zu beachten.</translation>
 <translation id="3021409116652377124">Plug-in-Suchfunktion deaktivieren</translation>
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
@@ -648,24 +603,6 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
      Wenn diese Einstellung aktiviert ist oder nicht konfiguriert wurde, können Nutzer den Google Cloud Print-Proxy durch die Authentifizierung mit ihrem Google-Konto aktivieren.
 
        Ist diese Einstellung deaktiviert, können Nutzer den Proxy nicht aktivieren und der Computer darf seine Drucker nicht für <ph name="CLOUD_PRINT_NAME" /> freigeben.</translation>
-<translation id="3357181471604560535">Sowohl Chromium als auch Google Chrome unterstützen dieselbe Gruppe von
-      Richtlinien. Beachten Sie, dass dieses Dokument Richtlinien umfassen kann,
-      die sich auf nicht veröffentlichte Softwareversionen beziehen, d. h., ihre
-      Unterstützung gilt für eine nicht veröffentlichte Version, und dass solche
-      Richtlinien ohne vorherige Ankündigung geändert oder entfernt werden können.
-
-      Diese Richtlinien dienen ausschließlich zur Konfiguration von internen
-      <ph name="PRODUCT_NAME" />-Instanzen innerhalb Ihrer Organisation. Eine Anwendung dieser
-      Richtlinien außerhalb Ihrer Organisation, z. B. in einem öffentlich
-      verbreiteten Programm, wird als Malware angesehen und von Google sowie
-      Anbietern von Antivirensoftware mit hoher Wahrscheinlichkeit als Malware gekennzeichnet.
-
-      Diese Einstellungen müssen nicht manuell konfiguriert werden. Nutzerfreundliche
-      Vorlagen für Windows, Mac und Linux sind unter <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> zum Download verfügbar.
-
-      Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte zu konfigurieren, die
-      Bereitstellung von Richtlinien über die Registrierung wird jedoch auch weiterhin von Windows-Instanzen unterstützt,
-      die Teil einer Active Directory-Domain sind.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
 <translation id="3417418267404583991">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, sind Gastanmeldungen in <ph name="PRODUCT_OS_NAME" /> möglich. Eine Anmeldung als Gast erfolgt anonym und erfordert keine Passworteingabe.
 
@@ -1175,9 +1112,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Wenn diese Richtlinie nicht festgelegt oder auf "false" gesetzt ist, verwendet <ph name="PRODUCT_NAME" /> die vorhandenen Online-Einstellungen zur Widerrufsprüfung.</translation>
 <translation id="5732972008943405952">AutoFill-Formulardaten bei erster Ausführung aus Standardbrowser importieren</translation>
-<translation id="5751004203256768694">Legt den Kontotyp der Konten der Android-Authentifizierungs-App fest, die die Authentifizierung durch Aushandeln über HTTP (z. B. die Kerberos-Authentifizierung) unterstützt. Diese Informationen sollten vom Anbieter der Authentifizierungs-App bereitgestellt werden. Weitere Informationen finden Sie unter https://goo.gl/hajyfN.
-
-          Ist keine Einstellung vorhanden, wird die HTTP-Authentifizierung durch Aushandeln unter Android deaktiviert.</translation>
 <translation id="5761030451068906335">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="5770738360657678870">Entwicklerkanal (möglicherweise nicht stabil)</translation>
@@ -1916,12 +1850,26 @@ Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgele
 <translation id="8544375438507658205">Standardanwendung für HTML-Darstellung in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
 <translation id="8566842294717252664">Web Store auf der "Neuer Tab"-Seite und im App Launcher ausblenden</translation>
-<translation id="857925079934558818">Diese Richtlinie legt fest, ob die "False Start"-Optimierung von TLS deaktiviert werden soll. Aus Gründen, die mit dem Hergang der Funktion zu tun haben, heißt die Richtlinie "DisableSSLRecordSplitting".
-
-      Wenn die Richtlinie nicht konfiguriert ist, wird die TLS-Funktion "False Start" aktiviert. Ist "true" festgelegt, wird die Funktion deaktiviert.</translation>
 <translation id="8587229956764455752">Erstellung neuer Nutzerkonten erlauben</translation>
 <translation id="8614804915612153606">Automatische Updates deaktivieren</translation>
 <translation id="8631434304112909927">Bis Version <ph name="UNTIL_VERSION" /></translation>
+<translation id="863712305404093038">Blockiert den Zugriff auf aufgelistete URLs.
+
+      Durch diese Richtlinie wird verhindert, dass Nutzer Webseiten von URLs auf der schwarzen Liste laden. Die schwarze Liste enthält URL-Muster, die angeben, welche URLs auf die schwarze Liste gesetzt werden.
+
+      Jedes URL-Muster kann entweder als Muster für lokale Dateien oder als ein generisches URL-Muster fungieren. Muster für lokale Dateien weisen das Format "Datei://Pfad" auf, wobei "Pfad" ein absoluter zu blockierender Pfad sein sollte. Sämtliche Speicherorte im Dateisystem, für die dieser Pfad ein Präfix darstellt, werden blockiert.
+
+      Eine generische URL weist das Format "Schema://Host:Port/Pfad" auf.
+      Nur dieses Schema wird blockiert, sofern vorhanden. Wurde kein Schema festgelegt, werden alle blockiert.
+      Beim Host kann es sich um einen Hostnamen oder eine IP-Adresse handeln. Subdomains eines Hostnamens werden ebenfalls blockiert. Damit keine Subdomains blockiert werden, fügen Sie vor dem Hostnamen einen Punkt "." ein. Der spezifische Hostname "*" blockiert alle Domains.
+      Der optionale Port besteht aus einer gültigen Portnummer zwischen 1 und 65535. Wurde kein Port ausgewählt, werden alle blockiert.
+      Wurde der optionale Pfad festgelegt, werden nur Pfade mit diesem Präfix blockiert.
+
+      Ausnahmen können in der Richtlinie für die weiße Liste für URLs definiert werden. Diese Richtlinien sind auf 1.000 Einträge begrenzt. Darüber hinausgehende Einträge werden ignoriert.
+
+      Es wird nicht empfohlen, interne "chrome://*"-URLs zu blockieren, da dies zu unerwarteten Fehlern führen kann.
+
+      Wird diese Richtlinie nicht konfiguriert, werden im Browser keine URLs zur schwarzen Liste hinzugefügt.</translation>
 <translation id="8649763579836720255">Chrome OS-Geräte können mithilfe einer Remote-Bescheinigung für überprüften Zugriff ein von der Chrome OS-Zertifizierungsstelle herausgegebenes Zertifikat erhalten, das die Berechtigung des Geräts für die Wiedergabe geschützter Medien nachweist. Bei diesem Vorgang werden Informationen zur Bestätigung der Hardware an die Chrome OS-Zertifizierungsstelle gesendet, anhand derer das Gerät eindeutig identifiziert werden kann.
 
           Ist die Einstellung auf "false" gesetzt, verwendet das Gerät keine Remote-Bescheinigung für geschützte Medien und kann möglicherweise keine geschützten Medien wiedergeben.

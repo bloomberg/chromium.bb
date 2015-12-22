@@ -4,12 +4,19 @@
 <translation id="1015255576907412255">Daha fazla bilgi için sistem yöneticinizle bağlantı kurun.</translation>
 <translation id="1032854598605920125">Saat yönünde döndür</translation>
 <translation id="1055184225775184556">Eklemeyi &amp;Geri Al</translation>
+<translation id="1064422015032085147">Web sayfasını barındıran sunucu aşırı yüklenmiş veya bakımda olabilir.
+    Çok fazla trafik oluşturmaktan ve durumu daha da kötüleştirmekten
+    kaçınmak için, bu URL'ye gelen istekler geçici olarak reddediliyor.</translation>
 <translation id="1066332784716773939">Hataları teşhis et...</translation>
 <translation id="106701514854093668">Masaüstü Yer İşaretleri</translation>
 <translation id="1080116354587839789">Genişliğe sığdır</translation>
 <translation id="108346963417674655">Sunucuya güvenli bir şekilde bağlanılamıyor. Bu web sitesi daha önce sorunsuz kullanılmış olabilir, ancak şu anda sunucuda bir sorun var. Bu tür sitelere bağlanmak tüm kullanıcılar için güvenlik risklerine sebep olduğundan devre dışı bırakılmıştır.</translation>
+<translation id="1090046120949329821">Birden fazla farklı Content-Disposition (İçerik Yetki Devri) üst bilgisi alındı. HTTP yanıtını
+    bölme saldırılarına karşı koruma sağlamak için buna izin verilmiyor.</translation>
+<translation id="1091911885099639251">Kart doğrulanıyor</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> dilini daima çevir</translation>
 <translation id="1105117579475534983">Web Sayfası Engellendi</translation>
+<translation id="1107591249535594099">İşaretlenirse Chrome, formları daha hızlı doldurma amacıyla kartınızın bir kopyasını bu cihazda depolar.</translation>
 <translation id="1113869188872983271">Sıralama değişikliğini &amp;geri al</translation>
 <translation id="111844081046043029">Bu sayfadan ayrılmak istediğinizden emin misiniz?</translation>
 <translation id="112840717907525620">Politika önbelleği uygun</translation>
@@ -22,6 +29,7 @@
 <translation id="1195447618553298278">Bilinmeyen hata.</translation>
 <translation id="1202290638211552064">Bir yukarı akış sunucusundan yanıt beklenirken ağ geçidi veya proxy sunucusu zaman aşımına uğradı.</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" /> alanına ulaşmayı denediniz, ancak sunucu zayıf anahtar içeren bir sertifika sundu. Bir saldırgan özel anahtarı ele geçirmiş olabilir ve sunucu beklediğiniz sunucu olmayabilir (bir saldırganla irtibat kuruyor olabilirsiniz).</translation>
+<translation id="1219129156119358924">Sistem Güvenliği</translation>
 <translation id="1227224963052638717">Bilinmeyen politika.</translation>
 <translation id="1227633850867390598">Değeri gizle</translation>
 <translation id="1228893227497259893">Yanlış varlık tanımlayıcı</translation>
@@ -29,8 +37,12 @@
 <translation id="1339601241726513588">Kayıt alan adı:</translation>
 <translation id="1344588688991793829">Chromium Otomatik Doldurma ayarları...</translation>
 <translation id="1375198122581997741">Sürüm Hakkında</translation>
+<translation id="1413809658975081374">Gizlilik hatası</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1430915738399379752">Yazdır</translation>
+<translation id="1452265419286795001">Bilgisayarınız uyku veya hazırda bekleme moduna girdiğinden Web sayfası
+    yüklenemiyor. Bu durumda, ağ bağlantılarınız kapatılır ve yeni ağ talepleri
+    başarısız olur. Sayfa yeniden yüklendiğinde sorun çözülecektir.</translation>
 <translation id="1455235771979731432">Kartınız doğrulanırken bir sorun oluştu. İnternet bağlantınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="1491151370853475546">Bu Sayfayı Yeniden Yükle</translation>
 <translation id="1506687042165942984">Bu sayfanın kaydedilmiş (eski olduğu bilinen) bir kopyasını gösterin.</translation>
@@ -40,7 +52,13 @@
 <translation id="1559572115229829303">&lt;p&gt;Cihazınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamadı.&lt;/p&gt;
 
       &lt;p&gt;Lütfen &lt;strong&gt;Ayarlar&lt;/strong&gt; uygulamasının &lt;strong&gt;Genel&lt;/strong&gt; bölümünden tarih ve saati ayarlayın.&lt;/p&gt;</translation>
+<translation id="1592005682883173041">Yerel Veri Erişimi</translation>
+<translation id="1619362374865863391"><ph name="PRODUCT_NAME" />
+    web sitesine erişemiyor. Bu, normalde ağdaki sorunlardan kaynaklanır, ama
+    yanlış yapılandırılmış bir güvenlik duvarı veya proxy sunucusu da buna yol açabilir.</translation>
 <translation id="1629803312968146339">Chrome'un bu kartı kaydetmesini istiyor musunuz?</translation>
+<translation id="1639782983204136776"><ph name="URL" /> yüklenmeye çalışılırken geçersiz bir yanıt alındı.
+    Sunucu bakım için kapatılmış veya yanlış yapılandırılmış olabilir.</translation>
 <translation id="1640180200866533862">Kullanıcı politikaları</translation>
 <translation id="1644184664548287040">Ağ yapılandırması geçersiz, dolayısıyla içe aktarılamadı.</translation>
 <translation id="1655462015569774233">{1,plural, =1{Bu sunucu, <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının süresi dün sona erdi. Bu durum, bir yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati geçerli olarak <ph name="CURRENT_DATE" /> tarihine ayarlı. Bu ayar doğru görünüyor mu? Değilse, sisteminizin saatini düzeltmeli ve sonra bu sayfayı yenilemelisiniz.}other{Bu sunucu, <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası # gün önce sona erdi. Bu durum, bir yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati geçerli olarak <ph name="CURRENT_DATE" /> tarihine ayarlı. Bu ayar doğru görünüyor mu? Değilse, sisteminizin saatini düzeltmeli ve sonra bu sayfayı yenilemelisiniz.}}</translation>
@@ -51,8 +69,10 @@
 <translation id="1737968601308870607">Hata bildir</translation>
 <translation id="1753706481035618306">Sayfa numarası</translation>
 <translation id="1763864636252898013">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. cihazınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
+<translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
 <translation id="1871208020102129563">Proxy, bir .pac komut dosyası URL'sini değil, sabit proxy sunucuları kullanacak şekilde ayarlanır.</translation>
+<translation id="1898423065542865115">Filtreleme</translation>
 <translation id="194030505837763158"><ph name="LINK" /> adresine git</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Yer İşaretleri</translation>
 <translation id="1973335181906896915">Serileştirme hatası</translation>
@@ -70,23 +90,37 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> tarafından geçersiz kılındığı için yoksayıldı.</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mobil Yer İşaretleri</translation>
+<translation id="2153530520610387456"><ph name="BEGIN_BOLD" />
+          Başlat &gt; Denetim Masası &gt; Ağ ve İnternet &gt; Ağ ve Paylaşım Merkezi &gt; Sorun Giderme (altta) &gt; İnternet Bağlantıları
+          <ph name="END_BOLD" /> seçeneğine gidin.</translation>
+<translation id="2166049586286450108">Tam Yönetici Erişimi</translation>
 <translation id="2171101176734966184"><ph name="DOMAIN" /> adresine erişme girişiminde bulundunuz ancak sunucu zayıf bir imza algoritması kullanılarak imzalanmış bir sertifika sağladı. Bu, sunucunun sağladığı güvenlik bilgilerinin sahte olabileceği anlamına gelir ve sunucu sizin beklediğiniz sunucu olmayabilir (bir saldırgan ile irtibat kuruyor olabilirsiniz).</translation>
 <translation id="2181821976797666341">Politikalar</translation>
 <translation id="2212735316055980242">Politika bulunamadı</translation>
 <translation id="2213606439339815911">Girişler getiriliyor...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> kullanılamıyor</translation>
+<translation id="2221403025589790908"><ph name="HOST_NAME" />
+    uzun süre yanıt vermediğinden
+    <ph name="PRODUCT_NAME" />,
+    web sayfasını yükleyemedi.  Web sitesi kapalı olabilir veya İnternet
+    bağlantınızla ilgili sorun yaşıyor olabilirsiniz.</translation>
+<translation id="2223896507118749476"><ph name="URL" /> alınırken web sitesi bir hatayla karşılaştı.
+    URL bakım için kapatılmış veya yanlış yapılandırılmış olabilir.</translation>
 <translation id="225207911366869382">Bu değer bu politika için kullanımdan kaldırıldı.</translation>
 <translation id="2262243747453050782">HTTP hatası</translation>
 <translation id="2271281383664374369">Uzantıların bu URL için yaptığı istekler geçici olarak durduruldu.</translation>
 <translation id="2279770628980885996">Sunucu isteği gerçekleştirmeyi denerken beklenmedik bir koşulla karşılaşıldı.</translation>
 <translation id="2282872951544483773">Kullanılamayan Deneyler</translation>
 <translation id="229702904922032456">Bir kök ya da ara sertifikanın süresi geçmiş.</translation>
+<translation id="230155334948463882">Yeni bir kart mı?</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> dizininde yok sayılan geçersiz yer işareti</translation>
 <translation id="2345460471437425338">Ana makine için yanlış sertifika.</translation>
 <translation id="2354001756790975382">Diğer yer işaretleri</translation>
+<translation id="2359808026110333948">Devam Et</translation>
 <translation id="2367567093518048410">Düzey</translation>
 <translation id="237718015863234333">Mevcut kullanıcı arayüzü alternatifi yok</translation>
 <translation id="2384307209577226199">Kuruluşun varsayılan ayarı</translation>
+<translation id="238526402387145295">Web sitesi <ph name="BEGIN_LINK" />HSTS kullandığı<ph name="END_LINK" /> için <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="2386255080630008482">Sunucunun sertifikası iptal edildi.</translation>
 <translation id="2392959068659972793">Hiçbir değer ayarlanmamış politikaları göster</translation>
 <translation id="2396249848217231973">Silmeyi &amp;geri al</translation>
@@ -115,15 +149,28 @@
 <translation id="2784949926578158345">Bağlantı sıfırlandı.</translation>
 <translation id="2835170189407361413">Formu temizle</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> kredi kartınızı doğrulayın</translation>
+<translation id="2887624244875325968">Bu hata güvenli (HTTPS) bir sunucuya bağlanırken ortaya çıkabilir. Bu,
+    sunucunun güvenli bağlantı kurmaya çalıştığını, ancak yapılandırmanın
+    çok bozuk olmasından dolayı bağlantının hiç güvenli olmayacağını gösterir!
+    <ph name="LINE_BREAK" />Bu durumda, sunucunun
+    düzeltilmesi gerekir.
+    <ph name="PRODUCT_NAME" />,
+    gizliliğinizi korumak için, güvenli olmayan bağlantıları kullanmaz.</translation>
 <translation id="2909946352844186028">Bir ağ değişikliği algılandı.</translation>
 <translation id="2915500479781995473">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının süresi dolmuş. Bu durum, bir yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati şu anda <ph name="CURRENT_TIME" /> değerine ayarlı. Saat doğru mu? Değilse sistem saatinizi düzeltmeniz ve ardından bu sayfayı yenilemeniz gerekir.</translation>
 <translation id="2922350208395188000">Sunucunun sertifikası kontrol edilemiyor.</translation>
 <translation id="2941952326391522266">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası <ph name="DOMAIN2" /> alan adından geliyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="2948083400971632585">Ayarlar sayfasından, bir bağlantı için yapılandırılmış proxy'leri devre dışı bırakabilirsiniz.</translation>
 <translation id="2950186680359523359">Sunucu, hiçbir veri göndermeden bağlantıyı kapattı.</translation>
+<translation id="2957518517523241247">Bağlantınızı test etmek için
+    <ph name="BEGIN_BOLD" />
+    Başlat &gt; Denetim Masası &gt; Ağ Bağlantıları &gt; Yeni Bağlantı Sihirbazı
+    <ph name="END_BOLD" />
+    seçeneğine gidin.</translation>
 <translation id="2958431318199492670">Ağ yapılandırması ONC standardıyla uyumlu değil. Yapılandırmanın bazı bölümleri içe aktarılamaz.</translation>
 <translation id="2969319727213777354">Güvenli bir bağlantı kurmak için saatinizin doğru ayarlanmış olması gerekir. Bunun sebebi, web sitelerinin kendilerini tanımlamak için kullandıkları sertifikaların sadece belli süreler için geçerli olmasıdır. Cihazınızın saati yanlış olduğundan, Google Chrome bu sertifikaları doğrulayamıyor.</translation>
 <translation id="2972581237482394796">&amp;Yinele</translation>
+<translation id="2991174974383378012">Web Siteleriyle Paylaşma</translation>
 <translation id="3005723025932146533">Kaydedilen kopyayı göster</translation>
 <translation id="3010559122411665027">Liste girişi "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Yanlış politika türü</translation>
@@ -135,15 +182,23 @@
 <translation id="3150653042067488994">Geçici sunucu hatası</translation>
 <translation id="3169472444629675720">Bul</translation>
 <translation id="3174168572213147020">Ada</translation>
+<translation id="3176929007561373547">Proxy sunucunun çalışıyor olduğundan emin olmak için
+    proxy ayarlarınızı kontrol edin veya ağ yöneticinize danışın. Proxy sunucu
+    kullanmamanız gerektiğini düşünüyorsanız:
+    <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3219579145727097045">Son kullanma tarihini ve kartınızın önündeki 4 basamaklı CVC'yi girin</translation>
 <translation id="3225579507836276307">Bir üçüncü taraf uzantısı, bu web sayfasına erişimi engelledi.</translation>
 <translation id="3225919329040284222">Sunucu, yerleşik beklentilerle eşleşmeyen bir sertifika sundu. Bu beklentiler sizi korumak amacıyla bazı yüksek güvenlikli web sitelerinde bulunur.</translation>
 <translation id="3226128629678568754">Sayfayı yüklemek üzere gereken verileri tekrar göndermek için yeniden yükle düğmesine basın.</translation>
 <translation id="3228969707346345236">Sayfa zaten <ph name="LANGUAGE" /> dilinde olduğundan çeviri işlemi başarısız oldu.</translation>
+<translation id="3230256772510102500">Proxy, bilgisayarınız ile diğer sunucular arasında aracı görevi gören bir sunucudur. Şu anda sisteminiz proxy kullanacak şekilde yapılandırılmış, ancak
+      <ph name="PRODUCT_NAME" />
+      söz konusu proxy'ye bağlanamıyor.</translation>
 <translation id="3270847123878663523">Sıralama Değişikliğini &amp;Geri Al</translation>
 <translation id="3286538390144397061">Şimdi yeniden başlat</translation>
 <translation id="333371639341676808">Bu sayfanın ek iletişim kutusu oluşturmasına izin verme.</translation>
 <translation id="3340978935015468852">ayarlar</translation>
+<translation id="3355823806454867987">Proxy ayarlarını değiştir...</translation>
 <translation id="3369192424181595722">Saat hatası</translation>
 <translation id="3369366829301677151"><ph name="CREDIT_CARD" /> kredi kartınızı güncelleyin ve doğrulayın</translation>
 <translation id="337363190475750230">Temel hazırlık iptal edildi</translation>
@@ -151,6 +206,7 @@
 <translation id="3380365263193509176">Bilinmeyen hata</translation>
 <translation id="3380864720620200369">İstemci Kimliği:</translation>
 <translation id="3393716657345709557">İstenilen giriş önbellekte bulunamadı.</translation>
+<translation id="340013220407300675">Saldırganlar <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesinden bilgilerinizi çalmaya çalışıyor olabilir (örneğin, şifreler, mesajlar veya kredi kartı bilgileri).</translation>
 <translation id="3427342743765426898">&amp;Düzenlemeyi Yeniden Yap</translation>
 <translation id="3435896845095436175">Etkinleştir</translation>
 <translation id="3447661539832366887">Bu cihazın sahibi dinozor oyununu kapattı.</translation>
@@ -158,7 +214,9 @@
 <translation id="3452404311384756672">Getirme aralığı:</translation>
 <translation id="3462200631372590220">Gelişmiş bilgileri gizle</translation>
 <translation id="3528171143076753409">Sunucunun sertifikasına güvenilmiyor.</translation>
+<translation id="3539171420378717834">Bu kartın bir kopyasını bu cihazda tut</translation>
 <translation id="3542684924769048008">Şunun için şifre kullan:</translation>
+<translation id="3566021033012934673">Bağlantınız gizli değil</translation>
 <translation id="3583757800736429874">Taşımayı &amp;Yeniden Yap</translation>
 <translation id="3586931643579894722">Ayrıntıları gizle</translation>
 <translation id="3608308818141211642">İstemci ve sunucu, ortak bir SSL protokolü sürümünü veya şifre paketini desteklemiyor. Buna, muhtemelen sunucunun artık güvenli olarak kabul edilmeyen RC4'ü gerektirmesi neden olmuş olabilir.</translation>
@@ -170,14 +228,20 @@
 <translation id="370665806235115550">Yükleniyor...</translation>
 <translation id="3712624925041724820">Lisanslar bitti</translation>
 <translation id="3739623965217189342">Kopyaladığınız bağlantı</translation>
+<translation id="3744899669254331632">Web sitesi Chromium'un işleyemediği karışık kimlik bilgileri gönderdiğinden <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici türdendir, dolayısıyla bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="3748412725338508953">Çok fazla yeniden yönlendirme vardı.</translation>
 <translation id="375403751935624634">Çeviri, bir sunucu hatası nedeniyle başarısız oldu.</translation>
 <translation id="3759461132968374835">Son zamanda herhangi bir kilitlenme bildirmediniz. Kilitlenme bildirme özelliği devre dışıyken oluşan kilitlenmeler burada görünmez.</translation>
 <translation id="382518646247711829">Proxy sunucu kullanıyorsanız...</translation>
+<translation id="3851596405215565524">Ağa erişmesine izin verilmiş bir program olarak zaten listelenmişse
+    listeden kaldırıp tekrar eklemeyi deneyin.</translation>
 <translation id="3858027520442213535">Tarih ve saati güncelle</translation>
 <translation id="3884278016824448484">Çakışan cihaz tanımlayıcısı</translation>
 <translation id="3885155851504623709">Bucak</translation>
+<translation id="3901925938762663762">Kartın kullanım süresi doldu</translation>
 <translation id="3903912596042358459">Sunucu, isteği yerine getirmeyi reddetti.</translation>
+<translation id="3920015046759567857"><ph name="HOST_NAME" />
+    ana makinesiyle bağlantı kesildi.</translation>
 <translation id="3934680773876859118">PDF dokümanı yüklenemedi</translation>
 <translation id="3940082421246752453">Sunucu, istekte kullanılan HTTP sürümünü desteklemiyor.</translation>
 <translation id="3950924596163729246">Ağa erişilemiyor.</translation>
@@ -192,7 +256,6 @@
 <translation id="4103249731201008433">Cihazın seri numarası geçersiz</translation>
 <translation id="4103763322291513355">Kara listeye alınmış URL'lerin ve sistem yöneticinizin zorunlu tuttuğu diğer politikaların listesini görmek için &lt;strong&gt;chrome://policy&lt;/strong&gt; adresini ziyaret edin.</translation>
 <translation id="4117700440116928470">Politika kapsamı desteklenmiyor.</translation>
-<translation id="4120075327926916474">Chrome'un, web formlarını doldurmak için bu kredi kartı bilgilerini kaydetmesini ister misiniz?</translation>
 <translation id="4147376274874979956">Dosyaya erişilemiyor.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium'un bu kartı kaydetmesini istiyor musunuz?</translation>
@@ -216,6 +279,7 @@
 <translation id="4424024547088906515">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Chrome, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="443673843213245140">Proxy kullanımı devre dışı, ancak açık bir proxy yapılandırması belirtildi.</translation>
 <translation id="4506176782989081258">Doğrulama hatası: <ph name="VALIDATION_ERROR" /></translation>
+<translation id="450710068430902550">Yöneticiyle Paylaşma</translation>
 <translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="4535734014498033861">Proxy sunucu bağlantısı başarısız oldu.</translation>
 <translation id="4587425331216688090">Adres Chrome'dan kaldırılsın mı?</translation>
@@ -235,28 +299,57 @@
 <translation id="4800132727771399293">Son kullanma tarihinizi ve CVC'nizi kontrol edip tekrar deneyin</translation>
 <translation id="4813512666221746211">Ağ hatası</translation>
 <translation id="4816492930507672669">Sayfaya sığdır</translation>
+<translation id="4841859178893814774">Web sayfalarını hızlandırmak için,
+    <ph name="PRODUCT_NAME" />
+    indirilen dosyaları geçici olarak diskte saklar.
+    <ph name="PRODUCT_NAME" />
+    doğru kapatılmadığında bu dosyalar bozularak bu hataya neden olabilir.
+    Sayfayı yeniden yüklemek sorunu çözecektir. Doğru şekilde kapatmak
+    ileride sorunun tekrarlanmasını önler.
+    <ph name="LINE_BREAK" />
+    Sorun devam ederse önbelleği temizlemeyi deneyin. Bazı durumlarda bu,
+    arıza vermeye başlayan bir donanımın da belirtisi olabilir.</translation>
 <translation id="4850886885716139402">Görüntüle</translation>
+<translation id="4874648484377130814">Bu site,
+    <ph name="BEGIN_LINK" />yeni bir genel üst düzey alan adı<ph name="END_LINK" />
+    (gTLD) kullanıyor. Geçmişte bir dahili siteye erişmek için
+    <ph name="HOST_NAME" />
+    ana makinesini kullandıysanız ağ yöneticinizle iletişime geçin.</translation>
+<translation id="49215695600353191">Sunucudan gelen yanıt yinelenen üst bilgiler içeriyordu. Bu sorun,
+    genellikle yanlış yapılandırılmış bir web sitesi ya da proxy'den kaynaklanır.
+    Sadece web sitesi veya proxy yöneticisi bu sorunu çözebilir.</translation>
 <translation id="4923417429809017348">Bu sayfa, bilinmeyen bir dilden <ph name="LANGUAGE_LANGUAGE" /> diline çevrildi</translation>
 <translation id="4926049483395192435">Belirtilmelidir.</translation>
 <translation id="4980112683975062744">Sunucudan yinelenen üstbilgiler alındı</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> dilinden <ph name="TARGET_LANGUAGE" /> diline çevrilsin mi?</translation>
+<translation id="5002932099480077015">Bu seçenek etkinleştirildiğinde Chrome, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
 <translation id="5019198164206649151">Yedekleme deposu kötü durumda</translation>
 <translation id="5023310440958281426">Yöneticinizin politikalarını inceleyin.</translation>
+<translation id="5029568752722684782">Kopyayı temizle</translation>
 <translation id="5031870354684148875">Google Çeviri Hakkında</translation>
 <translation id="5045550434625856497">Yanlış şifre</translation>
-<translation id="5065199687811594072">Chromium'un, web formlarını doldurmak için bu kredi kartı bilgilerini kaydetmesini ister misiniz?</translation>
 <translation id="5087286274860437796">Sunucu sertifikası şu anda geçerli değil.</translation>
 <translation id="5089810972385038852">Eyalet</translation>
 <translation id="5094747076828555589">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı; Chromium, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="5095208057601539847">Bölge</translation>
+<translation id="5109770625702925626"><ph name="HOST_NAME" />
+    bulunamıyor.
+    Sorun teşhis edilmeye çalışıyor...</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5145883236150621069">Politika yanıtında hata kodu var</translation>
+<translation id="5153978682603373396">Proxy sunucusu, cihazınız ile diğer sunucular arasında aracı görevi gören bir sunucudur. Şu anda, sisteminiz proxy kullanacak şekilde yapılandırılmış, ancak
+      <ph name="PRODUCT_NAME" />
+      ona bağlanamıyor.</translation>
 <translation id="5172758083709347301">Makine</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> dilinde değil mi? Bu hatayı bildirin</translation>
 <translation id="5190835502935405962">Yer İşareti Çubuğu</translation>
 <translation id="5199729219167945352">Deneyler</translation>
 <translation id="5228309736894624122">SSL protokolü hatası.</translation>
 <translation id="5251803541071282808">Bulut</translation>
+<translation id="527200068854444456">Cihazınız uyku veya hazırda bekletme moduna geçtiğinden
+      web sayfası yüklenemiyor. Bu durumda, ağ bağlantıları
+      kapanır ve yeni ağ istekleri başarısız olur. Sayfayı yeniden
+      yüklemek sorunu çözebilir.</translation>
 <translation id="5295309862264981122">Gezintiyi Onayla</translation>
 <translation id="5299298092464848405">Politika ayrıştırma hatası</translation>
 <translation id="5303618139271450299">Bu web sayfası bulunamadı</translation>
@@ -297,7 +390,23 @@
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="6060685159320643512">Dikkatli olun, bu deneyler canınızı yakabilir</translation>
 <translation id="6066742401428748382">Web sayfasına erişim reddedildi</translation>
+<translation id="6093795393556121384">Kartınız doğrulandı</translation>
 <translation id="6099520380851856040">Oluşma saati: <ph name="CRASH_TIME" /></translation>
+<translation id="6101917839110691420"><ph name="URL" /> adresindeki web sayfası çok fazla sayıda
+      yeniden yönlendirmeye yol açtı. Bu siteyle ilgili çerezlerinizi temizlemeniz veya üçüncü taraf çerezlerine izin vermeniz sorunu giderebilir.
+      Giderilmezse, sorun büyük olasılıkla bilgisayarınızdan değil sunucu
+      yapılandırmasından kaynaklanmaktadır.</translation>
+<translation id="6130627560064345577">Büyük olasılıkla Web sayfasını barındıran sunucu aşırı yüklendi veya bir hatayla karşılaştı.
+    Uzantıların çok fazla trafiğe neden olmasını ve durumun daha da kötüleşmesini önlemek amacıyla,
+    <ph name="PRODUCT_NAME" />
+    uzantıların bu URL için yaptıkları isteklere izin vermeyi geçici olarak durdurdu.
+    <ph name="LINE_BREAK" />
+    Bu davranışı istemiyorsanız (örneğin, kendi web sitenizde hata ayıklama yapıyorsanız),
+    özelliğin nasıl devre dışı bırakılacağı da dahil olmak üzere daha fazla bilgi için lütfen
+    <ph name="URL_FOR_MORE_INFO" />
+    adresini ziyaret edin.</translation>
+<translation id="6146055958333702838">Kabloları kontrol edin ve kullandığınız yönlendiricileri, modemleri
+    veya diğer ağ cihazlarını yeniden başlatın.</translation>
 <translation id="6151417162996330722">Sunucu sertifikasının geçerlilik dönemi çok uzun.</translation>
 <translation id="6154808779448689242">Döndürülen politika jetonu mevcut jetondan farklı</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
@@ -306,7 +415,10 @@
 <translation id="6232139169545176020">İstenen URI Şeması desteklenmiyor.</translation>
 <translation id="6237614789842758826">Google'da arama yapın.</translation>
 <translation id="6259156558325130047">Sıralama Değişikliğini &amp;Yeniden Yap</translation>
+<translation id="6262796033958342538">Birden fazla Location (Konum) üst bilgisi alındı. HTTP yanıtını bölme saldırılarına
+    karşı korumak için buna izin verilmez.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> yer işaretleri</translation>
+<translation id="6264485186158353794">Güvenliğe geri dön</translation>
 <translation id="6268647269805730940">Bu cihaz, ilk çalıştırma adımlarını tamamlamadı.</translation>
 <translation id="6282194474023008486">Posta kodu</translation>
 <translation id="6321917430147971392">DNS ayarlarınızı kontrol edin</translation>
@@ -318,29 +430,40 @@
 <translation id="6391832066170725637">Dosya veya dizin bulunamadı.</translation>
 <translation id="641480858134062906"><ph name="URL" /> yüklenemedi</translation>
 <translation id="6445051938772793705">Ülke</translation>
+<translation id="6451458296329894277">Yeniden Form Gönderme İşlemini Onayla</translation>
 <translation id="6458467102616083041">Varsayılan arama politika tarafından devre dışı bırakıldığı için yoksayıldı.</translation>
 <translation id="647261751007945333">Cihaz politikaları</translation>
 <translation id="6489534406876378309">Kilitlenmeleri yüklemeye başla</translation>
 <translation id="6500116422101723010">Sunucu şu anda isteği işleyemiyor. Bu kod, bunun geçici bir durum olduğunu ve sunucunun bir gecikme sonrasında yeniden çalışır durumda olacağını belirtir.</translation>
 <translation id="6512448926095770873">Bu Sayfadan Ayrıl</translation>
 <translation id="6516193643535292276">İnternet'e bağlanılamıyor</translation>
+<translation id="6518133107902771759">Doğrula</translation>
 <translation id="6529602333819889595">Silmeyi &amp;Yeniden Yap</translation>
 <translation id="6533019874004191247">Desteklenmeyen URL.</translation>
 <translation id="6550675742724504774">Seçenekler</translation>
 <translation id="6626108645084335023">DNS yoklaması bekleniyor.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Arama</translation>
+<translation id="6634865548447745291"><ph name="BEGIN_LINK" />Bu sertifika iptal edildiği<ph name="END_LINK" /> için <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="6637478299472506933">İndirme İşlemi Başarısız Oldu</translation>
 <translation id="6640442327198413730">Önbellekte yok</translation>
 <translation id="6644283850729428850">Bu politika uygun bulunmadı.</translation>
 <translation id="6646897916597483132">Kartınızın önündeki 4 basamaklı CVC'yi girin</translation>
 <translation id="6671697161687535275">Form önerisi Chromium'dan kaldırılsın mı?</translation>
 <translation id="674375294223700098">Bilinmeyen sunucu sertifikası hatası.</translation>
+<translation id="6746710319270251222">Birden fazla farklı Content-Length (İçerik Uzunluğu) üst bilgisi alındı. HTTP yanıtını
+    bölme saldırılarına karşı koruma sağlamak için buna izin verilmiyor.</translation>
 <translation id="6753269504797312559">Politika değeri</translation>
 <translation id="6771079623344431310">Proxy sunucusuna bağlanılamıyor</translation>
 <translation id="6781404225664080496">Bu URL'ye gelen istekler geçici olarak sınırlandırılıyor</translation>
+<translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> adresindeki web sayfası şu anda kullanılamıyor. Aşırı yüklenmiş veya bakım için kapatılmış olabilir.</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="6839929833149231406">Bölge</translation>
+<translation id="6851123334996048122">Bağlantınızı test etmek için
+      <ph name="BEGIN_BOLD" />
+      Applications (Uygulamalar) &gt; System Preferences (Sistem Tercihleri) &gt; Network (Ağ) &gt; Assist me (Bana yardım et)
+      <ph name="END_BOLD" />
+      seçeneğine gidin.</translation>
 <translation id="6874604403660855544">Eklemeyi &amp;yeniden yap</translation>
 <translation id="6891596781022320156">Politika düzeyi desteklenmiyor.</translation>
 <translation id="6897140037006041989">Kullanıcı Aracısı</translation>
@@ -351,12 +474,18 @@
 <translation id="6965978654500191972">Cihaz</translation>
 <translation id="6970216967273061347">Bölge</translation>
 <translation id="6973656660372572881">Hem sabit proxy sunucular hem de bir .pac komut dosyası URL'si belirtildi.</translation>
+<translation id="6989763994942163495">Gelişmiş ayarları göster...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> alan adına erişmeyi denediniz, ancak sunucu, geçerlilik dönemi güvenilir olmayacak kadar uzun olan bir sertifika sundu.</translation>
 <translation id="7052500709156631672">Ağ geçidi veya proxy sunucusu, bir yukarı akış sunucusundan geçersiz bir yanıt aldı.</translation>
 <translation id="7087282848513945231">İlçe</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" /> diline çeviri başarısız oldu.</translation>
 <translation id="7117303293717852287">Bu web sayfasını yeniden yükleyin.</translation>
+<translation id="7117941875056403396"><ph name="PRODUCT_NAME" />
+    uygulamasının
+    <ph name="HOST_NAME" />
+    ana makinesine bağlanma denemesi reddedildi. Web sitesi kapalı olabilir
+    veya ağınız doğru bir şekilde yapılandırılmamış olabilir.</translation>
 <translation id="7139724024395191329">Emirlik</translation>
 <translation id="7148804936871729015"><ph name="URL" /> adresinin sunucusu çok geç yanıt verdi. Sunucu aşırı yüklenmiş olabilir.</translation>
 <translation id="7179921470347911571">Şimdi Yeniden Başlat</translation>
@@ -368,12 +497,22 @@
 <translation id="721197778055552897">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinin.</translation>
 <translation id="7225807090967870017">Yapı Kimliği</translation>
 <translation id="725866823122871198">Bilgisayarınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
+<translation id="7265986070661382626"><ph name="SITE" /> web sitesi <ph name="BEGIN_LINK" />sertifika sabitleme yöntemini kullandığı<ph name="END_LINK" /> için web sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="7269802741830436641">Bu web sayfasında yönlendirme döngüsü var</translation>
 <translation id="7275334191706090484">Yönetilen Yer İşaretleri</translation>
 <translation id="7298195798382681320">Önerilenler</translation>
 <translation id="7334320624316649418">Sıralama değişikliğini &amp;yeniden yap</translation>
+<translation id="7335675476272530342">Web sayfası önbellekte bulunamadı. Önbellekten yalnızca,
+    gönderilen verilerden oluşturulan sayfalar gibi belirli kaynaklar
+    güvenli bir şekilde yüklenebilir.
+    <ph name="LINE_BREAK" />
+    Uygun olmayan bir şekilde kapanmadan kaynaklanan önbellek
+    bozulması da bu hataya yol açmış olabilir.
+    <ph name="LINE_BREAK" />
+    Sorun devam ederse önbelleği temizlemeyi deneyin.</translation>
 <translation id="7353601530677266744">Komut Satırı</translation>
 <translation id="7378627244592794276">Hayır</translation>
+<translation id="7378810950367401542">/</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profil Yolu</translation>
 <translation id="7424977062513257142">Bu web sayfasındaki yerleşik bir sayfanın mesajı:</translation>
@@ -390,13 +529,26 @@
 <translation id="7569952961197462199">Kredi kartı Chrome'dan kaldırılsın mı?</translation>
 <translation id="7578104083680115302">Google'a kaydettiğiniz kartları kullanarak farklı cihazlardan sitelerde ve uygulamalarda ödemelerinizi hızla yapabilirsiniz.</translation>
 <translation id="7592362899630581445">Sunucunun sertifikası ad sınırlamasını ihlal ediyor.</translation>
+<translation id="759809665464235306">Bu sunucu, kimlik doğrulama için bir sertifika gerektiriyor ve tarayıcı tarafından gönderileni
+    kabul etmedi. Sertifikanızın süresi dolmuş veya sunucu, sertifikayı verene güvenmiyor
+    olabilir. Geçerli bir sertifikanız varsa, farklı bir sertifikayla işlemi yeniden deneyebilirsiniz
+    veya başka bir yerden geçerli bir sertifika edinmeniz gerekebilir.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
+<translation id="7606563002701561706">Gelişmiş Yer İşaretleri</translation>
 <translation id="7610193165460212391">Değer aralık dışında: <ph name="VALUE" />.</translation>
 <translation id="7614030880636783720">Kablosuz ağ ve mobil veri kullanılamıyor. Sayfanın yüklenmesi, cihaz bir ağa bağlandıktan sonra gerçekleştirilebilir.</translation>
 <translation id="7637571805876720304">Kredi kartı Chromium'dan kaldırılsın mı?</translation>
 <translation id="7643817847124207232">İnternet bağlantısı kaybedildi.</translation>
+<translation id="765676359832457558">Gelişmiş ayarları gizle...</translation>
 <translation id="7674629440242451245">Chrome'daki etkileyici, yeni özellikler ilginizi çekiyor mu? chrome.com/dev adresinden geliştirici kanalımızı deneyin.</translation>
+<translation id="7689727675296818638">Ağ bağlantısındaki bir değişiklik nedeniyle
+    <ph name="HOST_NAME" />
+    bağlantısı kesintiye uğradı.</translation>
+<translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> sitesine ilerle (güvenli değil)<ph name="END_LINK" /></translation>
 <translation id="7752995774971033316">Yönetimden kaldırıldı</translation>
+<translation id="7760914272566804712">Aşağıdaki adımları uygulayarak bu sorunu teşhis etmeyi deneyebilirsiniz:
+      <ph name="LINE_BREAK" />
+      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Sunucu sertifikası URL ile eşleşmiyor.</translation>
 <translation id="777702478322588152">İdari bölge</translation>
 <translation id="778579833039460630">Hiçbir veri alınmadı</translation>
@@ -425,9 +577,20 @@
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" kodlu uzantı için geçersiz güncelleme URL'si.</translation>
 <translation id="8204086856545141093">Sunucuya gönderilen istekler bir politika tarafından engellendi.</translation>
 <translation id="820791781874064845">Bu web sayfası bir uzantı tarafından engellendi</translation>
-<translation id="8208216423136871611">Kaydetme</translation>
 <translation id="8218327578424803826">Atanan Konum:</translation>
+<translation id="8240446052814166959">Proxy sunucunun çalıştığından emin olmak için proxy ayarlarınızı
+      kontrol edin veya ağ yöneticinize başvurun.
+      <ph name="PLATFORM_TEXT" /></translation>
+<translation id="8241707690549784388">Aradığınız sayfa, girdiğiniz bilgileri kullandı. O sayfaya dönmeniz, gerçekleştirdiğiniz işlemlerin tekrarlanmasına yol açabilir. Devam etmek istiyor musunuz?</translation>
 <translation id="8249320324621329438">Son getirilen:</translation>
+<translation id="8266098793847448402"><ph name="BEGIN_BOLD" />Başlat<ph name="END_BOLD" />'ı 
+      ve sonra
+      <ph name="BEGIN_BOLD" />Çalıştır<ph name="END_BOLD" />'ı
+      tıklayın,
+      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
+      yazın ve
+      <ph name="BEGIN_BOLD" />Tamam<ph name="END_BOLD" />'ı
+      tıklayın.</translation>
 <translation id="8289355894181816810">Bunun ne anlama geldiğini bilmiyorsanız ağ yöneticinizle bağlantı kurun.</translation>
 <translation id="8294431847097064396">Kaynak</translation>
 <translation id="8295070100601117548">Sunucu hatası</translation>
@@ -440,16 +603,23 @@
 <translation id="8437238597147034694">Taşımayı &amp;geri al</translation>
 <translation id="8488350697529856933">Uygulandığı yer</translation>
 <translation id="8494979374722910010">Sunucuya bağlanma denemesi başarısız oldu.</translation>
+<translation id="8508677083825928015">Sayfaları daha hızlı yüklemek için kaynakları ön getir</translation>
 <translation id="8515737884867295000">Sertifikaya dayalı kimlik doğrulaması başarısız oldu</translation>
 <translation id="8530504477309582336">Google Payments, bu kart türünü desteklememektedir. Lütfen farklı bir kart seçin.</translation>
 <translation id="8553075262323480129">Sayfanın dili belirlenemediğinden çeviri başarısız oldu.</translation>
 <translation id="8559762987265718583">Cihazınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
 <translation id="8571890674111243710">Sayfa <ph name="LANGUAGE" /> diline çevriliyor...</translation>
+<translation id="8629916158020966496">Kurumsal kayıt doğrulama denetimi tamamlanana kadar İnternet'e göz atma devre dışı bırakıldı.
+    Yine de, bağlantınızla ilgili sorunlarınızı gidermek için burada sunulan teşhis aracını kullanabilirsiniz.</translation>
 <translation id="8647750283161643317">Tümünü varsayılan değerlere sıfırla</translation>
 <translation id="8713130696108419660">Başlangıç anahtarlı imza bozuk</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8729518820755801792">Chrome bu URL'yi açamıyor.</translation>
 <translation id="8738058698779197622">Güvenli bir bağlantı kurmak için saatinizin doğru ayarlanmış olması gerekir. Bunun sebebi, web sitelerinin kendilerini tanımlamak için kullandıkları sertifikaların sadece belli süreler için geçerli olmasıdır. Cihazınızın saati yanlış olduğundan, Chromium bu sertifikaları doğrulayamaz.</translation>
+<translation id="8776174617851537652"><ph name="URL" /> adresindeki web sayfası çok fazla
+      yönlendirmeye neden oldu. Bu site için çerezlerinizi temizlemek veya üçüncü taraf çerezlerine izin vermek sorunu çözebilir.
+      Çözmezse, sorun cihazınızda değil, sunucu yapılandırmasında
+      olabilir.</translation>
 <translation id="8790007591277257123">Silmeyi &amp;yeniden yap</translation>
 <translation id="8798099450830957504">Varsayılan</translation>
 <translation id="8804164990146287819">Gizlilik Politikası</translation>
@@ -458,6 +628,7 @@
 <translation id="8834246243508017242">Kişiler'i kullanarak Otomatik Doldur'u etkinleştir…</translation>
 <translation id="883848425547221593">Diğer Yer İşaretleri</translation>
 <translation id="884923133447025588">İptal mekanizması bulunamadı.</translation>
+<translation id="885730110891505394">Google ile Paylaşma</translation>
 <translation id="8866481888320382733">Politika ayarlarını ayrıştırma hatası</translation>
 <translation id="8866959479196209191">Bu sayfanın mesajı:</translation>
 <translation id="8876793034577346603">Ağ yapılandırması ayrıştırılamadı.</translation>
@@ -474,6 +645,15 @@
 <translation id="9020142588544155172">Sunucu bağlantıyı reddetti.</translation>
 <translation id="9020278534503090146">Bu web sayfası kullanılamıyor</translation>
 <translation id="9020542370529661692">Bu sayfa <ph name="TARGET_LANGUAGE" /> diline çevrildi</translation>
+<translation id="9032090437019334135">DNS araması başarısız olduğundan
+    <ph name="HOST_NAME" />
+    ana makinesindeki sunucu bulunamadı. DNS, web sitesinin adını
+    İnternet adresine çeviren bir web hizmetidir. Bu hata çoğunlukla
+    İnternet erişiminin olmamasından veya hatalı yapılandırılmış ağdan
+    kaynaklanır. Yanıt vermeyen bir DNS sunucusu ya da
+    <ph name="PRODUCT_NAME" />
+    uygulamasının ağa erişmesini önleyen bir güvenlik duvarı
+    da bu hataya yol açabilir.</translation>
 <translation id="904949795138183864"><ph name="URL" /> adresindeki web sayfası artık yok.</translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" /> alan adına erişmeye çalıştınız, ancak sunucu geçersiz bir sertifika sağladı.</translation>
 <translation id="9086455579313502267">Ağa erişilemiyor</translation>
@@ -481,11 +661,25 @@
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9148507642005240123">Düzenlemeyi &amp;geri al</translation>
 <translation id="9154176715500758432">Bu Sayfada Kal</translation>
+<translation id="9168302918952546302"><ph name="PRODUCT_NAME" />,
+      ağa erişmeyle ilgili sorun yaşıyor.
+      <ph name="LINE_BREAK" />
+      Bunun nedeni güvenlik duvarınızın veya virüsten korunma yazılımınızın
+      <ph name="PRODUCT_NAME" />
+      adlı programı cihazınızda yanlışlıkla davetsiz misafir olarak algılaması
+      ve İnternet'e bağlanmasını engellemesi olabilir.</translation>
 <translation id="9170848237812810038">&amp;Geri al</translation>
 <translation id="917450738466192189">Sunucunun sertifikası geçersiz.</translation>
 <translation id="9207861905230894330">Makale eklenemedi.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">FORMU TEMİZLE</translation>
+<translation id="946368465353148168"><ph name="PRODUCT_NAME" />
+      ağa erişmeyle ilgili sorun yaşıyor.
+      <ph name="LINE_BREAK" />
+      Bunun nedeni güvenlik duvarınızın veya virüsten korunma yazılımınızın
+      <ph name="PRODUCT_NAME" />
+      adlı programı yanlışlıkla bilgisayarınızda davetsiz misafir olarak algılaması
+      ve İnternet'e bağlanmasını engellemesi olabilir.</translation>
 <translation id="969892804517981540">Resmi Derleme</translation>
 <translation id="988159990683914416">Geliştirici Derlemesi</translation>
 </translationbundle>

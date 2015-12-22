@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="40400351611212369">Napaka pri aktiviranju omrežja</translation>
+<translation id="4118990158415604803">Povezovanje z drugimi omrežji je onemogočil skrbnik.</translation>
 <translation id="4237016987259239829">Napaka omrežne povezave</translation>
 <translation id="4274292172790327596">Neprepoznana napaka</translation>
 <translation id="4326192123064055915">Kava</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Obrnjeno</translation>
 <translation id="6943836128787782965">Ukaz HTTP get ni uspel</translation>
+<translation id="7066646422045619941">To omrežje je onemogočil skrbnik.</translation>
 <translation id="7165320105431587207">Omrežja ni bilo mogoče konfigurirati</translation>
 <translation id="7170041865419449892">Zunaj dosega</translation>
 <translation id="7229570126336867161">Potreben je EVDO</translation>

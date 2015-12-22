@@ -60,8 +60,6 @@
 <translation id="2886012850691518054">選用：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
 <translation id="2910007522516064972">關於 Chromium(&amp;C)</translation>
 <translation id="2966088006374919794">Chromium 需要啟用外部應用程式才能處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> 通常會使用加密方式保護您的資訊。目前當 Chromium 嘗試連線到 <ph name="SITE" /> 時，該網站會傳回異常且錯誤的憑證。
-這可能是因為有攻擊者試圖偽裝成 <ph name="SITE" />，或是 Wi-Fi 登入畫面造成連線中斷。請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="3032787606318309379">正在新增至 Chromium...</translation>
 <translation id="3046695367536568084">您必須登入 Chromium 才能使用應用程式。在登入狀態下，Chromium 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
 <translation id="3068515742935458733">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美</translation>
@@ -87,7 +85,6 @@
 <translation id="358997566136285270">Chromium 標誌</translation>
 <translation id="3595526210123705352">如果在 Windows 8 模式中重新啟動，您的 Chromium 應用程式將會關閉並重新啟動。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
-<translation id="3744899669254331632"><ph name="SITE" /> 傳送的憑證受到干擾，造成 Chromium 無法處理，因此您目前無法造訪該網站。網路錯誤和攻擊通常是暫時性狀態，因此這個網頁可能稍後就會恢復正常運作。</translation>
 <translation id="3748537968684000502">您正在瀏覽安全型 Chromium 網頁。</translation>
 <translation id="378917192836375108">透過 Chromium，您只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -132,6 +129,7 @@
 <translation id="5796460469508169315">Chromium 即將準備就緒。</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
 <translation id="5823381412099532241">由於 Chromium 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請更新 Chromium。</translation>
+<translation id="5859963531214966875">日後發佈的 Chromium 版本將不再支援這種 Linux 系統。</translation>
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5909170354645388250">Chromium 不適用本規範。請加入預留位置，確保資源同步對應。預期的引數為：$1。</translation>
@@ -151,6 +149,7 @@
 <translation id="6485906693002546646">您正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理您的 Chromium 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chromium，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
 <translation id="6526111688217511984">Chromium 必須取得儲存空間的存取權才能下載檔案。</translation>
+<translation id="6593914713218535185">Chromium 已不適用於這種 Linux 系統，因此可能無法正常運作。</translation>
 <translation id="6637001341228460105">Chromium 需要麥克風存取權，才能與這個網站分享。</translation>
 <translation id="6638567566961868659">您的書籤會顯示在 Chromium 選單中或書籤列上。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
@@ -231,7 +230,6 @@ Chromium 無法復原您的設定。</translation>
 <translation id="8985587603644336029">先前已有其他使用者使用 <ph name="ACCOUNT_EMAIL_LAST" /> 在這台電腦上登入 Chromium。如果這不是您的帳戶，請建立新的 Chromium 使用者以便個別保存您的資訊。
 
 如果您仍要繼續登入帳戶，各項 Chromium 資訊 (例如書籤、紀錄和其他設定) 則會合併至 <ph name="ACCOUNT_EMAIL_NEW" />。</translation>
-<translation id="8987477933582888019">網路瀏覽器</translation>
 <translation id="9013087743919948559">新增至 Chromium</translation>
 <translation id="9013262824292842194">Chromium 僅支援 Windows Vista 或 Windows XP SP2 以上版本。</translation>
 <translation id="9019929317751753759">為了讓 Chromium 的安全性更有保障，我們停用了以下這個未列在「<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />」中的擴充功能 (它可能是在您不知情的情況下加入瀏覽器)。</translation>
@@ -241,7 +239,6 @@ Chromium 無法復原您的設定。</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="918373042641772655">解除與 <ph name="USERNAME" /> 的連結將會清除此裝置上已儲存的歷史紀錄、書籤、設定和其他 Chromium 資料。不過，這不會清除 Google 帳戶中儲存的資料，您可以在 <ph name="GOOGLE_DASHBOARD_LINK" />Google 資訊主頁<ph name="END_GOOGLE_DASHBOARD_LINK" />管理這些資料。</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">管理員已為這個系統安裝了 Chromium，而且 Chromium 支援所有使用者。系統等級的 Chromium 會取代您目前安裝的使用者等級版本。</translation>
 <translation id="9197815481970649201">您現在已登入 Chromium</translation>
 <translation id="95514773681268843">在使用這個裝置前，<ph name="DOMAIN" /> 要求您詳讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Chromium 作業系統條款》。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

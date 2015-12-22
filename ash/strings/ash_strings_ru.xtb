@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1012876632442809908">Устройство USB-C (порт спереди)</translation>
 <translation id="1013923882670373915">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем PIN-код: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">Изменились быстрые клавиши для перехода к другому способу ввода. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Автоматически скрывать панель запуска</translation>
@@ -8,13 +9,14 @@
 <translation id="1270290102613614947">Экранная клавиатура отключена</translation>
 <translation id="1272079795634619415">Остановить</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1293264513303784526">Устройство USB-C (порт слева)</translation>
 <translation id="1330145147221172764">Включить экранную клавиатуру</translation>
 <translation id="1343000272198685031">Микрофонный разъем</translation>
-<translation id="1346748346194534595">Вправо</translation>
+<translation id="1346748346194534595">Справа</translation>
 <translation id="137180024469554212">Отключить автоповорот экрана</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1426410128494586442">Да</translation>
-<translation id="1467432559032391204">Влево</translation>
+<translation id="1467432559032391204">Слева</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Панель запуска</translation>
 <translation id="15373452373711364">Большой курсор мыши</translation>
@@ -25,6 +27,7 @@
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="1812696562331527143">Способ ввода изменен на <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />независимый разработчик<ph name="END_LINK" />).
 Для переключения нажмите Shift + Alt.</translation>
+<translation id="1864454756846565995">Устройство USB-C (порт сзади)</translation>
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Изменились быстрые клавиши для запуска диспетчера задач. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Автоматическое нажатие</translation>
@@ -55,6 +58,7 @@
 <translation id="2805756323405976993">Сервисы</translation>
 <translation id="2819276065543622893">Сеанс завершен.</translation>
 <translation id="2825619548187458965">Полка</translation>
+<translation id="2844169650293029770">Устройство USB-C (ближний порт слева)</translation>
 <translation id="2872961005593481000">Завершить работу</translation>
 <translation id="2942516765047364088">Положение панели запуска</translation>
 <translation id="2946640296642327832">Включить Bluetooth</translation>
@@ -68,12 +72,13 @@
 <translation id="3050422059534974565">Включен режим CAPS LOCK.
 Чтобы отключить его, нажмите Search или Shift.</translation>
 <translation id="3077734595579995578">shift</translation>
-<translation id="3087734570205094154">Низ</translation>
+<translation id="3087734570205094154">Снизу</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Перезагрузите, чтобы обновить</translation>
 <translation id="3147142846278915599">Панель запуска (синхронизация приложений...)</translation>
 <translation id="3157169093162779309">Включить автоповорот экрана</translation>
 <translation id="3294437725009624529">Гость</translation>
+<translation id="3445925074670675829">Устройство USB-C</translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="3573179567135747900">Вернуться к языку: "<ph name="FROM_LOCALE" />" (потребуется перезагрузка)</translation>
 <translation id="3595596368722241419">Аккумулятор заряжен</translation>
@@ -125,6 +130,7 @@
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="5238774010593222950">Не удается войти в другой аккаунт</translation>
 <translation id="532063867737390965">Сетевая настройка отключена администратором</translation>
+<translation id="5331975486040154427">Устройство USB-C (дальний порт слева)</translation>
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
 <translation id="5507786745520522457">Настроить сеть передачи данных</translation>
 <translation id="5543001071567407895">SMS</translation>
@@ -162,6 +168,7 @@
 <translation id="6426039856985689743">Отключить мобильную передачу данных</translation>
 <translation id="6452181791372256707">Отклонить</translation>
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME" /></translation>
+<translation id="6490471652906364588">Устройство USB-C (порт справа)</translation>
 <translation id="6501401484702599040">Трансляция содержимого экрана: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="6585808820553845416">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -181,6 +188,7 @@
 <translation id="7034339000180558234">Трансляция вкладки "<ph name="TAB_NAME" />": <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Выбрать обои</translation>
 <translation id="7097613348211027502">Голосовое сопровождение ChromeVox включено. Чтобы отключить его, нажмите CTRL+ALT+Z.</translation>
+<translation id="7098389117866926363">Устройство USB-C (порт слева на задней панели)</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Возврат к предыдущему разрешению через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7209101170223508707">Включен режим CAPS LOCK.
@@ -219,6 +227,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Клавиша поиска + Esc</translation>
 <translation id="8878886163241303700">Раскрытый экран</translation>
+<translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
 <translation id="8940956008527784070">Низкий заряд батареи (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Микрофон используется</translation>

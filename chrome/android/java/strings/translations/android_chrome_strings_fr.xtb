@@ -39,6 +39,7 @@
 <translation id="1477626028522505441">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de problèmes liés au serveur.</translation>
 <translation id="1506061864768559482">Moteur de recherche</translation>
 <translation id="1513352483775369820">Favoris et historique Web</translation>
+<translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1557201757634521564">Détecter automatiquement l'encodage</translation>
 <translation id="1568822834048182062">Vos favoris, votre historique, vos mots de passe et d'autres paramètres seront synchronisés avec votre compte Google.</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
@@ -143,7 +144,6 @@
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
 <translation id="3190152372525844641">Activer les autorisations pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de données stockées</translation>
-<translation id="3207960819495026254">Favori</translation>
 <translation id="3227137524299004712">Micro</translation>
 <translation id="3232754137068452469">Application Web</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -224,7 +224,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4543087392704641517">Titre du favori</translation>
 <translation id="4543661749405994812">Copier l'adresse e-mail</translation>
 <translation id="4581964774250883625">Vous êtes passé en mode navigation privée</translation>
-<translation id="4583974066823898813">{NUM_URLS,plural, =1{1 lien de Web physique provenant d'appareils à proximité}one{# lien de Web physique provenant d'appareils à proximité}other{# liens de Web physique provenant d'appareils à proximité}}</translation>
 <translation id="4645575059429386691">Géré par ton papa/ta maman</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris ont été supprimés.</translation>
 <translation id="4665282149850138822">Le site "<ph name="NAME" />" a bien été ajouté à votre écran d'accueil.</translation>
@@ -248,7 +247,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4885273946141277891">Le nombre d'instances de Chrome n'est pas compatible.</translation>
 <translation id="4927198283430892231">Les pages enregistrées occupent <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="494334276486034338">Dernière synchronisation il y a <ph name="HOURS" /> heures</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4970484396410298643">Accédez ici aux onglets ouverts sur votre ordinateur.
 
@@ -258,14 +256,9 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5000922062037820727">Bloquée (recommandé)</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5017989644593831205">Vous n'êtes pas <ph name="NOT_YOU_USER_NAME" /> ?</translation>
-<translation id="5026147292873308216">Aucune page Web provenant d'appareils à proximité n'a été trouvée.</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
-<translation id="5049968687459146030">Si vous interdisez le suivi, une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
-
-Par exemple, certains sites Web peuvent répondre à cette demande en diffusant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation afin, par exemple, d'améliorer la sécurité ou d'afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques.</translation>
 <translation id="5063480226653192405">Utilisation</translation>
-<translation id="5074309530946372881">Recherche de pages Web provenant d'appareils à proximité en cours</translation>
 <translation id="509605886816275399">Enregistrer cette page hors connexion ?</translation>
 <translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
 <translation id="5127805178023152808">La synchronisation est désactivée.</translation>
@@ -286,7 +279,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="5275558766013849309">Les onglets figureront aux côtés des applications récentes.</translation>
 <translation id="5302048478445481009">Langue</translation>
 <translation id="5304593522240415983">Champ obligatoire.</translation>
-<translation id="5305985456140490686">Dernière synchronisation il y a <ph name="MINUTES" /> minutes</translation>
 <translation id="5308933389783727448">Rechercher sur pages enregistrées</translation>
 <translation id="5313967007315987356">Ajouter un site</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
@@ -302,7 +294,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="5423934151118863508">Les pages les plus consultées s'affichent ici.</translation>
 <translation id="5424715742813396254">Modifier nom et mot passe ou exception enregistrés
 </translation>
-<translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME" /> (<ph name="SEARCH_ENGINE_DOMAIN" />)</translation>
 <translation id="5442257541162692417">Modifier la page enregistrée</translation>
 <translation id="544291274896356069">En ouvrant ce lien dans une application externe, vous allez quitter le mode navigation privée. Voulez-vous continuer ?</translation>
 <translation id="5487729733663684359">Les mises à jour de Chrome ne sont plus disponibles avec cette version d'Android.</translation>
@@ -468,6 +459,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Toujours</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
+<translation id="7588950540487816470">Web physique</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
 <translation id="7599840151813361502">Vous ne serez pas déconnecté de vos <ph name="BEGIN_LINK" />comptes Google<ph name="END_LINK" />.</translation>
 <translation id="7603403729818446828">Affichez vos onglets ainsi que d'autres applications récemment utilisées sur l'écran "Aperçu" de votre téléphone. Vous pouvez contrôler ce réglage dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
@@ -502,7 +494,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
-<translation id="7977858705483383621">SafeSearch</translation>
 <translation id="7987073022710626672">Conditions d'utilisation de Chrome</translation>
 <translation id="7989222512959629388">Enregistrement en cours…</translation>
 <translation id="7998918019931843664">Rouvrir un onglet fermé</translation>
@@ -528,7 +519,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8275818695183729150">Autoriser (pour les recherches dans la barre d'adresse)</translation>
 <translation id="8310344678080805313">Onglets standards</translation>
-<translation id="8374420395168535396">Dernière synchronisation il y a <ph name="DAYS" /> jours</translation>
 <translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
 <translation id="8396312449826231789">Uniquement les sites approuvés</translation>
 <translation id="8413126021676339697">Afficher l'historique complet</translation>
@@ -596,7 +586,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="938850635132480979">Erreur <ph name="ERROR_CODE" />.</translation>
 <translation id="939736085109172342">Nouveau dossier</translation>
 <translation id="945632385593298557">Accéder à votre micro</translation>
-<translation id="963967414714199900">Dernière synchronisation il y a quelques secondes</translation>
 <translation id="969096075394517431">Modifier les langues</translation>
 <translation id="971774202801778802">URL du favori</translation>
 <translation id="983192555821071799">Fermer tous les onglets</translation>

@@ -60,7 +60,6 @@
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
 <translation id="2966088006374919794">Chromium 必须启动外部应用才能处理 <ph name="SCHEME" /> 链接。请求的链接是 <ph name="PROTOLINK" />。</translation>
-<translation id="3017978164171051358"><ph name="SITE" /> 通常使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站返回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
 <translation id="3046695367536568084">您需要先登录Chromium，再使用各项应用。这样，Chromium就可以在各个设备上同步您的应用、书签、历史记录、密码和其他设置。</translation>
 <translation id="3068515742935458733">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Chromium。</translation>
@@ -86,7 +85,6 @@
 <translation id="358997566136285270">Chromium 徽标</translation>
 <translation id="3595526210123705352">若以 Windows 8 模式重新启动，将会关闭并重新启动您的 Chromium 应用。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
-<translation id="3744899669254331632">您目前无法访问 <ph name="SITE" />，因为此网站发送了 Chromium 无法处理的杂乱凭据。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="3748537968684000502">您正在查看的是安全的 Chromium 网页。</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
@@ -131,6 +129,7 @@
 <translation id="5796460469508169315">Chromium 即将准备就绪。</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5823381412099532241">Chromium无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chromium。</translation>
+<translation id="5859963531214966875">Chromium 的后续版本将不再支持此 Linux 系统。</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5909170354645388250">未在 Chromium 中使用。该占位符用于在同步中保留资源映射。要求使用一个参数：$1。</translation>
@@ -150,6 +149,7 @@
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐户的情况下使用Chromium，请前往<ph name="SETTINGS_LINK" />部分。</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
 <translation id="6526111688217511984">Chromium 需要具备存储空间使用权限，才能下载文件。</translation>
+<translation id="6593914713218535185">Chromium 不再支持此 Linux 系统，因此可能无法正常运行。</translation>
 <translation id="6637001341228460105">Chromium 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="6638567566961868659">在 Chromium 菜单或书签栏中查找您的书签。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
@@ -230,7 +230,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8985587603644336029">之前有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 帐户登录 Chromium。如果这不是您的帐户，请新建一个 Chromium 用户来单独保存您的信息。
 
 如果您仍然登录，Chromium 信息（例如书签、历史记录和其他设置）将合并到 <ph name="ACCOUNT_EMAIL_NEW" />。</translation>
-<translation id="8987477933582888019">网络浏览器</translation>
 <translation id="9013087743919948559">添加到 Chromium</translation>
 <translation id="9013262824292842194">Chromium 要求操作系统为 Windows Vista，或者 Windows XP SP2 或更高版本。</translation>
 <translation id="9019929317751753759">为了提高 Chromium 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并且可能是在您不知情的情况下添加的）。</translation>
@@ -240,7 +239,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="918373042641772655">取消与<ph name="USERNAME" />的关联将会清除您的历史记录、书签、设置以及存储在此设备上的其他Chromium数据。您的Google帐户中存储的数据将不会被清除，并且您可以通过<ph name="GOOGLE_DASHBOARD_LINK" />Google信息中心<ph name="END_GOOGLE_DASHBOARD_LINK" />管理这些数据。</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191268552238695869">管理员已在此系统上安装了 Chromium 以供所有用户使用。系统级 Chromium 将替换您安装的用户级版本。</translation>
 <translation id="9197815481970649201">现在您已登录到Chromium</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> 要求您必须先阅读并接受以下服务条款，才能使用此设备。这些条款不会扩大、修改或限制 Chromium 操作系统条款。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

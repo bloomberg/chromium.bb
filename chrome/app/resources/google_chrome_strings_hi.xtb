@@ -53,6 +53,7 @@
 <translation id="2485422356828889247">विस्थापित करें</translation>
 <translation id="2576431527583832481">Chrome अब बेहतर हो गया है! एक नया वर्शन उपलब्ध है.</translation>
 <translation id="2580411288591421699">Google Chrome के उस वर्शन के समान वर्शन को इंस्‍टॉल नहीं कर सकता, जो वर्तमान में चल रहा है. कृपया Google Chrome बंद करें और फिर से प्रयास करें.</translation>
+<translation id="2582790009689336987">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि यह Linux सिस्टम अब समर्थित नहीं रहेंगे.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
 <translation id="2664962310688259219">Chrome OS ओपन सोर्स लाइसेंस</translation>
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK" /> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
@@ -98,6 +99,7 @@
 <translation id="4251615635259297716">आपके Chrome डेटा को इस खाते से लिंक करें?</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />पुन: प्रारंभ<ph name="END_BUTTON" /> करना आवश्यक है)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
+<translation id="437002079035561265">यह कंप्यूटर अब Google Chrome अपडेट प्राप्त नहीं करेगा क्योंकि यह Linux सिस्टम अब समर्थित नहीं है.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">इस परिवर्तन के प्रभावी होने के लिए, कृपया प्रस्थान करें और पुन: प्रवेश करें.</translation>
 <translation id="4480040274068703980">प्रवेश करने संबंधी त्रुटि के कारण Chrome OS आपका डेटा सिंक नहीं कर सका.</translation>
@@ -138,8 +140,6 @@
 <translation id="5563479599352954471">एकल स्पर्श से खोजें</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">पृष्ठ को छोड़े बिना वेबसाइटों पर दिए गए विषयों के बारे में जानें.</translation>
-<translation id="5626352146162055517">आपकी जानकारी की सुरक्षा करने के लिए <ph name="SITE" /> आमतौर पर एन्क्रिप्शन का उपयोग करती है. जब Chrome ने इस बार <ph name="SITE" /> से कनेक्ट करने का प्रयास किया, तो वेबसाइट ने असामान्य
-  और गलत प्रामाणिकताएं वापस भेज दीं. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने का प्रयास कर रहा हो या किसी वाई-फ़ाई प्रवेश स्क्रीन ने कनेक्शन को बाधित कर दिया हो. आपकी जानकारी अभी भी सुरक्षित है क्योंकि किसी भी डेटा के आदान-प्रदान से पहले ही Chrome ने कनेक्शन को रोक दिया था.</translation>
 <translation id="568643307450491754">Chrome मेनू में या बुकमार्क बार पर अपने बुकमार्क ढूंढें.</translation>
 <translation id="573759479754913123">Chrome OS के बारे में</translation>
 <translation id="5749068826913805084">फ़ाइलें डाउनलोड करने के लिए Chrome को मेमोरी ऐक्‍सेस की आवश्‍यकता होगी.</translation>
@@ -152,7 +152,6 @@
 <translation id="597770749449734237">ऐसे अतिरिक्‍त कीबोर्ड शॉर्टकट सक्षम करता है जो Google Chrome को डीबग करने में उपयोगी होते हैं.</translation>
 <translation id="6012342843556706400">Chrome को स्थान ऐक्सेस की आवश्यकता है ताकि स्थान को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="6014844626092547096">अब आप Chrome में प्रवेश हैं! समन्वयन को आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
-<translation id="6049075767726609708">एक व्यवस्थापक ने इस सिस्टम में Google Chrome स्थापित किया है और यह सभी उपयोगकर्ताओं के लिए उपलब्ध है. सिस्टम-स्तरीय Google Chrome आपके उपयोगकर्ता-स्तरीय स्थापना को अब बदल देगा.</translation>
 <translation id="6113794647360055231">Chrome पहले से बेहतर हो गया है</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
@@ -212,7 +211,6 @@
 <translation id="781069973841903133">Chrome इमर्सिव मोड में पुन: लॉन्‍च करने से आपके Chrome ऐप्‍स्‍ पुन: लॉन्‍च हो जाएंगे.</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट त्रुटि के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
 <translation id="7890208801193284374">यदि आप कंप्यूटर साझा करते हैं, तो मित्र और परिवार अलग-अलग ब्राउज़ कर सकते हैं और Chrome को जैसा चाहें सेट कर सकते हैं.</translation>
-<translation id="7984945080620862648">आप इस समय <ph name="SITE" /> पर विज़िट नहीं कर सकते हैं क्योंकि वेबसाइट ने ऐसे अव्यवस्थित प्रमाणिकता भेजे हैं जिन्हें Chrome संसाधित नहीं कर सकता. नेटवर्क की त्रुटियां और हमले आमतौर पर अस्थायी होते हैं, इसलिए संभवत: यह पृष्ठ बाद में काम करेगा.</translation>
 <translation id="8000275528373650868">Google Chrome को Windows Vista या SP2 वाले Windows XP या इसके बाद के वर्शन की आवश्यकता है.</translation>
 <translation id="8005540215158006229">Chrome लगभग तैयार है.</translation>
 <translation id="8008534537613507642">Chrome फिर से इंस्टॉल करें</translation>
@@ -245,7 +243,6 @@
 <translation id="8851136666856101339">मुख्य</translation>
 <translation id="8862326446509486874">सिस्टम-स्तर स्थापना के लिए आपके पास उचित अधिकार नहीं हैं. इंस्टॉलर को व्यवस्थापक के रूप में फिर से चलाने का प्रयास करें.</translation>
 <translation id="8889942196804715220">Chrome इमर्सिव मोड में पुन: लॉन्‍च करें</translation>
-<translation id="8987477933582888019">वेब ब्राउज़र</translation>
 <translation id="9026991721384951619">Chrome OS आपका डेटा समन्वयित नहीं कर सका क्योंकि आपके खाता प्रवेश विवरण पुराने हो चुके हैं.</translation>
 <translation id="9102715433345326100">यह फ़ाइल दुर्भावनापूर्ण है, और Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />चेतावनी:<ph name="END_BOLD" /> Google Chrome एक्‍सटेंशन को आपका ब्राउज़िंग इतिहास रिकॉर्ड करने से रोक नहीं सकता. गुप्त मोड में यह एक्‍सटेंशन अक्षम करने के लिए, इस विकल्प को ना चनें.</translation>

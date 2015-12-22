@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Verbindung mit <ph name="NAME" /> wird hergestellt.</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Fehler beim Aktivieren des Netzwerks</translation>
+<translation id="4118990158415604803">Die Möglichkeit einer Verbindung zu anderen Netzwerken wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="4237016987259239829">Fehler bei der Netzwerkverbindung</translation>
 <translation id="4274292172790327596">Unbekannter Fehler</translation>
 <translation id="4326192123064055915">Kaffee</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktivieren</translation>
 <translation id="6935521024859866267">Auf dem Kopf</translation>
 <translation id="6943836128787782965">HTTP-Abruf fehlgeschlagen</translation>
+<translation id="7066646422045619941">Dieses Netzwerk wurde von Ihrem Administrator deaktiviert.</translation>
 <translation id="7165320105431587207">Fehler beim Konfigurieren des Netzwerks</translation>
 <translation id="7170041865419449892">Außerhalb des Bereichs</translation>
 <translation id="7229570126336867161">EVDO erforderlich</translation>

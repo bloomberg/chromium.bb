@@ -23,6 +23,7 @@
 <translation id="3901991538546252627">Σύνδεση με <ph name="NAME" /></translation>
 <translation id="3958548648197196644">Ακτινίδιο</translation>
 <translation id="40400351611212369">Σφάλμα ενεργοποίησης συστήματος</translation>
+<translation id="4118990158415604803">Η σύνδεση με άλλα δίκτυα έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="4237016987259239829">Σφάλμα σύνδεσης δικτύου</translation>
 <translation id="4274292172790327596">Μη αναγνωρίσιμο σφάλμα</translation>
 <translation id="4326192123064055915">Καφές</translation>
@@ -50,6 +51,7 @@
 <translation id="6857811139397017780">Ενεργοποίηση <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">Ανάποδα</translation>
 <translation id="6943836128787782965">Η λήψη HTTP απέτυχε</translation>
+<translation id="7066646422045619941">Το δίκτυο αυτό έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="7165320105431587207">Αποτυχία διαμόρφωσης δικτύου</translation>
 <translation id="7170041865419449892">Εκτός εύρους τιμών</translation>
 <translation id="7229570126336867161">Απαιτείται EVDO</translation>
