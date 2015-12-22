@@ -6,13 +6,17 @@
 
 namespace views {
 
-TestInkDropHost::TestInkDropHost() {}
+TestInkDropHost::TestInkDropHost() : num_ink_drop_layers_(0) {}
 
 TestInkDropHost::~TestInkDropHost() {}
 
-void TestInkDropHost::AddInkDropLayer(ui::Layer* ink_drop_layer) {}
+void TestInkDropHost::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  ++num_ink_drop_layers_;
+}
 
-void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {}
+void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  --num_ink_drop_layers_;
+}
 
 gfx::Point TestInkDropHost::CalculateInkDropCenter() const {
   return gfx::Point();

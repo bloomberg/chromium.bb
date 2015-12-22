@@ -545,7 +545,6 @@
       'animation/bounds_animator_unittest.cc',
       'animation/ink_drop_animation_controller_factory_unittest.cc',
       'animation/ink_drop_animation_unittest.cc',
-      'animation/ink_drop_delegate_unittest.cc',
       'bubble/bubble_border_unittest.cc',
       'bubble/bubble_delegate_unittest.cc',
       'bubble/bubble_frame_view_unittest.cc',

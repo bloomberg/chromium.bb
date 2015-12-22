@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -15,7 +16,7 @@ enum class VectorIconId;
 }
 
 namespace views {
-class InkDropAnimationController;
+class InkDropDelegate;
 }
 
 // A class for buttons that control bars (find bar, download shelf, etc.). The
@@ -33,11 +34,7 @@ class BarControlButton : public views::ImageButton, public views::InkDropHost {
   // views::ImageButton:
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-  void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void NotifyClick(const ui::Event& event) override;
 
  private:
   // views::InkDropHost:
@@ -48,8 +45,8 @@ class BarControlButton : public views::ImageButton, public views::InkDropHost {
   gfx::VectorIconId id_;
   base::Callback<SkColor(void)> get_text_color_callback_;
 
-  // Animation controller for the ink drop ripple effect.
-  scoped_ptr<views::InkDropAnimationController> ink_drop_animation_controller_;
+  // Controls the visual feedback for the button state.
+  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BarControlButton);
 };

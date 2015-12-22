@@ -47,6 +47,9 @@ void ButtonInkDropDelegate::OnAction(InkDropState state) {
 // ui::EventHandler:
 
 void ButtonInkDropDelegate::OnGestureEvent(ui::GestureEvent* event) {
+  InkDropState current_ink_drop_state =
+      ink_drop_animation_controller_->GetInkDropState();
+
   InkDropState ink_drop_state = InkDropState::HIDDEN;
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -61,16 +64,16 @@ void ButtonInkDropDelegate::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_LONG_TAP:
       ink_drop_state = InkDropState::SLOW_ACTION;
       break;
-    case ui::ET_GESTURE_SCROLL_BEGIN:
     case ui::ET_GESTURE_END:
+      if (current_ink_drop_state == InkDropState::ACTIVATED)
+        return;
+    // Fall through to ui::ET_GESTURE_SCROLL_BEGIN case.
+    case ui::ET_GESTURE_SCROLL_BEGIN:
       ink_drop_state = InkDropState::HIDDEN;
       break;
     default:
       return;
   }
-
-  InkDropState current_ink_drop_state =
-      ink_drop_animation_controller_->GetInkDropState();
 
   if (ink_drop_state == InkDropState::HIDDEN &&
       (current_ink_drop_state == InkDropState::QUICK_ACTION ||

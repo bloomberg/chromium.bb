@@ -182,6 +182,8 @@ bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
     TimeDelta delta = TimeTicks::Now() - menu_closed_time_;
     if (delta.InMilliseconds() > kMinimumMsBetweenButtonClicks)
       return Activate();
+    if (ink_drop_delegate())
+      ink_drop_delegate()->OnAction(InkDropState::ACTION_PENDING);
   }
   return true;
 }

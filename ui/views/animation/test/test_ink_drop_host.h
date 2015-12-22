@@ -10,12 +10,14 @@
 
 namespace views {
 
-// A non-functional, dummy implementation of an InkDropHost that can be used as
-// a placeholder during tests.
+// A non-functional implementation of an InkDropHost that can be used during
+// tests.  Tracks the number of hosted ink drop layers.
 class TestInkDropHost : public InkDropHost {
  public:
   TestInkDropHost();
   ~TestInkDropHost() override;
+
+  int num_ink_drop_layers() const { return num_ink_drop_layers_; }
 
   // TestInkDropHost:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -23,6 +25,8 @@ class TestInkDropHost : public InkDropHost {
   gfx::Point CalculateInkDropCenter() const override;
 
  private:
+  int num_ink_drop_layers_;
+
   DISALLOW_COPY_AND_ASSIGN(TestInkDropHost);
 };
 

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/button.h"
 
 namespace gfx {
@@ -120,6 +121,10 @@ class VIEWS_EXPORT CustomButton : public Button,
   // we simply return IsTriggerableEvent(event).
   virtual bool ShouldEnterPushedState(const ui::Event& event);
 
+  void set_has_ink_drop_action_on_click(bool has_ink_drop_action_on_click) {
+    has_ink_drop_action_on_click_ = has_ink_drop_action_on_click;
+  }
+
   // Returns true if the button should enter hovered state; that is, if the
   // mouse is over the button, and no other window has capture (which would
   // prevent the button from receiving MouseExited events and updating its
@@ -136,6 +141,10 @@ class VIEWS_EXPORT CustomButton : public Button,
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void OnBlur() override;
+
+  // Overridden from Button:
+  void NotifyClick(const ui::Event& event) override;
+  void OnClickCanceled(const ui::Event& event) override;
 
   // The button state (defined in implementation)
   ButtonState state_;
@@ -168,6 +177,15 @@ class VIEWS_EXPORT CustomButton : public Button,
 
   // The event on which the button should notify its listener.
   NotifyAction notify_action_;
+
+  // True when a button click should trigger an animation action on
+  // |ink_drop_delegate_|.
+  // TODO(bruthig): Use an InkDropAction enum and drop the flag.
+  bool has_ink_drop_action_on_click_;
+
+  // The animation action to trigger on the |ink_drop_delegate_| when the button
+  // is clicked.
+  InkDropState ink_drop_action_on_click_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButton);
 };

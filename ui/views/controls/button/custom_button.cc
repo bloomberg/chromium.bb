@@ -55,11 +55,7 @@ CustomButton* CustomButton::AsCustomButton(views::View* view) {
   return NULL;
 }
 
-CustomButton::~CustomButton() {
-  // InkDropDelegate needs to be destroyed by now since it may need to call
-  // methods on |this| via InkDropHost.
-  DCHECK(!ink_drop_delegate_);
-}
+CustomButton::~CustomButton() {}
 
 void CustomButton::SetState(ButtonState state) {
   if (state == state_)
@@ -143,8 +139,11 @@ const char* CustomButton::GetClassName() const {
 bool CustomButton::OnMousePressed(const ui::MouseEvent& event) {
   if (state_ == STATE_DISABLED)
     return true;
-  if (ShouldEnterPushedState(event) && HitTestPoint(event.location()))
+  if (ShouldEnterPushedState(event) && HitTestPoint(event.location())) {
     SetState(STATE_PRESSED);
+    if (ink_drop_delegate_)
+      ink_drop_delegate_->OnAction(views::InkDropState::ACTION_PENDING);
+  }
   if (request_focus_on_press_)
     RequestFocus();
   if (IsTriggerableEvent(event) && notify_action_ == NOTIFY_ON_PRESS) {
@@ -342,7 +341,9 @@ CustomButton::CustomButton(ButtonListener* listener)
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON),
       request_focus_on_press_(true),
       ink_drop_delegate_(nullptr),
-      notify_action_(NOTIFY_ON_RELEASE) {
+      notify_action_(NOTIFY_ON_RELEASE),
+      has_ink_drop_action_on_click_(false),
+      ink_drop_action_on_click_(InkDropState::QUICK_ACTION) {
   hover_animation_.reset(new gfx::ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
 }
@@ -403,6 +404,18 @@ void CustomButton::ViewHierarchyChanged(
 void CustomButton::OnBlur() {
   if (IsHotTracked())
     SetState(STATE_NORMAL);
+}
+
+void CustomButton::NotifyClick(const ui::Event& event) {
+  if (ink_drop_delegate() && has_ink_drop_action_on_click_)
+    ink_drop_delegate()->OnAction(ink_drop_action_on_click_);
+  Button::NotifyClick(event);
+}
+
+void CustomButton::OnClickCanceled(const ui::Event& event) {
+  if (ink_drop_delegate())
+    ink_drop_delegate()->OnAction(views::InkDropState::HIDDEN);
+  Button::OnClickCanceled(event);
 }
 
 bool CustomButton::IsChildWidget() const {

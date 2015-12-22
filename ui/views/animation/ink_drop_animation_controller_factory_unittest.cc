@@ -19,6 +19,8 @@ namespace views {
 
 // Macro that will execute |test_code| against all derivatives of the
 // InkDropAnimationController returned by the InkDropAnimationControllerFactory.
+// TODO(bruthig): Refactor these tests to use TEST_P and
+// INSTANTIATE_TEST_CASE_P.
 #define TEST_ALL_INK_DROPS(test_name, test_code)           \
   TEST_F(InkDropAnimationControllerFactoryTest, test_name) \
   test_code TEST_F(MDInkDropAnimationControllerFactoryTest, test_name) test_code
@@ -78,6 +80,14 @@ void MDInkDropAnimationControllerFactoryTest::SetUp() {
       ui::MaterialDesignController::MATERIAL_NORMAL);
   InkDropAnimationControllerFactoryTest::SetUp();
 }
+
+TEST_ALL_INK_DROPS(VerifyAllInkDropLayersRemovedAfterDestruction,
+                   {
+                     ink_drop_animation_controller_->AnimateToState(
+                         InkDropState::ACTION_PENDING);
+                     ink_drop_animation_controller_.reset();
+                     EXPECT_EQ(0, test_ink_drop_host_.num_ink_drop_layers());
+                   })
 
 TEST_ALL_INK_DROPS(StateIsHiddenInitially,
                    {

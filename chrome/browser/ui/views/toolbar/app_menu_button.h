@@ -18,7 +18,7 @@ class AppMenu;
 class AppMenuModel;
 
 namespace views {
-class InkDropAnimationController;
+class InkDropDelegate;
 class LabelButtonBorder;
 class MenuListener;
 }
@@ -85,7 +85,6 @@ class AppMenuButton : public views::InkDropHost,
       std::set<ui::Clipboard::FormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const ui::OSExchangeData& data) override;
-  void Layout() override;
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
@@ -97,9 +96,6 @@ class AppMenuButton : public views::InkDropHost,
 
   // Only used in MD.
   AppMenuIconPainter::Severity severity_;
-
-  // Animation controller for the ink drop ripple effect.
-  scoped_ptr<views::InkDropAnimationController> ink_drop_animation_controller_;
 
   // Our owning toolbar view.
   ToolbarView* toolbar_view_;
@@ -124,6 +120,9 @@ class AppMenuButton : public views::InkDropHost,
   // Any trailing margin to be applied. Used when the browser is in
   // a maximized state to extend to the full window width.
   int margin_trailing_;
+
+  // Controls the visual feedback for the button state.
+  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<AppMenuButton> weak_factory_;

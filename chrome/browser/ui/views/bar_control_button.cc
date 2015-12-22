@@ -7,8 +7,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/animation/ink_drop_animation_controller.h"
-#include "ui/views/animation/ink_drop_animation_controller_factory.h"
+#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/border.h"
 
 namespace {
@@ -21,17 +20,16 @@ const int kButtonExtraTouchSize = 4;
 BarControlButton::BarControlButton(views::ButtonListener* listener)
     : views::ImageButton(listener),
       id_(gfx::VectorIconId::VECTOR_ICON_NONE),
-      ink_drop_animation_controller_(
-          views::InkDropAnimationControllerFactory::
-              CreateInkDropAnimationController(this)) {
+      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)) {
+  set_ink_drop_delegate(ink_drop_delegate_.get());
+  set_has_ink_drop_action_on_click(true);
+
   const int kInkDropLargeSize = 32;
   const int kInkDropLargeCornerRadius = 4;
   const int kInkDropSmallSize = 24;
   const int kInkDropSmallCornerRadius = 2;
-  ink_drop_animation_controller_->SetInkDropSize(
-      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
-      kInkDropLargeCornerRadius,
-      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+  ink_drop_delegate()->SetInkDropSize(
+      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
       kInkDropSmallCornerRadius);
 }
 
@@ -63,12 +61,6 @@ void BarControlButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   OnThemeChanged();
 }
 
-void BarControlButton::Layout() {
-  ImageButton::Layout();
-
-  ink_drop_animation_controller_->SetInkDropCenter(CalculateInkDropCenter());
-}
-
 void BarControlButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   // TODO(estade|tdanderson): The ink drop layer should be positioned behind
   //                          the button's image.
@@ -89,54 +81,8 @@ gfx::Point BarControlButton::CalculateInkDropCenter() const {
 }
 
 bool BarControlButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (IsTriggerableEvent(event)) {
-    ink_drop_animation_controller_->AnimateToState(
-        views::InkDropState::ACTION_PENDING);
-  }
+  if (IsTriggerableEvent(event))
+    ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
 
   return ImageButton::OnMousePressed(event);
-}
-
-void BarControlButton::OnGestureEvent(ui::GestureEvent* event) {
-  views::InkDropState ink_drop_state = views::InkDropState::HIDDEN;
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      ink_drop_state = views::InkDropState::ACTION_PENDING;
-      // The ui::ET_GESTURE_TAP_DOWN event needs to be marked as handled so
-      // that subsequent events for the gesture are sent to |this|.
-      event->SetHandled();
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      ink_drop_state = views::InkDropState::SLOW_ACTION_PENDING;
-      break;
-    case ui::ET_GESTURE_TAP:
-      ink_drop_state = views::InkDropState::QUICK_ACTION;
-      break;
-    case ui::ET_GESTURE_LONG_TAP:
-      ink_drop_state = views::InkDropState::SLOW_ACTION;
-      break;
-    case ui::ET_GESTURE_END:
-    case ui::ET_GESTURE_TAP_CANCEL:
-      ink_drop_state = views::InkDropState::HIDDEN;
-      break;
-    default:
-      return;
-  }
-  ink_drop_animation_controller_->AnimateToState(ink_drop_state);
-
-  ImageButton::OnGestureEvent(event);
-}
-
-void BarControlButton::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!HitTestPoint(event.location()))
-    ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
-
-  ImageButton::OnMouseReleased(event);
-}
-
-void BarControlButton::NotifyClick(const ui::Event& event) {
-  ink_drop_animation_controller_->AnimateToState(
-      views::InkDropState::QUICK_ACTION);
-
-  ImageButton::NotifyClick(event);
 }

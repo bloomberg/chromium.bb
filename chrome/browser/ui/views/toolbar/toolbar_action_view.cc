@@ -68,6 +68,7 @@ ToolbarActionView::ToolbarActionView(
       ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),
       weak_factory_(this) {
   set_ink_drop_delegate(ink_drop_delegate_.get());
+  set_has_ink_drop_action_on_click(true);
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -98,8 +99,6 @@ ToolbarActionView::~ToolbarActionView() {
   if (context_menu_owner == this)
     context_menu_owner = nullptr;
   view_controller_->SetDelegate(nullptr);
-  ink_drop_delegate_.reset();
-  set_ink_drop_delegate(nullptr);
 }
 
 void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {
@@ -208,8 +207,12 @@ gfx::Size ToolbarActionView::GetPreferredSize() const {
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
   // views::MenuButton actions are only triggered by left mouse clicks.
-  if (event.IsOnlyLeftMouseButton())
+  if (event.IsOnlyLeftMouseButton()) {
+    // TODO(bruthig): The ACTION_PENDING triggering logic should be in
+    // MenuButton::OnPressed() however there is a bug with the pressed state
+    // logic in MenuButton. See http://crbug.com/567252.
     ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
+  }
   return MenuButton::OnMousePressed(event);
 }
 

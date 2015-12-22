@@ -37,6 +37,9 @@ class VIEWS_EXPORT InkDropDelegate {
   virtual void OnLayout() = 0;
 
   // Called when ink ripple state changes.
+  // TODO(bruthig): Replace the InkDropState parameter with an InkDropAction
+  // enum.  The InkDropAction enum should be a subset of the InkDropState values
+  // as well as a NONE value.
   virtual void OnAction(InkDropState state) = 0;
 
  private:

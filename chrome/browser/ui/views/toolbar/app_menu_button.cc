@@ -24,8 +24,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/views/animation/ink_drop_animation_controller.h"
-#include "ui/views/animation/ink_drop_animation_controller_factory.h"
+#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/metrics.h"
@@ -37,16 +36,15 @@ bool AppMenuButton::g_open_app_immediately_for_testing = false;
 AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     : views::MenuButton(NULL, base::string16(), toolbar_view, false),
       severity_(AppMenuIconPainter::SEVERITY_NONE),
-      ink_drop_animation_controller_(
-          views::InkDropAnimationControllerFactory::
-              CreateInkDropAnimationController(this)),
       toolbar_view_(toolbar_view),
       allow_extension_dragging_(
           extensions::FeatureSwitch::extension_action_redesign()
               ->IsEnabled()),
       destroyed_(nullptr),
       margin_trailing_(0),
+      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),
       weak_factory_(this) {
+  set_ink_drop_delegate(ink_drop_delegate_.get());
   if (!ui::MaterialDesignController::IsModeMaterial())
     icon_painter_.reset(new AppMenuIconPainter(this));
 
@@ -54,11 +52,8 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
   const int kInkDropLargeCornerRadius = 5;
   const int kInkDropSmallSize = 24;
   const int kInkDropSmallCornerRadius = 2;
-
-  ink_drop_animation_controller_->SetInkDropSize(
-      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
-      kInkDropLargeCornerRadius,
-      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+  ink_drop_delegate()->SetInkDropSize(
+      kInkDropLargeSize, kInkDropLargeCornerRadius, kInkDropSmallSize,
       kInkDropSmallCornerRadius);
 }
 
@@ -108,13 +103,11 @@ void AppMenuButton::ShowMenu(bool for_drop) {
   bool destroyed = false;
   destroyed_ = &destroyed;
 
-  ink_drop_animation_controller_->AnimateToState(
-      views::InkDropState::ACTIVATED);
+  ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
   menu_->RunMenu(this);
 
   if (!destroyed) {
-    ink_drop_animation_controller_->AnimateToState(
-        views::InkDropState::DEACTIVATED);
+    ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
     destroyed_ = nullptr;
   }
 }
@@ -266,11 +259,6 @@ bool AppMenuButton::CanDrop(const ui::OSExchangeData& data) {
       BrowserActionDragData::CanDrop(data,
                                      toolbar_view_->browser()->profile()) :
       views::View::CanDrop(data);
-}
-
-void AppMenuButton::Layout() {
-  MenuButton::Layout();
-  ink_drop_animation_controller_->SetInkDropCenter(CalculateInkDropCenter());
 }
 
 void AppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
