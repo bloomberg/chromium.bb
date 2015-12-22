@@ -4,7 +4,8 @@
 
 from telemetry.page import page_test
 from telemetry.timeline import model
-from telemetry.timeline import tracing_config
+from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import tracing_options
 from telemetry.value import scalar
 
 
@@ -18,11 +19,11 @@ class DrawProperties(page_test.PageTest):
     ])
 
   def WillNavigateToPage(self, page, tab):
-    config = tracing_config.TracingConfig()
-    config.tracing_category_filter.AddDisabledByDefault(
+    options = tracing_options.TracingOptions()
+    options.enable_chrome_trace = True
+    category_filter = tracing_category_filter.TracingCategoryFilter(
         'disabled-by-default-cc.debug.cdp-perf')
-    config.tracing_options.enable_chrome_trace = True
-    tab.browser.platform.tracing_controller.Start(config)
+    tab.browser.platform.tracing_controller.Start(options, category_filter)
 
   def ComputeAverageOfDurations(self, timeline_model, name):
     events = timeline_model.GetAllEventsOfName(name)
