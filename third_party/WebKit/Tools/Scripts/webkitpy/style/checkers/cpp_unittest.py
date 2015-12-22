@@ -1765,6 +1765,7 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('a<Foo*> t &= b;', '')
         self.assert_lint('a<Foo*> t <<= b;', '')
         self.assert_lint('a<Foo*> t >>= b;', '')
+        self.assert_lint('a<Foo*>&& t = &b;', '')
         self.assert_lint('a<Foo*> t >>= &b|c;', 'Missing spaces around |'
                          '  [whitespace/operators] [3]')
         self.assert_lint('a<Foo*> t <<= *b/c;', 'Missing spaces around /'
@@ -1778,12 +1779,6 @@ class CppStyleTest(CppStyleTestBase):
                          'Should have a space between // and comment  '
                          '[whitespace/comments] [4]',
                          'Missing spaces around ||  [whitespace/operators] [3]'])
-        self.assert_lint('a<Foo*> t <<= b&&c; // Test', 'Missing spaces around'
-                         ' &&  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t <<= b&&&c; // Test', 'Missing spaces around'
-                         ' &&  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t <<= b&&*c; // Test', 'Missing spaces around'
-                         ' &&  [whitespace/operators] [3]')
         self.assert_lint('a<Foo*> t <<= b && *c; // Test', '')
         self.assert_lint('a<Foo*> t <<= b && &c; // Test', '')
         self.assert_lint('a<Foo*> t <<= b || &c;  /*Test', 'Complex multi-line '
