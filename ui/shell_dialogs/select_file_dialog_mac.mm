@@ -12,12 +12,14 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #import "ui/base/cocoa/nib_loading.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -31,6 +33,22 @@ CFStringRef CreateUTIFromExtension(const base::FilePath::StringType& ext) {
   base::ScopedCFTypeRef<CFStringRef> ext_cf(base::SysUTF8ToCFStringRef(ext));
   return UTTypeCreatePreferredIdentifierForTag(
       kUTTagClassFilenameExtension, ext_cf.get(), NULL);
+}
+
+NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
+  base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
+  base::ScopedCFTypeRef<CFStringRef> description(
+      UTTypeCopyDescription(uti.get()));
+
+  if (description && CFStringGetLength(description))
+    return [[base::mac::CFToNSCast(description.get()) retain] autorelease];
+
+  // In case no description is found, create a description based on the
+  // unknown extension type (i.e. if the extension is .qqq, the we create
+  // a description "QQQ File (.qqq)").
+  base::string16 ext_name = base::UTF8ToUTF16(ext);
+  return l10n_util::GetNSStringF(IDS_APP_SAVEAS_EXTENSION_FORMAT,
+                                 base::i18n::ToUpper(ext_name), ext_name);
 }
 
 }  // namespace
@@ -333,22 +351,18 @@ SelectFileDialogImpl::SetAccessoryView(
         file_types->extensions[i];
 
     // Generate type description for the extension group.
-    NSString* type_description;
-    if (i < file_types->extension_description_overrides.size()) {
+    NSString* type_description = nil;
+    if (i < file_types->extension_description_overrides.size() &&
+        !file_types->extension_description_overrides[i].empty()) {
       type_description = base::SysUTF16ToNSString(
           file_types->extension_description_overrides[i]);
     } else {
       // No description given for a list of extensions; pick the first one
       // from the list (arbitrarily) and use its description.
       DCHECK(!ext_list.empty());
-      base::ScopedCFTypeRef<CFStringRef> uti(
-          CreateUTIFromExtension(ext_list[0]));
-      base::ScopedCFTypeRef<CFStringRef> description(
-          UTTypeCopyDescription(uti.get()));
-
-      type_description =
-          [[base::mac::CFToNSCast(description.get()) retain] autorelease];
+      type_description = GetDescriptionFromExtension(ext_list[0]);
     }
+    DCHECK_NE(0u, [type_description length]);
     [popup addItemWithTitle:type_description];
 
     // Populate file_type_lists.
