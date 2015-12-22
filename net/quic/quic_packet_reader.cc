@@ -72,7 +72,7 @@ void QuicPacketReader::OnReadComplete(int result) {
     result = ERR_CONNECTION_CLOSED;
 
   if (result < 0) {
-    visitor_->OnReadError(result);
+    visitor_->OnReadError(result, socket_);
     return;
   }
 

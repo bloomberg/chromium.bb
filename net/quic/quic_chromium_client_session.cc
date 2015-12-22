@@ -915,7 +915,9 @@ QuicChromiumClientSession::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void QuicChromiumClientSession::OnReadError(int result) {
+void QuicChromiumClientSession::OnReadError(
+    int result,
+    const DatagramClientSocket* socket) {
   DVLOG(1) << "Closing session on read error: " << result;
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ReadError", -result);
   NotifyFactoryOfSessionGoingAway();

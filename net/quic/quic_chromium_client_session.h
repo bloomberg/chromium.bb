@@ -177,7 +177,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
 
   // QuicPacketReader::Visitor methods:
-  void OnReadError(int result) override;
+  void OnReadError(int result, const DatagramClientSocket* socket) override;
   bool OnPacket(const QuicEncryptedPacket& packet,
                 IPEndPoint local_address,
                 IPEndPoint peer_address) override;

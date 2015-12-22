@@ -385,7 +385,8 @@ QuicPacketWriter* QuicSimpleClient::CreateQuicPacketWriter() {
   return new QuicDefaultPacketWriter(socket_.get());
 }
 
-void QuicSimpleClient::OnReadError(int result) {
+void QuicSimpleClient::OnReadError(int result,
+                                   const DatagramClientSocket* socket) {
   LOG(ERROR) << "QuicSimpleClient read failed: " << ErrorToShortString(result);
   Disconnect();
 }

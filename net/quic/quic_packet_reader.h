@@ -30,7 +30,8 @@ class NET_EXPORT_PRIVATE QuicPacketReader {
   class NET_EXPORT_PRIVATE Visitor {
    public:
     virtual ~Visitor(){};
-    virtual void OnReadError(int result) = 0;
+    virtual void OnReadError(int result,
+                             const DatagramClientSocket* socket) = 0;
     virtual bool OnPacket(const QuicEncryptedPacket& packet,
                           IPEndPoint local_address,
                           IPEndPoint peer_address) = 0;

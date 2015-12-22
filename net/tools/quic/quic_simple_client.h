@@ -129,7 +129,7 @@ class QuicSimpleClient : public QuicClientBase,
   bool MigrateSocket(const IPAddressNumber& new_host);
 
   // QuicPacketReader::Visitor
-  void OnReadError(int result) override;
+  void OnReadError(int result, const DatagramClientSocket* socket) override;
   bool OnPacket(const QuicEncryptedPacket& packet,
                 IPEndPoint local_address,
                 IPEndPoint peer_address) override;
