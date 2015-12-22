@@ -160,10 +160,13 @@ void KeywordExtensionsDelegateImpl::Observe(
       if (suggestions.request_id != current_input_id_)
         return;  // This is an old result. Just ignore.
 
+      // ExtractKeywordFromInput() can fail if e.g. this code is triggered by
+      // direct calls from the development console, outside the normal flow of
+      // user input.
       base::string16 keyword, remaining_input;
-      bool result = KeywordProvider::ExtractKeywordFromInput(
-          input, &keyword, &remaining_input);
-      DCHECK(result);
+      if (!KeywordProvider::ExtractKeywordFromInput(input, &keyword,
+                                                    &remaining_input))
+        return;
       const TemplateURL* template_url =
           model->GetTemplateURLForKeyword(keyword);
 
