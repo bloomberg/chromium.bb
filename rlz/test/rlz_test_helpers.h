@@ -8,6 +8,7 @@
 #define RLZ_TEST_RLZ_TEST_HELPERS_H
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)

@@ -45,8 +45,8 @@ const char kFinancialServer[]   = "clients1.google.com";
 const int kFinancialPort = 80;
 
 // Ping times in 100-nanosecond intervals.
-const int64 kEventsPingInterval = 24LL * 3600LL * 10000000LL;  // 1 day
-const int64 kNoEventsPingInterval = kEventsPingInterval * 7LL;  // 1 week
+const int64_t kEventsPingInterval = 24LL * 3600LL * 10000000LL;   // 1 day
+const int64_t kNoEventsPingInterval = kEventsPingInterval * 7LL;  // 1 week
 
 const char kFinancialPingUserAgent[] = "Mozilla/4.0 (compatible; Win32)";
 const char* kFinancialPingResponseObjects[] = { "text/*", NULL };

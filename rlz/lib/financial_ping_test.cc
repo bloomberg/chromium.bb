@@ -16,11 +16,14 @@
 
 #include "rlz/lib/financial_ping.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/machine_id.h"
 #include "rlz/lib/rlz_lib.h"
@@ -38,7 +41,7 @@
 namespace {
 
 // Must match the implementation in file_time.cc.
-int64 GetSystemTimeAsInt64() {
+int64_t GetSystemTimeAsInt64() {
 #if defined(OS_WIN)
   FILETIME now_as_file_time;
   GetSystemTimeAsFileTime(&now_as_file_time);
@@ -48,12 +51,12 @@ int64 GetSystemTimeAsInt64() {
   return integer.QuadPart;
 #else
   double now_seconds = base::Time::Now().ToDoubleT();
-  return static_cast<int64>(now_seconds * 1000 * 1000 * 10);
+  return static_cast<int64_t>(now_seconds * 1000 * 1000 * 10);
 #endif
 }
 
 // Ping times in 100-nanosecond intervals.
-const int64 k1MinuteInterval = 60LL * 10000000LL;  // 1 minute
+const int64_t k1MinuteInterval = 60LL * 10000000LL;  // 1 minute
 
 }  // namespace anonymous
 
@@ -178,8 +181,7 @@ TEST_F(FinancialPingTest, FormRequestBadBrand) {
   EXPECT_EQ(rlz_lib::SupplementaryBranding::GetBrand().empty(), ok);
 }
 
-
-static void SetLastPingTime(int64 time, rlz_lib::Product product) {
+static void SetLastPingTime(int64_t time, rlz_lib::Product product) {
   rlz_lib::ScopedRlzValueStoreLock lock;
   rlz_lib::RlzValueStore* store = lock.GetStore();
   ASSERT_TRUE(store);
@@ -188,8 +190,8 @@ static void SetLastPingTime(int64 time, rlz_lib::Product product) {
 }
 
 TEST_F(FinancialPingTest, IsPingTime) {
-  int64 now = GetSystemTimeAsInt64();
-  int64 last_ping = now - rlz_lib::kEventsPingInterval - k1MinuteInterval;
+  int64_t now = GetSystemTimeAsInt64();
+  int64_t last_ping = now - rlz_lib::kEventsPingInterval - k1MinuteInterval;
   SetLastPingTime(last_ping, rlz_lib::TOOLBAR_NOTIFIER);
 
   // No events, last ping just over a day ago.
@@ -240,8 +242,8 @@ TEST_F(FinancialPingTest, BrandingIsPingTime) {
   if (!rlz_lib::SupplementaryBranding::GetBrand().empty())
     return;
 
-  int64 now = GetSystemTimeAsInt64();
-  int64 last_ping = now - rlz_lib::kEventsPingInterval - k1MinuteInterval;
+  int64_t now = GetSystemTimeAsInt64();
+  int64_t last_ping = now - rlz_lib::kEventsPingInterval - k1MinuteInterval;
   SetLastPingTime(last_ping, rlz_lib::TOOLBAR_NOTIFIER);
 
   // Has events, last ping just over a day ago.
@@ -275,8 +277,8 @@ TEST_F(FinancialPingTest, BrandingIsPingTime) {
 }
 
 TEST_F(FinancialPingTest, ClearLastPingTime) {
-  int64 now = GetSystemTimeAsInt64();
-  int64 last_ping = now - rlz_lib::kEventsPingInterval + k1MinuteInterval;
+  int64_t now = GetSystemTimeAsInt64();
+  int64_t last_ping = now - rlz_lib::kEventsPingInterval + k1MinuteInterval;
   SetLastPingTime(last_ping, rlz_lib::TOOLBAR_NOTIFIER);
 
   // Has events, last ping just under a day ago.

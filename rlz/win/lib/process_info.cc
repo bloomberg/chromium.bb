@@ -7,7 +7,9 @@
 #include "rlz/win/lib/process_info.h"
 
 #include <windows.h>
+#include <stddef.h>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_info.h"
 #include "base/strings/string16.h"

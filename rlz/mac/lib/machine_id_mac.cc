@@ -7,6 +7,8 @@
 #include <IOKit/network/IOEthernetController.h>
 #include <IOKit/network/IOEthernetInterface.h>
 #include <IOKit/network/IONetworkInterface.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"

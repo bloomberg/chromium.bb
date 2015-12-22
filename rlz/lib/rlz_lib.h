@@ -12,6 +12,7 @@
 #ifndef RLZ_LIB_RLZ_LIB_H_
 #define RLZ_LIB_RLZ_LIB_H_
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string>
 

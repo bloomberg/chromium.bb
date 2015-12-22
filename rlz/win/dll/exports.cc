@@ -4,6 +4,8 @@
 //
 // Functions exported by the RLZ DLL.
 
+#include <stddef.h>
+
 #include "rlz/lib/rlz_lib.h"
 
 #define RLZ_DLL_EXPORT extern "C" __declspec(dllexport)

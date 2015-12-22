@@ -5,8 +5,12 @@
 #ifndef RLZ_MAC_LIB_RLZ_VALUE_STORE_MAC_H_
 #define RLZ_MAC_LIB_RLZ_VALUE_STORE_MAC_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "rlz/lib/rlz_value_store.h"
 
 @class NSDictionary;
@@ -20,8 +24,8 @@ class RlzValueStoreMac : public RlzValueStore {
  public:
   bool HasAccess(AccessType type) override;
 
-  bool WritePingTime(Product product, int64 time) override;
-  bool ReadPingTime(Product product, int64* time) override;
+  bool WritePingTime(Product product, int64_t time) override;
+  bool ReadPingTime(Product product, int64_t* time) override;
   bool ClearPingTime(Product product) override;
 
   bool WriteAccessPointRlz(AccessPoint access_point,

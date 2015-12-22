@@ -5,8 +5,14 @@
 #ifndef RLZ_VALUE_STORE_H_
 #define RLZ_VALUE_STORE_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include <string>
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "rlz/lib/rlz_enums.h"
 
 #if defined(OS_WIN)
@@ -16,10 +22,6 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
-
-
-#include <string>
-#include <vector>
 
 namespace base {
 class FilePath;
@@ -37,8 +39,8 @@ class RlzValueStore {
   virtual bool HasAccess(AccessType type) = 0;
 
   // Ping times.
-  virtual bool WritePingTime(Product product, int64 time) = 0;
-  virtual bool ReadPingTime(Product product, int64* time) = 0;
+  virtual bool WritePingTime(Product product, int64_t time) = 0;
+  virtual bool ReadPingTime(Product product, int64_t* time) = 0;
   virtual bool ClearPingTime(Product product) = 0;
 
   // Access point RLZs.

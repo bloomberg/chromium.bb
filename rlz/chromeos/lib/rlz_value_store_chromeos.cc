@@ -94,14 +94,14 @@ bool RlzValueStoreChromeOS::HasAccess(AccessType type) {
   return type == kReadAccess || !read_only_;
 }
 
-bool RlzValueStoreChromeOS::WritePingTime(Product product, int64 time) {
+bool RlzValueStoreChromeOS::WritePingTime(Product product, int64_t time) {
   DCHECK(CalledOnValidThread());
   rlz_store_->SetString(GetKeyName(kPingTimeKey, product),
                         base::Int64ToString(time));
   return true;
 }
 
-bool RlzValueStoreChromeOS::ReadPingTime(Product product, int64* time) {
+bool RlzValueStoreChromeOS::ReadPingTime(Product product, int64_t* time) {
   DCHECK(CalledOnValidThread());
   std::string ping_time;
   return rlz_store_->GetString(GetKeyName(kPingTimeKey, product), &ping_time) &&

@@ -5,6 +5,8 @@
 #ifndef RLZ_WIN_LIB_REGISTRY_UTIL_H_
 #define RLZ_WIN_LIB_REGISTRY_UTIL_H_
 
+#include <stddef.h>
+
 namespace base {
 namespace win {
 class RegKey;

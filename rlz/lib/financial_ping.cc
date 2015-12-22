@@ -6,13 +6,16 @@
 
 #include "rlz/lib/financial_ping.h"
 
+#include <stdint.h>
+
 #include "base/atomicops.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/machine_id.h"
@@ -64,7 +67,7 @@ namespace {
 // Returns the time relative to a fixed point in the past in multiples of
 // 100 ns stepts. The point in the past is arbitrary but can't change, as the
 // result of this value is stored on disk.
-int64 GetSystemTimeAsInt64() {
+int64_t GetSystemTimeAsInt64() {
 #if defined(OS_WIN)
   FILETIME now_as_file_time;
   // Relative to Jan 1, 1601 (UTC).
@@ -77,7 +80,7 @@ int64 GetSystemTimeAsInt64() {
 #else
   // Seconds since epoch (Jan 1, 1970).
   double now_seconds = base::Time::Now().ToDoubleT();
-  return static_cast<int64>(now_seconds * 1000 * 1000 * 10);
+  return static_cast<int64_t>(now_seconds * 1000 * 1000 * 10);
 #endif
 }
 
@@ -354,12 +357,12 @@ bool FinancialPing::IsPingTime(Product product, bool no_delay) {
   if (!store || !store->HasAccess(RlzValueStore::kReadAccess))
     return false;
 
-  int64 last_ping = 0;
+  int64_t last_ping = 0;
   if (!store->ReadPingTime(product, &last_ping))
     return true;
 
-  uint64 now = GetSystemTimeAsInt64();
-  int64 interval = now - last_ping;
+  uint64_t now = GetSystemTimeAsInt64();
+  int64_t interval = now - last_ping;
 
   // If interval is negative, clock was probably reset. So ping.
   if (interval < 0)
@@ -382,7 +385,7 @@ bool FinancialPing::UpdateLastPingTime(Product product) {
   if (!store || !store->HasAccess(RlzValueStore::kWriteAccess))
     return false;
 
-  uint64 now = GetSystemTimeAsInt64();
+  uint64_t now = GetSystemTimeAsInt64();
   return store->WritePingTime(product, now);
 }
 

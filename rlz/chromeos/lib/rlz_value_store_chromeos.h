@@ -5,7 +5,11 @@
 #ifndef RLZ_CHROMEOS_LIB_RLZ_VALUE_STORE_CHROMEOS_H_
 #define RLZ_CHROMEOS_LIB_RLZ_VALUE_STORE_CHROMEOS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "rlz/lib/rlz_value_store.h"
@@ -33,8 +37,8 @@ class RlzValueStoreChromeOS : public RlzValueStore,
   // RlzValueStore overrides:
   bool HasAccess(AccessType type) override;
 
-  bool WritePingTime(Product product, int64 time) override;
-  bool ReadPingTime(Product product, int64* time) override;
+  bool WritePingTime(Product product, int64_t time) override;
+  bool ReadPingTime(Product product, int64_t* time) override;
   bool ClearPingTime(Product product) override;
 
   bool WriteAccessPointRlz(AccessPoint access_point,

@@ -9,9 +9,9 @@
 
 #include <windows.h>
 #include <aclapi.h>
+#include <stddef.h>
 #include <winerror.h>
 
-#include "base/basictypes.h"
 #include "base/win/registry.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/rlz_value_store.h"

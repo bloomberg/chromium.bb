@@ -9,8 +9,10 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/crc32.h"
 #include "rlz/lib/financial_ping.h"

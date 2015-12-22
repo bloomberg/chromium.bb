@@ -7,7 +7,8 @@
 #ifndef RLZ_LIB_LIB_VALUES_H_
 #define RLZ_LIB_LIB_VALUES_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "rlz/lib/rlz_enums.h"
 
 namespace rlz_lib {
@@ -75,8 +76,8 @@ extern const char kFinancialServer[];
 
 extern const int kFinancialPort;
 
-extern const int64 kEventsPingInterval;
-extern const int64 kNoEventsPingInterval;
+extern const int64_t kEventsPingInterval;
+extern const int64_t kNoEventsPingInterval;
 
 extern const char kFinancialPingUserAgent[];
 extern const char* kFinancialPingResponseObjects[];

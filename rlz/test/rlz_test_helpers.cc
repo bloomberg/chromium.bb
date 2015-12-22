@@ -6,10 +6,14 @@
 
 #include "rlz_test_helpers.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "rlz/lib/rlz_lib.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +39,7 @@ const wchar_t kHKLMAccessProviders[] =
 struct RegistryValue {
   base::string16 name;
   DWORD type;
-  std::vector<uint8> data;
+  std::vector<uint8_t> data;
 };
 
 struct RegistryKeyData {
@@ -52,7 +56,7 @@ void ReadRegistryTree(const base::win::RegKey& src, RegistryKeyData* data) {
     for (; i.Valid(); ++i) {
       RegistryValue& value = *data->values.insert(data->values.end(),
                                                   RegistryValue());
-      const uint8* data = reinterpret_cast<const uint8*>(i.Value());
+      const uint8_t* data = reinterpret_cast<const uint8_t*>(i.Value());
       value.name.assign(i.Name());
       value.type = i.Type();
       value.data.assign(data, data + i.ValueSize());

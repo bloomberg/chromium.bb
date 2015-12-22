@@ -67,13 +67,13 @@ bool RlzValueStoreMac::HasAccess(AccessType type) {
   }
 }
 
-bool RlzValueStoreMac::WritePingTime(Product product, int64 time) {
+bool RlzValueStoreMac::WritePingTime(Product product, int64_t time) {
   NSNumber* n = [NSNumber numberWithLongLong:time];
   [ProductDict(product) setObject:n forKey:kPingTimeKey];
   return true;
 }
 
-bool RlzValueStoreMac::ReadPingTime(Product product, int64* time) {
+bool RlzValueStoreMac::ReadPingTime(Product product, int64_t* time) {
   if (NSNumber* n =
       ObjCCast<NSNumber>([ProductDict(product) objectForKey:kPingTimeKey])) {
     *time = [n longLongValue];

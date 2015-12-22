@@ -4,6 +4,7 @@
 
 #include "rlz/win/lib/rlz_value_store_registry.h"
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -161,7 +162,7 @@ bool RlzValueStoreRegistry::HasAccess(AccessType type) {
   return HasUserKeyAccess(type == kWriteAccess);
 }
 
-bool RlzValueStoreRegistry::WritePingTime(Product product, int64 time) {
+bool RlzValueStoreRegistry::WritePingTime(Product product, int64_t time) {
   base::win::RegKey key;
   std::wstring product_name = GetWideProductName(product);
   return GetPingTimesRegKey(KEY_WRITE, &key) &&
@@ -169,7 +170,7 @@ bool RlzValueStoreRegistry::WritePingTime(Product product, int64 time) {
                      REG_QWORD) == ERROR_SUCCESS;
 }
 
-bool RlzValueStoreRegistry::ReadPingTime(Product product, int64* time) {
+bool RlzValueStoreRegistry::ReadPingTime(Product product, int64_t* time) {
   base::win::RegKey key;
   std::wstring product_name = GetWideProductName(product);
   return GetPingTimesRegKey(KEY_READ, &key) &&
@@ -184,7 +185,7 @@ bool RlzValueStoreRegistry::ClearPingTime(Product product) {
   key.DeleteValue(product_name.c_str());
 
   // Verify deletion.
-  uint64 value;
+  uint64_t value;
   DWORD size = sizeof(value);
   if (key.ReadValue(
         product_name.c_str(), &value, &size, NULL) == ERROR_SUCCESS) {

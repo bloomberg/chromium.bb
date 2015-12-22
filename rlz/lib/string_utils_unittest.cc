@@ -6,8 +6,10 @@
 
 #include "rlz/lib/string_utils.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "rlz/lib/assert.h"
 #include "testing/gmock/include/gmock/gmock.h"

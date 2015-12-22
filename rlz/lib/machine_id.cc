@@ -4,6 +4,8 @@
 
 #include "rlz/lib/machine_id.h"
 
+#include <stddef.h>
+
 #include "base/sha1.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/crc8.h"

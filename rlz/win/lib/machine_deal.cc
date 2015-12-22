@@ -7,9 +7,10 @@
 #include "rlz/win/lib/machine_deal.h"
 
 #include <windows.h>
+#include <stddef.h>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
