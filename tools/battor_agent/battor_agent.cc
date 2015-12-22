@@ -4,25 +4,6 @@
 
 #include "tools/battor_agent/battor_agent.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "device/serial/serial.mojom.h"
-#include "device/serial/serial_io_handler.h"
-
-namespace {
-
-// Serial configuration parameters for the BattOr.
-const uint32 kBattOrBitrate = 2000000;
-const device::serial::DataBits kBattOrDataBits =
-    device::serial::DATA_BITS_EIGHT;
-const device::serial::ParityBit kBattOrParityBit =
-    device::serial::PARITY_BIT_NONE;
-const device::serial::StopBits kBattOrStopBit = device::serial::STOP_BITS_ONE;
-const bool kBattOrCtsFlowControl = true;
-const bool kBattOrHasCtsFlowControl = true;
-
-}  // namespace
-
 namespace battor {
 
 BattOrAgent::BattOrAgent(
@@ -30,10 +11,11 @@ BattOrAgent::BattOrAgent(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner,
     const std::string& path,
     Listener* listener)
-    : file_thread_task_runner_(file_thread_task_runner),
-      ui_thread_task_runner_(ui_thread_task_runner),
-      path_(path),
-      listener_(listener) {
+    : listener_(listener),
+      connection_(new BattOrConnection(path,
+                                       this,
+                                       file_thread_task_runner,
+                                       ui_thread_task_runner)) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -44,10 +26,7 @@ BattOrAgent::~BattOrAgent() {
 void BattOrAgent::StartTracing() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ConnectIfNeeded(
-      base::Bind(&BattOrAgent::DoStartTracing, AsWeakPtr()),
-      base::Bind(&Listener::OnStartTracingComplete, base::Unretained(listener_),
-                 BATTOR_ERROR_CONNECTION_FAILED));
+  ConnectIfNeeded();
 }
 
 void BattOrAgent::DoStartTracing() {
@@ -57,42 +36,36 @@ void BattOrAgent::DoStartTracing() {
   listener_->OnStartTracingComplete(BATTOR_ERROR_NONE);
 }
 
-void BattOrAgent::ConnectIfNeeded(const base::Closure& success_callback,
-                                  const base::Closure& failure_callback) {
+void BattOrAgent::OnConnectionOpened(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (io_handler_) {
-    success_callback.Run();
+  // TODO(charliea): Rewrite this in a way that allows for multiple tracing
+  // commands.
+  if (success) {
+    DoStartTracing();
+  } else {
+    connection_.reset();
+    listener_->OnStartTracingComplete(BATTOR_ERROR_CONNECTION_FAILED);
+  }
+}
+
+void BattOrAgent::OnBytesSent(bool success) {}
+
+void BattOrAgent::OnBytesRead(bool success,
+                              BattOrMessageType type,
+                              scoped_ptr<std::vector<char>> bytes) {}
+
+void BattOrAgent::ConnectIfNeeded() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (connection_->IsOpen()) {
+    // TODO(charliea): Rewrite this in a way that allows for multiple tracing
+    // commands.
+    DoStartTracing();
     return;
   }
 
-  io_handler_ = device::SerialIoHandler::Create(file_thread_task_runner_,
-                                                ui_thread_task_runner_);
-
-  device::serial::ConnectionOptions options;
-  options.bitrate = kBattOrBitrate;
-  options.data_bits = kBattOrDataBits;
-  options.parity_bit = kBattOrParityBit;
-  options.stop_bits = kBattOrStopBit;
-  options.cts_flow_control = kBattOrCtsFlowControl;
-  options.has_cts_flow_control = kBattOrHasCtsFlowControl;
-
-  io_handler_->Open(path_, options,
-                    base::Bind(&BattOrAgent::OnConnectComplete, AsWeakPtr(),
-                               success_callback, failure_callback));
-}
-
-void BattOrAgent::OnConnectComplete(const base::Closure& success_callback,
-                                    const base::Closure& failure_callback,
-                                    bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (success) {
-    success_callback.Run();
-  } else {
-    io_handler_ = nullptr;
-    failure_callback.Run();
-  }
+  connection_->Open();
 }
 
 }  // namespace battor
