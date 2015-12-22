@@ -1,6 +1,9 @@
 # http://crbug.com/293125
 WebRtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
 
+# https://crbug.com/376668
+TouchActionBrowserTest.DefaultAuto
+
 # crbug.com/395172
 WebRtcBrowserTest.CanForwardRemoteStream
 WebRtcBrowserTest.CanForwardRemoteStream720p
@@ -19,12 +22,12 @@ PluginTest.SelfDelete*
 # crbug.com/419396
 WebRtcBrowserTest.CallWithDataAndMedia
 
-# crbug.com/461489
-ServiceWorkerVersionBrowserTest.TimeoutStartingWorker
-
 # http://crbug.com/456131
 BrowserSideNavigationBrowserTest.BrowserInitiatedNavigations
 BrowserSideNavigationBrowserTest.FailedNavigation
+
+# crbug.com/461489
+ServiceWorkerVersionBrowserTest.TimeoutStartingWorker
 
 # http://crbug.com/464029
 WebRtcBrowserTest.CallAndModifyStream
@@ -48,14 +51,12 @@ NavigationControllerBrowserTest.DontIgnoreBackAfterNavEntryLimit
 WebRtcBrowserTest.CallInsideIframe
 
 # https://crbug.com/504187
-WebRtcGetUserMediaBrowserTest.TestGetUserMediaAspectRatio1To1
 WebRtcGetUserMediaBrowserTest.TestGetUserMediaAspectRatio16To9
+WebRtcGetUserMediaBrowserTest.TestGetUserMediaAspectRatio1To1
 WebRtcGetUserMediaBrowserTest.TestGetUserMediaAspectRatio4To3
 WebRtcGetUserMediaBrowserTest.TwoGetUserMediaAndCheckCallbackAfterFailure
 WebRtcGetUserMediaBrowserTest.TwoGetUserMediaWithEqualConstraints
-
-# https://crbug.com/376668
-TouchActionBrowserTest.DefaultAuto
+WebRtcGetUserMediaBrowserTest.TwoGetUserMediaWithFirstHdSecondVga
 
 # https://crbug.com/536881
 IndexedDBBrowserTest.DiskFullOnCommit
@@ -65,3 +66,6 @@ SitePerProcessBrowserTest.*
 
 # https://crbug.com/571264
 WebRtcMediaRecorderTest.MediaRecorderPausePreventsDataavailableFromBeingFired
+
+# https://crbug.com/571548
+RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
