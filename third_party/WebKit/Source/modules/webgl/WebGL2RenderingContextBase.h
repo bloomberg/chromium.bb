@@ -199,6 +199,8 @@ protected:
     bool validateTexImage3D(const char* functionName, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type);
     bool validateTexSubImage3D(const char*, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, GLsizei width, GLsizei height, GLsizei depth);
 
+    bool validateUniformBlockIndex(const char*, WebGLProgram*, GLuint);
+
     ScriptValue getInt64Parameter(ScriptState*, GLenum);
 
     void texSubImage3DImpl(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, Image*, WebGLImageConversion::ImageHtmlDomSource, bool, bool);
