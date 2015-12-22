@@ -9,6 +9,7 @@
 #include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/input/arc_input_bridge.h"
+#include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/settings/arc_settings_bridge.h"
 
 namespace arc {
@@ -27,6 +28,7 @@ ArcServiceManager::ArcServiceManager(
       arc_settings_bridge_(std::move(settings_bridge)) {
   DCHECK(!g_arc_service_manager);
   arc_input_bridge_ = ArcInputBridge::Create(arc_bridge_service_.get());
+  arc_power_bridge_.reset(new ArcPowerBridge(arc_bridge_service_.get()));
   g_arc_service_manager = this;
 
   arc_settings_bridge_->StartObservingBridgeServiceChanges();

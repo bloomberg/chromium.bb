@@ -14,6 +14,7 @@ namespace arc {
 class ArcBridgeService;
 class ArcInputBridge;
 class ArcSettingsBridge;
+class ArcPowerBridge;
 
 // Manages creation and destruction of services that communicate with the ARC
 // instance via the ArcBridgeService.
@@ -35,6 +36,7 @@ class ArcServiceManager {
   scoped_ptr<ArcBridgeService> arc_bridge_service_;
   scoped_ptr<ArcInputBridge> arc_input_bridge_;
   scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
+  scoped_ptr<ArcPowerBridge> arc_power_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };

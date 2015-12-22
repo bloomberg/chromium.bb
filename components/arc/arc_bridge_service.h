@@ -95,6 +95,19 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual ~Observer() {}
   };
 
+  // Notifies power management-related events.
+  class PowerObserver {
+   public:
+    // Called whenever ARC requests a wake lock.
+    virtual void OnAcquireDisplayWakeLock(DisplayWakeLockType type) {}
+
+    // Called whenever ARC releases a wake lock.
+    virtual void OnReleaseDisplayWakeLock(DisplayWakeLockType type) {}
+
+   protected:
+    virtual ~PowerObserver() {}
+  };
+
   ~ArcBridgeService() override;
 
   // Gets the global instance of the ARC Bridge Service. This can only be

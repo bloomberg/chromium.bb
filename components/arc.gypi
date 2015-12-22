@@ -15,6 +15,7 @@
         'arc_mojo_bindings',
         '../base/base.gyp:base',
         '../chromeos/chromeos.gyp:chromeos',
+        '../chromeos/chromeos.gyp:power_manager_proto',
         '../ipc/ipc.gyp:ipc',
         '../ui/aura/aura.gyp:aura',
         '../ui/events/events.gyp:events_base',
@@ -33,6 +34,8 @@
         'arc/input/arc_input_bridge_impl.h',
         'arc/settings/arc_settings_bridge.cc',
         'arc/settings/arc_settings_bridge.h',
+        'arc/power/arc_power_bridge.cc',
+        'arc/power/arc_power_bridge.h',
       ],
     },
     {

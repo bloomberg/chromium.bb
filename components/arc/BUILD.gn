@@ -17,6 +17,8 @@ static_library("arc") {
     "input/arc_input_bridge.h",
     "input/arc_input_bridge_impl.cc",
     "input/arc_input_bridge_impl.h",
+    "power/arc_power_bridge.cc",
+    "power/arc_power_bridge.h",
     "settings/arc_settings_bridge.cc",
     "settings/arc_settings_bridge.h",
   ]
@@ -25,6 +27,7 @@ static_library("arc") {
     "//base",
     "//base:prefs",
     "//chromeos",
+    "//chromeos:power_manager_proto",
     "//ipc:ipc",
     "//ipc/mojo:mojo",
     "//third_party/mojo/src/mojo/edk/system",
