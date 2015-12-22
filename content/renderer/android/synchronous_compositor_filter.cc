@@ -79,6 +79,9 @@ void SynchronousCompositorFilter::OnMessageReceivedOnCompositorThread(
     proxy->OnMessageReceived(message);
     return;
   }
+
+  if (!message.is_sync())
+    return;
   IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
   reply->set_reply_error();
   Send(reply);
