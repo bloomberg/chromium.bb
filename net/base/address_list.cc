@@ -46,6 +46,12 @@ AddressList AddressList::CreateFromIPAddress(const IPAddressNumber& address,
 }
 
 // static
+AddressList AddressList::CreateFromIPAddress(const IPAddress& address,
+                                             uint16_t port) {
+  return AddressList(IPEndPoint(address, port));
+}
+
+// static
 AddressList AddressList::CreateFromIPAddressList(
     const IPAddressList& addresses,
     const std::string& canonical_name) {
