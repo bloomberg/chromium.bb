@@ -911,7 +911,8 @@ void BridgedNativeWidget::OnDelegatedFrameDamage(
 
 void BridgedNativeWidget::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
-  NOTIMPLEMENTED();
+  native_widget_mac_->GetWidget()->DeviceScaleFactorChanged(
+      device_scale_factor);
 }
 
 base::Closure BridgedNativeWidget::PrepareForLayerBoundsChange() {

@@ -3398,5 +3398,51 @@ TEST_F(WidgetTest, AlwaysOnTop) {
   widget->CloseNow();
 }
 
+namespace {
+
+class ScaleFactorView : public View {
+ public:
+  ScaleFactorView() = default;
+
+  // Overridden from ui::LayerDelegate:
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
+    last_scale_factor_ = device_scale_factor;
+    View::OnDeviceScaleFactorChanged(device_scale_factor);
+  }
+
+  float last_scale_factor() const { return last_scale_factor_; };
+
+ private:
+  float last_scale_factor_ = 0.f;
+
+  DISALLOW_COPY_AND_ASSIGN(ScaleFactorView);
+};
+
+struct WidgetCloser {
+  inline void operator()(Widget* widget) const { widget->CloseNow(); }
+};
+
+}
+
+// Ensure scale factor changes are propagated from the native Widget.
+TEST_F(WidgetTest, OnDeviceScaleFactorChanged) {
+  // Automatically close the widget, but not delete it.
+  scoped_ptr<Widget, WidgetCloser> widget(CreateTopLevelPlatformWidget());
+  ScaleFactorView* view = new ScaleFactorView;
+  widget->GetRootView()->AddChildView(view);
+  float scale_factor = widget->GetLayer()->device_scale_factor();
+  EXPECT_NE(scale_factor, 0.f);
+
+  // For views that are not layer-backed, adding the view won't notify the view
+  // about the initial scale factor. Fake it.
+  view->OnDeviceScaleFactorChanged(scale_factor);
+  EXPECT_EQ(scale_factor, view->last_scale_factor());
+
+  // Changes should be propagated.
+  scale_factor *= 2.0f;
+  widget->GetLayer()->OnDeviceScaleFactorChanged(scale_factor);
+  EXPECT_EQ(scale_factor, view->last_scale_factor());
+}
+
 }  // namespace test
 }  // namespace views
