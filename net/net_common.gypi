@@ -95,6 +95,12 @@
     ['disable_ftp_support!=1', {
       'sources': ['<@(net_ftp_support_sources)']
     }],
+    ['enable_bidirectional_stream==1', {
+     'defines': [
+        'ENABLE_BIDIRECTIONAL_STREAM',
+      ],
+      'sources': ['<@(net_bidirectional_stream_sources)']
+    }],
     ['enable_built_in_dns==1', {
       'defines': [
         'ENABLE_BUILT_IN_DNS',

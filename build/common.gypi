@@ -605,6 +605,9 @@
       # Enables used resource whitelist generation; disabled by default.
       'enable_resource_whitelist_generation%': 0,
 
+      # Enables BidrectionalSteam; disabled by default.
+      'enable_bidirectional_stream': 0,
+
       # Enable FILE support by default.
       'disable_file_support%': 0,
 
@@ -1229,6 +1232,7 @@
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_file_support%': '<(disable_file_support)',
     'disable_ftp_support%': '<(disable_ftp_support)',
+    'enable_bidirectional_stream%': '<(enable_bidirectional_stream)',
     'enable_task_manager%': '<(enable_task_manager)',
     'sas_dll_path%': '<(sas_dll_path)',
     'wix_path%': '<(wix_path)',

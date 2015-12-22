@@ -15,6 +15,7 @@
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
+#include "net/http/bidirectional_stream_job.h"
 #include "net/http/http_server_properties.h"
 #include "net/socket/connection_attempts.h"
 #include "net/ssl/ssl_failure_state.h"
@@ -83,6 +84,11 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
         WebSocketHandshakeStreamBase* stream) = 0;
+
+    virtual void OnBidirectionalStreamJobReady(
+        const SSLConfig& used_ssl_config,
+        const ProxyInfo& used_proxy_info,
+        BidirectionalStreamJob* stream) = 0;
 
     // This is the failure to create a stream case.
     // |used_ssl_config| indicates the actual SSL configuration used for this
@@ -224,6 +230,17 @@ class NET_EXPORT HttpStreamFactory {
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
+      const BoundNetLog& net_log) = 0;
+
+  // Request a BidirectionalStreamJob.
+  // Will call delegate->OnBidirectionalStreamJobReady on successful
+  // completion.
+  virtual HttpStreamRequest* RequestBidirectionalStreamJob(
+      const HttpRequestInfo& info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      HttpStreamRequest::Delegate* delegate,
       const BoundNetLog& net_log) = 0;
 
   // Requests that enough connections for |num_streams| be opened.

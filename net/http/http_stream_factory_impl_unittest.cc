@@ -15,6 +15,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/bidirectional_stream_job.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
@@ -113,9 +114,8 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 // HttpStreamFactoryImpl subclass that can wait until a preconnect is complete.
 class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
  public:
-  MockHttpStreamFactoryImplForPreconnect(HttpNetworkSession* session,
-                                         bool for_websockets)
-      : HttpStreamFactoryImpl(session, for_websockets),
+  MockHttpStreamFactoryImplForPreconnect(HttpNetworkSession* session)
+      : HttpStreamFactoryImpl(session, false),
         preconnect_done_(false),
         waiting_for_preconnect_(false) {}
 
@@ -142,8 +142,7 @@ class MockHttpStreamFactoryImplForPreconnect : public HttpStreamFactoryImpl {
 class StreamRequestWaiter : public HttpStreamRequest::Delegate {
  public:
   StreamRequestWaiter()
-      : waiting_for_stream_(false),
-        stream_done_(false) {}
+      : waiting_for_stream_(false), stream_done_(false), error_status_(OK) {}
 
   // HttpStreamRequest::Delegate
 
@@ -170,9 +169,26 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     used_proxy_info_ = used_proxy_info;
   }
 
+  void OnBidirectionalStreamJobReady(const SSLConfig& used_ssl_config,
+                                     const ProxyInfo& used_proxy_info,
+                                     BidirectionalStreamJob* stream) override {
+    stream_done_ = true;
+    if (waiting_for_stream_)
+      base::MessageLoop::current()->QuitWhenIdle();
+    bidirectional_stream_job_.reset(stream);
+    used_ssl_config_ = used_ssl_config;
+    used_proxy_info_ = used_proxy_info;
+  }
+
   void OnStreamFailed(int status,
                       const SSLConfig& used_ssl_config,
-                      SSLFailureState ssl_failure_state) override {}
+                      SSLFailureState ssl_failure_state) override {
+    stream_done_ = true;
+    if (waiting_for_stream_)
+      base::MessageLoop::current()->QuitWhenIdle();
+    used_ssl_config_ = used_ssl_config;
+    error_status_ = status;
+  }
 
   void OnCertificateError(int status,
                           const SSLConfig& used_ssl_config,
@@ -217,15 +233,22 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     return static_cast<MockWebSocketHandshakeStream*>(websocket_stream_.get());
   }
 
+  BidirectionalStreamJob* bidirectional_stream_job() {
+    return bidirectional_stream_job_.get();
+  }
+
   bool stream_done() const { return stream_done_; }
+  int error_status() const { return error_status_; }
 
  private:
   bool waiting_for_stream_;
   bool stream_done_;
   scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
+  scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job_;
   SSLConfig used_ssl_config_;
   ProxyInfo used_proxy_info_;
+  int error_status_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamRequestWaiter);
 };
@@ -297,7 +320,7 @@ void PreconnectHelperForURL(int num_streams,
                             HttpNetworkSession* session) {
   HttpNetworkSessionPeer peer(session);
   MockHttpStreamFactoryImplForPreconnect* mock_factory =
-      new MockHttpStreamFactoryImplForPreconnect(session, false);
+      new MockHttpStreamFactoryImplForPreconnect(session);
   peer.SetHttpStreamFactory(scoped_ptr<HttpStreamFactory>(mock_factory));
   SSLConfig ssl_config;
   session->ssl_config_service()->GetSSLConfig(&ssl_config);
@@ -1347,6 +1370,106 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
       session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
+
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJob) {
+  SpdySessionDependencies session_deps(GetParam(),
+                                       ProxyService::CreateDirect());
+
+  MockRead mock_read(ASYNC, OK);
+  SequencedSocketData socket_data(&mock_read, 1, nullptr, 0);
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data);
+
+  SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
+  ssl_socket_data.SetNextProto(GetParam());
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+
+  HostPortPair host_port_pair("www.google.com", 443);
+  scoped_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  // Now request a stream.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+  request_info.load_flags = 0;
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+  scoped_ptr<HttpStreamRequest> request(
+      session->http_stream_factory()->RequestBidirectionalStreamJob(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          BoundNetLog()));
+  waiter.WaitForStream();
+  EXPECT_TRUE(waiter.stream_done());
+  EXPECT_FALSE(waiter.websocket_stream());
+  ASSERT_FALSE(waiter.stream());
+  ASSERT_TRUE(waiter.bidirectional_stream_job());
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_TRUE(waiter.used_proxy_info().is_direct());
+  ASSERT_EQ(0u,
+            static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory())
+                ->num_orphaned_jobs());
+}
+
+TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJobFailure) {
+  SpdySessionDependencies session_deps(GetParam(),
+                                       ProxyService::CreateDirect());
+
+  MockRead mock_read(ASYNC, OK);
+  SequencedSocketData socket_data(&mock_read, 1, nullptr, 0);
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data);
+
+  SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
+
+  // If HTTP/1 is used, BidirectionalStreamJob should not be obtained.
+  ssl_socket_data.SetNextProto(kProtoHTTP11);
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+
+  HostPortPair host_port_pair("www.google.com", 443);
+  scoped_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  // Now request a stream.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+  request_info.load_flags = 0;
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+  scoped_ptr<HttpStreamRequest> request(
+      session->http_stream_factory()->RequestBidirectionalStreamJob(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          BoundNetLog()));
+  waiter.WaitForStream();
+  EXPECT_TRUE(waiter.stream_done());
+  ASSERT_EQ(ERR_FAILED, waiter.error_status());
+  EXPECT_FALSE(waiter.websocket_stream());
+  ASSERT_FALSE(waiter.stream());
+  ASSERT_FALSE(waiter.bidirectional_stream_job());
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  ASSERT_EQ(0u,
+            static_cast<HttpStreamFactoryImpl*>(session->http_stream_factory())
+                ->num_orphaned_jobs());
+}
+#endif
 
 // TODO(ricea): This test can be removed once the new WebSocket stack supports
 // SPDY. Currently, even if we connect to a SPDY-supporting server, we need to

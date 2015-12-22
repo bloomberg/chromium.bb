@@ -524,6 +524,13 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
   OnIOComplete(OK);
 }
 
+void HttpNetworkTransaction::OnBidirectionalStreamJobReady(
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info,
+    BidirectionalStreamJob* stream_job) {
+  NOTREACHED();
+}
+
 void HttpNetworkTransaction::OnWebSocketHandshakeStreamReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,

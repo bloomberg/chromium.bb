@@ -18,6 +18,10 @@
 #include "net/spdy/spdy_http_stream.h"
 #include "url/gurl.h"
 
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+#include "net/spdy/bidirectional_stream_spdy_job.h"
+#endif
+
 namespace net {
 
 HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session,
@@ -76,6 +80,34 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
                                net_log);
 }
 
+HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamJob(
+    const HttpRequestInfo& request_info,
+    RequestPriority priority,
+    const SSLConfig& server_ssl_config,
+    const SSLConfig& proxy_ssl_config,
+    HttpStreamRequest::Delegate* delegate,
+    const BoundNetLog& net_log) {
+  DCHECK(!for_websockets_);
+  DCHECK(request_info.url.SchemeIs(url::kHttpsScheme));
+
+// TODO(xunjieli): Create QUIC's version of BidirectionalStreamJob.
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+  Request* request =
+      new Request(request_info.url, this, delegate, nullptr, net_log,
+                  Request::BIDIRECTIONAL_STREAM_SPDY_JOB);
+  Job* job = new Job(this, session_, request_info, priority, server_ssl_config,
+                     proxy_ssl_config, net_log.net_log());
+  request->AttachJob(job);
+
+  job->Start(request);
+  return request;
+
+#else
+  DCHECK(false);
+  return nullptr;
+#endif
+}
+
 HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
     const HttpRequestInfo& request_info,
     RequestPriority priority,
@@ -85,11 +117,9 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
     WebSocketHandshakeStreamBase::CreateHelper*
         websocket_handshake_stream_create_helper,
     const BoundNetLog& net_log) {
-  Request* request = new Request(request_info.url,
-                                 this,
-                                 delegate,
+  Request* request = new Request(request_info.url, this, delegate,
                                  websocket_handshake_stream_create_helper,
-                                 net_log);
+                                 net_log, Request::HTTP_STREAM);
   Job* job = new Job(this, session_, request_info, priority, server_ssl_config,
                      proxy_ssl_config, net_log.net_log());
   request->AttachJob(job);
@@ -275,12 +305,18 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
       // TODO(ricea): Restore this code path when WebSocket over SPDY
       // implementation is ready.
       NOTREACHED();
+    } else if (request->for_bidirectional()) {
+#if defined(ENABLE_BIDIRECTIONAL_STREAM)
+      request->OnBidirectionalStreamJobReady(
+          nullptr, used_ssl_config, used_proxy_info,
+          new BidirectionalStreamSpdyJob(spdy_session));
+#else
+      DCHECK(false);
+#endif
     } else {
       bool use_relative_url = direct || request->url().SchemeIs("https");
       request->OnStreamReady(
-          NULL,
-          used_ssl_config,
-          used_proxy_info,
+          nullptr, used_ssl_config, used_proxy_info,
           new SpdyHttpStream(spdy_session, use_relative_url));
     }
   }

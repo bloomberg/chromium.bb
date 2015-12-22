@@ -1087,7 +1087,15 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPushHeaders(
 SpdyFrame* SpdyTestUtil::ConstructSpdyHeaderFrame(int stream_id,
                                                   const char* const headers[],
                                                   int header_count) {
+  return ConstructSpdyHeaderFrame(stream_id, headers, header_count, false);
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyHeaderFrame(int stream_id,
+                                                  const char* const headers[],
+                                                  int header_count,
+                                                  bool fin) {
   SpdyHeadersIR spdy_headers(stream_id);
+  spdy_headers.set_fin(fin);
   AppendToHeaderBlock(headers, header_count,
                       spdy_headers.mutable_header_block());
   return CreateFramer(false)->SerializeFrame(spdy_headers);
@@ -1212,7 +1220,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPostSynReply(
     const char* const extra_headers[],
     int extra_header_count) {
   // TODO(jgraettinger): Remove this method.
-  return ConstructSpdyGetSynReply(NULL, 0, 1);
+  return ConstructSpdyGetSynReply(extra_headers, extra_header_count, 1);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyBodyFrame(int stream_id, bool fin) {

@@ -14521,6 +14521,17 @@ class FakeStreamFactory : public HttpStreamFactory {
     return fake_request;
   }
 
+  HttpStreamRequest* RequestBidirectionalStreamJob(
+      const HttpRequestInfo& info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      HttpStreamRequest::Delegate* delegate,
+      const BoundNetLog& net_log) override {
+    NOTREACHED();
+    return nullptr;
+  }
+
   HttpStreamRequest* RequestWebSocketHandshakeStream(
       const HttpRequestInfo& info,
       RequestPriority priority,

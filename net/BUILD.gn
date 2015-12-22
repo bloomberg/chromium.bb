@@ -46,6 +46,7 @@ disable_ftp_support = is_ios
 declare_args() {
   # Disables support for file URLs.  File URL support requires use of icu.
   disable_file_support = false
+  enable_bidirectional_stream = false
 }
 
 config("net_config") {
@@ -58,6 +59,9 @@ config("net_config") {
   }
   if (disable_ftp_support) {
     defines += [ "DISABLE_FTP_SUPPORT=1" ]
+  }
+  if (enable_bidirectional_stream) {
+    defines += [ "ENABLE_BIDIRECTIONAL_STREAM=1" ]
   }
 }
 
@@ -421,6 +425,10 @@ component("net") {
 
     if (!disable_ftp_support) {
       sources += gypi_values.net_ftp_support_sources
+    }
+
+    if (enable_bidirectional_stream) {
+      sources += gypi_values.net_bidirectional_stream_sources
     }
 
     if (enable_websockets) {
@@ -1528,6 +1536,9 @@ test("net_unittests") {
     ]
   }
 
+  if (!enable_bidirectional_stream) {
+    sources -= [ "http/bidirectional_stream_unittest.cc" ]
+  }
   if (!enable_built_in_dns) {
     sources -= [
       "dns/address_sorter_posix_unittest.cc",

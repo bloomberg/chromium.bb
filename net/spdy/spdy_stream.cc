@@ -460,6 +460,12 @@ int SpdyStream::OnAdditionalResponseHeadersReceived(
     delegate_->OnTrailers(additional_response_headers);
     return OK;
   }
+  if (type_ == SPDY_BIDIRECTIONAL_STREAM) {
+    DCHECK_EQ(RESPONSE_HEADERS_ARE_COMPLETE, response_headers_status_);
+    response_headers_status_ = TRAILERS_RECEIVED;
+    delegate_->OnTrailers(additional_response_headers);
+    return OK;
+  }
   if (type_ == SPDY_PUSH_STREAM &&
       response_headers_status_ == RESPONSE_HEADERS_ARE_COMPLETE) {
     session_->ResetStream(
@@ -501,8 +507,10 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   }
 
   if (response_headers_status_ == TRAILERS_RECEIVED && buffer) {
-    // TRAILERS_RECEIVED is only used in SPDY_REQUEST_RESPONSE_STREAM.
-    DCHECK_EQ(type_, SPDY_REQUEST_RESPONSE_STREAM);
+    // TRAILERS_RECEIVED is only used in SPDY_REQUEST_RESPONSE_STREAM and
+    // SPDY_BIDIRECTIONAL_STREAM.
+    DCHECK(type_ == SPDY_REQUEST_RESPONSE_STREAM ||
+           type_ == SPDY_BIDIRECTIONAL_STREAM);
     session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
                           "Data received after trailers");
     return;

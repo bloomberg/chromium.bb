@@ -30,6 +30,7 @@
 
 namespace net {
 
+class BidirectionalStreamJob;
 class ClientSocketHandle;
 class HttpAuthController;
 class HttpNetworkSession;
@@ -90,6 +91,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void OnStreamReady(const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
                      HttpStream* stream) override;
+  void OnBidirectionalStreamJobReady(
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      BidirectionalStreamJob* stream_job) override;
   void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,

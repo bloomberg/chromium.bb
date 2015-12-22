@@ -283,6 +283,12 @@
             ],
           },
         ],
+        [ 'enable_bidirectional_stream!=1', {
+            'sources!': [
+              'http/bidirectional_stream_unittest.cc',
+            ],
+          },
+        ],
         [ 'enable_built_in_dns!=1', {
             'sources!': [
               'dns/address_sorter_posix_unittest.cc',

@@ -35,6 +35,11 @@ class DoNothingRequestDelegate : public HttpStreamRequest::Delegate {
   void OnStreamReady(const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
                      HttpStream* stream) override {}
+  void OnBidirectionalStreamJobReady(
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      BidirectionalStreamJob* stream_job) override {}
+
   void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
@@ -72,7 +77,8 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
 
   DoNothingRequestDelegate request_delegate;
   HttpStreamFactoryImpl::Request request(
-      GURL(), factory, &request_delegate, NULL, BoundNetLog());
+      GURL(), factory, &request_delegate, NULL, BoundNetLog(),
+      HttpStreamFactoryImpl::Request::HTTP_STREAM);
 
   HttpStreamFactoryImpl::Job* job =
       new HttpStreamFactoryImpl::Job(factory,
