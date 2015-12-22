@@ -175,6 +175,10 @@ def _RunInstrumentCommand(_command, options, _, option_parser):
            '-m', 'fullcopy']
     build_utils.CheckOutput(cmd)
 
+    # File is not generated when filter_string doesn't match any files.
+    if not os.path.exists(options.coverage_file):
+      build_utils.Touch(options.coverage_file)
+
     temp_jar_dir = os.path.join(temp_dir, 'lib')
     jars = os.listdir(temp_jar_dir)
     if len(jars) != 1:
