@@ -189,6 +189,11 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "simple.cc",
     ]
+    if (is_nacl_glibc) {
+      deps = [
+        "//ppapi:ppapi_cpp_lib_shared",
+      ]
+    }
 
     # Need a new directory to not clash with with other extension
     # tests's files (e.g., manifest.json).

@@ -31,6 +31,7 @@ class SimpleModule : public pp::Module {
 
 namespace pp {
 
+__attribute__((visibility("default")))
 Module* CreateModule() {
   return new SimpleModule();
 }
