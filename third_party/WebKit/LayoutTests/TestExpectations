@@ -1413,7 +1413,8 @@ crbug.com/561595 [ XP ] plugins/webview-plugin-scroll.html [ Failure ]
 crbug.com/561595 [ XP ] plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
 
 crbug.com/568678 [ XP ] virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Failure ]
-crbug.com/568740 [ Mac Win7 XP ] svg/custom/repaint-shadow.svg [ Failure ]
+
+crbug.com/545551 svg/custom/repaint-shadow.svg [ NeedsRebaseline ]
 
 crbug.com/568778 [ XP ] media/video-aspect-ratio.html [ Failure ]
 crbug.com/568778 [ XP ] media/video-colorspace-yuv420.html [ Failure ]
