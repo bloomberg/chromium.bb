@@ -173,6 +173,7 @@ class BookmarkModelAssociator
     void UpdateDuplicateCount(const base::string16& title, const GURL& url);
 
     int duplicate_count() const { return duplicate_count_; }
+
     NativeModelSyncState native_model_sync_state() const {
       return native_model_sync_state_;
     }
@@ -184,8 +185,8 @@ class BookmarkModelAssociator
     void AddBookmarkRoot(const bookmarks::BookmarkNode* root);
     const BookmarkList& bookmark_roots() const { return bookmark_roots_; }
 
-    // Index of local bookmark nodes by native ID.
-    const bookmarks::BookmarkNode* LookupNodeInIdIndex(int64 native_id);
+    // Gets pre-association sync version for Bookmarks datatype.
+    int64 GetSyncPreAssociationVersion() const;
 
     void MarkForVersionUpdate(const bookmarks::BookmarkNode* node);
     const BookmarkList& bookmarks_for_version_update() const {
@@ -209,16 +210,9 @@ class BookmarkModelAssociator
     NativeModelSyncState native_model_sync_state_;
     // List of bookmark model roots participating in the sync.
     BookmarkList bookmark_roots_;
-    // Map of bookmark nodes by native ID. Used to lookup sync node matches
-    // by external ID.
-    typedef base::hash_map<int64, const bookmarks::BookmarkNode*> IdIndex;
-    IdIndex id_index_;
-    bool id_index_initialized_;
     // List of bookmark nodes for which the transaction version needs to be
     // updated.
     BookmarkList bookmarks_for_version_update_;
-
-    void BuildIdIndex();
 
     DISALLOW_COPY_AND_ASSIGN(Context);
   };
@@ -271,15 +265,6 @@ class BookmarkModelAssociator
       const std::vector<int64>& sync_ids,
       Context* context);
 
-  // This is a variation of BuildAssociations method above for the optimistic
-  // case where the native version of the storage is in sync or ahead of the
-  // sync version.
-  syncer::SyncError BuildAssociationsOptimistic(
-      syncer::WriteTransaction* trans,
-      const bookmarks::BookmarkNode* parent_node,
-      const std::vector<int64>& sync_ids,
-      Context* context);
-
   // Helper method for creating a new native bookmark node.
   const bookmarks::BookmarkNode* CreateBookmarkNode(
       const bookmarks::BookmarkNode* parent_node,
@@ -309,8 +294,6 @@ class BookmarkModelAssociator
   SyncIdToBookmarkNodeMap id_map_inverse_;
   // Stores sync ids for dirty associations.
   DirtyAssociationsSyncIds dirty_associations_sync_ids_;
-  // Specifies whether optimistic association experiment is enabled.
-  bool optimistic_association_enabled_;
 
   // Used to post PersistAssociation tasks to the current message loop and
   // guarantees no invocations can occur if |this| has been deleted. (This

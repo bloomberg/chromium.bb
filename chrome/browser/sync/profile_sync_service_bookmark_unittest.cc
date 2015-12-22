@@ -20,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
@@ -2086,47 +2085,6 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, MergeModelsWithSomeExtras) {
   ExpectBookmarkModelMatchesTestData();
 }
 
-// Tests the optimistic bookmark association case where some nodes are moved
-// and untracked by the sync before the association.
-TEST_F(ProfileSyncServiceBookmarkTestWithData, OptimisticMergeWithMoves) {
-  // TODO(stanisc): crbug.com/456876: Remove this once the optimistic
-  // association experiment has ended.
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial("SyncOptimisticBookmarkAssociation",
-                                         "Enabled");
-
-  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
-  WriteTestDataToBookmarkModel();
-
-  int num_bookmarks = model_->root_node()->GetTotalNodeCount();
-
-  StartSync();
-  ExpectModelMatch();
-  StopSync();
-
-  EXPECT_EQ(num_bookmarks, model_->root_node()->GetTotalNodeCount());
-
-  // Move one folder into mobile bookmarks
-  const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
-  const BookmarkNode* f1 = bookmark_bar_node->GetChild(1);
-  ASSERT_TRUE(f1->is_folder());
-  model_->Move(f1, model_->mobile_node(), 0);
-
-  StartSync();
-  ExpectModelMatch();
-  StopSync();
-
-  // Expect folders to not duplicate.
-  EXPECT_EQ(num_bookmarks, model_->root_node()->GetTotalNodeCount());
-
-  // Perform one more cycle and make sure that the number of nodes stays
-  // the same.
-  StartSync();
-  ExpectModelMatch();
-  StopSync();
-  EXPECT_EQ(num_bookmarks, model_->root_node()->GetTotalNodeCount());
-}
-
 // Tests that when persisted model associations are used, things work fine.
 TEST_F(ProfileSyncServiceBookmarkTestWithData, ModelAssociationPersistence) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
@@ -2232,12 +2190,6 @@ TEST_F(ProfileSyncServiceBookmarkTest, AssociationState) {
 // Verify that the creation_time_us changes are applied in the local model at
 // association time and update time.
 TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateDateAdded) {
-  // TODO(stanisc): crbug.com/456876: Remove this once the optimistic
-  // association experiment has ended.
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial("SyncOptimisticBookmarkAssociation",
-                                         "Enabled");
-
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   WriteTestDataToBookmarkModel();
 
@@ -2272,8 +2224,8 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateDateAdded) {
   // crbug/464907.
   EXPECT_EQ(child_node->date_added(), base::Time::FromInternalValue(10));
 
-  // Reset transaction version on the native model to trigger conservative
-  // association algorithm.
+  // Reset transaction version on the native model to trigger updating data
+  // for all bookmark nodes.
   model_->SetNodeSyncTransactionVersion(
       model_->root_node(), syncer::syncable::kInvalidTransactionVersion);
 
@@ -2303,6 +2255,38 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateDateAdded) {
   EXPECT_EQ(base::UTF8ToUTF16(kTitle), node->GetTitle());
   EXPECT_EQ(kUrl, node->url().possibly_invalid_spec());
   EXPECT_EQ(node->date_added(), base::Time::FromInternalValue(30));
+}
+
+// Verifies that the transaction version in the native bookmark model gets
+// updated and synced with the sync transaction version even when the
+// association doesn't modify any sync nodes. This is necessary to ensure
+// that the native transaction doesn't get stuck at "unset" version and skips
+// any further consistency checks.
+TEST_F(ProfileSyncServiceBookmarkTestWithData,
+       NativeTransactionVersionUpdated) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  WriteTestDataToBookmarkModel();
+
+  // Start sync in order to create bookmark nodes in the sync db.
+  StartSync();
+  StopSync();
+
+  // Reset transaction version on the native mode to "unset".
+  model_->SetNodeSyncTransactionVersion(
+      model_->root_node(), syncer::syncable::kInvalidTransactionVersion);
+
+  // Restart sync.
+  StartSync();
+  StopSync();
+
+  // Verify that the native transaction version has been updated and is now
+  // in sync with the sync version.
+  {
+    syncer::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    int64 sync_version = trans.GetModelVersion(syncer::BOOKMARKS);
+    int64 native_version = model_->root_node()->sync_transaction_version();
+    EXPECT_EQ(native_version, sync_version);
+  }
 }
 
 // Tests that changes to the sync nodes meta info gets reflected in the local
