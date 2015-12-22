@@ -13,7 +13,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 #include "./color_cache.h"
 #include "../utils/utils.h"
 
@@ -28,7 +27,6 @@ int VP8LColorCacheInit(VP8LColorCache* const cc, int hash_bits) {
                                           sizeof(*cc->colors_));
   if (cc->colors_ == NULL) return 0;
   cc->hash_shift_ = 32 - hash_bits;
-  cc->hash_bits_ = hash_bits;
   return 1;
 }
 
@@ -39,11 +37,3 @@ void VP8LColorCacheClear(VP8LColorCache* const cc) {
   }
 }
 
-void VP8LColorCacheCopy(const VP8LColorCache* const src,
-                        VP8LColorCache* const dst) {
-  assert(src != NULL);
-  assert(dst != NULL);
-  assert(src->hash_bits_ == dst->hash_bits_);
-  memcpy(dst->colors_, src->colors_,
-         ((size_t)1u << dst->hash_bits_) * sizeof(*dst->colors_));
-}

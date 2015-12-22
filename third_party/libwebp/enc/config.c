@@ -43,15 +43,10 @@ int WebPConfigInitInternal(WebPConfig* config,
   config->alpha_filtering = 1;
   config->alpha_quality = 100;
   config->lossless = 0;
-  config->exact = 0;
   config->image_hint = WEBP_HINT_DEFAULT;
   config->emulate_jpeg_size = 0;
   config->thread_level = 0;
   config->low_memory = 0;
-  config->near_lossless = 100;
-#ifdef WEBP_EXPERIMENTAL_FEATURES
-  config->delta_palettization = 0;
-#endif // WEBP_EXPERIMENTAL_FEATURES
 
   // TODO(skal): tune.
   switch (preset) {
@@ -116,7 +111,11 @@ int WebPValidateConfig(const WebPConfig* config) {
     return 0;
   if (config->show_compressed < 0 || config->show_compressed > 1)
     return 0;
+#if WEBP_ENCODER_ABI_VERSION > 0x0204
   if (config->preprocessing < 0 || config->preprocessing > 7)
+#else
+  if (config->preprocessing < 0 || config->preprocessing > 3)
+#endif
     return 0;
   if (config->partitions < 0 || config->partitions > 3)
     return 0;
@@ -130,8 +129,6 @@ int WebPValidateConfig(const WebPConfig* config) {
     return 0;
   if (config->lossless < 0 || config->lossless > 1)
     return 0;
-  if (config->near_lossless < 0 || config->near_lossless > 100)
-    return 0;
   if (config->image_hint >= WEBP_HINT_LAST)
     return 0;
   if (config->emulate_jpeg_size < 0 || config->emulate_jpeg_size > 1)
@@ -140,17 +137,12 @@ int WebPValidateConfig(const WebPConfig* config) {
     return 0;
   if (config->low_memory < 0 || config->low_memory > 1)
     return 0;
-  if (config->exact < 0 || config->exact > 1)
-    return 0;
-#ifdef WEBP_EXPERIMENTAL_FEATURES
-  if (config->delta_palettization < 0 || config->delta_palettization > 1)
-    return 0;
-#endif  // WEBP_EXPERIMENTAL_FEATURES
   return 1;
 }
 
 //------------------------------------------------------------------------------
 
+#if WEBP_ENCODER_ABI_VERSION > 0x0202
 #define MAX_LEVEL 9
 
 // Mapping between -z level and -m / -q parameter settings.
@@ -169,5 +161,6 @@ int WebPConfigLosslessPreset(WebPConfig* config, int level) {
   config->quality = kLosslessPresets[level].quality_;
   return 1;
 }
+#endif
 
 //------------------------------------------------------------------------------

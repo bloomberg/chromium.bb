@@ -189,14 +189,11 @@ VP8StatusCode WebPAllocateDecBuffer(int w, int h,
       h = ch;
     }
     if (options->use_scaling) {
-      int scaled_width = options->scaled_width;
-      int scaled_height = options->scaled_height;
-      if (!WebPRescalerGetScaledDimensions(
-              w, h, &scaled_width, &scaled_height)) {
+      if (options->scaled_width <= 0 || options->scaled_height <= 0) {
         return VP8_STATUS_INVALID_PARAM;
       }
-      w = scaled_width;
-      h = scaled_height;
+      w = options->scaled_width;
+      h = options->scaled_height;
     }
   }
   out->width = w;
@@ -206,10 +203,12 @@ VP8StatusCode WebPAllocateDecBuffer(int w, int h,
   status = AllocateBuffer(out);
   if (status != VP8_STATUS_OK) return status;
 
+#if WEBP_DECODER_ABI_VERSION > 0x0203
   // Use the stride trick if vertical flip is needed.
   if (options != NULL && options->flip) {
     status = WebPFlipBuffer(out);
   }
+#endif
   return status;
 }
 

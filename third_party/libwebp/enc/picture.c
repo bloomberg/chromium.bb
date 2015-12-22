@@ -15,7 +15,6 @@
 #include <stdlib.h>
 
 #include "./vp8enci.h"
-#include "../dsp/dsp.h"
 #include "../utils/utils.h"
 
 //------------------------------------------------------------------------------

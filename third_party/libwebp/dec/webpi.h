@@ -26,10 +26,7 @@ extern "C" {
 
 typedef struct WebPDecParams WebPDecParams;
 typedef int (*OutputFunc)(const VP8Io* const io, WebPDecParams* const p);
-typedef int (*OutputAlphaFunc)(const VP8Io* const io, WebPDecParams* const p,
-                               int expected_num_out_lines);
-typedef int (*OutputRowFunc)(WebPDecParams* const p, int y_pos,
-                             int max_out_lines);
+typedef int (*OutputRowFunc)(WebPDecParams* const p, int y_pos);
 
 struct WebPDecParams {
   WebPDecBuffer* output;             // output buffer.
@@ -43,7 +40,7 @@ struct WebPDecParams {
   void* memory;                  // overall scratch memory for the output work.
 
   OutputFunc emit;               // output RGB or YUV samples
-  OutputAlphaFunc emit_alpha;    // output alpha channel
+  OutputFunc emit_alpha;         // output alpha channel
   OutputRowFunc emit_alpha_row;  // output one line of rescaled alpha values
 };
 

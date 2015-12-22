@@ -20,15 +20,9 @@ extern "C" {
 
 #include "../webp/types.h"
 
-#define WEBP_RESCALER_RFIX 32   // fixed-point precision for multiplies
-#define WEBP_RESCALER_ONE (1ull << WEBP_RESCALER_RFIX)
-#define WEBP_RESCALER_FRAC(x, y) \
-    ((uint32_t)(((uint64_t)(x) << WEBP_RESCALER_RFIX) / (y)))
-
 // Structure used for on-the-fly rescaling
 typedef uint32_t rescaler_t;   // type for side-buffer
-typedef struct WebPRescaler WebPRescaler;
-struct WebPRescaler {
+typedef struct {
   int x_expand;               // true if we're expanding in the x direction
   int y_expand;               // true if we're expanding in the y direction
   int num_channels;           // bytes to jump between pixels
@@ -44,7 +38,7 @@ struct WebPRescaler {
   uint8_t* dst;
   int dst_stride;
   rescaler_t* irow, *frow;    // work buffer
-};
+} WebPRescaler;
 
 // Initialize a rescaler given scratch area 'work' and dimensions of src & dst.
 void WebPRescalerInit(WebPRescaler* const rescaler,
@@ -53,14 +47,6 @@ void WebPRescalerInit(WebPRescaler* const rescaler,
                       int dst_width, int dst_height, int dst_stride,
                       int num_channels,
                       rescaler_t* const work);
-
-// If either 'scaled_width' or 'scaled_height' (but not both) is 0 the value
-// will be calculated preserving the aspect ratio, otherwise the values are
-// left unmodified. Returns true on success, false if either value is 0 after
-// performing the scaling calculation.
-int WebPRescalerGetScaledDimensions(int src_width, int src_height,
-                                    int* const scaled_width,
-                                    int* const scaled_height);
 
 // Returns the number of input lines needed next to produce one output line,
 // considering that the maximum available input lines are 'max_num_lines'.
@@ -74,6 +60,10 @@ int WebPRescalerImport(WebPRescaler* const rescaler, int num_rows,
 
 // Export as many rows as possible. Return the numbers of rows written.
 int WebPRescalerExport(WebPRescaler* const rescaler);
+void WebPRescalerImportRow(WebPRescaler* const wrk,
+                           const uint8_t* src);
+// Export one row (starting at x_out position) from rescaler.
+void WebPRescalerExportRow(WebPRescaler* const wrk);
 
 // Return true if input is finished
 static WEBP_INLINE
