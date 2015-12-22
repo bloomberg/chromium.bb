@@ -53,11 +53,11 @@ typedef HashMap<const PaintLayer*, PaintLayerFilterInfo*> PaintLayerFilterInfoMa
 //
 // Because PaintLayer is not allocated for SVG objects, SVG filters (both
 // software and hardware-accelerated) use a different code path to paint the
-// filters (SVGFilterPainer), but both code paths use the same abstraction for
+// filters (SVGFilterPainter), but both code paths use the same abstraction for
 // painting non-hardware accelerated filters (FilterEffect). Hardware
 // accelerated CSS filters use WebFilterOperations, that is backed by cc.
 //
-// PaintLayerFilterInfo is allocated when filters are present and store in an
+// PaintLayerFilterInfo is allocated when filters are present and stored in an
 // internal map (s_filterMap) to save memory as 'filter' should be a rare
 // property.
 class PaintLayerFilterInfo final : public DocumentResourceClient {
@@ -76,7 +76,7 @@ public:
     static PaintLayerFilterInfo* createFilterInfoForLayerIfNeeded(PaintLayer*);
 
     // Remove the PaintLayerFilterInfo associated with PaintLayer.
-    // If there is none, this function  does nothing.
+    // If there is none, this function does nothing.
     static void removeFilterInfoForLayer(PaintLayer*);
 
     FilterEffectBuilder* builder() const { return m_builder.get(); }
