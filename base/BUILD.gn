@@ -64,41 +64,66 @@ if (is_nacl_nonsfi) {
   }
 }
 
-source_set("base_paths") {
-  sources = [
-    "base_paths.cc",
-    "base_paths.h",
-    "base_paths_android.cc",
-    "base_paths_android.h",
-    "base_paths_mac.h",
-    "base_paths_mac.mm",
-    "base_paths_posix.cc",
-    "base_paths_posix.h",
-    "base_paths_win.cc",
-    "base_paths_win.h",
-  ]
-
-  if (is_android || is_mac || is_ios) {
-    sources -= [ "base_paths_posix.cc" ]
+if (is_nacl) {
+  # None of the files apply to nacl, and we can't make an empty static library.
+  group("base_paths") {
   }
-
-  if (is_nacl) {
-    sources -= [
+} else {
+  static_library("base_paths") {
+    sources = [
       "base_paths.cc",
+      "base_paths.h",
+      "base_paths_android.cc",
+      "base_paths_android.h",
+      "base_paths_mac.h",
+      "base_paths_mac.mm",
       "base_paths_posix.cc",
+      "base_paths_posix.h",
+      "base_paths_win.cc",
+      "base_paths_win.h",
     ]
+
+    if (is_android || is_mac || is_ios) {
+      sources -= [ "base_paths_posix.cc" ]
+    }
+
+    configs += [ ":base_implementation" ]
+
+    visibility = [ ":base" ]
   }
-
-  configs += [ ":base_implementation" ]
-
-  visibility = [ ":base" ]
 }
 
 config("android_system_libs") {
   libs = [ "log" ]  # Used by logging.cc.
 }
 
-component("base") {
+# Base and everything it depends on should be a static library rather than
+# a source set. Base is more of a "library" in the classic sense in that many
+# small parts of it are used in many different contexts. This combined with a
+# few static initializers floating around means that dead code stripping
+# still leaves a lot of code behind that isn't always used. For example, this
+# saves more than 40K for a smaller target like chrome_elf.
+#
+# Use static libraries for the helper stuff as well like //base/debug since
+# those things refer back to base code, which will force base compilation units
+# to be linked in where they wouldn't have otherwise. This does not include
+# test code (test support and anything in the test directory) which should use
+# source_set as is recommended for GN targets).
+if (is_component_build) {
+  base_target_type = "shared_library"
+} else {
+  # TODO(phosek) bug 570839: If field_trial.cc is in a static library,
+  # hacl_helper_nonsfi doesn't link properly on Linux in debug builds. The
+  # reasons for this seem to involve obscure toolchain bugs. This should be
+  # fixed and this target should always be a static_library in the
+  # non-component case.
+  if (is_nacl_nonsfi) {
+    base_target_type = "source_set"
+  } else {
+    base_target_type = "static_library"
+  }
+}
+target(base_target_type, "base") {
   sources = [
     "allocator/allocator_extension.cc",
     "allocator/allocator_extension.h",
@@ -1312,7 +1337,7 @@ buildflag_header("debugging_flags") {
 # This is the subset of files from base that should not be used with a dynamic
 # library. Note that this library cannot depend on base because base depends on
 # base_static.
-source_set("base_static") {
+static_library("base_static") {
   sources = [
     "base_switches.cc",
     "base_switches.h",

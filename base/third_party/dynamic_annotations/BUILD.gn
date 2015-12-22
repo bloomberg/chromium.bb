@@ -12,7 +12,8 @@ if (is_nacl) {
     ]
   }
 } else {
-  source_set("dynamic_annotations") {
+  # Should be static library, see documentation on //base:base for discussion.
+  static_library("dynamic_annotations") {
     sources = [
       "../valgrind/valgrind.h",
       "dynamic_annotations.c",
