@@ -5,7 +5,6 @@
 #ifndef MASH_WM_FRAME_DEFAULT_HEADER_PAINTER_H_
 #define MASH_WM_FRAME_DEFAULT_HEADER_PAINTER_H_
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mash/wm/frame/header_painter.h"

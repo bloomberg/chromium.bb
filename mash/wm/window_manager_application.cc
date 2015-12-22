@@ -4,6 +4,8 @@
 
 #include "mash/wm/window_manager_application.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/event_matcher.h"

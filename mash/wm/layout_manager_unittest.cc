@@ -4,6 +4,7 @@
 
 #include "mash/wm/layout_manager.h"
 
+#include "base/macros.h"
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -5,6 +5,8 @@
 #ifndef MASH_WM_WINDOW_MANAGER_APPLICATION_H_
 #define MASH_WM_WINDOW_MANAGER_APPLICATION_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/macros.h"

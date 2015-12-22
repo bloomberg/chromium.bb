@@ -4,9 +4,12 @@
 
 #include "mash/wm/frame/caption_buttons/frame_caption_button_container_view.h"
 
+#include <stddef.h>
+
 #include <cmath>
 #include <map>
 
+#include "base/macros.h"
 #include "mash/wm/frame/caption_buttons/frame_caption_button.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"

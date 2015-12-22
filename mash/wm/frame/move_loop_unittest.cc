@@ -4,6 +4,9 @@
 
 #include "mash/wm/frame/move_loop.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"

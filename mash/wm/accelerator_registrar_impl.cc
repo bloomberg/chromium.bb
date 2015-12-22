@@ -4,6 +4,8 @@
 
 #include "mash/wm/accelerator_registrar_impl.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 

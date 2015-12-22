@@ -4,6 +4,9 @@
 
 #include "mash/wm/non_client_frame_controller.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"

@@ -4,6 +4,8 @@
 
 #include "mash/browser_driver/browser_driver_application_delegate.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "components/mus/public/cpp/event_matcher.h"
 #include "mojo/application/public/cpp/application_connection.h"

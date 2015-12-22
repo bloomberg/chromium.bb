@@ -4,6 +4,8 @@
 
 #include "mash/wm/window_manager_impl.h"
 
+#include <stdint.h>
+
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"

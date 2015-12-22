@@ -5,6 +5,8 @@
 #ifndef MASH_WM_FRAME_MOVE_LOOP_H_
 #define MASH_WM_FRAME_MOVE_LOOP_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"

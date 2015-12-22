@@ -4,6 +4,9 @@
 
 #include "mash/system_ui/system_ui.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"

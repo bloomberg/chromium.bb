@@ -5,6 +5,8 @@
 #ifndef MASH_WM_NON_CLIENT_FRAME_CONTROLLER_H_
 #define MASH_WM_NON_CLIENT_FRAME_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/mus/public/cpp/window_observer.h"

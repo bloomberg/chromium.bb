@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/mus/public/cpp/window.h"
 #include "grit/mash_wm_resources.h"
 #include "mash/wm/frame/caption_buttons/frame_caption_button_container_view.h"

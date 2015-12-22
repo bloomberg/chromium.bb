@@ -5,6 +5,8 @@
 #ifndef MASH_WM_WINDOW_LAYOUT_H_
 #define MASH_WM_WINDOW_LAYOUT_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "mash/wm/layout_manager.h"
 

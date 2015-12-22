@@ -5,6 +5,8 @@
 #ifndef MASH_BROWSER_DRIVER_BROWSER_DRIVER_APPLICATION_DELEGATE_H_
 #define MASH_BROWSER_DRIVER_BROWSER_DRIVER_APPLICATION_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/callback.h"

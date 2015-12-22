@@ -5,6 +5,8 @@
 #ifndef MASH_WM_ACCELERATOR_REGISTRAR_IMPL_H_
 #define MASH_WM_ACCELERATOR_REGISTRAR_IMPL_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/callback.h"

@@ -5,6 +5,8 @@
 #ifndef MASH_WM_WINDOW_MANAGER_IMPL_H_
 #define MASH_WM_WINDOW_MANAGER_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"

@@ -4,6 +4,7 @@
 
 #include "mash/example/window_type_launcher/window_type_launcher.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"

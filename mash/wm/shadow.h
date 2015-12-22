@@ -5,7 +5,6 @@
 #ifndef MASH_WM_SHADOW_H_
 #define MASH_WM_SHADOW_H_
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"

@@ -4,6 +4,8 @@
 
 #include "mash/wm/property_util.h"
 
+#include <stdint.h>
+
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "mash/wm/shadow.h"

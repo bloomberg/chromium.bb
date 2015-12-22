@@ -5,7 +5,7 @@
 #ifndef MASH_WM_SHADOW_CONTROLLER_H_
 #define MASH_WM_SHADOW_CONTROLLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_connection_observer.h"
 
