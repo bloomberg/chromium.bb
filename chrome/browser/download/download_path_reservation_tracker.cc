@@ -49,7 +49,8 @@ ReservationMap* g_reservation_map = NULL;
 // Observes a DownloadItem for changes to its target path and state. Updates or
 // revokes associated download path reservations as necessary. Created, invoked
 // and destroyed on the UI thread.
-class DownloadItemObserver : public DownloadItem::Observer {
+class DownloadItemObserver : public DownloadItem::Observer,
+                             public base::SupportsUserData::Data {
  public:
   explicit DownloadItemObserver(DownloadItem* download_item);
 
@@ -64,6 +65,8 @@ class DownloadItemObserver : public DownloadItem::Observer {
 
   // Last known target path for the download.
   base::FilePath last_target_path_;
+
+  static const int kUserDataKey;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemObserver);
 };
@@ -162,9 +165,15 @@ bool CreateReservation(
   // deleted when all the reservations are revoked.
   if (g_reservation_map == NULL)
     g_reservation_map = new ReservationMap;
-
   ReservationMap& reservations = *g_reservation_map;
-  DCHECK(!ContainsKey(reservations, key));
+
+  // Erase the reservation if it already exists. This can happen during
+  // automatic resumption where a new target determination request may be issued
+  // for a DownloadItem without an intervening transition to INTERRUPTED.
+  //
+  // Revoking and re-acquiring the reservation forces us to re-verify the claims
+  // we are making about the path.
+  reservations.erase(key);
 
   base::FilePath target_path(suggested_path.NormalizePathSeparators());
   base::FilePath target_dir = target_path.DirName();
@@ -289,10 +298,14 @@ DownloadItemObserver::DownloadItemObserver(DownloadItem* download_item)
       last_target_path_(download_item->GetTargetFilePath()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   download_item_->AddObserver(this);
+  download_item_->SetUserData(&kUserDataKey, this);
 }
 
 DownloadItemObserver::~DownloadItemObserver() {
   download_item_->RemoveObserver(this);
+  // DownloadItemObserver is owned by DownloadItem. It should only be getting
+  // destroyed because it's being removed from the UserData pool. No need to
+  // call DownloadItem::RemoveUserData().
 }
 
 void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
@@ -323,7 +336,7 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
 
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
           &RevokeReservation, download));
-      delete this;
+      download->RemoveUserData(&kUserDataKey);
       break;
 
     case DownloadItem::MAX_DOWNLOAD_STATE:
@@ -337,8 +350,10 @@ void DownloadItemObserver::OnDownloadDestroyed(DownloadItem* download) {
   NOTREACHED();
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
       &RevokeReservation, download));
-  delete this;
 }
+
+// static
+const int DownloadItemObserver::kUserDataKey = 0;
 
 }  // namespace
 
