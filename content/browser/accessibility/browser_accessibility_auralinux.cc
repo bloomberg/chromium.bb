@@ -707,6 +707,14 @@ static GType GetAccessibilityTypeFromObject(
 
 BrowserAccessibilityAtk* browser_accessibility_new(
     BrowserAccessibilityAuraLinux* obj) {
+  #if !GLIB_CHECK_VERSION(2, 36, 0)
+  static bool first_time = true;
+  if (first_time) {
+    g_type_init();
+    first_time = false;
+  }
+  #endif
+
   GType type = GetAccessibilityTypeFromObject(obj);
   AtkObject* atk_object = static_cast<AtkObject*>(g_object_new(type, 0));
 
