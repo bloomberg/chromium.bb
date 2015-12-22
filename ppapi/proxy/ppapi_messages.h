@@ -884,7 +884,20 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
 // Notify the renderer that the PPAPI channel gets ready in the plugin.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_StartupInitializationComplete)
 
-// Calls renderer to open a resource file for nacl_irt_open_resource().
+// This is sent from a nexe (NaCl untrusted code) to the renderer, to open a
+// file listed in a NaCl manifest file (NMF).  It is part of the
+// implementation of open_resource(), which is defined in NaCl's irt.h.
+//
+// This call returns a read-only file handle from the renderer.  When using
+// validation caching, this handle is not used: The NaCl loader process will
+// reacquire the handle from the more-trusted browser process via
+// NaClProcessMsg_ResolveFileToken, passing the token values returned here.
+//
+// Note that the open_resource() interface is not a PPAPI interface (in the
+// sense that it's not defined in ppapi/c/), but this message is defined here
+// in ppapi_messages.h (rather than in components/nacl/) because half of the
+// implementation of open_resource() lives in ppapi/nacl_irt/, and because
+// this message must be processed by ppapi/proxy/nacl_message_scanner.cc.
 IPC_SYNC_MESSAGE_CONTROL1_3(PpapiHostMsg_OpenResource,
                             std::string /* key */,
                             ppapi::proxy::SerializedHandle /* fd */,
