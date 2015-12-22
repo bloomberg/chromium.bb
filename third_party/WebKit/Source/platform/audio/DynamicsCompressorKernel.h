@@ -36,6 +36,8 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class PLATFORM_EXPORT DynamicsCompressorKernel {
@@ -129,5 +131,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // DynamicsCompressorKernel_h

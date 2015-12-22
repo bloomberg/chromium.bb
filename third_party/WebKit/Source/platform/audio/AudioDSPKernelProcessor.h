@@ -38,6 +38,8 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioBus;
@@ -75,5 +77,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioDSPKernelProcessor_h

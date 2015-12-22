@@ -28,8 +28,6 @@
 
 #include "platform/audio/ZeroPole.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "platform/audio/DenormalDisabler.h"
 

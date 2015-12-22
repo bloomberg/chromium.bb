@@ -34,6 +34,8 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioBus;
@@ -59,5 +61,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // MultiChannelResampler_h

@@ -40,6 +40,8 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioChannel;
@@ -86,5 +88,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // ReverbConvolver_h

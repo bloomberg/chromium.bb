@@ -29,6 +29,8 @@
 #include "platform/audio/AudioDSPKernel.h"
 #include "platform/audio/Biquad.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class BiquadProcessor;
@@ -69,5 +71,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // BiquadDSPKernel_h

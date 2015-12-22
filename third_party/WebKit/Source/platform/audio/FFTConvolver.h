@@ -34,6 +34,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class PLATFORM_EXPORT FFTConvolver {
@@ -71,5 +73,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // FFTConvolver_h

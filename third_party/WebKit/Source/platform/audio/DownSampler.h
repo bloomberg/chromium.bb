@@ -36,6 +36,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 // DownSampler down-samples the source stream by a factor of 2x.
@@ -74,5 +76,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // DownSampler_h

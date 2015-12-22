@@ -46,6 +46,8 @@ struct RDFTContext;
 #include <ipps.h>
 #endif
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 // Defines the interface for an "FFT frame", an object which is able to perform a forward
@@ -117,5 +119,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // FFTFrame_h

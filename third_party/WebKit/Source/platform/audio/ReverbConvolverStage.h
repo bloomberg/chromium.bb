@@ -35,6 +35,8 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class ReverbAccumulationBuffer;
@@ -85,5 +87,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // ReverbConvolverStage_h

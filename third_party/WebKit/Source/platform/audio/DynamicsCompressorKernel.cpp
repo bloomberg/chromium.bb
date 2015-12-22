@@ -28,8 +28,6 @@
 
 #include "platform/audio/DynamicsCompressorKernel.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include <algorithm>
 #include "platform/audio/AudioUtilities.h"

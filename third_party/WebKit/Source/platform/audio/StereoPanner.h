@@ -7,6 +7,8 @@
 
 #include "platform/audio/Spatializer.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 // Common type of stereo panner as found in normal audio mixing equipment.
@@ -32,5 +34,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // StereoPanner_h

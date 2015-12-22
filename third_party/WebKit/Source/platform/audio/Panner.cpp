@@ -28,8 +28,6 @@
 
 #include "platform/audio/Panner.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "platform/audio/EqualPowerPanner.h"
 #include "platform/audio/HRTFPanner.h"

@@ -24,8 +24,6 @@
 
 #include "platform/audio/AudioUtilities.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"

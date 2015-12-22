@@ -32,6 +32,8 @@
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/PassRefPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AbstractAudioContext;
@@ -58,5 +60,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // ChannelMergerNode_h

@@ -32,6 +32,8 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AbstractAudioContext;
@@ -122,5 +124,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // OfflineAudioDestinationNode_h

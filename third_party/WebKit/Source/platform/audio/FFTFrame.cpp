@@ -28,8 +28,6 @@
 
 #include "platform/audio/FFTFrame.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "platform/audio/VectorMath.h"
 #include "platform/Logging.h"

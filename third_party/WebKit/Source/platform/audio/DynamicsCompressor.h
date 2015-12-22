@@ -36,6 +36,8 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioBus;
@@ -106,5 +108,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // DynamicsCompressor_h

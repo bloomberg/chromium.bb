@@ -10,6 +10,8 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioBus;
@@ -46,5 +48,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // Spatializer_h

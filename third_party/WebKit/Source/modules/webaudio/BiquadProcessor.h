@@ -32,6 +32,8 @@
 #include "platform/audio/Biquad.h"
 #include "wtf/RefPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 // BiquadProcessor is an AudioDSPKernelProcessor which uses Biquad objects to implement several common filters.
@@ -89,5 +91,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // BiquadProcessor_h

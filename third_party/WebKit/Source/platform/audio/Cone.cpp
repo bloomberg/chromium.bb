@@ -28,8 +28,6 @@
 
 #include "platform/audio/Cone.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "wtf/MathExtras.h"
 

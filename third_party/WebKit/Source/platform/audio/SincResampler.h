@@ -35,6 +35,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 // SincResampler is a high-quality sample-rate converter.
@@ -87,5 +89,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // SincResampler_h

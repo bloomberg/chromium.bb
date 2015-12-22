@@ -26,7 +26,10 @@
 #define VectorMath_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/build_config.h"
 #include <cstddef>
+
+#if ENABLE(WEB_AUDIO)
 
 // Defines the interface for several vector math functions whose implementation will ideally be optimized.
 
@@ -56,5 +59,7 @@ PLATFORM_EXPORT void vclip(const float* sourceP, int sourceStride, const float* 
 
 } // namespace VectorMath
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // VectorMath_h

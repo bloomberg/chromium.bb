@@ -35,6 +35,8 @@
 #include "wtf/RefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class TaskSynchronizer;
@@ -84,5 +86,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // HRTFDatabaseLoader_h

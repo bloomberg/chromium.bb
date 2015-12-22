@@ -32,6 +32,8 @@
 #include "platform/audio/UpSampler.h"
 #include "wtf/OwnPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class WaveShaperProcessor;
@@ -71,5 +73,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // WaveShaperDSPKernel_h

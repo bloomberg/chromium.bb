@@ -25,8 +25,6 @@
 #ifndef MediaStreamAudioSourceNode_h
 #define MediaStreamAudioSourceNode_h
 
-#if ENABLE(WEB_AUDIO)
-
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioSourceNode.h"
 #include "platform/audio/AudioSourceProvider.h"
@@ -34,6 +32,8 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Threading.h"
+
+#if ENABLE(WEB_AUDIO)
 
 namespace blink {
 

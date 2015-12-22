@@ -30,8 +30,6 @@
 
 #include "platform/audio/DownSampler.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "wtf/MathExtras.h"
 

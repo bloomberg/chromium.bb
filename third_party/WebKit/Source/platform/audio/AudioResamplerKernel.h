@@ -29,6 +29,8 @@
 #include "platform/audio/AudioArray.h"
 #include "wtf/Allocator.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioResampler;
@@ -76,5 +78,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioResamplerKernel_h

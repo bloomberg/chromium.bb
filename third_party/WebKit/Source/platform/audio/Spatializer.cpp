@@ -4,8 +4,6 @@
 
 #include "platform/audio/Spatializer.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "platform/audio/StereoPanner.h"
 

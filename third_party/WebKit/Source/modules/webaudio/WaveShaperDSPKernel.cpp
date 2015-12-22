@@ -22,10 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/WaveShaperDSPKernel.h"
 
+#if ENABLE(WEB_AUDIO)
 #include "wtf/MainThread.h"
 #include "wtf/Threading.h"
 #include <algorithm>

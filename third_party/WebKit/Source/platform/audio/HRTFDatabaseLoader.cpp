@@ -28,8 +28,6 @@
 
 #include "platform/audio/HRTFDatabaseLoader.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "platform/Task.h"
 #include "platform/TaskSynchronizer.h"

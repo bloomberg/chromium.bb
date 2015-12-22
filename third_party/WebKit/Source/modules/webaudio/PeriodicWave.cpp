@@ -26,10 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/PeriodicWave.h"
 
+#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/OscillatorNode.h"
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/VectorMath.h"

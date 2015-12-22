@@ -28,6 +28,8 @@
 #include "modules/webaudio/DelayProcessor.h"
 #include "platform/audio/AudioDelayDSPKernel.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class DelayProcessor;
@@ -46,5 +48,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // DelayDSPKernel_h

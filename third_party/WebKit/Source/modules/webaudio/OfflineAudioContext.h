@@ -29,6 +29,8 @@
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "wtf/HashMap.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class ExceptionState;
@@ -114,5 +116,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // OfflineAudioContext_h

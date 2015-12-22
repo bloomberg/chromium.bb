@@ -36,6 +36,9 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 
 namespace blink {
 
@@ -58,5 +61,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // MediaStreamWebAudioSource_h

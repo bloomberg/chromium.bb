@@ -38,6 +38,8 @@
 #include "wtf/text/WTFString.h"
 #include <sys/types.h>
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioNodeOutput;
@@ -157,5 +159,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioParam_h

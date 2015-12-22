@@ -34,6 +34,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 // ReverbAccumulationBuffer is a circular delay buffer with one client reading from it and multiple clients
@@ -68,5 +70,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // ReverbAccumulationBuffer_h

@@ -22,10 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 
+#if ENABLE(WEB_AUDIO)
 #include "core/dom/CrossThreadTask.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/html/HTMLMediaElement.h"

@@ -30,6 +30,8 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioBuffer;
@@ -60,5 +62,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioProcessingEvent_h

@@ -34,6 +34,8 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class HRTFDatabaseLoader;
@@ -116,5 +118,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioListener_h

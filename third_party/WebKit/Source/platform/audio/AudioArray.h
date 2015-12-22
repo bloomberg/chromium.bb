@@ -32,7 +32,10 @@
 #include "wtf/Allocator.h"
 #include "wtf/Partitions.h"
 #include "wtf/Vector.h"
+#include "wtf/build_config.h"
 #include <string.h>
+
+#if ENABLE(WEB_AUDIO)
 
 namespace blink {
 
@@ -159,5 +162,7 @@ typedef AudioArray<float> AudioFloatArray;
 typedef AudioArray<double> AudioDoubleArray;
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioArray_h

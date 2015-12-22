@@ -34,6 +34,9 @@
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 
 namespace blink {
 
@@ -191,5 +194,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // DeferredTaskHandler_h

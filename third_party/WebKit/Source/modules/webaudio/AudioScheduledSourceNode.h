@@ -31,6 +31,8 @@
 
 #include "modules/webaudio/AudioSourceNode.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AbstractAudioContext;
@@ -136,5 +138,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioScheduledSourceNode_h

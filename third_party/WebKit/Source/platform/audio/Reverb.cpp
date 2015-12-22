@@ -28,8 +28,6 @@
 
 #include "platform/audio/Reverb.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include <math.h>
 #include "platform/audio/AudioBus.h"

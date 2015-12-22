@@ -24,8 +24,6 @@
 
 #include "platform/audio/AudioResampler.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include <algorithm>
 #include "wtf/MathExtras.h"

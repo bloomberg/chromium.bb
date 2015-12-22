@@ -30,6 +30,8 @@
 #include "platform/audio/HRTFDatabaseLoader.h"
 #include "platform/audio/Panner.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class PLATFORM_EXPORT HRTFPanner final : public Panner {
@@ -105,5 +107,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // HRTFPanner_h

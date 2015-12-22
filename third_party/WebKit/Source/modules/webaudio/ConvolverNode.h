@@ -32,6 +32,8 @@
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioBuffer;
@@ -90,5 +92,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // ConvolverNode_h

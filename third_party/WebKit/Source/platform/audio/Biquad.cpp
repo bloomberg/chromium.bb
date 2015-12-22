@@ -28,8 +28,6 @@
 
 #include "platform/audio/Biquad.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include <stdio.h>
 #include <algorithm>

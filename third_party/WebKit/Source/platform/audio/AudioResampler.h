@@ -33,6 +33,8 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 // AudioResampler resamples the audio stream from an AudioSourceProvider.
@@ -68,5 +70,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioResampler_h

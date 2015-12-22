@@ -39,6 +39,8 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioChannel;
@@ -98,5 +100,7 @@ private:
 typedef Vector<OwnPtr<HRTFKernel>> HRTFKernelList;
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // HRTFKernel_h

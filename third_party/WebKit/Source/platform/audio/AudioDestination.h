@@ -38,6 +38,8 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioFIFO;
@@ -93,5 +95,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioDestination_h

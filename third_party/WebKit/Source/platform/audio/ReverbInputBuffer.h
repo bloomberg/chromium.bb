@@ -34,6 +34,8 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 // ReverbInputBuffer is used to buffer input samples for deferred processing by the background threads.
@@ -65,5 +67,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // ReverbInputBuffer_h

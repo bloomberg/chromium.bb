@@ -33,6 +33,9 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 
 namespace blink {
 
@@ -72,5 +75,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // Panner_h

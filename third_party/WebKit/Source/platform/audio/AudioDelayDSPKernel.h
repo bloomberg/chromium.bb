@@ -28,6 +28,8 @@
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/AudioDSPKernel.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
@@ -65,5 +67,7 @@ protected:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioDelayDSPKernel_h

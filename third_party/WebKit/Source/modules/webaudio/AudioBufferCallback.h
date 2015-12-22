@@ -25,9 +25,10 @@
 #ifndef AudioBufferCallback_h
 #define AudioBufferCallback_h
 
-#if ENABLE(WEB_AUDIO)
-
 #include "platform/heap/Handle.h"
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 
 namespace blink {
 

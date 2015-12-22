@@ -33,6 +33,8 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AbstractAudioContext;
@@ -118,5 +120,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // OscillatorNode_h

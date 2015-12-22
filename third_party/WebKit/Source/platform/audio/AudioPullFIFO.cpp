@@ -28,8 +28,6 @@
 
 #include "platform/audio/AudioPullFIFO.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 
 namespace blink {

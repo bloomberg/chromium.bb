@@ -34,6 +34,8 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "wtf/HashMap.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AbstractAudioContext;
@@ -186,5 +188,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // PannerNode_h

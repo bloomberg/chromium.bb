@@ -22,10 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/BiquadFilterNode.h"
 
+#if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 
 namespace blink {

@@ -30,8 +30,6 @@
 
 #include "platform/audio/AudioDSPKernelProcessor.h"
 
-#include "wtf/build_config.h"
-
 #if ENABLE(WEB_AUDIO)
 #include "platform/audio/AudioDSPKernel.h"
 #include "wtf/MainThread.h"

@@ -33,6 +33,9 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/build_config.h"
+
+#if ENABLE(WEB_AUDIO)
 
 #define DEBUG_AUDIONODE_REFERENCES 0
 
@@ -335,5 +338,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // AudioNode_h

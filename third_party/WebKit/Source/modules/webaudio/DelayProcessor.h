@@ -30,6 +30,8 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
+#if ENABLE(WEB_AUDIO)
+
 namespace blink {
 
 class AudioDSPKernel;
@@ -50,5 +52,7 @@ private:
 };
 
 } // namespace blink
+
+#endif // ENABLE(WEB_AUDIO)
 
 #endif // DelayProcessor_h

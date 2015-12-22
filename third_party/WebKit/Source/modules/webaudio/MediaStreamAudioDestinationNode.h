@@ -25,13 +25,13 @@
 #ifndef MediaStreamAudioDestinationNode_h
 #define MediaStreamAudioDestinationNode_h
 
-#if ENABLE(WEB_AUDIO)
-
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioBasicInspectorNode.h"
 #include "platform/audio/AudioBus.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
+
+#if ENABLE(WEB_AUDIO)
 
 namespace blink {
 
