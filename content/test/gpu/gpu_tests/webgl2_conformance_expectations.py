@@ -221,10 +221,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=565438)
     self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['mac'], bug=483282)
-
-    # Mac 10.9 only.
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['mavericks'], bug=483282)
+        ['mac'], bug=483282)
 
     # Linux only.
     self.Skip('deqp/functional/gles3/shaderswitch.html',
@@ -236,6 +234,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
         ['linux'], bug=564020)
     self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
+        ['linux'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['linux'], bug=483282)
 
     # Linux NVIDIA only.
@@ -256,8 +256,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
         ['linux', 'amd'], bug=295792)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['linux', 'amd'], bug=295792)
 
