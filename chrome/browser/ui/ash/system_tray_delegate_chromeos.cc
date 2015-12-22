@@ -478,6 +478,7 @@ void SystemTrayDelegateChromeOS::ShowPowerSettings() {
          ash::PowerStatus::Get()->SupportsDualRoleDevices()))) {
     return;
   }
+  content::RecordAction(base::UserMetricsAction("Tray_ShowPowerOptions"));
   ShowSettingsSubPageForActiveUser(chrome::kPowerOptionsSubPage);
 }
 
