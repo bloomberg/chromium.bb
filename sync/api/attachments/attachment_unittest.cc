@@ -4,6 +4,8 @@
 
 #include "sync/api/attachments/attachment.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"

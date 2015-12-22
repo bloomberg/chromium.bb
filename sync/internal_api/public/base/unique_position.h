@@ -5,6 +5,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_UNIQUE_POSITION_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_UNIQUE_POSITION_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

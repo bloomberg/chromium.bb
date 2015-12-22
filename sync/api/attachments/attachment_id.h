@@ -5,6 +5,9 @@
 #ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_ID_H_
 #define SYNC_API_ATTACHMENTS_ATTACHMENT_ID_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>

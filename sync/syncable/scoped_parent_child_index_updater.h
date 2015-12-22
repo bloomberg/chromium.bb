@@ -5,7 +5,7 @@
 #ifndef SYNC_SYNCABLE_SCOPED_PARENT_CHILD_INDEX_UPDATER_H_
 #define SYNC_SYNCABLE_SCOPED_PARENT_CHILD_INDEX_UPDATER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 
 namespace syncer {

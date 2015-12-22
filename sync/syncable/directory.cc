@@ -4,6 +4,9 @@
 
 #include "sync/syncable/directory.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <iterator>
 
@@ -146,7 +149,7 @@ void Directory::InitializeIndices(MetahandlesMap* handles_map) {
     EntryKernel* entry = it->second;
     if (ParentChildIndex::ShouldInclude(entry))
       kernel_->parent_child_index.Insert(entry);
-    const int64 metahandle = entry->ref(META_HANDLE);
+    const int64_t metahandle = entry->ref(META_HANDLE);
     if (entry->ref(IS_UNSYNCED))
       kernel_->unsynced_metahandles.insert(metahandle);
     if (entry->ref(IS_UNAPPLIED_UPDATE)) {
@@ -274,13 +277,13 @@ EntryKernel* Directory::GetEntryByServerTag(const string& tag) {
   return NULL;
 }
 
-EntryKernel* Directory::GetEntryByHandle(int64 metahandle) {
+EntryKernel* Directory::GetEntryByHandle(int64_t metahandle) {
   ScopedKernelLock lock(this);
   return GetEntryByHandle(lock, metahandle);
 }
 
 EntryKernel* Directory::GetEntryByHandle(const ScopedKernelLock& lock,
-                                         int64 metahandle) {
+                                         int64_t metahandle) {
   // Look up in memory
   MetahandlesMap::iterator found =
       kernel_->metahandles_map.find(metahandle);
@@ -441,7 +444,7 @@ bool Directory::ReindexParentId(BaseWriteTransaction* trans,
 
 void Directory::RemoveFromAttachmentIndex(
     const ScopedKernelLock& lock,
-    const int64 metahandle,
+    const int64_t metahandle,
     const sync_pb::AttachmentMetadata& attachment_metadata) {
   for (int i = 0; i < attachment_metadata.record_size(); ++i) {
     AttachmentIdUniqueId unique_id =
@@ -459,7 +462,7 @@ void Directory::RemoveFromAttachmentIndex(
 
 void Directory::AddToAttachmentIndex(
     const ScopedKernelLock& lock,
-    const int64 metahandle,
+    const int64_t metahandle,
     const sync_pb::AttachmentMetadata& attachment_metadata) {
   for (int i = 0; i < attachment_metadata.record_size(); ++i) {
     AttachmentIdUniqueId unique_id =
@@ -476,7 +479,7 @@ void Directory::AddToAttachmentIndex(
 }
 
 void Directory::UpdateAttachmentIndex(
-    const int64 metahandle,
+    const int64_t metahandle,
     const sync_pb::AttachmentMetadata& old_metadata,
     const sync_pb::AttachmentMetadata& new_metadata) {
   ScopedKernelLock lock(this);
@@ -517,7 +520,7 @@ bool Directory::SafeToPurgeFromMemory(WriteTransaction* trans,
       !entry->ref(IS_UNSYNCED);
 
   if (safe) {
-    int64 handle = entry->ref(META_HANDLE);
+    int64_t handle = entry->ref(META_HANDLE);
     const ModelType type = entry->GetServerModelType();
     if (!SyncAssert(kernel_->dirty_metahandles.count(handle) == 0U,
                     FROM_HERE,
@@ -647,7 +650,7 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
 }
 
 void Directory::UnapplyEntry(EntryKernel* entry) {
-  int64 handle = entry->ref(META_HANDLE);
+  int64_t handle = entry->ref(META_HANDLE);
   ModelType server_type = GetModelTypeFromSpecifics(
       entry->ref(SERVER_SPECIFICS));
 
@@ -706,7 +709,7 @@ void Directory::DeleteEntry(const ScopedKernelLock& lock,
                             bool save_to_journal,
                             EntryKernel* entry,
                             EntryKernelSet* entries_to_journal) {
-  int64 handle = entry->ref(META_HANDLE);
+  int64_t handle = entry->ref(META_HANDLE);
   ModelType server_type = GetModelTypeFromSpecifics(
       entry->ref(SERVER_SPECIFICS));
 
@@ -946,7 +949,7 @@ bool Directory::HasEmptyDownloadProgress(ModelType type) const {
   return kernel_->persisted_info.HasEmptyDownloadProgress(type);
 }
 
-int64 Directory::GetTransactionVersion(ModelType type) const {
+int64_t Directory::GetTransactionVersion(ModelType type) const {
   kernel_->transaction_mutex.AssertAcquired();
   return kernel_->persisted_info.transaction_version[type];
 }
@@ -1085,7 +1088,7 @@ void Directory::GetUnsyncedMetaHandles(BaseTransaction* trans,
        kernel_->unsynced_metahandles.end(), back_inserter(*result));
 }
 
-int64 Directory::unsynced_entity_count() const {
+int64_t Directory::unsynced_entity_count() const {
   ScopedKernelLock lock(this);
   return kernel_->unsynced_metahandles.size();
 }
@@ -1095,10 +1098,9 @@ bool Directory::TypeHasUnappliedUpdates(ModelType type) {
   return !kernel_->unapplied_update_metahandles[type].empty();
 }
 
-void Directory::GetUnappliedUpdateMetaHandles(
-    BaseTransaction* trans,
-    FullModelTypeSet server_types,
-    std::vector<int64>* result) {
+void Directory::GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
+                                              FullModelTypeSet server_types,
+                                              std::vector<int64_t>* result) {
   result->clear();
   ScopedKernelLock lock(this);
   for (int i = UNSPECIFIED; i < MODEL_TYPE_COUNT; ++i) {
@@ -1113,7 +1115,7 @@ void Directory::GetUnappliedUpdateMetaHandles(
 
 void Directory::GetMetaHandlesOfType(BaseTransaction* trans,
                                      ModelType type,
-                                     std::vector<int64>* result) {
+                                     std::vector<int64_t>* result) {
   ScopedKernelLock lock(this);
   GetMetaHandlesOfType(lock, trans, type, result);
 }
@@ -1121,7 +1123,7 @@ void Directory::GetMetaHandlesOfType(BaseTransaction* trans,
 void Directory::GetMetaHandlesOfType(const ScopedKernelLock& lock,
                                      BaseTransaction* trans,
                                      ModelType type,
-                                     std::vector<int64>* result) {
+                                     std::vector<int64_t>* result) {
   result->clear();
   for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
        it != kernel_->metahandles_map.end(); ++it) {
@@ -1210,7 +1212,7 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                                     const MetahandleSet& handles) {
   MetahandleSet::const_iterator i;
   for (i = handles.begin() ; i != handles.end() ; ++i) {
-    int64 metahandle = *i;
+    int64_t metahandle = *i;
     Entry e(trans, GET_BY_HANDLE, metahandle);
     if (!SyncAssert(e.good(), FROM_HERE, "Entry is bad", trans))
       return false;
@@ -1268,8 +1270,8 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
         }
       }
     }
-    int64 base_version = e.GetBaseVersion();
-    int64 server_version = e.GetServerVersion();
+    int64_t base_version = e.GetBaseVersion();
+    int64_t server_version = e.GetServerVersion();
     bool using_unique_client_tag = !e.GetUniqueClientTag().empty();
     if (CHANGES_VERSION == base_version || 0 == base_version) {
       ModelType model_type = e.GetModelType();
@@ -1361,9 +1363,9 @@ void Directory::SetInvariantCheckLevel(InvariantCheckLevel check_level) {
   invariant_check_level_ = check_level;
 }
 
-int64 Directory::NextMetahandle() {
+int64_t Directory::NextMetahandle() {
   ScopedKernelLock lock(this);
-  int64 metahandle = (kernel_->next_metahandle)++;
+  int64_t metahandle = (kernel_->next_metahandle)++;
   return metahandle;
 }
 
@@ -1542,12 +1544,12 @@ void Directory::GetAttachmentIdsToUpload(BaseTransaction* trans,
   ids->clear();
   AttachmentIdSet on_server_id_set;
   AttachmentIdSet not_on_server_id_set;
-  std::vector<int64> metahandles;
+  std::vector<int64_t> metahandles;
   {
     ScopedKernelLock lock(this);
     GetMetaHandlesOfType(lock, trans, type, &metahandles);
-    std::vector<int64>::const_iterator iter = metahandles.begin();
-    const std::vector<int64>::const_iterator end = metahandles.end();
+    std::vector<int64_t>::const_iterator iter = metahandles.begin();
+    const std::vector<int64_t>::const_iterator end = metahandles.end();
     // For all of this type's entries...
     for (; iter != end; ++iter) {
       EntryKernel* entry = GetEntryByHandle(lock, *iter);

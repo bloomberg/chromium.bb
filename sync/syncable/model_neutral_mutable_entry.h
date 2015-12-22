@@ -5,8 +5,12 @@
 #ifndef SYNC_SYNCABLE_MODEL_NEUTRAL_MUTABLE_ENTRY_H_
 #define SYNC_SYNCABLE_MODEL_NEUTRAL_MUTABLE_ENTRY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/entry.h"
@@ -37,7 +41,7 @@ class SYNC_EXPORT ModelNeutralMutableEntry : public Entry {
   ModelNeutralMutableEntry(BaseWriteTransaction* trans,
                            CreateNewTypeRoot,
                            ModelType type);
-  ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetByHandle, int64);
+  ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetByHandle, int64_t);
   ModelNeutralMutableEntry(BaseWriteTransaction* trans, GetById, const Id&);
   ModelNeutralMutableEntry(
       BaseWriteTransaction* trans,
@@ -61,8 +65,8 @@ class SYNC_EXPORT ModelNeutralMutableEntry : public Entry {
   // success and false on failure, which occurs when putting the value would
   // have caused a duplicate in the index.  The setters that never fail return
   // void.
-  void PutBaseVersion(int64 value);
-  void PutServerVersion(int64 value);
+  void PutBaseVersion(int64_t value);
+  void PutServerVersion(int64_t value);
   void PutServerMtime(base::Time value);
   void PutServerCtime(base::Time value);
   bool PutId(const Id& value);
@@ -97,7 +101,7 @@ class SYNC_EXPORT ModelNeutralMutableEntry : public Entry {
   // except that it doesn't bother to invoke 'SaveOriginals'.  Calling that
   // function is at best unnecessary, since the transaction will have already
   // used its list of mutations by the time this function is called.
-  void UpdateTransactionVersion(int64 version);
+  void UpdateTransactionVersion(int64_t version);
 
  protected:
   explicit ModelNeutralMutableEntry(BaseWriteTransaction* trans);

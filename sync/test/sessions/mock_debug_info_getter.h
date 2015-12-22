@@ -5,8 +5,8 @@
 #ifndef SYNC_TEST_SESSIONS_MOCK_DEBUG_INFO_GETTER_H_
 #define SYNC_TEST_SESSIONS_MOCK_DEBUG_INFO_GETTER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/debug_info_getter.h"

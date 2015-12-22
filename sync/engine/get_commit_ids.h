@@ -5,6 +5,9 @@
 #ifndef SYNC_ENGINE_GET_COMMIT_IDS_H_
 #define SYNC_ENGINE_GET_COMMIT_IDS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "sync/base/sync_export.h"
@@ -31,7 +34,7 @@ class BaseTransaction;
 SYNC_EXPORT void GetCommitIdsForType(syncable::BaseTransaction* trans,
                                      ModelType type,
                                      size_t max_entries,
-                                     std::vector<int64>* out);
+                                     std::vector<int64_t>* out);
 
 }  // namespace syncer
 

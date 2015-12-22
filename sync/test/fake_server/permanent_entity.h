@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/test/fake_server/fake_server_entity.h"

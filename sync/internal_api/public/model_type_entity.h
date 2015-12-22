@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_ENTITY_H_
 #define SYNC_INTERNAL_API_PUBLIC_MODEL_TYPE_ENTITY_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -53,10 +55,10 @@ class SYNC_EXPORT ModelTypeEntity {
   bool RequiresCommitRequest() const;
 
   // Returns true if the specified update version does not contain new data.
-  bool UpdateIsReflection(int64 update_version) const;
+  bool UpdateIsReflection(int64_t update_version) const;
 
   // Returns true if the specified update version conflicts with local changes.
-  bool UpdateIsInConflict(int64 update_version) const;
+  bool UpdateIsInConflict(int64_t update_version) const;
 
   // Applies an update from the sync server.
   //
@@ -92,8 +94,8 @@ class SYNC_EXPORT ModelTypeEntity {
   // possible that the committed item was already out of date by the time it
   // reached the server.
   void ReceiveCommitResponse(const std::string& id,
-                             int64 sequence_number,
-                             int64 response_version,
+                             int64_t sequence_number,
+                             int64_t response_version,
                              const std::string& encryption_key_name);
 
   // Clears any in-memory sync state associated with outstanding commits.
@@ -133,7 +135,7 @@ class SYNC_EXPORT ModelTypeEntity {
   EntityDataPtr commit_data_;
 
   // The sequence number of the last item sent to the sync thread.
-  int64 commit_requested_sequence_number_;
+  int64_t commit_requested_sequence_number_;
 
   // TODO(stanisc): this should be removed.
   // The name of the encryption key used to encrypt this item on the server.

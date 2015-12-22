@@ -15,9 +15,12 @@
 #ifndef SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_
 #define SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/sync_engine_event_listener.h"
 #include "sync/sessions/debug_info_getter.h"
@@ -89,7 +92,7 @@ class SYNC_EXPORT SyncSessionContext {
   void set_max_commit_batch_size(int batch_size) {
     max_commit_batch_size_ = batch_size;
   }
-  int32 max_commit_batch_size() const { return max_commit_batch_size_; }
+  int32_t max_commit_batch_size() const { return max_commit_batch_size_; }
 
   base::ObserverList<SyncEngineEventListener>* listeners() {
     return &listeners_;

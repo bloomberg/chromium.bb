@@ -5,9 +5,11 @@
 #ifndef SYNC_SESSIONS_DATA_TYPE_TRACKER_H_
 #define SYNC_SESSIONS_DATA_TYPE_TRACKER_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"

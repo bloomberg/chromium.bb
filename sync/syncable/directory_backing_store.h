@@ -5,9 +5,12 @@
 #ifndef SYNC_SYNCABLE_DIRECTORY_BACKING_STORE_H_
 #define SYNC_SYNCABLE_DIRECTORY_BACKING_STORE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sql/connection.h"
@@ -25,7 +28,7 @@ class EntitySpecifics;
 namespace syncer {
 namespace syncable {
 
-SYNC_EXPORT extern const int32 kCurrentDBVersion;
+SYNC_EXPORT extern const int32_t kCurrentDBVersion;
 
 struct ColumnSpec;
 

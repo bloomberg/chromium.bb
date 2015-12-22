@@ -7,6 +7,8 @@
 #ifndef SYNC_TEST_ENGINE_TEST_ID_FACTORY_H_
 #define SYNC_TEST_ENGINE_TEST_ID_FACTORY_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
@@ -26,7 +28,7 @@ class TestIdFactory {
   // If the number is positive, create a server ID based on the value.  If
   // the number is negative, create a local ID based on the value.  This
   // is deterministic, and [FromNumber(X) == FromNumber(Y)] iff [X == Y].
-  static syncable::Id FromNumber(int64 value) {
+  static syncable::Id FromNumber(int64_t value) {
     if (value == 0)
       return root();
     else if (value < 0)

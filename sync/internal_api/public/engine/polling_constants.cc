@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "sync/internal_api/public/engine/polling_constants.h"
 
 namespace syncer {
@@ -12,12 +13,12 @@ namespace syncer {
 // We use high values here to ensure that failure to receive poll updates from
 // the server doesn't result in rapid-fire polling from the client due to low
 // local limits.
-const int64 kDefaultShortPollIntervalSeconds = 3600 * 8;
+const int64_t kDefaultShortPollIntervalSeconds = 3600 * 8;
 // Long poll is used when XMPP is on.
-const int64 kDefaultLongPollIntervalSeconds = 3600 * 12;
+const int64_t kDefaultLongPollIntervalSeconds = 3600 * 12;
 
 // Maximum interval for exponential backoff.
-const int64 kMaxBackoffSeconds = 60 * 10;  // 10 minutes.
+const int64_t kMaxBackoffSeconds = 60 * 10;  // 10 minutes.
 
 // Backoff interval randomization factor.
 const int kBackoffRandomizationFactor = 2;

@@ -6,10 +6,11 @@
 // functionality is provided by the Syncable layer, which has its own
 // unit tests. We'll test SyncApi specific things in this harness.
 
+#include <stdint.h>
+
 #include <cstddef>
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
@@ -97,9 +98,9 @@ namespace {
 
 // Makes a child node under the type root folder.  Returns the id of the
 // newly-created node.
-int64 MakeNode(UserShare* share,
-               ModelType model_type,
-               const std::string& client_tag) {
+int64_t MakeNode(UserShare* share,
+                 ModelType model_type,
+                 const std::string& client_tag) {
   WriteTransaction trans(FROM_HERE, share);
   WriteNode node(&trans);
   WriteNode::InitUniqueByCreationResult result =
@@ -111,9 +112,9 @@ int64 MakeNode(UserShare* share,
 
 // Makes a non-folder child of the root node.  Returns the id of the
 // newly-created node.
-int64 MakeNodeWithRoot(UserShare* share,
-                       ModelType model_type,
-                       const std::string& client_tag) {
+int64_t MakeNodeWithRoot(UserShare* share,
+                         ModelType model_type,
+                         const std::string& client_tag) {
   WriteTransaction trans(FROM_HERE, share);
   ReadNode root_node(&trans);
   root_node.InitByRootLookup();
@@ -127,10 +128,10 @@ int64 MakeNodeWithRoot(UserShare* share,
 
 // Makes a folder child of a non-root node. Returns the id of the
 // newly-created node.
-int64 MakeFolderWithParent(UserShare* share,
-                           ModelType model_type,
-                           int64 parent_id,
-                           BaseNode* predecessor) {
+int64_t MakeFolderWithParent(UserShare* share,
+                             ModelType model_type,
+                             int64_t parent_id,
+                             BaseNode* predecessor) {
   WriteTransaction trans(FROM_HERE, share);
   ReadNode parent_node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
@@ -140,9 +141,9 @@ int64 MakeFolderWithParent(UserShare* share,
   return node.GetId();
 }
 
-int64 MakeBookmarkWithParent(UserShare* share,
-                             int64 parent_id,
-                             BaseNode* predecessor) {
+int64_t MakeBookmarkWithParent(UserShare* share,
+                               int64_t parent_id,
+                               BaseNode* predecessor) {
   WriteTransaction trans(FROM_HERE, share);
   ReadNode parent_node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
@@ -154,7 +155,7 @@ int64 MakeBookmarkWithParent(UserShare* share,
 // Creates the "synced" root node for a particular datatype. We use the syncable
 // methods here so that the syncer treats these nodes as if they were already
 // received from the server.
-int64 MakeTypeRoot(UserShare* share, ModelType model_type) {
+int64_t MakeTypeRoot(UserShare* share, ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
   AddDefaultFieldValue(model_type, &specifics);
   syncable::WriteTransaction trans(
@@ -181,10 +182,11 @@ int64 MakeTypeRoot(UserShare* share, ModelType model_type) {
 }
 
 // Simulates creating a "synced" node as a child of the root datatype node.
-int64 MakeServerNode(UserShare* share, ModelType model_type,
-                     const std::string& client_tag,
-                     const std::string& hashed_tag,
-                     const sync_pb::EntitySpecifics& specifics) {
+int64_t MakeServerNode(UserShare* share,
+                       ModelType model_type,
+                       const std::string& client_tag,
+                       const std::string& hashed_tag,
+                       const sync_pb::EntitySpecifics& specifics) {
   syncable::WriteTransaction trans(
       FROM_HERE, syncable::UNITTEST, share->directory.get());
   syncable::Entry root_entry(&trans, syncable::GET_TYPE_ROOT, model_type);
@@ -209,7 +211,7 @@ int64 MakeServerNode(UserShare* share, ModelType model_type,
   return entry.GetMetahandle();
 }
 
-int GetTotalNodeCount(UserShare* share, int64 root) {
+int GetTotalNodeCount(UserShare* share, int64_t root) {
   ReadTransaction trans(FROM_HERE, share);
   ReadNode node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(root));
@@ -343,7 +345,7 @@ TEST_F(SyncApiTest, BasicTagWrite) {
 }
 
 TEST_F(SyncApiTest, BasicTagWriteWithImplicitParent) {
-  int64 type_root = MakeTypeRoot(user_share(), PREFERENCES);
+  int64_t type_root = MakeTypeRoot(user_share(), PREFERENCES);
 
   {
     ReadTransaction trans(FROM_HERE, user_share());
@@ -423,8 +425,8 @@ TEST_F(SyncApiTest, ReadMissingTagsFails) {
 // TODO(chron): Hook this all up to the server and write full integration tests
 //              for update->undelete behavior.
 TEST_F(SyncApiTest, TestDeleteBehavior) {
-  int64 node_id;
-  int64 folder_id;
+  int64_t node_id;
+  int64_t folder_id;
   std::string test_title("test1");
 
   {
@@ -603,7 +605,7 @@ TEST_F(SyncApiTest, WriteEmptyBookmarkTitle) {
 }
 
 TEST_F(SyncApiTest, BaseNodeSetSpecifics) {
-  int64 child_id = MakeNodeWithRoot(user_share(), BOOKMARKS, "testtag");
+  int64_t child_id = MakeNodeWithRoot(user_share(), BOOKMARKS, "testtag");
   WriteTransaction trans(FROM_HERE, user_share());
   WriteNode node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
@@ -619,7 +621,7 @@ TEST_F(SyncApiTest, BaseNodeSetSpecifics) {
 }
 
 TEST_F(SyncApiTest, BaseNodeSetSpecificsPreservesUnknownFields) {
-  int64 child_id = MakeNodeWithRoot(user_share(), BOOKMARKS, "testtag");
+  int64_t child_id = MakeNodeWithRoot(user_share(), BOOKMARKS, "testtag");
   WriteTransaction trans(FROM_HERE, user_share());
   WriteNode node(&trans);
   EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
@@ -651,14 +653,15 @@ TEST_F(SyncApiTest, EmptyTags) {
 
 // Test counting nodes when the type's root node has no children.
 TEST_F(SyncApiTest, GetTotalNodeCountEmpty) {
-  int64 type_root = MakeTypeRoot(user_share(), BOOKMARKS);
+  int64_t type_root = MakeTypeRoot(user_share(), BOOKMARKS);
   EXPECT_EQ(1, GetTotalNodeCount(user_share(), type_root));
 }
 
 // Test counting nodes when there is one child beneath the type's root.
 TEST_F(SyncApiTest, GetTotalNodeCountOneChild) {
-  int64 type_root = MakeTypeRoot(user_share(), BOOKMARKS);
-  int64 parent = MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
+  int64_t type_root = MakeTypeRoot(user_share(), BOOKMARKS);
+  int64_t parent =
+      MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
   EXPECT_EQ(2, GetTotalNodeCount(user_share(), type_root));
   EXPECT_EQ(1, GetTotalNodeCount(user_share(), parent));
 }
@@ -666,10 +669,11 @@ TEST_F(SyncApiTest, GetTotalNodeCountOneChild) {
 // Test counting nodes when there are multiple children beneath the type root,
 // and one of those children has children of its own.
 TEST_F(SyncApiTest, GetTotalNodeCountMultipleChildren) {
-  int64 type_root = MakeTypeRoot(user_share(), BOOKMARKS);
-  int64 parent = MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
+  int64_t type_root = MakeTypeRoot(user_share(), BOOKMARKS);
+  int64_t parent =
+      MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
   ignore_result(MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL));
-  int64 child1 = MakeFolderWithParent(user_share(), BOOKMARKS, parent, NULL);
+  int64_t child1 = MakeFolderWithParent(user_share(), BOOKMARKS, parent, NULL);
   ignore_result(MakeBookmarkWithParent(user_share(), parent, NULL));
   ignore_result(MakeBookmarkWithParent(user_share(), child1, NULL));
   EXPECT_EQ(6, GetTotalNodeCount(user_share(), type_root));
@@ -731,10 +735,10 @@ TEST_F(SyncApiTest, AttachmentLinking) {
 // with client tag matching that of an existing unapplied node with server only
 // data. See crbug.com/505761.
 TEST_F(SyncApiTest, WriteNode_UniqueByCreation_UndeleteCase) {
-  int64 preferences_root = MakeTypeRoot(user_share(), PREFERENCES);
+  int64_t preferences_root = MakeTypeRoot(user_share(), PREFERENCES);
 
   // Create a node with server only data.
-  int64 item1 = 0;
+  int64_t item1 = 0;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST,
                                      user_share()->directory.get());
@@ -757,7 +761,7 @@ TEST_F(SyncApiTest, WriteNode_UniqueByCreation_UndeleteCase) {
   EXPECT_EQ(1, GetTotalNodeCount(user_share(), preferences_root));
 
   // Create a client node with the same tag as the node above.
-  int64 item2 = MakeNode(user_share(), PREFERENCES, "foo");
+  int64_t item2 = MakeNode(user_share(), PREFERENCES, "foo");
   // Expect this to be the same directory entry as |item1|.
   EXPECT_EQ(item1, item2);
   // Expect it to be visible as a child of |preferences_root|.
@@ -960,11 +964,10 @@ class SyncManagerTest : public testing::Test,
     return GetRoutingInfoTypes(routing_info);
   }
 
-  void OnChangesApplied(
-      ModelType model_type,
-      int64 model_version,
-      const BaseTransaction* trans,
-      const ImmutableChangeRecordList& changes) override {}
+  void OnChangesApplied(ModelType model_type,
+                        int64_t model_version,
+                        const BaseTransaction* trans,
+                        const ImmutableChangeRecordList& changes) override {}
 
   void OnChangesComplete(ModelType model_type) override {}
 
@@ -974,7 +977,7 @@ class SyncManagerTest : public testing::Test,
     UserShare* share = sync_manager_.GetUserShare();
 
     // We need to create the nigori node as if it were an applied server update.
-    int64 nigori_id = GetIdForDataType(NIGORI);
+    int64_t nigori_id = GetIdForDataType(NIGORI);
     if (nigori_id == kInvalidId)
       return false;
 
@@ -1005,7 +1008,7 @@ class SyncManagerTest : public testing::Test,
     return cryptographer->is_ready();
   }
 
-  int64 GetIdForDataType(ModelType type) {
+  int64_t GetIdForDataType(ModelType type) {
     if (type_roots_.count(type) == 0)
       return 0;
     return type_roots_[type];
@@ -1118,7 +1121,7 @@ class SyncManagerTest : public testing::Test,
   // Needed by |sync_manager_|.
   base::ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
-  std::map<ModelType, int64> type_roots_;
+  std::map<ModelType, int64_t> type_roots_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
 
  protected:
@@ -1237,10 +1240,8 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
 
   // Create some unencrypted unsynced data.
-  int64 folder = MakeFolderWithParent(sync_manager_.GetUserShare(),
-                                      BOOKMARKS,
-                                      GetIdForDataType(BOOKMARKS),
-                                      NULL);
+  int64_t folder = MakeFolderWithParent(sync_manager_.GetUserShare(), BOOKMARKS,
+                                        GetIdForDataType(BOOKMARKS), NULL);
   // First batch_size nodes are children of folder.
   size_t i;
   for (i = 0; i < batch_size; ++i) {
@@ -1639,7 +1640,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
 
 TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  int64 node_id = 0;
+  int64_t node_id = 0;
   std::string tag = "foo";
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1684,9 +1685,9 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   std::string url2 = "http://www.bla.com";
 
   // Create a bookmark using the legacy format.
-  int64 node_id1 =
+  int64_t node_id1 =
       MakeNodeWithRoot(sync_manager_.GetUserShare(), BOOKMARKS, "testtag");
-  int64 node_id2 =
+  int64_t node_id2 =
       MakeNodeWithRoot(sync_manager_.GetUserShare(), BOOKMARKS, "testtag2");
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1797,7 +1798,7 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode bookmark_root(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, bookmark_root.InitTypeRoot(BOOKMARKS));
-    int64 child_id = bookmark_root.GetFirstChildId();
+    int64_t child_id = bookmark_root.GetFirstChildId();
 
     ReadNode node(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
@@ -2840,7 +2841,7 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
   AddDefaultFieldValue(BOOKMARKS, &bm_specifics);
   int pref1_meta = MakeServerNode(
       share, PREFERENCES, "pref1", "hash1", pref_specifics);
-  int64 pref2_meta = MakeNodeWithRoot(share, PREFERENCES, "pref2");
+  int64_t pref2_meta = MakeNodeWithRoot(share, PREFERENCES, "pref2");
   int pref3_meta = MakeServerNode(
       share, PREFERENCES, "pref3", "hash3", pref_specifics);
   int pref4_meta = MakeServerNode(
@@ -2956,7 +2957,7 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
 class SyncManagerChangeProcessingTest : public SyncManagerTest {
  public:
   void OnChangesApplied(ModelType model_type,
-                        int64 model_version,
+                        int64_t model_version,
                         const BaseTransaction* trans,
                         const ImmutableChangeRecordList& changes) override {
     last_changes_ = changes;
@@ -2985,7 +2986,7 @@ class SyncManagerChangeProcessingTest : public SyncManagerTest {
 
   // Looks for the given change in the list.  Returns the index at which it was
   // found.  Returns -1 on lookup failure.
-  size_t FindChangeInList(int64 id, ChangeRecord::Action action) {
+  size_t FindChangeInList(int64_t id, ChangeRecord::Action action) {
     SCOPED_TRACE(id);
     for (size_t i = 0; i < last_changes_.Get().size(); ++i) {
       if (last_changes_.Get()[i].id == id
@@ -3015,9 +3016,9 @@ class SyncManagerChangeProcessingTest : public SyncManagerTest {
 
 // Test creation of a folder and a bookmark.
 TEST_F(SyncManagerChangeProcessingTest, AddBookmarks) {
-  int64 type_root = GetIdForDataType(BOOKMARKS);
-  int64 folder_id = kInvalidId;
-  int64 child_id = kInvalidId;
+  int64_t type_root = GetIdForDataType(BOOKMARKS);
+  int64_t folder_id = kInvalidId;
+  int64_t child_id = kInvalidId;
 
   // Create a folder and a bookmark under it.
   {
@@ -3057,8 +3058,8 @@ TEST_F(SyncManagerChangeProcessingTest, AddBookmarks) {
 
 // Test creation of a preferences (with implicit parent Id)
 TEST_F(SyncManagerChangeProcessingTest, AddPreferences) {
-  int64 item1_id = kInvalidId;
-  int64 item2_id = kInvalidId;
+  int64_t item1_id = kInvalidId;
+  int64_t item2_id = kInvalidId;
 
   // Create two preferences.
   {
@@ -3090,9 +3091,9 @@ TEST_F(SyncManagerChangeProcessingTest, AddPreferences) {
 
 // Test moving a bookmark into an empty folder.
 TEST_F(SyncManagerChangeProcessingTest, MoveBookmarkIntoEmptyFolder) {
-  int64 type_root = GetIdForDataType(BOOKMARKS);
-  int64 folder_b_id = kInvalidId;
-  int64 child_id = kInvalidId;
+  int64_t type_root = GetIdForDataType(BOOKMARKS);
+  int64_t folder_b_id = kInvalidId;
+  int64_t child_id = kInvalidId;
 
   // Create two folders.  Place a child under folder A.
   {
@@ -3147,9 +3148,9 @@ TEST_F(SyncManagerChangeProcessingTest, MoveBookmarkIntoEmptyFolder) {
 
 // Test moving a bookmark into a non-empty folder.
 TEST_F(SyncManagerChangeProcessingTest, MoveIntoPopulatedFolder) {
-  int64 type_root = GetIdForDataType(BOOKMARKS);
-  int64 child_a_id = kInvalidId;
-  int64 child_b_id = kInvalidId;
+  int64_t type_root = GetIdForDataType(BOOKMARKS);
+  int64_t child_a_id = kInvalidId;
+  int64_t child_b_id = kInvalidId;
 
   // Create two folders.  Place one child each under folder A and folder B.
   {
@@ -3208,10 +3209,10 @@ TEST_F(SyncManagerChangeProcessingTest, MoveIntoPopulatedFolder) {
 
 // Tests the ordering of deletion changes.
 TEST_F(SyncManagerChangeProcessingTest, DeletionsAndChanges) {
-  int64 type_root = GetIdForDataType(BOOKMARKS);
-  int64 folder_a_id = kInvalidId;
-  int64 folder_b_id = kInvalidId;
-  int64 child_id = kInvalidId;
+  int64_t type_root = GetIdForDataType(BOOKMARKS);
+  int64_t folder_a_id = kInvalidId;
+  int64_t folder_b_id = kInvalidId;
+  int64_t child_id = kInvalidId;
 
   // Create two folders.  Place a child under folder A.
   {
@@ -3280,11 +3281,11 @@ TEST_F(SyncManagerChangeProcessingTest, DeletionsAndChanges) {
 // SyncManagerImpl::VisiblePropertiesDiffer.
 TEST_F(SyncManagerChangeProcessingTest, AttachmentMetadataOnlyChanges) {
   // Create an article with no attachments.  See that a change is generated.
-  int64 article_id = kInvalidId;
+  int64_t article_id = kInvalidId;
   {
     syncable::WriteTransaction trans(
         FROM_HERE, syncable::SYNCER, share()->directory.get());
-    int64 type_root = GetIdForDataType(ARTICLES);
+    int64_t type_root = GetIdForDataType(ARTICLES);
     syncable::Entry root(&trans, syncable::GET_BY_HANDLE, type_root);
     ASSERT_TRUE(root.good());
     syncable::MutableEntry article(

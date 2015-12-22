@@ -5,8 +5,11 @@
 #ifndef SYNC_SYNCABLE_MUTABLE_ENTRY_H_
 #define SYNC_SYNCABLE_MUTABLE_ENTRY_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/entry.h"
@@ -41,7 +44,7 @@ class SYNC_EXPORT MutableEntry : public ModelNeutralMutableEntry {
                ModelType model_type,
                const Id& parent_id,
                const std::string& name);
-  MutableEntry(WriteTransaction* trans, GetByHandle, int64);
+  MutableEntry(WriteTransaction* trans, GetByHandle, int64_t);
   MutableEntry(WriteTransaction* trans, GetById, const Id&);
   MutableEntry(WriteTransaction* trans, GetByClientTag, const std::string& tag);
   MutableEntry(WriteTransaction* trans, GetTypeRoot, ModelType type);
@@ -52,7 +55,7 @@ class SYNC_EXPORT MutableEntry : public ModelNeutralMutableEntry {
 
   // Model-changing setters.  These setters make user-visible changes that will
   // need to be communicated either to the local model or the sync server.
-  void PutLocalExternalId(int64 value);
+  void PutLocalExternalId(int64_t value);
   void PutMtime(base::Time value);
   void PutCtime(base::Time value);
   void PutParentId(const Id& value);

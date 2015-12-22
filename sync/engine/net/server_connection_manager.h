@@ -5,10 +5,13 @@
 #ifndef SYNC_ENGINE_NET_SERVER_CONNECTION_MANAGER_H_
 #define SYNC_ENGINE_NET_SERVER_CONNECTION_MANAGER_H_
 
+#include <stdint.h>
+
 #include <iosfwd>
 #include <string>
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
@@ -31,9 +34,9 @@ namespace syncable {
 class Directory;
 }
 
-static const int32 kUnsetResponseCode = -1;
-static const int32 kUnsetContentLength = -1;
-static const int32 kUnsetPayloadLength = -1;
+static const int32_t kUnsetResponseCode = -1;
+static const int32_t kUnsetContentLength = -1;
+static const int32_t kUnsetPayloadLength = -1;
 
 // HttpResponse gathers the relevant output properties of an HTTP request.
 // Depending on the value of the server_status code, response_code, and
@@ -73,13 +76,13 @@ struct SYNC_EXPORT HttpResponse {
   };
 
   // The HTTP Status code.
-  int64 response_code;
+  int64_t response_code;
 
   // The value of the Content-length header.
-  int64 content_length;
+  int64_t content_length;
 
   // The size of a download request's payload.
-  int64 payload_length;
+  int64_t payload_length;
 
   // Identifies the type of failure, if any.
   ServerConnectionCode server_status;

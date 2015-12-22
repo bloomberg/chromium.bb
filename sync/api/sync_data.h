@@ -5,11 +5,12 @@
 #ifndef SYNC_API_SYNC_DATA_H_
 #define SYNC_API_SYNC_DATA_H_
 
+#include <stdint.h>
+
 #include <iosfwd>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
@@ -71,7 +72,7 @@ class SYNC_EXPORT SyncData {
 
   // Helper method for creating SyncData objects originating from the syncer.
   static SyncData CreateRemoteData(
-      int64 id,
+      int64_t id,
       const sync_pb::EntitySpecifics& specifics,
       const base::Time& last_modified_time,
       const AttachmentIdList& attachment_ids,
@@ -128,7 +129,7 @@ class SYNC_EXPORT SyncData {
       ImmutableSyncEntity;
 
   // Equal to kInvalidId iff this is local.
-  int64 id_;
+  int64_t id_;
 
   // This may be null if the SyncData represents a deleted item.
   base::Time remote_modification_time_;
@@ -143,7 +144,7 @@ class SYNC_EXPORT SyncData {
   bool is_valid_;
 
   // Clears |entity| and |attachments|.
-  SyncData(int64 id,
+  SyncData(int64_t id,
            sync_pb::SyncEntity* entity,
            const base::Time& remote_modification_time,
            const syncer::AttachmentServiceProxy& attachment_service);
@@ -176,7 +177,7 @@ class SYNC_EXPORT SyncDataRemote : public SyncData {
   // if the SyncData represents a deleted item.
   const base::Time& GetModifiedTime() const;
 
-  int64 GetId() const;
+  int64_t GetId() const;
 
   // Retrieve the attachments indentified by |attachment_ids|. Invoke
   // |callback| with the requested attachments.

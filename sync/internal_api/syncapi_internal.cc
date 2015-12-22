@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/syncapi_internal.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/protocol/attachments.pb.h"
 #include "sync/protocol/password_specifics.pb.h"

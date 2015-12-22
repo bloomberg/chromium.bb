@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "sync/test/null_directory_change_delegate.h"
 
 namespace syncer {
@@ -12,7 +14,7 @@ NullDirectoryChangeDelegate::~NullDirectoryChangeDelegate() {}
 void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncApi(
     const ImmutableWriteTransactionInfo& write_transaction_info,
     BaseTransaction* trans,
-    std::vector<int64>* entries_changed) {
+    std::vector<int64_t>* entries_changed) {
   for (EntryKernelMutationMap::const_iterator it =
           write_transaction_info.Get().mutations.Get().begin();
       it != write_transaction_info.Get().mutations.Get().end(); ++it) {
@@ -23,7 +25,7 @@ void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncApi(
 void NullDirectoryChangeDelegate::HandleCalculateChangesChangeEventFromSyncer(
     const ImmutableWriteTransactionInfo& write_transaction_info,
     BaseTransaction* trans,
-    std::vector<int64>* entries_changed) {
+    std::vector<int64_t>* entries_changed) {
   for (EntryKernelMutationMap::const_iterator it =
           write_transaction_info.Get().mutations.Get().begin();
       it != write_transaction_info.Get().mutations.Get().end(); ++it) {

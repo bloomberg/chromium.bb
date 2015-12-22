@@ -4,6 +4,9 @@
 
 #include "sync/engine/directory_commit_contribution.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <set>
 
@@ -31,7 +34,7 @@ scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
     DirectoryTypeDebugInfoEmitter* debug_info_emitter) {
   DCHECK(debug_info_emitter);
 
-  std::vector<int64> metahandles;
+  std::vector<int64_t> metahandles;
 
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir);
   GetCommitIdsForType(&trans, type, max_entries, &metahandles);
@@ -40,7 +43,7 @@ scoped_ptr<DirectoryCommitContribution> DirectoryCommitContribution::Build(
     return scoped_ptr<DirectoryCommitContribution>();
 
   google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> entities;
-  for (std::vector<int64>::iterator it = metahandles.begin();
+  for (std::vector<int64_t>::iterator it = metahandles.begin();
        it != metahandles.end(); ++it) {
     sync_pb::SyncEntity* entity = entities.Add();
     syncable::ModelNeutralMutableEntry entry(&trans, GET_BY_HANDLE, *it);
@@ -169,7 +172,7 @@ size_t DirectoryCommitContribution::GetNumEntries() const {
 }
 
 DirectoryCommitContribution::DirectoryCommitContribution(
-    const std::vector<int64>& metahandles,
+    const std::vector<int64_t>& metahandles,
     const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
     const sync_pb::DataTypeContext& context,
     syncable::Directory* dir,
@@ -184,7 +187,7 @@ DirectoryCommitContribution::DirectoryCommitContribution(
 
 void DirectoryCommitContribution::UnsetSyncingBits() {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
-  for (std::vector<int64>::const_iterator it = metahandles_.begin();
+  for (std::vector<int64_t>::const_iterator it = metahandles_.begin();
        it != metahandles_.end(); ++it) {
     syncable::ModelNeutralMutableEntry entry(&trans, GET_BY_HANDLE, *it);
     // TODO(sync): this seems like it could be harmful if a sync cycle doesn't

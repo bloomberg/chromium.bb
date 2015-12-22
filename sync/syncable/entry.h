@@ -5,9 +5,13 @@
 #ifndef SYNC_SYNCABLE_ENTRY_H_
 #define SYNC_SYNCABLE_ENTRY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/entry_kernel.h"
 
@@ -54,7 +58,7 @@ class SYNC_EXPORT Entry {
  public:
   // After constructing, you must check good() to test whether the Get
   // succeeded.
-  Entry(BaseTransaction* trans, GetByHandle, int64 handle);
+  Entry(BaseTransaction* trans, GetByHandle, int64_t handle);
   Entry(BaseTransaction* trans, GetById, const Id& id);
   Entry(BaseTransaction* trans, GetTypeRoot, ModelType type);
   Entry(BaseTransaction* trans, GetByClientTag, const std::string& tag);
@@ -68,27 +72,27 @@ class SYNC_EXPORT Entry {
   BaseTransaction* trans() const { return basetrans_; }
 
   // Field accessors.
-  int64 GetMetahandle() const {
+  int64_t GetMetahandle() const {
     DCHECK(kernel_);
     return kernel_->ref(META_HANDLE);
   }
 
-  int64 GetBaseVersion() const {
+  int64_t GetBaseVersion() const {
     DCHECK(kernel_);
     return kernel_->ref(BASE_VERSION);
   }
 
-  int64 GetServerVersion() const {
+  int64_t GetServerVersion() const {
     DCHECK(kernel_);
     return kernel_->ref(SERVER_VERSION);
   }
 
-  int64 GetLocalExternalId() const {
+  int64_t GetLocalExternalId() const {
     DCHECK(kernel_);
     return kernel_->ref(LOCAL_EXTERNAL_ID);
   }
 
-  int64 GetTransactionVersion() const {
+  int64_t GetTransactionVersion() const {
     DCHECK(kernel_);
     return kernel_->ref(TRANSACTION_VERSION);
   }
@@ -235,7 +239,7 @@ class SYNC_EXPORT Entry {
   // Clears |result| if there are no children.  If this node is of a type that
   // supports user-defined ordering then the resulting vector will be in the
   // proper order.
-  void GetChildHandles(std::vector<int64>* result) const;
+  void GetChildHandles(std::vector<int64_t>* result) const;
 
   inline bool ExistsOnClientBecauseNameIsNonEmpty() const {
     DCHECK(kernel_);

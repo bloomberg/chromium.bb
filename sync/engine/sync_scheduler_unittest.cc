@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -238,7 +241,7 @@ class SyncSchedulerTest : public testing::Test {
   }
 
   static scoped_ptr<InvalidationInterface> BuildInvalidation(
-      int64 version,
+      int64_t version,
       const std::string& payload) {
     return MockInvalidation::Build(version, payload);
   }

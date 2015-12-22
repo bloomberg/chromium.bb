@@ -5,8 +5,11 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_
 #define SYNC_SYNCABLE_SYNCABLE_WRITE_TRANSACTION_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/syncable_base_write_transaction.h"
@@ -14,7 +17,7 @@
 namespace syncer {
 namespace syncable {
 
-SYNC_EXPORT extern const int64 kInvalidTransactionVersion;
+SYNC_EXPORT extern const int64_t kInvalidTransactionVersion;
 
 // Locks db in constructor, unlocks in destructor.
 class SYNC_EXPORT WriteTransaction : public BaseWriteTransaction {
@@ -28,7 +31,8 @@ class SYNC_EXPORT WriteTransaction : public BaseWriteTransaction {
   // in |transaction_version| upon destruction of the transaction. If model is
   // not changed,  |transaction_version| will be kInvalidTransactionVersion.
   WriteTransaction(const tracked_objects::Location& from_here,
-                   Directory* directory, int64* transaction_version);
+                   Directory* directory,
+                   int64_t* transaction_version);
 
   ~WriteTransaction() override;
 
@@ -51,7 +55,7 @@ class SYNC_EXPORT WriteTransaction : public BaseWriteTransaction {
 
   // Increment versions of the models whose entries are modified and set the
   // version on the changed entries.
-  void UpdateTransactionVersion(const std::vector<int64>& entry_changed);
+  void UpdateTransactionVersion(const std::vector<int64_t>& entry_changed);
 
   // Only the original fields are filled in until |RecordMutations()|.
   // We use a mutation map instead of a kernel set to avoid copying.
@@ -59,7 +63,7 @@ class SYNC_EXPORT WriteTransaction : public BaseWriteTransaction {
 
   // Stores new transaction version of changed model and nodes if model is
   // indeed changed. kInvalidTransactionVersion otherwise. Not owned.
-  int64* transaction_version_;
+  int64_t* transaction_version_;
 
   DISALLOW_COPY_AND_ASSIGN(WriteTransaction);
 };

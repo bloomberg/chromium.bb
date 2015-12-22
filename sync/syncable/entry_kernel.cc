@@ -4,6 +4,8 @@
 
 #include "sync/syncable/entry_kernel.h"
 
+#include <stdint.h>
+
 #include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "sync/protocol/proto_value_conversions.h"
@@ -115,7 +117,7 @@ void SetEncryptableProtoValues(
 
 // Helper functions for SetFieldValues().
 
-base::StringValue* Int64ToValue(int64 i) {
+base::StringValue* Int64ToValue(int64_t i) {
   return new base::StringValue(base::Int64ToString(i));
 }
 

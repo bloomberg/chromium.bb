@@ -4,20 +4,21 @@
 
 #include "sync/test/trackable_mock_invalidation.h"
 
+#include <stdint.h>
+
 #include "sync/test/mock_invalidation_tracker.h"
 
 namespace syncer {
 
 TrackableMockInvalidation::TrackableMockInvalidation(
     bool is_unknown_version,
-    int64 version,
+    int64_t version,
     const std::string& payload,
     MockInvalidationTracker* tracker,
     int tracking_id)
     : MockInvalidation(is_unknown_version, version, payload),
       tracker_(tracker),
-      tracking_id_(tracking_id) {
-}
+      tracking_id_(tracking_id) {}
 
 TrackableMockInvalidation::~TrackableMockInvalidation() {
 }

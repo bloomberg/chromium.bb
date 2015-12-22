@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/test/test_entry_factory.h"
 
+#include <stdint.h>
+
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
@@ -28,7 +30,7 @@ TestEntryFactory::TestEntryFactory(syncable::Directory *dir)
 
 TestEntryFactory::~TestEntryFactory() { }
 
-int64 TestEntryFactory::CreateUnappliedNewItemWithParent(
+int64_t TestEntryFactory::CreateUnappliedNewItemWithParent(
     const string& item_id,
     const sync_pb::EntitySpecifics& specifics,
     const string& parent_id) {
@@ -46,7 +48,7 @@ int64 TestEntryFactory::CreateUnappliedNewItemWithParent(
   return entry.GetMetahandle();
 }
 
-int64 TestEntryFactory::CreateUnappliedNewBookmarkItemWithParent(
+int64_t TestEntryFactory::CreateUnappliedNewBookmarkItemWithParent(
     const string& item_id,
     const sync_pb::EntitySpecifics& specifics,
     const string& parent_id) {
@@ -65,7 +67,7 @@ int64 TestEntryFactory::CreateUnappliedNewBookmarkItemWithParent(
   return entry.GetMetahandle();
 }
 
-int64 TestEntryFactory::CreateUnappliedNewItem(
+int64_t TestEntryFactory::CreateUnappliedNewItem(
     const string& item_id,
     const sync_pb::EntitySpecifics& specifics,
     bool is_unique) {
@@ -86,13 +88,12 @@ int64 TestEntryFactory::CreateUnappliedNewItem(
   return entry.GetMetahandle();
 }
 
-void TestEntryFactory::CreateUnsyncedItem(
-    const Id& item_id,
-    const Id& parent_id,
-    const string& name,
-    bool is_folder,
-    ModelType model_type,
-    int64* metahandle_out) {
+void TestEntryFactory::CreateUnsyncedItem(const Id& item_id,
+                                          const Id& parent_id,
+                                          const string& name,
+                                          bool is_folder,
+                                          ModelType model_type,
+                                          int64_t* metahandle_out) {
   if (is_folder) {
     DCHECK_EQ(model_type, BOOKMARKS);
   }
@@ -122,9 +123,9 @@ void TestEntryFactory::CreateUnsyncedItem(
     *metahandle_out = entry.GetMetahandle();
 }
 
-int64 TestEntryFactory::CreateUnappliedAndUnsyncedBookmarkItem(
+int64_t TestEntryFactory::CreateUnappliedAndUnsyncedBookmarkItem(
     const string& name) {
-  int64 metahandle = 0;
+  int64_t metahandle = 0;
   CreateUnsyncedItem(
       TestIdFactory::MakeServer(name), TestIdFactory::root(),
       name, false, BOOKMARKS, &metahandle);
@@ -142,13 +143,14 @@ int64 TestEntryFactory::CreateUnappliedAndUnsyncedBookmarkItem(
   return metahandle;
 }
 
-int64 TestEntryFactory::CreateSyncedItem(
-    const std::string& name, ModelType model_type, bool is_folder) {
+int64_t TestEntryFactory::CreateSyncedItem(const std::string& name,
+                                           ModelType model_type,
+                                           bool is_folder) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
 
   syncable::Id parent_id(TestIdFactory::root());
   syncable::Id item_id(TestIdFactory::MakeServer(name));
-  int64 version = GetNextRevision();
+  int64_t version = GetNextRevision();
 
   MutableEntry entry(&trans, syncable::CREATE, model_type, parent_id, name);
   if (!entry.good()) {
@@ -175,8 +177,7 @@ int64 TestEntryFactory::CreateSyncedItem(
   return entry.GetMetahandle();
 }
 
-int64 TestEntryFactory::CreateUnappliedRootNode(
-    ModelType model_type) {
+int64_t TestEntryFactory::CreateUnappliedRootNode(ModelType model_type) {
   syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, directory_);
   sync_pb::EntitySpecifics specifics;
   AddDefaultFieldValue(model_type, &specifics);
@@ -198,7 +199,7 @@ int64 TestEntryFactory::CreateUnappliedRootNode(
 }
 
 bool TestEntryFactory::SetServerSpecificsForItem(
-    int64 meta_handle,
+    int64_t meta_handle,
     const sync_pb::EntitySpecifics specifics) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
   MutableEntry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
@@ -211,7 +212,7 @@ bool TestEntryFactory::SetServerSpecificsForItem(
 }
 
 bool TestEntryFactory::SetLocalSpecificsForItem(
-    int64 meta_handle,
+    int64_t meta_handle,
     const sync_pb::EntitySpecifics specifics) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
   MutableEntry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
@@ -224,7 +225,7 @@ bool TestEntryFactory::SetLocalSpecificsForItem(
 }
 
 const sync_pb::EntitySpecifics& TestEntryFactory::GetServerSpecificsForItem(
-    int64 meta_handle) const {
+    int64_t meta_handle) const {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
   syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
   DCHECK(entry.good());
@@ -232,7 +233,7 @@ const sync_pb::EntitySpecifics& TestEntryFactory::GetServerSpecificsForItem(
 }
 
 const sync_pb::EntitySpecifics& TestEntryFactory::GetLocalSpecificsForItem(
-    int64 meta_handle) const {
+    int64_t meta_handle) const {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
   syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
   DCHECK(entry.good());
@@ -240,7 +241,7 @@ const sync_pb::EntitySpecifics& TestEntryFactory::GetLocalSpecificsForItem(
 }
 
 bool TestEntryFactory::SetServerAttachmentMetadataForItem(
-    int64 meta_handle,
+    int64_t meta_handle,
     const sync_pb::AttachmentMetadata metadata) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
   MutableEntry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
@@ -253,7 +254,7 @@ bool TestEntryFactory::SetServerAttachmentMetadataForItem(
 }
 
 bool TestEntryFactory::SetLocalAttachmentMetadataForItem(
-    int64 meta_handle,
+    int64_t meta_handle,
     const sync_pb::AttachmentMetadata metadata) {
   WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
   MutableEntry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
@@ -266,7 +267,8 @@ bool TestEntryFactory::SetLocalAttachmentMetadataForItem(
 }
 
 const sync_pb::AttachmentMetadata&
-TestEntryFactory::GetServerAttachmentMetadataForItem(int64 meta_handle) const {
+TestEntryFactory::GetServerAttachmentMetadataForItem(
+    int64_t meta_handle) const {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
   syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
   DCHECK(entry.good());
@@ -274,14 +276,14 @@ TestEntryFactory::GetServerAttachmentMetadataForItem(int64 meta_handle) const {
 }
 
 const sync_pb::AttachmentMetadata&
-TestEntryFactory::GetLocalAttachmentMetadataForItem(int64 meta_handle) const {
+TestEntryFactory::GetLocalAttachmentMetadataForItem(int64_t meta_handle) const {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
   syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
   DCHECK(entry.good());
   return entry.GetAttachmentMetadata();
 }
 
-bool TestEntryFactory::GetIsUnsyncedForItem(int64 meta_handle) const {
+bool TestEntryFactory::GetIsUnsyncedForItem(int64_t meta_handle) const {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
   syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
   if (!entry.good()) {
@@ -291,7 +293,7 @@ bool TestEntryFactory::GetIsUnsyncedForItem(int64 meta_handle) const {
   return entry.GetIsUnsynced();
 }
 
-bool TestEntryFactory::GetIsUnappliedForItem(int64 meta_handle) const {
+bool TestEntryFactory::GetIsUnappliedForItem(int64_t meta_handle) const {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
   syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
   if (!entry.good()) {
@@ -301,7 +303,7 @@ bool TestEntryFactory::GetIsUnappliedForItem(int64 meta_handle) const {
   return entry.GetIsUnappliedUpdate();
 }
 
-int64 TestEntryFactory::GetNextRevision() {
+int64_t TestEntryFactory::GetNextRevision() {
   return next_revision_++;
 }
 

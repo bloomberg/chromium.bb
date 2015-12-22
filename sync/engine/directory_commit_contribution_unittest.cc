@@ -4,6 +4,8 @@
 
 #include "sync/engine/directory_commit_contribution.h"
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
@@ -36,7 +38,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
   void TearDown() override { dir_maker_.TearDown(); }
 
  protected:
-  int64 CreateUnsyncedItemWithAttachments(
+  int64_t CreateUnsyncedItemWithAttachments(
       syncable::WriteTransaction* trans,
       ModelType type,
       const std::string& tag,
@@ -57,16 +59,16 @@ class DirectoryCommitContributionTest : public ::testing::Test {
     return entry.GetMetahandle();
   }
 
-  int64 CreateUnsyncedItem(syncable::WriteTransaction* trans,
-                           ModelType type,
-                           const std::string& tag) {
+  int64_t CreateUnsyncedItem(syncable::WriteTransaction* trans,
+                             ModelType type,
+                             const std::string& tag) {
     return CreateUnsyncedItemWithAttachments(
         trans, type, tag, sync_pb::AttachmentMetadata());
   }
 
-  int64 CreateSyncedItem(syncable::WriteTransaction* trans,
-                         ModelType type,
-                         const std::string& tag) {
+  int64_t CreateSyncedItem(syncable::WriteTransaction* trans,
+                           ModelType type,
+                           const std::string& tag) {
     syncable::Entry parent_entry(trans, syncable::GET_TYPE_ROOT, type);
     syncable::MutableEntry entry(
         trans,
@@ -118,7 +120,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
 // Verify that the DirectoryCommitContribution contains only entries of its
 // specified type.
 TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
-  int64 pref1;
+  int64_t pref1;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     pref1 = CreateUnsyncedItem(&trans, PREFERENCES, "pref1");
@@ -131,7 +133,7 @@ TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 5, &emitter));
   ASSERT_EQ(2U, cc->GetNumEntries());
 
-  const std::vector<int64>& metahandles = cc->metahandles_;
+  const std::vector<int64_t>& metahandles = cc->metahandles_;
   EXPECT_TRUE(std::find(metahandles.begin(), metahandles.end(), pref1) !=
               metahandles.end());
   EXPECT_TRUE(std::find(metahandles.begin(), metahandles.end(), pref1) !=
@@ -143,8 +145,8 @@ TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
 // Verify that the DirectoryCommitContributionTest builder function
 // truncates if necessary.
 TEST_F(DirectoryCommitContributionTest, GatherAndTruncate) {
-  int64 pref1;
-  int64 pref2;
+  int64_t pref1;
+  int64_t pref2;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     pref1 = CreateUnsyncedItem(&trans, PREFERENCES, "pref1");
@@ -157,7 +159,7 @@ TEST_F(DirectoryCommitContributionTest, GatherAndTruncate) {
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 1, &emitter));
   ASSERT_EQ(1U, cc->GetNumEntries());
 
-  int64 only_metahandle = cc->metahandles_[0];
+  int64_t only_metahandle = cc->metahandles_[0];
   EXPECT_TRUE(only_metahandle == pref1 || only_metahandle == pref2);
 
   cc->CleanUp();
@@ -220,7 +222,7 @@ TEST_F(DirectoryCommitContributionTest, PrepareCommit) {
 // This was not always the case, but was implemented to allow us to loosen some
 // other restrictions in the protocol.
 TEST_F(DirectoryCommitContributionTest, DeletedItemsWithSpecifics) {
-  int64 pref1;
+  int64_t pref1;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     pref1 = CreateSyncedItem(&trans, PREFERENCES, "pref1");
@@ -249,7 +251,7 @@ TEST_F(DirectoryCommitContributionTest, DeletedItemsWithSpecifics) {
 // Deleted bookmarks include a valid "is folder" bit and their full specifics
 // (especially the meta info, which is what server really wants).
 TEST_F(DirectoryCommitContributionTest, DeletedBookmarksWithSpecifics) {
-  int64 bm1;
+  int64_t bm1;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     bm1 = CreateSyncedItem(&trans, BOOKMARKS, "bm1");
@@ -295,7 +297,7 @@ TEST_F(DirectoryCommitContributionTest, DeletedBookmarksWithSpecifics) {
 // Test that bookmarks support hierarchy.
 TEST_F(DirectoryCommitContributionTest, HierarchySupport_Bookmark) {
   // Create a normal-looking bookmark item.
-  int64 bm1;
+  int64_t bm1;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     bm1 = CreateSyncedItem(&trans, BOOKMARKS, "bm1");
@@ -330,7 +332,7 @@ TEST_F(DirectoryCommitContributionTest, HierarchySupport_Bookmark) {
 // Test that preferences do not support hierarchy.
 TEST_F(DirectoryCommitContributionTest, HierarchySupport_Preferences) {
   // Create a normal-looking prefs item.
-  int64 pref1;
+  int64_t pref1;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     pref1 = CreateUnsyncedItem(&trans, PREFERENCES, "pref1");
@@ -364,9 +366,9 @@ void AddAttachment(sync_pb::AttachmentMetadata* metadata, bool is_on_server) {
 // specially crafted response to the syncer in order to test commit response
 // processing.  The response simulates a succesful commit scenario.
 TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
-  int64 pref1_handle;
-  int64 pref2_handle;
-  int64 ext1_handle;
+  int64_t pref1_handle;
+  int64_t pref2_handle;
+  int64_t ext1_handle;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     pref1_handle = CreateUnsyncedItem(&trans, PREFERENCES, "pref1");
@@ -431,9 +433,9 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
 // where all attachments have been uploaded to the server are eligible to be
 // committed.
 TEST_F(DirectoryCommitContributionTest, ProcessCommitResponseWithAttachments) {
-  int64 art1_handle;
-  int64 art2_handle;
-  int64 art3_handle;
+  int64_t art1_handle;
+  int64_t art2_handle;
+  int64_t art3_handle;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
 

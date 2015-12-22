@@ -12,6 +12,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

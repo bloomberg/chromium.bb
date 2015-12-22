@@ -5,8 +5,11 @@
 #ifndef SYNC_ENGINE_DIRECTORY_COMMIT_CONTRIBUTOR_H_
 #define SYNC_ENGINE_DIRECTORY_COMMIT_CONTRIBUTOR_H_
 
+#include <stddef.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/engine/commit_contributor.h"
 #include "sync/engine/directory_commit_contribution.h"

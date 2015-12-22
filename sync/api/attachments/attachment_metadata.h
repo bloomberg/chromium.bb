@@ -5,9 +5,10 @@
 #ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_METADATA_H_
 #define SYNC_API_ATTACHMENTS_ATTACHMENT_METADATA_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"
 

@@ -5,10 +5,11 @@
 #ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_H_
 #define SYNC_API_ATTACHMENTS_ATTACHMENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"

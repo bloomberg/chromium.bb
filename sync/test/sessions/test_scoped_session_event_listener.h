@@ -5,6 +5,7 @@
 #ifndef SYNC_TEST_SESSIONS_TEST_SCOPED_SESSION_EVENT_LISTENER_H_
 #define SYNC_TEST_SESSIONS_TEST_SCOPED_SESSION_EVENT_LISTENER_H_
 
+#include "base/macros.h"
 #include "sync/sessions/sync_session_context.h"
 
 namespace syncer {

@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/sync_rollback_manager_base.h"
 
+#include <stdint.h>
+
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
@@ -178,16 +180,14 @@ ModelTypeSet SyncRollbackManagerBase::HandleTransactionEndingChangeEvent(
 }
 
 void SyncRollbackManagerBase::HandleCalculateChangesChangeEventFromSyncApi(
-      const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-      syncable::BaseTransaction* trans,
-      std::vector<int64>* entries_changed) {
-}
+    const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
+    syncable::BaseTransaction* trans,
+    std::vector<int64_t>* entries_changed) {}
 
 void SyncRollbackManagerBase::HandleCalculateChangesChangeEventFromSyncer(
-      const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
-      syncable::BaseTransaction* trans,
-      std::vector<int64>* entries_changed) {
-}
+    const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
+    syncable::BaseTransaction* trans,
+    std::vector<int64_t>* entries_changed) {}
 
 void SyncRollbackManagerBase::OnTransactionWrite(
     const syncable::ImmutableWriteTransactionInfo& write_transaction_info,

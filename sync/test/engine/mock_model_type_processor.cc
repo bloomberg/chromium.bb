@@ -4,6 +4,9 @@
 
 #include "sync/test/engine/mock_model_type_processor.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "sync/engine/commit_queue.h"
 
@@ -62,7 +65,7 @@ void MockModelTypeProcessor::RunQueuedTasks() {
 CommitRequestData MockModelTypeProcessor::CommitRequest(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
-  const int64 base_version = GetBaseVersion(tag_hash);
+  const int64_t base_version = GetBaseVersion(tag_hash);
 
   EntityData data;
 
@@ -90,7 +93,7 @@ CommitRequestData MockModelTypeProcessor::CommitRequest(
 
 CommitRequestData MockModelTypeProcessor::DeleteRequest(
     const std::string& tag_hash) {
-  const int64 base_version = GetBaseVersion(tag_hash);
+  const int64_t base_version = GetBaseVersion(tag_hash);
 
   EntityData data;
 
@@ -218,9 +221,9 @@ void MockModelTypeProcessor::OnUpdateReceivedImpl(
 }
 
 // Fetches the sequence number as of the most recent update request.
-int64 MockModelTypeProcessor::GetCurrentSequenceNumber(
+int64_t MockModelTypeProcessor::GetCurrentSequenceNumber(
     const std::string& tag_hash) const {
-  std::map<const std::string, int64>::const_iterator it =
+  std::map<const std::string, int64_t>::const_iterator it =
       sequence_numbers_.find(tag_hash);
   if (it == sequence_numbers_.end()) {
     return 0;
@@ -231,17 +234,17 @@ int64 MockModelTypeProcessor::GetCurrentSequenceNumber(
 
 // The model thread should be sending us items with strictly increasing
 // sequence numbers.  Here's where we emulate that behavior.
-int64 MockModelTypeProcessor::GetNextSequenceNumber(
+int64_t MockModelTypeProcessor::GetNextSequenceNumber(
     const std::string& tag_hash) {
-  int64 sequence_number = GetCurrentSequenceNumber(tag_hash);
+  int64_t sequence_number = GetCurrentSequenceNumber(tag_hash);
   sequence_number++;
   sequence_numbers_[tag_hash] = sequence_number;
   return sequence_number;
 }
 
-int64 MockModelTypeProcessor::GetBaseVersion(
+int64_t MockModelTypeProcessor::GetBaseVersion(
     const std::string& tag_hash) const {
-  std::map<const std::string, int64>::const_iterator it =
+  std::map<const std::string, int64_t>::const_iterator it =
       base_versions_.find(tag_hash);
   if (it == base_versions_.end()) {
     return kUncommittedVersion;
@@ -251,7 +254,7 @@ int64 MockModelTypeProcessor::GetBaseVersion(
 }
 
 void MockModelTypeProcessor::SetBaseVersion(const std::string& tag_hash,
-                                            int64 version) {
+                                            int64_t version) {
   base_versions_[tag_hash] = version;
 }
 

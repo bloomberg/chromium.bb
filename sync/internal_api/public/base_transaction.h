@@ -5,6 +5,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/user_share.h"

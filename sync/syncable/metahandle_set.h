@@ -5,14 +5,15 @@
 #ifndef SYNC_SYNCABLE_METAHANDLE_SET_H_
 #define SYNC_SYNCABLE_METAHANDLE_SET_H_
 
+#include <stdint.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 
 namespace syncer {
 namespace syncable {
 
-typedef std::set<int64> MetahandleSet;
+typedef std::set<int64_t> MetahandleSet;
 
 }  // namespace syncable
 }  // namespace syncer

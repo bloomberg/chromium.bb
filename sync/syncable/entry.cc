@@ -4,6 +4,8 @@
 
 #include "sync/syncable/entry.h"
 
+#include <stdint.h>
+
 #include <iomanip>
 
 #include "sync/syncable/directory.h"
@@ -28,7 +30,7 @@ Entry::Entry(BaseTransaction* trans, GetTypeRoot, ModelType type)
   kernel_ = trans->directory()->GetEntryByServerTag(tag);
 }
 
-Entry::Entry(BaseTransaction* trans, GetByHandle, int64 metahandle)
+Entry::Entry(BaseTransaction* trans, GetByHandle, int64_t metahandle)
     : basetrans_(trans) {
   kernel_ = trans->directory()->GetEntryByHandle(metahandle);
 }
@@ -109,7 +111,7 @@ Id Entry::GetFirstChildId() const {
   return dir()->GetFirstChildId(basetrans_, kernel_);
 }
 
-void Entry::GetChildHandles(std::vector<int64>* result) const {
+void Entry::GetChildHandles(std::vector<int64_t>* result) const {
   dir()->GetChildHandlesById(basetrans_, GetId(), result);
 }
 

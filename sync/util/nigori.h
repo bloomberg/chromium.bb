@@ -5,6 +5,8 @@
 #ifndef SYNC_UTIL_NIGORI_H_
 #define SYNC_UTIL_NIGORI_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"

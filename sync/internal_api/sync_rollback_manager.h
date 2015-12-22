@@ -5,10 +5,13 @@
 #ifndef SYNC_INTERNAL_API_SYNC_ROLLBACK_MANAGER_H_
 #define SYNC_INTERNAL_API_SYNC_ROLLBACK_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "sync/internal_api/sync_rollback_manager_base.h"
 
 class GURL;
@@ -29,7 +32,8 @@ class SYNC_EXPORT SyncRollbackManager : public SyncRollbackManagerBase {
 
  private:
   // Deletes specified entries in local model.
-  SyncerError DeleteOnWorkerThread(ModelType type, std::vector<int64> handles);
+  SyncerError DeleteOnWorkerThread(ModelType type,
+                                   std::vector<int64_t> handles);
 
   void NotifyRollbackDone();
 

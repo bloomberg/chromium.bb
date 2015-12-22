@@ -5,11 +5,12 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_ORDINAL_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_ORDINAL_H_
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 
@@ -38,8 +39,8 @@ namespace syncer {
 //   struct MyOrdinalTraits {
 //     // There must be at least two distinct values greater than kZeroDigit
 //     // and less than kMaxDigit.
-//     static const uint8 kZeroDigit = '0';
-//     static const uint8 kMaxDigit = '9';
+//     static const uint8_t kZeroDigit = '0';
+//     static const uint8_t kMaxDigit = '9';
 //     // kMinLength must be positive.
 //     static const size_t kMinLength = 1;
 //   };
@@ -132,11 +133,11 @@ class Ordinal {
   // Use of copy constructor and default assignment for this class is allowed.
 
   // Constants for Ordinal digits.
-  static const uint8 kZeroDigit = Traits::kZeroDigit;
-  static const uint8 kMaxDigit = Traits::kMaxDigit;
+  static const uint8_t kZeroDigit = Traits::kZeroDigit;
+  static const uint8_t kMaxDigit = Traits::kMaxDigit;
   static const size_t kMinLength = Traits::kMinLength;
-  static const uint8 kOneDigit = kZeroDigit + 1;
-  static const uint8 kMidDigit = kOneDigit + (kMaxDigit - kOneDigit) / 2;
+  static const uint8_t kOneDigit = kZeroDigit + 1;
+  static const uint8_t kMidDigit = kOneDigit + (kMaxDigit - kOneDigit) / 2;
   static const unsigned int kMidDigitValue = kMidDigit - kZeroDigit;
   static const unsigned int kMaxDigitValue = kMaxDigit - kZeroDigit;
   static const unsigned int kRadix = kMaxDigitValue + 1;
@@ -162,7 +163,7 @@ class Ordinal {
 
   // Returns the digit at position i, padding with zero digits if
   // required.
-  static uint8 GetDigit(const std::string& bytes, size_t i);
+  static uint8_t GetDigit(const std::string& bytes, size_t i);
 
   // Returns the digit value at position i, padding with 0 if required.
   static int GetDigitValue(const std::string& bytes, size_t i);
@@ -197,11 +198,15 @@ class Ordinal {
   bool is_valid_;
 };
 
-template <typename Traits> const uint8 Ordinal<Traits>::kZeroDigit;
-template <typename Traits> const uint8 Ordinal<Traits>::kMaxDigit;
+template <typename Traits>
+const uint8_t Ordinal<Traits>::kZeroDigit;
+template <typename Traits>
+const uint8_t Ordinal<Traits>::kMaxDigit;
 template <typename Traits> const size_t Ordinal<Traits>::kMinLength;
-template <typename Traits> const uint8 Ordinal<Traits>::kOneDigit;
-template <typename Traits> const uint8 Ordinal<Traits>::kMidDigit;
+template <typename Traits>
+const uint8_t Ordinal<Traits>::kOneDigit;
+template <typename Traits>
+const uint8_t Ordinal<Traits>::kMidDigit;
 template <typename Traits> const unsigned int Ordinal<Traits>::kMidDigitValue;
 template <typename Traits> const unsigned int Ordinal<Traits>::kMaxDigitValue;
 template <typename Traits> const unsigned int Ordinal<Traits>::kRadix;
@@ -348,7 +353,7 @@ bool Ordinal<Traits>::IsValidOrdinalBytes(const std::string& bytes) {
 
   bool found_non_zero = false;
   for (size_t i = 0; i < length; ++i) {
-    const uint8 byte = bytes[i];
+    const uint8_t byte = bytes[i];
     if (byte < kZeroDigit || byte > kMaxDigit)
       return false;
     if (byte > kZeroDigit)
@@ -358,7 +363,7 @@ bool Ordinal<Traits>::IsValidOrdinalBytes(const std::string& bytes) {
     return false;
 
   if (length > kMinLength) {
-    const uint8 last_byte = bytes[length - 1];
+    const uint8_t last_byte = bytes[length - 1];
     if (last_byte == kZeroDigit)
       return false;
   }
@@ -384,7 +389,7 @@ size_t Ordinal<Traits>::GetLengthWithoutTrailingZeroDigits(
 }
 
 template <typename Traits>
-uint8 Ordinal<Traits>::GetDigit(const std::string& bytes, size_t i) {
+uint8_t Ordinal<Traits>::GetDigit(const std::string& bytes, size_t i) {
   return (i < bytes.length()) ? bytes[i] : kZeroDigit;
 }
 

@@ -4,6 +4,9 @@
 
 #include "sync/engine/model_type_worker.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -242,7 +245,7 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   DCHECK(CalledOnValidThread());
 
   size_t space_remaining = max_entries;
-  std::vector<int64> sequence_numbers;
+  std::vector<int64_t> sequence_numbers;
   google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> commit_entities;
 
   if (!CanCommitItems())
@@ -254,7 +257,7 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     EntityTracker* entity = it->second.get();
     if (entity->HasPendingCommit()) {
       sync_pb::SyncEntity* commit_entity = commit_entities.Add();
-      int64 sequence_number = -1;
+      int64_t sequence_number = -1;
 
       entity->PrepareCommitProto(commit_entity, &sequence_number);
       HelpInitializeCommitEntity(commit_entity);

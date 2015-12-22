@@ -4,16 +4,18 @@
 
 #include "sync/util/time.h"
 
+#include <stdint.h>
+
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace syncer {
 
-int64 TimeToProtoTime(const base::Time& t) {
+int64_t TimeToProtoTime(const base::Time& t) {
   return (t - base::Time::UnixEpoch()).InMilliseconds();
 }
 
-base::Time ProtoTimeToTime(int64 proto_t) {
+base::Time ProtoTimeToTime(int64_t proto_t) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(proto_t);
 }
 

@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_TASK_QUEUE_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_TASK_QUEUE_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <set>
 

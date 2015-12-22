@@ -4,10 +4,14 @@
 
 #include "sync/syncable/directory_backing_store.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -33,7 +37,7 @@ namespace syncer {
 namespace syncable {
 
 // Increment this version whenever updating DB tables.
-const int32 kCurrentDBVersion = 90;
+const int32_t kCurrentDBVersion = 90;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -460,7 +464,7 @@ bool DirectoryBackingStore::InitializeTables() {
       version_on_disk = 74;
   }
 
-  // Version 75 migrated from int64-based timestamps to per-datatype tokens.
+  // Version 75 migrated from int64_t-based timestamps to per-datatype tokens.
   if (version_on_disk == 74) {
     if (MigrateVersion74To75())
       version_on_disk = 75;
@@ -497,7 +501,7 @@ bool DirectoryBackingStore::InitializeTables() {
       version_on_disk = 80;
   }
 
-  // Version 81 replaces the int64 server_position_in_parent_field
+  // Version 81 replaces the int64_t server_position_in_parent_field
   // with a blob server_ordinal_in_parent field.
   if (version_on_disk == 80) {
     if (MigrateVersion80To81())
@@ -663,7 +667,7 @@ bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
     if (!kernel)
       return false;
 
-    int64 handle = kernel->ref(META_HANDLE);
+    int64_t handle = kernel->ref(META_HANDLE);
     if (SafeToPurgeOnLoading(*kernel)) {
       metahandles_to_purge->insert(handle);
     } else {
@@ -821,7 +825,7 @@ bool DirectoryBackingStore::MigrateToSpecifics(
   sql::Statement update(db_->GetUniqueStatement(update_sql.c_str()));
 
   while (query.Step()) {
-    int64 metahandle = query.ColumnInt64(0);
+    int64_t metahandle = query.ColumnInt64(0);
     std::string new_value_bytes;
     query.ColumnBlobAsString(1, &new_value_bytes);
     sync_pb::EntitySpecifics new_value;
@@ -978,7 +982,7 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
     if (!fetch.Step())
       return false;
 
-    int64 last_sync_timestamp = fetch.ColumnInt64(0);
+    int64_t last_sync_timestamp = fetch.ColumnInt64(0);
     bool initial_sync_ended = fetch.ColumnBool(1);
 
     // Verify there were no additional rows returned.
@@ -1221,8 +1225,8 @@ bool DirectoryBackingStore::MigrateVersion80To81() {
       "WHERE metahandle = ?"));
 
   while (get_positions.Step()) {
-    int64 metahandle = get_positions.ColumnInt64(0);
-    int64 position = get_positions.ColumnInt64(1);
+    int64_t metahandle = get_positions.ColumnInt64(0);
+    int64_t position = get_positions.ColumnInt64(1);
 
     const std::string& ordinal = Int64ToNodeOrdinal(position).ToInternalValue();
     put_ordinals.BindBlob(0, ordinal.data(), ordinal.length());
@@ -1342,7 +1346,7 @@ bool DirectoryBackingStore::MigrateVersion85To86() {
       "WHERE metahandle = ?"));
 
   while (get.Step()) {
-    int64 metahandle = get.ColumnInt64(0);
+    int64_t metahandle = get.ColumnInt64(0);
 
     std::string id_string;
     get.ColumnBlobAsString(1, &id_string);
@@ -1393,7 +1397,7 @@ bool DirectoryBackingStore::MigrateVersion85To86() {
             id_string.substr(1));
       }
 
-      int64 int_position = NodeOrdinalToInt64(ordinal);
+      int64_t int_position = NodeOrdinalToInt64(ordinal);
       position = UniquePosition::FromInt64(int_position, unique_bookmark_tag);
     } else {
       // Leave bookmark_tag and position at their default (invalid) values.
@@ -1511,7 +1515,7 @@ bool DirectoryBackingStore::CreateTables() {
 
   {
     // Insert the entry for the root into the metas table.
-    const int64 now = TimeToProtoTime(base::Time::Now());
+    const int64_t now = TimeToProtoTime(base::Time::Now());
     sql::Statement s(db_->GetUniqueStatement(
             "INSERT INTO metas "
             "( id, metahandle, is_dir, ctime, mtime ) "

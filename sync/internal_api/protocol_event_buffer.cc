@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/protocol_event_buffer.h"
 
+#include <stddef.h>
+
 #include "sync/internal_api/public/events/protocol_event.h"
 
 namespace syncer {

@@ -5,9 +5,12 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_DELETE_JOURNAL_H_
 #define SYNC_SYNCABLE_SYNCABLE_DELETE_JOURNAL_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/metahandle_set.h"

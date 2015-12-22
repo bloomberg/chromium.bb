@@ -4,6 +4,8 @@
 
 #include "sync/syncable/syncable_util.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -18,8 +20,7 @@ namespace syncer {
 namespace syncable {
 
 // Returns the number of unsynced entries.
-int GetUnsyncedEntries(BaseTransaction* trans,
-                       std::vector<int64> *handles) {
+int GetUnsyncedEntries(BaseTransaction* trans, std::vector<int64_t>* handles) {
   trans->directory()->GetUnsyncedMetaHandles(trans, handles);
   DVLOG_IF(1, !handles->empty()) << "Have " << handles->size()
                                  << " unsynced items.";

@@ -6,7 +6,6 @@
 
 #include "sync/protocol/proto_enum_conversions.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace syncer {

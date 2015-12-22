@@ -4,7 +4,8 @@
 
 #include "sync/internal_api/public/base/enum_set.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

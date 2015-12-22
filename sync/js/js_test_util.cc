@@ -4,7 +4,7 @@
 
 #include "sync/js/js_test_util.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/js/js_event_details.h"
 

@@ -5,9 +5,10 @@
 #ifndef SYNC_TEST_FAKE_SERVER_UNIQUE_CLIENT_ENTITY_H_
 #define SYNC_TEST_FAKE_SERVER_UNIQUE_CLIENT_ENTITY_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/test/fake_server/fake_server_entity.h"
@@ -28,12 +29,12 @@ class UniqueClientEntity : public FakeServerEntity {
  public:
   UniqueClientEntity(const std::string& id,
                      syncer::ModelType model_type,
-                     int64 version,
+                     int64_t version,
                      const std::string& name,
                      const std::string& client_defined_unique_tag,
                      const sync_pb::EntitySpecifics& specifics,
-                     int64 creation_time,
-                     int64 last_modified_time);
+                     int64_t creation_time,
+                     int64_t last_modified_time);
 
   ~UniqueClientEntity() override;
 
@@ -59,8 +60,8 @@ class UniqueClientEntity : public FakeServerEntity {
  private:
   // These member values have equivalent fields in SyncEntity.
   std::string client_defined_unique_tag_;
-  int64 creation_time_;
-  int64 last_modified_time_;
+  int64_t creation_time_;
+  int64_t last_modified_time_;
 };
 
 }  // namespace fake_server

@@ -5,7 +5,9 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_ATTACHMENT_ID_PROTO_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_ATTACHMENT_ID_PROTO_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "sync/base/sync_export.h"
 #include "sync/protocol/sync.pb.h"
 

@@ -4,8 +4,11 @@
 
 #include "sync/engine/get_updates_processor.h"
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "sync/engine/get_updates_delegate.h"
@@ -26,7 +29,7 @@ namespace syncer {
 namespace {
 
 scoped_ptr<InvalidationInterface> BuildInvalidation(
-    int64 version,
+    int64_t version,
     const std::string& payload) {
   return MockInvalidation::Build(version, payload);
 }

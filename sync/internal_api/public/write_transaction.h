@@ -5,10 +5,13 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_WRITE_TRANSACTION_H_
 #define SYNC_INTERNAL_API_PUBLIC_WRITE_TRANSACTION_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base_transaction.h"
@@ -39,7 +42,8 @@ class SYNC_EXPORT WriteTransaction : public BaseTransaction {
   // if not after transaction is closed. This constructor is used for model
   // types that support embassy data.
   WriteTransaction(const tracked_objects::Location& from_here,
-                   UserShare* share, int64* transaction_version);
+                   UserShare* share,
+                   int64_t* transaction_version);
   ~WriteTransaction() override;
 
   // Provide access to the syncable transaction from the API WriteNode.

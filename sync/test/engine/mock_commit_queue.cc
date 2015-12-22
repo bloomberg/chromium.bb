@@ -4,6 +4,9 @@
 
 #include "sync/test/engine/mock_commit_queue.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 
 namespace syncer_v2 {
@@ -67,12 +70,12 @@ CommitRequestData MockCommitQueue::GetLatestCommitRequestForTagHash(
 }
 
 UpdateResponseData MockCommitQueue::UpdateFromServer(
-    int64 version_offset,
+    int64_t version_offset,
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   // Overwrite the existing server version if this is the new highest version.
-  int64 old_version = GetServerVersion(tag_hash);
-  int64 version = old_version + version_offset;
+  int64_t old_version = GetServerVersion(tag_hash);
+  int64_t version = old_version + version_offset;
   if (version > old_version) {
     SetServerVersion(tag_hash, version);
   }
@@ -97,10 +100,10 @@ UpdateResponseData MockCommitQueue::UpdateFromServer(
 }
 
 UpdateResponseData MockCommitQueue::TombstoneFromServer(
-    int64 version_offset,
+    int64_t version_offset,
     const std::string& tag_hash) {
-  int64 old_version = GetServerVersion(tag_hash);
-  int64 version = old_version + version_offset;
+  int64_t old_version = GetServerVersion(tag_hash);
+  int64_t version = old_version + version_offset;
   if (version > old_version) {
     SetServerVersion(tag_hash, version);
   }
@@ -143,7 +146,7 @@ CommitResponseData MockCommitQueue::SuccessfulCommitResponse(
   response_data.sequence_number = request_data.sequence_number;
 
   // Increment the server version on successful commit.
-  int64 version = GetServerVersion(client_tag_hash);
+  int64_t version = GetServerVersion(client_tag_hash);
   version++;
   SetServerVersion(client_tag_hash, version);
 
@@ -161,8 +164,8 @@ std::string MockCommitQueue::GenerateId(const std::string& tag_hash) {
   return "FakeId:" + tag_hash;
 }
 
-int64 MockCommitQueue::GetServerVersion(const std::string& tag_hash) {
-  std::map<const std::string, int64>::const_iterator it;
+int64_t MockCommitQueue::GetServerVersion(const std::string& tag_hash) {
+  std::map<const std::string, int64_t>::const_iterator it;
   it = server_versions_.find(tag_hash);
   if (it == server_versions_.end()) {
     return 0;
@@ -172,7 +175,7 @@ int64 MockCommitQueue::GetServerVersion(const std::string& tag_hash) {
 }
 
 void MockCommitQueue::SetServerVersion(const std::string& tag_hash,
-                                               int64 version) {
+                                       int64_t version) {
   server_versions_[tag_hash] = version;
 }
 

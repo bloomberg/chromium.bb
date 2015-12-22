@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/public/http_bridge.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
@@ -47,16 +50,17 @@ bool IsSyncHttpContentCompressionEnabled() {
   return StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
-void RecordSyncRequestContentLengthHistograms(int64 compressed_content_length,
-                                              int64 original_content_length) {
+void RecordSyncRequestContentLengthHistograms(int64_t compressed_content_length,
+                                              int64_t original_content_length) {
   UMA_HISTOGRAM_COUNTS("Sync.RequestContentLength.Compressed",
                        compressed_content_length);
   UMA_HISTOGRAM_COUNTS("Sync.RequestContentLength.Original",
                        original_content_length);
 }
 
-void RecordSyncResponseContentLengthHistograms(int64 compressed_content_length,
-                                               int64 original_content_length) {
+void RecordSyncResponseContentLengthHistograms(
+    int64_t compressed_content_length,
+    int64_t original_content_length) {
   UMA_HISTOGRAM_COUNTS("Sync.ResponseContentLength.Compressed",
                        compressed_content_length);
   UMA_HISTOGRAM_COUNTS("Sync.ResponseContentLength.Original",
@@ -326,7 +330,7 @@ void HttpBridge::MakeAsynchronousPost() {
   fetch_state_.url_poster->SetRequestContext(request_context_getter_.get());
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
 
-  int64 compressed_content_size = 0;
+  int64_t compressed_content_size = 0;
   if (IsSyncHttpContentCompressionEnabled()) {
     std::string compressed_request_content;
     GzipCompress(request_content_, &compressed_request_content);
@@ -452,8 +456,8 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   fetch_state_.response_headers = source->GetResponseHeaders();
   UpdateNetworkTime();
 
-  int64 compressed_content_length = fetch_state_.response_content.size();
-  int64 original_content_length = compressed_content_length;
+  int64_t compressed_content_length = fetch_state_.response_content.size();
+  int64_t original_content_length = compressed_content_length;
   if (fetch_state_.response_headers &&
       fetch_state_.response_headers->HasHeaderValue("content-encoding",
                                                     "gzip")) {
@@ -475,7 +479,8 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void HttpBridge::OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                            int64 current, int64 total) {
+                                            int64_t current,
+                                            int64_t total) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   // Reset the delay when forward progress is made.
   base::AutoLock lock(fetch_state_lock_);
@@ -484,7 +489,8 @@ void HttpBridge::OnURLFetchDownloadProgress(const net::URLFetcher* source,
 }
 
 void HttpBridge::OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                          int64 current, int64 total) {
+                                          int64_t current,
+                                          int64_t total) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   // Reset the delay when forward progress is made.
   base::AutoLock lock(fetch_state_lock_);
@@ -537,7 +543,7 @@ void HttpBridge::UpdateNetworkTime() {
     return;
   }
 
-  int64 sane_time_ms = 0;
+  int64_t sane_time_ms = 0;
   if (base::StringToInt64(sane_time_str, &sane_time_ms)) {
     network_time_update_callback_.Run(
         base::Time::FromJsTime(sane_time_ms),

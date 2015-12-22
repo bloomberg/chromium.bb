@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/delete_journal.h"
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
@@ -19,7 +21,7 @@ void DeleteJournal::GetBookmarkDeleteJournals(
   syncer::syncable::EntryKernelSet deleted_entries;
   trans->GetDirectory()->delete_journal()->GetDeleteJournals(
       trans->GetWrappedTrans(), BOOKMARKS, &deleted_entries);
-  std::set<int64> undecryptable_journal;
+  std::set<int64_t> undecryptable_journal;
   for (syncer::syncable::EntryKernelSet::const_iterator i =
       deleted_entries.begin(); i != deleted_entries.end(); ++i) {
     delete_journal_list->push_back(BookmarkDeleteJournal());
@@ -55,7 +57,7 @@ void DeleteJournal::GetBookmarkDeleteJournals(
 
 // static
 void DeleteJournal::PurgeDeleteJournals(BaseTransaction* trans,
-                                        const std::set<int64>& ids) {
+                                        const std::set<int64_t>& ids) {
   trans->GetDirectory()->delete_journal()->PurgeDeleteJournals(
       trans->GetWrappedTrans(), ids);
 }

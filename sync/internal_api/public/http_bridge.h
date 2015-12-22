@@ -5,10 +5,12 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_H_
 #define SYNC_INTERNAL_API_PUBLIC_HTTP_BRIDGE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -76,9 +78,11 @@ class SYNC_EXPORT HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64 current, int64 total) override;
+                                  int64_t current,
+                                  int64_t total) override;
   void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64 current, int64 total) override;
+                                int64_t current,
+                                int64_t total) override;
 
   net::URLRequestContextGetter* GetRequestContextGetterForTest() const;
 

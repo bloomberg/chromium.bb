@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_DELETE_JOURNAL_H_
 #define SYNC_INTERNAL_API_PUBLIC_DELETE_JOURNAL_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
@@ -17,8 +19,8 @@ namespace syncer {
 class BaseTransaction;
 
 struct BookmarkDeleteJournal {
-  int64 id;   // Metahandle of delete journal entry.
-  int64 external_id;  // Bookmark ID in the native model.
+  int64_t id;           // Metahandle of delete journal entry.
+  int64_t external_id;  // Bookmark ID in the native model.
   bool is_folder;
   sync_pb::EntitySpecifics specifics;
 };
@@ -38,7 +40,7 @@ class SYNC_EXPORT DeleteJournal {
 
   // Purge delete journals of given IDs from |trans|'s directory.
   static void PurgeDeleteJournals(BaseTransaction* trans,
-                                  const std::set<int64>& ids);
+                                  const std::set<int64_t>& ids);
 };
 
 }  // namespace syncer

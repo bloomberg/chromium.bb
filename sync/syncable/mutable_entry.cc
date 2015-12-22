@@ -4,6 +4,8 @@
 
 #include "sync/syncable/mutable_entry.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/syncable/directory.h"
@@ -103,11 +105,11 @@ MutableEntry::MutableEntry(WriteTransaction* trans, GetById, const Id& id)
       write_transaction_(trans) {
 }
 
-MutableEntry::MutableEntry(WriteTransaction* trans, GetByHandle,
-                           int64 metahandle)
+MutableEntry::MutableEntry(WriteTransaction* trans,
+                           GetByHandle,
+                           int64_t metahandle)
     : ModelNeutralMutableEntry(trans, GET_BY_HANDLE, metahandle),
-      write_transaction_(trans) {
-}
+      write_transaction_(trans) {}
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByClientTag,
                            const std::string& tag)
@@ -120,7 +122,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans, GetTypeRoot, ModelType type)
       write_transaction_(trans) {
 }
 
-void MutableEntry::PutLocalExternalId(int64 value) {
+void MutableEntry::PutLocalExternalId(int64_t value) {
   DCHECK(kernel_);
   if (kernel_->ref(LOCAL_EXTERNAL_ID) != value) {
     write_transaction()->TrackChangesTo(kernel_);

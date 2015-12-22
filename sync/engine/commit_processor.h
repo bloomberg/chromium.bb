@@ -5,10 +5,12 @@
 #ifndef SYNC_ENGINE_COMMIT_PROCESSOR_H_
 #define SYNC_ENGINE_COMMIT_PROCESSOR_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit.h"
 #include "sync/internal_api/public/base/model_type.h"

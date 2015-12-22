@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 

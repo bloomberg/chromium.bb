@@ -5,9 +5,13 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_
 #define SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base_transaction.h"
@@ -42,7 +46,7 @@ class SYNC_EXPORT ReadTransaction : public BaseTransaction {
 
   // Return |transaction_version| of |type| stored in sync directory's
   // persisted info.
-  int64 GetModelVersion(ModelType type) const;
+  int64_t GetModelVersion(ModelType type) const;
 
   // Fills |context| with the datatype context associated with |type|.
   void GetDataTypeContext(ModelType type,

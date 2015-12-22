@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"

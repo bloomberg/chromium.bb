@@ -5,6 +5,7 @@
 #ifndef SYNC_API_SYNC_CHANGE_PROCESSOR_WRAPPER_FOR_TEST_H_
 #define SYNC_API_SYNC_CHANGE_PROCESSOR_WRAPPER_FOR_TEST_H_
 
+#include "base/macros.h"
 #include "sync/api/sync_change_processor.h"
 
 namespace syncer {

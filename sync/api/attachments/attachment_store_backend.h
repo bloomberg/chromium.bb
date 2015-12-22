@@ -6,6 +6,7 @@
 #define SYNC_API_ATTACHMENTS_ATTACHMENT_STORE_BACKEND_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/attachment_id.h"

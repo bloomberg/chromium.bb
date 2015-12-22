@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

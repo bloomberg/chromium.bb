@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/syncapi_server_connection_manager.h"
 
+#include <stdint.h>
+
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
@@ -60,9 +62,9 @@ bool SyncAPIBridgedConnection::Init(const char* path,
   // We got a server response, copy over response codes and content.
   response->response_code = response_code;
   response->content_length =
-      static_cast<int64>(http->GetResponseContentLength());
+      static_cast<int64_t>(http->GetResponseContentLength());
   response->payload_length =
-      static_cast<int64>(http->GetResponseContentLength());
+      static_cast<int64_t>(http->GetResponseContentLength());
   if (response->response_code < 400)
     response->server_status = HttpResponse::SERVER_CONNECTION_OK;
   else if (response->response_code == net::HTTP_UNAUTHORIZED)

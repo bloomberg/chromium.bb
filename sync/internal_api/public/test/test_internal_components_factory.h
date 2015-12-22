@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 
 namespace syncer {

@@ -4,6 +4,9 @@
 
 #include "sync/syncable/model_neutral_mutable_entry.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "sync/internal_api/public/base/unique_position.h"
@@ -88,10 +91,10 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(
     : Entry(trans, GET_BY_ID, id), base_write_transaction_(trans) {
 }
 
-ModelNeutralMutableEntry::ModelNeutralMutableEntry(
-    BaseWriteTransaction* trans, GetByHandle, int64 metahandle)
-    : Entry(trans, GET_BY_HANDLE, metahandle), base_write_transaction_(trans) {
-}
+ModelNeutralMutableEntry::ModelNeutralMutableEntry(BaseWriteTransaction* trans,
+                                                   GetByHandle,
+                                                   int64_t metahandle)
+    : Entry(trans, GET_BY_HANDLE, metahandle), base_write_transaction_(trans) {}
 
 ModelNeutralMutableEntry::ModelNeutralMutableEntry(
     BaseWriteTransaction* trans, GetByClientTag, const std::string& tag)
@@ -103,7 +106,7 @@ ModelNeutralMutableEntry::ModelNeutralMutableEntry(
     : Entry(trans, GET_TYPE_ROOT, type), base_write_transaction_(trans) {
 }
 
-void ModelNeutralMutableEntry::PutBaseVersion(int64 value) {
+void ModelNeutralMutableEntry::PutBaseVersion(int64_t value) {
   DCHECK(kernel_);
   if (kernel_->ref(BASE_VERSION) != value) {
     base_write_transaction_->TrackChangesTo(kernel_);
@@ -112,7 +115,7 @@ void ModelNeutralMutableEntry::PutBaseVersion(int64 value) {
   }
 }
 
-void ModelNeutralMutableEntry::PutServerVersion(int64 value) {
+void ModelNeutralMutableEntry::PutServerVersion(int64_t value) {
   DCHECK(kernel_);
   if (kernel_->ref(SERVER_VERSION) != value) {
     base_write_transaction_->TrackChangesTo(kernel_);
@@ -350,7 +353,7 @@ void ModelNeutralMutableEntry::PutServerSpecifics(
       // Remove ourselves from unapplied_update_metahandles with our
       // old server type.
       const ModelType old_server_type = kernel_->GetServerModelType();
-      const int64 metahandle = kernel_->ref(META_HANDLE);
+      const int64_t metahandle = kernel_->ref(META_HANDLE);
       size_t erase_count =
           dir()->kernel()->unapplied_update_metahandles[old_server_type]
           .erase(metahandle);
@@ -370,7 +373,7 @@ void ModelNeutralMutableEntry::PutServerSpecifics(
       // Add ourselves back into unapplied_update_metahandles with our
       // new server type.
       const ModelType new_server_type = kernel_->GetServerModelType();
-      const int64 metahandle = kernel_->ref(META_HANDLE);
+      const int64_t metahandle = kernel_->ref(META_HANDLE);
       dir()->kernel()->unapplied_update_metahandles[new_server_type]
           .insert(metahandle);
     }
@@ -446,7 +449,7 @@ void ModelNeutralMutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
   MarkDirty();
 }
 
-void ModelNeutralMutableEntry::UpdateTransactionVersion(int64 value) {
+void ModelNeutralMutableEntry::UpdateTransactionVersion(int64_t value) {
   kernel_->put(TRANSACTION_VERSION, value);
   MarkDirty();
 }

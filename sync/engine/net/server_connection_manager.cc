@@ -5,6 +5,7 @@
 #include "sync/engine/net/server_connection_manager.h"
 
 #include <errno.h>
+#include <stdint.h>
 
 #include <ostream>
 #include <string>
@@ -90,8 +91,8 @@ bool ServerConnectionManager::Connection::ReadBufferResponse(
   if (require_response && (1 > response->content_length))
     return false;
 
-  const int64 bytes_read = ReadResponse(buffer_out,
-      static_cast<int>(response->content_length));
+  const int64_t bytes_read =
+      ReadResponse(buffer_out, static_cast<int>(response->content_length));
   if (bytes_read != response->content_length) {
     response->server_status = HttpResponse::IO_ERROR;
     return false;
@@ -102,8 +103,8 @@ bool ServerConnectionManager::Connection::ReadBufferResponse(
 bool ServerConnectionManager::Connection::ReadDownloadResponse(
     HttpResponse* response,
     string* buffer_out) {
-  const int64 bytes_read = ReadResponse(buffer_out,
-      static_cast<int>(response->content_length));
+  const int64_t bytes_read =
+      ReadResponse(buffer_out, static_cast<int>(response->content_length));
 
   if (bytes_read != response->content_length) {
     LOG(ERROR) << "Mismatched content lengths, server claimed " <<

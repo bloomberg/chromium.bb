@@ -4,6 +4,8 @@
 
 #include "sync/engine/commit.h"
 
+#include <stddef.h>
+
 #include "base/metrics/sparse_histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "sync/engine/commit_contribution.h"

@@ -4,6 +4,8 @@
 
 #include "sync/util/nigori.h"
 
+#include <stdint.h>
+
 #include <sstream>
 #include <vector>
 
@@ -30,9 +32,9 @@ class NigoriStream {
   // Append the big-endian representation of the length of |value| with 32 bits,
   // followed by |value| itself to the stream.
   NigoriStream& operator<<(const std::string& value) {
-    uint32 size = base::HostToNet32(value.size());
+    uint32_t size = base::HostToNet32(value.size());
 
-    stream_.write(reinterpret_cast<char*>(&size), sizeof(uint32));
+    stream_.write(reinterpret_cast<char*>(&size), sizeof(uint32_t));
     stream_ << value;
     return *this;
   }
@@ -41,10 +43,10 @@ class NigoriStream {
   // followed by the big-endian representation of the value of |type|, with 32
   // bits, to the stream.
   NigoriStream& operator<<(const Nigori::Type type) {
-    uint32 size = base::HostToNet32(sizeof(uint32));
-    stream_.write(reinterpret_cast<char*>(&size), sizeof(uint32));
-    uint32 value = base::HostToNet32(type);
-    stream_.write(reinterpret_cast<char*>(&value), sizeof(uint32));
+    uint32_t size = base::HostToNet32(sizeof(uint32_t));
+    stream_.write(reinterpret_cast<char*>(&size), sizeof(uint32_t));
+    uint32_t value = base::HostToNet32(type);
+    stream_.write(reinterpret_cast<char*>(&value), sizeof(uint32_t));
     return *this;
   }
 

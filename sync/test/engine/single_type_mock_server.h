@@ -5,10 +5,14 @@
 #ifndef SYNC_TEST_ENGINE_SINGLE_TYPE_MOCK_SERVER_H_
 #define SYNC_TEST_ENGINE_SINGLE_TYPE_MOCK_SERVER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
@@ -35,13 +39,13 @@ class SingleTypeMockServer {
   // The |version_offset| parameter allows the caller to simulate reflected
   // updates, redeliveries, and genuine updates.
   sync_pb::SyncEntity UpdateFromServer(
-      int64 version_offset,
+      int64_t version_offset,
       const std::string& tag_hash,
       const sync_pb::EntitySpecifics& specifics);
 
   // Generates a SyncEntity representing a server-delivered update to delete
   // an item.
-  sync_pb::SyncEntity TombstoneFromServer(int64 version_offset,
+  sync_pb::SyncEntity TombstoneFromServer(int64_t version_offset,
                                           const std::string& tag_hash);
 
   // Generates a response to the specified commit message.
@@ -74,14 +78,14 @@ class SingleTypeMockServer {
   static std::string GenerateId(const std::string& tag_hash);
 
   // Get and set our emulated server state.
-  int64 GetServerVersion(const std::string& tag_hash) const;
-  void SetServerVersion(const std::string& tag_hash, int64 version);
+  int64_t GetServerVersion(const std::string& tag_hash) const;
+  void SetServerVersion(const std::string& tag_hash, int64_t version);
 
   const ModelType type_;
   const std::string type_root_id_;
 
   // Server version state maps.
-  std::map<const std::string, int64> server_versions_;
+  std::map<const std::string, int64_t> server_versions_;
 
   // Log of messages sent to the server.
   std::vector<sync_pb::ClientToServerMessage> commit_messages_;

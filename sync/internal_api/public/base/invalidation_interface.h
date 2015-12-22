@@ -5,9 +5,10 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_INTERFACE_H_
 #define SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_INTERFACE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "sync/base/sync_export.h"
 
 namespace syncer {
@@ -36,7 +37,7 @@ class SYNC_EXPORT InvalidationInterface {
   //
   // It is preferable to use the LessThan() function, which handles unknown
   // versions properly, rather than this function.
-  virtual int64 GetVersion() const = 0;
+  virtual int64_t GetVersion() const = 0;
 
   // This function will be called when the invalidation has been handled
   // successfully.

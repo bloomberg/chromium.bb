@@ -7,8 +7,9 @@
 
 #include <string>
 
-#include "sync/syncable/directory_backing_store.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
+#include "sync/syncable/directory_backing_store.h"
 
 namespace syncer {
 namespace syncable {

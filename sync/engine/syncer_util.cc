@@ -4,6 +4,8 @@
 
 #include "sync/engine/syncer_util.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <set>
 #include <string>
@@ -138,8 +140,8 @@ syncable::Id FindLocalIdToUpdate(
     // If it exists, then our local client lost a commit response.  Use
     // the local entry.
     if (local_entry.good() && !local_entry.GetIsDel()) {
-      int64 old_version = local_entry.GetBaseVersion();
-      int64 new_version = update.version();
+      int64_t old_version = local_entry.GetBaseVersion();
+      int64_t new_version = update.version();
       DCHECK_LE(old_version, 0);
       DCHECK_GT(new_version, 0);
       // Otherwise setting the base version could cause a consistency failure.

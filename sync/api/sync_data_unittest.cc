@@ -4,6 +4,8 @@
 
 #include "sync/api/sync_data.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted_memory.h"
@@ -26,7 +28,7 @@ namespace {
 const char kSyncTag[] = "3984729834";
 const ModelType kDatatype = syncer::PREFERENCES;
 const char kNonUniqueTitle[] = "my preference";
-const int64 kId = 439829;
+const int64_t kId = 439829;
 const base::Time kLastModifiedTime = base::Time();
 
 class SyncDataTest : public testing::Test {

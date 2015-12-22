@@ -5,8 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ENGINE_PASSIVE_MODEL_WORKER_H_
 #define SYNC_INTERNAL_API_PUBLIC_ENGINE_PASSIVE_MODEL_WORKER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/syncer_error.h"

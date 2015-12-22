@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_STATUS_COUNTERS_H_
 #define SYNC_INTERNAL_API_PUBLIC_SESSIONS_STATUS_COUNTERS_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"

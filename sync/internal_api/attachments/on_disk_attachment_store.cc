@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/on_disk_attachment_store.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -34,7 +36,7 @@ const char kMetadataPrefix[] = "metadata-";
 
 const char kDatabaseMetadataKey[] = "database-metadata";
 
-const int32 kCurrentSchemaVersion = 1;
+const int32_t kCurrentSchemaVersion = 1;
 
 const base::FilePath::CharType kLeveldbDirectory[] =
     FILE_PATH_LITERAL("leveldb");

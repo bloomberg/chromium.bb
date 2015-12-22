@@ -5,8 +5,8 @@
 #ifndef SYNC_TEST_ENGINE_MOCK_NUDGE_HANDLER_H_
 #define SYNC_TEST_ENGINE_MOCK_NUDGE_HANDLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "sync/engine/nudge_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 

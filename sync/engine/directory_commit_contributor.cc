@@ -4,6 +4,8 @@
 
 #include "sync/engine/directory_commit_contributor.h"
 
+#include <stddef.h>
+
 #include "sync/engine/directory_commit_contribution.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 

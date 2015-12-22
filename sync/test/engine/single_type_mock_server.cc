@@ -4,6 +4,9 @@
 
 #include "sync/test/engine/single_type_mock_server.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "sync/util/time.h"
 
 using google::protobuf::RepeatedPtrField;
@@ -33,11 +36,11 @@ sync_pb::SyncEntity SingleTypeMockServer::TypeRootUpdate() {
 }
 
 sync_pb::SyncEntity SingleTypeMockServer::UpdateFromServer(
-    int64 version_offset,
+    int64_t version_offset,
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
-  int64 old_version = GetServerVersion(tag_hash);
-  int64 version = old_version + version_offset;
+  int64_t old_version = GetServerVersion(tag_hash);
+  int64_t version = old_version + version_offset;
   if (version > old_version) {
     SetServerVersion(tag_hash, version);
   }
@@ -62,10 +65,10 @@ sync_pb::SyncEntity SingleTypeMockServer::UpdateFromServer(
 }
 
 sync_pb::SyncEntity SingleTypeMockServer::TombstoneFromServer(
-    int64 version_offset,
+    int64_t version_offset,
     const std::string& tag_hash) {
-  int64 old_version = GetServerVersion(tag_hash);
-  int64 version = old_version + version_offset;
+  int64_t old_version = GetServerVersion(tag_hash);
+  int64_t version = old_version + version_offset;
   if (version > old_version) {
     SetServerVersion(tag_hash, version);
   }
@@ -107,7 +110,7 @@ sync_pb::ClientToServerResponse SingleTypeMockServer::DoSuccessfulCommit(
     committed_items_[tag_hash] = *it;
 
     // Every commit increments the version number.
-    int64 version = GetServerVersion(tag_hash);
+    int64_t version = GetServerVersion(tag_hash);
     version++;
     SetServerVersion(tag_hash, version);
 
@@ -159,9 +162,9 @@ std::string SingleTypeMockServer::GenerateId(const std::string& tag_hash) {
   return "FakeId:" + tag_hash;
 }
 
-int64 SingleTypeMockServer::GetServerVersion(
+int64_t SingleTypeMockServer::GetServerVersion(
     const std::string& tag_hash) const {
-  std::map<const std::string, int64>::const_iterator it;
+  std::map<const std::string, int64_t>::const_iterator it;
   it = server_versions_.find(tag_hash);
   // Server versions do not necessarily start at 1 or 0.
   if (it == server_versions_.end()) {
@@ -172,7 +175,7 @@ int64 SingleTypeMockServer::GetServerVersion(
 }
 
 void SingleTypeMockServer::SetServerVersion(const std::string& tag_hash,
-                                            int64 version) {
+                                            int64_t version) {
   server_versions_[tag_hash] = version;
 }
 

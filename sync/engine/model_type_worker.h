@@ -5,6 +5,8 @@
 #ifndef SYNC_ENGINE_MODEL_TYPE_WORKER_H_
 #define SYNC_ENGINE_MODEL_TYPE_WORKER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 

@@ -10,8 +10,8 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "sync/engine/syncer_types.h"
 
 namespace syncer {

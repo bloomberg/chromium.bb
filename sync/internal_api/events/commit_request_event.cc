@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/events/commit_request_event.h"
 
+#include <stddef.h>
+
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "sync/protocol/proto_value_conversions.h"

@@ -5,9 +5,10 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_CHANGE_RECORD_H_
 #define SYNC_INTERNAL_API_PUBLIC_CHANGE_RECORD_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
@@ -52,7 +53,7 @@ struct SYNC_EXPORT ChangeRecord {
 
   scoped_ptr<base::DictionaryValue> ToValue() const;
 
-  int64 id;
+  int64_t id;
   Action action;
   sync_pb::EntitySpecifics specifics;
   linked_ptr<ExtraPasswordChangeRecordData> extra;

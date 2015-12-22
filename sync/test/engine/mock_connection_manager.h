@@ -7,6 +7,8 @@
 #ifndef SYNC_TEST_ENGINE_MOCK_CONNECTION_MANAGER_H_
 #define SYNC_TEST_ENGINE_MOCK_CONNECTION_MANAGER_H_
 
+#include <stdint.h>
+
 #include <bitset>
 #include <list>
 #include <string>
@@ -14,6 +16,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "sync/engine/net/server_connection_manager.h"
@@ -52,7 +55,7 @@ class MockConnectionManager : public ServerConnectionManager {
   void SetCommitTimeRename(const std::string& prepend);
 
   // Generic versions of AddUpdate functions. Tests using these function should
-  // compile for both the int64 and string id based versions of the server.
+  // compile for both the int64_t and string id based versions of the server.
   // The SyncEntity returned is only valid until the Sync is completed
   // (e.g. with SyncShare.) It allows to add further entity properties before
   // sync, using SetLastXXX() methods and/or GetMutableLastUpdate().
@@ -60,16 +63,16 @@ class MockConnectionManager : public ServerConnectionManager {
       syncable::Id id,
       syncable::Id parent_id,
       const std::string& name,
-      int64 version,
-      int64 sync_ts,
+      int64_t version,
+      int64_t sync_ts,
       const std::string& originator_cache_guid,
       const std::string& originator_client_item_id);
   sync_pb::SyncEntity* AddUpdateBookmark(
       syncable::Id id,
       syncable::Id parent_id,
       const std::string& name,
-      int64 version,
-      int64 sync_ts,
+      int64_t version,
+      int64_t sync_ts,
       const std::string& originator_cache_guid,
       const std::string& originator_client_item_id);
   // Versions of the AddUpdate functions that accept integer IDs.
@@ -77,16 +80,16 @@ class MockConnectionManager : public ServerConnectionManager {
       int id,
       int parent_id,
       const std::string& name,
-      int64 version,
-      int64 sync_ts,
+      int64_t version,
+      int64_t sync_ts,
       const std::string& originator_cache_guid,
       const std::string& originator_client_item_id);
   sync_pb::SyncEntity* AddUpdateBookmark(
       int id,
       int parent_id,
       const std::string& name,
-      int64 version,
-      int64 sync_ts,
+      int64_t version,
+      int64_t sync_ts,
       const std::string& originator_cache_guid,
       const std::string& originator_client_item_id);
   // New protocol versions of the AddUpdate functions.
@@ -94,16 +97,16 @@ class MockConnectionManager : public ServerConnectionManager {
       const std::string& id,
       const std::string& parent_id,
       const std::string& name,
-      int64 version,
-      int64 sync_ts,
+      int64_t version,
+      int64_t sync_ts,
       const std::string& originator_cache_guid,
       const std::string& originator_client_item_id);
   sync_pb::SyncEntity* AddUpdateBookmark(
       const std::string& id,
       const std::string& parent_id,
       const std::string& name,
-      int64 version,
-      int64 sync_ts,
+      int64_t version,
+      int64_t sync_ts,
       const std::string& originator_cache_guid,
       const std::string& originator_client_item_id);
   // Versions of the AddUpdate function that accept specifics.
@@ -111,33 +114,32 @@ class MockConnectionManager : public ServerConnectionManager {
       int id,
       int parent_id,
       const std::string& name,
-      int64 version,
-      int64 sync_ts,
+      int64_t version,
+      int64_t sync_ts,
       bool is_dir,
-      int64 position,
+      int64_t position,
       const sync_pb::EntitySpecifics& specifics);
   sync_pb::SyncEntity* AddUpdateSpecifics(
       int id,
       int parent_id,
       const std::string& name,
-      int64 version,
-      int64 sync_ts,
+      int64_t version,
+      int64_t sync_ts,
       bool is_dir,
-      int64 position,
+      int64_t position,
       const sync_pb::EntitySpecifics& specifics,
       const std::string& originator_cache_guid,
       const std::string& originator_client_item_id);
-  sync_pb::SyncEntity* SetNigori(
-      int id,
-      int64 version,
-      int64 sync_ts,
-      const sync_pb::EntitySpecifics& specifics);
+  sync_pb::SyncEntity* SetNigori(int id,
+                                 int64_t version,
+                                 int64_t sync_ts,
+                                 const sync_pb::EntitySpecifics& specifics);
   // Unique client tag variant for adding items.
   sync_pb::SyncEntity* AddUpdatePref(const std::string& id,
                                      const std::string& parent_id,
                                      const std::string& client_tag,
-                                     int64 version,
-                                     int64 sync_ts);
+                                     int64_t version,
+                                     int64_t sync_ts);
 
   // Find the last commit sent by the client, and replay it for the next get
   // updates command.  This can be used to simulate the GetUpdates that happens
@@ -154,9 +156,9 @@ class MockConnectionManager : public ServerConnectionManager {
   void SetLastUpdateClientTag(const std::string& tag);
   void SetLastUpdateOriginatorFields(const std::string& client_id,
                                      const std::string& entry_id);
-  void SetLastUpdatePosition(int64 position_in_parent);
+  void SetLastUpdatePosition(int64_t position_in_parent);
   void SetNewTimestamp(int ts);
-  void SetChangesRemaining(int64 count);
+  void SetChangesRemaining(int64_t count);
 
   // Add a new batch of updates after the current one.  Allows multiple
   // GetUpdates responses to be buffered up, since the syncer may
@@ -275,20 +277,20 @@ class MockConnectionManager : public ServerConnectionManager {
   sync_pb::SyncEntity* AddUpdateFull(syncable::Id id,
                                      syncable::Id parentid,
                                      const std::string& name,
-                                     int64 version,
-                                     int64 sync_ts,
+                                     int64_t version,
+                                     int64_t sync_ts,
                                      bool is_dir);
   sync_pb::SyncEntity* AddUpdateFull(const std::string& id,
                                      const std::string& parentid,
                                      const std::string& name,
-                                     int64 version,
-                                     int64 sync_ts,
+                                     int64_t version,
+                                     int64_t sync_ts,
                                      bool is_dir);
   sync_pb::SyncEntity* AddUpdateMeta(const std::string& id,
                                      const std::string& parentid,
                                      const std::string& name,
-                                     int64 version,
-                                     int64 sync_ts);
+                                     int64_t version,
+                                     int64_t sync_ts);
 
   // Functions to handle the various types of server request.
   void ProcessGetUpdates(sync_pb::ClientToServerMessage* csm,
@@ -309,9 +311,7 @@ class MockConnectionManager : public ServerConnectionManager {
   // Generate a numeric position_in_parent value.  We use a global counter
   // that only decreases; this simulates new objects always being added to the
   // front of the ordering.
-  int64 GeneratePositionInParent() {
-    return next_position_in_parent_--;
-  }
+  int64_t GeneratePositionInParent() { return next_position_in_parent_--; }
 
   // Get a mutable update response which will eventually be returned to the
   // client.
@@ -398,7 +398,7 @@ class MockConnectionManager : public ServerConnectionManager {
   scoped_ptr<sync_pb::ClientCommand> commit_client_command_;
 
   // The next value to use for the position_in_parent property.
-  int64 next_position_in_parent_;
+  int64_t next_position_in_parent_;
 
   // The default is to use the newer sync_pb::BookmarkSpecifics-style protocol.
   // If this option is set to true, then the MockConnectionManager will

@@ -4,6 +4,9 @@
 
 #include "sync/engine/model_type_worker.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -100,10 +103,11 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   // Pretends to receive update messages from the server.
   void TriggerTypeRootUpdateFromServer();
-  void TriggerUpdateFromServer(int64 version_offset,
+  void TriggerUpdateFromServer(int64_t version_offset,
                                const std::string& tag,
                                const std::string& value);
-  void TriggerTombstoneFromServer(int64 version_offset, const std::string& tag);
+  void TriggerTombstoneFromServer(int64_t version_offset,
+                                  const std::string& tag);
 
   // Delivers specified protos as updates.
   //
@@ -379,7 +383,7 @@ void ModelTypeWorkerTest::TriggerTypeRootUpdateFromServer() {
   worker_->ApplyUpdates(&dummy_status);
 }
 
-void ModelTypeWorkerTest::TriggerUpdateFromServer(int64 version_offset,
+void ModelTypeWorkerTest::TriggerUpdateFromServer(int64_t version_offset,
                                                   const std::string& tag,
                                                   const std::string& value) {
   sync_pb::SyncEntity entity = mock_server_.UpdateFromServer(
@@ -409,7 +413,7 @@ void ModelTypeWorkerTest::DeliverRawUpdates(const SyncEntityList& list) {
   worker_->ApplyUpdates(&dummy_status);
 }
 
-void ModelTypeWorkerTest::TriggerTombstoneFromServer(int64 version_offset,
+void ModelTypeWorkerTest::TriggerTombstoneFromServer(int64_t version_offset,
                                                      const std::string& tag) {
   sync_pb::SyncEntity entity =
       mock_server_.TombstoneFromServer(version_offset, GenerateTagHash(tag));
@@ -695,7 +699,7 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
   ASSERT_TRUE(HasCommitResponseOnModelThread("tag1"));
   const CommitResponseData& initial_commit_response =
       GetCommitResponseOnModelThread("tag1");
-  int64 base_version = initial_commit_response.response_version;
+  int64_t base_version = initial_commit_response.response_version;
 
   // Now that we have an entity, we can delete it.
   DeleteRequest("tag1");

@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/sync_manager_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/base64.h"
@@ -680,7 +683,7 @@ SyncManagerImpl::HandleTransactionEndingChangeEvent(
 void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncApi(
     const ImmutableWriteTransactionInfo& write_transaction_info,
     syncable::BaseTransaction* trans,
-    std::vector<int64>* entries_changed) {
+    std::vector<int64_t>* entries_changed) {
   // We have been notified about a user action changing a sync model.
   LOG_IF(WARNING, !change_records_.empty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
@@ -723,10 +726,14 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncApi(
   }
 }
 
-void SyncManagerImpl::SetExtraChangeRecordData(int64 id,
-    ModelType type, ChangeReorderBuffer* buffer,
-    Cryptographer* cryptographer, const syncable::EntryKernel& original,
-    bool existed_before, bool exists_now) {
+void SyncManagerImpl::SetExtraChangeRecordData(
+    int64_t id,
+    ModelType type,
+    ChangeReorderBuffer* buffer,
+    Cryptographer* cryptographer,
+    const syncable::EntryKernel& original,
+    bool existed_before,
+    bool exists_now) {
   // If this is a deletion and the datatype was encrypted, we need to decrypt it
   // and attach it to the buffer.
   if (!exists_now && existed_before) {
@@ -756,7 +763,7 @@ void SyncManagerImpl::SetExtraChangeRecordData(int64 id,
 void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
     const ImmutableWriteTransactionInfo& write_transaction_info,
     syncable::BaseTransaction* trans,
-    std::vector<int64>* entries_changed) {
+    std::vector<int64_t>* entries_changed) {
   // We only expect one notification per sync step, so change_buffers_ should
   // contain no pending entries.
   LOG_IF(WARNING, !change_records_.empty()) <<
@@ -778,7 +785,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
     if (type < FIRST_REAL_MODEL_TYPE)
       continue;
 
-    int64 handle = it->first;
+    int64_t handle = it->first;
     if (exists_now && !existed_before)
       change_buffers[type].PushAddedItem(handle);
     else if (!exists_now && existed_before)

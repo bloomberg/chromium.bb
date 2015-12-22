@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/public/change_record.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -103,7 +106,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
   sync_pb::EntitySpecifics new_specifics;
   old_specifics.mutable_extension()->set_id("new");
 
-  const int64 kTestId = 5;
+  const int64_t kTestId = 5;
 
   // Add
   {

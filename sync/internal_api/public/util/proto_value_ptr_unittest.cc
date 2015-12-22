@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/util/proto_value_ptr.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

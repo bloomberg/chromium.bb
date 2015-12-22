@@ -4,6 +4,8 @@
 
 #include "sync/sessions/data_type_tracker.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

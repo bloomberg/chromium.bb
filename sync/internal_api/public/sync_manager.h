@@ -5,10 +5,11 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_H_
 #define SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -117,11 +118,10 @@ class SYNC_EXPORT SyncManager {
     // forward dependencies.  But since deletions come before reparent
     // operations, a delete may temporarily orphan a node that is
     // updated later in the list.
-    virtual void OnChangesApplied(
-        ModelType model_type,
-        int64 model_version,
-        const BaseTransaction* trans,
-        const ImmutableChangeRecordList& changes) = 0;
+    virtual void OnChangesApplied(ModelType model_type,
+                                  int64_t model_version,
+                                  const BaseTransaction* trans,
+                                  const ImmutableChangeRecordList& changes) = 0;
 
     // OnChangesComplete gets called when the TransactionComplete event is
     // posted (after OnChangesApplied finishes), after the transaction lock
@@ -161,10 +161,9 @@ class SYNC_EXPORT SyncManager {
     // Even more ideally, we would have sync semantics such that we'd
     // be able to apply changes without being under a transaction.
     // But that's a ways off...
-    virtual void OnChangesApplied(
-        ModelType model_type,
-        int64 write_transaction_id,
-        const ImmutableChangeRecordList& changes) = 0;
+    virtual void OnChangesApplied(ModelType model_type,
+                                  int64_t write_transaction_id,
+                                  const ImmutableChangeRecordList& changes) = 0;
 
     virtual void OnChangesComplete(ModelType model_type) = 0;
 

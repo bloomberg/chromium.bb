@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_UTIL_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "sync/base/sync_export.h"
 

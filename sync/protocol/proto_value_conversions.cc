@@ -6,11 +6,12 @@
 
 #include "sync/protocol/proto_value_conversions.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -50,7 +51,7 @@ namespace {
 
 // Basic Type -> Value functions.
 
-scoped_ptr<base::StringValue> MakeInt64Value(int64 x) {
+scoped_ptr<base::StringValue> MakeInt64Value(int64_t x) {
   return make_scoped_ptr(new base::StringValue(base::Int64ToString(x)));
 }
 
@@ -79,7 +80,7 @@ scoped_ptr<base::ListValue> MakeRepeatedValue(const F& fields,
   return list;
 }
 
-base::string16 TimestampToString(int64 tm) {
+base::string16 TimestampToString(int64_t tm) {
   return base::TimeFormatShortDateAndTime(syncer::ProtoTimeToTime(tm));
 }
 

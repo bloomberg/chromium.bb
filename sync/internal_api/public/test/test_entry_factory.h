@@ -5,9 +5,11 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_TEST_TEST_ENTRY_FACTORY_H_
 #define SYNC_INTERNAL_API_PUBLIC_TEST_TEST_ENTRY_FACTORY_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 
@@ -24,20 +26,20 @@ class TestEntryFactory {
   ~TestEntryFactory();
 
   // Create a new unapplied folder node with a parent.
-  int64 CreateUnappliedNewItemWithParent(
+  int64_t CreateUnappliedNewItemWithParent(
       const std::string& item_id,
       const sync_pb::EntitySpecifics& specifics,
       const std::string& parent_id);
 
-  int64 CreateUnappliedNewBookmarkItemWithParent(
+  int64_t CreateUnappliedNewBookmarkItemWithParent(
       const std::string& item_id,
       const sync_pb::EntitySpecifics& specifics,
       const std::string& parent_id);
 
   // Create a new unapplied update without a parent.
-  int64 CreateUnappliedNewItem(const std::string& item_id,
-                               const sync_pb::EntitySpecifics& specifics,
-                               bool is_unique);
+  int64_t CreateUnappliedNewItem(const std::string& item_id,
+                                 const sync_pb::EntitySpecifics& specifics,
+                                 bool is_unique);
 
   // Create an unsynced unique_client_tag item in the database.  If item_id is a
   // local ID, it will be treated as a create-new.  Otherwise, if it's a server
@@ -49,52 +51,53 @@ class TestEntryFactory {
                           const std::string& name,
                           bool is_folder,
                           ModelType model_type,
-                          int64* metahandle_out);
+                          int64_t* metahandle_out);
 
   // Creates a bookmark that is both unsynced an an unapplied update.  Returns
   // the metahandle of the created item.
-  int64 CreateUnappliedAndUnsyncedBookmarkItem(const std::string& name);
+  int64_t CreateUnappliedAndUnsyncedBookmarkItem(const std::string& name);
 
   // Creates a unique_client_tag item that has neither IS_UNSYNED or
   // IS_UNAPPLIED_UPDATE.  The item is known to both the server and client.
   // Returns the metahandle of the created item.
-  int64 CreateSyncedItem(const std::string& name,
-                         ModelType model_type, bool is_folder);
+  int64_t CreateSyncedItem(const std::string& name,
+                           ModelType model_type,
+                           bool is_folder);
 
   // Creates a root node that IS_UNAPPLIED. Similar to what one would find in
   // the database between the ProcessUpdates of an initial datatype configure
   // cycle and the ApplyUpdates step of the same sync cycle.
-  int64 CreateUnappliedRootNode(ModelType model_type);
+  int64_t CreateUnappliedRootNode(ModelType model_type);
 
   // Looks up the item referenced by |meta_handle|. If successful, overwrites
   // the server specifics with |specifics|, sets
   // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
   // Else, return false.
-  bool SetServerSpecificsForItem(int64 meta_handle,
+  bool SetServerSpecificsForItem(int64_t meta_handle,
                                  const sync_pb::EntitySpecifics specifics);
 
   // Looks up the item referenced by |meta_handle|. If successful, overwrites
   // the local specifics with |specifics|, sets
   // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
   // Else, return false.
-  bool SetLocalSpecificsForItem(int64 meta_handle,
+  bool SetLocalSpecificsForItem(int64_t meta_handle,
                                 const sync_pb::EntitySpecifics specifics);
 
   // Looks up the item referenced by |meta_handle| and returns its server
   // specifics.
   const sync_pb::EntitySpecifics& GetServerSpecificsForItem(
-      int64 meta_handle) const;
+      int64_t meta_handle) const;
 
   // Looks up the item referenced by |meta_handle| and returns its specifics.
   const sync_pb::EntitySpecifics& GetLocalSpecificsForItem(
-      int64 meta_handle) const;
+      int64_t meta_handle) const;
 
   // Looks up the item referenced by |meta_handle|. If successful, overwrites
   // the server attachment metadata with |metadata|, sets
   // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
   // Else, return false.
   bool SetServerAttachmentMetadataForItem(
-      int64 meta_handle,
+      int64_t meta_handle,
       const sync_pb::AttachmentMetadata metadata);
 
   // Looks up the item referenced by |meta_handle|. If successful, overwrites
@@ -102,28 +105,28 @@ class TestEntryFactory {
   // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
   // Else, return false.
   bool SetLocalAttachmentMetadataForItem(
-      int64 meta_handle,
+      int64_t meta_handle,
       const sync_pb::AttachmentMetadata metadata);
 
   // Looks up the item referenced by |meta_handle| and returns its server
   // attachment metadata.
   const sync_pb::AttachmentMetadata& GetServerAttachmentMetadataForItem(
-      int64 meta_handle) const;
+      int64_t meta_handle) const;
 
   // Looks up the item referenced by |meta_handle| and returns its attachment
   // metadata.
   const sync_pb::AttachmentMetadata& GetLocalAttachmentMetadataForItem(
-      int64 meta_handle) const;
+      int64_t meta_handle) const;
 
   // Getters for IS_UNSYNCED and IS_UNAPPLIED_UPDATE bit fields.
-  bool GetIsUnsyncedForItem(int64 meta_handle) const;
-  bool GetIsUnappliedForItem(int64 meta_handle) const;
+  bool GetIsUnsyncedForItem(int64_t meta_handle) const;
+  bool GetIsUnappliedForItem(int64_t meta_handle) const;
 
-  int64 GetNextRevision();
+  int64_t GetNextRevision();
 
  private:
   syncable::Directory* directory_;
-  int64 next_revision_;
+  int64_t next_revision_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEntryFactory);
 };

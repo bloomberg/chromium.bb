@@ -5,6 +5,7 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_MODEL_NEUTRAL_WRITE_TRANSACTION_H_
 #define SYNC_SYNCABLE_SYNCABLE_MODEL_NEUTRAL_WRITE_TRANSACTION_H_
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/syncable_base_write_transaction.h"

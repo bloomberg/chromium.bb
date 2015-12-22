@@ -12,12 +12,13 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "sync/engine/nudge_source.h"
 #include "sync/engine/sync_engine_event_listener.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/sync_status.h"
-#include "sync/engine/nudge_source.h"
 
 namespace syncer {
 

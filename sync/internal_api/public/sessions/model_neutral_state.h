@@ -5,7 +5,6 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_MODEL_NEUTRAL_STATE_H_
 #define SYNC_INTERNAL_API_PUBLIC_SESSIONS_MODEL_NEUTRAL_STATE_H_
 
-#include "base/basictypes.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/syncer_error.h"

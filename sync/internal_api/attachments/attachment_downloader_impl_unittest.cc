@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/attachment_downloader_impl.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/bind.h"

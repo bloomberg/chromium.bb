@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -79,9 +83,9 @@ int GzipUncompressHelper(Bytef* dest,
 }
 
 // Returns the uncompressed size from GZIP-compressed |compressed_data|.
-uint32 GetUncompressedSize(const std::string& compressed_data) {
+uint32_t GetUncompressedSize(const std::string& compressed_data) {
   // The uncompressed size is stored in the last 4 bytes of |input| in LE.
-  uint32 size;
+  uint32_t size;
   if (compressed_data.length() < sizeof(size))
     return 0;
   memcpy(&size, &compressed_data[compressed_data.length() - sizeof(size)],

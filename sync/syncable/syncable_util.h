@@ -5,10 +5,11 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_UTIL_H_
 #define SYNC_SYNCABLE_SYNCABLE_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 
@@ -38,7 +39,7 @@ bool SyncAssert(bool condition,
                 BaseTransaction* trans);
 
 SYNC_EXPORT int GetUnsyncedEntries(BaseTransaction* trans,
-                                   std::vector<int64>* handles);
+                                   std::vector<int64_t>* handles);
 
 // Generates a fixed-length tag for the given string under the given model_type.
 SYNC_EXPORT std::string GenerateSyncableHash(ModelType model_type,

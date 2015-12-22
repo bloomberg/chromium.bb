@@ -4,6 +4,9 @@
 
 #include "sync/api/attachments/attachment_metadata.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

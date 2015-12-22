@@ -5,16 +5,19 @@
 #ifndef SYNC_SYNCABLE_DIRECTORY_H_
 #define SYNC_SYNCABLE_DIRECTORY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"
@@ -57,7 +60,7 @@ enum InvariantCheckLevel {
 // treated as pseudo-private.
 class SYNC_EXPORT Directory {
  public:
-  typedef std::vector<int64> Metahandles;
+  typedef std::vector<int64_t> Metahandles;
 
   // TODO(skym): Convert this hash_map usage to unordered_map, crbug/567280.
   // Be careful when using these hash_map containers.  According to the spec,
@@ -69,7 +72,7 @@ class SYNC_EXPORT Directory {
   // and other similar functions are off-limits too, until this bug is fixed.
   //
   // See http://sourceforge.net/p/stlport/bugs/239/.
-  typedef base::hash_map<int64, EntryKernel*> MetahandlesMap;
+  typedef base::hash_map<int64_t, EntryKernel*> MetahandlesMap;
   typedef base::hash_map<std::string, EntryKernel*> IdsMap;
   typedef base::hash_map<std::string, EntryKernel*> TagsMap;
   typedef std::string AttachmentIdUniqueId;
@@ -108,7 +111,7 @@ class SYNC_EXPORT Directory {
     // transaction versions of sync model and native model.
     // TODO(hatiaol): implement detection and fixing of out-of-sync models.
     //                Bug 154858.
-    int64 transaction_version[MODEL_TYPE_COUNT];
+    int64_t transaction_version[MODEL_TYPE_COUNT];
     // The store birthday we were given by the server. Contents are opaque to
     // the client.
     std::string store_birthday;
@@ -125,7 +128,7 @@ class SYNC_EXPORT Directory {
   struct KernelLoadInfo {
     PersistedKernelInfo kernel_info;
     std::string cache_guid;  // Created on first initialization, never changes.
-    int64 max_metahandle;    // Computed (using sql MAX aggregate) on init.
+    int64_t max_metahandle;  // Computed (using sql MAX aggregate) on init.
     KernelLoadInfo() : max_metahandle(0) {
     }
   };
@@ -161,7 +164,7 @@ class SYNC_EXPORT Directory {
     base::Lock transaction_mutex;
 
     // Protected by transaction_mutex.  Used by WriteTransactions.
-    int64 next_write_transaction_id;
+    int64_t next_write_transaction_id;
 
     // The name of this directory.
     std::string const name;
@@ -238,7 +241,7 @@ class SYNC_EXPORT Directory {
     base::Lock save_changes_mutex;
 
     // The next metahandle is protected by kernel mutex.
-    int64 next_metahandle;
+    int64_t next_metahandle;
 
     // The delegate for directory change events.  Must not be NULL.
     DirectoryChangeDelegate* const delegate;
@@ -267,7 +270,7 @@ class SYNC_EXPORT Directory {
                      const WeakHandle<TransactionObserver>&
                          transaction_observer);
 
-  int64 NextMetahandle();
+  int64_t NextMetahandle();
   // Generates next client ID based on a randomly generated GUID.
   syncable::Id NextId();
 
@@ -291,7 +294,7 @@ class SYNC_EXPORT Directory {
 
   // Gets/Increments transaction version of a model type. Must be called when
   // holding kernel mutex.
-  int64 GetTransactionVersion(ModelType type) const;
+  int64_t GetTransactionVersion(ModelType type) const;
   void IncrementTransactionVersion(ModelType type);
 
   // Getter/setters for the per datatype context.
@@ -399,7 +402,7 @@ class SYNC_EXPORT Directory {
   bool SaveChanges();
 
   // Returns the number of entities with the unsynced bit set.
-  int64 unsynced_entity_count() const;
+  int64_t unsynced_entity_count() const;
 
   // Get GetUnsyncedMetaHandles should only be called after SaveChanges and
   // before any new entries have been created. The intention is that the
@@ -414,7 +417,7 @@ class SYNC_EXPORT Directory {
   // server types.
   void GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
                                      FullModelTypeSet server_types,
-                                     std::vector<int64>* result);
+                                     std::vector<int64_t>* result);
 
   // Get all the metahandles of entries of |type|.
   void GetMetaHandlesOfType(BaseTransaction* trans,
@@ -505,7 +508,7 @@ class SYNC_EXPORT Directory {
 
   // Update the attachment index for |metahandle| removing it from the index
   // under |old_metadata| entries and add it under |new_metadata| entries.
-  void UpdateAttachmentIndex(const int64 metahandle,
+  void UpdateAttachmentIndex(const int64_t metahandle,
                              const sync_pb::AttachmentMetadata& old_metadata,
                              const sync_pb::AttachmentMetadata& new_metadata);
 
@@ -513,7 +516,7 @@ class SYNC_EXPORT Directory {
   virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
   EntryKernel* GetEntryByServerTag(const std::string& tag);
 
-  virtual EntryKernel* GetEntryByHandle(int64 handle);
+  virtual EntryKernel* GetEntryByHandle(int64_t handle);
 
   bool ReindexId(BaseWriteTransaction* trans, EntryKernel* const entry,
                  const Id& new_id);
@@ -544,7 +547,7 @@ class SYNC_EXPORT Directory {
   // overload with the held ScopedKernelLock.
 
   virtual EntryKernel* GetEntryByHandle(const ScopedKernelLock& lock,
-                                        int64 metahandle);
+                                        int64_t metahandle);
 
   virtual EntryKernel* GetEntryById(const ScopedKernelLock& lock, const Id& id);
 
@@ -555,13 +558,13 @@ class SYNC_EXPORT Directory {
   // Remove each of |metahandle|'s attachment ids from index_by_attachment_id.
   void RemoveFromAttachmentIndex(
       const ScopedKernelLock& lock,
-      const int64 metahandle,
+      const int64_t metahandle,
       const sync_pb::AttachmentMetadata& attachment_metadata);
 
   // Add each of |metahandle|'s attachment ids to the index_by_attachment_id.
   void AddToAttachmentIndex(
       const ScopedKernelLock& lock,
-      const int64 metahandle,
+      const int64_t metahandle,
       const sync_pb::AttachmentMetadata& attachment_metadata);
 
   void ClearDirtyMetahandles(const ScopedKernelLock& lock);
@@ -624,7 +627,7 @@ class SYNC_EXPORT Directory {
   void GetMetaHandlesOfType(const ScopedKernelLock& lock,
                             BaseTransaction* trans,
                             ModelType type,
-                            std::vector<int64>* result);
+                            std::vector<int64_t>* result);
 
   // Invoked by DirectoryBackingStore when a catastrophic database error is
   // detected.

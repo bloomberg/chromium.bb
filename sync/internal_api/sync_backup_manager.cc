@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/sync_backup_manager.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "sync/internal_api/public/read_node.h"
@@ -58,7 +60,7 @@ ModelTypeSet SyncBackupManager::HandleTransactionEndingChangeEvent(
   for (syncable::EntryKernelMutationMap::const_iterator it =
       write_transaction_info.Get().mutations.Get().begin();
       it != write_transaction_info.Get().mutations.Get().end(); ++it) {
-    int64 id = it->first;
+    int64_t id = it->first;
     if (unsynced_.find(id) == unsynced_.end()) {
       unsynced_.insert(id);
 
@@ -77,8 +79,8 @@ ModelTypeSet SyncBackupManager::HandleTransactionEndingChangeEvent(
 void SyncBackupManager::NormalizeEntries() {
   WriteTransaction trans(FROM_HERE, GetUserShare());
   in_normalization_ = true;
-  for (std::set<int64>::const_iterator it = unsynced_.begin();
-      it != unsynced_.end(); ++it) {
+  for (std::set<int64_t>::const_iterator it = unsynced_.begin();
+       it != unsynced_.end(); ++it) {
     syncable::MutableEntry entry(trans.GetWrappedWriteTrans(),
                                  syncable::GET_BY_HANDLE, *it);
     CHECK(entry.good());
@@ -101,9 +103,9 @@ void SyncBackupManager::HideSyncPreference(ModelType type) {
   if (BaseNode::INIT_OK != pref_root.InitTypeRoot(type))
     return;
 
-  std::vector<int64> pref_ids;
+  std::vector<int64_t> pref_ids;
   pref_root.GetChildIds(&pref_ids);
-  for (uint32 i = 0; i < pref_ids.size(); ++i) {
+  for (uint32_t i = 0; i < pref_ids.size(); ++i) {
     syncable::MutableEntry entry(trans.GetWrappedWriteTrans(),
                                  syncable::GET_BY_HANDLE, pref_ids[i]);
     if (entry.good()) {

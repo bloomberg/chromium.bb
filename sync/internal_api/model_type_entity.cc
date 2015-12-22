@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/model_type_entity.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/sha1.h"
 #include "base/time/time.h"
@@ -58,11 +60,11 @@ bool ModelTypeEntity::RequiresCommitRequest() const {
   return metadata_.sequence_number() > commit_requested_sequence_number_;
 }
 
-bool ModelTypeEntity::UpdateIsReflection(int64 update_version) const {
+bool ModelTypeEntity::UpdateIsReflection(int64_t update_version) const {
   return metadata_.server_version() >= update_version;
 }
 
-bool ModelTypeEntity::UpdateIsInConflict(int64 update_version) const {
+bool ModelTypeEntity::UpdateIsInConflict(int64_t update_version) const {
   return IsUnsynced() && !UpdateIsReflection(update_version);
 }
 
@@ -154,8 +156,8 @@ void ModelTypeEntity::SetCommitRequestInProgress() {
 
 void ModelTypeEntity::ReceiveCommitResponse(
     const std::string& id,
-    int64 sequence_number,
-    int64 response_version,
+    int64_t sequence_number,
+    int64_t response_version,
     const std::string& encryption_key_name) {
   // The server can assign us a new ID in a commit response.
   metadata_.set_server_id(id);

@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/js_mutation_event_observer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/location.h"
@@ -45,7 +48,7 @@ const size_t kChangeLimit = 100;
 
 void JsMutationEventObserver::OnChangesApplied(
     ModelType model_type,
-    int64 write_transaction_id,
+    int64_t write_transaction_id,
     const ImmutableChangeRecordList& changes) {
   if (!event_handler_.IsInitialized()) {
     return;

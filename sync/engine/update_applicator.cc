@@ -4,6 +4,8 @@
 
 #include "sync/engine/update_applicator.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"
@@ -45,14 +47,14 @@ UpdateApplicator::~UpdateApplicator() {
 // access to all the Nigori keys.  There's nothing we can do about them here.
 void UpdateApplicator::AttemptApplications(
     syncable::WriteTransaction* trans,
-    const std::vector<int64>& handles) {
-  std::vector<int64> to_apply = handles;
+    const std::vector<int64_t>& handles) {
+  std::vector<int64_t> to_apply = handles;
 
   DVLOG(1) << "UpdateApplicator running over " << to_apply.size() << " items.";
   while (!to_apply.empty()) {
-    std::vector<int64> to_reapply;
+    std::vector<int64_t> to_reapply;
 
-    for (std::vector<int64>::iterator i = to_apply.begin();
+    for (std::vector<int64_t>::iterator i = to_apply.begin();
          i != to_apply.end(); ++i) {
       syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *i);
       UpdateAttemptResponse result = AttemptToUpdateEntry(

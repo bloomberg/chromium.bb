@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_FAKE_SERVER_ENTITY_BUILDER_FACTORY_H_
 #define SYNC_TEST_FAKE_SERVER_ENTITY_BUILDER_FACTORY_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "sync/test/fake_server/bookmark_entity_builder.h"
@@ -34,7 +36,7 @@ class EntityBuilderFactory {
   std::string cache_guid_;
 
   // The latest client item id assigned to an entity.
-  int64 latest_client_item_id_;
+  int64_t latest_client_item_id_;
 };
 
 }  // namespace fake_server

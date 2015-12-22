@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"

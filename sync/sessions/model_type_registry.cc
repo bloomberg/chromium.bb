@@ -4,6 +4,8 @@
 
 #include "sync/sessions/model_type_registry.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/observer_list.h"
 #include "base/thread_task_runner_handle.h"

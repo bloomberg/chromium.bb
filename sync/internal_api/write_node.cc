@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/write_node.h"
 
+#include <stdint.h>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -193,7 +195,7 @@ void WriteNode::SetTypedUrlSpecifics(
   SetEntitySpecifics(entity_specifics);
 }
 
-void WriteNode::SetExternalId(int64 id) {
+void WriteNode::SetExternalId(int64_t id) {
   if (GetExternalId() != id)
     entry_->PutLocalExternalId(id);
 }
@@ -209,7 +211,7 @@ WriteNode::~WriteNode() {
 
 // Find an existing node matching the ID |id|, and bind this WriteNode to it.
 // Return true on success.
-BaseNode::InitByLookupResult WriteNode::InitByIdLookup(int64 id) {
+BaseNode::InitByLookupResult WriteNode::InitByIdLookup(int64_t id) {
   DCHECK(!entry_) << "Init called twice";
   DCHECK_NE(id, kInvalidId);
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),

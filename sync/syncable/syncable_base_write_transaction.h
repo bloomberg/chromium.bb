@@ -5,6 +5,7 @@
 #ifndef SYNC_SYNCABLE_SYNCABLE_BASE_WRITE_TRANSACTION_H_
 #define SYNC_SYNCABLE_SYNCABLE_BASE_WRITE_TRANSACTION_H_
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/syncable_base_transaction.h"
 

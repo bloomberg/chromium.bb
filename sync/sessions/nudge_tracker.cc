@@ -4,9 +4,10 @@
 
 #include "sync/sessions/nudge_tracker.h"
 
+#include <stddef.h>
+
 #include <utility>
 
-#include "base/basictypes.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/protocol/sync.pb.h"
 

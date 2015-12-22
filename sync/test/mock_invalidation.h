@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_MOCK_INVALIDATION_H_
 #define SYNC_TEST_MOCK_INVALIDATION_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -18,7 +20,7 @@ class MockInvalidation : public InvalidationInterface {
  public:
   // Helpers to build new MockInvalidations.
   static scoped_ptr<MockInvalidation> BuildUnknownVersion();
-  static scoped_ptr<MockInvalidation> Build(int64 version,
+  static scoped_ptr<MockInvalidation> Build(int64_t version,
                                             const std::string& payload);
 
   ~MockInvalidation() override;
@@ -26,20 +28,20 @@ class MockInvalidation : public InvalidationInterface {
   // Implementation of InvalidationInterface.
   bool IsUnknownVersion() const override;
   const std::string& GetPayload() const override;
-  int64 GetVersion() const override;
+  int64_t GetVersion() const override;
   void Acknowledge() override;
   void Drop() override;
 
  protected:
   MockInvalidation(bool is_unknown_version,
-                   int64 version,
+                   int64_t version,
                    const std::string& payload);
 
   // Whether or not this is an 'unknown version' invalidation.
   const bool is_unknown_version_;
 
   // The version of this invalidation.  Valid only if !is_unknown_version_.
-  const int64 version_;
+  const int64_t version_;
 
   // The payload of this invalidation.  Valid only if !is_unknown_version_.
   const std::string payload_;

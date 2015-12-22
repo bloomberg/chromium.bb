@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/api/attachments/attachment.h"

@@ -4,11 +4,14 @@
 
 #include "sync/internal_api/change_reorder_buffer.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <queue>
 #include <set>
 #include <utility>  // for pair<>
 
+#include "base/macros.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/syncable/entry.h"
@@ -29,24 +32,23 @@ namespace syncer {
 // methods can be used to explore the nodes in root-to-leaf order.
 class ChangeReorderBuffer::Traversal {
  public:
-  typedef pair<int64, int64> ParentChildLink;
+  typedef pair<int64_t, int64_t> ParentChildLink;
   typedef set<ParentChildLink> LinkSet;
 
   Traversal() : top_(kInvalidId) { }
 
   // Expand the traversal so that it includes the node indicated by
   // |child_handle|.
-  void ExpandToInclude(syncable::BaseTransaction* trans,
-                       int64 child_handle) {
+  void ExpandToInclude(syncable::BaseTransaction* trans, int64_t child_handle) {
     // If |top_| is invalid, this is the first insertion -- easy.
     if (top_ == kInvalidId) {
       top_ = child_handle;
       return;
     }
 
-    int64 node_to_include = child_handle;
+    int64_t node_to_include = child_handle;
     while (node_to_include != kInvalidId && node_to_include != top_) {
-      int64 node_parent = 0;
+      int64_t node_parent = 0;
 
       syncable::Entry node(trans, syncable::GET_BY_HANDLE, node_to_include);
       CHECK(node.good());
@@ -87,20 +89,20 @@ class ChangeReorderBuffer::Traversal {
 
   // Return the top node of the traversal.  Use this as a starting point
   // for walking the tree.
-  int64 top() const { return top_; }
+  int64_t top() const { return top_; }
 
   // Return an iterator corresponding to the first child (in the traversal)
   // of the node specified by |parent_id|.  Iterate this return value until
   // it is equal to the value returned by end_children(parent_id).  The
   // enumeration thus provided is unordered.
-  LinkSet::const_iterator begin_children(int64 parent_id) const {
+  LinkSet::const_iterator begin_children(int64_t parent_id) const {
     return links_.upper_bound(
-        ParentChildLink(parent_id, numeric_limits<int64>::min()));
+        ParentChildLink(parent_id, numeric_limits<int64_t>::min()));
   }
 
   // Return an iterator corresponding to the last child in the traversal
   // of the node specified by |parent_id|.
-  LinkSet::const_iterator end_children(int64 parent_id) const {
+  LinkSet::const_iterator end_children(int64_t parent_id) const {
     return begin_children(parent_id + 1);
   }
 
@@ -109,7 +111,7 @@ class ChangeReorderBuffer::Traversal {
   // and thus the first node to be traversed.  If the traversal is empty,
   // this is kInvalidId.  If the traversal contains exactly one member, |top_|
   // will be the solitary member, and |links_| will be empty.
-  int64 top_;
+  int64_t top_;
   // A set of single-level links that compose the traversal below |top_|.  The
   // (parent, child) ordering of values enables efficient lookup of children
   // given the parent handle, which is used for top-down traversal.  |links_|
@@ -127,26 +129,26 @@ ChangeReorderBuffer::ChangeReorderBuffer() {
 ChangeReorderBuffer::~ChangeReorderBuffer() {
 }
 
-void ChangeReorderBuffer::PushAddedItem(int64 id) {
+void ChangeReorderBuffer::PushAddedItem(int64_t id) {
   operations_[id] = ChangeRecord::ACTION_ADD;
 }
 
-void ChangeReorderBuffer::PushDeletedItem(int64 id) {
+void ChangeReorderBuffer::PushDeletedItem(int64_t id) {
   operations_[id] = ChangeRecord::ACTION_DELETE;
 }
 
-void ChangeReorderBuffer::PushUpdatedItem(int64 id) {
+void ChangeReorderBuffer::PushUpdatedItem(int64_t id) {
   operations_[id] = ChangeRecord::ACTION_UPDATE;
 }
 
 void ChangeReorderBuffer::SetExtraDataForId(
-    int64 id,
+    int64_t id,
     ExtraPasswordChangeRecordData* extra) {
   extra_data_[id] = make_linked_ptr<ExtraPasswordChangeRecordData>(extra);
 }
 
 void ChangeReorderBuffer::SetSpecificsForId(
-    int64 id,
+    int64_t id,
     const sync_pb::EntitySpecifics& specifics) {
   specifics_[id] = specifics;
 }
@@ -189,10 +191,10 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
   }
 
   // Step 2: Breadth-first expansion of the traversal.
-  queue<int64> to_visit;
+  queue<int64_t> to_visit;
   to_visit.push(traversal.top());
   while (!to_visit.empty()) {
-    int64 next = to_visit.front();
+    int64_t next = to_visit.front();
     to_visit.pop();
 
     // If the node has an associated action, output a change record.

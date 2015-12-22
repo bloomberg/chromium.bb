@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace syncer {

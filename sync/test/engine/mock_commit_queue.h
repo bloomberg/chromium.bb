@@ -5,6 +5,9 @@
 #ifndef SYNC_TEST_ENGINE_MOCK_COMMIT_QUEUE_H_
 #define SYNC_TEST_ENGINE_MOCK_COMMIT_QUEUE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -45,13 +48,13 @@ class MockCommitQueue : public CommitQueue {
   // going backwards), reflections and redeliveries (ie. several instances of
   // the same version) or new updates.
   UpdateResponseData UpdateFromServer(
-      int64 version_offset,
+      int64_t version_offset,
       const std::string& tag_hash,
       const sync_pb::EntitySpecifics& specifics);
 
   // Returns an UpdateResponseData representing a tombstone update from the
   // server.  Updates server state accordingly.
-  UpdateResponseData TombstoneFromServer(int64 version_offset,
+  UpdateResponseData TombstoneFromServer(int64_t version_offset,
                                          const std::string& tag_hash);
 
   // Returns a commit response that indicates a successful commit of the
@@ -69,15 +72,15 @@ class MockCommitQueue : public CommitQueue {
   static std::string GenerateId(const std::string& tag_hash);
 
   // Retrieve or set the server version.
-  int64 GetServerVersion(const std::string& tag_hash);
-  void SetServerVersion(const std::string& tag_hash, int64 version);
+  int64_t GetServerVersion(const std::string& tag_hash);
+  void SetServerVersion(const std::string& tag_hash, int64_t version);
 
   // A record of past commits requests.
   std::vector<CommitRequestDataList> commit_request_lists_;
 
   // Map of versions by client tag.
   // This is an essential part of the mocked server state.
-  std::map<const std::string, int64> server_versions_;
+  std::map<const std::string, int64_t> server_versions_;
 
   // Name of the encryption key in use on other clients.
   std::string server_encryption_key_name_;

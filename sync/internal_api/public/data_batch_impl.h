@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_DATA_BATCH_IMPL_H_
 #define SYNC_INTERNAL_API_PUBLIC_DATA_BATCH_IMPL_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 #include <vector>

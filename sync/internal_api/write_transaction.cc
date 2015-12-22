@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/write_transaction.h"
 
+#include <stdint.h>
+
 #include "sync/syncable/directory.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_write_transaction.h"
@@ -22,9 +24,8 @@ WriteTransaction::WriteTransaction(const tracked_objects::Location& from_here,
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& from_here,
                                    UserShare* share,
-                                   int64* new_model_version)
-    : BaseTransaction(share),
-      transaction_(NULL) {
+                                   int64_t* new_model_version)
+    : BaseTransaction(share), transaction_(NULL) {
   transaction_ = new syncable::WriteTransaction(from_here,
                                                 share->directory.get(),
                                                 new_model_version);

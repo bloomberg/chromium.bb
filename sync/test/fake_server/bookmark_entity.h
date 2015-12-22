@@ -5,10 +5,11 @@
 #ifndef SYNC_TEST_FAKE_SERVER_BOOKMARK_ENTITY_H_
 #define SYNC_TEST_FAKE_SERVER_BOOKMARK_ENTITY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/test/fake_server/fake_server_entity.h"
@@ -38,7 +39,7 @@ class BookmarkEntity : public FakeServerEntity {
       const std::string& parent_id);
 
   BookmarkEntity(const std::string& id,
-                 int64 version,
+                 int64_t version,
                  const std::string& name,
                  const std::string& originator_cache_guid,
                  const std::string& originator_client_item_id,
@@ -46,8 +47,8 @@ class BookmarkEntity : public FakeServerEntity {
                  const sync_pb::EntitySpecifics& specifics,
                  bool is_folder,
                  const std::string& parent_id,
-                 int64 creation_time,
-                 int64 last_modified_time);
+                 int64_t creation_time,
+                 int64_t last_modified_time);
 
   void SetParentId(const std::string& parent_id);
 
@@ -64,8 +65,8 @@ class BookmarkEntity : public FakeServerEntity {
   sync_pb::UniquePosition unique_position_;
   bool is_folder_;
   std::string parent_id_;
-  int64 creation_time_;
-  int64 last_modified_time_;
+  int64_t creation_time_;
+  int64_t last_modified_time_;
 };
 
 }  // namespace fake_server

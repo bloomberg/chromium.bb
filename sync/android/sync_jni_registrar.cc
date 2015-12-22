@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sync/android/model_type_helper.h"
 
 namespace syncer {

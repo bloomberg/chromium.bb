@@ -5,9 +5,10 @@
 #ifndef SYNC_SYNCABLE_DIRECTORY_UNITTEST_H_
 #define SYNC_SYNCABLE_DIRECTORY_UNITTEST_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
 #include "sync/syncable/mutable_entry.h"
@@ -82,8 +83,8 @@ class SyncableDirectoryTest : public testing::Test {
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
   void CheckPurgeEntriesWithTypeInSucceeded(ModelTypeSet types_to_purge,
                                             bool before_reload);
-  bool IsInDirtyMetahandles(int64 metahandle);
-  bool IsInMetahandlesToPurge(int64 metahandle);
+  bool IsInDirtyMetahandles(int64_t metahandle);
+  bool IsInMetahandlesToPurge(int64_t metahandle);
 
   scoped_ptr<Directory>& dir();
   DirectoryChangeDelegate* directory_change_delegate();
@@ -92,11 +93,11 @@ class SyncableDirectoryTest : public testing::Test {
 
  private:
   void ValidateEntry(BaseTransaction* trans,
-                     int64 id,
+                     int64_t id,
                      bool check_name,
                      const std::string& name,
-                     int64 base_version,
-                     int64 server_version,
+                     int64_t base_version,
+                     int64_t server_version,
                      bool is_del);
 
   base::MessageLoop message_loop_;

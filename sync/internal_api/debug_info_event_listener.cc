@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/debug_info_event_listener.h"
 
+#include <stddef.h>
+
 #include "sync/util/cryptographer.h"
 
 namespace syncer {

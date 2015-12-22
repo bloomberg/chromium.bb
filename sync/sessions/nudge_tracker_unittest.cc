@@ -4,6 +4,9 @@
 
 #include "sync/sessions/nudge_tracker.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -69,7 +72,7 @@ class NudgeTrackerTest : public ::testing::Test {
   }
 
   scoped_ptr<InvalidationInterface> BuildInvalidation(
-      int64 version,
+      int64_t version,
       const std::string& payload) {
     return MockInvalidation::Build(version, payload);
   }

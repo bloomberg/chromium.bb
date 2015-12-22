@@ -4,6 +4,8 @@
 
 #include "sync/engine/get_updates_processor.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/trace_event/trace_event.h"

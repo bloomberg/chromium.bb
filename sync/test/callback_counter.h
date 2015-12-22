@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_CALLBACK_COUNTER_H_
 #define SYNC_TEST_CALLBACK_COUNTER_H_
 
+#include "base/macros.h"
+
 namespace syncer {
 
 // Helper class to track how many times a callback is triggered.

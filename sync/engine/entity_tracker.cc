@@ -4,6 +4,8 @@
 
 #include "sync/engine/entity_tracker.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
@@ -26,8 +28,8 @@ scoped_ptr<EntityTracker> EntityTracker::FromCommitRequest(
 
 EntityTracker::EntityTracker(const std::string& id,
                              const std::string& client_tag_hash,
-                             int64 highest_commit_response_version,
-                             int64 highest_gu_response_version)
+                             int64_t highest_commit_response_version,
+                             int64_t highest_gu_response_version)
     : id_(id),
       client_tag_hash_(client_tag_hash),
       highest_commit_response_version_(highest_commit_response_version),
@@ -42,7 +44,7 @@ bool EntityTracker::HasPendingCommit() const {
 }
 
 void EntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
-                                       int64* sequence_number) const {
+                                       int64_t* sequence_number) const {
   DCHECK(HasPendingCommit());
   DCHECK(!client_tag_hash_.empty());
 
@@ -115,8 +117,8 @@ void EntityTracker::RequestCommit(const CommitRequestData& data) {
 }
 
 void EntityTracker::ReceiveCommitResponse(const std::string& response_id,
-                                          int64 response_version,
-                                          int64 sequence_number) {
+                                          int64_t response_version,
+                                          int64_t sequence_number) {
   // Commit responses, especially after the first commit, can update our ID.
   id_ = response_id;
 
@@ -139,7 +141,7 @@ void EntityTracker::ReceiveCommitResponse(const std::string& response_id,
   ClearPendingCommit();
 }
 
-void EntityTracker::ReceiveUpdate(int64 version) {
+void EntityTracker::ReceiveUpdate(int64_t version) {
   if (version <= highest_gu_response_version_)
     return;
 

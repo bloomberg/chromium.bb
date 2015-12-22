@@ -4,10 +4,11 @@
 
 #include "sync/util/cryptographer.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/util/encryptor.h"

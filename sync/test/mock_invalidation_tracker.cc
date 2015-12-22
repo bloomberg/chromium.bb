@@ -4,6 +4,8 @@
 
 #include "sync/test/mock_invalidation_tracker.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "sync/test/trackable_mock_invalidation.h"
 
@@ -16,7 +18,7 @@ MockInvalidationTracker::IssueUnknownVersionInvalidation() {
 }
 
 scoped_ptr<TrackableMockInvalidation>
-MockInvalidationTracker::IssueInvalidation(int64 version,
+MockInvalidationTracker::IssueInvalidation(int64_t version,
                                            const std::string& payload) {
   return scoped_ptr<TrackableMockInvalidation>(
       new TrackableMockInvalidation(false, version, payload, this, next_id_++));

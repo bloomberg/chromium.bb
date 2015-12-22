@@ -4,6 +4,8 @@
 
 #include "sync/test/fake_server/fake_server_verifier.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <vector>

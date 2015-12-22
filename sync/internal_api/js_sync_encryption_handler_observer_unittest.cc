@@ -4,7 +4,6 @@
 
 #include "sync/internal_api/js_sync_encryption_handler_observer.h"
 
-#include "base/basictypes.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/values.h"

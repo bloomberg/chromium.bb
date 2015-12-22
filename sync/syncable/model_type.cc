@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/public/base/model_type.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "sync/protocol/app_notification_specifics.pb.h"

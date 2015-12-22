@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/sync_encryption_handler_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
@@ -833,8 +836,8 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
       continue;  // Don't try to reencrypt if the type's data is unavailable.
 
     // Iterate through all children of this datatype.
-    std::queue<int64> to_visit;
-    int64 child_id = type_root.GetFirstChildId();
+    std::queue<int64_t> to_visit;
+    int64_t child_id = type_root.GetFirstChildId();
     to_visit.push(child_id);
     while (!to_visit.empty()) {
       child_id = to_visit.front();
@@ -861,7 +864,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
   // encrypted so we don't need to check GetEncryptedTypes() here.
   ReadNode passwords_root(trans);
   if (passwords_root.InitTypeRoot(PASSWORDS) == BaseNode::INIT_OK) {
-    int64 child_id = passwords_root.GetFirstChildId();
+    int64_t child_id = passwords_root.GetFirstChildId();
     while (child_id != kInvalidId) {
       WriteNode child(trans);
       if (child.InitByIdLookup(child_id) != BaseNode::INIT_OK)

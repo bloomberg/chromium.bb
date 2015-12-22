@@ -4,6 +4,8 @@
 
 #include "sync/test/mock_invalidation.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "sync/test/mock_invalidation_tracker.h"
 
@@ -15,7 +17,7 @@ scoped_ptr<MockInvalidation> MockInvalidation::BuildUnknownVersion() {
 }
 
 scoped_ptr<MockInvalidation> MockInvalidation::Build(
-    int64 version,
+    int64_t version,
     const std::string& payload) {
   return scoped_ptr<MockInvalidation>(
       new MockInvalidation(false, version, payload));
@@ -33,7 +35,7 @@ const std::string& MockInvalidation::GetPayload() const {
   return payload_;
 }
 
-int64 MockInvalidation::GetVersion() const {
+int64_t MockInvalidation::GetVersion() const {
   DCHECK(!is_unknown_version_);
   return version_;
 }
@@ -47,11 +49,10 @@ void MockInvalidation::Drop() {
 }
 
 MockInvalidation::MockInvalidation(bool is_unknown_version,
-                                   int64 version,
+                                   int64_t version,
                                    const std::string& payload)
     : is_unknown_version_(is_unknown_version),
       version_(version),
-      payload_(payload) {
-}
+      payload_(payload) {}
 
 }  // namespace syncer

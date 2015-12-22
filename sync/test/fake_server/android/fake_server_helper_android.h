@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "sync/test/fake_server/entity_builder_factory.h"
 
 // Helper for utilizing native FakeServer infrastructure in Android tests.

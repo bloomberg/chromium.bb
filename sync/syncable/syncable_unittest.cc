@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -18,6 +19,7 @@
 #include "base/test/values_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/directory_change_delegate.h"
@@ -372,13 +374,13 @@ TEST_F(OnDiskSyncableDirectoryTest,
   }
   int i = BEGIN_FIELDS;
   for ( ; i < INT64_FIELDS_END ; ++i) {
-    EXPECT_EQ(create_pre_save.ref((Int64Field)i) +
-                  (i == TRANSACTION_VERSION ? 1 : 0),
-              create_post_save.ref((Int64Field)i))
-              << "int64 field #" << i << " changed during save/load";
+    EXPECT_EQ(
+        create_pre_save.ref((Int64Field)i) + (i == TRANSACTION_VERSION ? 1 : 0),
+        create_post_save.ref((Int64Field)i))
+        << "int64_t field #" << i << " changed during save/load";
     EXPECT_EQ(update_pre_save.ref((Int64Field)i),
               update_post_save.ref((Int64Field)i))
-        << "int64 field #" << i << " changed during save/load";
+        << "int64_t field #" << i << " changed during save/load";
   }
   for ( ; i < TIME_FIELDS_END ; ++i) {
     EXPECT_EQ(create_pre_save.ref((TimeField)i),
@@ -431,7 +433,7 @@ TEST_F(OnDiskSyncableDirectoryTest,
 }
 
 TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailure) {
-  int64 handle1 = 0;
+  int64_t handle1 = 0;
   // Set up an item using a regular, saveable directory.
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
@@ -467,7 +469,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailure) {
   StartFailingSaveChanges();
   ASSERT_TRUE(dir()->good());
 
-  int64 handle2 = 0;
+  int64_t handle2 = 0;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
 
@@ -513,7 +515,7 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailure) {
 }
 
 TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
-  int64 handle1 = 0;
+  int64_t handle1 = 0;
   // Set up an item and progress marker using a regular, saveable directory.
   dir()->SetDownloadProgress(BOOKMARKS, BuildProgress(BOOKMARKS));
   {

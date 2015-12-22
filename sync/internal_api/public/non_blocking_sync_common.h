@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_NON_BLOCKING_SYNC_COMMON_H_
 #define SYNC_INTERNAL_API_PUBLIC_NON_BLOCKING_SYNC_COMMON_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -15,7 +17,7 @@
 
 namespace syncer_v2 {
 
-static const int64 kUncommittedVersion = -1;
+static const int64_t kUncommittedVersion = -1;
 
 // Data-type global state that must be accessed and updated on the sync thread,
 // but persisted on or through the model thread.
@@ -52,8 +54,8 @@ struct SYNC_EXPORT CommitRequestData {
   // Strictly incrementing number for in-progress commits.  More information
   // about its meaning can be found in comments in the files that make use of
   // this struct.
-  int64 sequence_number = 0;
-  int64 base_version = 0;
+  int64_t sequence_number = 0;
+  int64_t base_version = 0;
 };
 
 struct SYNC_EXPORT CommitResponseData {
@@ -62,8 +64,8 @@ struct SYNC_EXPORT CommitResponseData {
 
   std::string id;
   std::string client_tag_hash;
-  int64 sequence_number = 0;
-  int64 response_version = 0;
+  int64_t sequence_number = 0;
+  int64_t response_version = 0;
 };
 
 struct SYNC_EXPORT UpdateResponseData {
@@ -72,7 +74,7 @@ struct SYNC_EXPORT UpdateResponseData {
 
   EntityDataPtr entity;
 
-  int64 response_version = 0;
+  int64_t response_version = 0;
   std::string encryption_key_name;
 };
 

@@ -4,6 +4,9 @@
 
 #include "sync/engine/process_updates_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/location.h"
@@ -51,7 +54,7 @@ namespace {
 // For more information, see FindLocalIdToUpdate().
 bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
                               const sync_pb::SyncEntity &update) {
-  int64 existing_version = -1;  // The server always sends positive versions.
+  int64_t existing_version = -1;  // The server always sends positive versions.
   syncable::Entry existing_entry(trans, GET_BY_ID,
                                  SyncableIdFromProto(update.id_string()));
   if (existing_entry.good())
@@ -319,7 +322,7 @@ void ProcessDownloadedUpdates(
 void ExpireEntriesByVersion(syncable::Directory* dir,
                             syncable::ModelNeutralWriteTransaction* trans,
                             ModelType type,
-                            int64 version_watermark) {
+                            int64_t version_watermark) {
   syncable::Directory::Metahandles handles;
   dir->GetMetaHandlesOfType(trans, type, &handles);
   for (size_t i = 0; i < handles.size(); ++i) {

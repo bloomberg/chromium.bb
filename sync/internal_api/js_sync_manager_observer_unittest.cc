@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/values.h"

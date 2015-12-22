@@ -4,6 +4,9 @@
 
 #include "sync/syncable/directory_backing_store.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -15,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_ignorer.h"
@@ -53,7 +57,7 @@ scoped_ptr<EntryKernel> CreateEntry(int id, const std::string &id_suffix) {
 
 }  // namespace
 
-SYNC_EXPORT extern const int32 kCurrentDBVersion;
+SYNC_EXPORT extern const int32_t kCurrentDBVersion;
 
 class MigrationTest : public testing::TestWithParam<int> {
  public:
@@ -280,9 +284,9 @@ enum ShouldIncludeDeletedItems {
 
 // Returns a map from metahandle -> expected legacy time (in proto
 // format).
-std::map<int64, int64> GetExpectedLegacyMetaProtoTimes(
+std::map<int64_t, int64_t> GetExpectedLegacyMetaProtoTimes(
     enum ShouldIncludeDeletedItems include_deleted) {
-  std::map<int64, int64> expected_legacy_meta_proto_times;
+  std::map<int64_t, int64_t> expected_legacy_meta_proto_times;
   expected_legacy_meta_proto_times[1] = LEGACY_META_PROTO_TIMES(1);
   if (include_deleted == INCLUDE_DELETED_ITEMS) {
     expected_legacy_meta_proto_times[2] = LEGACY_META_PROTO_TIMES(2);
@@ -302,9 +306,9 @@ std::map<int64, int64> GetExpectedLegacyMetaProtoTimes(
 }
 
 // Returns a map from metahandle -> expected time (in proto format).
-std::map<int64, int64> GetExpectedMetaProtoTimes(
+std::map<int64_t, int64_t> GetExpectedMetaProtoTimes(
     enum ShouldIncludeDeletedItems include_deleted) {
-  std::map<int64, int64> expected_meta_proto_times;
+  std::map<int64_t, int64_t> expected_meta_proto_times;
   expected_meta_proto_times[1] = META_PROTO_TIMES(1);
   if (include_deleted == INCLUDE_DELETED_ITEMS) {
     expected_meta_proto_times[2] = META_PROTO_TIMES(2);
@@ -324,11 +328,11 @@ std::map<int64, int64> GetExpectedMetaProtoTimes(
 }
 
 // Returns a map from metahandle -> expected time (as a Time object).
-std::map<int64, base::Time> GetExpectedMetaTimes() {
-  std::map<int64, base::Time> expected_meta_times;
-  const std::map<int64, int64>& expected_meta_proto_times =
+std::map<int64_t, base::Time> GetExpectedMetaTimes() {
+  std::map<int64_t, base::Time> expected_meta_times;
+  const std::map<int64_t, int64_t>& expected_meta_proto_times =
       GetExpectedMetaProtoTimes(INCLUDE_DELETED_ITEMS);
-  for (std::map<int64, int64>::const_iterator it =
+  for (std::map<int64_t, int64_t>::const_iterator it =
            expected_meta_proto_times.begin();
        it != expected_meta_proto_times.end(); ++it) {
     expected_meta_times[it->first] = ProtoTimeToTime(it->second);
@@ -338,19 +342,19 @@ std::map<int64, base::Time> GetExpectedMetaTimes() {
 
 // Extracts a map from metahandle -> time (in proto format) from the
 // given database.
-std::map<int64, int64> GetMetaProtoTimes(sql::Connection *db) {
+std::map<int64_t, int64_t> GetMetaProtoTimes(sql::Connection* db) {
   sql::Statement s(db->GetCachedStatement(
           SQL_FROM_HERE,
           "SELECT metahandle, mtime, server_mtime, ctime, server_ctime "
           "FROM metas"));
   EXPECT_EQ(5, s.ColumnCount());
-  std::map<int64, int64> meta_times;
+  std::map<int64_t, int64_t> meta_times;
   while (s.Step()) {
-    int64 metahandle = s.ColumnInt64(0);
-    int64 mtime = s.ColumnInt64(1);
-    int64 server_mtime = s.ColumnInt64(2);
-    int64 ctime = s.ColumnInt64(3);
-    int64 server_ctime = s.ColumnInt64(4);
+    int64_t metahandle = s.ColumnInt64(0);
+    int64_t mtime = s.ColumnInt64(1);
+    int64_t server_mtime = s.ColumnInt64(2);
+    int64_t ctime = s.ColumnInt64(3);
+    int64_t server_ctime = s.ColumnInt64(4);
     EXPECT_EQ(mtime, server_mtime);
     EXPECT_EQ(mtime, ctime);
     EXPECT_EQ(mtime, server_ctime);
@@ -393,12 +397,12 @@ void ExpectTime(const EntryKernel& entry_kernel,
 // Expect that all the entries in |entries| have times matching those in
 // the given map (from metahandle to expect time).
 void ExpectTimes(const Directory::MetahandlesMap& handles_map,
-                 const std::map<int64, base::Time>& expected_times) {
+                 const std::map<int64_t, base::Time>& expected_times) {
   for (Directory::MetahandlesMap::const_iterator it = handles_map.begin();
        it != handles_map.end(); ++it) {
-    int64 meta_handle = it->first;
+    int64_t meta_handle = it->first;
     SCOPED_TRACE(meta_handle);
-    std::map<int64, base::Time>::const_iterator it2 =
+    std::map<int64_t, base::Time>::const_iterator it2 =
         expected_times.find(meta_handle);
     if (it2 == expected_times.end()) {
       ADD_FAILURE() << "Could not find expected time for " << meta_handle;
@@ -1859,21 +1863,9 @@ void MigrationTest::SetUpVersion80Database(sql::Connection* connection) {
 namespace {
 
 const int V80_ROW_COUNT = 13;
-const int64 V80_POSITIONS[V80_ROW_COUNT] = {
-  0,
-  -2097152,
-  -3145728,
-  1048576,
-  -4194304,
-  1048576,
-  1048576,
-  1048576,
-  2097152,
-  -1048576,
-  0,
-  -917504,
-  1048576
-};
+const int64_t V80_POSITIONS[V80_ROW_COUNT] = {
+    0,       -2097152, -3145728, 1048576, -4194304, 1048576, 1048576,
+    1048576, 2097152,  -1048576, 0,       -917504,  1048576};
 
 std::string V81_Ordinal(int n) {
   return Int64ToNodeOrdinal(V80_POSITIONS[n]).ToInternalValue();
@@ -4060,7 +4052,7 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
             &kernel_load_info);
   size_t initial_size = handles_map.size();
   ASSERT_LT(0U, initial_size) << "Test requires handles_map to delete.";
-  int64 first_to_die = handles_map.begin()->second->ref(META_HANDLE);
+  int64_t first_to_die = handles_map.begin()->second->ref(META_HANDLE);
   MetahandleSet to_delete;
   to_delete.insert(first_to_die);
   EXPECT_TRUE(dbs->DeleteEntries(to_delete));

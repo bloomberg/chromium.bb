@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"

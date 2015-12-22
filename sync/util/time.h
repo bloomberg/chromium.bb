@@ -7,9 +7,10 @@
 #ifndef SYNC_UTIL_TIME_H_
 #define SYNC_UTIL_TIME_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 
@@ -17,10 +18,10 @@ namespace syncer {
 
 // Converts a time object to the format used in sync protobufs (ms
 // since the Unix epoch).
-SYNC_EXPORT int64 TimeToProtoTime(const base::Time& t);
+SYNC_EXPORT int64_t TimeToProtoTime(const base::Time& t);
 
 // Converts a time field from sync protobufs to a time object.
-SYNC_EXPORT base::Time ProtoTimeToTime(int64 proto_t);
+SYNC_EXPORT base::Time ProtoTimeToTime(int64_t proto_t);
 
 SYNC_EXPORT std::string GetTimeDebugString(const base::Time& t);
 

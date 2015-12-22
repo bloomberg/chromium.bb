@@ -5,8 +5,11 @@
 #ifndef SYNC_TEST_FAKE_SERVER_FAKE_SERVER_VERIFIER_H_
 #define SYNC_TEST_FAKE_SERVER_FAKE_SERVER_VERIFIER_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"

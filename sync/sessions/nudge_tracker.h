@@ -7,10 +7,13 @@
 #ifndef SYNC_SESSIONS_NUDGE_TRACKER_H_
 #define SYNC_SESSIONS_NUDGE_TRACKER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"

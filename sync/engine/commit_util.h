@@ -5,6 +5,8 @@
 #ifndef SYNC_ENGINE_COMMIT_UTIL_H_
 #define SYNC_ENGINE_COMMIT_UTIL_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "sync/base/sync_export.h"
@@ -55,7 +57,7 @@ sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
     syncable::BaseWriteTransaction* trans,
     const sync_pb::CommitResponse_EntryResponse& server_entry,
     const sync_pb::SyncEntity& commit_request_entry,
-    int64 metahandle,
+    int64_t metahandle,
     std::set<syncable::Id>* deleted_folders);
 
 }  // namespace commit_util

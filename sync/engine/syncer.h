@@ -5,12 +5,14 @@
 #ifndef SYNC_ENGINE_SYNCER_H_
 #define SYNC_ENGINE_SYNCER_H_
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/conflict_resolver.h"
@@ -36,7 +38,7 @@ class GetUpdatesProcessor;
 // lock contention, or on tasks posted to other threads.
 class SYNC_EXPORT Syncer {
  public:
-  typedef std::vector<int64> UnsyncedMetaHandles;
+  typedef std::vector<int64_t> UnsyncedMetaHandles;
 
   explicit Syncer(CancelationSignal* cancelation_signal);
   virtual ~Syncer();

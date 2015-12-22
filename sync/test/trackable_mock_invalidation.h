@@ -5,6 +5,8 @@
 #ifndef SYNC_TEST_TRACKABLE_MOCK_INVALIDATION_H_
 #define SYNC_TEST_TRACKABLE_MOCK_INVALIDATION_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "sync/test/mock_invalidation.h"
@@ -20,7 +22,7 @@ class MockInvalidationTracker;
 class TrackableMockInvalidation : public MockInvalidation {
  public:
   TrackableMockInvalidation(bool is_unknown_version,
-                            int64 version,
+                            int64_t version,
                             const std::string& payload,
                             MockInvalidationTracker* tracker,
                             int tracking_id);

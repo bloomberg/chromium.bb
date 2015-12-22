@@ -5,6 +5,8 @@
 #ifndef SYNC_ENGINE_PROCESS_UPDATES_UTIL_H_
 #define SYNC_ENGINE_PROCESS_UPDATES_UTIL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "sync/internal_api/public/base/model_type.h"
@@ -42,7 +44,7 @@ void ProcessDownloadedUpdates(
 void ExpireEntriesByVersion(syncable::Directory* dir,
                             syncable::ModelNeutralWriteTransaction* trans,
                             ModelType type,
-                            int64 version_watermark);
+                            int64_t version_watermark);
 
 }  // namespace syncer
 

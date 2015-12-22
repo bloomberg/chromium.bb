@@ -4,6 +4,8 @@
 
 #include "sync/engine/backoff_delay_provider.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/rand_util.h"
@@ -43,8 +45,8 @@ TimeDelta BackoffDelayProvider::GetDelay(const base::TimeDelta& last_delay) {
     return TimeDelta::FromSeconds(kMaxBackoffSeconds);
 
   // This calculates approx. base_delay_seconds * 2 +/- base_delay_seconds / 2
-  int64 backoff_s =
-      std::max(static_cast<int64>(1),
+  int64_t backoff_s =
+      std::max(static_cast<int64_t>(1),
                last_delay.InSeconds() * kBackoffRandomizationFactor);
 
   // Flip a coin to randomize backoff interval by +/- 50%.
@@ -55,7 +57,7 @@ TimeDelta BackoffDelayProvider::GetDelay(const base::TimeDelta& last_delay) {
       (rand_sign * (last_delay.InSeconds() / kBackoffRandomizationFactor));
 
   // Cap the backoff interval.
-  backoff_s = std::max(static_cast<int64>(1),
+  backoff_s = std::max(static_cast<int64_t>(1),
                        std::min(backoff_s, kMaxBackoffSeconds));
 
   return TimeDelta::FromSeconds(backoff_s);

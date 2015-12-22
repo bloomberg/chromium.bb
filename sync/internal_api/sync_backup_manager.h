@@ -5,8 +5,11 @@
 #ifndef SYNC_INTERNAL_API_SYNC_BACKUP_MANAGER_H_
 #define SYNC_INTERNAL_API_SYNC_BACKUP_MANAGER_H_
 
+#include <stdint.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "sync/internal_api/sync_rollback_manager_base.h"
 #include "url/gurl.h"
 
@@ -52,7 +55,7 @@ class SYNC_EXPORT SyncBackupManager : public SyncRollbackManagerBase {
   void HideSyncPreference(ModelType pref_type);
 
   // Handles of unsynced entries caused by local model changes.
-  std::set<int64> unsynced_;
+  std::set<int64_t> unsynced_;
 
   // True if NormalizeEntries() is being called.
   bool in_normalization_;

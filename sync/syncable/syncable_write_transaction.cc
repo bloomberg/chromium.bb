@@ -4,6 +4,8 @@
 
 #include "sync/syncable/syncable_write_transaction.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "sync/syncable/directory.h"
@@ -15,7 +17,7 @@
 namespace syncer {
 namespace syncable {
 
-const int64 kInvalidTransactionVersion = -1;
+const int64_t kInvalidTransactionVersion = -1;
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer, Directory* directory)
@@ -26,7 +28,7 @@ WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    Directory* directory,
-                                   int64* transaction_version)
+                                   int64_t* transaction_version)
     : BaseWriteTransaction(location, "WriteTransaction", SYNCAPI, directory),
       transaction_version_(transaction_version) {
   Lock();
@@ -39,7 +41,7 @@ void WriteTransaction::TrackChangesTo(const EntryKernel* entry) {
     return;
   }
   // Insert only if it's not already there.
-  const int64 handle = entry->ref(META_HANDLE);
+  const int64_t handle = entry->ref(META_HANDLE);
   EntryKernelMutationMap::iterator it = mutations_.lower_bound(handle);
   if (it == mutations_.end() || it->first != handle) {
     mutations_[handle].original = *entry;
@@ -96,7 +98,7 @@ ModelTypeSet WriteTransaction::NotifyTransactionChangingAndEnding(
   ImmutableWriteTransactionInfo immutable_write_transaction_info(
       &write_transaction_info);
   DirectoryChangeDelegate* const delegate = directory_->kernel()->delegate;
-  std::vector<int64> entry_changed;
+  std::vector<int64_t> entry_changed;
   if (writer_ == syncable::SYNCAPI) {
     delegate->HandleCalculateChangesChangeEventFromSyncApi(
         immutable_write_transaction_info, this, &entry_changed);
@@ -124,9 +126,9 @@ void WriteTransaction::NotifyTransactionComplete(
 }
 
 void WriteTransaction::UpdateTransactionVersion(
-    const std::vector<int64>& entry_changed) {
+    const std::vector<int64_t>& entry_changed) {
   syncer::ModelTypeSet type_seen;
-  for (uint32 i = 0; i < entry_changed.size(); ++i) {
+  for (uint32_t i = 0; i < entry_changed.size(); ++i) {
     MutableEntry entry(this, GET_BY_HANDLE, entry_changed[i]);
     if (entry.good()) {
       ModelType type = GetModelTypeFromSpecifics(entry.GetSpecifics());

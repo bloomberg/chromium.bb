@@ -5,10 +5,13 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_READ_NODE_H_
 #define SYNC_INTERNAL_API_PUBLIC_READ_NODE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base_node.h"
@@ -28,7 +31,7 @@ class SYNC_EXPORT ReadNode : public BaseNode {
   // populate the node.
 
   // BaseNode implementation.
-  InitByLookupResult InitByIdLookup(int64 id) override;
+  InitByLookupResult InitByIdLookup(int64_t id) override;
   InitByLookupResult InitByClientTagLookup(ModelType model_type,
                                            const std::string& tag) override;
 
@@ -50,7 +53,7 @@ class SYNC_EXPORT ReadNode : public BaseNode {
 
   // Returns transaction version of the last transaction where this node has
   // been modified.
-  int64 GetTransactionVersion() const;
+  int64_t GetTransactionVersion() const;
 
   // Implementation of BaseNode's abstract virtual accessors.
   const syncable::Entry* GetEntry() const override;

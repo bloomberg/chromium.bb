@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 

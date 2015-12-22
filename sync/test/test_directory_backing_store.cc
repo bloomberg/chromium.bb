@@ -4,7 +4,6 @@
 
 #include "sync/test/test_directory_backing_store.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace syncer {

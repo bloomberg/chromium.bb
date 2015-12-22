@@ -4,6 +4,8 @@
 
 #include "sync/engine/commit_util.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <set>
 #include <string>
@@ -152,7 +154,7 @@ void BuildCommitItem(
     sync_entry->set_old_parent_id(SyncableIdToProto(server_parent_id));
   }
 
-  int64 version = meta_entry.GetBaseVersion();
+  int64_t version = meta_entry.GetBaseVersion();
   if (syncable::CHANGES_VERSION == version || 0 == version) {
     // Undeletions are only supported for items that have a client tag.
     DCHECK(!id.ServerKnows() ||
@@ -232,8 +234,8 @@ bool UpdateVersionAfterCommit(
     const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id,
     syncable::ModelNeutralMutableEntry* local_entry) {
-  int64 old_version = local_entry->GetBaseVersion();
-  int64 new_version = entry_response.version();
+  int64_t old_version = local_entry->GetBaseVersion();
+  int64_t new_version = entry_response.version();
   bool bad_commit_version = false;
   if (committed_entry.deleted() &&
       !local_entry->GetUniqueClientTag().empty()) {
@@ -391,12 +393,11 @@ void ProcessSuccessfulCommitResponse(
 
 }  // namespace
 
-sync_pb::CommitResponse::ResponseType
-ProcessSingleCommitResponse(
+sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
     syncable::BaseWriteTransaction* trans,
     const sync_pb::CommitResponse_EntryResponse& server_entry,
     const sync_pb::SyncEntity& commit_request_entry,
-    int64 metahandle,
+    int64_t metahandle,
     set<syncable::Id>* deleted_folders) {
   syncable::ModelNeutralMutableEntry local_entry(
       trans,

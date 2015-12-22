@@ -4,6 +4,8 @@
 
 #include "sync/engine/commit_processor.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "sync/engine/commit_contribution.h"

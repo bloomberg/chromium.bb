@@ -6,6 +6,8 @@
 
 #include "sync/test/engine/mock_connection_manager.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/location.h"
@@ -214,8 +216,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
     int id,
     int parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     const std::string& originator_cache_guid,
     const std::string& originator_client_item_id) {
   return AddUpdateDirectory(TestIdFactory::FromNumber(id),
@@ -245,8 +247,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
     int id,
     int parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     const string& originator_client_item_id,
     const string& originator_cache_guid) {
   return AddUpdateBookmark(TestIdFactory::FromNumber(id),
@@ -262,10 +264,10 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateSpecifics(
     int id,
     int parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     bool is_dir,
-    int64 position,
+    int64_t position,
     const sync_pb::EntitySpecifics& specifics) {
   sync_pb::SyncEntity* ent = AddUpdateMeta(
       TestIdFactory::FromNumber(id).GetServerId(),
@@ -281,10 +283,10 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateSpecifics(
     int id,
     int parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     bool is_dir,
-    int64 position,
+    int64_t position,
     const sync_pb::EntitySpecifics& specifics,
     const string& originator_cache_guid,
     const string& originator_client_item_id) {
@@ -297,8 +299,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateSpecifics(
 
 sync_pb::SyncEntity* MockConnectionManager::SetNigori(
     int id,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     const sync_pb::EntitySpecifics& specifics) {
   sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(TestIdFactory::FromNumber(id).GetServerId());
@@ -320,8 +322,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdatePref(
     const string& id,
     const string& parent_id,
     const string& client_tag,
-    int64 version,
-    int64 sync_ts) {
+    int64_t version,
+    int64_t sync_ts) {
   sync_pb::SyncEntity* ent =
       AddUpdateMeta(id, parent_id, " ", version, sync_ts);
 
@@ -338,8 +340,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateFull(
     const string& id,
     const string& parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     bool is_dir) {
   sync_pb::SyncEntity* ent =
       AddUpdateMeta(id, parent_id, name, version, sync_ts);
@@ -351,8 +353,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateMeta(
     const string& id,
     const string& parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts) {
+    int64_t version,
+    int64_t sync_ts) {
   sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
   ent->set_id_string(id);
   ent->set_parent_id_string(parent_id);
@@ -383,8 +385,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
     const string& id,
     const string& parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     const std::string& originator_cache_guid,
     const std::string& originator_client_item_id) {
   sync_pb::SyncEntity* ret =
@@ -398,8 +400,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
     const string& id,
     const string& parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     const string& originator_cache_guid,
     const string& originator_client_item_id) {
   sync_pb::SyncEntity* ret =
@@ -485,7 +487,7 @@ void MockConnectionManager::SetLastUpdateClientTag(const string& tag) {
   GetMutableLastUpdate()->set_client_defined_unique_tag(tag);
 }
 
-void MockConnectionManager::SetLastUpdatePosition(int64 server_position) {
+void MockConnectionManager::SetLastUpdatePosition(int64_t server_position) {
   GetMutableLastUpdate()->set_position_in_parent(server_position);
 }
 
@@ -508,7 +510,7 @@ void MockConnectionManager::ApplyToken() {
   }
 }
 
-void MockConnectionManager::SetChangesRemaining(int64 timestamp) {
+void MockConnectionManager::SetChangesRemaining(int64_t timestamp) {
   GetUpdateResponse()->set_changes_remaining(timestamp);
 }
 
@@ -669,8 +671,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
     syncable::Id id,
     syncable::Id parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     const string& originator_cache_guid,
     const string& originator_client_item_id) {
   return AddUpdateDirectory(id.GetServerId(), parent_id.GetServerId(),
@@ -682,8 +684,8 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
     syncable::Id id,
     syncable::Id parent_id,
     const string& name,
-    int64 version,
-    int64 sync_ts,
+    int64_t version,
+    int64_t sync_ts,
     const string& originator_cache_guid,
     const string& originator_client_item_id) {
   return AddUpdateBookmark(id.GetServerId(), parent_id.GetServerId(),

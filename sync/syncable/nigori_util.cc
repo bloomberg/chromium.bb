@@ -4,6 +4,9 @@
 
 #include "sync/syncable/nigori_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 #include <vector>
@@ -11,8 +14,8 @@
 #include "base/json/json_writer.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
-#include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/cryptographer.h"
@@ -33,7 +36,7 @@ bool ProcessUnsyncedChangesForEncryption(
   // Note: we do not attempt to re-encrypt data with a new key here as key
   // changes in this code path are likely due to consistency issues (we have
   // to be updated to a key we already have, e.g. an old key).
-  std::vector<int64> handles;
+  std::vector<int64_t> handles;
   GetUnsyncedEntries(trans, &handles);
   for (size_t i = 0; i < handles.size(); ++i) {
     MutableEntry entry(trans, GET_BY_HANDLE, handles[i]);
@@ -51,7 +54,7 @@ bool ProcessUnsyncedChangesForEncryption(
 bool VerifyUnsyncedChangesAreEncrypted(
     BaseTransaction* const trans,
     ModelTypeSet encrypted_types) {
-  std::vector<int64> handles;
+  std::vector<int64_t> handles;
   GetUnsyncedEntries(trans, &handles);
   for (size_t i = 0; i < handles.size(); ++i) {
     Entry entry(trans, GET_BY_HANDLE, handles[i]);

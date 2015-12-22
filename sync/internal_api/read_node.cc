@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/read_node.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/syncable/entry.h"
@@ -36,7 +38,7 @@ void ReadNode::InitByRootLookup() {
     DCHECK(false) << "Could not lookup root node for reading.";
 }
 
-BaseNode::InitByLookupResult ReadNode::InitByIdLookup(int64 id) {
+BaseNode::InitByLookupResult ReadNode::InitByIdLookup(int64_t id) {
   DCHECK(!entry_) << "Init called twice";
   DCHECK_NE(id, kInvalidId);
   syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
@@ -77,7 +79,7 @@ const BaseTransaction* ReadNode::GetTransaction() const {
   return transaction_;
 }
 
-int64 ReadNode::GetTransactionVersion() const {
+int64_t ReadNode::GetTransactionVersion() const {
   return GetEntry()->GetTransactionVersion();
 }
 

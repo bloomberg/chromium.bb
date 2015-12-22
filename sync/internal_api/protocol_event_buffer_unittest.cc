@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
@@ -18,8 +21,8 @@ class ProtocolEventBufferTest : public ::testing::Test {
   ProtocolEventBufferTest();
   ~ProtocolEventBufferTest() override;
 
-  static scoped_ptr<ProtocolEvent> MakeTestEvent(int64 id);
-  static bool HasId(const ProtocolEvent& event, int64 id);
+  static scoped_ptr<ProtocolEvent> MakeTestEvent(int64_t id);
+  static bool HasId(const ProtocolEvent& event, int64_t id);
 
  protected:
   ProtocolEventBuffer buffer_;
@@ -29,7 +32,7 @@ ProtocolEventBufferTest::ProtocolEventBufferTest() {}
 
 ProtocolEventBufferTest::~ProtocolEventBufferTest() {}
 
-scoped_ptr<ProtocolEvent> ProtocolEventBufferTest::MakeTestEvent(int64 id) {
+scoped_ptr<ProtocolEvent> ProtocolEventBufferTest::MakeTestEvent(int64_t id) {
   sync_pb::ClientToServerMessage message;
   return scoped_ptr<ProtocolEvent>(
       new PollGetUpdatesRequestEvent(
@@ -37,7 +40,7 @@ scoped_ptr<ProtocolEvent> ProtocolEventBufferTest::MakeTestEvent(int64 id) {
           message));
 }
 
-bool ProtocolEventBufferTest::HasId(const ProtocolEvent& event, int64 id) {
+bool ProtocolEventBufferTest::HasId(const ProtocolEvent& event, int64_t id) {
   return event.GetTimestamp() == base::Time::FromInternalValue(id);
 }
 
@@ -58,7 +61,7 @@ TEST_F(ProtocolEventBufferTest, AddThenReturnEvents) {
 
 TEST_F(ProtocolEventBufferTest, AddThenOverflowThenReturnEvents) {
   for (size_t i = 0; i < ProtocolEventBuffer::kBufferSize+1; ++i) {
-    scoped_ptr<ProtocolEvent> e(MakeTestEvent(static_cast<int64>(i)));
+    scoped_ptr<ProtocolEvent> e(MakeTestEvent(static_cast<int64_t>(i)));
     buffer_.RecordProtocolEvent(*e);
   }
 
@@ -67,8 +70,7 @@ TEST_F(ProtocolEventBufferTest, AddThenOverflowThenReturnEvents) {
   ASSERT_EQ(ProtocolEventBuffer::kBufferSize, buffered_events.size());
 
   for (size_t i = 1; i < ProtocolEventBuffer::kBufferSize+1; ++i) {
-    EXPECT_TRUE(
-        HasId(*(buffered_events[i-1]), static_cast<int64>(i)));
+    EXPECT_TRUE(HasId(*(buffered_events[i - 1]), static_cast<int64_t>(i)));
   }
 }
 

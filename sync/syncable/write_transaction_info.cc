@@ -4,13 +4,16 @@
 
 #include "sync/syncable/write_transaction_info.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 
 namespace syncer {
 namespace syncable {
 
 WriteTransactionInfo::WriteTransactionInfo(
-    int64 id,
+    int64_t id,
     tracked_objects::Location location,
     WriterTag writer,
     ImmutableEntryKernelMutationMap mutations)

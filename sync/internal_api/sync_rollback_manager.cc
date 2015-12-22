@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/sync_rollback_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
@@ -87,7 +90,8 @@ void SyncRollbackManager::StartSyncingNormally(
 }
 
 SyncerError SyncRollbackManager::DeleteOnWorkerThread(
-    ModelType type, std::vector<int64> handles) {
+    ModelType type,
+    std::vector<int64_t> handles) {
   CHECK(change_delegate_);
 
   {

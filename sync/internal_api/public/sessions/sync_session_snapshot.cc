@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
+#include <stddef.h>
+
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

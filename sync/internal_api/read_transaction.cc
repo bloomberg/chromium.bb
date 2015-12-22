@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/read_transaction.h"
 
+#include <stdint.h>
+
 #include "sync/syncable/directory.h"
 #include "sync/syncable/syncable_read_transaction.h"
 
@@ -36,7 +38,7 @@ syncable::BaseTransaction* ReadTransaction::GetWrappedTrans() const {
   return transaction_;
 }
 
-int64 ReadTransaction::GetModelVersion(ModelType type) const {
+int64_t ReadTransaction::GetModelVersion(ModelType type) const {
   return transaction_->directory()->GetTransactionVersion(type);
 }
 

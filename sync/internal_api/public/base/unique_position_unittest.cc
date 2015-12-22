@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/public/base/unique_position.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -12,8 +13,8 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"

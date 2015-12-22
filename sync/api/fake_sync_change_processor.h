@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "sync/api/sync_change_processor.h"
 
 namespace syncer {

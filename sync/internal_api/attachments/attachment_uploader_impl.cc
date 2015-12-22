@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

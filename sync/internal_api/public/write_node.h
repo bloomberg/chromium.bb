@@ -5,12 +5,15 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_WRITE_NODE_H_
 #define SYNC_INTERNAL_API_PUBLIC_WRITE_NODE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base_node.h"
@@ -56,7 +59,7 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   // populate the node.
 
   // BaseNode implementation.
-  InitByLookupResult InitByIdLookup(int64 id) override;
+  InitByLookupResult InitByIdLookup(int64_t id) override;
   InitByLookupResult InitByClientTagLookup(ModelType model_type,
                                            const std::string& tag) override;
 
@@ -95,7 +98,7 @@ class SYNC_EXPORT WriteNode : public BaseNode {
 
   // External ID is a client-only field, so setting it doesn't cause the item to
   // be synced again.
-  void SetExternalId(int64 external_id);
+  void SetExternalId(int64_t external_id);
 
   // Remove this node and its children and sync deletion to server.
   void Tombstone();

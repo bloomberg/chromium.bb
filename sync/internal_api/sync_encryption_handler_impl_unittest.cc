@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/sync_encryption_handler_impl.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/base64.h"
@@ -146,10 +148,9 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     VerifyMigratedNigoriWithTimestamp(0, passphrase_type, passphrase);
   }
 
-  void VerifyMigratedNigoriWithTimestamp(
-      int64 migration_time,
-      PassphraseType passphrase_type,
-      const std::string& passphrase) {
+  void VerifyMigratedNigoriWithTimestamp(int64_t migration_time,
+                                         PassphraseType passphrase_type,
+                                         const std::string& passphrase) {
     ReadTransaction trans(FROM_HERE, user_share());
     ReadNode nigori_node(&trans);
     ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
@@ -196,7 +197,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
 
   sync_pb::NigoriSpecifics BuildMigratedNigori(
       PassphraseType passphrase_type,
-      int64 migration_time,
+      int64_t migration_time,
       const std::string& default_passphrase,
       const std::string& keystore_key) {
     DCHECK_NE(passphrase_type, IMPLICIT_PASSPHRASE);
@@ -239,7 +240,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
 
   // Build a migrated nigori node with the specified default passphrase
   // and keystore key and initialize the encryption handler with it.
-  void InitKeystoreMigratedNigori(int64 migration_time,
+  void InitKeystoreMigratedNigori(int64_t migration_time,
                                   const std::string& default_passphrase,
                                   const std::string& keystore_key) {
     {
@@ -273,7 +274,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
 
   // Build a migrated nigori node with the specified default passphrase
   // as a custom passphrase.
-  void InitCustomPassMigratedNigori(int64 migration_time,
+  void InitCustomPassMigratedNigori(int64_t migration_time,
                                     const std::string& default_passphrase) {
     {
       WriteTransaction trans(FROM_HERE, user_share());
@@ -344,7 +345,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   //
   // |passphrase| is the custom passphrase.
   void VerifyRestoreAfterCustomPassphrase(
-      int64 migration_time,
+      int64_t migration_time,
       const std::string& passphrase,
       const std::string& bootstrap_token,
       const SyncEncryptionHandler::NigoriState& nigori_state,
@@ -1338,7 +1339,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveUnmigratedNigoriAfterMigration) {
   GetCryptographer()->AddKey(cur_key);
 
   // Build a migrated nigori with full encryption.
-  const int64 migration_time = 1;
+  const int64_t migration_time = 1;
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
@@ -1476,7 +1477,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
   EXPECT_CALL(*observer(), OnLocalSetPassphraseEncryption(_))
       .WillOnce(testing::SaveArg<0>(&captured_nigori_state));
   EXPECT_CALL(*observer(), OnEncryptionComplete());
-  const int64 migration_time = 1;
+  const int64_t migration_time = 1;
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
@@ -1616,7 +1617,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   // Build a nigori node with the generated keystore decryptor token and
   // initialize the encryption handler with it. The cryptographer should be
   // initialized properly to decrypt both kOldKey and kKeystoreKey.
-  const int64 migration_time = 1;
+  const int64_t migration_time = 1;
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
@@ -1733,7 +1734,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   // Build a nigori node with the generated keystore decryptor token and
   // initialize the encryption handler with it. The cryptographer will have
   // pending keys until we provide the decryption passphrase.
-  const int64 migration_time = 1;
+  const int64_t migration_time = 1;
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
@@ -1947,7 +1948,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   // Build a nigori node with the generated keystore decryptor token and
   // initialize the encryption handler with it. The cryptographer will have
   // pending keys until we provide the decryption passphrase.
-  const int64 migration_time = 1;
+  const int64_t migration_time = 1;
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
@@ -2414,7 +2415,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
   KeyParams custom_key = {"localhost", "dummy", kCustomPass};
   GetCryptographer()->AddKey(custom_key);
 
-  const int64 migration_time = 1;
+  const int64_t migration_time = 1;
   InitCustomPassMigratedNigori(migration_time, kCustomPass);
   VerifyMigratedNigoriWithTimestamp(migration_time, CUSTOM_PASSPHRASE,
                                     kCustomPass);

@@ -4,6 +4,9 @@
 
 #include "sync/internal_api/public/shared_model_type_processor.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -76,14 +79,14 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // Emulate updates from the server.
   // This harness has some functionality to help emulate server behavior.
   // See the definitions of these methods for more information.
-  void UpdateFromServer(int64 version_offset,
+  void UpdateFromServer(int64_t version_offset,
                         const std::string& tag,
                         const std::string& value);
-  void TombstoneFromServer(int64 version_offset, const std::string& tag);
+  void TombstoneFromServer(int64_t version_offset, const std::string& tag);
 
   // Emulate the receipt of pending updates from the server.
   // Pending updates are usually caused by a temporary decryption failure.
-  void PendingUpdateFromServer(int64 version_offset,
+  void PendingUpdateFromServer(int64_t version_offset,
                                const std::string& tag,
                                const std::string& value,
                                const std::string& key_name);
@@ -128,8 +131,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
       const std::string& value,
       const std::string& key_name);
 
-  int64 GetServerVersion(const std::string& tag);
-  void SetServerVersion(const std::string& tag, int64 version);
+  int64_t GetServerVersion(const std::string& tag);
+  void SetServerVersion(const std::string& tag, int64_t version);
 
   void StartDone(syncer::SyncError error,
                  scoped_ptr<ActivationContext> context);
@@ -225,7 +228,7 @@ void SharedModelTypeProcessorTest::OnInitialSyncDone() {
                                     empty_update_list);
 }
 
-void SharedModelTypeProcessorTest::UpdateFromServer(int64 version_offset,
+void SharedModelTypeProcessorTest::UpdateFromServer(int64_t version_offset,
                                                     const std::string& tag,
                                                     const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
@@ -239,7 +242,7 @@ void SharedModelTypeProcessorTest::UpdateFromServer(int64 version_offset,
 }
 
 void SharedModelTypeProcessorTest::PendingUpdateFromServer(
-    int64 version_offset,
+    int64_t version_offset,
     const std::string& tag,
     const std::string& value,
     const std::string& key_name) {
@@ -254,7 +257,7 @@ void SharedModelTypeProcessorTest::PendingUpdateFromServer(
                                     list);
 }
 
-void SharedModelTypeProcessorTest::TombstoneFromServer(int64 version_offset,
+void SharedModelTypeProcessorTest::TombstoneFromServer(int64_t version_offset,
                                                        const std::string& tag) {
   // Overwrite the existing server version if this is the new highest version.
   std::string tag_hash = GenerateTagHash(tag);

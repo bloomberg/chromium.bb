@@ -4,6 +4,8 @@
 
 #include "sync/test/local_sync_test_server.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/command_line.h"
@@ -22,11 +24,11 @@ LocalSyncTestServer::LocalSyncTestServer()
         base::FilePath()),
       xmpp_port_(0) {}
 
-LocalSyncTestServer::LocalSyncTestServer(uint16 port, uint16 xmpp_port)
+LocalSyncTestServer::LocalSyncTestServer(uint16_t port, uint16_t xmpp_port)
     : LocalTestServer(
-        net::SpawnedTestServer::TYPE_HTTP,  // Sync uses the HTTP scheme.
-        net::SpawnedTestServer::kLocalhost,
-        base::FilePath()),
+          net::SpawnedTestServer::TYPE_HTTP,  // Sync uses the HTTP scheme.
+          net::SpawnedTestServer::kLocalhost,
+          base::FilePath()),
       xmpp_port_(xmpp_port) {
   SetPort(port);
 }

@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"

@@ -5,11 +5,14 @@
 #ifndef SYNC_INTERNAL_API_SYNC_MANAGER_IMPL_H_
 #define SYNC_INTERNAL_API_SYNC_MANAGER_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "net/base/network_change_notifier.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/all_status.h"
@@ -159,11 +162,11 @@ class SYNC_EXPORT SyncManagerImpl
   void HandleCalculateChangesChangeEventFromSyncApi(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans,
-      std::vector<int64>* entries_changed) override;
+      std::vector<int64_t>* entries_changed) override;
   void HandleCalculateChangesChangeEventFromSyncer(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans,
-      std::vector<int64>* entries_changed) override;
+      std::vector<int64_t>* entries_changed) override;
 
   // Handle explicit requests to fetch updates for the given types.
   void RefreshTypes(ModelTypeSet types) override;
@@ -243,7 +246,7 @@ class SYNC_EXPORT SyncManagerImpl
   // If this is a deletion for a password, sets the legacy
   // ExtraPasswordChangeRecordData field of |buffer|. Otherwise sets
   // |buffer|'s specifics field to contain the unencrypted data.
-  void SetExtraChangeRecordData(int64 id,
+  void SetExtraChangeRecordData(int64_t id,
                                 ModelType type,
                                 ChangeReorderBuffer* buffer,
                                 Cryptographer* cryptographer,

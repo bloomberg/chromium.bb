@@ -4,6 +4,9 @@
 
 #include "sync/syncable/syncable_delete_journal.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/stl_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 
@@ -83,7 +86,7 @@ void DeleteJournal::PurgeDeleteJournals(BaseTransaction* trans,
   DCHECK(trans);
   JournalIndex::iterator it = delete_journals_.begin();
   while (it != delete_journals_.end()) {
-    int64 handle = (*it)->ref(META_HANDLE);
+    int64_t handle = (*it)->ref(META_HANDLE);
     if (to_purge.count(handle)) {
       delete *it;
       delete_journals_.erase(it++);

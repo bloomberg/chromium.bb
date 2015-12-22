@@ -5,6 +5,9 @@
 // Syncer unit tests. Unfortunately a lot of these tests
 // are outdated and need to be reworked and updated.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <list>
@@ -17,6 +20,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -501,14 +505,14 @@ class SyncerTest : public testing::Test,
     return "kqyg7097kro6GSUod+GSg==";
   }
 
-  int64 CreateUnsyncedDirectory(const string& entry_name,
-      const string& idstring) {
+  int64_t CreateUnsyncedDirectory(const string& entry_name,
+                                  const string& idstring) {
     return CreateUnsyncedDirectory(entry_name,
         syncable::Id::CreateFromServerId(idstring));
   }
 
-  int64 CreateUnsyncedDirectory(const string& entry_name,
-      const syncable::Id& id) {
+  int64_t CreateUnsyncedDirectory(const string& entry_name,
+                                  const syncable::Id& id) {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(
         &wtrans, CREATE, BOOKMARKS, wtrans.root_id(), entry_name);
@@ -1933,7 +1937,7 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
     parent.PutBaseVersion(1);
   }
 
-  int64 meta_handle_b;
+  int64_t meta_handle_b;
   const Id parent2_local_id = ids_.NewLocalId();
   const Id child_local_id = ids_.NewLocalId();
   {
@@ -2005,8 +2009,8 @@ TEST_F(SyncerTest, TestBasicUpdate) {
   string id = "some_id";
   string parent_id = "0";
   string name = "in_root";
-  int64 version = 10;
-  int64 timestamp = 10;
+  int64_t version = 10;
+  int64_t timestamp = 10;
   mock_server_->AddUpdateDirectory(id, parent_id, name, version, timestamp,
                                    foreign_cache_guid(), "-1");
 
@@ -2178,7 +2182,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
 // its parent.
 TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
   // Create a folder in the root.
-  int64 metahandle_folder;
+  int64_t metahandle_folder;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(
@@ -2192,7 +2196,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
 
   // Verify it and pull the ID out of the folder.
   syncable::Id folder_id;
-  int64 metahandle_entry;
+  int64_t metahandle_entry;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, GET_BY_HANDLE, metahandle_folder);
@@ -2224,8 +2228,8 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
   }
 
   // Now, to emulate a commit response failure, we just don't commit it.
-  int64 new_version = 150;  // any larger value.
-  int64 timestamp = 20;  // arbitrary value.
+  int64_t new_version = 150;  // any larger value.
+  int64_t timestamp = 20;     // arbitrary value.
   syncable::Id new_folder_id =
       syncable::Id::CreateFromServerId("folder_server_id");
 
@@ -2269,7 +2273,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
 // its parent.
 TEST_F(SyncerTest, CommitReuniteUpdate) {
   // Create an entry in the root.
-  int64 entry_metahandle;
+  int64_t entry_metahandle;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, CREATE, BOOKMARKS, trans.root_id(), "new_entry");
@@ -2291,8 +2295,8 @@ TEST_F(SyncerTest, CommitReuniteUpdate) {
   }
 
   // Now, to emulate a commit response failure, we just don't commit it.
-  int64 new_version = 150;  // any larger value.
-  int64 timestamp = 20;  // arbitrary value.
+  int64_t new_version = 150;  // any larger value.
+  int64_t timestamp = 20;     // arbitrary value.
   syncable::Id new_entry_id = syncable::Id::CreateFromServerId("server_id");
 
   // Generate an update from the server with a relevant ID reassignment.
@@ -2322,7 +2326,7 @@ TEST_F(SyncerTest, CommitReuniteUpdate) {
 // finish, that must be cleaned up on the server side after some time.
 TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
   // Create a entry in the root.
-  int64 entry_metahandle;
+  int64_t entry_metahandle;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, CREATE, BOOKMARKS, trans.root_id(), "new_entry");
@@ -2342,8 +2346,8 @@ TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
   }
 
   // Now, to emulate a commit response failure, we just don't commit it.
-  int64 new_version = 150;  // any larger value.
-  int64 timestamp = 20;  // arbitrary value.
+  int64_t new_version = 150;  // any larger value.
+  int64_t timestamp = 20;     // arbitrary value.
   syncable::Id new_entry_id = syncable::Id::CreateFromServerId("server_id");
 
   // Generate an update from the server with a relevant ID reassignment.
@@ -2541,7 +2545,7 @@ TEST_F(SyncerTest, NegativeIDInUpdate) {
 }
 
 TEST_F(SyncerTest, UnappliedUpdateOnCreatedItemItemDoesNotCrash) {
-  int64 metahandle_fred;
+  int64_t metahandle_fred;
   syncable::Id orig_id;
   {
     // Create an item.
@@ -2624,7 +2628,7 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
 TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   const base::Time& test_time = ProtoTimeToTime(123456);
   syncable::Id local_id;
-  int64 entry_metahandle;
+  int64_t entry_metahandle;
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&wtrans, CREATE, BOOKMARKS, root_id_, "Pete");
@@ -2639,7 +2643,7 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   }
   EXPECT_TRUE(SyncShareNudge());
   syncable::Id id;
-  int64 version;
+  int64_t version;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, syncable::GET_BY_HANDLE, entry_metahandle);
@@ -2713,7 +2717,7 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
     EXPECT_EQ(1u, children.size());
     directory()->GetChildHandlesById(&trans, parent_id, &children);
     EXPECT_EQ(1u, children.size());
-    std::vector<int64> unapplied;
+    std::vector<int64_t> unapplied;
     directory()->GetUnappliedUpdateMetaHandles(&trans, all_types, &unapplied);
     EXPECT_EQ(0u, unapplied.size());
     syncable::Directory::Metahandles unsynced;
@@ -2773,7 +2777,7 @@ TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
 // if no syncing occured midway, bob will have an illegal parent
 TEST_F(SyncerTest, DeletingEntryInFolder) {
   // This test is a little fake.
-  int64 existing_metahandle;
+  int64_t existing_metahandle;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, CREATE, BOOKMARKS, trans.root_id(), "existing");
@@ -2849,7 +2853,7 @@ TEST_F(SyncerTest, ConflictWithImplicitParent) {
 }
 
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
-  int64 newfolder_metahandle;
+  int64_t newfolder_metahandle;
 
   mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10,
                                    foreign_cache_guid(), "-1");
@@ -2950,11 +2954,11 @@ TEST_F(SyncerTest, NameCollidingFolderSwapWorksFine) {
 // we post more than one commit command to the server.  This test makes
 // sure that scenario works as expected.
 TEST_F(SyncerTest, CommitManyItemsInOneGo_Success) {
-  uint32 num_batches = 3;
-  uint32 items_to_commit = kDefaultMaxCommitBatchSize * num_batches;
+  uint32_t num_batches = 3;
+  uint32_t items_to_commit = kDefaultMaxCommitBatchSize * num_batches;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
-    for (uint32 i = 0; i < items_to_commit; i++) {
+    for (uint32_t i = 0; i < items_to_commit; i++) {
       string nameutf8 = base::UintToString(i);
       string name(nameutf8.begin(), nameutf8.end());
       MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), name);
@@ -2973,11 +2977,11 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_Success) {
 // Test that a single failure to contact the server will cause us to exit the
 // commit loop immediately.
 TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
-  uint32 num_batches = 3;
-  uint32 items_to_commit = kDefaultMaxCommitBatchSize * num_batches;
+  uint32_t num_batches = 3;
+  uint32_t items_to_commit = kDefaultMaxCommitBatchSize * num_batches;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
-    for (uint32 i = 0; i < items_to_commit; i++) {
+    for (uint32_t i = 0; i < items_to_commit; i++) {
       string nameutf8 = base::UintToString(i);
       string name(nameutf8.begin(), nameutf8.end());
       MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), name);
@@ -3003,11 +3007,11 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
 // Test that a single conflict response from the server will cause us to exit
 // the commit loop immediately.
 TEST_F(SyncerTest, CommitManyItemsInOneGo_CommitConflict) {
-  uint32 num_batches = 2;
-  uint32 items_to_commit = kDefaultMaxCommitBatchSize * num_batches;
+  uint32_t num_batches = 2;
+  uint32_t items_to_commit = kDefaultMaxCommitBatchSize * num_batches;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
-    for (uint32 i = 0; i < items_to_commit; i++) {
+    for (uint32_t i = 0; i < items_to_commit; i++) {
       string nameutf8 = base::UintToString(i);
       string name(nameutf8.begin(), nameutf8.end());
       MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), name);
@@ -3254,7 +3258,7 @@ TEST_F(SyncerTest, NewEntryAndAlteredServerEntrySharePath) {
   mock_server_->AddUpdateBookmark(1, 0, "Foo.htm", 10, 10,
                                   foreign_cache_guid(), "-1");
   EXPECT_TRUE(SyncShareNudge());
-  int64 local_folder_handle;
+  int64_t local_folder_handle;
   syncable::Id local_folder_id;
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
@@ -3321,7 +3325,7 @@ TEST_F(SyncerTest, NewEntryAndAlteredServerEntrySharePath_OldBookmarksProto) {
   mock_server_->AddUpdateBookmark(1, 0, "Foo.htm", 10, 10,
                                   foreign_cache_guid(), "-1");
   EXPECT_TRUE(SyncShareNudge());
-  int64 local_folder_handle;
+  int64_t local_folder_handle;
   syncable::Id local_folder_id;
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
@@ -3467,7 +3471,7 @@ TEST_F(SyncerTest, DualDeletionWithNewItemNameClash) {
 // existing server id and preserve the old version, simply updating the server
 // version with the new non-deleted entity.
 TEST_F(SyncerTest, ResolveWeWroteTheyDeleted) {
-  int64 bob_metahandle;
+  int64_t bob_metahandle;
 
   mock_server_->AddUpdateBookmark(1, 0, "bob", 1, 10,
                                   foreign_cache_guid(), "-1");
@@ -3736,7 +3740,7 @@ TEST_F(SyncerTest, TestUndeleteUpdate) {
   mock_server_->SetLastUpdateDeleted();
   EXPECT_TRUE(SyncShareNudge());
 
-  int64 metahandle;
+  int64_t metahandle;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, GET_BY_ID, ids_.FromNumber(2));
@@ -3830,8 +3834,8 @@ TEST_F(SyncerTest, DirectoryUpdateTest) {
 
 TEST_F(SyncerTest, DirectoryCommitTest) {
   syncable::Id in_root_id, in_dir_id;
-  int64 foo_metahandle;
-  int64 bar_metahandle;
+  int64_t foo_metahandle;
+  int64_t bar_metahandle;
 
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
@@ -3989,11 +3993,11 @@ TEST_F(SyncerTest, EnsureWeSendUpOldParent) {
 }
 
 TEST_F(SyncerTest, Test64BitVersionSupport) {
-  int64 really_big_int = std::numeric_limits<int64>::max() - 12;
+  int64_t really_big_int = std::numeric_limits<int64_t>::max() - 12;
   const string name("ringo's dang orang ran rings around my o-ring");
-  int64 item_metahandle;
+  int64_t item_metahandle;
 
-  // Try writing max int64 to the version fields of a meta entry.
+  // Try writing max int64_t to the version fields of a meta entry.
   {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), name);
@@ -4003,7 +4007,7 @@ TEST_F(SyncerTest, Test64BitVersionSupport) {
     entry.PutId(ids_.NewServerId());
     item_metahandle = entry.GetMetahandle();
   }
-  // Now read it back out and make sure the value is max int64.
+  // Now read it back out and make sure the value is max int64_t.
   syncable::ReadTransaction rtrans(FROM_HERE, directory());
   Entry entry(&rtrans, syncable::GET_BY_HANDLE, item_metahandle);
   ASSERT_TRUE(entry.good());
@@ -4210,7 +4214,7 @@ TEST_F(SyncerTest, ClientTagIllegalUpdateIgnored) {
 }
 
 TEST_F(SyncerTest, ClientTagUncommittedTagMatchesUpdate) {
-  int64 original_metahandle = 0;
+  int64_t original_metahandle = 0;
 
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
@@ -4323,8 +4327,8 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
   mock_server_->set_conflict_all_commits(true);
 
   EXPECT_TRUE(SyncShareNudge());
-  int64 tag1_metahandle = syncable::kInvalidMetaHandle;
-  int64 tag2_metahandle = syncable::kInvalidMetaHandle;
+  int64_t tag1_metahandle = syncable::kInvalidMetaHandle;
+  int64_t tag2_metahandle = syncable::kInvalidMetaHandle;
   // This should cause client tag overwrite.
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -4555,7 +4559,7 @@ TEST_F(SyncerTest, EntryWithParentIdUpdatedWithEntryWithoutParentId) {
 TEST_F(SyncerTest, UniqueServerTagUpdates) {
   // As a hurdle, introduce an item whose name is the same as the tag value
   // we'll use later.
-  int64 hurdle_handle = CreateUnsyncedDirectory("bob", "id_bob");
+  int64_t hurdle_handle = CreateUnsyncedDirectory("bob", "id_bob");
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry hurdle(&trans, GET_BY_HANDLE, hurdle_handle);
@@ -4642,7 +4646,7 @@ TEST_F(SyncerTest, UpdateThenCommit) {
 
   mock_server_->AddUpdateDirectory(to_receive, ids_.root(), "x", 1, 10,
                                    foreign_cache_guid(), "-1");
-  int64 commit_handle = CreateUnsyncedDirectory("y", to_commit);
+  int64_t commit_handle = CreateUnsyncedDirectory("y", to_commit);
   EXPECT_TRUE(SyncShareNudge());
 
   // The sync cycle should have included a GetUpdate, then a commit.  By the
@@ -4673,7 +4677,7 @@ TEST_F(SyncerTest, UpdateFailsThenDontCommit) {
 
   mock_server_->AddUpdateDirectory(to_receive, ids_.root(), "x", 1, 10,
                                    foreign_cache_guid(), "-1");
-  int64 commit_handle = CreateUnsyncedDirectory("y", to_commit);
+  int64_t commit_handle = CreateUnsyncedDirectory("y", to_commit);
   mock_server_->FailNextPostBufferToPathCall();
   EXPECT_FALSE(SyncShareNudge());
 
@@ -4877,7 +4881,7 @@ class SyncerBookmarksTest : public SyncerTest {
       entry.PutDirtySync(true);
   }
 
-  int64 GetMetahandleOfTag() {
+  int64_t GetMetahandleOfTag() {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, GET_BY_HANDLE, metahandle_);
     EXPECT_TRUE(entry.good());
@@ -4976,7 +4980,7 @@ class SyncerBookmarksTest : public SyncerTest {
 
  protected:
   syncable::Id local_id_;
-  int64 metahandle_;
+  int64_t metahandle_;
 };
 
 TEST_F(SyncerBookmarksTest, CreateSyncThenDeleteSync) {
@@ -5124,7 +5128,7 @@ class SyncerUndeletionTest : public SyncerTest {
       entry.PutDirtySync(true);
   }
 
-  int64 GetMetahandleOfTag() {
+  int64_t GetMetahandleOfTag() {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, GET_BY_CLIENT_TAG, client_tag_);
     EXPECT_TRUE(entry.good());
@@ -5214,7 +5218,7 @@ class SyncerUndeletionTest : public SyncerTest {
  protected:
   const std::string client_tag_;
   syncable::Id local_id_;
-  int64 metahandle_;
+  int64_t metahandle_;
 };
 
 TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {

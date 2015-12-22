@@ -5,7 +5,6 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

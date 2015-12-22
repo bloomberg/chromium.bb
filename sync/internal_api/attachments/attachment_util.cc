@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/attachment_util.h"
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted_memory.h"
 #include "third_party/leveldatabase/src/util/crc32c.h"
 

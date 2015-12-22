@@ -4,13 +4,16 @@
 
 #include "sync/internal_api/public/base/node_ordinal.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
 namespace syncer {
 
-NodeOrdinal Int64ToNodeOrdinal(int64 x) {
-  uint64 y = static_cast<uint64>(x);
+NodeOrdinal Int64ToNodeOrdinal(int64_t x) {
+  uint64_t y = static_cast<uint64_t>(x);
   y ^= 0x8000000000000000ULL;
   std::string bytes(NodeOrdinal::kMinLength, '\x00');
   if (y == 0) {
@@ -18,7 +21,7 @@ NodeOrdinal Int64ToNodeOrdinal(int64 x) {
     bytes.push_back('\x80');
   } else {
     for (int i = 7; i >= 0; --i) {
-      bytes[i] = static_cast<uint8>(y);
+      bytes[i] = static_cast<uint8_t>(y);
       y >>= 8;
     }
   }
@@ -27,8 +30,8 @@ NodeOrdinal Int64ToNodeOrdinal(int64 x) {
   return ordinal;
 }
 
-int64 NodeOrdinalToInt64(const NodeOrdinal& ordinal) {
-  uint64 y = 0;
+int64_t NodeOrdinalToInt64(const NodeOrdinal& ordinal) {
+  uint64_t y = 0;
   const std::string& s = ordinal.ToInternalValue();
   size_t l = NodeOrdinal::kMinLength;
   if (s.length() < l) {
@@ -36,13 +39,13 @@ int64 NodeOrdinalToInt64(const NodeOrdinal& ordinal) {
     l = s.length();
   }
   for (size_t i = 0; i < l; ++i) {
-    const uint8 byte = s[l - i - 1];
-    y |= static_cast<uint64>(byte) << (i * 8);
+    const uint8_t byte = s[l - i - 1];
+    y |= static_cast<uint64_t>(byte) << (i * 8);
   }
   y ^= 0x8000000000000000ULL;
   // This is technically implementation-defined if y > INT64_MAX, so
   // we're assuming that we're on a twos-complement machine.
-  return static_cast<int64>(y);
+  return static_cast<int64_t>(y);
 }
 
 }  // namespace syncer

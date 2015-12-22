@@ -4,9 +4,10 @@
 
 #include "sync/test/fake_server/unique_client_entity.h"
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -27,22 +28,22 @@ namespace {
 
 // A version must be passed when creating a FakeServerEntity, but this value
 // is overrideen immediately when saving the entity in FakeServer.
-const int64 kUnusedVersion = 0L;
+const int64_t kUnusedVersion = 0L;
 
 // Default time (creation and last modified) used when creating entities.
-const int64 kDefaultTime = 1234L;
+const int64_t kDefaultTime = 1234L;
 
 }  // namespace
 
 UniqueClientEntity::UniqueClientEntity(
     const string& id,
     ModelType model_type,
-    int64 version,
+    int64_t version,
     const string& name,
     const string& client_defined_unique_tag,
     const sync_pb::EntitySpecifics& specifics,
-    int64 creation_time,
-    int64 last_modified_time)
+    int64_t creation_time,
+    int64_t last_modified_time)
     : FakeServerEntity(id, model_type, version, name),
       client_defined_unique_tag_(client_defined_unique_tag),
       creation_time_(creation_time),

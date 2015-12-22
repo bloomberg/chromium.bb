@@ -4,11 +4,12 @@
 
 #include "sync/test/fake_server/fake_server_entity.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -46,11 +47,11 @@ ModelType FakeServerEntity::GetModelType() const {
   return model_type_;
 }
 
-int64 FakeServerEntity::GetVersion() const {
+int64_t FakeServerEntity::GetVersion() const {
   return version_;
 }
 
-void FakeServerEntity::SetVersion(int64 version) {
+void FakeServerEntity::SetVersion(int64_t version) {
   version_ = version;
 }
 
@@ -111,12 +112,9 @@ ModelType FakeServerEntity::GetModelTypeFromId(const string& id) {
 
 FakeServerEntity::FakeServerEntity(const string& id,
                                    const ModelType& model_type,
-                                   int64 version,
+                                   int64_t version,
                                    const string& name)
-      : id_(id),
-        model_type_(model_type),
-        version_(version),
-        name_(name) {}
+    : id_(id), model_type_(model_type), version_(version), name_(name) {}
 
 void FakeServerEntity::SerializeBaseProtoFields(
     sync_pb::SyncEntity* sync_entity) const {

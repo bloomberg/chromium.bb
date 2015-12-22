@@ -5,12 +5,12 @@
 #include "sync/test/fake_server/android/fake_server_helper_android.h"
 
 #include <jni.h>
+#include <stddef.h>
 #include <set>
 #include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "jni/FakeServerHelper_jni.h"

@@ -5,8 +5,10 @@
 #ifndef SYNC_TEST_LOCAL_SYNC_TEST_SERVER_H_
 #define SYNC_TEST_LOCAL_SYNC_TEST_SERVER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/test/spawned_test_server/local_test_server.h"
 
 namespace syncer {
@@ -21,7 +23,7 @@ class LocalSyncTestServer : public net::LocalTestServer {
 
   // Initialize a sync server that listens on |port| for sync updates and
   // |xmpp_port| for p2p notifications.
-  LocalSyncTestServer(uint16 port, uint16 xmpp_port);
+  LocalSyncTestServer(uint16_t port, uint16_t xmpp_port);
 
   ~LocalSyncTestServer() override;
 
@@ -37,7 +39,7 @@ class LocalSyncTestServer : public net::LocalTestServer {
 
  private:
   // Port on which the Sync XMPP server listens.
-  uint16 xmpp_port_;
+  uint16_t xmpp_port_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSyncTestServer);
 };

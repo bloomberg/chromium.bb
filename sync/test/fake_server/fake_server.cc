@@ -4,6 +4,8 @@
 
 #include "sync/test/fake_server/fake_server.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <set>
@@ -11,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -73,7 +74,7 @@ class UpdateSieve {
   // markers from the original GetUpdatesMessage and |new_version| (the latest
   // version in the entries sent back).
   void UpdateProgressMarkers(
-      int64 new_version,
+      int64_t new_version,
       sync_pb::GetUpdatesResponse* get_updates_response) const {
     ModelTypeToVersionMap::const_iterator it;
     for (it = request_from_version_.begin(); it != request_from_version_.end();
@@ -83,7 +84,7 @@ class UpdateSieve {
       new_marker->set_data_type_id(
           GetSpecificsFieldNumberFromModelType(it->first));
 
-      int64 version = std::max(new_version, it->second);
+      int64_t version = std::max(new_version, it->second);
       new_marker->set_token(base::Int64ToString(version));
     }
   }
@@ -91,7 +92,7 @@ class UpdateSieve {
   // Determines whether the server should send an |entity| to the client as
   // part of a GetUpdatesResponse.
   bool ClientWantsItem(const FakeServerEntity& entity) const {
-    int64 version = entity.GetVersion();
+    int64_t version = entity.GetVersion();
     if (version <= min_version_) {
       return false;
     } else if (entity.IsDeleted()) {
@@ -105,18 +106,16 @@ class UpdateSieve {
   }
 
   // Returns the minimum version seen across all types.
-  int64 GetMinVersion() const {
-    return min_version_;
-  }
+  int64_t GetMinVersion() const { return min_version_; }
 
  private:
-  typedef std::map<ModelType, int64> ModelTypeToVersionMap;
+  typedef std::map<ModelType, int64_t> ModelTypeToVersionMap;
 
   // Creates an UpdateSieve.
   UpdateSieve(const ModelTypeToVersionMap request_from_version,
-              const int64 min_version)
+              const int64_t min_version)
       : request_from_version_(request_from_version),
-        min_version_(min_version) { }
+        min_version_(min_version) {}
 
   // Maps data type IDs to the latest version seen for that type.
   const ModelTypeToVersionMap request_from_version_;
@@ -131,12 +130,12 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
       << "A GetUpdates request must have at least one progress marker.";
 
   UpdateSieve::ModelTypeToVersionMap request_from_version;
-  int64 min_version = std::numeric_limits<int64>::max();
+  int64_t min_version = std::numeric_limits<int64_t>::max();
   for (int i = 0; i < get_updates_message.from_progress_marker_size(); i++) {
     sync_pb::DataTypeProgressMarker marker =
         get_updates_message.from_progress_marker(i);
 
-    int64 version = 0;
+    int64_t version = 0;
     // Let the version remain zero if there is no token or an empty token (the
     // first request for this type).
     if (marker.has_token() && !marker.token().empty()) {
@@ -338,7 +337,7 @@ bool FakeServer::HandleGetUpdatesRequest(
   }
 
   bool send_encryption_keys_based_on_nigori = false;
-  int64 max_response_version = 0;
+  int64_t max_response_version = 0;
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     const FakeServerEntity& entity = *it->second;

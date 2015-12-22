@@ -5,9 +5,12 @@
 #ifndef SYNC_INTERNAL_API_SYNC_ROLLBACK_MANAGER_BASE_H_
 #define SYNC_INTERNAL_API_SYNC_ROLLBACK_MANAGER_BASE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
@@ -81,11 +84,11 @@ class SYNC_EXPORT SyncRollbackManagerBase
   void HandleCalculateChangesChangeEventFromSyncApi(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans,
-      std::vector<int64>* entries_changed) override;
+      std::vector<int64_t>* entries_changed) override;
   void HandleCalculateChangesChangeEventFromSyncer(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans,
-      std::vector<int64>* entries_changed) override;
+      std::vector<int64_t>* entries_changed) override;
 
   // syncable::TransactionObserver implementation.
   void OnTransactionWrite(

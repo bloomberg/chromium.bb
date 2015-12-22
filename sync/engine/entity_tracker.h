@@ -5,9 +5,11 @@
 #ifndef SYNC_ENGINE_ENTITY_TRACKER_H_
 #define SYNC_ENGINE_ENTITY_TRACKER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
@@ -47,7 +49,7 @@ class SYNC_EXPORT EntityTracker {
   // Populates a sync_pb::SyncEntity for a commit.  Also sets the
   // |sequence_number|, so we can track it throughout the commit process.
   void PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
-                          int64* sequence_number) const;
+                          int64_t* sequence_number) const;
 
   // Updates this entity with data from the latest version that the
   // model asked us to commit.  May clobber state related to the
@@ -60,11 +62,11 @@ class SYNC_EXPORT EntityTracker {
   // that our item's state at the end of the commit is the same as it was at
   // the start.
   void ReceiveCommitResponse(const std::string& response_id,
-                             int64 response_version,
-                             int64 sequence_number);
+                             int64_t response_version,
+                             int64_t sequence_number);
 
   // Handles receipt of an update from the server.
-  void ReceiveUpdate(int64 version);
+  void ReceiveUpdate(int64_t version);
 
   // Handles the receipt of an pending update from the server.
   //
@@ -85,8 +87,8 @@ class SYNC_EXPORT EntityTracker {
   // related to a pending commit.
   EntityTracker(const std::string& id,
                 const std::string& client_tag_hash,
-                int64 highest_commit_response_version,
-                int64 highest_gu_response_version);
+                int64_t highest_commit_response_version,
+                int64_t highest_gu_response_version);
 
   // Checks if the current state indicates a conflict.
   //
@@ -107,18 +109,18 @@ class SYNC_EXPORT EntityTracker {
   std::string client_tag_hash_;
 
   // The highest version seen in a commit response for this entry.
-  int64 highest_commit_response_version_;
+  int64_t highest_commit_response_version_;
 
   // The highest version seen in a GU response for this entry.
-  int64 highest_gu_response_version_;
+  int64_t highest_gu_response_version_;
 
   // Used to track in-flight commit requests on the model thread.  All we need
   // to do here is return it back to the model thread when the pending commit
   // is completed and confirmed.  Not valid if no commit is pending.
-  int64 sequence_number_;
+  int64_t sequence_number_;
 
   // The server version on which this item is based.
-  int64 base_version_;
+  int64_t base_version_;
 
   // A commit for this entity waiting for a sync cycle to be committed.
   scoped_ptr<CommitRequestData> pending_commit_;

@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"

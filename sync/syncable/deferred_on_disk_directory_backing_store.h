@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "sync/base/sync_export.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
 

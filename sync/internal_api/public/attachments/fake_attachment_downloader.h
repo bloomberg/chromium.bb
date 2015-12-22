@@ -5,6 +5,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_FAKE_ATTACHMENT_DOWNLOADER_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_FAKE_ATTACHMENT_DOWNLOADER_H_
 
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/internal_api/public/attachments/attachment_downloader.h"
 

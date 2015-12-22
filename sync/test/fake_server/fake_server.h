@@ -5,11 +5,12 @@
 #ifndef SYNC_TEST_FAKE_SERVER_FAKE_SERVER_H_
 #define SYNC_TEST_FAKE_SERVER_FAKE_SERVER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -204,10 +205,10 @@ class FakeServer {
 
   // This is the last version number assigned to an entity. The next entity will
   // have a version number of version_ + 1.
-  int64 version_;
+  int64_t version_;
 
   // The current store birthday value.
-  int64 store_birthday_;
+  int64_t store_birthday_;
 
   // Whether the server should act as if incoming connections are properly
   // authenticated.

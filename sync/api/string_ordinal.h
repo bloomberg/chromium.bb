@@ -5,7 +5,9 @@
 #ifndef SYNC_API_STRING_ORDINAL_H_
 #define SYNC_API_STRING_ORDINAL_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "sync/internal_api/public/base/ordinal.h"
 
 namespace syncer {
@@ -20,8 +22,8 @@ namespace syncer {
 // to store as a string in a protobuf.
 
 struct StringOrdinalTraits {
-  static const uint8 kZeroDigit = 'a';
-  static const uint8 kMaxDigit = 'z';
+  static const uint8_t kZeroDigit = 'a';
+  static const uint8_t kMaxDigit = 'z';
   static const size_t kMinLength = 1;
 };
 

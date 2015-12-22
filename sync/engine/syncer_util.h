@@ -8,6 +8,8 @@
 #ifndef SYNC_ENGINE_SYNCER_UTIL_H_
 #define SYNC_ENGINE_SYNCER_UTIL_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -53,7 +55,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
 
 // Returns the most accurate position information available in this update.  It
 // prefers to use the unique_position() field, but will fall back to using the
-// int64-based position_in_parent if necessary.
+// int64_t-based position_in_parent if necessary.
 //
 // The suffix parameter is the unique bookmark tag for the item being updated.
 //

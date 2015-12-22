@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/model_type_entity.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -69,7 +71,7 @@ class ModelTypeEntityTest : public ::testing::Test {
   }
 
   scoped_ptr<ModelTypeEntity> NewServerItem(
-      int64 version,
+      int64_t version,
       const sync_pb::EntitySpecifics& specifics) {
     scoped_ptr<ModelTypeEntity> entity(NewServerItem());
     ApplyUpdateFromServer(entity.get(), version, specifics);
@@ -77,13 +79,13 @@ class ModelTypeEntityTest : public ::testing::Test {
   }
 
   void ApplyUpdateFromServer(ModelTypeEntity* entity,
-                             int64 version,
+                             int64_t version,
                              const sync_pb::EntitySpecifics& specifics) {
     ApplyUpdateFromServer(entity, version, specifics, kMtime);
   }
 
   void ApplyUpdateFromServer(ModelTypeEntity* entity,
-                             int64 version,
+                             int64_t version,
                              const sync_pb::EntitySpecifics& specifics,
                              base::Time mtime) {
     EntityData data;

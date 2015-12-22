@@ -5,6 +5,8 @@
 #ifndef SYNC_ENGINE_COMMIT_CONTRIBUTION_H_
 #define SYNC_ENGINE_COMMIT_CONTRIBUTION_H_
 
+#include <stddef.h>
+
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/protocol/sync.pb.h"

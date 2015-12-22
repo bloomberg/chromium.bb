@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include "base/at_exit.h"
@@ -54,7 +55,7 @@ static bool RunSyncTest(
 
 // Gets a port value from the switch with name |switch_name| and writes it to
 // |port|. Returns true if a port was provided and false otherwise.
-static bool GetPortFromSwitch(const std::string& switch_name, uint16* port) {
+static bool GetPortFromSwitch(const std::string& switch_name, uint16_t* port) {
   DCHECK(port != NULL) << "|port| is NULL";
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   int port_int = 0;
@@ -64,7 +65,7 @@ static bool GetPortFromSwitch(const std::string& switch_name, uint16* port) {
       return false;
     }
   }
-  *port = static_cast<uint16>(port_int);
+  *port = static_cast<uint16_t>(port_int);
   return true;
 }
 
@@ -99,10 +100,10 @@ int main(int argc, const char* argv[]) {
     return RunSyncTest(FILE_PATH_LITERAL("xmppserver_test.py")) ? 0 : -1;
   }
 
-  uint16 port = 0;
+  uint16_t port = 0;
   GetPortFromSwitch("port", &port);
 
-  uint16 xmpp_port = 0;
+  uint16_t xmpp_port = 0;
   GetPortFromSwitch("xmpp-port", &xmpp_port);
 
   scoped_ptr<syncer::LocalSyncTestServer> test_server(

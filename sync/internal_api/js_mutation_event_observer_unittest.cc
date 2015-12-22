@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/js_mutation_event_observer.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"

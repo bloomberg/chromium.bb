@@ -4,6 +4,8 @@
 
 #include "sync/api/sync_data.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <ostream>
 
@@ -65,7 +67,7 @@ void SyncData::ImmutableSyncEntityTraits::Swap(sync_pb::SyncEntity* t1,
 
 SyncData::SyncData() : id_(kInvalidId), is_valid_(false) {}
 
-SyncData::SyncData(int64 id,
+SyncData::SyncData(int64_t id,
                    sync_pb::SyncEntity* entity,
                    const base::Time& remote_modification_time,
                    const syncer::AttachmentServiceProxy& attachment_service)
@@ -117,7 +119,7 @@ SyncData SyncData::CreateLocalDataWithAttachments(
 
 // Static.
 SyncData SyncData::CreateRemoteData(
-    int64 id,
+    int64_t id,
     const sync_pb::EntitySpecifics& specifics,
     const base::Time& modification_time,
     const AttachmentIdList& attachment_ids,
@@ -208,7 +210,7 @@ const base::Time& SyncDataRemote::GetModifiedTime() const {
   return remote_modification_time_;
 }
 
-int64 SyncDataRemote::GetId() const {
+int64_t SyncDataRemote::GetId() const {
   return id_;
 }
 

@@ -31,8 +31,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 #include "sync/test/null_directory_change_delegate.h"

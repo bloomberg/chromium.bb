@@ -5,10 +5,11 @@
 #ifndef SYNC_UTIL_EXTENSIONS_ACTIVITY_H_
 #define SYNC_UTIL_EXTENSIONS_ACTIVITY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "sync/base/sync_export.h"
@@ -32,7 +33,7 @@ class SYNC_EXPORT ExtensionsActivity
 
     // How many times the extension successfully invoked a write
     // operation through the bookmarks API since the last CommitMessage.
-    uint32 bookmark_write_count;
+    uint32_t bookmark_write_count;
   };
 
   typedef std::map<std::string, Record> Records;

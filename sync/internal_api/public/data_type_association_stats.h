@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_ASSOCIATION_STATS_H_
 #define SYNC_INTERNAL_API_PUBLIC_DATA_TYPE_ASSOCIATION_STATS_H_
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 
@@ -33,8 +35,8 @@ struct SYNC_EXPORT DataTypeAssociationStats {
   int num_sync_items_modified;
 
   // Model versions before association.
-  int64 local_version_pre_association;
-  int64 sync_version_pre_association;
+  int64_t local_version_pre_association;
+  int64_t sync_version_pre_association;
 
   // Whether a datatype unrecoverable error was encountered during association.
   bool had_error;

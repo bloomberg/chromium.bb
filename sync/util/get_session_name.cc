@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task_runner.h"
+#include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/system/devicetype.h"
