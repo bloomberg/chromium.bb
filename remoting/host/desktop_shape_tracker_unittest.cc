@@ -9,6 +9,7 @@
 #include "remoting/host/desktop_shape_tracker.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"

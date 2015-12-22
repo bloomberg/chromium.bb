@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_SHUTDOWN_WATCHDOG_H_
 #define REMOTING_HOST_SHUTDOWN_WATCHDOG_H_
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/watchdog.h"
 

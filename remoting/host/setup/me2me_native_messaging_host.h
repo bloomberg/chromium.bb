@@ -5,11 +5,13 @@
 #ifndef REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
 #define REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "extensions/browser/api/messaging/native_messaging_channel.h"
 #include "remoting/host/native_messaging/log_message_handler.h"
 #include "remoting/host/setup/daemon_controller.h"

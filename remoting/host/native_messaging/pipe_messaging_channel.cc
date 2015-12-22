@@ -4,12 +4,12 @@
 
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/values.h"
+#include "build/build_config.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>

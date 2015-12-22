@@ -5,6 +5,7 @@
 #include "remoting/host/win/security_descriptor.h"
 
 #include <sddl.h>
+#include <stdint.h>
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -50,7 +51,7 @@ ScopedSid GetLogonSid(HANDLE token) {
   if (!GetTokenInformation(token, TokenGroups, groups.get(), length, &length))
     return ScopedSid();
 
-  for (uint32 i = 0; i < groups->GroupCount; ++i) {
+  for (uint32_t i = 0; i < groups->GroupCount; ++i) {
     if ((groups->Groups[i].Attributes & SE_GROUP_LOGON_ID) ==
         SE_GROUP_LOGON_ID) {
       length = GetLengthSid(groups->Groups[i].Sid);

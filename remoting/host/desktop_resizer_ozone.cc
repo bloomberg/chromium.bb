@@ -5,6 +5,7 @@
 #include "remoting/host/desktop_resizer.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace remoting {
 

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/host/continue_window.h"

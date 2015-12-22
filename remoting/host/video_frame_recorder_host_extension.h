@@ -5,6 +5,9 @@
 #ifndef REMOTING_HOST_VIDEO_FRAME_RECORDER_HOST_EXTENSION_H_
 #define REMOTING_HOST_VIDEO_FRAME_RECORDER_HOST_EXTENSION_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/host_extension.h"
 

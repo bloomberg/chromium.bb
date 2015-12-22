@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_CHROMOTING_MESSAGES_H_
 #define REMOTING_HOST_CHROMOTING_MESSAGES_H_
 
+#include <stdint.h>
+
 #include "ipc/ipc_platform_file.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_param_traits.h"
@@ -86,9 +88,9 @@ IPC_MESSAGE_CONTROL2(ChromotingNetworkDaemonMsg_SetScreenResolution,
 IPC_STRUCT_BEGIN(SerializedTransportRoute)
   IPC_STRUCT_MEMBER(int, type)
   IPC_STRUCT_MEMBER(net::IPAddressNumber, remote_address)
-  IPC_STRUCT_MEMBER(uint16, remote_port)
+  IPC_STRUCT_MEMBER(uint16_t, remote_port)
   IPC_STRUCT_MEMBER(net::IPAddressNumber, local_address)
-  IPC_STRUCT_MEMBER(uint16, local_port)
+  IPC_STRUCT_MEMBER(uint16_t, local_port)
 IPC_STRUCT_END()
 
 // Hosts status notifications (see HostStatusObserver interface) sent by
@@ -138,7 +140,7 @@ IPC_MESSAGE_CONTROL0(ChromotingDesktopDaemonMsg_InjectSas)
 IPC_MESSAGE_CONTROL3(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
                      int /* id */,
                      IPC::PlatformFileForTransit /* handle */,
-                     uint32 /* size */)
+                     uint32_t /* size */)
 
 // Request the network process to stop using a shared buffer.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
@@ -159,10 +161,10 @@ IPC_STRUCT_BEGIN(SerializedDesktopFrame)
   IPC_STRUCT_MEMBER(webrtc::DesktopSize, dimensions)
 
   // Time spent in capture. Unit is in milliseconds.
-  IPC_STRUCT_MEMBER(int64, capture_time_ms)
+  IPC_STRUCT_MEMBER(int64_t, capture_time_ms)
 
   // Latest event timestamp supplied by the client for performance tracking.
-  IPC_STRUCT_MEMBER(int64, latest_event_timestamp)
+  IPC_STRUCT_MEMBER(int64_t, latest_event_timestamp)
 
   // DPI for this frame.
   IPC_STRUCT_MEMBER(webrtc::DesktopVector, dpi)

@@ -4,6 +4,8 @@
 
 #include "remoting/host/screen_resolution.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,7 +42,7 @@ TEST(ScreenResolutionTest, ScalingSaturation) {
   ScreenResolution resolution(
       webrtc::DesktopSize(10000000, 1000000), webrtc::DesktopVector(1, 1));
 
-  int32 max_int = std::numeric_limits<int32>::max();
+  int32_t max_int = std::numeric_limits<int32_t>::max();
   EXPECT_TRUE(webrtc::DesktopSize(max_int, max_int).equals(
       resolution.ScaleDimensionsToDpi(
           webrtc::DesktopVector(1000000, 1000000))));

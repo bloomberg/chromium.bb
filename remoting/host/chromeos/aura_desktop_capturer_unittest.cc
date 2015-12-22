@@ -4,6 +4,9 @@
 
 #include "remoting/host/chromeos/aura_desktop_capturer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "cc/output/copy_output_result.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

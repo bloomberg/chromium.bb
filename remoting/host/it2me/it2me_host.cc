@@ -4,6 +4,8 @@
 
 #include "remoting/host/it2me/it2me_host.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/string_util.h"

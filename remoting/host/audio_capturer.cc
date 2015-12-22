@@ -4,7 +4,6 @@
 
 #include "remoting/host/audio_capturer.h"
 
-#include "base/basictypes.h"
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {

@@ -4,6 +4,8 @@
 
 #include "remoting/host/audio_capturer_linux.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -53,8 +55,8 @@ void AudioCapturerLinux::OnDataRead(
   DCHECK(!callback_.is_null());
 
   if (silence_detector_.IsSilence(
-          reinterpret_cast<const int16*>(data->data().data()),
-          data->data().size() / sizeof(int16))) {
+          reinterpret_cast<const int16_t*>(data->data().data()),
+          data->data().size() / sizeof(int16_t))) {
     return;
   }
 

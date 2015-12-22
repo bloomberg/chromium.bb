@@ -4,6 +4,9 @@
 //
 // This file implements a standalone host process for Me2Me.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -12,6 +15,7 @@
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -1477,7 +1481,7 @@ void HostProcess::StartHost() {
 
   InitializeSignaling();
 
-  uint32 network_flags = 0;
+  uint32_t network_flags = 0;
   if (allow_nat_traversal_) {
     network_flags = NetworkSettings::NAT_TRAVERSAL_STUN |
                     NetworkSettings::NAT_TRAVERSAL_OUTGOING;

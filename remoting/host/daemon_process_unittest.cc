@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "ipc/ipc_message.h"
@@ -14,8 +17,8 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
 #include "remoting/host/desktop_session.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -215,7 +218,7 @@ void DaemonProcessTest::StartDaemonProcess() {
 }
 
 MATCHER_P(Message, type, "") {
-  return arg.type() == static_cast<uint32>(type);
+  return arg.type() == static_cast<uint32_t>(type);
 }
 
 TEST_F(DaemonProcessTest, OpenClose) {

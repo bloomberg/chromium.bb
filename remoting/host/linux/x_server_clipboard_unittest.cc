@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "remoting/base/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -379,7 +379,7 @@ bool UnprivilegedProcessDelegate::OnMessageReceived(
   return event_handler_->OnMessageReceived(message);
 }
 
-void UnprivilegedProcessDelegate::OnChannelConnected(int32 peer_pid) {
+void UnprivilegedProcessDelegate::OnChannelConnected(int32_t peer_pid) {
   DCHECK(CalledOnValidThread());
 
   DWORD pid = GetProcessId(worker_process_.Get());

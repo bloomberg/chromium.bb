@@ -4,9 +4,12 @@
 
 #include "remoting/host/desktop_shape_tracker.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/win/scoped_handle.h"
@@ -60,7 +62,7 @@ class MockIpcDelegate : public WorkerProcessIpcDelegate {
   ~MockIpcDelegate() override {}
 
   // WorkerProcessIpcDelegate interface.
-  MOCK_METHOD1(OnChannelConnected, void(int32));
+  MOCK_METHOD1(OnChannelConnected, void(int32_t));
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message&));
   MOCK_METHOD1(OnPermanentError, void(int));
 
@@ -108,7 +110,7 @@ class WorkerProcessLauncherTest
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   // WorkerProcessLauncher::Delegate mocks
@@ -218,7 +220,7 @@ bool WorkerProcessLauncherTest::OnMessageReceived(const IPC::Message& message) {
   return event_handler_->OnMessageReceived(message);
 }
 
-void WorkerProcessLauncherTest::OnChannelConnected(int32 peer_pid) {
+void WorkerProcessLauncherTest::OnChannelConnected(int32_t peer_pid) {
   event_handler_->OnChannelConnected(peer_pid);
 }
 

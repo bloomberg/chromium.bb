@@ -9,6 +9,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "remoting/proto/event.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/mac/desktop_configuration.h"
 

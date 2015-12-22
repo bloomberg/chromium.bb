@@ -5,12 +5,13 @@
 // ATL headers have to go first.
 #include <atlbase.h>
 #include <atlhost.h>
+#include <stdint.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/win/scoped_com_initializer.h"
@@ -131,7 +132,7 @@ void RdpClientTest::TearDown() {
 }
 
 void RdpClientTest::OnRdpConnected() {
-  uint32 session_id = WtsTerminalMonitor::LookupSessionId(terminal_id_);
+  uint32_t session_id = WtsTerminalMonitor::LookupSessionId(terminal_id_);
 
   std::string id;
   EXPECT_TRUE(WtsTerminalMonitor::LookupTerminalId(session_id, &id));

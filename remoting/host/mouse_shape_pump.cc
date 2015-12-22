@@ -4,8 +4,11 @@
 
 #include "remoting/host/mouse_shape_pump.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"

@@ -5,7 +5,9 @@
 #ifndef REMOTING_HOST_AUDIO_SILENCE_DETECTOR_H_
 #define REMOTING_HOST_AUDIO_SILENCE_DETECTOR_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 
 namespace remoting {
@@ -22,7 +24,7 @@ class AudioSilenceDetector {
 
   // Must be called for each new chunk of data. Return true the given packet
   // is silence should be dropped.
-  bool IsSilence(const int16* samples, size_t samples_count);
+  bool IsSilence(const int16_t* samples, size_t samples_count);
 
  private:
   // Maximum absolute sample value that should still be considered as silence.

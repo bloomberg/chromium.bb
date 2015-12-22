@@ -5,11 +5,13 @@
 #ifndef REMOTING_HOST_DESKTOP_PROCESS_H_
 #define REMOTING_HOST_DESKTOP_PROCESS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -43,7 +45,7 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   // Injects Secure Attention Sequence.

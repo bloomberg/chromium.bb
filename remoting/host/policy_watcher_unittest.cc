@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/mock_log.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/fake_async_policy_loader.h"
 #include "policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"

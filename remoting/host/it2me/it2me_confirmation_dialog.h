@@ -5,8 +5,8 @@
 #ifndef REMOTING_HOST_IT2ME_IT2ME_CONFIRMATION_DIALOG_H_
 #define REMOTING_HOST_IT2ME_IT2ME_CONFIRMATION_DIALOG_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"

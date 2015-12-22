@@ -4,6 +4,8 @@
 
 #include "remoting/host/shaped_desktop_capturer.h"
 
+#include <stddef.h>
+
 #include "remoting/host/desktop_shape_tracker.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
 #include "testing/gtest/include/gtest/gtest.h"

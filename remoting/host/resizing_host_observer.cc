@@ -4,6 +4,8 @@
 
 #include "remoting/host/resizing_host_observer.h"
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/bind.h"
@@ -67,9 +69,9 @@ class CandidateResolution {
   const ScreenResolution& resolution() const { return resolution_; }
   float client_scale_factor() const { return client_scale_factor_; }
   float aspect_ratio_goodness() const { return aspect_ratio_goodness_; }
-  int64 area() const {
-    return static_cast<int64>(resolution_.dimensions().width()) *
-        resolution_.dimensions().height();
+  int64_t area() const {
+    return static_cast<int64_t>(resolution_.dimensions().width()) *
+           resolution_.dimensions().height();
   }
 
   // TODO(jamiewalch): Also compare the DPI: http://crbug.com/172405

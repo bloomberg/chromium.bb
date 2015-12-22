@@ -5,6 +5,9 @@
 #ifndef REMOTING_HOST_SHAPED_DESKTOP_CAPTURER_H_
 #define REMOTING_HOST_SHAPED_DESKTOP_CAPTURER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 

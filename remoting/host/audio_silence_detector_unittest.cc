@@ -4,7 +4,9 @@
 
 #include "remoting/host/audio_silence_detector.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -14,7 +16,8 @@ namespace {
 const int kSamplingRate = 1000;
 
 void TestSilenceDetector(AudioSilenceDetector* target,
-                         const int16* samples, int samples_count,
+                         const int16_t* samples,
+                         int samples_count,
                          bool silence_expected) {
   target->Reset(kSamplingRate, 1);
   bool silence_started = false;
@@ -42,21 +45,21 @@ void TestSilenceDetector(AudioSilenceDetector* target,
 }  // namespace
 
 TEST(AudioSilenceDetectorTest, Silence) {
-  const int16 kSamples[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const int16_t kSamples[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   AudioSilenceDetector target(0);
   TestSilenceDetector(&target, kSamples, arraysize(kSamples), true);
 }
 
 TEST(AudioSilenceDetectorTest, Sound) {
-  const int16 kSamples[] = {65, 73, 83, 89, 92, -1, 5, 9, 123, 0};
+  const int16_t kSamples[] = {65, 73, 83, 89, 92, -1, 5, 9, 123, 0};
 
   AudioSilenceDetector target(0);
   TestSilenceDetector(&target, kSamples, arraysize(kSamples), false);
 }
 
 TEST(AudioSilenceDetectorTest, Threshold) {
-  const int16 kSamples[] = {0, 0, 0, 0, 1, 0, 0, -1, 0, 0};
+  const int16_t kSamples[] = {0, 0, 0, 0, 1, 0, 0, -1, 0, 0};
 
   AudioSilenceDetector target1(0);
   TestSilenceDetector(&target1, kSamples, arraysize(kSamples), false);

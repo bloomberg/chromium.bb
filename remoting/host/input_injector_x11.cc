@@ -4,6 +4,8 @@
 
 #include "remoting/host/input_injector.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XTest.h>
 #include <X11/Xlib.h>
@@ -12,16 +14,14 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversion_utils.h"
+#include "build/build_config.h"
 #include "remoting/base/logging.h"
-#if defined(OS_CHROMEOS)
-#include "remoting/host/chromeos/point_transformer.h"
-#endif
 #include "remoting/host/clipboard.h"
 #include "remoting/host/linux/unicode_to_keysym.h"
 #include "remoting/host/linux/x11_util.h"
@@ -29,6 +29,10 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+
+#if defined(OS_CHROMEOS)
+#include "remoting/host/chromeos/point_transformer.h"
+#endif
 
 namespace remoting {
 
@@ -352,7 +356,7 @@ void InputInjectorX11::Core::InjectTextEvent(const TextEvent& event) {
   pressed_keys_.clear();
 
   const std::string text = event.text();
-  for (int32 index = 0; index < static_cast<int32>(text.size()); ++index) {
+  for (int32_t index = 0; index < static_cast<int32_t>(text.size()); ++index) {
     uint32_t code_point;
     if (!base::ReadUnicodeCharacter(
             text.c_str(), text.size(), &index, &code_point)) {

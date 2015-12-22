@@ -5,9 +5,9 @@
 #ifndef REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_READER_H_
 #define REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_READER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"

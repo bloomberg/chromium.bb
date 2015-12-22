@@ -6,9 +6,11 @@
 #define REMOTING_HOST_TOUCH_INJECTOR_WIN_H_
 
 #include <windows.h>
+#include <stdint.h>
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_native_library.h"
 

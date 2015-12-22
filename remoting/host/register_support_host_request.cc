@@ -4,6 +4,8 @@
 
 #include "remoting/host/register_support_host_request.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -96,7 +98,7 @@ scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
   scoped_ptr<XmlElement> signature_tag(new XmlElement(
       QName(kChromotingXmlNamespace, kSignatureTag)));
 
-  int64 time = static_cast<int64>(base::Time::Now().ToDoubleT());
+  int64_t time = static_cast<int64_t>(base::Time::Now().ToDoubleT());
   std::string time_str(base::Int64ToString(time));
   signature_tag->AddAttr(
       QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);

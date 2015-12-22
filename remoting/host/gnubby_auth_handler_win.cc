@@ -5,6 +5,7 @@
 #include "remoting/host/gnubby_auth_handler.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace remoting {
 

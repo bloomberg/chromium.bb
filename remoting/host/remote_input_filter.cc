@@ -4,6 +4,8 @@
 
 #include "remoting/host/remote_input_filter.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "remoting/proto/event.pb.h"
 
@@ -17,7 +19,7 @@ const unsigned int kNumRemoteMousePositions = 50;
 
 // The number of milliseconds for which to block remote input when local input
 // is received.
-const int64 kRemoteBlockTimeoutMillis = 2000;
+const int64_t kRemoteBlockTimeoutMillis = 2000;
 
 } // namespace
 
@@ -103,7 +105,7 @@ void RemoteInputFilter::InjectTouchEvent(const protocol::TouchEvent& event) {
 
 bool RemoteInputFilter::ShouldIgnoreInput() const {
   // Ignore remote events if the local mouse moved recently.
-  int64 millis =
+  int64_t millis =
       (base::TimeTicks::Now() - latest_local_input_time_).InMilliseconds();
   if (millis < kRemoteBlockTimeoutMillis)
     return true;

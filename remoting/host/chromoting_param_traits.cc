@@ -4,6 +4,8 @@
 
 #include "remoting/host/chromoting_param_traits.h"
 
+#include <stdint.h>
+
 #include "base/strings/stringprintf.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 

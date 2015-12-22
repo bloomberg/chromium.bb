@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_LINUX_UNICODE_TO_KEYSYM_H_
 #define REMOTING_HOST_LINUX_UNICODE_TO_KEYSYM_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 
 namespace remoting {
 

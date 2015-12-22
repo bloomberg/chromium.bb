@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/jsoncpp/source/include/json/value.h"
 

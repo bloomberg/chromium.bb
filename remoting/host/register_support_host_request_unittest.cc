@@ -4,6 +4,8 @@
 
 #include "remoting/host/register_support_host_request.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -79,7 +81,7 @@ class RegisterSupportHostRequestTest : public testing::Test {
 
 TEST_F(RegisterSupportHostRequestTest, Send) {
   // |iq_request| is freed by RegisterSupportHostRequest.
-  int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
+  int64_t start_time = static_cast<int64_t>(base::Time::Now().ToDoubleT());
 
   scoped_ptr<RegisterSupportHostRequest> request(
       new RegisterSupportHostRequest(&signal_strategy_, key_pair_,
@@ -114,9 +116,9 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
 
   std::string time_str =
       signature->Attr(QName(kChromotingXmlNamespace, "time"));
-  int64 time;
+  int64_t time;
   EXPECT_TRUE(base::StringToInt64(time_str, &time));
-  int64 now = static_cast<int64>(base::Time::Now().ToDoubleT());
+  int64_t now = static_cast<int64_t>(base::Time::Now().ToDoubleT());
   EXPECT_LE(start_time, time);
   EXPECT_GE(now, time);
 

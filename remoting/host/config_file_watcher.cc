@@ -10,10 +10,12 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 
 namespace remoting {
 

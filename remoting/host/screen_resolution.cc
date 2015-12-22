@@ -4,6 +4,8 @@
 
 #include "remoting/host/screen_resolution.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -28,14 +30,14 @@ ScreenResolution::ScreenResolution(const webrtc::DesktopSize& dimensions,
 
 webrtc::DesktopSize ScreenResolution::ScaleDimensionsToDpi(
     const webrtc::DesktopVector& new_dpi) const {
-  int64 width = dimensions_.width();
-  int64 height = dimensions_.height();
+  int64_t width = dimensions_.width();
+  int64_t height = dimensions_.height();
 
   // Scale the screen dimensions to new DPI.
   width = std::min(width * new_dpi.x() / dpi_.x(),
-                   static_cast<int64>(std::numeric_limits<int32>::max()));
+                   static_cast<int64_t>(std::numeric_limits<int32_t>::max()));
   height = std::min(height * new_dpi.y() / dpi_.y(),
-                    static_cast<int64>(std::numeric_limits<int32>::max()));
+                    static_cast<int64_t>(std::numeric_limits<int32_t>::max()));
   return webrtc::DesktopSize(width, height);
 }
 

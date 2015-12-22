@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/url_request_context_getter.h"
 

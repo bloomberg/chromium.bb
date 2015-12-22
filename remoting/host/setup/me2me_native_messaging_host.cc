@@ -3,19 +3,21 @@
 // found in the LICENSE file.
 
 #include "remoting/host/setup/me2me_native_messaging_host.h"
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/google_api_keys.h"
 #include "ipc/ipc_channel.h"

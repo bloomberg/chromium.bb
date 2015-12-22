@@ -4,7 +4,8 @@
 
 #include "remoting/host/native_messaging/native_messaging_reader.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -75,7 +76,7 @@ void NativeMessagingReaderTest::OnMessage(scoped_ptr<base::Value> message) {
 }
 
 void NativeMessagingReaderTest::WriteMessage(const std::string& message) {
-  uint32 length = message.length();
+  uint32_t length = message.length();
   WriteData(reinterpret_cast<char*>(&length), 4);
   WriteData(message.data(), length);
 }
@@ -97,7 +98,7 @@ TEST_F(NativeMessagingReaderTest, GoodMessage) {
 }
 
 TEST_F(NativeMessagingReaderTest, InvalidLength) {
-  uint32 length = 0xffffffff;
+  uint32_t length = 0xffffffff;
   WriteData(reinterpret_cast<char*>(&length), 4);
   Run();
   EXPECT_FALSE(message_);
@@ -116,14 +117,14 @@ TEST_F(NativeMessagingReaderTest, ShortHeader) {
 }
 
 TEST_F(NativeMessagingReaderTest, EmptyBody) {
-  uint32 length = 1;
+  uint32_t length = 1;
   WriteData(reinterpret_cast<char*>(&length), 4);
   Run();
   EXPECT_FALSE(message_);
 }
 
 TEST_F(NativeMessagingReaderTest, ShortBody) {
-  uint32 length = 2;
+  uint32_t length = 2;
   WriteData(reinterpret_cast<char*>(&length), 4);
 
   // Only write 1 byte, where the header indicates there should be 2 bytes.

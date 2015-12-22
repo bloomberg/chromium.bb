@@ -7,13 +7,14 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include <Carbon/Carbon.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
+#include <stdint.h>
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -108,7 +109,7 @@ class InputInjectorMac : public InputInjector {
 
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
     webrtc::DesktopVector mouse_pos_;
-    uint32 mouse_button_state_;
+    uint32_t mouse_button_state_;
     scoped_ptr<Clipboard> clipboard_;
     uint64_t left_modifiers_;
     uint64_t right_modifiers_;

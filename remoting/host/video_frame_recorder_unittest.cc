@@ -4,6 +4,10 @@
 
 #include "remoting/host/video_frame_recorder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -44,7 +48,7 @@ namespace {
 const int kFrameWidth = 640;
 const int kFrameHeight = 480;
 const size_t kTestFrameCount = 6;
-const int64 kTestFrameBytes =
+const int64_t kTestFrameBytes =
     kFrameWidth * kFrameHeight * webrtc::DesktopFrame::kBytesPerPixel;
 } // namespace
 

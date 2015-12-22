@@ -4,6 +4,7 @@
 //
 // A simple command-line app that registers and starts a host.
 
+#include <stddef.h>
 #include <stdio.h>
 
 #include "base/at_exit.h"
@@ -11,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/logging.h"

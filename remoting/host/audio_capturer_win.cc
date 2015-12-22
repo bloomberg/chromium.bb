@@ -9,8 +9,9 @@
 #include <mmreg.h>
 #include <mmsystem.h>
 
-#include <algorithm>
+#include <stdint.h>
 #include <stdlib.h>
+#include <algorithm>
 
 #include "base/logging.h"
 
@@ -226,8 +227,8 @@ void AudioCapturerWin::DoCapture() {
       break;
 
     if ((flags & AUDCLNT_BUFFERFLAGS_SILENT) == 0 &&
-        !silence_detector_.IsSilence(
-            reinterpret_cast<const int16*>(data), frames * kChannels)) {
+        !silence_detector_.IsSilence(reinterpret_cast<const int16_t*>(data),
+                                     frames * kChannels)) {
       scoped_ptr<AudioPacket> packet(new AudioPacket());
       packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
       packet->set_encoding(AudioPacket::ENCODING_RAW);

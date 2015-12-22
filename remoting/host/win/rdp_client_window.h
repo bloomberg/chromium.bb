@@ -10,7 +10,6 @@
 #include <atlcrack.h>
 #include <atlctl.h>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/win/scoped_comptr.h"

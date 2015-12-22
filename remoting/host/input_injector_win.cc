@@ -5,10 +5,12 @@
 #include "remoting/host/input_injector.h"
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"

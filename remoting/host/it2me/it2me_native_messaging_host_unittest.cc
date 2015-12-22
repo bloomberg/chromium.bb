@@ -4,10 +4,12 @@
 
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -262,7 +264,7 @@ void It2MeNativeMessagingHostTest::TearDown() {
 scoped_ptr<base::DictionaryValue>
 It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
   while (true) {
-    uint32 length;
+    uint32_t length;
     int read_result = output_read_file_.ReadAtCurrentPos(
         reinterpret_cast<char*>(&length), sizeof(length));
     if (read_result != sizeof(length)) {
@@ -301,7 +303,7 @@ void It2MeNativeMessagingHostTest::WriteMessageToInputPipe(
   std::string message_json;
   base::JSONWriter::Write(message, &message_json);
 
-  uint32 length = message_json.length();
+  uint32_t length = message_json.length();
   input_write_file_.WriteAtCurrentPos(reinterpret_cast<char*>(&length),
                                       sizeof(length));
   input_write_file_.WriteAtCurrentPos(message_json.data(), length);

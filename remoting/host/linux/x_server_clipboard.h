@@ -13,8 +13,8 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace remoting {

@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_DESKTOP_SHAPE_TRACKER_H_
 #define REMOTING_HOST_DESKTOP_SHAPE_TRACKER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace webrtc {

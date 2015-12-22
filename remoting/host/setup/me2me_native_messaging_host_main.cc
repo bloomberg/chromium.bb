@@ -4,6 +4,8 @@
 
 #include "remoting/host/setup/me2me_native_messaging_host_main.h"
 
+#include <stdint.h>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -12,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/url_request_context_getter.h"
@@ -117,7 +120,7 @@ int StartMe2MeNativeMessagingHost() {
   // are focused properly.
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  int64 native_view_handle = 0;
+  int64_t native_view_handle = 0;
   if (command_line->HasSwitch(kParentWindowSwitchName)) {
     std::string native_view =
         command_line->GetSwitchValueASCII(kParentWindowSwitchName);

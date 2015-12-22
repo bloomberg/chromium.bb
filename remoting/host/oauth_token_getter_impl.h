@@ -7,7 +7,6 @@
 
 #include <queue>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"

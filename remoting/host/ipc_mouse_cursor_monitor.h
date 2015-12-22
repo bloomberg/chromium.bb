@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_IPC_MOUSE_CURSOR_MONITOR_H_
 #define REMOTING_HOST_IPC_MOUSE_CURSOR_MONITOR_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

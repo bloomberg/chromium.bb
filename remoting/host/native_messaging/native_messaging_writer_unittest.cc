@@ -4,7 +4,8 @@
 
 #include "remoting/host/native_messaging/native_messaging_writer.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -42,7 +43,7 @@ TEST_F(NativeMessagingWriterTest, GoodMessage) {
   EXPECT_TRUE(writer_->WriteMessage(message));
 
   // Read from the pipe and verify the content.
-  uint32 length;
+  uint32_t length;
   int read = read_file_.ReadAtCurrentPos(reinterpret_cast<char*>(&length), 4);
   EXPECT_EQ(4, read);
   std::string content(length, '\0');
@@ -70,7 +71,7 @@ TEST_F(NativeMessagingWriterTest, SecondMessage) {
   writer_.reset(nullptr);
 
   // Read two messages.
-  uint32 length;
+  uint32_t length;
   int read;
   std::string content;
   for (int i = 0; i < 2; i++) {

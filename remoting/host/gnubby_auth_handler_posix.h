@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_GNUBBY_AUTH_HANDLER_POSIX_H_
 #define REMOTING_HOST_GNUBBY_AUTH_HANDLER_POSIX_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 

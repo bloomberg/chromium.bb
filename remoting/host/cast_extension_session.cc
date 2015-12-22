@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/client_session.h"

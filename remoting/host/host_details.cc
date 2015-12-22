@@ -5,6 +5,7 @@
 #include "remoting/host/host_details.h"
 
 #include "base/sys_info.h"
+#include "build/build_config.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"

@@ -80,7 +80,7 @@ void DaemonProcess::RemoveStatusObserver(HostStatusObserver* observer) {
   status_observers_.RemoveObserver(observer);
 }
 
-void DaemonProcess::OnChannelConnected(int32 peer_pid) {
+void DaemonProcess::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: daemon <- network (" << peer_pid << ")";

@@ -5,6 +5,7 @@
 #include "remoting/host/single_window_desktop_environment.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/single_window_input_injector.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"

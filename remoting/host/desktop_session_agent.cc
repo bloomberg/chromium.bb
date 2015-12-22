@@ -6,7 +6,9 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -161,7 +163,7 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DesktopSessionAgent::OnChannelConnected(int32 peer_pid) {
+void DesktopSessionAgent::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: desktop <- network (" << peer_pid << ")";

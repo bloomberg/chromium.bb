@@ -4,6 +4,9 @@
 
 #include "remoting/host/linux/unicode_to_keysym.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/macros.h"

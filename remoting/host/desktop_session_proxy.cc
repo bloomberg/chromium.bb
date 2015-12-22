@@ -4,11 +4,15 @@
 
 #include "remoting/host/desktop_session_proxy.h"
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/process/process_handle.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/capabilities.h"
@@ -201,7 +205,7 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DesktopSessionProxy::OnChannelConnected(int32 peer_pid) {
+void DesktopSessionProxy::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: network <- desktop (" << peer_pid << ")";
@@ -471,7 +475,7 @@ void DesktopSessionProxy::OnAudioPacket(const std::string& serialized_packet) {
 void DesktopSessionProxy::OnCreateSharedBuffer(
     int id,
     IPC::PlatformFileForTransit handle,
-    uint32 size) {
+    uint32_t size) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
 #if defined(OS_WIN)

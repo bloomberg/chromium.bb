@@ -7,6 +7,7 @@
 #include <X11/extensions/XInput.h>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/client_session_control.h"

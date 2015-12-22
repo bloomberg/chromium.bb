@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_SCREEN_CONTROLS_H_
 #define REMOTING_HOST_SCREEN_CONTROLS_H_
 
-#include "base/basictypes.h"
 
 namespace remoting {
 

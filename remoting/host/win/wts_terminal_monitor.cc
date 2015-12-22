@@ -7,14 +7,13 @@
 #include <windows.h>
 #include <wtsapi32.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace remoting {
 
 // Session id that does not represent any session.
-const uint32 kInvalidSessionId = 0xffffffffu;
+const uint32_t kInvalidSessionId = 0xffffffffu;
 
 const char WtsTerminalMonitor::kConsole[] = "console";
 
@@ -22,7 +21,7 @@ WtsTerminalMonitor::~WtsTerminalMonitor() {
 }
 
 // static
-bool WtsTerminalMonitor::LookupTerminalId(uint32 session_id,
+bool WtsTerminalMonitor::LookupTerminalId(uint32_t session_id,
                                           std::string* terminal_id) {
   // Fast path for the case when |session_id| is currently attached to
   // the physical console.
@@ -50,7 +49,7 @@ bool WtsTerminalMonitor::LookupTerminalId(uint32 session_id,
 }
 
 // static
-uint32 WtsTerminalMonitor::LookupSessionId(const std::string& terminal_id) {
+uint32_t WtsTerminalMonitor::LookupSessionId(const std::string& terminal_id) {
   // Use the fast path if the caller wants to get id of the session attached to
   // the physical console.
   if (terminal_id == kConsole)
@@ -65,7 +64,7 @@ uint32 WtsTerminalMonitor::LookupSessionId(const std::string& terminal_id) {
     return kInvalidSessionId;
   }
   for (DWORD i = 0; i < session_info_count; ++i) {
-    uint32 session_id = session_info[i].SessionId;
+    uint32_t session_id = session_info[i].SessionId;
 
     std::string id;
     if (LookupTerminalId(session_id, &id) && terminal_id == id) {

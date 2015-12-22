@@ -5,9 +5,11 @@
 #ifndef REMOTING_HOST_RESIZING_HOST_OBSERVER_H_
 #define REMOTING_HOST_RESIZING_HOST_OBSERVER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"

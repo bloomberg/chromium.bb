@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_IT2ME_DESKTOP_ENVIRONMENT_H_
 #define REMOTING_HOST_IT2ME_DESKTOP_ENVIRONMENT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/basic_desktop_environment.h"

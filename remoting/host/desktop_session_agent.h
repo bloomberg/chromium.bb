@@ -5,11 +5,14 @@
 #ifndef REMOTING_HOST_DESKTOP_SESSION_AGENT_H_
 #define REMOTING_HOST_DESKTOP_SESSION_AGENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -72,7 +75,7 @@ class DesktopSessionAgent
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   // webrtc::DesktopCapturer::Callback implementation.

@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,7 +52,7 @@ class WtsSessionProcessDelegate::Core
        const std::string& channel_security);
 
   // Initializes the object returning true on success.
-  bool Initialize(uint32 session_id);
+  bool Initialize(uint32_t session_id);
 
   // Stops the object asynchronously.
   void Stop();
@@ -73,7 +74,7 @@ class WtsSessionProcessDelegate::Core
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   // The actual implementation of LaunchProcess()
@@ -157,7 +158,7 @@ WtsSessionProcessDelegate::Core::Core(
       target_command_(target_command.Pass()) {
 }
 
-bool WtsSessionProcessDelegate::Core::Initialize(uint32 session_id) {
+bool WtsSessionProcessDelegate::Core::Initialize(uint32_t session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Windows XP does not support elevation.
@@ -299,7 +300,7 @@ bool WtsSessionProcessDelegate::Core::OnMessageReceived(
   return event_handler_->OnMessageReceived(message);
 }
 
-void WtsSessionProcessDelegate::Core::OnChannelConnected(int32 peer_pid) {
+void WtsSessionProcessDelegate::Core::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Report the worker PID now if the worker process is launched indirectly.
@@ -544,7 +545,7 @@ WtsSessionProcessDelegate::~WtsSessionProcessDelegate() {
   core_->Stop();
 }
 
-bool WtsSessionProcessDelegate::Initialize(uint32 session_id) {
+bool WtsSessionProcessDelegate::Initialize(uint32_t session_id) {
   return core_->Initialize(session_id);
 }
 

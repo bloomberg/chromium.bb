@@ -6,6 +6,7 @@
 #define REMOTING_HOST_BACKOFF_TIMER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"

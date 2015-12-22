@@ -5,6 +5,7 @@
 #include "remoting/host/logging.h"
 
 #include <asl.h>
+#include <stddef.h>
 #include <sys/types.h>
 #include <unistd.h>
 

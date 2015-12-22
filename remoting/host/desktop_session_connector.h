@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_DESKTOP_SESSION_CONNECTOR_H_
 #define REMOTING_HOST_DESKTOP_SESSION_CONNECTOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "ipc/ipc_platform_file.h"
 

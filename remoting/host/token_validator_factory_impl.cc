@@ -4,11 +4,14 @@
 
 #include "remoting/host/token_validator_factory_impl.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"

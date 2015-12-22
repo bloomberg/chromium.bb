@@ -138,7 +138,7 @@ bool WorkerProcessLauncher::OnMessageReceived(
   return ipc_handler_->OnMessageReceived(message);
 }
 
-void WorkerProcessLauncher::OnChannelConnected(int32 peer_pid) {
+void WorkerProcessLauncher::OnChannelConnected(int32_t peer_pid) {
   DCHECK(CalledOnValidThread());
 
   if (!ipc_enabled_)

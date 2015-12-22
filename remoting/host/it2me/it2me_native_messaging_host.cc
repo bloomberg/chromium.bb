@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -16,6 +15,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/service_urls.h"

@@ -9,7 +9,7 @@
 #include <atlcom.h>
 #include <atlctl.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/win/scoped_com_initializer.h"
 

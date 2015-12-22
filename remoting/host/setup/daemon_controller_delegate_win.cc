@@ -4,7 +4,8 @@
 
 #include "remoting/host/setup/daemon_controller_delegate_win.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"

@@ -4,6 +4,8 @@
 
 #include "remoting/host/gcd_rest_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/json/json_writer.h"
@@ -49,7 +51,7 @@ void GcdRestClient::PatchState(
   // }
   //
   // Note that |now| is deliberately using a double to hold an integer
-  // value because |DictionaryValue| doesn't support int64 values, and
+  // value because |DictionaryValue| doesn't support int64_t values, and
   // GCD doesn't accept fractional values.
   double now = clock_->Now().ToJavaTime();
   scoped_ptr<base::DictionaryValue> patch_dict(new base::DictionaryValue);

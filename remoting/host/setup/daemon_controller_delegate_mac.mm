@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"

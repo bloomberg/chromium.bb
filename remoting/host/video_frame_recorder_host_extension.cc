@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/host/host_extension_session.h"

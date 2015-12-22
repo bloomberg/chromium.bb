@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_CLIENT_SESSION_CONTROL_H_
 #define REMOTING_HOST_CLIENT_SESSION_CONTROL_H_
 
-#include "base/basictypes.h"
 #include "remoting/protocol/errors.h"
 
 namespace webrtc {

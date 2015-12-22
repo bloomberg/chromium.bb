@@ -5,9 +5,10 @@
 #include "remoting/host/clipboard.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/timer/timer.h"
@@ -19,7 +20,7 @@
 namespace {
 
 // Clipboard polling interval in milliseconds.
-const int64 kClipboardPollingIntervalMs = 500;
+const int64_t kClipboardPollingIntervalMs = 500;
 
 } // namespace
 

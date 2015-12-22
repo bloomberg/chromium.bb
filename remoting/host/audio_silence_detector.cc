@@ -34,7 +34,7 @@ void AudioSilenceDetector::Reset(int sampling_rate, int channels) {
       sampling_rate * channels * kSilencePeriodThresholdSeconds;
 }
 
-bool AudioSilenceDetector::IsSilence(const int16* samples,
+bool AudioSilenceDetector::IsSilence(const int16_t* samples,
                                      size_t samples_count) {
   bool silent_packet = true;
   // Potentially this loop can be optimized (e.g. using SSE or adding special

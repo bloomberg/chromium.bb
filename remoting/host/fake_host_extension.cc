@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/proto/control.pb.h"

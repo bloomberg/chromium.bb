@@ -6,6 +6,7 @@
 #define REMOTING_HOST_CHROMEOS_MESSAGE_BOX_H_
 
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 

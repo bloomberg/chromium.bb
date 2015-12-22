@@ -5,8 +5,8 @@
 #ifndef REMOTING_HOST_WIN_SESSION_INPUT_INJECTOR_H_
 #define REMOTING_HOST_WIN_SESSION_INPUT_INJECTOR_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/input_injector.h"

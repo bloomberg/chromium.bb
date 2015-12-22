@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "remoting/host/chromeos/point_transformer.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"

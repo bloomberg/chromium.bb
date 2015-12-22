@@ -12,6 +12,7 @@
 #include <X11/Xlib.h>
 
 #include "base/callback.h"
+#include "base/macros.h"
 
 namespace remoting {
 

@@ -5,9 +5,11 @@
 #ifndef REMOTING_HOST_WIN_WTS_TERMINAL_MONITOR_H_
 #define REMOTING_HOST_WIN_WTS_TERMINAL_MONITOR_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace remoting {
@@ -15,7 +17,7 @@ namespace remoting {
 class WtsTerminalObserver;
 
 // Session id that does not represent any session.
-extern const uint32 kInvalidSessionId;
+extern const uint32_t kInvalidSessionId;
 
 class WtsTerminalMonitor {
  public:
@@ -40,12 +42,12 @@ class WtsTerminalMonitor {
   // Returns ID of the terminal connected to |session_id| in |*terminal_id|.
   // Returns false if |session_id| is not attached to the physical console or
   // does not have an assigned terminal ID.
-  static bool LookupTerminalId(uint32 session_id, std::string* terminal_id);
+  static bool LookupTerminalId(uint32_t session_id, std::string* terminal_id);
 
   // Returns ID of the session that |terminal_id| is attached.
   // |kInvalidSessionId| is returned if none of the sessions is currently
   // attahced to |client_endpoint|.
-  static uint32 LookupSessionId(const std::string& terminal_id);
+  static uint32_t LookupSessionId(const std::string& terminal_id);
 
  protected:
   WtsTerminalMonitor();

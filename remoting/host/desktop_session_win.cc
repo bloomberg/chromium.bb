@@ -4,13 +4,14 @@
 
 #include "remoting/host/desktop_session_win.h"
 
-#include <limits>
 #include <sddl.h>
+#include <limits>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -459,7 +460,7 @@ void DesktopSessionWin::TerminateSession() {
   daemon_process()->CloseDesktopSession(id());
 }
 
-void DesktopSessionWin::OnChannelConnected(int32 peer_pid) {
+void DesktopSessionWin::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   ReportElapsedTime("channel connected");
@@ -502,7 +503,7 @@ void DesktopSessionWin::OnPermanentError(int exit_code) {
   TerminateSession();
 }
 
-void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
+void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!launcher_);
   DCHECK(monitoring_notifications_);

@@ -5,9 +5,12 @@
 #ifndef REMOTING_HOST_LINUX_AUDIO_PIPE_READER_H_
 #define REMOTING_HOST_LINUX_AUDIO_PIPE_READER_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -94,7 +97,7 @@ class AudioPipeReader
   // Stream position of the last capture in bytes with zero position
   // corresponding to |started_time_|. Must always be a multiple of the sample
   // size.
-  int64 last_capture_position_;
+  int64_t last_capture_position_;
 
   // Bytes left from the previous read.
   std::string left_over_bytes_;

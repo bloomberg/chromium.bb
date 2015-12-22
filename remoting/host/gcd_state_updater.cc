@@ -4,6 +4,8 @@
 
 #include "remoting/host/gcd_state_updater.h"
 
+#include <stdint.h>
+
 #include "base/callback_helpers.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
@@ -15,8 +17,8 @@ namespace remoting {
 
 namespace {
 
-const int64 kTimerIntervalMinMs = 1000;
-const int64 kTimerIntervalMaxMs = 5 * 60 * 1000;  // 5 minutes
+const int64_t kTimerIntervalMinMs = 1000;
+const int64_t kTimerIntervalMaxMs = 5 * 60 * 1000;  // 5 minutes
 
 }  // namespace
 

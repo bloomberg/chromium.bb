@@ -14,7 +14,7 @@
 namespace {
 
 // Clipboard polling interval in milliseconds.
-const int64 kClipboardPollingIntervalMs = 500;
+const int64_t kClipboardPollingIntervalMs = 500;
 
 }  // namespace
 
@@ -69,7 +69,7 @@ void ClipboardAura::CheckClipboardForChanges() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  uint64 change_count =
+  uint64_t change_count =
       clipboard->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE);
 
   if (change_count == current_change_count_) {

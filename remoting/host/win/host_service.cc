@@ -7,8 +7,8 @@
 
 #include "remoting/host/win/host_service.h"
 
-#include <sddl.h>
 #include <windows.h>
+#include <sddl.h>
 #include <wtsapi32.h>
 
 #include "base/base_paths.h"
@@ -145,7 +145,7 @@ HostService::HostService() :
 HostService::~HostService() {
 }
 
-void HostService::OnSessionChange(uint32 event, uint32 session_id) {
+void HostService::OnSessionChange(uint32_t event, uint32_t session_id) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(session_id, kInvalidSessionId);
 

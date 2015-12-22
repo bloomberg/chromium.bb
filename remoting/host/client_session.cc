@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/logging.h"
 #include "remoting/codec/audio_encoder.h"

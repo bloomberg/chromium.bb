@@ -4,6 +4,7 @@
 
 #include "remoting/host/host_event_logger.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"

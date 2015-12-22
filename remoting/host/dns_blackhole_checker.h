@@ -8,6 +8,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 #include "base/callback.h"
+#include "base/macros.h"
 
 namespace net {
 class URLRequestContextGetter;

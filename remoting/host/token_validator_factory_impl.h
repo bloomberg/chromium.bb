@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/token_validator_base.h"
 #include "remoting/protocol/token_validator.h"

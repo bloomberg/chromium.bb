@@ -5,7 +5,8 @@
 #ifndef REMOTING_HOST_WORKER_PROCESS_IPC_DELEGATE_H_
 #define REMOTING_HOST_WORKER_PROCESS_IPC_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 
 namespace IPC {
@@ -21,7 +22,7 @@ class WorkerProcessIpcDelegate {
   virtual ~WorkerProcessIpcDelegate() {}
 
   // Notifies that a client has been connected to the channel.
-  virtual void OnChannelConnected(int32 peer_pid) = 0;
+  virtual void OnChannelConnected(int32_t peer_pid) = 0;
 
   // Processes messages sent by the client.
   virtual bool OnMessageReceived(const IPC::Message& message) = 0;

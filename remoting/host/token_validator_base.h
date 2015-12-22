@@ -6,6 +6,7 @@
 #define REMOTING_HOST_TOKEN_VALIDATOR_BASE_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request.h"

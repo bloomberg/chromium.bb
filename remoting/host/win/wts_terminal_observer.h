@@ -6,8 +6,9 @@
 #define REMOTING_HOST_WIN_WTS_TERMINAL_OBSERVER_H_
 
 #include <windows.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace remoting {
 
@@ -17,7 +18,7 @@ class WtsTerminalObserver {
   virtual ~WtsTerminalObserver() {}
 
   // Called when |session_id| attaches to the console.
-  virtual void OnSessionAttached(uint32 session_id) = 0;
+  virtual void OnSessionAttached(uint32_t session_id) = 0;
 
   // Called when a session detaches from the console.
   virtual void OnSessionDetached() = 0;

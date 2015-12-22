@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_SETUP_DAEMON_CONTROLLER_DELEGATE_MAC_H_
 #define REMOTING_HOST_SETUP_DAEMON_CONTROLLER_DELEGATE_MAC_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/setup/daemon_controller.h"

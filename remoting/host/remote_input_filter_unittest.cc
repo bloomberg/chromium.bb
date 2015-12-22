@@ -4,6 +4,8 @@
 
 #include "remoting/host/remote_input_filter.h"
 
+#include <stdint.h>
+
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/protocol_mock_objects.h"

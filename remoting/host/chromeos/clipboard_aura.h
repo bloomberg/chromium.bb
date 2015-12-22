@@ -5,6 +5,9 @@
 #ifndef REMOTING_HOST_CLIPBOARD_AURA_H_
 #define REMOTING_HOST_CLIPBOARD_AURA_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -44,7 +47,7 @@ class ClipboardAura : public Clipboard {
   base::ThreadChecker thread_checker_;
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
   base::RepeatingTimer clipboard_polling_timer_;
-  uint64 current_change_count_;
+  uint64_t current_change_count_;
   base::TimeDelta polling_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardAura);

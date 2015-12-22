@@ -4,6 +4,8 @@
 
 #include "remoting/host/token_validator_base.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -13,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"

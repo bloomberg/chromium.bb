@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "remoting/host/host_extension.h"
 
 namespace remoting {

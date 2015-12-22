@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -81,7 +85,7 @@ class MockDaemonListener : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   MOCK_METHOD1(OnDesktopAttached, void(IPC::PlatformFileForTransit));
-  MOCK_METHOD1(OnChannelConnected, void(int32));
+  MOCK_METHOD1(OnChannelConnected, void(int32_t));
   MOCK_METHOD0(OnChannelError, void());
 
  private:

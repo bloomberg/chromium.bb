@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_FAKE_DESKTOP_ENVIRONMENT_H_
 #define REMOTING_HOST_FAKE_DESKTOP_ENVIRONMENT_H_
 
+#include "base/macros.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/input_injector.h"

@@ -4,12 +4,15 @@
 
 #include "remoting/host/native_messaging/native_messaging_reader.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -19,8 +22,8 @@
 
 namespace {
 
-// uint32 is specified in the protocol as the type for the message header.
-typedef uint32 MessageLengthType;
+// uint32_t is specified in the protocol as the type for the message header.
+typedef uint32_t MessageLengthType;
 
 const int kMessageHeaderSize = sizeof(MessageLengthType);
 

@@ -10,6 +10,7 @@
 #include <launch.h>
 #import <PreferencePanes/PreferencePanes.h>
 #import <SecurityInterface/SFAuthorizationView.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
 

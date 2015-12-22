@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "ipc/ipc_sender.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"

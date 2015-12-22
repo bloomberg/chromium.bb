@@ -4,6 +4,9 @@
 
 #include "remoting/host/touch_injector_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/stl_util.h"

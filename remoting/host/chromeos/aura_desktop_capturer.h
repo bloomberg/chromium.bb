@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_CHROMEOS_AURA_DESKTOP_CAPTURER_H_
 #define REMOTING_HOST_CHROMEOS_AURA_DESKTOP_CAPTURER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 

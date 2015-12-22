@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_INPUT_INJECTOR_CHROMEOS_H_
 #define REMOTING_HOST_INPUT_INJECTOR_CHROMEOS_H_
 
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/input_injector.h"
 

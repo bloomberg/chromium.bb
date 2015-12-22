@@ -4,15 +4,17 @@
 
 #include "remoting/host/native_messaging/native_messaging_writer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/json/json_writer.h"
 
 namespace {
 
 // 4-byte type used for the message header.
-typedef uint32 MessageLengthType;
+typedef uint32_t MessageLengthType;
 
 // Defined as an int, for passing to APIs that take an int, to avoid
 // signed/unsigned warnings about implicit cast.

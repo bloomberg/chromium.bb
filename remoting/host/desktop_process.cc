@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -70,7 +71,7 @@ bool DesktopProcess::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DesktopProcess::OnChannelConnected(int32 peer_pid) {
+void DesktopProcess::OnChannelConnected(int32_t peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: desktop <- daemon (" << peer_pid << ")";

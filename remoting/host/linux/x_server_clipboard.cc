@@ -6,8 +6,8 @@
 
 #include <X11/extensions/Xfixes.h>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/util.h"

@@ -4,8 +4,11 @@
 
 #include "remoting/host/desktop_capturer_proxy.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/proto/control.pb.h"

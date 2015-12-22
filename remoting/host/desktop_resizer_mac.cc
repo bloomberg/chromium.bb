@@ -5,11 +5,12 @@
 #include "remoting/host/desktop_resizer.h"
 
 #include <Carbon/Carbon.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "remoting/base/logging.h"
 
 namespace {

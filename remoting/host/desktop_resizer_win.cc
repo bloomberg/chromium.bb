@@ -4,10 +4,11 @@
 
 #include "remoting/host/desktop_resizer.h"
 
-#include <map>
 #include <windows.h>
+#include <map>
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace {
 // TODO(jamiewalch): Use the correct DPI for the mode: http://crbug.com/172405.

@@ -5,10 +5,13 @@
 #ifndef REMOTING_HOST_GNUBBY_SOCKET_H_
 #define REMOTING_HOST_GNUBBY_SOCKET_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"

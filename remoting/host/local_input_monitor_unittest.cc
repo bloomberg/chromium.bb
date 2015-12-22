@@ -6,6 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_mock_objects.h"

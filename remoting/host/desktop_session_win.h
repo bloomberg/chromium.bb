@@ -5,6 +5,9 @@
 #ifndef REMOTING_HOST_DESKTOP_SESSION_WIN_H_
 #define REMOTING_HOST_DESKTOP_SESSION_WIN_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -85,12 +88,12 @@ class DesktopSessionWin
   virtual void InjectSas() = 0;
 
   // WorkerProcessIpcDelegate implementation.
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnPermanentError(int exit_code) override;
 
   // WtsTerminalObserver implementation.
-  void OnSessionAttached(uint32 session_id) override;
+  void OnSessionAttached(uint32_t session_id) override;
   void OnSessionDetached() override;
 
  private:

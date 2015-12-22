@@ -4,6 +4,8 @@
 
 #include "remoting/host/chromoting_host.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

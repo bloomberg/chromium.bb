@@ -5,11 +5,13 @@
 #ifndef REMOTING_HOST_DAEMON_PROCESS_H_
 #define REMOTING_HOST_DAEMON_PROCESS_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -66,7 +68,7 @@ class DaemonProcess
   void RemoveStatusObserver(HostStatusObserver* observer) override;
 
   // WorkerProcessIpcDelegate implementation.
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnPermanentError(int exit_code) override;
 

@@ -4,6 +4,9 @@
 
 #include "remoting/host/audio_pump.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

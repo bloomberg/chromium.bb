@@ -5,6 +5,7 @@
 #include "remoting/host/heartbeat_sender.h"
 
 #include <math.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -47,9 +48,9 @@ const char kHeartbeatResultTag[] = "heartbeat-result";
 const char kSetIntervalTag[] = "set-interval";
 const char kExpectedSequenceIdTag[] = "expected-sequence-id";
 
-const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
-const int64 kResendDelayMs = 10 * 1000;  // 10 seconds.
-const int64 kResendDelayOnHostNotFoundMs = 10 * 1000; // 10 seconds.
+const int64_t kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
+const int64_t kResendDelayMs = 10 * 1000;                   // 10 seconds.
+const int64_t kResendDelayOnHostNotFoundMs = 10 * 1000;     // 10 seconds.
 const int kMaxResendOnHostNotFoundCount = 12;  // 2 minutes (12 x 10 seconds).
 
 }  // namespace

@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_SCREEN_RESOLUTION_H_
 #define REMOTING_HOST_SCREEN_RESOLUTION_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 

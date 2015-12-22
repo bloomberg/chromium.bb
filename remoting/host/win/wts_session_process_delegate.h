@@ -5,8 +5,10 @@
 #ifndef REMOTING_HOST_WIN_WTS_SESSION_PROCESS_DELEGATE_H_
 #define REMOTING_HOST_WIN_WTS_SESSION_PROCESS_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -37,7 +39,7 @@ class WtsSessionProcessDelegate
   ~WtsSessionProcessDelegate() override;
 
   // Initializes the object returning true on success.
-  bool Initialize(uint32 session_id);
+  bool Initialize(uint32_t session_id);
 
   // WorkerProcessLauncher::Delegate implementation.
   void LaunchProcess(WorkerProcessLauncher* event_handler) override;

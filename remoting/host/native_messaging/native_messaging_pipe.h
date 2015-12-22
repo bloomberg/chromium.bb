@@ -5,6 +5,7 @@
 #ifndef REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_PIPE_H_
 #define REMOTING_HOST_NATIVE_MESSAGING_NATIVE_MESSAGING_PIPE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/messaging/native_message_host.h"

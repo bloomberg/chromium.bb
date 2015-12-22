@@ -5,9 +5,11 @@
 #ifndef REMOTING_HOST_WIN_WORKER_PROCESS_LAUNCHER_H_
 #define REMOTING_HOST_WIN_WORKER_PROCESS_LAUNCHER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -94,7 +96,7 @@ class WorkerProcessLauncher
   // Mirrors methods of IPC::Listener to be invoked by |Delegate|. |Delegate|
   // has to validate |peer_pid| if necessary.
   bool OnMessageReceived(const IPC::Message& message);
-  void OnChannelConnected(int32 peer_pid);
+  void OnChannelConnected(int32_t peer_pid);
   void OnChannelError();
 
  private:

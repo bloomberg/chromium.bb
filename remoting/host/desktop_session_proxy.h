@@ -5,9 +5,11 @@
 #ifndef REMOTING_HOST_DESKTOP_SESSION_PROXY_H_
 #define REMOTING_HOST_DESKTOP_SESSION_PROXY_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -90,7 +92,7 @@ class DesktopSessionProxy
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   // Connects to the desktop session agent.
@@ -152,7 +154,7 @@ class DesktopSessionProxy
   // Registers a new shared buffer created by the desktop process.
   void OnCreateSharedBuffer(int id,
                             IPC::PlatformFileForTransit handle,
-                            uint32 size);
+                            uint32_t size);
 
   // Drops a cached reference to the shared buffer.
   void OnReleaseSharedBuffer(int id);

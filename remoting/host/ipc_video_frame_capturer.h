@@ -5,9 +5,10 @@
 #ifndef REMOTING_HOST_IPC_VIDEO_FRAME_CAPTURER_H_
 #define REMOTING_HOST_IPC_VIDEO_FRAME_CAPTURER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {

@@ -6,6 +6,7 @@
 #define REMOTING_HOST_BRANDING_H_
 
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 
 namespace remoting {
 

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"

@@ -4,6 +4,8 @@
 
 #include "remoting/host/win/session_input_injector.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
@@ -11,6 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/windows_version.h"
 #include "remoting/host/sas_injector.h"

@@ -18,6 +18,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"

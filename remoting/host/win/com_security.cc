@@ -6,7 +6,6 @@
 
 #include <objidl.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/win/windows_version.h"

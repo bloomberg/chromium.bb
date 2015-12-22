@@ -5,9 +5,9 @@
 #ifndef REMOTING_HOST_CONFIG_FILE_WATCHER_H_
 #define REMOTING_HOST_CONFIG_FILE_WATCHER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/host/config_watcher.h"
 

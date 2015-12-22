@@ -4,6 +4,7 @@
 
 #include "remoting/host/gnubby_auth_handler_posix.h"
 
+#include <stdint.h>
 #include <unistd.h>
 #include <utility>
 
@@ -37,7 +38,7 @@ const char kGnubbyAuthMessage[] = "gnubby-auth";
 const char kGnubbyAuthV1[] = "auth-v1";
 const char kMessageType[] = "type";
 
-const int64 kDefaultRequestTimeoutSeconds = 60;
+const int64_t kDefaultRequestTimeoutSeconds = 60;
 
 // The name of the socket to listen for gnubby requests on.
 base::LazyInstance<base::FilePath>::Leaky g_gnubby_socket_name =
