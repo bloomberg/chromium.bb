@@ -138,11 +138,13 @@ void WindowEventDispatcher::DispatchCancelModeEvent() {
     return;
 }
 
-void WindowEventDispatcher::DispatchGestureEvent(ui::GestureEvent* event) {
+void WindowEventDispatcher::DispatchGestureEvent(
+    ui::GestureConsumer* raw_input_consumer,
+    ui::GestureEvent* event) {
   DispatchDetails details = DispatchHeldEvents();
   if (details.dispatcher_destroyed)
     return;
-  Window* target = GetGestureTarget(event);
+  Window* target = ConsumerToWindow(raw_input_consumer);
   if (target) {
     event->ConvertLocationToTarget(window(), target);
     DispatchDetails details = DispatchEvent(target, event);
@@ -165,7 +167,7 @@ void WindowEventDispatcher::ProcessedTouchEvent(uint32 unique_event_id,
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures(
       ui::GestureRecognizer::Get()->AckTouchEvent(unique_event_id, result,
                                                   window));
-  DispatchDetails details = ProcessGestures(gestures.get());
+  DispatchDetails details = ProcessGestures(window, gestures.get());
   if (details.dispatcher_destroyed)
     return;
 }
@@ -282,12 +284,12 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
 }
 
 ui::EventDispatchDetails WindowEventDispatcher::ProcessGestures(
+    Window* target,
     ui::GestureRecognizer::Gestures* gestures) {
   DispatchDetails details;
   if (!gestures || gestures->empty())
     return details;
 
-  Window* target = GetGestureTarget(gestures->get().at(0));
   // If a window has been hidden between the touch event and now, the associated
   // gestures may not have a valid target.
   if (!target)
@@ -343,11 +345,6 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
     if (invisible->Contains(capture_window) && invisible != window())
       capture_window->ReleaseCapture();
   }
-}
-
-Window* WindowEventDispatcher::GetGestureTarget(ui::GestureEvent* event) {
-  return ConsumerToWindow(
-      ui::GestureRecognizer::Get()->GetTargetForGestureEvent(*event));
 }
 
 bool WindowEventDispatcher::is_dispatched_held_event(
@@ -507,11 +504,11 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
       if (!touchevent.synchronous_handling_disabled()) {
         scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
 
+        Window* window = static_cast<Window*>(target);
         gestures.reset(ui::GestureRecognizer::Get()->AckTouchEvent(
-            touchevent.unique_event_id(), event.result(),
-            static_cast<Window*>(target)));
+            touchevent.unique_event_id(), event.result(), window));
 
-        return ProcessGestures(gestures.get());
+        return ProcessGestures(window, gestures.get());
       }
     }
   }
@@ -528,7 +525,9 @@ bool WindowEventDispatcher::CanDispatchToConsumer(
   return (consumer_window && consumer_window->GetRootWindow() == window());
 }
 
-void WindowEventDispatcher::DispatchCancelTouchEvent(ui::TouchEvent* event) {
+void WindowEventDispatcher::DispatchCancelTouchEvent(
+    ui::GestureConsumer* raw_input_consumer,
+    ui::TouchEvent* event) {
   // The touchcancel event's location is based on the last known location of
   // the pointer, in dips. OnEventFromSource expects events with co-ordinates
   // in raw pixels, so we convert back to raw pixels here.

@@ -37,7 +37,6 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
 
   // Overridden from GestureRecognizer
   GestureConsumer* GetTouchLockedTarget(const TouchEvent& event) override;
-  GestureConsumer* GetTargetForGestureEvent(const GestureEvent& event) override;
   GestureConsumer* GetTargetForLocation(const gfx::PointF& location,
                                         int source_device_id) override;
   void CancelActiveTouchesExcept(GestureConsumer* not_cancelled) override;
@@ -55,7 +54,8 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   // Sets up the target consumer for gestures based on the touch-event.
   void SetupTargets(const TouchEvent& event, GestureConsumer* consumer);
 
-  void DispatchGestureEvent(GestureEvent* event);
+  void DispatchGestureEvent(GestureConsumer* raw_input_consumer,
+                            GestureEvent* event);
 
   // Overridden from GestureRecognizer
   bool ProcessTouchEventPreDispatch(TouchEvent* event,
@@ -70,19 +70,18 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   void RemoveGestureEventHelper(GestureEventHelper* helper) override;
 
   // Overridden from GestureProviderAuraClient
-  void OnGestureEvent(GestureEvent* event) override;
+  void OnGestureEvent(GestureConsumer* raw_input_consumer,
+                      GestureEvent* event) override;
 
   // Convenience method to find the GestureEventHelper that can dispatch events
   // to a specific |consumer|.
   GestureEventHelper* FindDispatchHelperForConsumer(GestureConsumer* consumer);
   std::map<GestureConsumer*, GestureProviderAura*> consumer_gesture_provider_;
 
-  // Both |touch_id_target_| and |touch_id_target_for_gestures_| map a touch-id
-  // to its target window.  touch-ids are removed from |touch_id_target_| on
-  // ET_TOUCH_RELEASE and ET_TOUCH_CANCEL. |touch_id_target_for_gestures_| are
-  // removed in ConsumerDestroyed().
+  // |touch_id_target_| maps a touch-id to its target window.
+  // touch-ids are removed from |touch_id_target_| on
+  // ET_TOUCH_RELEASE and ET_TOUCH_CANCEL.
   TouchIdToConsumerMap touch_id_target_;
-  TouchIdToConsumerMap touch_id_target_for_gestures_;
 
   std::vector<GestureEventHelper*> helpers_;
 

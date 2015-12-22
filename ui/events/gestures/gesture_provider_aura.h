@@ -16,18 +16,26 @@
 
 namespace ui {
 
+class GestureProviderAura;
+
 class EVENTS_EXPORT GestureProviderAuraClient {
  public:
   virtual ~GestureProviderAuraClient() {}
-  virtual void OnGestureEvent(GestureEvent* event) = 0;
+  virtual void OnGestureEvent(GestureConsumer* consumer,
+                              GestureEvent* event) = 0;
 };
 
 // Provides gesture detection and dispatch given a sequence of touch events
 // and touch event acks.
 class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
  public:
-  GestureProviderAura(GestureProviderAuraClient* client);
+  GestureProviderAura(GestureConsumer* consumer,
+                      GestureProviderAuraClient* client);
   ~GestureProviderAura() override;
+
+  void set_gesture_consumer(GestureConsumer* consumer) {
+    gesture_consumer_ = consumer;
+  }
 
   bool OnTouchEvent(TouchEvent* event);
   void OnTouchEventAck(uint32 unique_event_id, bool event_consumed);
@@ -44,6 +52,9 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
 
   bool handling_event_;
   ScopedVector<GestureEvent> pending_gestures_;
+
+  // |gesture_consumer_| must outlive this object.
+  GestureConsumer* gesture_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureProviderAura);
 };

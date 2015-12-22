@@ -37,7 +37,7 @@ TouchExplorationController::TouchExplorationController(
     : root_window_(root_window),
       delegate_(delegate),
       state_(NO_FINGERS_DOWN),
-      gesture_provider_(new GestureProviderAura(this)),
+      gesture_provider_(new GestureProviderAura(this, this)),
       prev_state_(NO_FINGERS_DOWN),
       VLOG_on_(true),
       tick_clock_(NULL) {
@@ -786,8 +786,8 @@ void TouchExplorationController::DispatchEvent(ui::Event* event) {
 // certain touch events are added to the vector accessible via
 // GetAndResetPendingGestures(). We only care about swipes (which are created
 // synchronously), so we ignore this callback.
-void TouchExplorationController::OnGestureEvent(ui::GestureEvent* gesture) {
-}
+void TouchExplorationController::OnGestureEvent(ui::GestureConsumer* consumer,
+                                                ui::GestureEvent* gesture) {}
 
 void TouchExplorationController::ProcessGestureEvents() {
   scoped_ptr<ScopedVector<ui::GestureEvent> > gestures(
@@ -1031,7 +1031,7 @@ void TouchExplorationController::SetState(State new_state,
         gesture_provider_.reset(NULL);
       break;
     case NO_FINGERS_DOWN:
-      gesture_provider_.reset(new GestureProviderAura(this));
+      gesture_provider_.reset(new GestureProviderAura(this, this));
       if (sound_timer_.IsRunning())
         sound_timer_.Stop();
       tap_timer_.Stop();

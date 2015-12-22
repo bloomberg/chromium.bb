@@ -162,6 +162,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                                     ui::EventType type)
       WARN_UNUSED_RESULT;
   ui::EventDispatchDetails ProcessGestures(
+      Window* target,
       ui::GestureRecognizer::Gestures* gestures) WARN_UNUSED_RESULT;
 
   // Called when a window becomes invisible, either by being removed
@@ -170,9 +171,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // will cause a window to lose capture and some windows may destroy themselves
   // on capture (like DragDropTracker).
   void OnWindowHidden(Window* invisible, WindowHiddenReason reason);
-
-  // Returns a target window for the given gesture event.
-  Window* GetGestureTarget(ui::GestureEvent* event);
 
   bool is_dispatched_held_event(const ui::Event& event) const;
 
@@ -195,8 +193,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // Overridden from ui::GestureEventHelper.
   bool CanDispatchToConsumer(ui::GestureConsumer* consumer) override;
-  void DispatchGestureEvent(ui::GestureEvent* event) override;
-  void DispatchCancelTouchEvent(ui::TouchEvent* event) override;
+  void DispatchGestureEvent(ui::GestureConsumer* raw_input_consumer,
+                            ui::GestureEvent* event) override;
+  void DispatchCancelTouchEvent(ui::GestureConsumer* raw_input_consumer,
+                                ui::TouchEvent* event) override;
 
   // Overridden from WindowObserver:
   void OnWindowDestroying(Window* window) override;

@@ -49,10 +49,6 @@ class EVENTS_EXPORT GestureRecognizer {
   // Otherwise, returns null.
   virtual GestureConsumer* GetTouchLockedTarget(const TouchEvent& event) = 0;
 
-  // Return the window which should handle this GestureEvent.
-  virtual GestureConsumer* GetTargetForGestureEvent(
-      const GestureEvent& event) = 0;
-
   // Returns the target of the nearest active touch with source device of
   // |source_device_id|, within
   // GestureConfiguration::max_separation_for_gesture_touches_in_pixels of

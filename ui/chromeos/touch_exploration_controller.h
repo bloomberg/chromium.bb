@@ -164,7 +164,8 @@ class TouchExplorationControllerDelegate {
 // destroy them before |root_window| is destroyed.
 class UI_CHROMEOS_EXPORT TouchExplorationController
     : public ui::EventRewriter,
-      public ui::GestureProviderAuraClient {
+      public ui::GestureProviderAuraClient,
+      public ui::GestureConsumer {
  public:
   explicit TouchExplorationController(
       aura::Window* root_window,
@@ -236,7 +237,8 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // the user moves fast enough to trigger a gesture. After the user
   // completes their gesture, this method will decide what keyboard
   // input their gesture corresponded to.
-  void OnGestureEvent(ui::GestureEvent* gesture) override;
+  void OnGestureEvent(ui::GestureConsumer* raw_input_consumer,
+                      ui::GestureEvent* gesture) override;
 
   // Process the gesture events that have been created.
   void ProcessGestureEvents();

@@ -263,7 +263,6 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
 
 void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
   ui::GestureEventDetails event_details(gesture_type);
-  event_details.set_oldest_touch_id(1);
   ui::GestureEvent gesture_event(
       location.x(), location.y(), 0, ui::EventTimeForNow(), event_details);
   ui::EventSource* event_source =

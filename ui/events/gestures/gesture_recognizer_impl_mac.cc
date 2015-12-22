@@ -33,10 +33,6 @@ class GestureRecognizerImplMac : public GestureRecognizer {
   GestureConsumer* GetTouchLockedTarget(const TouchEvent& event) override {
     return NULL;
   }
-  GestureConsumer* GetTargetForGestureEvent(
-      const GestureEvent& event) override {
-    return NULL;
-  }
   GestureConsumer* GetTargetForLocation(const gfx::PointF& location,
                                         int source_device_id) override {
     return NULL;

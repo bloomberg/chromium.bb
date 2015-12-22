@@ -31,12 +31,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     touch_points_ = touch_points;
   }
 
-  int oldest_touch_id() const { return oldest_touch_id_; }
-  void set_oldest_touch_id(int oldest_touch_id) {
-    DCHECK_GE(oldest_touch_id, 0);
-    oldest_touch_id_ = oldest_touch_id;
-  }
-
   const gfx::Rect bounding_box() const {
     return ToEnclosingRect(bounding_box_);
   }
@@ -193,9 +187,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   // Bounding box is an axis-aligned rectangle that contains all the
   // enclosing rectangles of the touch-points in the gesture.
   gfx::RectF bounding_box_;
-
-  // The touch id of the oldest touch contributing to the gesture.
-  int oldest_touch_id_;
 };
 
 }  // namespace ui

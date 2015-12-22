@@ -17,15 +17,20 @@ class GestureProviderAuraTest : public testing::Test,
 
   ~GestureProviderAuraTest() override {}
 
-  void OnGestureEvent(GestureEvent* event) override {}
+  void OnGestureEvent(GestureConsumer* raw_input_consumer,
+                      GestureEvent* event) override {}
 
-  void SetUp() override { provider_.reset(new GestureProviderAura(this)); }
+  void SetUp() override {
+    consumer_.reset(new GestureConsumer());
+    provider_.reset(new GestureProviderAura(consumer_.get(), this));
+  }
 
   void TearDown() override { provider_.reset(); }
 
   GestureProviderAura* provider() { return provider_.get(); }
 
  private:
+  scoped_ptr<GestureConsumer> consumer_;
   scoped_ptr<GestureProviderAura> provider_;
   base::MessageLoopForUI message_loop_;
 };

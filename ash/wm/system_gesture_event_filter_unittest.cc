@@ -162,7 +162,6 @@ ui::GestureEvent* CreateGesture(ui::EventType type,
                                 int touch_id) {
   ui::GestureEventDetails details =
       ui::GestureEventDetails(type, delta_x, delta_y);
-  details.set_oldest_touch_id(touch_id);
   return new ui::GestureEvent(x, y, 0,
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(type, delta_x, delta_y));
