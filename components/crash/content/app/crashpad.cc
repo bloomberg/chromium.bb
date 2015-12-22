@@ -244,13 +244,35 @@ void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports) {
 #if defined(KASKO)
 
 void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys) {
+  // Reserve room for an extra key, the guid.
   crash_keys->clear();
-  crash_keys->reserve(g_simple_string_dictionary->GetCount());
+  crash_keys->reserve(g_simple_string_dictionary->GetCount() + 1);
+
+  // Set the Crashpad client ID in the crash keys.
+  bool got_guid = false;
+  if (g_database) {
+    crashpad::Settings* settings = g_database->GetSettings();
+    crashpad::UUID uuid;
+    if (settings->GetClientID(&uuid)) {
+      kasko::api::CrashKey kv;
+      wcsncpy_s(kv.name, L"guid", _TRUNCATE);
+      wcsncpy_s(kv.value, base::UTF8ToWide(uuid.ToString()).c_str(), _TRUNCATE);
+      crash_keys->push_back(kv);
+      got_guid = true;
+    }
+  }
+
   crashpad::SimpleStringDictionary::Iterator iter(*g_simple_string_dictionary);
   for (;;) {
     const auto* entry = iter.Next();
     if (!entry)
       break;
+
+    // Skip the 'guid' key if it was already set.
+    static const char kGuid[] = "guid";
+    if (got_guid && ::strncmp(entry->key, kGuid, arraysize(kGuid)) == 0)
+      continue;
+
     kasko::api::CrashKey kv;
     wcsncpy_s(kv.name, base::UTF8ToWide(entry->key).c_str(), _TRUNCATE);
     wcsncpy_s(kv.value, base::UTF8ToWide(entry->value).c_str(), _TRUNCATE);
