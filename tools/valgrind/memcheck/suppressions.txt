@@ -3355,3 +3355,14 @@
    fun:_ZN4base6Thread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
+{
+   bug_571543
+   Memcheck:Leak
+   ...
+   fun:_ZN4base11MessageLoopC1ENS0_4TypeENS_8Callback*
+   fun:_ZN4base11MessageLoop13CreateUnboundENS0_4TypeENS_8Callback*
+   fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
+   fun:_ZN4base6Thread5StartEv
+   fun:_ZN4base6Thread22StartAndWaitForTestingEv
+   fun:_ZN12browser_sync12_GLOBAL__N_124SyncBackendRegistrarTest5SetUpEv
+}
