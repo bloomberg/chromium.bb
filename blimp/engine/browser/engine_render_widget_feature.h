@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_ENGINE_BROWSER_ENGINE_RENDER_WIDGET_MESSAGE_PROCESSOR_H_
-#define BLIMP_ENGINE_BROWSER_ENGINE_RENDER_WIDGET_MESSAGE_PROCESSOR_H_
+#ifndef BLIMP_ENGINE_BROWSER_ENGINE_RENDER_WIDGET_FEATURE_H_
+#define BLIMP_ENGINE_BROWSER_ENGINE_RENDER_WIDGET_FEATURE_H_
 
 #include <stdint.h>
 
@@ -27,7 +27,7 @@ namespace blimp {
 // notified of incoming messages. This class automatically handles dropping
 // stale BlimpMessage::RENDER_WIDGET messages from the client after a
 // RenderWidgetMessage::INITIALIZE message is sent.
-class EngineRenderWidgetMessageProcessor : public BlimpMessageProcessor {
+class EngineRenderWidgetFeature : public BlimpMessageProcessor {
  public:
   // A delegate to be notified of specific RenderWidget related incoming events.
   class RenderWidgetMessageDelegate {
@@ -42,10 +42,17 @@ class EngineRenderWidgetMessageProcessor : public BlimpMessageProcessor {
         const std::vector<uint8_t>& message) = 0;
   };
 
-  EngineRenderWidgetMessageProcessor(
-      BlimpMessageProcessor* render_widget_message_processor,
-      BlimpMessageProcessor* compositor_message_processor);
-  ~EngineRenderWidgetMessageProcessor() override;
+  EngineRenderWidgetFeature();
+  ~EngineRenderWidgetFeature() override;
+
+  void set_render_widget_message_sender(
+      scoped_ptr<BlimpMessageProcessor> message_processor);
+
+  void set_input_message_sender(
+      scoped_ptr<BlimpMessageProcessor> message_processor);
+
+  void set_compositor_message_sender(
+      scoped_ptr<BlimpMessageProcessor> message_processor);
 
   // Notifies the client that the RenderWidget for a particular WebContents has
   // changed.  When this is sent all incoming messages from the client sent
@@ -80,14 +87,21 @@ class EngineRenderWidgetMessageProcessor : public BlimpMessageProcessor {
   DelegateMap delegates_;
   RenderWidgetIdMap render_widget_ids_;
 
+  // TODO(haibinlu): rename InputMessageProcessor.
   InputMessageProcessor input_message_processor_;
 
-  BlimpMessageProcessor* render_widget_message_processor_;
-  BlimpMessageProcessor* compositor_message_processor_;
+  // Message processor for sending RENDER_WIDGET messages.
+  scoped_ptr<BlimpMessageProcessor> render_widget_message_sender_;
 
-  DISALLOW_COPY_AND_ASSIGN(EngineRenderWidgetMessageProcessor);
+  // Message processor for sending COMPOSITOR messages.
+  scoped_ptr<BlimpMessageProcessor> compositor_message_sender_;
+
+  // Message processor for sending INPUT messages.
+  scoped_ptr<BlimpMessageProcessor> input_message_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(EngineRenderWidgetFeature);
 };
 
 }  // namespace blimp
 
-#endif  // BLIMP_ENGINE_BROWSER_ENGINE_RENDER_WIDGET_MESSAGE_PROCESSOR_H_
+#endif  // BLIMP_ENGINE_BROWSER_ENGINE_RENDER_WIDGET_FEATURE_H_

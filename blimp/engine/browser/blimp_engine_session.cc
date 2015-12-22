@@ -4,10 +4,8 @@
 
 #include "blimp/engine/browser/blimp_engine_session.h"
 
-#include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "blimp/common/create_blimp_message.h"
-#include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
 #include "blimp/engine/ui/blimp_layout_manager.h"
@@ -50,9 +48,6 @@ const float kDefaultScaleFactor = 1.f;
 const int kDefaultDisplayWidth = 800;
 const int kDefaultDisplayHeight = 600;
 const uint16_t kDefaultPortNumber = 25467;
-
-base::LazyInstance<blimp::NullBlimpMessageProcessor> g_blimp_message_processor =
-    LAZY_INSTANCE_INITIALIZER;
 
 // Focus rules that support activating an child window.
 class FocusRulesImpl : public wm::BaseFocusRules {
@@ -122,18 +117,15 @@ BlimpEngineSession::BlimpEngineSession(
     net::NetLog* net_log)
     : browser_context_(std::move(browser_context)),
       screen_(new BlimpScreen),
-      // TODO(dtrainor, haibinlu): Properly pull these from the BlimpMessageMux.
-      render_widget_processor_(g_blimp_message_processor.Pointer(),
-                               g_blimp_message_processor.Pointer()),
       net_components_(new BlimpNetworkComponents(net_log)) {
   screen_->UpdateDisplayScaleAndSize(kDefaultScaleFactor,
                                      gfx::Size(kDefaultDisplayWidth,
                                                kDefaultDisplayHeight));
-  render_widget_processor_.SetDelegate(kDummyTabId, this);
+  render_widget_feature_.SetDelegate(kDummyTabId, this);
 }
 
 BlimpEngineSession::~BlimpEngineSession() {
-  render_widget_processor_.RemoveDelegate(kDummyTabId);
+  render_widget_feature_.RemoveDelegate(kDummyTabId);
 
   // Safely delete network components on the IO thread.
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
@@ -174,6 +166,31 @@ void BlimpEngineSession::Initialize() {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&BlimpNetworkComponents::Initialize,
                  base::Unretained(net_components_.get())));
+
+  // Registers features.
+  // TODO(kmarshall) Refactor this using
+  //  1. Get outgoing message processors for blimp message types of a feature.
+  //  2. Create a feature with these outgoing message processors.
+  //  3. Register the feature as the incoming message processor for these
+  //     blimp message types.
+  tab_control_message_sender_ =
+      RegisterFeature(BlimpMessage::TAB_CONTROL, this);
+  navigation_message_sender_ = RegisterFeature(BlimpMessage::NAVIGATION, this);
+
+  render_widget_feature_.set_render_widget_message_sender(
+      RegisterFeature(BlimpMessage::RENDER_WIDGET, &render_widget_feature_));
+  render_widget_feature_.set_input_message_sender(
+      RegisterFeature(BlimpMessage::INPUT, &render_widget_feature_));
+  render_widget_feature_.set_compositor_message_sender(
+      RegisterFeature(BlimpMessage::COMPOSITOR, &render_widget_feature_));
+}
+
+scoped_ptr<BlimpMessageProcessor> BlimpEngineSession::RegisterFeature(
+    BlimpMessage::Type type,
+    BlimpMessageProcessor* incoming_processor) {
+  // TODO(haibinlu): implement this once thread hopping message processing is
+  // done.
+  return make_scoped_ptr(new NullBlimpMessageProcessor);
 }
 
 void BlimpEngineSession::CreateWebContents(const int target_tab_id) {
@@ -366,7 +383,7 @@ void BlimpEngineSession::ActivateContents(content::WebContents* contents) {
 
 void BlimpEngineSession::ForwardCompositorProto(
     const std::vector<uint8_t>& proto) {
-  render_widget_processor_.SendCompositorMessage(kDummyTabId, proto);
+  render_widget_feature_.SendCompositorMessage(kDummyTabId, proto);
 }
 
 void BlimpEngineSession::NavigationStateChanged(
@@ -396,16 +413,14 @@ void BlimpEngineSession::NavigationStateChanged(
   if (changed_flags & content::InvalidateTypes::INVALIDATE_TYPE_LOAD)
     details->set_loading(source->IsLoading());
 
-  // TODO(dtrainor, haibinlu): Send to the right BlimpMessageProcessor.
-  g_blimp_message_processor.Pointer()->ProcessMessage(
-      std::move(message),
-      net::CompletionCallback());
+  navigation_message_sender_->ProcessMessage(std::move(message),
+                                             net::CompletionCallback());
 }
 
 void BlimpEngineSession::RenderViewHostChanged(
     content::RenderViewHost* old_host,
     content::RenderViewHost* new_host) {
-  render_widget_processor_.OnRenderWidgetInitialized(kDummyTabId);
+  render_widget_feature_.OnRenderWidgetInitialized(kDummyTabId);
 }
 
 void BlimpEngineSession::PlatformSetContents(

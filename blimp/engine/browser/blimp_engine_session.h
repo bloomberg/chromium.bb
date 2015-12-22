@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "blimp/engine/browser/engine_render_widget_message_processor.h"
+#include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/engine/browser/engine_render_widget_feature.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -62,7 +63,7 @@ class BlimpEngineSession
     : public BlimpMessageProcessor,
       public content::WebContentsDelegate,
       public content::WebContentsObserver,
-      public EngineRenderWidgetMessageProcessor::RenderWidgetMessageDelegate {
+      public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
  public:
   explicit BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context,
                               net::NetLog* net_log);
@@ -76,11 +77,18 @@ class BlimpEngineSession
   BlimpBrowserContext* browser_context() { return browser_context_.get(); }
 
   // BlimpMessageProcessor implementation.
-  // TODO(haibinlu): Delete this and move to BlimpMessageDemultiplexer.
+  // This object handles incoming TAB_CONTROL and NAVIGATION messages.
   void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:
+  // Registers a message processor which will receive all messages of the |type|
+  // specified.  Returns a BlimpMessageProcessor object for sending messages of
+  // type |type|.
+  scoped_ptr<BlimpMessageProcessor> RegisterFeature(
+      BlimpMessage::Type type,
+      BlimpMessageProcessor* incoming_processor);
+
   // TabControlMessage handler methods.
   // Creates a new WebContents, which will be indexed by |target_tab_id|.
   void CreateWebContents(const int target_tab_id);
@@ -147,15 +155,19 @@ class BlimpEngineSession
   // Only one web_contents is supported for blimp 0.5
   scoped_ptr<content::WebContents> web_contents_;
 
-  // The bridge to the network layer that does the RenderWidget proto/id work.
-  // TODO(dtrainor, haibinlu): Move this to a higher level once we start dealing
-  // with multiple tabs.
-  EngineRenderWidgetMessageProcessor render_widget_processor_;
-
   // Container for connection manager, authentication handler, and
   // browser connection handler. The components run on the I/O thread, and
   // this object is destroyed there.
   scoped_ptr<BlimpNetworkComponents> net_components_;
+
+  // Handles all incoming and outgoing messages related to RenderWidget,
+  // including INPUT, COMPOSITOR and RENDER_WIDGET messages.
+  // TODO(dtrainor, haibinlu): Move this to a higher level once we start dealing
+  // with multiple tabs.
+  EngineRenderWidgetFeature render_widget_feature_;
+
+  scoped_ptr<BlimpMessageProcessor> tab_control_message_sender_;
+  scoped_ptr<BlimpMessageProcessor> navigation_message_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpEngineSession);
 };

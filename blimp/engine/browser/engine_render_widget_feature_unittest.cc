@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/engine/browser/engine_render_widget_message_processor.h"
+#include "blimp/engine/browser/engine_render_widget_feature.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,9 +27,9 @@ namespace blimp {
 namespace {
 
 class MockHostRenderWidgetMessageDelegate
-    : public EngineRenderWidgetMessageProcessor::RenderWidgetMessageDelegate {
+    : public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
  public:
-  // EngineRenderWidgetMessageProcessor implementation.
+  // EngineRenderWidgetFeature implementation.
   void OnWebInputEvent(scoped_ptr<blink::WebInputEvent> event) override {
     MockableOnWebInputEvent();
   }
@@ -100,27 +100,30 @@ void SendCompositorMessage(BlimpMessageProcessor* processor,
 
 }  // namespace
 
-class EngineRenderWidgetMessageProcessorTest : public testing::Test {
+class EngineRenderWidgetFeatureTest : public testing::Test {
  public:
-  EngineRenderWidgetMessageProcessorTest()
-      : processor_(&out_processor_, &out_processor_) {}
+  EngineRenderWidgetFeatureTest() {}
 
   void SetUp() override {
-    processor_.SetDelegate(1, &delegate1_);
-    processor_.SetDelegate(2, &delegate2_);
+    render_widget_message_sender_ = new MockBlimpMessageProcessor;
+    feature_.set_render_widget_message_sender(
+        make_scoped_ptr(render_widget_message_sender_));
+    feature_.SetDelegate(1, &delegate1_);
+    feature_.SetDelegate(2, &delegate2_);
   }
 
  protected:
-  MockBlimpMessageProcessor out_processor_;
+  MockBlimpMessageProcessor* render_widget_message_sender_;
   MockHostRenderWidgetMessageDelegate delegate1_;
   MockHostRenderWidgetMessageDelegate delegate2_;
-  EngineRenderWidgetMessageProcessor processor_;
+  EngineRenderWidgetFeature feature_;
 };
 
-TEST_F(EngineRenderWidgetMessageProcessorTest, DelegateCallsOK) {
+TEST_F(EngineRenderWidgetFeatureTest, DelegateCallsOK) {
   std::vector<uint8_t> payload = { 'd', 'a', 'v', 'i', 'd' };
 
-  EXPECT_CALL(out_processor_, MockableProcessMessage(_, _)).Times(2);
+  EXPECT_CALL(*render_widget_message_sender_, MockableProcessMessage(_, _))
+      .Times(2);
   EXPECT_CALL(delegate1_,
               MockableOnCompositorMessageReceived(CompMsgEquals(payload)))
       .Times(1);
@@ -130,68 +133,67 @@ TEST_F(EngineRenderWidgetMessageProcessorTest, DelegateCallsOK) {
       .Times(1);
   EXPECT_CALL(delegate2_, MockableOnWebInputEvent()).Times(0);
 
-  processor_.OnRenderWidgetInitialized(1);
-  processor_.OnRenderWidgetInitialized(2);
-  SendCompositorMessage(&processor_, 1, 1U, payload);
-  SendInputMessage(&processor_, 1, 1U);
-  SendCompositorMessage(&processor_, 2, 1U, payload);
+  feature_.OnRenderWidgetInitialized(1);
+  feature_.OnRenderWidgetInitialized(2);
+  SendCompositorMessage(&feature_, 1, 1U, payload);
+  SendInputMessage(&feature_, 1, 1U);
+  SendCompositorMessage(&feature_, 2, 1U, payload);
 }
 
-TEST_F(EngineRenderWidgetMessageProcessorTest, DropsStaleMessages) {
+TEST_F(EngineRenderWidgetFeatureTest, DropsStaleMessages) {
   InSequence sequence;
   std::vector<uint8_t> payload = { 'f', 'u', 'n' };
   std::vector<uint8_t> new_payload = {'n', 'o', ' ', 'f', 'u', 'n'};
 
-  EXPECT_CALL(out_processor_,
+  EXPECT_CALL(*render_widget_message_sender_,
               MockableProcessMessage(BlimpRWMsgEquals(1, 1U), _));
   EXPECT_CALL(delegate1_,
               MockableOnCompositorMessageReceived(CompMsgEquals(payload)));
-  EXPECT_CALL(out_processor_,
+  EXPECT_CALL(*render_widget_message_sender_,
               MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _));
   EXPECT_CALL(delegate1_,
               MockableOnCompositorMessageReceived(CompMsgEquals(new_payload)));
   EXPECT_CALL(delegate1_, MockableOnWebInputEvent());
 
-  processor_.OnRenderWidgetInitialized(1);
-  SendCompositorMessage(&processor_, 1, 1U, payload);
-  processor_.OnRenderWidgetInitialized(1);
+  feature_.OnRenderWidgetInitialized(1);
+  SendCompositorMessage(&feature_, 1, 1U, payload);
+  feature_.OnRenderWidgetInitialized(1);
 
   // These next three calls should be dropped.
-  SendCompositorMessage(&processor_, 1, 1U, payload);
-  SendCompositorMessage(&processor_, 1, 1U, payload);
-  SendInputMessage(&processor_, 1, 1U);
+  SendCompositorMessage(&feature_, 1, 1U, payload);
+  SendCompositorMessage(&feature_, 1, 1U, payload);
+  SendInputMessage(&feature_, 1, 1U);
 
-  SendCompositorMessage(&processor_, 1, 2U, new_payload);
-  SendInputMessage(&processor_, 1, 2U);
+  SendCompositorMessage(&feature_, 1, 2U, new_payload);
+  SendInputMessage(&feature_, 1, 2U);
 }
 
-TEST_F(EngineRenderWidgetMessageProcessorTest,
-       RepliesHaveCorrectRenderWidgetId) {
+TEST_F(EngineRenderWidgetFeatureTest, RepliesHaveCorrectRenderWidgetId) {
   Sequence delegate1_sequence;
   Sequence delegate2_sequence;
   std::vector<uint8_t> payload = { 'a', 'b', 'c', 'd' };
 
-  EXPECT_CALL(out_processor_,
+  EXPECT_CALL(*render_widget_message_sender_,
               MockableProcessMessage(BlimpRWMsgEquals(1, 1U), _))
       .InSequence(delegate1_sequence);
-  EXPECT_CALL(out_processor_,
+  EXPECT_CALL(*render_widget_message_sender_,
               MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _))
       .InSequence(delegate1_sequence);
-  EXPECT_CALL(out_processor_,
+  EXPECT_CALL(*render_widget_message_sender_,
               MockableProcessMessage(BlimpCompMsgEquals(1, 2U, payload), _))
       .InSequence(delegate1_sequence);
-  EXPECT_CALL(out_processor_,
+  EXPECT_CALL(*render_widget_message_sender_,
               MockableProcessMessage(BlimpRWMsgEquals(2, 1U), _))
       .InSequence(delegate2_sequence);
-  EXPECT_CALL(out_processor_,
+  EXPECT_CALL(*render_widget_message_sender_,
               MockableProcessMessage(BlimpRWMsgEquals(2, 2U), _))
       .InSequence(delegate2_sequence);
 
-  processor_.OnRenderWidgetInitialized(1);
-  processor_.OnRenderWidgetInitialized(2);
-  processor_.OnRenderWidgetInitialized(1);
-  processor_.OnRenderWidgetInitialized(2);
-  processor_.SendCompositorMessage(1, payload);
+  feature_.OnRenderWidgetInitialized(1);
+  feature_.OnRenderWidgetInitialized(2);
+  feature_.OnRenderWidgetInitialized(1);
+  feature_.OnRenderWidgetInitialized(2);
+  feature_.SendCompositorMessage(1, payload);
 }
 
 

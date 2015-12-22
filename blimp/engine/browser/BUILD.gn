@@ -18,8 +18,8 @@ source_set("browser") {
     "blimp_permission_manager.h",
     "blimp_url_request_context_getter.cc",
     "blimp_url_request_context_getter.h",
-    "engine_render_widget_message_processor.cc",
-    "engine_render_widget_message_processor.h",
+    "engine_render_widget_feature.cc",
+    "engine_render_widget_feature.h",
   ]
 
   deps = [
@@ -44,7 +44,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "engine_render_widget_message_processor_unittest.cc",
+    "engine_render_widget_feature_unittest.cc",
   ]
 
   deps = [

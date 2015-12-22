@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/engine/browser/engine_render_widget_message_processor.h"
+#include "blimp/engine/browser/engine_render_widget_feature.h"
 
 #include "base/numerics/safe_conversions.h"
 #include "blimp/common/create_blimp_message.h"
@@ -15,22 +15,29 @@
 
 namespace blimp {
 
-EngineRenderWidgetMessageProcessor::EngineRenderWidgetMessageProcessor(
-    BlimpMessageProcessor* render_widget_message_processor,
-    BlimpMessageProcessor* compositor_message_processor)
-    : render_widget_message_processor_(render_widget_message_processor),
-      compositor_message_processor_(compositor_message_processor) {
-  // TODO(dtrainor): Register as a BlimpMessageProcessor for
-  // BlimpMessage::INPUT and BlimpMessage::COMPOSITOR messages.
+EngineRenderWidgetFeature::EngineRenderWidgetFeature() {}
+
+EngineRenderWidgetFeature::~EngineRenderWidgetFeature() {}
+
+void EngineRenderWidgetFeature::set_render_widget_message_sender(
+    scoped_ptr<BlimpMessageProcessor> message_processor) {
+  DCHECK(message_processor);
+  render_widget_message_sender_ = std::move(message_processor);
 }
 
-EngineRenderWidgetMessageProcessor::~EngineRenderWidgetMessageProcessor() {
-  // TODO(dtrainor): Unregister as a BlimpMessageProcessor for
-  // BlimpMessage::INPUT and BlimpMessage::COMPOSITOR messages.
+void EngineRenderWidgetFeature::set_input_message_sender(
+    scoped_ptr<BlimpMessageProcessor> message_processor) {
+  DCHECK(message_processor);
+  input_message_sender_ = std::move(message_processor);
 }
 
-void EngineRenderWidgetMessageProcessor::OnRenderWidgetInitialized(
-    const int tab_id) {
+void EngineRenderWidgetFeature::set_compositor_message_sender(
+    scoped_ptr<BlimpMessageProcessor> message_processor) {
+  DCHECK(message_processor);
+  compositor_message_sender_ = std::move(message_processor);
+}
+
+void EngineRenderWidgetFeature::OnRenderWidgetInitialized(const int tab_id) {
   render_widget_ids_[tab_id] = GetRenderWidgetId(tab_id) + 1;
 
   RenderWidgetMessage* render_widget_message;
@@ -39,11 +46,11 @@ void EngineRenderWidgetMessageProcessor::OnRenderWidgetInitialized(
   render_widget_message->set_type(RenderWidgetMessage::INITIALIZE);
   render_widget_message->set_render_widget_id(GetRenderWidgetId(tab_id));
 
-  render_widget_message_processor_->ProcessMessage(std::move(blimp_message),
-                                                   net::CompletionCallback());
+  render_widget_message_sender_->ProcessMessage(std::move(blimp_message),
+                                                net::CompletionCallback());
 }
 
-void EngineRenderWidgetMessageProcessor::SendCompositorMessage(
+void EngineRenderWidgetFeature::SendCompositorMessage(
     const int tab_id,
     const std::vector<uint8_t>& message) {
   CompositorMessage* compositor_message;
@@ -58,26 +65,28 @@ void EngineRenderWidgetMessageProcessor::SendCompositorMessage(
   compositor_message->set_payload(message.data(),
                                   base::checked_cast<int>(message.size()));
 
-  render_widget_message_processor_->ProcessMessage(std::move(blimp_message),
-                                                   net::CompletionCallback());
+  render_widget_message_sender_->ProcessMessage(std::move(blimp_message),
+                                                net::CompletionCallback());
 }
 
-void EngineRenderWidgetMessageProcessor::SetDelegate(
-    const int tab_id, RenderWidgetMessageDelegate* delegate) {
+void EngineRenderWidgetFeature::SetDelegate(
+    const int tab_id,
+    RenderWidgetMessageDelegate* delegate) {
   DCHECK(!FindDelegate(tab_id));
   delegates_[tab_id] = delegate;
 }
 
-void EngineRenderWidgetMessageProcessor::RemoveDelegate(const int tab_id) {
+void EngineRenderWidgetFeature::RemoveDelegate(const int tab_id) {
   DelegateMap::iterator it = delegates_.find(tab_id);
   if (it != delegates_.end())
     delegates_.erase(it);
 }
 
-void EngineRenderWidgetMessageProcessor::ProcessMessage(
+void EngineRenderWidgetFeature::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
-  DCHECK(message->type() == BlimpMessage::INPUT ||
+  DCHECK(message->type() == BlimpMessage::RENDER_WIDGET ||
+         message->type() == BlimpMessage::INPUT ||
          message->type() == BlimpMessage::COMPOSITOR);
 
   int target_tab_id = message->target_tab_id();
@@ -114,17 +123,15 @@ void EngineRenderWidgetMessageProcessor::ProcessMessage(
   }
 }
 
-EngineRenderWidgetMessageProcessor::RenderWidgetMessageDelegate*
-EngineRenderWidgetMessageProcessor::FindDelegate(
-    const int tab_id) {
+EngineRenderWidgetFeature::RenderWidgetMessageDelegate*
+EngineRenderWidgetFeature::FindDelegate(const int tab_id) {
   DelegateMap::const_iterator it = delegates_.find(tab_id);
   if (it != delegates_.end())
     return it->second;
   return nullptr;
 }
 
-uint32_t EngineRenderWidgetMessageProcessor::GetRenderWidgetId(
-    const int tab_id) {
+uint32_t EngineRenderWidgetFeature::GetRenderWidgetId(const int tab_id) {
   RenderWidgetIdMap::const_iterator it = render_widget_ids_.find(tab_id);
   if (it != render_widget_ids_.end())
     return it->second;
