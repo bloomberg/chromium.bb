@@ -5,13 +5,16 @@
 #ifndef IOS_CHROME_BROWSER_IOS_CHROME_IO_THREAD_H_
 #define IOS_CHROME_BROWSER_IOS_CHROME_IO_THREAD_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -128,8 +131,8 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
     scoped_refptr<net::CookieStore> system_cookie_store;
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     scoped_ptr<net::NetworkQualityEstimator> network_quality_estimator;
-    uint16 testing_fixed_http_port;
-    uint16 testing_fixed_https_port;
+    uint16_t testing_fixed_http_port;
+    uint16_t testing_fixed_https_port;
     Optional<bool> enable_tcp_fast_open_for_ssl;
 
     Optional<size_t> initial_max_spdy_concurrent_streams;

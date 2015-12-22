@@ -5,6 +5,7 @@
 #include "ios/net/cookies/system_cookie_util.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"

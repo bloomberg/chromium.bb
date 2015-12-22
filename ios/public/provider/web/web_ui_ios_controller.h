@@ -5,7 +5,6 @@
 #ifndef IOS_PUBLIC_PROVIDER_WEB_WEB_UI_IOS_CONTROLLER_H_
 #define IOS_PUBLIC_PROVIDER_WEB_WEB_UI_IOS_CONTROLLER_H_
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 
 class GURL;

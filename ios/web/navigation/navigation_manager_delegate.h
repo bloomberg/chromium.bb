@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_NAVIGATION_NAVIGATION_MANAGER_DELEGATE_H_
 #define IOS_WEB_NAVIGATION_NAVIGATION_MANAGER_DELEGATE_H_
 
+#include <stddef.h>
+
 namespace web {
 
 struct LoadCommittedDetails;

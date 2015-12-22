@@ -5,6 +5,7 @@
 #include "ios/net/cookies/cookie_creation_time_manager.h"
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include "base/ios/ios_util.h"
 #include "base/time/time.h"
@@ -45,7 +46,7 @@ TEST_F(CookieCreationTimeManagerTest, GetFromSystemCookie) {
   base::Time time = creation_time_manager_.GetCreationTime(cookie);
   base::Time now = base::Time::Now();
   ASSERT_FALSE(time.is_null());
-  int64 delta = (now - time).InMilliseconds();
+  int64_t delta = (now - time).InMilliseconds();
   // On iOS 8, the range is (0, 1000) ms, but on earlier iOS versions the range
   // is (-500, 500) ms. The intervals tested are actually 1200 ms to allow some
   // imprecision.
@@ -99,7 +100,7 @@ TEST_F(CookieCreationTimeManagerTest, MakeUniqueCreationTime) {
 
 TEST_F(CookieCreationTimeManagerTest, MakeUniqueCreationTimeConflicts) {
   base::Time creation_time = base::Time::Now();
-  int64 time_internal_value = creation_time.ToInternalValue();
+  int64_t time_internal_value = creation_time.ToInternalValue();
   // Insert two cookies with consecutive times.
   creation_time_manager_.SetCreationTime(GetCookie(@"A=B"), creation_time);
   creation_time_manager_.SetCreationTime(

@@ -5,8 +5,8 @@
 #ifndef IOS_WEB_SHELL_SHELL_NETWORK_DELEGATE_H_
 #define IOS_WEB_SHELL_SHELL_NETWORK_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/base/network_delegate_impl.h"
 
 namespace web {

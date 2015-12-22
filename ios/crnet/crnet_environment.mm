@@ -16,6 +16,7 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
+#include "base/macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"

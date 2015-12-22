@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/passwords/password_controller.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>

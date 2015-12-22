@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 
+#include <stdint.h>
+
 #include "base/prefs/pref_service.h"
 #include "ios/chrome/browser/application_context.h"
 

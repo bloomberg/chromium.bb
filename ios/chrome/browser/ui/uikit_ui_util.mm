@@ -7,6 +7,8 @@
 #import <Accelerate/Accelerate.h>
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
+#include <stddef.h>
+#include <stdint.h>
 #import <UIKit/UIKit.h>
 #include <cmath>
 

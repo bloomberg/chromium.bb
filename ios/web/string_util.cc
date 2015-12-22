@@ -4,6 +4,8 @@
 
 #include "ios/web/public/string_util.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 
 namespace web {

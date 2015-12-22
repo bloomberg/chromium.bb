@@ -6,6 +6,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_block.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"

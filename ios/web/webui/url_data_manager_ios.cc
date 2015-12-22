@@ -4,6 +4,8 @@
 
 #include "ios/web/webui/url_data_manager_ios.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"

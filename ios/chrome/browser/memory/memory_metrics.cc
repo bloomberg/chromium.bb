@@ -5,10 +5,13 @@
 #include "ios/chrome/browser/memory/memory_metrics.h"
 
 #include <mach/mach.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
+#include "build/build_config.h"
 
 #ifdef ARCH_CPU_64_BITS
 #define cr_vm_region vm_region_64
@@ -27,7 +30,7 @@ const uint64_t kVMPageSize = 4096;
 
 namespace memory_util {
 
-uint64 GetFreePhysicalBytes() {
+uint64_t GetFreePhysicalBytes() {
   vm_statistics_data_t vmstat;
   mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
   kern_return_t result =
@@ -40,14 +43,14 @@ uint64 GetFreePhysicalBytes() {
   return vmstat.free_count * kVMPageSize;
 }
 
-uint64 GetRealMemoryUsedInBytes() {
+uint64_t GetRealMemoryUsedInBytes() {
   base::ProcessHandle process_handle = base::GetCurrentProcessHandle();
   scoped_ptr<base::ProcessMetrics> process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(process_handle));
-  return static_cast<uint64>(process_metrics->GetWorkingSetSize());
+  return static_cast<uint64_t>(process_metrics->GetWorkingSetSize());
 }
 
-uint64 GetDirtyVMBytes() {
+uint64_t GetDirtyVMBytes() {
   // Iterate over all VM regions and sum their dirty pages.
   unsigned int total_dirty_pages = 0;
   vm_size_t vm_size = 0;
@@ -72,7 +75,7 @@ uint64 GetDirtyVMBytes() {
   return total_dirty_pages * kVMPageSize;
 }
 
-uint64 GetInternalVMBytes() {
+uint64_t GetInternalVMBytes() {
   task_vm_info_data_t task_vm_info;
   mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
   kern_return_t result =
@@ -83,7 +86,7 @@ uint64 GetInternalVMBytes() {
     return 0;
   }
 
-  return static_cast<uint64>(task_vm_info.internal);
+  return static_cast<uint64_t>(task_vm_info.internal);
 }
 
 }  // namespace memory_util

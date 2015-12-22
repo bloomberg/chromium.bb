@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -13,6 +15,7 @@
 #include "base/debug/leak_tracker.h"
 #include "base/environment.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"

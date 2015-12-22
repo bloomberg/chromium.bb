@@ -4,6 +4,8 @@
 
 #import "ios/web/navigation/crw_session_entry.h"
 
+#include <stdint.h>
+
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -115,7 +117,7 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
     }
 
     if ([aDecoder containsValueForKey:web::kSessionEntryTimestampKey]) {
-      int64 us = [aDecoder decodeInt64ForKey:web::kSessionEntryTimestampKey];
+      int64_t us = [aDecoder decodeInt64ForKey:web::kSessionEntryTimestampKey];
       _navigationItem->SetTimestamp(base::Time::FromInternalValue(us));
     }
 

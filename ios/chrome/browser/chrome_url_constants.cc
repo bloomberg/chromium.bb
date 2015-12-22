@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/chrome_url_constants.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
 
 const char kChromeUIScheme[] = "chrome";

@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_TEST_TEST_WEB_STATE_H_
 #define IOS_WEB_PUBLIC_TEST_TEST_WEB_STATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/strings/string16.h"

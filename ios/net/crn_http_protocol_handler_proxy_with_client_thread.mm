@@ -4,6 +4,8 @@
 
 #import "ios/net/crn_http_protocol_handler_proxy_with_client_thread.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"

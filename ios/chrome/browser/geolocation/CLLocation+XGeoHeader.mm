@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/geolocation/CLLocation+XGeoHeader.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #import "third_party/google_toolbox_for_mac/src/Foundation/GTMStringEncoding.h"
 
 NSString* const kGMOLocationDescriptorFormat =
@@ -33,11 +34,11 @@ NSString* const kGMOLocationDescriptorFormat =
 
 // Returns the timestamp of this location in microseconds since the UNIX epoch.
 // Returns 0 if the timestamp is unavailable or invalid.
-- (int64)cr_timestampInMicroseconds {
+- (int64_t)cr_timestampInMicroseconds {
   NSTimeInterval seconds = [self.timestamp timeIntervalSince1970];
   if (seconds > 0) {
-    const int64 kSecondsToMicroseconds = 1000000;
-    return (int64)(seconds * kSecondsToMicroseconds);
+    const int64_t kSecondsToMicroseconds = 1000000;
+    return (int64_t)(seconds * kSecondsToMicroseconds);
   }
   return 0;
 }

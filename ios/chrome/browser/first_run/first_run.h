@@ -7,7 +7,7 @@
 #ifndef IOS_CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 #define IOS_CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 class FilePath;

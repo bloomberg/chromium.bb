@@ -4,6 +4,8 @@
 
 #import "ios/web/shell/view_controller.h"
 
+#include <stdint.h>
+
 #include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"

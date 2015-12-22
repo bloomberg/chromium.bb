@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/i18n/case_conversion.h"

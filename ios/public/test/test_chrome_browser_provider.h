@@ -5,6 +5,7 @@
 #ifndef IOS_PUBLIC_TEST_TEST_CHROME_BROWSER_PROVIDER_H_
 #define IOS_PUBLIC_TEST_TEST_CHROME_BROWSER_PROVIDER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 

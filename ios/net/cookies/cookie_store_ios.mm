@@ -5,6 +5,7 @@
 #include "ios/net/cookies/cookie_store_ios.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -14,6 +15,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/observer_list.h"

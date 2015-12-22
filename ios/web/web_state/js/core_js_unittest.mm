@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "ios/web/public/test/web_test_util.h"
 #import "ios/web/test/web_test.h"

@@ -5,6 +5,7 @@
 #include "ios/chrome/app/safe_mode_util.h"
 
 #include <mach-o/dyld.h>
+#include <stdint.h>
 
 namespace safe_mode_util {
 

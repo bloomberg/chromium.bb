@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/net/cookie_util.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 #include <sys/sysctl.h>
 
 #include "base/logging.h"

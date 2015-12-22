@@ -5,10 +5,12 @@
 #ifndef IOS_WEB_NAVIGATION_NAVIGATION_MANAGER_IMPL_H_
 #define IOS_WEB_NAVIGATION_NAVIGATION_MANAGER_IMPL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"

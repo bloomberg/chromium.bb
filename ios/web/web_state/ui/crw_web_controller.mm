@@ -5,6 +5,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
 #import <objc/runtime.h>
+#include <stddef.h>
 #include <cmath>
 
 #include "base/ios/block_types.h"

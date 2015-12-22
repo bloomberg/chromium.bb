@@ -4,6 +4,7 @@
 
 #include "ios/web/public/referrer_util.h"
 
+#include "base/macros.h"
 #include "ios/web/public/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

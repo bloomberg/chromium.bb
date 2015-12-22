@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "ios/web/public/cert_policy.h"
 #include "net/cert/x509_certificate.h"
 

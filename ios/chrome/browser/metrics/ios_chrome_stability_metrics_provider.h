@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_METRICS_CHROME_STABILITY_METRICS_PROVIDER_H_
 #define IOS_CHROME_BROWSER_METRICS_CHROME_STABILITY_METRICS_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/stability_metrics_helper.h"

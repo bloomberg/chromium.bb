@@ -11,6 +11,7 @@
 
 #include "base/format_macros.h"
 #include "base/i18n/number_formatting.h"
+#include "base/macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/gaia/google_service_auth_error.h"

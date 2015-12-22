@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_APP_WEB_MAIN_LOOP_H_
 #define IOS_WEB_APP_WEB_MAIN_LOOP_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/crash_report/crash_keys.h"
 
+#include <stddef.h>
+
 #include "base/debug/crash_logging.h"
 #include "base/macros.h"
 #include "components/crash/core/common/crash_keys.h"

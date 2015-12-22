@@ -6,10 +6,13 @@
 
 #import <UIKit/UIKit.h>
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 #include <string>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -23,8 +26,8 @@ struct UAVersions {
 };
 
 struct OSVersionMap {
-  int32 major_os_version;
-  int32 minor_os_version;
+  int32_t major_os_version;
+  int32_t minor_os_version;
   UAVersions ua_versions;
 };
 
@@ -39,9 +42,9 @@ const UAVersions& GetUAVersionsForCurrentOS() {
       {7, 0, {"9537.53", "537.51.1"}},
   };
 
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
+  int32_t os_major_version = 0;
+  int32_t os_minor_version = 0;
+  int32_t os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                &os_minor_version,
                                                &os_bugfix_version);
@@ -63,9 +66,9 @@ const UAVersions& GetUAVersionsForCurrentOS() {
 namespace web {
 
 std::string BuildOSCpuInfo() {
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
+  int32_t os_major_version = 0;
+  int32_t os_minor_version = 0;
+  int32_t os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                &os_minor_version,
                                                &os_bugfix_version);

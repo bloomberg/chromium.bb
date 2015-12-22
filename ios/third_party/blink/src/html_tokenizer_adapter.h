@@ -5,8 +5,11 @@
 #ifndef IOS_THIRD_PARTY_BLINK_SRC_TOKENIZER_ADAPTER_H_
 #define IOS_THIRD_PARTY_BLINK_SRC_TOKENIZER_ADAPTER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 
 #define ALWAYS_INLINE inline __attribute__((always_inline))
 
@@ -23,8 +26,8 @@
 #define notImplemented()
 
 namespace WebCore {
-typedef uint16 UChar;
-typedef uint8 LChar;
+typedef uint16_t UChar;
+typedef uint8_t LChar;
 
 template <typename CharType>
 inline bool isASCIIUpper(CharType c) {

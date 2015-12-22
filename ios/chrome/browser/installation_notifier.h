@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_INSTALLATION_NOTIFIER_H_
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 class GURL;
 

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/signin/signin_client_impl.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"

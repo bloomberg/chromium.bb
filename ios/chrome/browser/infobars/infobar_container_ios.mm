@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"

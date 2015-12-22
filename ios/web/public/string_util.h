@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_STRING_UTIL_H_
 #define IOS_WEB_PUBLIC_STRING_UTIL_H_
 
+#include <stddef.h>
+
 #include "base/strings/string16.h"
 
 namespace web {

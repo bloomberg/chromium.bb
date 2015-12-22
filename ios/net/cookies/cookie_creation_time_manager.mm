@@ -5,6 +5,7 @@
 #include "ios/net/cookies/cookie_creation_time_manager.h"
 
 #include <Foundation/Foundation.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"

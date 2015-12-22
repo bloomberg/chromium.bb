@@ -6,6 +6,7 @@
 #define IOS_WEB_NAVIGATION_CRW_SESSION_ENTRY_H_
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"

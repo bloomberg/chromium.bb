@@ -6,6 +6,7 @@
 #define IOS_WEB_NET_COOKIE_NOTIFICATION_BRIDGE_H_
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 
 @class NSNotification;

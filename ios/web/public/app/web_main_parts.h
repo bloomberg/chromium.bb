@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_PUBLIC_APP_WEB_MAIN_PARTS_H_
 #define IOS_WEB_PUBLIC_APP_WEB_MAIN_PARTS_H_
 
-#include "base/basictypes.h"
 
 namespace web {
 

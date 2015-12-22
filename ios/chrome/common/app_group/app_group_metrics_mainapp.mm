@@ -4,6 +4,8 @@
 
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
@@ -39,8 +41,8 @@ void ProcessPendingLogs(
 
 void EnableMetrics(NSString* client_id,
                    NSString* brand_code,
-                   int64 install_date,
-                   int64 enable_metrics_date) {
+                   int64_t install_date,
+                   int64_t enable_metrics_date) {
   base::scoped_nsobject<NSUserDefaults> shared_defaults(
       [[NSUserDefaults alloc] initWithSuiteName:ApplicationGroup()]);
   [shared_defaults setObject:client_id forKey:@(kChromeAppClientID)];

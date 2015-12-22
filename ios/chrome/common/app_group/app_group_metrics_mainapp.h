@@ -6,8 +6,8 @@
 #define IOS_CHROME_COMMON_APP_GROUP_APP_GROUP_METRICS_MAINAPP_H_
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_block.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 
@@ -27,8 +27,8 @@ void ProcessPendingLogs(
 // use |clientID| as client ID, and |brandCode| as brand code in the logs.
 void EnableMetrics(NSString* client_id,
                    NSString* brand_code,
-                   int64 installDate,
-                   int64 enableMetricsDate);
+                   int64_t installDate,
+                   int64_t enableMetricsDate);
 
 // Disabled the metrics collecting in extensions.
 void DisableMetrics();

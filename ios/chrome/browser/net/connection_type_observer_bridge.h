@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_NET_CONNECTION_TYPE_OBSERVER_BRIDGE_H_
 #define IOS_CHROME_BROWSER_NET_CONNECTION_TYPE_OBSERVER_BRIDGE_H_
 
+#include "base/macros.h"
 #include "net/base/network_change_notifier.h"
 
 // Protocol mirroring net::NetworkChangeNotifier::ConnectionTypeObserver.

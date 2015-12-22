@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -165,7 +166,7 @@ TEST_F(CRWSessionEntryTest, InitWithCoderNewStyle) {
   web::NavigationItem* item = [sessionEntry_ navigationItem];
   item->SetVirtualURL(GURL("http://user.friendly"));
   item->SetTitle(base::SysNSStringToUTF16(@"Title"));
-  int64 timestamp = item->GetTimestamp().ToInternalValue();
+  int64_t timestamp = item->GetTimestamp().ToInternalValue();
 
   std::string virtualUrl = item->GetVirtualURL().spec();
   std::string referrerUrl = item->GetReferrer().url.spec();

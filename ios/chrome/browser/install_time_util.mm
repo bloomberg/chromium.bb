@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/install_time_util.h"
 
 #include <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include "base/mac/foundation_util.h"
 
@@ -31,7 +32,7 @@ namespace install_time_util {
 
 // 2 is used because 0 is a magic value for Time, and 1 was the pre-M29 value
 // which was migrated to a specific date (crbug.com/270124).
-const int64 kUnknownInstallDate = 2;
+const int64_t kUnknownInstallDate = 2;
 
 base::Time ComputeInstallationTime(bool is_first_run) {
   return ComputeInstallationTimeInternal(is_first_run,

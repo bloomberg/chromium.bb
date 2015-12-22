@@ -5,8 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_IMPL_IO_DATA_H_
 #define IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_IMPL_IO_DATA_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_store.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_io_data.h"

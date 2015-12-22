@@ -7,11 +7,14 @@
 
 #include "ios/chrome/browser/about_flags.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -223,9 +226,9 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   if ([defaults boolForKey:@"UseMobileSafariUA"]) {
     // Safari uses "Vesion/", followed by the OS version excluding bugfix, where
     // Chrome puts its product token.
-    int32 major = 0;
-    int32 minor = 0;
-    int32 bugfix = 0;
+    int32_t major = 0;
+    int32_t minor = 0;
+    int32_t bugfix = 0;
     base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
     std::string product = base::StringPrintf("Version/%d.%d", major, minor);
 

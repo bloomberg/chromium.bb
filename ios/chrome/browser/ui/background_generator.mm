@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/background_generator.h"
 
 #import <QuartzCore/QuartzCore.h>
+#include <stddef.h>
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"

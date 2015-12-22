@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/installation_notifier.h"
 
+#include <stdint.h>
 #import <UIKit/UIKit.h>
 
 #include "base/ios/weak_nsobject.h"

@@ -5,12 +5,15 @@
 #include "ios/web/net/request_tracker_impl.h"
 
 #include <pthread.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"

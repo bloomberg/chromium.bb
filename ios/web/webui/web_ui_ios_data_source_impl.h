@@ -8,9 +8,9 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "ios/web/public/url_data_source_ios.h"
 #include "ios/web/public/web_ui_ios_data_source.h"

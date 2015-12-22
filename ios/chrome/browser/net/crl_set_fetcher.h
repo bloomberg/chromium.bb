@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_NET_CRL_SET_FETCHER_H_
 #define IOS_CHROME_BROWSER_NET_CRL_SET_FETCHER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -71,7 +73,7 @@ class CRLSetFetcher : public update_client::CrxInstaller {
   void SetCRLSetIfNewer(scoped_refptr<net::CRLSet> crl_set);
 
   // RegisterComponent registers this object as a component updater.
-  void RegisterComponent(uint32 sequence_of_loaded_crl);
+  void RegisterComponent(uint32_t sequence_of_loaded_crl);
 
   // DoDeleteFromDisk runs on the FILE thread and removes the CRLSet file from
   // the disk.

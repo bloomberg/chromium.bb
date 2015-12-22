@@ -26,6 +26,8 @@
 #ifndef HTMLToken_h
 #define HTMLToken_h
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "ios/third_party/blink/src/html_tokenizer_adapter.h"

@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service.h"

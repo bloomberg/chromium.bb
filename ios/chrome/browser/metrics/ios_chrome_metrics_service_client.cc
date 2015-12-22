@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -122,7 +124,7 @@ bool IOSChromeMetricsServiceClient::IsOffTheRecordSessionActive() {
   return ::IsOffTheRecordSessionActive();
 }
 
-int32 IOSChromeMetricsServiceClient::GetProduct() {
+int32_t IOSChromeMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::CHROME;
 }
 

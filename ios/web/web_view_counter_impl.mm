@@ -4,6 +4,8 @@
 
 #import "ios/web/web_view_counter_impl.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"

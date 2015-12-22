@@ -8,6 +8,8 @@
 #ifndef IOS_CHROME_BROWSER_ABOUT_FLAGS_H_
 #define IOS_CHROME_BROWSER_ABOUT_FLAGS_H_
 
+#include <stddef.h>
+
 #include "components/flags_ui/flags_state.h"
 
 namespace base {

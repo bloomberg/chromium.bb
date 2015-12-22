@@ -5,9 +5,11 @@
 #import "ios/web/net/clients/crw_csp_network_client.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #import "ios/web/net/crw_url_verifying_protocol_handler.h"
 
 namespace {

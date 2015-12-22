@@ -4,6 +4,8 @@
 
 #import "ios/chrome/app/deferred_initialization_runner.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 

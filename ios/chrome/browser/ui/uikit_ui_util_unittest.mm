@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/ui_util.h"

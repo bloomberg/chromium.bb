@@ -4,6 +4,7 @@
 
 #import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
 
+#include <stddef.h>
 #import <WebKit/WebKit.h>
 
 #include "base/containers/mru_cache.h"

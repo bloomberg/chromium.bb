@@ -4,6 +4,8 @@
 
 #import "ios/web/navigation/crw_session_controller.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

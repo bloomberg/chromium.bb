@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_NET_CERT_STORE_IMPL_H_
 #define IOS_WEB_NET_CERT_STORE_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ios/web/net/request_tracker_data_memoizing_store.h"
 #include "ios/web/public/cert_store.h"

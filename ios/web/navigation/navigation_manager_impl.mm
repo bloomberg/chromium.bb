@@ -4,6 +4,8 @@
 
 #include "ios/web/navigation/navigation_manager_impl.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"

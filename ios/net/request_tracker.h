@@ -6,6 +6,7 @@
 #define IOS_NET_REQUEST_TRACKER_H_
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include "base/callback_forward.h"
 #include "base/mac/scoped_nsobject.h"

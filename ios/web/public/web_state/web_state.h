@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

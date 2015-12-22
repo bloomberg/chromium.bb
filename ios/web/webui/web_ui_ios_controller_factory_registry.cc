@@ -4,6 +4,8 @@
 
 #include "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"

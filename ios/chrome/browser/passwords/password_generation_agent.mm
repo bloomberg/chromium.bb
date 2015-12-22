@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/passwords/password_generation_agent.h"
 
+#include <stddef.h>
+
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"

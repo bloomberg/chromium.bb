@@ -5,9 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_SYNC_SYNC_OBSERVER_BRIDGE_H_
 #define IOS_CHROME_BROWSER_SYNC_SYNC_OBSERVER_BRIDGE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/ios/weak_nsobject.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/sync_driver/sync_service_observer.h"
 

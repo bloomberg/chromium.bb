@@ -5,8 +5,8 @@
 #ifndef IOS_CHROME_TEST_IOS_CHROME_UNIT_TEST_SUITE_H_
 #define IOS_CHROME_TEST_IOS_CHROME_UNIT_TEST_SUITE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/test/test_suite.h"
 
 // Test suite for unit tests.

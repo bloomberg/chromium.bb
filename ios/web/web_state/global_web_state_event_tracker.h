@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_WEB_STATE_GLOBAL_WEB_STATE_EVENT_TRACKER_H_
 #define IOS_WEB_WEB_STATE_GLOBAL_WEB_STATE_EVENT_TRACKER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"

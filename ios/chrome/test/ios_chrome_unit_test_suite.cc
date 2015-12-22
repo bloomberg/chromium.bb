@@ -4,6 +4,7 @@
 
 #include "ios/chrome/test/ios_chrome_unit_test_suite.h"
 
+#include "base/macros.h"
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"

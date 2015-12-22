@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_WEB_STATE_UI_CRW_UI_WEB_VIEW_WEB_CONTROLLER_H_
 #define IOS_WEB_WEB_STATE_UI_CRW_UI_WEB_VIEW_WEB_CONTROLLER_H_
 
+#include <stdint.h>
 #import <UIKit/UIKit.h>
 
 #import "ios/web/web_state/crw_recurring_task_delegate.h"
@@ -13,8 +14,8 @@
 namespace web {
 
 // Continuous JavaScript check timer frequency constants (exposed for tests).
-extern const int64 kContinuousCheckIntervalMSHigh;
-extern const int64 kContinuousCheckIntervalMSLow;
+extern const int64_t kContinuousCheckIntervalMSHigh;
+extern const int64_t kContinuousCheckIntervalMSLow;
 
 }  // namespace web
 

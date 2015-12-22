@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/sync/sessions/ios_chrome_local_session_event_router.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"

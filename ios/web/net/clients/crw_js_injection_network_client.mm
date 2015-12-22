@@ -4,6 +4,9 @@
 
 #import "ios/web/net/clients/crw_js_injection_network_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
@@ -361,7 +364,7 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
   if (!dataLength)
     return;
 
-  const uint8* bytes = reinterpret_cast<const uint8*>([firstData bytes]);
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>([firstData bytes]);
 
   // Construct one data in which to send the content + injected script tag.
   base::scoped_nsobject<NSMutableData> combined([[NSMutableData alloc] init]);
@@ -461,7 +464,7 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
   // Do the same check that WebKit does for the byte order mark (BOM), which
   // must be right at the beginning of the content to be accepted.
   // Info on byte order mark: http://en.wikipedia.org/wiki/Byte_order_mark
-  const uint8* bytes = reinterpret_cast<const uint8*>([firstData bytes]);
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>([firstData bytes]);
   if (BytesEqual(bytes, 0xFF, 0xFE)) {
     bytes += 2;
 
@@ -522,7 +525,7 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
   // is not exactly clear about what, if anything, can appear before an XML
   // declaration. Can there be white space? Can there be comments? WebKit only
   // accepts XML declarations if they are right at the beginning of the content.
-  const uint8* bytes = reinterpret_cast<const uint8*>([firstData bytes]);
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>([firstData bytes]);
   if (BytesEqual(bytes, '<', '?', 'x', 'm', 'l')) {
     _contentEncoding = NSISOLatin1StringEncoding;
   } else if (BytesEqual(bytes, '<', 0, '?', 0, 'x', 0)) {
@@ -565,7 +568,7 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
   NSData* firstData = [_pendingData firstObject];
   DCHECK([firstData length] >= kMinimumBytesNeededForHTMLTag);
 
-  const uint8* bytes8 = reinterpret_cast<const uint8*>([firstData bytes]);
+  const uint8_t* bytes8 = reinterpret_cast<const uint8_t*>([firstData bytes]);
 
   WebCore::CharacterProvider provider;
   switch (_contentEncoding) {
@@ -573,8 +576,8 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
     case NSUTF16LittleEndianStringEncoding:
     case NSUTF32BigEndianStringEncoding:
     case NSUTF32LittleEndianStringEncoding: {
-      const uint16* bytes16 =
-          reinterpret_cast<const uint16*>(bytes8 + _headerLength);
+      const uint16_t* bytes16 =
+          reinterpret_cast<const uint16_t*>(bytes8 + _headerLength);
 
       provider.setContents(bytes16, [firstData length] - _headerLength);
 

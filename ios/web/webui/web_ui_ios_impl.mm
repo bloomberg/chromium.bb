@@ -4,6 +4,8 @@
 
 #include "ios/web/webui/web_ui_ios_impl.h"
 
+#include <stddef.h>
+
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

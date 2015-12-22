@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
 #define IOS_CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 

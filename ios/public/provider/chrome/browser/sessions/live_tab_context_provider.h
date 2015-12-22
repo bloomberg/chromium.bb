@@ -5,7 +5,7 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SESSIONS_LIVE_TAB_CONTEXT_PROVIDER_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SESSIONS_LIVE_TAB_CONTEXT_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace sessions {
 class LiveTab;
@@ -26,7 +26,7 @@ class LiveTabContextProvider {
       ios::ChromeBrowserState* browser_state) = 0;
 
   // Retrieves the context with the given ID, if one exists.
-  virtual sessions::LiveTabContext* FindContextWithID(int32 desired_id) = 0;
+  virtual sessions::LiveTabContext* FindContextWithID(int32_t desired_id) = 0;
 
   // Retrieves the context for the given tab, if one exists.
   virtual sessions::LiveTabContext* FindContextForTab(

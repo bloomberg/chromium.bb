@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #import <UIKit/UIWebView.h>
 
 #include "ios/web/public/test/web_test_util.h"

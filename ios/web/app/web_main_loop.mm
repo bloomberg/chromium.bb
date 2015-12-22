@@ -4,6 +4,8 @@
 
 #include "ios/web/app/web_main_loop.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"

@@ -4,9 +4,12 @@
 
 #import "ios/chrome/browser/snapshots/lru_cache.h"
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace {

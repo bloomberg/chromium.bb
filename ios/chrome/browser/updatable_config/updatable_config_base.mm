@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/updatable_config/updatable_config_base.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"

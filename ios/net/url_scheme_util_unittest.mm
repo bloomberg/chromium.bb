@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/macros.h"
 #import "testing/gtest_mac.h"
 #include "url/gurl.h"
 

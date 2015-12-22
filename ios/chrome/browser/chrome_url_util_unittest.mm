@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/chrome_url_util.h"
 
+#include "base/macros.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "net/base/mac/url_conversions.h"
 #import "testing/gtest_mac.h"

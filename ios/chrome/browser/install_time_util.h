@@ -5,11 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_INSTALL_TIME_UTIL_H_
 #define IOS_CHROME_BROWSER_INSTALL_TIME_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 
 namespace install_time_util {
 
-extern const int64 kUnknownInstallDate;
+extern const int64_t kUnknownInstallDate;
 
 // Computes the true installation time of the application based on the current
 // install time stored in NSUserDefaults and whether or not this is a first run

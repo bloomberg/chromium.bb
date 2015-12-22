@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/net/image_fetcher.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/location.h"

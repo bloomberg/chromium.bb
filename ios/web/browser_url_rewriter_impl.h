@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ios/web/public/browser_url_rewriter.h"
 

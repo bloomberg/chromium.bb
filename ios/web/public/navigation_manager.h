@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_NAVIGATION_MANAGER_H_
 #define IOS_WEB_PUBLIC_NAVIGATION_MANAGER_H_
 
+#include <stddef.h>
+
 #include "ios/web/public/browser_url_rewriter.h"
 
 namespace web {

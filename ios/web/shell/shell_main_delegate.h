@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_SHELL_SHELL_MAIN_DELEGATE_H_
 #define IOS_WEB_SHELL_SHELL_MAIN_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ios/web/public/app/web_main_delegate.h"

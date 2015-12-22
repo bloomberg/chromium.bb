@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"

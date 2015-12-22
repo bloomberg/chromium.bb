@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/dom_distiller/core/article_entry.h"

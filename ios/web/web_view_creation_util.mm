@@ -5,6 +5,8 @@
 #include "ios/web/public/web_view_creation_util.h"
 
 #include <Foundation/Foundation.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 
 #include "base/ios/ios_util.h"

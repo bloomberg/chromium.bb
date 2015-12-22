@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_SYNC_SESSIONS_IOS_CHROME_LOCAL_EVENT_SESSION_ROUTER_H_
 #define IOS_CHROME_BROWSER_SYNC_SESSIONS_IOS_CHROME_LOCAL_EVENT_SESSION_ROUTER_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/callback_list.h"

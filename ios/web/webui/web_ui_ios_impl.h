@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ios/public/provider/web/web_ui_ios.h"

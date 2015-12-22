@@ -5,6 +5,8 @@
 #ifndef IOS_THIRD_PARTY_BLINK_SRC_HTML_CHARACTER_PROVIDER_H_
 #define IOS_THIRD_PARTY_BLINK_SRC_HTML_CHARACTER_PROVIDER_H_
 
+#include <stddef.h>
+
 #include "ios/third_party/blink/src/html_tokenizer_adapter.h"
 
 namespace WebCore {

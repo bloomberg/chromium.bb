@@ -5,6 +5,7 @@
 #include "ios/web/net/request_group_util.h"
 
 #include <Foundation/Foundation.h>
+#include <stddef.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"

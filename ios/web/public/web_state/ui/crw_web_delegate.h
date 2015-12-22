@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_DELEGATE_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_DELEGATE_H_
 
+#include <stdint.h>
 #import <UIKit/UIKit.h>
 #include <vector>
 

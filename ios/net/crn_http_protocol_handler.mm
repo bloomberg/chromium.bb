@@ -4,12 +4,15 @@
 
 #import "ios/net/crn_http_protocol_handler.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"

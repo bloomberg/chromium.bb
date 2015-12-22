@@ -6,6 +6,7 @@
 #define IOS_WEB_SHELL_SHELL_WEB_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ios/web/public/web_client.h"
 

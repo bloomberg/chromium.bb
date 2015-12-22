@@ -4,6 +4,8 @@
 
 #include "ios/web/navigation/navigation_item_impl.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/url_formatter/url_formatter.h"

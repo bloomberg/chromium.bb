@@ -10,6 +10,7 @@
 #include "base/ios/ios_util.h"
 #include "base/location.h"
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "ios/web/public/web_thread.h"

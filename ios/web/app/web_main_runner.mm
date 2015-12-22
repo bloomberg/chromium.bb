@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "ios/web/app/web_main_loop.h"
 #include "ios/web/public/url_schemes.h"

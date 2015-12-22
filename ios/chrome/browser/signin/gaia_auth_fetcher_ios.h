@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_GAIA_AUTH_FETCHER_IOS_H_
 #define IOS_CHROME_BROWSER_SIGNIN_GAIA_AUTH_FETCHER_IOS_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 

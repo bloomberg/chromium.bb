@@ -4,6 +4,8 @@
 
 #include "ios/web/net/request_tracker_impl.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"

@@ -4,6 +4,9 @@
 
 #import "ios/web/web_state/ui/crw_ui_web_view_web_controller.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #import "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #import "base/ios/weak_nsobject.h"
@@ -11,6 +14,7 @@
 #include "base/json/string_escape.h"
 #include "base/mac/bind_objc_block.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
@@ -46,17 +50,17 @@ namespace web {
 // available for the purpose of performance tests.
 // Frequency for the continuous checks when a reset in the page object is
 // anticipated shortly. In milliseconds.
-const int64 kContinuousCheckIntervalMSHigh = 100;
+const int64_t kContinuousCheckIntervalMSHigh = 100;
 
 // The maximum duration that the CRWWebController can run in high-frequency
 // check mode before being changed back to the low frequency.
-const int64 kContinuousCheckHighFrequencyMSMaxDuration = 5000;
+const int64_t kContinuousCheckHighFrequencyMSMaxDuration = 5000;
 
 // Frequency for the continuous checks when a reset in the page object is not
 // anticipated; checks are only made as a precaution.
 // The URL could be out of date for this many milliseconds, so this should not
 // be increased without careful consideration.
-const int64 kContinuousCheckIntervalMSLow = 3000;
+const int64_t kContinuousCheckIntervalMSLow = 3000;
 
 }  // namespace web
 

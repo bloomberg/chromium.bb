@@ -4,6 +4,9 @@
 
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_user_data.h"

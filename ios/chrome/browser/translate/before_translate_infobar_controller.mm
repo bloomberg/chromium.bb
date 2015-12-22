@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/translate/before_translate_infobar_controller.h"
 
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"

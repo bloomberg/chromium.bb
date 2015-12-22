@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_INFOBAR_MANAGER_IMPL_H_
 #define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_MANAGER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "ios/web/public/web_state/web_state_observer.h"

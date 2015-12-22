@@ -5,25 +5,25 @@
 #ifndef IOS_CHROME_BROWSER_MEMORY_MEMORY_METRICS_H_
 #define IOS_CHROME_BROWSER_MEMORY_MEMORY_METRICS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace memory_util {
 // "Physical Free" memory metric. This corresponds to the "Physical Memory Free"
 // value reported by the Memory Monitor in Instruments.
-uint64 GetFreePhysicalBytes();
+uint64_t GetFreePhysicalBytes();
 
 // "Real Memory Used" memory metric. This corresponds to the "Real Memory" value
 // reported for the app by the Memory Monitor in Instruments.
-uint64 GetRealMemoryUsedInBytes();
+uint64_t GetRealMemoryUsedInBytes();
 
 // "Xcode Gauge" memory metric. This corresponds to the "Memory" value reported
 // for the app by the Debug Navigator in Xcode. Only supported in iOS 7 and
 // later.
-uint64 GetInternalVMBytes();
+uint64_t GetInternalVMBytes();
 
 // "Dirty VM" memory metric. This corresponds to the "Dirty Size" value reported
 // for the app by the VM Tracker in Instruments.
-uint64 GetDirtyVMBytes();
+uint64_t GetDirtyVMBytes();
 }  // namespace memory_util
 
 #endif  // IOS_CHROME_BROWSER_MEMORY_MEMORY_METRICS_H_

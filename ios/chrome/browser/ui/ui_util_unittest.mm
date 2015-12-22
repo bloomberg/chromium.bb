@@ -4,9 +4,10 @@
 
 #import "ios/chrome/browser/ui/ui_util.h"
 
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 

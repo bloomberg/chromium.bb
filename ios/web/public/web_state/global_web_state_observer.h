@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_GLOBAL_WEB_STATE_OBSERVER_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_GLOBAL_WEB_STATE_OBSERVER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 

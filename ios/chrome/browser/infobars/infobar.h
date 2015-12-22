@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_H_
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "components/infobars/core/infobar.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_delegate.h"
 

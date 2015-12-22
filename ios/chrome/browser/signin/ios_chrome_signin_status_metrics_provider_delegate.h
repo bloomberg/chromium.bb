@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
 #include "ios/chrome/browser/signin/signin_manager_factory_observer.h"
 

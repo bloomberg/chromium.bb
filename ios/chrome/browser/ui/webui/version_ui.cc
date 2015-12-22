@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/version_info/version_info.h"
 #include "components/version_ui/version_ui_constants.h"
 #include "grit/components_chromium_strings.h"

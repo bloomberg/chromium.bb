@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_WEB_VIEW_COUNTER_IMPL_H_
 #define IOS_WEB_WEB_VIEW_COUNTER_IMPL_H_
 
+#include <stddef.h>
 #import <WebKit/WebKit.h>
 
 #include "base/macros.h"

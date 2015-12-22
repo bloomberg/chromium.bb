@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/memory/memory_debugger.h"
 
+#include <stdint.h>
+
 #include "base/ios/ios_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/memory/scoped_ptr.h"
@@ -40,7 +42,7 @@ const CGFloat kPadding = 10;
   base::scoped_nsobject<UITextField> _continuousMemoryWarningField;
 
   // A place to store the artifical memory bloat.
-  scoped_ptr<uint8> _bloat;
+  scoped_ptr<uint8_t> _bloat;
 
   // Distance the view was pushed up to accomodate the keyboard.
   CGFloat _keyboardOffset;
@@ -482,8 +484,8 @@ const CGFloat kPadding = 10;
     [_bloatField setText:[NSString stringWithFormat:@"%.1f", bloatSizeMB]];
   }
   const CGFloat kBloatSizeBytes = ceil(bloatSizeMB * kNumBytesInMB);
-  const uint64 kNumberOfBytes = static_cast<uint64>(kBloatSizeBytes);
-  _bloat.reset(kNumberOfBytes ? new uint8[kNumberOfBytes] : nullptr);
+  const uint64_t kNumberOfBytes = static_cast<uint64_t>(kBloatSizeBytes);
+  _bloat.reset(kNumberOfBytes ? new uint8_t[kNumberOfBytes] : nullptr);
   if (_bloat) {
     memset(_bloat.get(), -1, kNumberOfBytes);  // Occupy memory.
   } else {

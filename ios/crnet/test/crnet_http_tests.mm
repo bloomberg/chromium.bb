@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #import "CrNet.h"
 

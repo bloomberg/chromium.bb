@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_BROWSER_STATE_BROWSER_STATE_INFO_CACHE_H_
 #define IOS_CHROME_BROWSER_BROWSER_STATE_BROWSER_STATE_INFO_CACHE_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

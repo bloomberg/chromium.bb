@@ -4,6 +4,9 @@
 
 #include "ios/web/web_state/web_state_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_controller.h"
