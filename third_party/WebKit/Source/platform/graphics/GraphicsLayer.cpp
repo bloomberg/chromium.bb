@@ -57,9 +57,12 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
+#include "wtf/MathExtras.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
+#include <cmath>
+#include <utility>
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -987,7 +990,7 @@ void GraphicsLayer::setBackfaceVisibility(bool visible)
 
 void GraphicsLayer::setOpacity(float opacity)
 {
-    float clampedOpacity = std::max(std::min(opacity, 1.0f), 0.0f);
+    float clampedOpacity = clampTo(opacity, 0.0f, 1.0f);
     m_opacity = clampedOpacity;
     platformLayer()->setOpacity(opacity);
 }

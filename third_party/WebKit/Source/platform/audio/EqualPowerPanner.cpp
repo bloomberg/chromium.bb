@@ -25,10 +25,11 @@
 #include "platform/audio/EqualPowerPanner.h"
 
 #if ENABLE(WEB_AUDIO)
-#include <algorithm>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
+#include <algorithm>
+#include <cmath>
 
 // Use a 50ms smoothing / de-zippering time-constant.
 const float SmoothingTimeConstant = 0.050f;
@@ -67,8 +68,7 @@ void EqualPowerPanner::pan(double azimuth, double /*elevation*/, const AudioBus*
         return;
 
     // Clamp azimuth to allowed range of -180 -> +180.
-    azimuth = std::max(-180.0, azimuth);
-    azimuth = std::min(180.0, azimuth);
+    azimuth = clampTo(azimuth, -180.0, 180.0);
 
     // Alias the azimuth ranges behind us to in front of us:
     // -90 -> -180 to -90 -> 0 and 90 -> 180 to 90 -> 0

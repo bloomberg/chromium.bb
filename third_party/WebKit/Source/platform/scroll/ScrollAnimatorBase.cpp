@@ -33,8 +33,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -98,7 +98,7 @@ float ScrollAnimatorBase::clampScrollPosition(ScrollbarOrientation orientation, 
 {
     float maxScrollPos = m_scrollableArea->maximumScrollPosition(orientation);
     float minScrollPos = m_scrollableArea->minimumScrollPosition(orientation);
-    return std::max(std::min(pos, maxScrollPos), minScrollPos);
+    return clampTo(pos, minScrollPos, maxScrollPos);
 }
 
 DEFINE_TRACE(ScrollAnimatorBase)

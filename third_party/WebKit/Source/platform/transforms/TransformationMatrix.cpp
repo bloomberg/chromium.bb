@@ -37,6 +37,9 @@
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 
+#include <cmath>
+#include <cstdlib>
+
 #if CPU(X86_64)
 #include <emmintrin.h>
 #endif
@@ -596,8 +599,7 @@ static void slerp(double qa[4], const double qb[4], double t)
 
     product = ax * bx + ay * by + az * bz + aw * bw;
 
-    // Clamp product to -1.0 <= product <= 1.0.
-    product = std::min(std::max(product, -1.0), 1.0);
+    product = clampTo(product, -1.0, 1.0);
 
     const double epsilon = 1e-5;
     if (std::abs(product - 1.0) < epsilon) {
@@ -710,7 +712,7 @@ FloatQuad TransformationMatrix::projectQuad(const FloatQuad& q, bool* clamped) c
 static float clampEdgeValue(float f)
 {
     ASSERT(!std::isnan(f));
-    return std::min<float>(std::max<float>(f, (-LayoutUnit::max() / 2).toFloat()), (LayoutUnit::max() / 2).toFloat());
+    return clampTo(f, (-LayoutUnit::max() / 2).toFloat(), (LayoutUnit::max() / 2).toFloat());
 }
 
 LayoutRect TransformationMatrix::clampedBoundsOfProjectedQuad(const FloatQuad& q) const

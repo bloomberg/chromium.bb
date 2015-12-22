@@ -24,7 +24,7 @@
 #define SpotLightSource_h
 
 #include "platform/graphics/filters/LightSource.h"
-#include <algorithm>
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -55,7 +55,7 @@ private:
         : LightSource(LS_SPOT)
         , m_position(position)
         , m_direction(direction)
-        , m_specularExponent(std::min(std::max(specularExponent, 1.0f), 128.0f))
+        , m_specularExponent(clampTo(specularExponent, 1.0f, 128.0f))
         , m_limitingConeAngle(limitingConeAngle)
     {
     }

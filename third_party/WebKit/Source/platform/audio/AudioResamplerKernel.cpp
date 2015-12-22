@@ -25,8 +25,8 @@
 #include "platform/audio/AudioResamplerKernel.h"
 
 #if ENABLE(WEB_AUDIO)
-#include <algorithm>
 #include "platform/audio/AudioResampler.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -75,8 +75,7 @@ void AudioResamplerKernel::process(float* destination, size_t framesToProcess)
     float* source = m_sourceBuffer.data();
 
     double rate = this->rate();
-    rate = std::max(0.0, rate);
-    rate = std::min(AudioResampler::MaxRate, rate);
+    rate = clampTo(rate, 0.0, AudioResampler::MaxRate);
 
     // Start out with the previous saved values (if any).
     if (m_fillIndex > 0) {

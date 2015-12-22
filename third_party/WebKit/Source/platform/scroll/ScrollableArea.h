@@ -33,6 +33,7 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
+#include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
@@ -231,7 +232,7 @@ public:
     int scrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? scrollPosition().x() : scrollPosition().y(); }
     int minimumScrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? minimumScrollPosition().x() : minimumScrollPosition().y(); }
     int maximumScrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? maximumScrollPosition().x() : maximumScrollPosition().y(); }
-    int clampScrollPosition(ScrollbarOrientation orientation, int pos)  { return std::max(std::min(pos, maximumScrollPosition(orientation)), minimumScrollPosition(orientation)); }
+    int clampScrollPosition(ScrollbarOrientation orientation, int pos)  { return clampTo(pos, minimumScrollPosition(orientation), maximumScrollPosition(orientation)); }
 
     virtual GraphicsLayer* layerForContainer() const;
     virtual GraphicsLayer* layerForScrolling() const { return 0; }

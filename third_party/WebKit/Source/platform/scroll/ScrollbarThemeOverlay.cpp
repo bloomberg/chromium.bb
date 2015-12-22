@@ -33,6 +33,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebThemeEngine.h"
+#include "wtf/MathExtras.h"
 
 #include <algorithm>
 
@@ -91,7 +92,8 @@ int ScrollbarThemeOverlay::thumbLength(const ScrollbarThemeClient& scrollbar)
 
     float proportion = static_cast<float>(scrollbar.visibleSize()) / scrollbar.totalSize();
     int length = round(proportion * trackLen);
-    length = std::min(std::max(length, minimumThumbLength(scrollbar)), trackLen);
+    int minLen = std::min(minimumThumbLength(scrollbar), trackLen);
+    length = clampTo(length, minLen, trackLen);
     return length;
 }
 

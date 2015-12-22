@@ -38,6 +38,7 @@
 #include "platform/scroll/ScrollbarThemeMacCommon.h"
 #include "platform/scroll/ScrollbarThemeMacOverlayAPI.h"
 #include "wtf/MainThread.h"
+#include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"
 
 using namespace blink;
@@ -341,8 +342,7 @@ private:
             m_timer.stop();
 
         double fraction = delta / m_duration;
-        fraction = std::min(1.0, fraction);
-        fraction = std::max(0.0, fraction);
+        fraction = clampTo(fraction, 0.0, 1.0);
         double progress = m_timingFunction->evaluate(fraction, 0.001);
         [m_animation setCurrentProgress:progress];
     }
@@ -768,8 +768,8 @@ FloatPoint ScrollAnimatorMac::adjustScrollPositionIfNecessary(const FloatPoint& 
     IntPoint minPos = m_scrollableArea->minimumScrollPosition();
     IntPoint maxPos = m_scrollableArea->maximumScrollPosition();
 
-    float newX = std::max<float>(std::min<float>(position.x(), maxPos.x()), minPos.x());
-    float newY = std::max<float>(std::min<float>(position.y(), maxPos.y()), minPos.y());
+    float newX = clampTo<float, float>(position.x(), minPos.x(), maxPos.x());
+    float newY = clampTo<float, float>(position.y(), minPos.y(), maxPos.y());
 
     return FloatPoint(newX, newY);
 }
