@@ -13,6 +13,7 @@
 #include "modules/fetch/DataConsumerTee.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchHeaderList.h"
+#include "platform/HTTPNames.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -90,7 +91,7 @@ FetchRequestData::~FetchRequestData()
 }
 
 FetchRequestData::FetchRequestData()
-    : m_method("GET")
+    : m_method(HTTPNames::GET)
     , m_headerList(FetchHeaderList::create())
     , m_unsafeRequestFlag(false)
     , m_context(WebURLRequest::RequestContextUnspecified)

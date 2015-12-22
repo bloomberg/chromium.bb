@@ -20,6 +20,7 @@
 #include "modules/fetch/GlobalFetch.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
+#include "platform/HTTPNames.h"
 #include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 
@@ -454,7 +455,7 @@ ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const HeapVector<Membe
     for (size_t i = 0; i < requests.size(); ++i) {
         if (!requests[i]->url().protocolIsInHTTPFamily())
             return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Add/AddAll does not support schemes other than \"http\" or \"https\""));
-        if (requests[i]->method() != "GET")
+        if (requests[i]->method() != HTTPNames::GET)
             return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Add/AddAll only supports the GET request method."));
         requestInfos[i].setRequest(requests[i]);
 
@@ -490,7 +491,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
             barrierCallback->onError("Request scheme '" + url.protocol() + "' is unsupported");
             return promise;
         }
-        if (requests[i]->method() != "GET") {
+        if (requests[i]->method() != HTTPNames::GET) {
             barrierCallback->onError("Request method '" + requests[i]->method() + "' is unsupported");
             return promise;
         }

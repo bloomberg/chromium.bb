@@ -287,11 +287,6 @@ const AtomicString& ResourceResponse::httpHeaderField(const AtomicString& name) 
     return m_httpHeaderFields.get(name);
 }
 
-const AtomicString& ResourceResponse::httpHeaderField(const char* name) const
-{
-    return m_httpHeaderFields.get(name);
-}
-
 static const AtomicString& cacheControlHeaderString()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, cacheControlHeader, ("cache-control", AtomicString::ConstructFromLiteral));

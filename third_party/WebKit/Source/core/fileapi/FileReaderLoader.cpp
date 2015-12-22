@@ -102,9 +102,9 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext, const S
     // FIXME: Should this really be 'internal'? Do we know anything about the actual request that generated this fetch?
     request.setRequestContext(WebURLRequest::RequestContextInternal);
 
-    request.setHTTPMethod("GET");
+    request.setHTTPMethod(HTTPNames::GET);
     if (m_hasRange)
-        request.setHTTPHeaderField("Range", AtomicString(String::format("bytes=%d-%d", m_rangeStart, m_rangeEnd)));
+        request.setHTTPHeaderField(HTTPNames::Range, AtomicString(String::format("bytes=%d-%d", m_rangeStart, m_rangeEnd)));
 
     ThreadableLoaderOptions options;
     options.preflightPolicy = ConsiderPreflight;

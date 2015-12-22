@@ -31,6 +31,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/HTTPNames.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/ResourceResponse.h"
 #include "public/platform/WebURLRequest.h"
@@ -113,7 +114,7 @@ const KURL& WorkerScriptLoader::responseURL() const
 ResourceRequest WorkerScriptLoader::createResourceRequest()
 {
     ResourceRequest request(m_url);
-    request.setHTTPMethod("GET");
+    request.setHTTPMethod(HTTPNames::GET);
     request.setRequestContext(m_requestContext);
     return request;
 }

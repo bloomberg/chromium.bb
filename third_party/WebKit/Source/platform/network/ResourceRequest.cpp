@@ -26,6 +26,7 @@
 
 #include "platform/network/ResourceRequest.h"
 
+#include "platform/HTTPNames.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -202,49 +203,39 @@ const AtomicString& ResourceRequest::httpHeaderField(const AtomicString& name) c
     return m_httpHeaderFields.get(name);
 }
 
-const AtomicString& ResourceRequest::httpHeaderField(const char* name) const
-{
-    return m_httpHeaderFields.get(name);
-}
-
 void ResourceRequest::setHTTPHeaderField(const AtomicString& name, const AtomicString& value)
 {
     m_httpHeaderFields.set(name, value);
 }
 
-void ResourceRequest::setHTTPHeaderField(const char* name, const AtomicString& value)
-{
-    setHTTPHeaderField(AtomicString(name), value);
-}
-
 void ResourceRequest::setHTTPReferrer(const Referrer& referrer)
 {
     if (referrer.referrer.isEmpty())
-        m_httpHeaderFields.remove("Referer");
+        m_httpHeaderFields.remove(HTTPNames::Referer);
     else
-        setHTTPHeaderField("Referer", referrer.referrer);
+        setHTTPHeaderField(HTTPNames::Referer, referrer.referrer);
     m_referrerPolicy = referrer.referrerPolicy;
     m_didSetHTTPReferrer = true;
 }
 
 void ResourceRequest::clearHTTPReferrer()
 {
-    m_httpHeaderFields.remove("Referer");
+    m_httpHeaderFields.remove(HTTPNames::Referer);
     m_referrerPolicy = ReferrerPolicyDefault;
     m_didSetHTTPReferrer = false;
 }
 
 void ResourceRequest::setHTTPOrigin(PassRefPtr<SecurityOrigin> origin)
 {
-    setHTTPHeaderField("Origin", origin->toAtomicString());
+    setHTTPHeaderField(HTTPNames::Origin, origin->toAtomicString());
     if (origin->hasSuborigin())
-        setHTTPHeaderField("Suborigin", AtomicString(origin->suboriginName()));
+        setHTTPHeaderField(HTTPNames::Suborigin, AtomicString(origin->suboriginName()));
 }
 
 void ResourceRequest::clearHTTPOrigin()
 {
-    m_httpHeaderFields.remove("Origin");
-    m_httpHeaderFields.remove("Suborigin");
+    m_httpHeaderFields.remove(HTTPNames::Origin);
+    m_httpHeaderFields.remove(HTTPNames::Suborigin);
 }
 
 void ResourceRequest::addHTTPOriginIfNeeded(PassRefPtr<SecurityOrigin> origin)
@@ -258,7 +249,7 @@ void ResourceRequest::addHTTPOriginIfNeeded(PassRefPtr<SecurityOrigin> origin)
     // will leak the internal host name. Similar privacy concerns have lead
     // to the widespread suppression of the Referer header at the network
     // layer.
-    if (httpMethod() == "GET" || httpMethod() == "HEAD")
+    if (httpMethod() == HTTPNames::GET || httpMethod() == HTTPNames::HEAD)
         return;
 
     // For non-GET and non-HEAD methods, always send an Origin header so the
@@ -276,7 +267,7 @@ void ResourceRequest::addHTTPOriginIfNeeded(PassRefPtr<SecurityOrigin> origin)
 
 void ResourceRequest::clearHTTPUserAgent()
 {
-    m_httpHeaderFields.remove("User-Agent");
+    m_httpHeaderFields.remove(HTTPNames::User_Agent);
 }
 
 EncodedFormData* ResourceRequest::httpBody() const
@@ -382,11 +373,11 @@ bool ResourceRequest::compare(const ResourceRequest& a, const ResourceRequest& b
 
 bool ResourceRequest::isConditional() const
 {
-    return (m_httpHeaderFields.contains("If-Match")
-        || m_httpHeaderFields.contains("If-Modified-Since")
-        || m_httpHeaderFields.contains("If-None-Match")
-        || m_httpHeaderFields.contains("If-Range")
-        || m_httpHeaderFields.contains("If-Unmodified-Since"));
+    return (m_httpHeaderFields.contains(HTTPNames::If_Match)
+        || m_httpHeaderFields.contains(HTTPNames::If_Modified_Since)
+        || m_httpHeaderFields.contains(HTTPNames::If_None_Match)
+        || m_httpHeaderFields.contains(HTTPNames::If_Range)
+        || m_httpHeaderFields.contains(HTTPNames::If_Unmodified_Since));
 }
 
 void ResourceRequest::setHasUserGesture(bool hasUserGesture)
@@ -394,22 +385,10 @@ void ResourceRequest::setHasUserGesture(bool hasUserGesture)
     m_hasUserGesture |= hasUserGesture;
 }
 
-static const AtomicString& cacheControlHeaderString()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, cacheControlHeader, ("cache-control", AtomicString::ConstructFromLiteral));
-    return cacheControlHeader;
-}
-
-static const AtomicString& pragmaHeaderString()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, pragmaHeader, ("pragma", AtomicString::ConstructFromLiteral));
-    return pragmaHeader;
-}
-
 const CacheControlHeader& ResourceRequest::cacheControlHeader() const
 {
     if (!m_cacheControlHeaderCache.parsed)
-        m_cacheControlHeaderCache = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
+        m_cacheControlHeaderCache = parseCacheControlDirectives(m_httpHeaderFields.get(HTTPNames::Cache_Control), m_httpHeaderFields.get(HTTPNames::Pragma));
     return m_cacheControlHeaderCache;
 }
 
@@ -425,9 +404,7 @@ bool ResourceRequest::cacheControlContainsNoStore() const
 
 bool ResourceRequest::hasCacheValidatorFields() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, lastModifiedHeader, ("last-modified", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, eTagHeader, ("etag", AtomicString::ConstructFromLiteral));
-    return !m_httpHeaderFields.get(lastModifiedHeader).isEmpty() || !m_httpHeaderFields.get(eTagHeader).isEmpty();
+    return !m_httpHeaderFields.get(HTTPNames::Last_Modified).isEmpty() || !m_httpHeaderFields.get(HTTPNames::ETag).isEmpty();
 }
 
 void ResourceRequest::initialize(const KURL& url)
@@ -435,7 +412,7 @@ void ResourceRequest::initialize(const KURL& url)
     m_url = url;
     m_cachePolicy = UseProtocolCachePolicy;
     m_timeoutInterval = s_defaultTimeoutInterval;
-    m_httpMethod = "GET";
+    m_httpMethod = HTTPNames::GET;
     m_allowStoredCredentials = true;
     m_reportUploadProgress = false;
     m_reportRawHeaders = false;

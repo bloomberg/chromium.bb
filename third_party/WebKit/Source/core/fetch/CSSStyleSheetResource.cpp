@@ -101,7 +101,7 @@ const String CSSStyleSheetResource::sheetText(MIMETypeCheck mimeTypeCheck) const
 
 const AtomicString CSSStyleSheetResource::mimeType() const
 {
-    return extractMIMETypeFromMediaType(response().httpHeaderField("Content-Type")).lower();
+    return extractMIMETypeFromMediaType(response().httpHeaderField(HTTPNames::Content_Type)).lower();
 }
 
 void CSSStyleSheetResource::checkNotify()

@@ -74,8 +74,8 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
 {
     ResourceRequest preflightRequest(request.url());
     updateRequestForAccessControl(preflightRequest, securityOrigin, DoNotAllowStoredCredentials);
-    preflightRequest.setHTTPMethod("OPTIONS");
-    preflightRequest.setHTTPHeaderField("Access-Control-Request-Method", request.httpMethod());
+    preflightRequest.setHTTPMethod(HTTPNames::OPTIONS);
+    preflightRequest.setHTTPHeaderField(HTTPNames::Access_Control_Request_Method, AtomicString(request.httpMethod()));
     preflightRequest.setPriority(request.priority());
     preflightRequest.setRequestContext(request.requestContext());
     preflightRequest.setSkipServiceWorker(true);
@@ -103,7 +103,7 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
                 headerBuffer.appendLiteral(", ");
             headerBuffer.append(header);
         }
-        preflightRequest.setHTTPHeaderField("Access-Control-Request-Headers", AtomicString(headerBuffer.toString()));
+        preflightRequest.setHTTPHeaderField(HTTPNames::Access_Control_Request_Headers, AtomicString(headerBuffer.toString()));
     }
 
     return preflightRequest;

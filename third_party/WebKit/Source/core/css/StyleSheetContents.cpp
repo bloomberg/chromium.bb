@@ -333,10 +333,10 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     String sheetText = cachedStyleSheet->sheetText(mimeTypeCheck);
 
     const ResourceResponse& response = cachedStyleSheet->response();
-    m_sourceMapURL = response.httpHeaderField("SourceMap");
+    m_sourceMapURL = response.httpHeaderField(HTTPNames::SourceMap);
     if (m_sourceMapURL.isEmpty()) {
         // Try to get deprecated header.
-        m_sourceMapURL = response.httpHeaderField("X-SourceMap");
+        m_sourceMapURL = response.httpHeaderField(HTTPNames::X_SourceMap);
     }
 
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));

@@ -309,9 +309,9 @@ TEST_F(CachingCorrectnessTest, FreshButNoCache)
 {
     ResourceResponse fresh200NocacheResponse;
     fresh200NocacheResponse.setHTTPStatusCode(200);
-    fresh200NocacheResponse.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh200NocacheResponse.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
-    fresh200NocacheResponse.setHTTPHeaderField("Cache-Control", "no-cache");
+    fresh200NocacheResponse.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh200NocacheResponse.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
+    fresh200NocacheResponse.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
 
     ResourcePtr<Resource> fresh200Nocache = resourceFromResourceResponse(fresh200NocacheResponse);
 
@@ -325,7 +325,7 @@ TEST_F(CachingCorrectnessTest, FreshButNoCache)
 TEST_F(CachingCorrectnessTest, RequestWithNoCahe)
 {
     ResourceRequest noCacheRequest;
-    noCacheRequest.setHTTPHeaderField("Cache-Control", "no-cache");
+    noCacheRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
     ResourcePtr<Resource> noCacheResource = resourceFromResourceRequest(noCacheRequest);
     ResourcePtr<Resource> fetched = fetch();
     EXPECT_NE(noCacheResource, fetched);
@@ -335,9 +335,9 @@ TEST_F(CachingCorrectnessTest, FreshButNoStore)
 {
     ResourceResponse fresh200NostoreResponse;
     fresh200NostoreResponse.setHTTPStatusCode(200);
-    fresh200NostoreResponse.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh200NostoreResponse.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
-    fresh200NostoreResponse.setHTTPHeaderField("Cache-Control", "no-store");
+    fresh200NostoreResponse.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh200NostoreResponse.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
+    fresh200NostoreResponse.setHTTPHeaderField(HTTPNames::Cache_Control, "no-store");
 
     ResourcePtr<Resource> fresh200Nostore = resourceFromResourceResponse(fresh200NostoreResponse);
 
@@ -351,7 +351,7 @@ TEST_F(CachingCorrectnessTest, FreshButNoStore)
 TEST_F(CachingCorrectnessTest, RequestWithNoStore)
 {
     ResourceRequest noStoreRequest;
-    noStoreRequest.setHTTPHeaderField("Cache-Control", "no-store");
+    noStoreRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "no-store");
     ResourcePtr<Resource> noStoreResource = resourceFromResourceRequest(noStoreRequest);
     ResourcePtr<Resource> fetched = fetch();
     EXPECT_NE(noStoreResource, fetched);
@@ -363,9 +363,9 @@ TEST_F(CachingCorrectnessTest, DISABLED_FreshButMustRevalidate)
 {
     ResourceResponse fresh200MustRevalidateResponse;
     fresh200MustRevalidateResponse.setHTTPStatusCode(200);
-    fresh200MustRevalidateResponse.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh200MustRevalidateResponse.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
-    fresh200MustRevalidateResponse.setHTTPHeaderField("Cache-Control", "must-revalidate");
+    fresh200MustRevalidateResponse.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh200MustRevalidateResponse.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
+    fresh200MustRevalidateResponse.setHTTPHeaderField(HTTPNames::Cache_Control, "must-revalidate");
 
     ResourcePtr<Resource> fresh200MustRevalidate = resourceFromResourceResponse(fresh200MustRevalidateResponse);
 
@@ -387,9 +387,9 @@ TEST_F(CachingCorrectnessTest, FreshWithFreshRedirect)
     ResourceResponse fresh301Response;
     fresh301Response.setURL(redirectUrl);
     fresh301Response.setHTTPStatusCode(301);
-    fresh301Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh301Response.setHTTPHeaderField("Location", redirectTargetUrlString);
-    fresh301Response.setHTTPHeaderField("Cache-Control", "max-age=600");
+    fresh301Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh301Response.setHTTPHeaderField(HTTPNames::Location, redirectTargetUrlString);
+    fresh301Response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=600");
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
@@ -399,8 +399,8 @@ TEST_F(CachingCorrectnessTest, FreshWithFreshRedirect)
     ResourceResponse fresh200Response;
     fresh200Response.setURL(redirectTargetUrl);
     fresh200Response.setHTTPStatusCode(200);
-    fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
     memoryCache()->add(firstResource.get());
@@ -422,8 +422,8 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect)
     ResourceResponse stale301Response;
     stale301Response.setURL(redirectUrl);
     stale301Response.setHTTPStatusCode(301);
-    stale301Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    stale301Response.setHTTPHeaderField("Location", redirectTargetUrlString);
+    stale301Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    stale301Response.setHTTPHeaderField(HTTPNames::Location, redirectTargetUrlString);
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
@@ -433,8 +433,8 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect)
     ResourceResponse fresh200Response;
     fresh200Response.setURL(redirectTargetUrl);
     fresh200Response.setHTTPStatusCode(200);
-    fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
     memoryCache()->add(firstResource.get());
@@ -448,13 +448,13 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect)
 TEST_F(CachingCorrectnessTest, PostToSameURLTwice)
 {
     ResourceRequest request1(KURL(ParsedURLString, kResourceURL));
-    request1.setHTTPMethod("POST");
+    request1.setHTTPMethod(HTTPNames::POST);
     ResourcePtr<Resource> resource1 = new Resource(ResourceRequest(request1.url()), Resource::Raw);
     resource1->setLoading(true);
     memoryCache()->add(resource1.get());
 
     ResourceRequest request2(KURL(ParsedURLString, kResourceURL));
-    request2.setHTTPMethod("POST");
+    request2.setHTTPMethod(HTTPNames::POST);
     FetchRequest fetch2(request2, FetchInitiatorInfo());
     ResourcePtr<Resource> resource2 = RawResource::fetchSynchronously(fetch2, fetcher());
 
@@ -473,9 +473,9 @@ TEST_F(CachingCorrectnessTest, 302RedirectNotImplicitlyFresh)
     ResourceResponse fresh302Response;
     fresh302Response.setURL(redirectUrl);
     fresh302Response.setHTTPStatusCode(302);
-    fresh302Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh302Response.setHTTPHeaderField("Last-Modified", kOneDayBeforeOriginalRequest);
-    fresh302Response.setHTTPHeaderField("Location", redirectTargetUrlString);
+    fresh302Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh302Response.setHTTPHeaderField(HTTPNames::Last_Modified, kOneDayBeforeOriginalRequest);
+    fresh302Response.setHTTPHeaderField(HTTPNames::Location, redirectTargetUrlString);
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
@@ -485,8 +485,8 @@ TEST_F(CachingCorrectnessTest, 302RedirectNotImplicitlyFresh)
     ResourceResponse fresh200Response;
     fresh200Response.setURL(redirectTargetUrl);
     fresh200Response.setHTTPStatusCode(200);
-    fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
     memoryCache()->add(firstResource.get());
@@ -508,9 +508,9 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshMaxAge)
     ResourceResponse fresh302Response;
     fresh302Response.setURL(redirectUrl);
     fresh302Response.setHTTPStatusCode(302);
-    fresh302Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh302Response.setHTTPHeaderField("Cache-Control", "max-age=600");
-    fresh302Response.setHTTPHeaderField("Location", redirectTargetUrlString);
+    fresh302Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh302Response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=600");
+    fresh302Response.setHTTPHeaderField(HTTPNames::Location, redirectTargetUrlString);
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
@@ -520,8 +520,8 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshMaxAge)
     ResourceResponse fresh200Response;
     fresh200Response.setURL(redirectTargetUrl);
     fresh200Response.setHTTPStatusCode(200);
-    fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
     memoryCache()->add(firstResource.get());
@@ -543,9 +543,9 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshExpires)
     ResourceResponse fresh302Response;
     fresh302Response.setURL(redirectUrl);
     fresh302Response.setHTTPStatusCode(302);
-    fresh302Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh302Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
-    fresh302Response.setHTTPHeaderField("Location", redirectTargetUrlString);
+    fresh302Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh302Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
+    fresh302Response.setHTTPHeaderField(HTTPNames::Location, redirectTargetUrlString);
 
     // Add the redirect to our request.
     ResourceRequest redirectRequest = ResourceRequest(redirectTargetUrl);
@@ -555,8 +555,8 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshExpires)
     ResourceResponse fresh200Response;
     fresh200Response.setURL(redirectTargetUrl);
     fresh200Response.setHTTPStatusCode(200);
-    fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
-    fresh200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Date, kOriginalRequestDateAsString);
+    fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
     memoryCache()->add(firstResource.get());

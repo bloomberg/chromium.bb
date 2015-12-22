@@ -27,6 +27,7 @@
 #include "core/loader/CrossOriginPreflightResultCache.h"
 
 #include "core/fetch/FetchUtils.h"
+#include "platform/HTTPNames.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
@@ -87,19 +88,19 @@ static bool parseAccessControlAllowList(const String& string, HashSet<String, Ha
 bool CrossOriginPreflightResultCacheItem::parse(const ResourceResponse& response, String& errorDescription)
 {
     m_methods.clear();
-    if (!parseAccessControlAllowList(response.httpHeaderField("Access-Control-Allow-Methods"), m_methods)) {
+    if (!parseAccessControlAllowList(response.httpHeaderField(HTTPNames::Access_Control_Allow_Methods), m_methods)) {
         errorDescription = "Cannot parse Access-Control-Allow-Methods response header field in preflight response.";
         return false;
     }
 
     m_headers.clear();
-    if (!parseAccessControlAllowList(response.httpHeaderField("Access-Control-Allow-Headers"), m_headers)) {
+    if (!parseAccessControlAllowList(response.httpHeaderField(HTTPNames::Access_Control_Allow_Headers), m_headers)) {
         errorDescription = "Cannot parse Access-Control-Allow-Headers response header field in preflight response.";
         return false;
     }
 
     unsigned expiryDelta;
-    if (parseAccessControlMaxAge(response.httpHeaderField("Access-Control-Max-Age"), expiryDelta)) {
+    if (parseAccessControlMaxAge(response.httpHeaderField(HTTPNames::Access_Control_Max_Age), expiryDelta)) {
         if (expiryDelta > maxPreflightCacheTimeoutSeconds)
             expiryDelta = maxPreflightCacheTimeoutSeconds;
     } else {

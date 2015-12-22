@@ -57,7 +57,6 @@ public:
     static void addAndMergeHeader(HTTPHeaderMap* /* map */, const AtomicString& name, const AtomicString& value);
 
     void addHeaderField(const AtomicString& name, const AtomicString& value) { m_headerFields.add(name, value); }
-    void addHeaderField(const char* name, const char* value) { m_headerFields.add(name, value); }
 
     KURL url() const { return m_url; }
     void setURL(const KURL& url) { m_url = url; }

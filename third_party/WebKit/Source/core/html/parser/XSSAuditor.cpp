@@ -54,7 +54,6 @@ namespace {
 const char kURLWithUniqueOrigin[] = "data:,";
 
 const char kSafeJavaScriptURL[] = "javascript:void(0)";
-const char kXSSProtectionHeader[] = "X-XSS-Protection";
 
 } // namespace
 
@@ -331,7 +330,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         m_encoding = document->encoding();
 
     if (DocumentLoader* documentLoader = document->frame()->loader().documentLoader()) {
-        const AtomicString& headerValue = documentLoader->response().httpHeaderField(kXSSProtectionHeader);
+        const AtomicString& headerValue = documentLoader->response().httpHeaderField(HTTPNames::X_XSS_Protection);
         String errorDetails;
         unsigned errorPosition = 0;
         String reportURL;

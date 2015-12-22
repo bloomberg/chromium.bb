@@ -62,41 +62,4 @@ void HTTPHeaderMap::adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData> data)
     }
 }
 
-// Adapter that allows the HashMap to take C strings as keys.
-struct CaseFoldingCStringTranslator {
-    STATIC_ONLY(CaseFoldingCStringTranslator);
-    static unsigned hash(const char* cString)
-    {
-        return CaseFoldingHash::hash(cString, strlen(cString));
-    }
-
-    static bool equal(const AtomicString& key, const char* cString)
-    {
-        return equalIgnoringCase(key, cString);
-    }
-
-    static void translate(AtomicString& location, const char* cString, unsigned /*hash*/)
-    {
-        location = AtomicString(cString);
-    }
-};
-
-const AtomicString& HTTPHeaderMap::get(const char* name) const
-{
-    const_iterator i = m_headers.find<CaseFoldingCStringTranslator>(name);
-    if (i == end())
-        return nullAtom;
-    return i->value;
-}
-
-bool HTTPHeaderMap::contains(const char* name) const
-{
-    return m_headers.find<CaseFoldingCStringTranslator>(name) != end();
-}
-
-HTTPHeaderMap::AddResult HTTPHeaderMap::add(const char* name, const AtomicString& value)
-{
-    return m_headers.add<CaseFoldingCStringTranslator>(name, value);
-}
-
 } // namespace blink

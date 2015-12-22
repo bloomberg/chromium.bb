@@ -62,6 +62,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/FileMetadata.h"
+#include "platform/HTTPNames.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
@@ -680,7 +681,7 @@ void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrSt
 
 bool XMLHttpRequest::areMethodAndURLValidForSend()
 {
-    return m_method != "GET" && m_method != "HEAD" && m_url.protocolIsInHTTPFamily();
+    return m_method != HTTPNames::GET && m_method != HTTPNames::HEAD && m_url.protocolIsInHTTPFamily();
 }
 
 void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
@@ -698,8 +699,8 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
         // FIXME: Per https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send the
         // Content-Type header and whether to serialize as HTML or XML should
         // depend on |document->isHTMLDocument()|.
-        if (getRequestHeader("Content-Type").isEmpty())
-            setRequestHeaderInternal("Content-Type", "application/xml;charset=UTF-8");
+        if (getRequestHeader(HTTPNames::Content_Type).isEmpty())
+            setRequestHeaderInternal(HTTPNames::Content_Type, "application/xml;charset=UTF-8");
 
         String body = createMarkup(document);
 
@@ -719,12 +720,12 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
     RefPtr<EncodedFormData> httpBody;
 
     if (!body.isNull() && areMethodAndURLValidForSend()) {
-        String contentType = getRequestHeader("Content-Type");
+        String contentType = getRequestHeader(HTTPNames::Content_Type);
         if (contentType.isEmpty()) {
-            setRequestHeaderInternal("Content-Type", "text/plain;charset=UTF-8");
+            setRequestHeaderInternal(HTTPNames::Content_Type, "text/plain;charset=UTF-8");
         } else {
             replaceCharsetInMediaType(contentType, "UTF-8");
-            m_requestHeaders.set("Content-Type", AtomicString(contentType));
+            m_requestHeaders.set(HTTPNames::Content_Type, AtomicString(contentType));
         }
 
         httpBody = EncodedFormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
@@ -743,10 +744,10 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
     RefPtr<EncodedFormData> httpBody;
 
     if (areMethodAndURLValidForSend()) {
-        if (getRequestHeader("Content-Type").isEmpty()) {
+        if (getRequestHeader(HTTPNames::Content_Type).isEmpty()) {
             const String& blobType = body->type();
             if (!blobType.isEmpty() && isValidContentType(blobType)) {
-                setRequestHeaderInternal("Content-Type", AtomicString(blobType));
+                setRequestHeaderInternal(HTTPNames::Content_Type, AtomicString(blobType));
             }
         }
 
@@ -780,9 +781,9 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exceptionState)
     if (areMethodAndURLValidForSend()) {
         httpBody = body->encodeMultiPartFormData();
 
-        if (getRequestHeader("Content-Type").isEmpty()) {
+        if (getRequestHeader(HTTPNames::Content_Type).isEmpty()) {
             AtomicString contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + httpBody->boundary().data();
-            setRequestHeaderInternal("Content-Type", contentType);
+            setRequestHeaderInternal(HTTPNames::Content_Type, contentType);
         }
     }
 
@@ -845,7 +846,7 @@ void XMLHttpRequest::throwForLoadFailureIfNeeded(ExceptionState& exceptionState,
 void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, ExceptionState& exceptionState)
 {
     // Only GET request is supported for blob URL.
-    if (m_url.protocolIs("blob") && m_method != "GET") {
+    if (m_url.protocolIs("blob") && m_method != HTTPNames::GET) {
         handleNetworkError();
 
         if (!m_async) {
@@ -884,8 +885,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
     InspectorInstrumentation::willLoadXHR(&executionContext, this, this, m_method, m_url, m_async, httpBody ? httpBody->deepCopy() : nullptr, m_requestHeaders, m_includeCredentials);
 
     if (httpBody) {
-        ASSERT(m_method != "GET");
-        ASSERT(m_method != "HEAD");
+        ASSERT(m_method != HTTPNames::GET);
+        ASSERT(m_method != HTTPNames::HEAD);
         request.setHTTPBody(httpBody);
     }
 
@@ -1221,7 +1222,7 @@ String XMLHttpRequest::getAllResponseHeaders() const
     StringBuilder stringBuilder;
 
     HTTPHeaderSet accessControlExposeHeaderSet;
-    parseAccessControlExposeHeadersAllowList(m_response.httpHeaderField("Access-Control-Expose-Headers"), accessControlExposeHeaderSet);
+    parseAccessControlExposeHeadersAllowList(m_response.httpHeaderField(HTTPNames::Access_Control_Expose_Headers), accessControlExposeHeaderSet);
     HTTPHeaderMap::const_iterator end = m_response.httpHeaderFields().end();
     for (HTTPHeaderMap::const_iterator it = m_response.httpHeaderFields().begin(); it!= end; ++it) {
         // Hide any headers whose name is a forbidden response-header name.
@@ -1258,7 +1259,7 @@ const AtomicString& XMLHttpRequest::getResponseHeader(const AtomicString& name) 
     }
 
     HTTPHeaderSet accessControlExposeHeaderSet;
-    parseAccessControlExposeHeadersAllowList(m_response.httpHeaderField("Access-Control-Expose-Headers"), accessControlExposeHeaderSet);
+    parseAccessControlExposeHeadersAllowList(m_response.httpHeaderField(HTTPNames::Access_Control_Expose_Headers), accessControlExposeHeaderSet);
 
     if (!m_sameOriginRequest && !isOnAccessControlResponseHeaderWhitelist(name) && !accessControlExposeHeaderSet.contains(name)) {
         logConsoleError(executionContext(), "Refused to get unsafe header \"" + name + "\"");
@@ -1274,7 +1275,7 @@ AtomicString XMLHttpRequest::finalResponseMIMEType() const
         return overriddenType;
 
     if (m_response.isHTTP())
-        return extractMIMETypeFromMediaType(m_response.httpHeaderField("Content-Type"));
+        return extractMIMETypeFromMediaType(m_response.httpHeaderField(HTTPNames::Content_Type));
 
     return m_response.mimeType();
 }
@@ -1511,7 +1512,7 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
 
     m_response = response;
     if (!m_mimeTypeOverride.isEmpty()) {
-        m_response.setHTTPHeaderField("Content-Type", m_mimeTypeOverride);
+        m_response.setHTTPHeaderField(HTTPNames::Content_Type, m_mimeTypeOverride);
         m_finalResponseCharset = extractCharsetFromMediaType(m_mimeTypeOverride);
     }
 

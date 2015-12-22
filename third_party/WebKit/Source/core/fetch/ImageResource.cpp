@@ -358,7 +358,7 @@ void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPt
         finishOnePart();
     Resource::responseReceived(response, handle);
     if (RuntimeEnabledFeatures::clientHintsEnabled()) {
-        m_devicePixelRatioHeaderValue = m_response.httpHeaderField("content-dpr").toFloat(&m_hasDevicePixelRatioHeaderValue);
+        m_devicePixelRatioHeaderValue = m_response.httpHeaderField(HTTPNames::Content_DPR).toFloat(&m_hasDevicePixelRatioHeaderValue);
         if (!m_hasDevicePixelRatioHeaderValue || m_devicePixelRatioHeaderValue <= 0.0) {
             m_devicePixelRatioHeaderValue = 1.0;
             m_hasDevicePixelRatioHeaderValue = false;

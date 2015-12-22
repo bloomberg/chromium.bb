@@ -108,7 +108,7 @@ TEST_F(ResourceFetcherTest, UseExistingResource)
     ResourceResponse response;
     response.setURL(url);
     response.setHTTPStatusCode(200);
-    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
+    response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
     resource->responseReceived(response, nullptr);
     resource->finish();
 
@@ -126,8 +126,8 @@ TEST_F(ResourceFetcherTest, Vary)
     ResourceResponse response;
     response.setURL(url);
     response.setHTTPStatusCode(200);
-    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
-    response.setHTTPHeaderField("Vary", "*");
+    response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+    response.setHTTPHeaderField(HTTPNames::Vary, "*");
     resource->responseReceived(response, nullptr);
     resource->finish();
     ASSERT_TRUE(resource->hasVaryHeader());
@@ -156,8 +156,8 @@ TEST_F(ResourceFetcherTest, VaryOnBack)
     ResourceResponse response;
     response.setURL(url);
     response.setHTTPStatusCode(200);
-    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
-    response.setHTTPHeaderField("Vary", "*");
+    response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+    response.setHTTPHeaderField(HTTPNames::Vary, "*");
     resource->responseReceived(response, nullptr);
     resource->finish();
     ASSERT_TRUE(resource->hasVaryHeader());
@@ -177,8 +177,8 @@ TEST_F(ResourceFetcherTest, VaryImage)
     ResourceResponse response;
     response.setURL(url);
     response.setHTTPStatusCode(200);
-    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
-    response.setHTTPHeaderField("Vary", "*");
+    response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+    response.setHTTPHeaderField(HTTPNames::Vary, "*");
     URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, "white-1x1.png", WebString::fromUTF8(""), WrappedResourceResponse(response));
 
     FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
@@ -202,14 +202,14 @@ TEST_F(ResourceFetcherTest, RevalidateWhileLoading)
 
     ResourceFetcher* fetcher1 = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
     ResourceRequest request1(url);
-    request1.setHTTPHeaderField("Cache-control", "no-cache");
+    request1.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
     FetchRequest fetchRequest1 = FetchRequest(request1, FetchInitiatorInfo());
     ResourcePtr<Resource> resource1 = fetcher1->requestResource(fetchRequest1, TestResourceFactory(Resource::Image));
     ResourceResponse response;
     response.setURL(url);
     response.setHTTPStatusCode(200);
-    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
-    response.setHTTPHeaderField("etag", "1234567890");
+    response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+    response.setHTTPHeaderField(HTTPNames::ETag, "1234567890");
     resource1->responseReceived(response, nullptr);
     resource1->finish();
 

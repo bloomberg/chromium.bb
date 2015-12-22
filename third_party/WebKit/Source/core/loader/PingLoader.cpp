@@ -73,7 +73,7 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
     }
 
     ResourceRequest request(url);
-    request.setHTTPHeaderField("Cache-Control", "max-age=0");
+    request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
     finishPingRequestInitialization(request, frame);
 
     FetchInitiatorInfo initiatorInfo;
@@ -85,10 +85,10 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const KURL& destinationURL)
 {
     ResourceRequest request(pingURL);
-    request.setHTTPMethod("POST");
+    request.setHTTPMethod(HTTPNames::POST);
     request.setHTTPContentType("text/ping");
     request.setHTTPBody(EncodedFormData::create("PING"));
-    request.setHTTPHeaderField("Cache-Control", "max-age=0");
+    request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
     finishPingRequestInitialization(request, frame);
 
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
@@ -97,12 +97,12 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
     if (frame->document()->securityOrigin()->isSameSchemeHostPort(pingOrigin.get()))
         request.clearHTTPReferrer();
 
-    request.setHTTPHeaderField("Ping-To", AtomicString(destinationURL.string()));
+    request.setHTTPHeaderField(HTTPNames::Ping_To, AtomicString(destinationURL.string()));
 
     // Ping-From follows the same rules as the default referrer beahavior for subresource requests.
     // FIXME: Should Ping-From obey ReferrerPolicy?
     if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->document()->url().string()))
-        request.setHTTPHeaderField("Ping-From", AtomicString(frame->document()->url().string()));
+        request.setHTTPHeaderField(HTTPNames::Ping_From, AtomicString(frame->document()->url().string()));
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::ping;
@@ -112,7 +112,7 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
 void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, PassRefPtr<EncodedFormData> report, ViolationReportType type)
 {
     ResourceRequest request(reportURL);
-    request.setHTTPMethod("POST");
+    request.setHTTPMethod(HTTPNames::POST);
     request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
     request.setHTTPBody(report);
     finishPingRequestInitialization(request, frame);

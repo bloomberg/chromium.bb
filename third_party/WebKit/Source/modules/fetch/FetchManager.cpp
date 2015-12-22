@@ -30,6 +30,7 @@
 #include "modules/fetch/FetchRequestData.h"
 #include "modules/fetch/Response.h"
 #include "modules/fetch/ResponseInit.h"
+#include "platform/HTTPNames.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -278,7 +279,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
 
     if (IsRedirectStatusCode(m_responseHttpStatusCode)) {
         Vector<String> locations;
-        responseData->headerList()->getAll("location", locations);
+        responseData->headerList()->getAll(HTTPNames::Location, locations);
         if (locations.size() > 1) {
             performNetworkError("Multiple Location header.");
             return;
@@ -318,7 +319,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         // "... return a response whose header list consist of a single header
         //  whose name is `Content-Type` and value is the MIME type and
         //  parameters returned from obtaining a resource"
-        r->headers()->headerList()->remove("Access-Control-Allow-Origin");
+        r->headers()->headerList()->remove(HTTPNames::Access_Control_Allow_Origin);
     }
     r->headers()->setGuard(Headers::ImmutableGuard);
 
@@ -530,7 +531,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         request.addHTTPHeaderField(AtomicString(list[i]->first), AtomicString(list[i]->second));
     }
 
-    if (m_request->method() != "GET" && m_request->method() != "HEAD") {
+    if (m_request->method() != HTTPNames::GET && m_request->method() != HTTPNames::HEAD) {
         if (m_request->buffer()) {
             request.setHTTPBody(m_request->buffer()->drainAsFormData());
         }
@@ -623,7 +624,7 @@ void FetchManager::Loader::performDataFetch()
 
     // Spec: https://fetch.spec.whatwg.org/#concept-basic-fetch
     // If |request|'s method is `GET` .... Otherwise, return a network error.
-    if (m_request->method() != "GET") {
+    if (m_request->method() != HTTPNames::GET) {
         performNetworkError("Only 'GET' method is allowed for data URLs in Fetch API.");
         return;
     }

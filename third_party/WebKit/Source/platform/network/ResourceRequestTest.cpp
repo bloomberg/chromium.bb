@@ -28,7 +28,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData)
     original.setTimeoutInterval(10);
     original.setFirstPartyForCookies(KURL(ParsedURLString, "http://www.example.com/first_party.htm"));
     original.setRequestorOrigin(SecurityOrigin::create(KURL(ParsedURLString, "http://www.example.com/first_party.htm")));
-    original.setHTTPMethod(AtomicString("GET", AtomicString::ConstructFromLiteral));
+    original.setHTTPMethod(HTTPNames::GET);
     original.setHTTPHeaderField(AtomicString("Foo"), AtomicString("Bar"));
     original.setHTTPHeaderField(AtomicString("Piyo"), AtomicString("Fuga"));
     original.setPriority(ResourceLoadPriorityLow, 20);

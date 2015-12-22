@@ -185,7 +185,7 @@ protected:
         fetchContext->upgradeInsecureRequest(fetchRequest);
 
         EXPECT_STREQ(shouldPrefer ? "1" : "",
-            fetchRequest.resourceRequest().httpHeaderField("Upgrade-Insecure-Requests").utf8().data());
+            fetchRequest.resourceRequest().httpHeaderField(HTTPNames::Upgrade_Insecure_Requests).utf8().data());
     }
 
     RefPtr<SecurityOrigin> exampleOrigin;
@@ -401,7 +401,7 @@ TEST_F(FrameFetchContextTest, MainResource)
     // Conditional request
     document->frame()->loader().setLoadType(FrameLoadTypeStandard);
     ResourceRequest conditional("http://www.example.com");
-    conditional.setHTTPHeaderField("If-Modified-Since", "foo");
+    conditional.setHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
     EXPECT_EQ(ReloadIgnoringCacheData, fetchContext->resourceRequestCachePolicy(conditional, Resource::MainResource));
 
     // Set up a child frame

@@ -161,7 +161,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     for (const auto& header : headerMap) {
         if (FetchUtils::isSimpleHeader(header.key, header.value)) {
             m_simpleRequestHeaders.add(header.key, header.value);
-        } else if (equalIgnoringCase(header.key, "range") && m_options.crossOriginRequestPolicy == UseAccessControl && m_options.preflightPolicy == PreventPreflight) {
+        } else if (equalIgnoringCase(header.key, HTTPNames::Range) && m_options.crossOriginRequestPolicy == UseAccessControl && m_options.preflightPolicy == PreventPreflight) {
             // Allow an exception for the "range" header for when CORS callers request no preflight, this ensures cross-origin
             // redirects work correctly for crossOrigin enabled WebURLRequest::RequestContextVideo type requests.
             m_simpleRequestHeaders.add(header.key, header.value);
@@ -181,7 +181,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     //   initiated fetch.
     //   - Some non-script initiated fetches such as WorkerScriptLoader also use
     //     ThreadableLoader, but they are guaranteed to use GET method.
-    if (request.httpMethod() != "GET") {
+    if (request.httpMethod() != HTTPNames::GET) {
         if (Page* page = document.page())
             page->chromeClient().didObserveNonGetFetchFromScript();
     }

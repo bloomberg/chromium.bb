@@ -191,7 +191,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, const Secur
     if (resourceOrigin->isSameSchemeHostPort(&initiatorSecurityOrigin))
         return true;
 
-    const AtomicString& timingAllowOriginString = originalTimingAllowOrigin.isEmpty() ? response.httpHeaderField("timing-allow-origin") : originalTimingAllowOrigin;
+    const AtomicString& timingAllowOriginString = originalTimingAllowOrigin.isEmpty() ? response.httpHeaderField(HTTPNames::Timing_Allow_Origin) : originalTimingAllowOrigin;
     if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
         return false;
 

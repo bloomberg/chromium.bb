@@ -60,6 +60,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
+#include "platform/HTTPNames.h"
 #include "platform/Logging.h"
 #include "platform/ThreadedDataReceiver.h"
 #include "platform/UserGestureIndicator.h"
@@ -208,7 +209,7 @@ void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDoc
     m_originalRequest.setURL(newURL);
     m_request.setURL(newURL);
     if (sameDocumentNavigationSource == SameDocumentNavigationHistoryApi) {
-        m_request.setHTTPMethod("GET");
+        m_request.setHTTPMethod(HTTPNames::GET);
         m_request.setHTTPBody(nullptr);
     }
     clearRedirectChain();
@@ -316,7 +317,7 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
 {
     int status = redirectResponse.httpStatusCode();
     if (((status >= 301 && status <= 303) || status == 307)
-        && m_originalRequest.httpMethod() == "POST")
+        && m_originalRequest.httpMethod() == HTTPNames::POST)
         return true;
 
     return false;
@@ -400,7 +401,7 @@ bool DocumentLoader::shouldContinueForResponse() const
         return false;
     }
 
-    if (contentDispositionType(m_response.httpHeaderField("Content-Disposition")) == ContentDispositionAttachment) {
+    if (contentDispositionType(m_response.httpHeaderField(HTTPNames::Content_Disposition)) == ContentDispositionAttachment) {
         // The server wants us to download instead of replacing the page contents.
         // Downloading is handled by the embedder, but we still get the initial
         // response so that we can ignore it and clean up properly.
@@ -454,11 +455,9 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
         return;
     }
 
-    DEFINE_STATIC_LOCAL(AtomicString, xFrameOptionHeader, ("x-frame-options", AtomicString::ConstructFromLiteral));
-
     // 'frame-ancestors' obviates 'x-frame-options': https://w3c.github.io/webappsec/specs/content-security-policy/#frame-ancestors-and-frame-options
     if (!m_contentSecurityPolicy->isFrameAncestorsEnforced()) {
-        HTTPHeaderMap::const_iterator it = response.httpHeaderFields().find(xFrameOptionHeader);
+        HTTPHeaderMap::const_iterator it = response.httpHeaderFields().find(HTTPNames::X_Frame_Options);
         if (it != response.httpHeaderFields().end()) {
             String content = it->value;
             if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), mainResourceIdentifier())) {
@@ -520,7 +519,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
 
     // Call receivedFirstData() exactly once per load.
     frameLoader()->receivedFirstData();
-    m_frame->document()->maybeHandleHttpRefresh(m_response.httpHeaderField("Refresh"), Document::HttpRefreshFromHeader);
+    m_frame->document()->maybeHandleHttpRefresh(m_response.httpHeaderField(HTTPNames::Refresh), Document::HttpRefreshFromHeader);
 }
 
 void DocumentLoader::commitData(const char* bytes, size_t length)

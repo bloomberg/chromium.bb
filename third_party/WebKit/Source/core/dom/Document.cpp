@@ -4117,7 +4117,7 @@ String Document::lastModified() const
     bool foundDate = false;
     if (m_frame) {
         if (DocumentLoader* documentLoader = loader()) {
-            const AtomicString& httpLastModified = documentLoader->response().httpHeaderField("Last-Modified");
+            const AtomicString& httpLastModified = documentLoader->response().httpHeaderField(HTTPNames::Last_Modified);
             if (!httpLastModified.isEmpty()) {
                 date.setMillisecondsSinceEpochForDateTime(convertToLocalTime(parseDate(httpLastModified)));
                 foundDate = true;

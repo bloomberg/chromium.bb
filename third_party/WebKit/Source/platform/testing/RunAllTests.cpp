@@ -29,6 +29,7 @@
  */
 
 #include "platform/EventTracer.h"
+#include "platform/HTTPNames.h"
 #include "platform/heap/Heap.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "wtf/CryptographicallyRandomNumber.h"
@@ -74,6 +75,8 @@ int main(int argc, char** argv)
     blink::ThreadState::attachMainThread();
     blink::ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr);
     blink::EventTracer::initialize();
+
+    blink::HTTPNames::init();
 
     base::TestSuite testSuite(argc, argv);
     int result = base::LaunchUnitTests(argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));

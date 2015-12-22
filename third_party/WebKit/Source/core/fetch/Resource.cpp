@@ -937,7 +937,7 @@ bool Resource::hasCacheControlNoStoreHeader()
 
 bool Resource::hasVaryHeader() const
 {
-    return !m_response.httpHeaderField("Vary").isNull();
+    return !m_response.httpHeaderField(HTTPNames::Vary).isNull();
 }
 
 bool Resource::mustRevalidateDueToCacheHeaders()

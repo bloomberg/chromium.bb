@@ -231,10 +231,11 @@
       '<@(platform_heap_files)',
 
       # Additional .cpp files from platform_generated.gyp:make_platform_generated actions.
+      '<(blink_platform_output_dir)/ColorData.cpp',
       '<(blink_platform_output_dir)/FontFamilyNames.cpp',
+      '<(blink_platform_output_dir)/HTTPNames.cpp',
       '<(blink_platform_output_dir)/RuntimeEnabledFeatures.cpp',
       '<(blink_platform_output_dir)/RuntimeEnabledFeatures.h',
-      '<(blink_platform_output_dir)/ColorData.cpp',
     ],
     'sources/': [
       # Exclude all platform specific things, reinclude them below on a per-platform basis

@@ -49,6 +49,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/page/EventSourceInit.h"
+#include "platform/HTTPNames.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -122,15 +123,15 @@ void EventSource::connect()
 
     ExecutionContext& executionContext = *this->executionContext();
     ResourceRequest request(m_url);
-    request.setHTTPMethod("GET");
-    request.setHTTPHeaderField("Accept", "text/event-stream");
-    request.setHTTPHeaderField("Cache-Control", "no-cache");
+    request.setHTTPMethod(HTTPNames::GET);
+    request.setHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
+    request.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
     request.setRequestContext(WebURLRequest::RequestContextEventSource);
     if (!m_lastEventId.isEmpty()) {
         // HTTP headers are Latin-1 byte strings, but the Last-Event-ID header is encoded as UTF-8.
         // TODO(davidben): This should be captured in the type of setHTTPHeaderField's arguments.
         CString lastEventIdUtf8 = m_lastEventId.utf8();
-        request.setHTTPHeaderField("Last-Event-ID", AtomicString(reinterpret_cast<const LChar*>(lastEventIdUtf8.data()), lastEventIdUtf8.length()));
+        request.setHTTPHeaderField(HTTPNames::Last_Event_ID, AtomicString(reinterpret_cast<const LChar*>(lastEventIdUtf8.data()), lastEventIdUtf8.length()));
     }
 
     SecurityOrigin* origin = executionContext.securityOrigin();

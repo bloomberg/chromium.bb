@@ -84,7 +84,7 @@ void ScriptResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebP
 
 AtomicString ScriptResource::mimeType() const
 {
-    return extractMIMETypeFromMediaType(m_response.httpHeaderField("Content-Type")).lower();
+    return extractMIMETypeFromMediaType(m_response.httpHeaderField(HTTPNames::Content_Type)).lower();
 }
 
 const String& ScriptResource::script()
@@ -112,7 +112,7 @@ void ScriptResource::destroyDecodedDataForFailedRevalidation()
 
 bool ScriptResource::mimeTypeAllowedByNosniff() const
 {
-    return parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
+    return parseContentTypeOptionsHeader(m_response.httpHeaderField(HTTPNames::X_Content_Type_Options)) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
 }
 
 bool ScriptResource::mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const

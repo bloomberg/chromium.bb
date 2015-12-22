@@ -490,7 +490,7 @@ void ResourceFetcher::initializeResourceRequest(ResourceRequest& request, Resour
     if (request.requestContext() == WebURLRequest::RequestContextUnspecified)
         determineRequestContext(request, type);
     if (type == Resource::LinkPrefetch || type == Resource::LinkSubresource)
-        request.setHTTPHeaderField("Purpose", "prefetch");
+        request.setHTTPHeaderField(HTTPNames::Purpose, "prefetch");
 
     context().addAdditionalRequestHeaders(request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }
@@ -508,21 +508,21 @@ void ResourceFetcher::initializeRevalidation(const FetchRequest& request, Resour
     revalidatingRequest.clearHTTPReferrer();
     initializeResourceRequest(revalidatingRequest, resource->type());
 
-    const AtomicString& lastModified = resource->response().httpHeaderField("Last-Modified");
-    const AtomicString& eTag = resource->response().httpHeaderField("ETag");
+    const AtomicString& lastModified = resource->response().httpHeaderField(HTTPNames::Last_Modified);
+    const AtomicString& eTag = resource->response().httpHeaderField(HTTPNames::ETag);
     if (!lastModified.isEmpty() || !eTag.isEmpty()) {
         ASSERT(context().cachePolicy() != CachePolicyReload);
         if (context().cachePolicy() == CachePolicyRevalidate)
-            revalidatingRequest.setHTTPHeaderField("Cache-Control", "max-age=0");
+            revalidatingRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
     }
     if (!lastModified.isEmpty())
-        revalidatingRequest.setHTTPHeaderField("If-Modified-Since", lastModified);
+        revalidatingRequest.setHTTPHeaderField(HTTPNames::If_Modified_Since, lastModified);
     if (!eTag.isEmpty())
-        revalidatingRequest.setHTTPHeaderField("If-None-Match", eTag);
+        revalidatingRequest.setHTTPHeaderField(HTTPNames::If_None_Match, eTag);
 
     double stalenessLifetime = resource->stalenessLifetime();
     if (std::isfinite(stalenessLifetime) && stalenessLifetime > 0) {
-        revalidatingRequest.setHTTPHeaderField("Resource-Freshness", AtomicString(String::format("max-age=%.0lf,stale-while-revalidate=%.0lf,age=%.0lf", resource->freshnessLifetime(), stalenessLifetime, resource->currentAge())));
+        revalidatingRequest.setHTTPHeaderField(HTTPNames::Resource_Freshness, AtomicString(String::format("max-age=%.0lf,stale-while-revalidate=%.0lf,age=%.0lf", resource->freshnessLifetime(), stalenessLifetime, resource->currentAge())));
     }
 
     resource->setRevalidatingRequest(revalidatingRequest);
@@ -552,7 +552,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
     OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(resource->options().initiatorInfo.name, monotonicallyIncreasingTime(), resource->type() == Resource::MainResource);
 
     if (resource->isCacheValidator()) {
-        const AtomicString& timingAllowOrigin = resource->response().httpHeaderField("Timing-Allow-Origin");
+        const AtomicString& timingAllowOrigin = resource->response().httpHeaderField(HTTPNames::Timing_Allow_Origin);
         if (!timingAllowOrigin.isEmpty())
             info->setOriginalTimingAllowOrigin(timingAllowOrigin);
     }

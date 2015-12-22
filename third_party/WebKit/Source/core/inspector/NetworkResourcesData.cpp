@@ -193,7 +193,7 @@ void NetworkResourcesData::responseReceived(const String& requestId, const Strin
         blobData->appendFile(filePath);
         AtomicString mimeType;
         if (response.isHTTP())
-            mimeType = extractMIMETypeFromMediaType(response.httpHeaderField("Content-Type"));
+            mimeType = extractMIMETypeFromMediaType(response.httpHeaderField(HTTPNames::Content_Type));
         if (mimeType.isEmpty())
             mimeType = response.mimeType();
         if (mimeType.isEmpty())

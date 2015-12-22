@@ -60,6 +60,24 @@
           ],
         },
         {
+          'action_name': 'HTTPNames',
+          'inputs': [
+            '<@(make_names_files)',
+            'network/HTTPNames.in',
+          ],
+          'outputs': [
+            '<(blink_platform_output_dir)/HTTPNames.cpp',
+            '<(blink_platform_output_dir)/HTTPNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_names.py',
+            'network/HTTPNames.in',
+            '--output_dir',
+            '<(blink_platform_output_dir)',
+          ],
+        },
+        {
           'action_name': 'RuntimeEnabledFeatures',
           'inputs': [
             '<@(scripts_for_in_files)',
