@@ -340,6 +340,9 @@ crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ P
 
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ Failure ]
 
+crbug.com/327832 tables/mozilla/bugs/bug3037-1.html [ NeedsRebaseline ]
+crbug.com/327832 fast/dynamic/insert-before-table-part-in-continuation.html [ NeedsRebaseline ]
+
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ Pass Failure ]
@@ -457,6 +460,8 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Failure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ Failure ]
+
+crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass Slow ]
 

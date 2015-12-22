@@ -348,7 +348,7 @@ void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
             table = toLayoutTable(afterChild);
         } else {
             table = LayoutTable::createAnonymousWithParent(this);
-            addChild(table, beforeChild);
+            children->insertChildNode(this, table, beforeChild);
         }
         table->addChild(newChild);
     } else {

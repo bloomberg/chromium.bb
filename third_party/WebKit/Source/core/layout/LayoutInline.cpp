@@ -258,6 +258,11 @@ LayoutRect LayoutInline::localCaretRect(InlineBox* inlineBox, int, LayoutUnit* e
 
 void LayoutInline::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
+    // Any table-part dom child of an inline element has anonymous wrappers in the layout tree
+    // so we need to climb up to the enclosing anonymous table wrapper and add the new child before that.
+    // TODO(rhogan): If newChild is a table part we want to insert it into the same table as beforeChild.
+    while (beforeChild && beforeChild->isTablePart())
+        beforeChild = beforeChild->parent();
     if (continuation())
         return addChildToContinuation(newChild, beforeChild);
     return addChildIgnoringContinuation(newChild, beforeChild);
@@ -301,7 +306,7 @@ void LayoutInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
     if (!beforeChild && isAfterContent(lastChild()))
         beforeChild = lastChild();
 
-    if (!newChild->isInline() && !newChild->isFloatingOrOutOfFlowPositioned()) {
+    if (!newChild->isInline() && !newChild->isFloatingOrOutOfFlowPositioned() && !newChild->isTablePart()) {
         // We are placing a block inside an inline. We have to perform a split of this
         // inline into continuations.  This involves creating an anonymous block box to hold
         // |newChild|.  We then make that block box a continuation of this inline.  We take all of
@@ -486,8 +491,10 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox
 
 void LayoutInline::addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
+    // A continuation always consists of two potential candidates: an inline or an anonymous
+    // block box holding block children.
     LayoutBoxModelObject* flow = continuationBefore(beforeChild);
-    ASSERT(!beforeChild || beforeChild->parent()->isLayoutBlock() || beforeChild->parent()->isLayoutInline());
+    ASSERT(!beforeChild || beforeChild->parent()->isAnonymousBlock() || beforeChild->parent()->isLayoutInline());
     LayoutBoxModelObject* beforeChildParent = nullptr;
     if (beforeChild) {
         beforeChildParent = toLayoutBoxModelObject(beforeChild->parent());
@@ -499,12 +506,13 @@ void LayoutInline::addChildToContinuation(LayoutObject* newChild, LayoutObject* 
             beforeChildParent = flow;
     }
 
+    // TODO(rhogan): Should we treat out-of-flows and floats as through they're inline below?
     if (newChild->isFloatingOrOutOfFlowPositioned())
         return beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
 
-    // A continuation always consists of two potential candidates: an inline or an anonymous
-    // block box holding block children.
-    bool childInline = newChild->isInline();
+    // A table part will be wrapped by an inline anonymous table when it is added to the layout
+    // tree, so treat it as inline when deciding where to add it.
+    bool childInline = newChild->isInline() || newChild->isTablePart();
     bool bcpInline = beforeChildParent->isInline();
     bool flowInline = flow->isInline();
 
