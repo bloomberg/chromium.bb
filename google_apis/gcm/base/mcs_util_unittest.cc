@@ -4,7 +4,11 @@
 
 #include "google_apis/gcm/base/mcs_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -13,8 +17,8 @@
 namespace gcm {
 namespace {
 
-const uint64 kAuthId = 4421448356646222460;
-const uint64 kAuthToken = 12345;
+const uint64_t kAuthId = 4421448356646222460;
+const uint64_t kAuthToken = 12345;
 
 // Build a login request protobuf.
 TEST(MCSUtilTest, BuildLoginRequest) {
@@ -31,7 +35,7 @@ TEST(MCSUtilTest, BuildLoginRequest) {
 
 // Test building a protobuf and extracting the tag from a protobuf.
 TEST(MCSUtilTest, ProtobufToTag) {
-  for (uint8 i = 0; i < kNumProtoTypes; ++i) {
+  for (uint8_t i = 0; i < kNumProtoTypes; ++i) {
     scoped_ptr<google::protobuf::MessageLite> protobuf =
         BuildProtobufFromTag(i);
     if (!protobuf.get())  // Not all tags have protobuf definitions.

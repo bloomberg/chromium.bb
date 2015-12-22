@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/instance_id_delete_token_request_handler.h"
 
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/gcm/base/gcm_util.h"

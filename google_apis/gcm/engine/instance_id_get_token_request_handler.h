@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "google_apis/gcm/engine/registration_request.h"
 
 namespace gcm {

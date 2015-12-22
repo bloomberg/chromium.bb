@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
 

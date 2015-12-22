@@ -5,12 +5,16 @@
 #ifndef GOOGLE_APIS_DRIVE_TEST_UTIL_H_
 #define GOOGLE_APIS_DRIVE_TEST_UTIL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/template_util.h"
@@ -97,9 +101,9 @@ scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
 // "bytes <start_position>-<end_position>/<length>".
 // Returns true on success.
 bool ParseContentRangeHeader(const std::string& value,
-                             int64* start_position,
-                             int64* end_position,
-                             int64* length);
+                             int64_t* start_position,
+                             int64_t* end_position,
+                             int64_t* length);
 
 // Google API related code and Drive File System code work on asynchronous
 // architecture and return the results via callbacks.
@@ -265,12 +269,12 @@ CreateCopyResultCallback(T1* out1, T2* out2, T3* out3, T4* out4) {
       internal::OutputParams<T1, T2, T3, T4>(out1, out2, out3, out4));
 }
 
-typedef std::pair<int64, int64> ProgressInfo;
+typedef std::pair<int64_t, int64_t> ProgressInfo;
 
 // Helper utility for recording the results via ProgressCallback.
 void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
-                                  int64 progress,
-                                  int64 total);
+                                  int64_t progress,
+                                  int64_t total);
 
 // Helper utility for recording the content via GetContentCallback.
 class TestGetContentCallback {

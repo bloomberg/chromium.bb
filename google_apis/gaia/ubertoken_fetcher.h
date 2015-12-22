@@ -5,6 +5,7 @@
 #ifndef GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
 #define GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"

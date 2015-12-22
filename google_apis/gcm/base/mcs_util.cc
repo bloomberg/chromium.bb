@@ -4,8 +4,11 @@
 
 #include "google_apis/gcm/base/mcs_util.h"
 
+#include <stddef.h>
+
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
@@ -51,8 +54,8 @@ const int kMaxTTLSeconds = 24 * 60 * 60;  // 1 day.
 }  // namespace
 
 scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
-    uint64 auth_id,
-    uint64 auth_token,
+    uint64_t auth_id,
+    uint64_t auth_token,
     const std::string& version_string) {
   // Create a hex encoded auth id for the device id field.
   std::string auth_id_hex;
@@ -106,7 +109,7 @@ scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
 
 // Utility method to build a google::protobuf::MessageLite object from a MCS
 // tag.
-scoped_ptr<google::protobuf::MessageLite> BuildProtobufFromTag(uint8 tag) {
+scoped_ptr<google::protobuf::MessageLite> BuildProtobufFromTag(uint8_t tag) {
   switch(tag) {
     case kHeartbeatPingTag:
       return scoped_ptr<google::protobuf::MessageLite>(
@@ -187,7 +190,8 @@ void SetPersistentId(const std::string& persistent_id,
   NOTREACHED();
 }
 
-uint32 GetLastStreamIdReceived(const google::protobuf::MessageLite& protobuf) {
+uint32_t GetLastStreamIdReceived(
+    const google::protobuf::MessageLite& protobuf) {
   if (protobuf.GetTypeName() == kProtoNames[kIqStanzaTag]) {
     return reinterpret_cast<const mcs_proto::IqStanza*>(&protobuf)->
         last_stream_id_received();
@@ -208,7 +212,7 @@ uint32 GetLastStreamIdReceived(const google::protobuf::MessageLite& protobuf) {
   return 0;
 }
 
-void SetLastStreamIdReceived(uint32 val,
+void SetLastStreamIdReceived(uint32_t val,
                              google::protobuf::MessageLite* protobuf) {
   if (protobuf->GetTypeName() == kProtoNames[kIqStanzaTag]) {
     reinterpret_cast<mcs_proto::IqStanza*>(protobuf)->
@@ -238,8 +242,8 @@ bool HasTTLExpired(const google::protobuf::MessageLite& protobuf,
                    base::Clock* clock) {
   if (protobuf.GetTypeName() != kProtoNames[kDataMessageStanzaTag])
     return false;
-  uint64 ttl = GetTTL(protobuf);
-  uint64 sent =
+  uint64_t ttl = GetTTL(protobuf);
+  uint64_t sent =
       reinterpret_cast<const mcs_proto::DataMessageStanza*>(&protobuf)->sent();
   DCHECK(sent);
   return ttl > 0 &&

@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/engine/account_mapping.h"
 
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -13,12 +15,12 @@ namespace gcm {
 namespace {
 
 const char kSeparator[] = "&";
-const uint32 kEmailIndex = 0;
-const uint32 kStatusIndex = 1;
-const uint32 kStatusChangeTimestampIndex = 2;
-const uint32 kSizeWithNoMessage = kStatusChangeTimestampIndex + 1;
-const uint32 kMessageIdIndex = 3;
-const uint32 kSizeWithMessage = kMessageIdIndex + 1;
+const uint32_t kEmailIndex = 0;
+const uint32_t kStatusIndex = 1;
+const uint32_t kStatusChangeTimestampIndex = 2;
+const uint32_t kSizeWithNoMessage = kStatusChangeTimestampIndex + 1;
+const uint32_t kMessageIdIndex = 3;
+const uint32_t kSizeWithMessage = kMessageIdIndex + 1;
 
 const char kStatusNew[] = "new";
 const char kStatusAdding[] = "adding";
@@ -104,7 +106,7 @@ bool AccountMapping::ParseFromString(const std::string& value) {
   if (values.size() == kSizeWithNoMessage && temp_status == ADDING)
     return false;
 
-  int64 status_change_ts_internal = 0LL;
+  int64_t status_change_ts_internal = 0LL;
   if (!base::StringToInt64(values[kStatusChangeTimestampIndex],
                            &status_change_ts_internal)) {
     return false;

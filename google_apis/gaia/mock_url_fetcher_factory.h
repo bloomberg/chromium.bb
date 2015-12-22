@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"

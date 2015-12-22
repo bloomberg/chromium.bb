@@ -5,9 +5,11 @@
 #ifndef GOOGLE_APIS_GCM_BASE_MCS_MESSAGE_H_
 #define GOOGLE_APIS_GCM_BASE_MCS_MESSAGE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
@@ -32,9 +34,9 @@ class GCM_EXPORT MCSMessage {
   // Infers tag from |message|.
   explicit MCSMessage(const google::protobuf::MessageLite& protobuf);
   // |tag| must match |protobuf|'s message type.
-  MCSMessage(uint8 tag, const google::protobuf::MessageLite& protobuf);
+  MCSMessage(uint8_t tag, const google::protobuf::MessageLite& protobuf);
   // |tag| must match |protobuf|'s message type. Takes ownership of |protobuf|.
-  MCSMessage(uint8 tag,
+  MCSMessage(uint8_t tag,
              scoped_ptr<const google::protobuf::MessageLite> protobuf);
   ~MCSMessage();
 
@@ -43,7 +45,7 @@ class GCM_EXPORT MCSMessage {
   bool IsValid() const;
 
   // Getters for serialization.
-  uint8 tag() const { return tag_; }
+  uint8_t tag() const { return tag_; }
   int size() const {return size_; }
   std::string SerializeAsString() const;
 
@@ -57,8 +59,8 @@ class GCM_EXPORT MCSMessage {
   class Core : public base::RefCountedThreadSafe<MCSMessage::Core> {
    public:
     Core();
-    Core(uint8 tag, const google::protobuf::MessageLite& protobuf);
-    Core(uint8 tag, scoped_ptr<const google::protobuf::MessageLite> protobuf);
+    Core(uint8_t tag, const google::protobuf::MessageLite& protobuf);
+    Core(uint8_t tag, scoped_ptr<const google::protobuf::MessageLite> protobuf);
 
     const google::protobuf::MessageLite& Get() const;
 
@@ -73,7 +75,7 @@ class GCM_EXPORT MCSMessage {
   };
 
   // These are cached separately to avoid having to recompute them.
-  const uint8 tag_;
+  const uint8_t tag_;
   const int size_;
 
   // The refcounted core, containing the protobuf memory.

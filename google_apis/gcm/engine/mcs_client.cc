@@ -4,9 +4,10 @@
 
 #include "google_apis/gcm/engine/mcs_client.h"
 
+#include <stddef.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -86,12 +87,12 @@ class CollapseKey {
 
   std::string token() const { return token_; }
   std::string app_id() const { return app_id_; }
-  int64 device_user_id() const { return device_user_id_; }
+  int64_t device_user_id() const { return device_user_id_; }
 
  private:
   const std::string token_;
   const std::string app_id_;
-  const int64 device_user_id_;
+  const int64_t device_user_id_;
 };
 
 CollapseKey::CollapseKey(const mcs_proto::DataMessageStanza& message)
@@ -119,13 +120,13 @@ struct ReliablePacketInfo {
   ~ReliablePacketInfo();
 
   // The stream id with which the message was sent.
-  uint32 stream_id;
+  uint32_t stream_id;
 
   // If reliable delivery was requested, the persistent id of the message.
   std::string persistent_id;
 
   // The type of message itself (for easier lookup).
-  uint8 tag;
+  uint8_t tag;
 
   // The protobuf of the message itself.
   MCSProto protobuf;
@@ -227,12 +228,12 @@ void MCSClient::Initialize(
   restored_unackeds_server_ids_ = load_result->incoming_messages;
 
   // First go through and order the outgoing messages by recency.
-  std::map<uint64, google::protobuf::MessageLite*> ordered_messages;
+  std::map<uint64_t, google::protobuf::MessageLite*> ordered_messages;
   std::vector<PersistentId> expired_ttl_ids;
   for (GCMStore::OutgoingMessageMap::iterator iter =
            load_result->outgoing_messages.begin();
        iter != load_result->outgoing_messages.end(); ++iter) {
-    uint64 timestamp = 0;
+    uint64_t timestamp = 0;
     if (!base::StringToUint64(iter->first, &timestamp)) {
       LOG(ERROR) << "Invalid restored message.";
       // TODO(fgorski): Error: data unreadable
@@ -259,8 +260,8 @@ void MCSClient::Initialize(
 
   // Now go through and add the outgoing messages to the send queue in their
   // appropriate order (oldest at front, most recent at back).
-  for (std::map<uint64, google::protobuf::MessageLite*>::iterator
-           iter = ordered_messages.begin();
+  for (std::map<uint64_t, google::protobuf::MessageLite*>::iterator iter =
+           ordered_messages.begin();
        iter != ordered_messages.end(); ++iter) {
     ReliablePacketInfo* packet_info = new ReliablePacketInfo();
     packet_info->protobuf.reset(iter->second);
@@ -285,7 +286,7 @@ void MCSClient::Initialize(
   heartbeat_manager_.SetClientHeartbeatIntervalMs(min_interval_ms);
 }
 
-void MCSClient::Login(uint64 android_id, uint64 security_token) {
+void MCSClient::Login(uint64_t android_id, uint64_t security_token) {
   DCHECK_EQ(state_, LOADED);
   DCHECK(android_id_ == 0 || android_id_ == android_id);
   DCHECK(security_token_ == 0 || security_token_ == security_token);
@@ -566,7 +567,7 @@ void MCSClient::SendPacketToWire(ReliablePacketInfo* packet_info) {
     mcs_proto::DataMessageStanza* data_message =
         reinterpret_cast<mcs_proto::DataMessageStanza*>(
             packet_info->protobuf.get());
-    uint64 sent = data_message->sent();
+    uint64_t sent = data_message->sent();
     DCHECK_GT(sent, 0U);
     int queued = (clock_->Now().ToInternalValue() /
         base::Time::kMicrosecondsPerSecond) - sent;
@@ -639,7 +640,7 @@ void MCSClient::HandlePacketFromWire(
     scoped_ptr<google::protobuf::MessageLite> protobuf) {
   if (!protobuf.get())
     return;
-  uint8 tag = GetMCSProtoTag(*protobuf);
+  uint8_t tag = GetMCSProtoTag(*protobuf);
   PersistentId persistent_id = GetPersistentId(*protobuf);
   StreamId last_stream_id_received = GetLastStreamIdReceived(*protobuf);
 

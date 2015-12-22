@@ -35,13 +35,10 @@ const char kLoginHeader[] = "AidLogin";
 
 }  // namespace
 
-UnregistrationRequest::RequestInfo::RequestInfo(
-    uint64 android_id,
-    uint64 security_token,
-    const std::string& app_id)
-    : android_id(android_id),
-      security_token(security_token),
-      app_id(app_id) {
+UnregistrationRequest::RequestInfo::RequestInfo(uint64_t android_id,
+                                                uint64_t security_token,
+                                                const std::string& app_id)
+    : android_id(android_id), security_token(security_token), app_id(app_id) {
   DCHECK(android_id != 0UL);
   DCHECK(security_token != 0UL);
 }

@@ -4,8 +4,11 @@
 
 #include "google_apis/gcm/engine/registration_request.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -69,13 +72,10 @@ bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
 
 }  // namespace
 
-RegistrationRequest::RequestInfo::RequestInfo(
-    uint64 android_id,
-    uint64 security_token,
-    const std::string& app_id)
-    : android_id(android_id),
-      security_token(security_token),
-      app_id(app_id) {
+RegistrationRequest::RequestInfo::RequestInfo(uint64_t android_id,
+                                              uint64_t security_token,
+                                              const std::string& app_id)
+    : android_id(android_id), security_token(security_token), app_id(app_id) {
   DCHECK(android_id != 0UL);
   DCHECK(security_token != 0UL);
 }

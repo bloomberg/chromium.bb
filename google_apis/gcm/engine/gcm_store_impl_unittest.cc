@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -38,8 +40,8 @@ const char kAppName2[] = "my_app_2";
 // Category name for testing.
 const char kCategoryName[] = "my_category";
 
-const uint64 kDeviceId = 22;
-const uint64 kDeviceToken = 55;
+const uint64_t kDeviceId = 22;
+const uint64_t kDeviceToken = 55;
 
 class GCMStoreImplTest : public testing::Test {
  public:
@@ -65,7 +67,7 @@ class GCMStoreImplTest : public testing::Test {
   base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temp_directory_;
   bool expected_success_;
-  uint64 next_persistent_id_;
+  uint64_t next_persistent_id_;
 };
 
 GCMStoreImplTest::GCMStoreImplTest()

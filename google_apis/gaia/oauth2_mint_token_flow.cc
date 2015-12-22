@@ -4,10 +4,11 @@
 
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"

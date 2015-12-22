@@ -7,10 +7,11 @@
 #ifndef GOOGLE_APIS_GCM_BASE_MCS_UTIL_H_
 #define GOOGLE_APIS_GCM_BASE_MCS_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
@@ -56,8 +57,8 @@ enum MCSIqStanzaExtension {
 
 // Builds a LoginRequest with the hardcoded local data.
 GCM_EXPORT scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
-    uint64 auth_id,
-    uint64 auth_token,
+    uint64_t auth_id,
+    uint64_t auth_token,
     const std::string& version_string);
 
 // Builds a StreamAck IqStanza message.
@@ -66,8 +67,8 @@ GCM_EXPORT scoped_ptr<mcs_proto::IqStanza> BuildSelectiveAck(
     const std::vector<std::string>& acked_ids);
 
 // Utility methods for building and identifying MCS protobufs.
-GCM_EXPORT scoped_ptr<google::protobuf::MessageLite>
-    BuildProtobufFromTag(uint8 tag);
+GCM_EXPORT scoped_ptr<google::protobuf::MessageLite> BuildProtobufFromTag(
+    uint8_t tag);
 GCM_EXPORT int GetMCSProtoTag(const google::protobuf::MessageLite& message);
 
 // RMQ utility methods for extracting/setting common data from/to protobufs.
@@ -76,10 +77,10 @@ GCM_EXPORT std::string GetPersistentId(
 GCM_EXPORT void SetPersistentId(
     const std::string& persistent_id,
     google::protobuf::MessageLite* message);
-GCM_EXPORT uint32 GetLastStreamIdReceived(
-    const google::protobuf::MessageLite& protobuf);
+GCM_EXPORT uint32_t
+GetLastStreamIdReceived(const google::protobuf::MessageLite& protobuf);
 GCM_EXPORT void SetLastStreamIdReceived(
-    uint32 last_stream_id_received,
+    uint32_t last_stream_id_received,
     google::protobuf::MessageLite* protobuf);
 
 // Returns whether the TTL (time to live) for this message has expired, based

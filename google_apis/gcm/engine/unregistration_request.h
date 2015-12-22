@@ -5,8 +5,10 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_UNREGISTRATION_REQUEST_H_
 #define GOOGLE_APIS_GCM_ENGINE_UNREGISTRATION_REQUEST_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -59,15 +61,15 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
   // Defines the common info about an unregistration/token-deletion request.
   // All parameters are mandatory.
   struct GCM_EXPORT RequestInfo {
-    RequestInfo(uint64 android_id,
-                uint64 security_token,
+    RequestInfo(uint64_t android_id,
+                uint64_t security_token,
                 const std::string& app_id);
     ~RequestInfo();
 
     // Android ID of the device.
-    uint64 android_id;
+    uint64_t android_id;
     // Security token of the device.
-    uint64 security_token;
+    uint64_t security_token;
     // Application ID.
     std::string app_id;
   };

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/stringprintf.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"

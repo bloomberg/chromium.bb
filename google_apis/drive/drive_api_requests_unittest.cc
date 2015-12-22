@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -92,18 +95,20 @@ class TestBatchableDelegate : public BatchableDelegate {
     closure.Run();
   }
   void NotifyUploadProgress(const net::URLFetcher* source,
-                            int64 current,
-                            int64 total) override {
+                            int64_t current,
+                            int64_t total) override {
     progress_values_.push_back(current);
   }
-  const std::vector<int64>& progress_values() const { return progress_values_; }
+  const std::vector<int64_t>& progress_values() const {
+    return progress_values_;
+  }
 
  private:
   GURL url_;
   std::string content_type_;
   std::string content_data_;
   base::Closure callback_;
-  std::vector<int64> progress_values_;
+  std::vector<int64_t> progress_values_;
 };
 
 void EmptyPreapreCallback(DriveApiErrorCode) {
@@ -359,9 +364,9 @@ class DriveApiRequestsTest : public testing::Test {
         return scoped_ptr<net::test_server::HttpResponse>();
       }
 
-      int64 length = 0;
-      int64 start_position = 0;
-      int64 end_position = 0;
+      int64_t length = 0;
+      int64_t start_position = 0;
+      int64_t end_position = 0;
       if (!test_util::ParseContentRangeHeader(
               iter->second, &start_position, &end_position, &length)) {
         // Invalid "Content-Range" value.
@@ -488,8 +493,8 @@ class DriveApiRequestsTest : public testing::Test {
   }
 
   // These are for the current upload file status.
-  int64 received_bytes_;
-  int64 content_length_;
+  int64_t received_bytes_;
+  int64_t content_length_;
 };
 
 TEST_F(DriveApiRequestsTest, DriveApiDataRequest_Fields) {
@@ -1373,7 +1378,8 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     // Check the response.
     EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
     EXPECT_EQ(0, response.start_position_received);
-    EXPECT_EQ(static_cast<int64>(end_position), response.end_position_received);
+    EXPECT_EQ(static_cast<int64_t>(end_position),
+              response.end_position_received);
 
     // Check the response by GetUploadStatusRequest.
     {
@@ -1403,7 +1409,7 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     // Check the response.
     EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
     EXPECT_EQ(0, response.start_position_received);
-    EXPECT_EQ(static_cast<int64>(end_position),
+    EXPECT_EQ(static_cast<int64_t>(end_position),
               response.end_position_received);
   }
 }

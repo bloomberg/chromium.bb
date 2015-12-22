@@ -122,9 +122,9 @@ scoped_ptr<net::test_server::HttpResponse> HandleDownloadFileRequest(
 }
 
 bool ParseContentRangeHeader(const std::string& value,
-                             int64* start_position,
-                             int64* end_position,
-                             int64* length) {
+                             int64_t* start_position,
+                             int64_t* end_position,
+                             int64_t* length) {
   DCHECK(start_position);
   DCHECK(end_position);
   DCHECK(length);
@@ -151,8 +151,8 @@ bool ParseContentRangeHeader(const std::string& value,
 }
 
 void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
-                                  int64 progress,
-                                  int64 total) {
+                                  int64_t progress,
+                                  int64_t total) {
   progress_values->push_back(ProgressInfo(progress, total));
 }
 

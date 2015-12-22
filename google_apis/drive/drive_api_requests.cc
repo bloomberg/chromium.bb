@@ -4,6 +4,8 @@
 
 #include "google_apis/drive/drive_api_requests.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
@@ -801,18 +803,14 @@ InitiateUploadNewFileRequest::InitiateUploadNewFileRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const InitiateUploadCallback& callback)
-    : InitiateUploadRequestBase(sender,
-                                callback,
-                                content_type,
-                                content_length),
+    : InitiateUploadRequestBase(sender, callback, content_type, content_length),
       url_generator_(url_generator),
       parent_resource_id_(parent_resource_id),
-      title_(title) {
-}
+      title_(title) {}
 
 InitiateUploadNewFileRequest::~InitiateUploadNewFileRequest() {}
 
@@ -860,18 +858,14 @@ InitiateUploadExistingFileRequest::InitiateUploadExistingFileRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator,
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const std::string& etag,
     const InitiateUploadCallback& callback)
-    : InitiateUploadRequestBase(sender,
-                                callback,
-                                content_type,
-                                content_length),
+    : InitiateUploadRequestBase(sender, callback, content_type, content_length),
       url_generator_(url_generator),
       resource_id_(resource_id),
-      etag_(etag) {
-}
+      etag_(etag) {}
 
 InitiateUploadExistingFileRequest::~InitiateUploadExistingFileRequest() {}
 
@@ -930,9 +924,9 @@ bool InitiateUploadExistingFileRequest::GetContentData(
 ResumeUploadRequest::ResumeUploadRequest(
     RequestSender* sender,
     const GURL& upload_location,
-    int64 start_position,
-    int64 end_position,
-    int64 content_length,
+    int64_t start_position,
+    int64_t end_position,
+    int64_t content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path,
     const UploadRangeCallback& callback,
@@ -959,7 +953,9 @@ void ResumeUploadRequest::OnRangeRequestComplete(
 }
 
 void ResumeUploadRequest::OnURLFetchUploadProgress(
-    const net::URLFetcher* source, int64 current, int64 total) {
+    const net::URLFetcher* source,
+    int64_t current,
+    int64_t total) {
   if (!progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }
@@ -969,11 +965,9 @@ void ResumeUploadRequest::OnURLFetchUploadProgress(
 GetUploadStatusRequest::GetUploadStatusRequest(
     RequestSender* sender,
     const GURL& upload_url,
-    int64 content_length,
+    int64_t content_length,
     const UploadRangeCallback& callback)
-    : GetUploadStatusRequestBase(sender,
-                                 upload_url,
-                                 content_length),
+    : GetUploadStatusRequestBase(sender, upload_url, content_length),
       callback_(callback) {
   DCHECK(!callback.is_null());
 }
@@ -994,7 +988,7 @@ MultipartUploadNewFileDelegate::MultipartUploadNewFileDelegate(
     const std::string& title,
     const std::string& parent_resource_id,
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const base::Time& modified_date,
     const base::Time& last_viewed_by_me_date,
     const base::FilePath& local_file_path,
@@ -1015,8 +1009,7 @@ MultipartUploadNewFileDelegate::MultipartUploadNewFileDelegate(
           callback,
           progress_callback),
       has_modified_date_(!modified_date.is_null()),
-      url_generator_(url_generator) {
-}
+      url_generator_(url_generator) {}
 
 MultipartUploadNewFileDelegate::~MultipartUploadNewFileDelegate() {
 }
@@ -1038,7 +1031,7 @@ MultipartUploadExistingFileDelegate::MultipartUploadExistingFileDelegate(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const base::Time& modified_date,
     const base::Time& last_viewed_by_me_date,
     const base::FilePath& local_file_path,
@@ -1062,8 +1055,7 @@ MultipartUploadExistingFileDelegate::MultipartUploadExistingFileDelegate(
       resource_id_(resource_id),
       etag_(etag),
       has_modified_date_(!modified_date.is_null()),
-      url_generator_(url_generator) {
-}
+      url_generator_(url_generator) {}
 
 MultipartUploadExistingFileDelegate::~MultipartUploadExistingFileDelegate() {
 }
@@ -1228,8 +1220,8 @@ void SingleBatchableDelegateRequest::RunCallbackOnPrematureFailure(
 
 void SingleBatchableDelegateRequest::OnURLFetchUploadProgress(
     const net::URLFetcher* source,
-    int64 current,
-    int64 total) {
+    int64_t current,
+    int64_t total) {
   delegate_->NotifyUploadProgress(source, current, total);
 }
 
@@ -1327,7 +1319,7 @@ void BatchUploadRequest::MayCompletePrepare() {
   }
 
   // Build multipart body here.
-  int64 total_size = 0;
+  int64_t total_size = 0;
   std::vector<ContentTypeAndData> parts;
   for (auto& child : child_requests_) {
     std::string type;
@@ -1367,7 +1359,7 @@ void BatchUploadRequest::MayCompletePrepare() {
   UMA_HISTOGRAM_MEMORY_KB(kUMADriveTotalFileSizeInBatchUpload,
                           total_size / 1024);
 
-  std::vector<uint64> part_data_offset;
+  std::vector<uint64_t> part_data_offset;
   GenerateMultipartBody(MULTIPART_MIXED, boundary_, parts, &upload_content_,
                         &part_data_offset);
   DCHECK(part_data_offset.size() == child_requests_.size());
@@ -1451,8 +1443,8 @@ void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
 }
 
 void BatchUploadRequest::OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                                  int64 current,
-                                                  int64 total) {
+                                                  int64_t current,
+                                                  int64_t total) {
   for (auto child : child_requests_) {
     if (child->data_offset <= current &&
         current <= child->data_offset + child->data_size) {

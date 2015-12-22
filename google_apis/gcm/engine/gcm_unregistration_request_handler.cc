@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/gcm_unregistration_request_handler.h"
 
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "google_apis/gcm/base/gcm_util.h"
 #include "net/url_request/url_fetcher.h"

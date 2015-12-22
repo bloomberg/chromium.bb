@@ -5,6 +5,8 @@
 #ifndef GOOGLE_APIS_GCM_MONITORING_GCM_STATS_RECORDER_H_
 #define GOOGLE_APIS_GCM_MONITORING_GCM_STATS_RECORDER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -42,10 +44,10 @@ class GCM_EXPORT GCMStatsRecorder {
   virtual ~GCMStatsRecorder() {}
 
   // Records that a check-in has been initiated.
-  virtual void RecordCheckinInitiated(uint64 android_id) = 0;
+  virtual void RecordCheckinInitiated(uint64_t android_id) = 0;
 
   // Records that a check-in has been delayed due to backoff.
-  virtual void RecordCheckinDelayedDueToBackoff(int64 delay_msec) = 0;
+  virtual void RecordCheckinDelayedDueToBackoff(int64_t delay_msec) = 0;
 
   // Records that a check-in request has succeeded.
   virtual void RecordCheckinSuccess() = 0;
@@ -59,7 +61,7 @@ class GCM_EXPORT GCMStatsRecorder {
   virtual void RecordConnectionInitiated(const std::string& host) = 0;
 
   // Records that a connection has been delayed due to backoff.
-  virtual void RecordConnectionDelayedDueToBackoff(int64 delay_msec) = 0;
+  virtual void RecordConnectionDelayedDueToBackoff(int64_t delay_msec) = 0;
 
   // Records that connection has been successfully established.
   virtual void RecordConnectionSuccess() = 0;
@@ -84,11 +86,10 @@ class GCM_EXPORT GCMStatsRecorder {
 
   // Records that a registration retry has been requested and delayed due to
   // backoff logic.
-  virtual void RecordRegistrationRetryDelayed(
-      const std::string& app_id,
-      const std::string& source,
-      int64 delay_msec,
-      int retries_left) = 0;
+  virtual void RecordRegistrationRetryDelayed(const std::string& app_id,
+                                              const std::string& source,
+                                              int64_t delay_msec,
+                                              int retries_left) = 0;
 
   // Records that an unregistration request has been sent. This could be
   // initiated directly from API, or from retry logic.
@@ -105,7 +106,7 @@ class GCM_EXPORT GCMStatsRecorder {
   // backoff logic.
   virtual void RecordUnregistrationRetryDelayed(const std::string& app_id,
                                                 const std::string& source,
-                                                int64 delay_msec,
+                                                int64_t delay_msec,
                                                 int retries_left) = 0;
 
   // Records that a data message has been received. If this message is not

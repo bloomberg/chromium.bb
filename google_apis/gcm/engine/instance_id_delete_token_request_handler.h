@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
 
 namespace gcm {

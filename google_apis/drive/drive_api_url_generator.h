@@ -5,8 +5,11 @@
 #ifndef GOOGLE_APIS_DRIVE_DRIVE_API_URL_GENERATOR_H_
 #define GOOGLE_APIS_DRIVE_DRIVE_API_URL_GENERATOR_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "url/gurl.h"
 
 namespace google_apis {
@@ -78,7 +81,7 @@ class DriveApiUrlGenerator {
   GURL GetChangesListUrl(bool include_deleted,
                          int max_results,
                          const std::string& page_token,
-                         int64 start_change_id) const;
+                         int64_t start_change_id) const;
 
   // Returns a URL to add a resource to a directory with |folder_id|.
   GURL GetChildrenInsertUrl(const std::string& folder_id) const;

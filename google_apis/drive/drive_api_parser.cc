@@ -4,8 +4,10 @@
 
 #include "google_apis/drive/drive_api_parser.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/json/json_value_converter.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -17,7 +19,7 @@ namespace google_apis {
 
 namespace {
 
-const int64 kUnsetFileSize = -1;
+const int64_t kUnsetFileSize = -1;
 
 bool CreateFileResourceFromValue(const base::Value* value,
                                  scoped_ptr<FileResource>* file) {
@@ -226,15 +228,14 @@ scoped_ptr<AboutResource> AboutResource::CreateFrom(const base::Value& value) {
 // static
 void AboutResource::RegisterJSONConverter(
     base::JSONValueConverter<AboutResource>* converter) {
-  converter->RegisterCustomField<int64>(kLargestChangeId,
-                                        &AboutResource::largest_change_id_,
-                                        &base::StringToInt64);
-  converter->RegisterCustomField<int64>(kQuotaBytesTotal,
-                                        &AboutResource::quota_bytes_total_,
-                                        &base::StringToInt64);
-  converter->RegisterCustomField<int64>(
-      kQuotaBytesUsedAggregate,
-      &AboutResource::quota_bytes_used_aggregate_,
+  converter->RegisterCustomField<int64_t>(kLargestChangeId,
+                                          &AboutResource::largest_change_id_,
+                                          &base::StringToInt64);
+  converter->RegisterCustomField<int64_t>(kQuotaBytesTotal,
+                                          &AboutResource::quota_bytes_total_,
+                                          &base::StringToInt64);
+  converter->RegisterCustomField<int64_t>(
+      kQuotaBytesUsedAggregate, &AboutResource::quota_bytes_used_aggregate_,
       &base::StringToInt64);
   converter->RegisterStringField(kRootFolderId,
                                  &AboutResource::root_folder_id_);
@@ -459,9 +460,8 @@ void FileResource::RegisterJSONConverter(
       &util::GetTimeFromString);
   converter->RegisterBoolField(kShared, &FileResource::shared_);
   converter->RegisterStringField(kMd5Checksum, &FileResource::md5_checksum_);
-  converter->RegisterCustomField<int64>(kFileSize,
-                                        &FileResource::file_size_,
-                                        &base::StringToInt64);
+  converter->RegisterCustomField<int64_t>(kFileSize, &FileResource::file_size_,
+                                          &base::StringToInt64);
   converter->RegisterCustomField<GURL>(kAlternateLink,
                                        &FileResource::alternate_link_,
                                        GetGURLFromString);
@@ -558,9 +558,8 @@ ChangeResource::~ChangeResource() {}
 // static
 void ChangeResource::RegisterJSONConverter(
     base::JSONValueConverter<ChangeResource>* converter) {
-  converter->RegisterCustomField<int64>(kId,
-                                        &ChangeResource::change_id_,
-                                        &base::StringToInt64);
+  converter->RegisterCustomField<int64_t>(kId, &ChangeResource::change_id_,
+                                          &base::StringToInt64);
   converter->RegisterStringField(kFileId, &ChangeResource::file_id_);
   converter->RegisterBoolField(kDeleted, &ChangeResource::deleted_);
   converter->RegisterCustomValueField(kFile, &ChangeResource::file_,
@@ -603,9 +602,8 @@ void ChangeList::RegisterJSONConverter(
   converter->RegisterCustomField<GURL>(kNextLink,
                                        &ChangeList::next_link_,
                                        GetGURLFromString);
-  converter->RegisterCustomField<int64>(kLargestChangeId,
-                                        &ChangeList::largest_change_id_,
-                                        &base::StringToInt64);
+  converter->RegisterCustomField<int64_t>(
+      kLargestChangeId, &ChangeList::largest_change_id_, &base::StringToInt64);
   converter->RegisterRepeatedMessage<ChangeResource>(kItems,
                                                      &ChangeList::items_);
 }

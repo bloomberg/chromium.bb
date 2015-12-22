@@ -5,12 +5,15 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_MCS_CLIENT_H_
 #define GOOGLE_APIS_GCM_ENGINE_MCS_CLIENT_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -91,11 +94,10 @@ class GCM_EXPORT MCSClient {
       OnMessageReceivedCallback;
   // Callback when a message is sent (and receipt has been acknowledged by
   // the MCS endpoint).
-  typedef base::Callback<
-      void(int64 user_serial_number,
-           const std::string& app_id,
-           const std::string& message_id,
-           MessageSendStatus status)> OnMessageSentCallback;
+  typedef base::Callback<void(int64_t user_serial_number,
+                              const std::string& app_id,
+                              const std::string& message_id,
+                              MessageSendStatus status)> OnMessageSentCallback;
 
   MCSClient(const std::string& version_string,
             base::Clock* clock,
@@ -125,7 +127,7 @@ class GCM_EXPORT MCSClient {
   // with a valid LoginResponse.
   // Login failure (typically invalid id/token) will shut down the client, and
   // |initialization_callback| to be invoked with |success = false|.
-  virtual void Login(uint64 android_id, uint64 security_token);
+  virtual void Login(uint64_t android_id, uint64_t security_token);
 
   // Sends a message, with or without reliable message queueing (RMQ) support.
   // Will asynchronously invoke the OnMessageSent callback regardless.
@@ -165,7 +167,7 @@ class GCM_EXPORT MCSClient {
   }
 
  private:
-  typedef uint32 StreamId;
+  typedef uint32_t StreamId;
   typedef std::string PersistentId;
   typedef std::vector<StreamId> StreamIdList;
   typedef std::vector<PersistentId> PersistentIdList;
@@ -244,8 +246,8 @@ class GCM_EXPORT MCSClient {
   OnMessageSentCallback message_sent_callback_;
 
   // The android id and security token in use by this device.
-  uint64 android_id_;
-  uint64 security_token_;
+  uint64_t android_id_;
+  uint64_t security_token_;
 
   // Factory for creating new connections and connection handlers.
   ConnectionFactory* connection_factory_;

@@ -5,8 +5,11 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_CONNECTION_HANDLER_IMPL_H_
 #define GOOGLE_APIS_GCM_ENGINE_CONNECTION_HANDLER_IMPL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -105,8 +108,8 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
   bool handshake_complete_;
 
   // State for the message currently being processed, if there is one.
-  uint8 message_tag_;
-  uint32 message_size_;
+  uint8_t message_tag_;
+  uint32_t message_size_;
 
   ProtoReceivedCallback read_callback_;
   ProtoSentCallback write_callback_;
@@ -115,11 +118,11 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
   // The number of bytes of the size packet read so far without finishing the
   // read. This can be up to but no larger than 5 (the max number of bytes for
   // a varint32).
-  uint8 size_packet_so_far_;
+  uint8_t size_packet_so_far_;
   // A temporary input buffer for holding large messages. Will hold
   // message_size_ bytes for messages larger than the normal size limit (and
   // will be empty otherwise).
-  std::vector<uint8> payload_input_buffer_;
+  std::vector<uint8_t> payload_input_buffer_;
 
   base::WeakPtrFactory<ConnectionHandlerImpl> weak_ptr_factory_;
 

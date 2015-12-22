@@ -12,6 +12,7 @@
 
 #include "google_apis/google_api_keys.h"
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +31,9 @@
 // below. We used to include that file in its entirety here, but that
 // can cause problems if the linker decides the version of symbols
 // from that file included here is the "right" version.
+
+#include <stddef.h>
+
 #include <string>
 #include "base/command_line.h"
 #include "base/environment.h"

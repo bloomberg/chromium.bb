@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "google_apis/gcm/engine/checkin_request.h"
@@ -11,12 +13,12 @@
 
 namespace gcm {
 
-const uint64 kAndroidId = 42UL;
-const uint64 kBlankAndroidId = 999999UL;
-const uint64 kBlankSecurityToken = 999999UL;
+const uint64_t kAndroidId = 42UL;
+const uint64_t kBlankAndroidId = 999999UL;
+const uint64_t kBlankSecurityToken = 999999UL;
 const char kCheckinURL[] = "http://foo.bar/checkin";
 const char kChromeVersion[] = "Version String";
-const uint64 kSecurityToken = 77;
+const uint64_t kSecurityToken = 77;
 const char kSettingsDigest[] = "settings_digest";
 const char kEmailAddress[] = "test_user@gmail.com";
 const char kTokenValue[] = "token_value";
@@ -37,14 +39,14 @@ class CheckinRequestTest : public GCMRequestTestBase {
   void FetcherCallback(
       const checkin_proto::AndroidCheckinResponse& response);
 
-  void CreateRequest(uint64 android_id, uint64 security_token);
+  void CreateRequest(uint64_t android_id, uint64_t security_token);
 
   void SetResponseScenario(ResponseScenario response_scenario);
 
  protected:
   bool callback_called_;
-  uint64 android_id_;
-  uint64 security_token_;
+  uint64_t android_id_;
+  uint64_t security_token_;
   int checkin_device_type_;
   checkin_proto::ChromeBuildProto chrome_build_proto_;
   scoped_ptr<CheckinRequest> request_;
@@ -69,8 +71,8 @@ void CheckinRequestTest::FetcherCallback(
     security_token_ = checkin_response.security_token();
 }
 
-void CheckinRequestTest::CreateRequest(uint64 android_id,
-                                       uint64 security_token) {
+void CheckinRequestTest::CreateRequest(uint64_t android_id,
+                                       uint64_t security_token) {
   // First setup a chrome_build protobuf.
   chrome_build_proto_.set_platform(
       checkin_proto::ChromeBuildProto::PLATFORM_LINUX);
@@ -108,8 +110,9 @@ void CheckinRequestTest::SetResponseScenario(
   checkin_proto::AndroidCheckinResponse response;
   response.set_stats_ok(true);
 
-  uint64 android_id = response_scenario == ANDROID_ID_IS_ZER0 ? 0 : kAndroidId;
-  uint64 security_token =
+  uint64_t android_id =
+      response_scenario == ANDROID_ID_IS_ZER0 ? 0 : kAndroidId;
+  uint64_t security_token =
       response_scenario == SECURITY_TOKEN_IS_ZERO ? 0 : kSecurityToken;
 
   if (response_scenario != MISSING_ANDROID_ID)
@@ -134,7 +137,7 @@ TEST_F(CheckinRequestTest, FetcherDataAndURL) {
 
   checkin_proto::AndroidCheckinRequest request_proto;
   request_proto.ParseFromString(fetcher->upload_data());
-  EXPECT_EQ(kAndroidId, static_cast<uint64>(request_proto.id()));
+  EXPECT_EQ(kAndroidId, static_cast<uint64_t>(request_proto.id()));
   EXPECT_EQ(kSecurityToken, request_proto.security_token());
   EXPECT_EQ(chrome_build_proto_.platform(),
             request_proto.checkin().chrome_build().platform());

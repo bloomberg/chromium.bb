@@ -12,11 +12,10 @@ FakeGCMStatsRecorder::FakeGCMStatsRecorder() {
 FakeGCMStatsRecorder::~FakeGCMStatsRecorder() {
 }
 
-void FakeGCMStatsRecorder::RecordCheckinInitiated(uint64 android_id) {
-}
+void FakeGCMStatsRecorder::RecordCheckinInitiated(uint64_t android_id) {}
 
-void FakeGCMStatsRecorder::RecordCheckinDelayedDueToBackoff(int64 delay_msec) {
-}
+void FakeGCMStatsRecorder::RecordCheckinDelayedDueToBackoff(
+    int64_t delay_msec) {}
 
 void FakeGCMStatsRecorder::RecordCheckinSuccess() {
 }
@@ -28,8 +27,7 @@ void FakeGCMStatsRecorder::RecordConnectionInitiated(const std::string& host) {
 }
 
 void FakeGCMStatsRecorder::RecordConnectionDelayedDueToBackoff(
-    int64 delay_msec) {
-}
+    int64_t delay_msec) {}
 
 void FakeGCMStatsRecorder::RecordConnectionSuccess() {
 }
@@ -55,9 +53,8 @@ void FakeGCMStatsRecorder::RecordRegistrationResponse(
 void FakeGCMStatsRecorder::RecordRegistrationRetryDelayed(
     const std::string& app_id,
     const std::string& source,
-    int64 delay_msec,
-    int retries_left) {
-}
+    int64_t delay_msec,
+    int retries_left) {}
 
 void FakeGCMStatsRecorder::RecordUnregistrationSent(
     const std::string& app_id, const std::string& source) {
@@ -72,9 +69,8 @@ void FakeGCMStatsRecorder::RecordUnregistrationResponse(
 void FakeGCMStatsRecorder::RecordUnregistrationRetryDelayed(
     const std::string& app_id,
     const std::string& source,
-    int64 delay_msec,
-    int retries_left) {
-}
+    int64_t delay_msec,
+    int retries_left) {}
 
 void FakeGCMStatsRecorder::RecordDataMessageReceived(
     const std::string& app_id,

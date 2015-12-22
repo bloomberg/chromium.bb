@@ -4,6 +4,8 @@
 
 #include "google_apis/gaia/oauth_request_signer.h"
 
+#include <stddef.h>
+
 #include <cctype>
 #include <cstddef>
 #include <cstdlib>

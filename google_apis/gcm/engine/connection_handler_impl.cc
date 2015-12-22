@@ -289,7 +289,7 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
 }
 
 void ConnectionHandlerImpl::OnGotVersion() {
-  uint8 version = 0;
+  uint8_t version = 0;
   {
     CodedInputStream coded_input_stream(input_stream_.get());
     coded_input_stream.ReadRaw(&version, 1);
@@ -421,8 +421,8 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
     int size = 0;
     input_stream_->Next(&data_ptr, &size);
     payload_input_buffer_.insert(payload_input_buffer_.end(),
-                                 static_cast<const uint8*>(data_ptr),
-                                 static_cast<const uint8*>(data_ptr) + size);
+                                 static_cast<const uint8_t*>(data_ptr),
+                                 static_cast<const uint8_t*>(data_ptr) + size);
     DCHECK_LE(payload_input_buffer_.size(), message_size_);
 
     if (payload_input_buffer_.size() == message_size_) {

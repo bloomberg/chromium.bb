@@ -4,6 +4,8 @@
 
 #include "google_apis/gcm/base/socket_stream.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "net/base/io_buffer.h"
@@ -71,7 +73,7 @@ bool SocketInputStream::Skip(int count) {
   return false;
 }
 
-int64 SocketInputStream::ByteCount() const {
+int64_t SocketInputStream::ByteCount() const {
   DCHECK_NE(GetState(), CLOSED);
   DCHECK_NE(GetState(), READING);
   return next_pos_;
@@ -245,7 +247,7 @@ void SocketOutputStream::BackUp(int count) {
            << next_pos_ << " bytes used.";
 }
 
-int64 SocketOutputStream::ByteCount() const {
+int64_t SocketOutputStream::ByteCount() const {
   DCHECK_NE(GetState(), CLOSED);
   DCHECK_NE(GetState(), FLUSHING);
   return next_pos_;

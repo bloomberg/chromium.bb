@@ -5,6 +5,7 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_FAKE_CONNECTION_FACTORY_H_
 #define GOOGLE_APIS_GCM_ENGINE_FAKE_CONNECTION_FACTORY_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/engine/connection_factory.h"
 

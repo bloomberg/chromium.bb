@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/gcm/engine/gservices_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -10,14 +12,14 @@ namespace gcm {
 
 namespace {
 
-const int64 kAlternativeCheckinInterval = 16 * 60 * 60;
+const int64_t kAlternativeCheckinInterval = 16 * 60 * 60;
 const char kAlternativeCheckinURL[] = "http://alternative.url/checkin";
 const char kAlternativeMCSHostname[] = "alternative.gcm.host";
 const int kAlternativeMCSSecurePort = 7777;
 const char kAlternativeRegistrationURL[] =
     "http://alternative.url/registration";
 
-const int64 kDefaultCheckinInterval = 2 * 24 * 60 * 60;  // seconds = 2 days.
+const int64_t kDefaultCheckinInterval = 2 * 24 * 60 * 60;  // seconds = 2 days.
 const char kDefaultCheckinURL[] = "https://android.clients.google.com/checkin";
 const char kDefaultRegistrationURL[] =
     "https://android.clients.google.com/c2dm/register3";

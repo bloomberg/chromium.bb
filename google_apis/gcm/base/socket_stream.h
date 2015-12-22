@@ -8,9 +8,11 @@
 #ifndef GOOGLE_APIS_GCM_BASE_SOCKET_STREAM_H_
 #define GOOGLE_APIS_GCM_BASE_SOCKET_STREAM_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -69,7 +71,7 @@ class GCM_EXPORT SocketInputStream
   bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;  // Not implemented.
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
   // The remaining amount of valid data available to be read.
   int UnreadByteCount() const;
@@ -164,7 +166,7 @@ class GCM_EXPORT SocketOutputStream
   // ZeroCopyOutputStream implementation.
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
-  int64 ByteCount() const override;
+  int64_t ByteCount() const override;
 
   // Writes the buffer into the Socket.
   net::Error Flush(const base::Closure& callback);

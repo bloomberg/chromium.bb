@@ -4,6 +4,9 @@
 
 #include "google_apis/gcm/engine/mcs_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -26,8 +29,8 @@ namespace gcm {
 
 namespace {
 
-const uint64 kAndroidId = 54321;
-const uint64 kSecurityToken = 12345;
+const uint64_t kAndroidId = 54321;
+const uint64_t kSecurityToken = 12345;
 
 // Number of messages to send when testing batching.
 // Note: must be even for tests that split batches in half.
@@ -55,10 +58,10 @@ MCSMessage BuildDataMessage(const std::string& from,
                             int last_stream_id_received,
                             const std::string& persistent_id,
                             int ttl,
-                            uint64 sent,
+                            uint64_t sent,
                             int queued,
                             const std::string& token,
-                            const uint64& user_id,
+                            const uint64_t& user_id,
                             RequestImmediateAck immediate_ack) {
   mcs_proto::DataMessageStanza data_message;
   data_message.set_id(message_id);
@@ -94,7 +97,7 @@ class TestMCSClient : public MCSClient {
   }
 
  private:
-  uint32 next_id_;
+  uint32_t next_id_;
 };
 
 class TestConnectionListener : public ConnectionFactory::ConnectionListener {
@@ -136,8 +139,8 @@ class MCSClientTest : public testing::Test {
     return &connection_factory_;
   }
   bool init_success() const { return init_success_; }
-  uint64 restored_android_id() const { return restored_android_id_; }
-  uint64 restored_security_token() const { return restored_security_token_; }
+  uint64_t restored_android_id() const { return restored_android_id_; }
+  uint64_t restored_security_token() const { return restored_security_token_; }
   MCSMessage* received_message() const { return received_message_.get(); }
   std::string sent_message_id() const { return sent_message_id_;}
   MCSClient::MessageSendStatus message_send_status() const {
@@ -154,7 +157,7 @@ class MCSClientTest : public testing::Test {
  private:
   void ErrorCallback();
   void MessageReceivedCallback(const MCSMessage& message);
-  void MessageSentCallback(int64 user_serial_number,
+  void MessageSentCallback(int64_t user_serial_number,
                            const std::string& app_id,
                            const std::string& message_id,
                            MCSClient::MessageSendStatus status);
@@ -169,8 +172,8 @@ class MCSClientTest : public testing::Test {
   FakeConnectionFactory connection_factory_;
   scoped_ptr<TestMCSClient> mcs_client_;
   bool init_success_;
-  uint64 restored_android_id_;
-  uint64 restored_security_token_;
+  uint64_t restored_android_id_;
+  uint64_t restored_security_token_;
   scoped_ptr<MCSMessage> received_message_;
   std::string sent_message_id_;
   MCSClient::MessageSendStatus message_send_status_;
@@ -287,7 +290,7 @@ void MCSClientTest::MessageReceivedCallback(const MCSMessage& message) {
   run_loop_->Quit();
 }
 
-void MCSClientTest::MessageSentCallback(int64 user_serial_number,
+void MCSClientTest::MessageSentCallback(int64_t user_serial_number,
                                         const std::string& app_id,
                                         const std::string& message_id,
                                         MCSClient::MessageSendStatus status) {

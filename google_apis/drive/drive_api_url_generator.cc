@@ -194,7 +194,7 @@ GURL DriveApiUrlGenerator::GetFilesTrashUrl(const std::string& file_id) const {
 GURL DriveApiUrlGenerator::GetChangesListUrl(bool include_deleted,
                                              int max_results,
                                              const std::string& page_token,
-                                             int64 start_change_id) const {
+                                             int64_t start_change_id) const {
   DCHECK_GE(start_change_id, 0);
 
   GURL url = base_url_.Resolve(kDriveV2ChangelistUrl);

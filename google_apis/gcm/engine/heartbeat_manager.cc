@@ -11,6 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/network_change_notifier.h"
 

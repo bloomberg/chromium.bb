@@ -4,8 +4,10 @@
 
 #include "google_apis/gcm/base/socket_stream.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -113,8 +115,8 @@ base::StringPiece GCMSocketStreamTest::DoInputStreamRead(int bytes) {
       break;
     total_bytes_read += size;
     if (initial_buffer) {  // Verify the buffer doesn't skip data.
-      EXPECT_EQ(static_cast<const uint8*>(initial_buffer) + total_bytes_read,
-                static_cast<const uint8*>(buffer) + size);
+      EXPECT_EQ(static_cast<const uint8_t*>(initial_buffer) + total_bytes_read,
+                static_cast<const uint8_t*>(buffer) + size);
     } else {
       initial_buffer = buffer;
     }

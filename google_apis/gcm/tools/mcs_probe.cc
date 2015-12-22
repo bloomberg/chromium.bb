@@ -5,6 +5,8 @@
 // A standalone tool for testing MCS connections and the MCS client on their
 // own.
 
+#include <stdint.h>
+
 #include <cstddef>
 #include <cstdio>
 #include <string>
@@ -25,6 +27,7 @@
 #include "base/threading/worker_pool.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "google_apis/gcm/base/fake_encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -90,7 +93,7 @@ const char kChromeVersion[] = "Chrome MCS Probe";
 
 // The default server to communicate with.
 const char kMCSServerHost[] = "mtalk.google.com";
-const uint16 kMCSServerPort = 5228;
+const uint16_t kMCSServerPort = 5228;
 
 // Command line switches.
 const char kRMQFileName[] = "rmq_file";
@@ -122,7 +125,7 @@ void MessageReceivedCallback(const MCSMessage& message) {
   }
 }
 
-void MessageSentCallback(int64 user_serial_number,
+void MessageSentCallback(int64_t user_serial_number,
                          const std::string& app_id,
                          const std::string& message_id,
                          MCSClient::MessageSendStatus status) {
@@ -215,8 +218,8 @@ class MCSProbe {
 
   void Start();
 
-  uint64 android_id() const { return android_id_; }
-  uint64 secret() const { return secret_; }
+  uint64_t android_id() const { return android_id_; }
+  uint64_t secret() const { return secret_; }
 
  private:
   void CheckIn();
@@ -235,8 +238,8 @@ class MCSProbe {
   base::CommandLine command_line_;
 
   base::FilePath gcm_store_path_;
-  uint64 android_id_;
-  uint64 secret_;
+  uint64_t android_id_;
+  uint64_t secret_;
   std::string server_host_;
   int server_port_;
 

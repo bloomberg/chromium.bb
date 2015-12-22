@@ -4,6 +4,10 @@
 
 #include "google_apis/drive/drive_api_url_generator.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -201,7 +205,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetChangesListUrl) {
     bool include_deleted;
     int max_results;
     const std::string page_token;
-    int64 start_change_id;
+    int64_t start_change_id;
     const std::string expected_query;
   };
   const TestPattern kTestPatterns[] = {

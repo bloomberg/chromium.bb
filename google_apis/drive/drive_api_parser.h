@@ -5,10 +5,13 @@
 #ifndef GOOGLE_APIS_DRIVE_DRIVE_API_PARSER_H_
 #define GOOGLE_APIS_DRIVE_DRIVE_API_PARSER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
@@ -44,23 +47,23 @@ class AboutResource {
   static scoped_ptr<AboutResource> CreateFrom(const base::Value& value);
 
   // Returns the largest change ID number.
-  int64 largest_change_id() const { return largest_change_id_; }
+  int64_t largest_change_id() const { return largest_change_id_; }
   // Returns total number of quota bytes.
-  int64 quota_bytes_total() const { return quota_bytes_total_; }
+  int64_t quota_bytes_total() const { return quota_bytes_total_; }
   // Returns the number of quota bytes used.
-  int64 quota_bytes_used_aggregate() const {
+  int64_t quota_bytes_used_aggregate() const {
     return quota_bytes_used_aggregate_;
   }
   // Returns root folder ID.
   const std::string& root_folder_id() const { return root_folder_id_; }
 
-  void set_largest_change_id(int64 largest_change_id) {
+  void set_largest_change_id(int64_t largest_change_id) {
     largest_change_id_ = largest_change_id;
   }
-  void set_quota_bytes_total(int64 quota_bytes_total) {
+  void set_quota_bytes_total(int64_t quota_bytes_total) {
     quota_bytes_total_ = quota_bytes_total;
   }
-  void set_quota_bytes_used_aggregate(int64 quota_bytes_used_aggregate) {
+  void set_quota_bytes_used_aggregate(int64_t quota_bytes_used_aggregate) {
     quota_bytes_used_aggregate_ = quota_bytes_used_aggregate;
   }
   void set_root_folder_id(const std::string& root_folder_id) {
@@ -75,9 +78,9 @@ class AboutResource {
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
 
-  int64 largest_change_id_;
-  int64 quota_bytes_total_;
-  int64 quota_bytes_used_aggregate_;
+  int64_t largest_change_id_;
+  int64_t quota_bytes_total_;
+  int64_t quota_bytes_used_aggregate_;
   std::string root_folder_id_;
 
   // This class is copyable on purpose.
@@ -496,7 +499,7 @@ class FileResource {
   const std::string& md5_checksum() const { return md5_checksum_; }
 
   // Returns the size of this file in bytes.
-  int64 file_size() const { return file_size_; }
+  int64_t file_size() const { return file_size_; }
 
   // Return the link to open the file in Google editor or viewer.
   // E.g. Google Document, Google Spreadsheet.
@@ -549,9 +552,7 @@ class FileResource {
   void set_md5_checksum(const std::string& md5_checksum) {
     md5_checksum_ = md5_checksum;
   }
-  void set_file_size(int64 file_size) {
-    file_size_ = file_size;
-  }
+  void set_file_size(int64_t file_size) { file_size_ = file_size; }
   void set_alternate_link(const GURL& alternate_link) {
     alternate_link_ = alternate_link;
   }
@@ -584,7 +585,7 @@ class FileResource {
   base::Time shared_with_me_date_;
   bool shared_;
   std::string md5_checksum_;
-  int64 file_size_;
+  int64_t file_size_;
   GURL alternate_link_;
   GURL share_link_;
   std::vector<ParentReference> parents_;
@@ -652,7 +653,7 @@ class ChangeResource {
 
   // Returns change ID for this change.  This is a monotonically increasing
   // number.
-  int64 change_id() const { return change_id_; }
+  int64_t change_id() const { return change_id_; }
 
   // Returns a string file ID for corresponding file of the change.
   const std::string& file_id() const { return file_id_; }
@@ -667,9 +668,7 @@ class ChangeResource {
   // Returns the time of this modification.
   const base::Time& modification_date() const { return modification_date_; }
 
-  void set_change_id(int64 change_id) {
-    change_id_ = change_id;
-  }
+  void set_change_id(int64_t change_id) { change_id_ = change_id; }
   void set_file_id(const std::string& file_id) {
     file_id_ = file_id;
   }
@@ -691,7 +690,7 @@ class ChangeResource {
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
 
-  int64 change_id_;
+  int64_t change_id_;
   std::string file_id_;
   bool deleted_;
   scoped_ptr<FileResource> file_;
@@ -723,7 +722,7 @@ class ChangeList {
   const GURL& next_link() const { return next_link_; }
 
   // Returns the largest change ID number.
-  int64 largest_change_id() const { return largest_change_id_; }
+  int64_t largest_change_id() const { return largest_change_id_; }
 
   // Returns a set of changes in this list.
   const ScopedVector<ChangeResource>& items() const { return items_; }
@@ -732,7 +731,7 @@ class ChangeList {
   void set_next_link(const GURL& next_link) {
     next_link_ = next_link;
   }
-  void set_largest_change_id(int64 largest_change_id) {
+  void set_largest_change_id(int64_t largest_change_id) {
     largest_change_id_ = largest_change_id;
   }
 
@@ -745,7 +744,7 @@ class ChangeList {
   bool Parse(const base::Value& value);
 
   GURL next_link_;
-  int64 largest_change_id_;
+  int64_t largest_change_id_;
   ScopedVector<ChangeResource> items_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeList);

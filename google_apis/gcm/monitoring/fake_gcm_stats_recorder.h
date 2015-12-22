@@ -5,6 +5,9 @@
 #ifndef GOOGLE_APIS_GCM_MONITORING_FAKE_GCM_STATS_RECODER_H_
 #define GOOGLE_APIS_GCM_MONITORING_FAKE_GCM_STATS_RECODER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 
 namespace gcm {
@@ -15,13 +18,13 @@ class FakeGCMStatsRecorder : public GCMStatsRecorder {
   FakeGCMStatsRecorder();
   ~FakeGCMStatsRecorder() override;
 
-  void RecordCheckinInitiated(uint64 android_id) override;
-  void RecordCheckinDelayedDueToBackoff(int64 delay_msec) override;
+  void RecordCheckinInitiated(uint64_t android_id) override;
+  void RecordCheckinDelayedDueToBackoff(int64_t delay_msec) override;
   void RecordCheckinSuccess() override;
   void RecordCheckinFailure(const std::string& status,
                             bool will_retry) override;
   void RecordConnectionInitiated(const std::string& host) override;
-  void RecordConnectionDelayedDueToBackoff(int64 delay_msec) override;
+  void RecordConnectionDelayedDueToBackoff(int64_t delay_msec) override;
   void RecordConnectionSuccess() override;
   void RecordConnectionFailure(int network_error) override;
   void RecordConnectionResetSignaled(
@@ -31,11 +34,10 @@ class FakeGCMStatsRecorder : public GCMStatsRecorder {
   void RecordRegistrationResponse(const std::string& app_id,
                                   const std::string& source,
                                   RegistrationRequest::Status status) override;
-  void RecordRegistrationRetryDelayed(
-      const std::string& app_id,
-      const std::string& source,
-      int64 delay_msec,
-      int retries_left) override;
+  void RecordRegistrationRetryDelayed(const std::string& app_id,
+                                      const std::string& source,
+                                      int64_t delay_msec,
+                                      int retries_left) override;
   void RecordUnregistrationSent(
       const std::string& app_id,
       const std::string& source) override;
@@ -45,7 +47,7 @@ class FakeGCMStatsRecorder : public GCMStatsRecorder {
       UnregistrationRequest::Status status) override;
   void RecordUnregistrationRetryDelayed(const std::string& app_id,
                                         const std::string& source,
-                                        int64 delay_msec,
+                                        int64_t delay_msec,
                                         int retries_left) override;
   void RecordDataMessageReceived(const std::string& app_id,
                                  const std::string& from,
