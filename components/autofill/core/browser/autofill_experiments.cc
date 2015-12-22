@@ -51,28 +51,37 @@ bool OfferStoreUnmaskedCards() {
 
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const std::string& user_email) {
-  // Query the field trial before checking command line flags to ensure UMA
-  // reports the correct group.
+  // Query the field trial first to ensure UMA always reports the correct group.
   std::string group_name =
       base::FieldTrialList::FindFullName("OfferUploadCreditCards");
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOfferUploadCreditCards))
-    return true;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableOfferUploadCreditCards))
-    return false;
-
-  if (group_name.empty() || group_name == "Disabled")
-    return false;
-
+  // Check user settings.
   if (!pref_service->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled) ||
-      !pref_service->GetBoolean(prefs::kAutofillWalletImportEnabled))
+      !pref_service->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
     return false;
+  }
 
+  // Check that the user is logged into a supported domain.
+  if (user_email.empty())
+    return false;
   std::string domain = gaia::ExtractDomainName(user_email);
-  return domain == "googlemail.com" || domain == "gmail.com" ||
-         domain == "google.com";
+  if (!(domain == "googlemail.com" || domain == "gmail.com" ||
+        domain == "google.com")) {
+    return false;
+  }
+
+  // With the user settings and logged in state verified, now we can consult the
+  // command-line flags and experiment settings.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOfferUploadCreditCards)) {
+    return true;
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOfferUploadCreditCards)) {
+    return false;
+  }
+
+  return !group_name.empty() && group_name != "Disabled";
 }
 
 }  // namespace autofill
