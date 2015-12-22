@@ -93,15 +93,19 @@ extern "C" void __declspec(dllexport)
   }
 
   // The Breakpad integration hooks TerminateProcess. Sidestep it to avoid a
-  // secondary report.
-
+  // secondary report. Crashpad, on the other hand, does not hook
+  // TerminateProcess so it can be safely invoked.
+  // TODO(chrisha): When Breakpad is completely ripped out make this Crashpad
+  // specific.
   using TerminateProcessWithoutDumpProc = void(__cdecl*)();
   TerminateProcessWithoutDumpProc terminate_process_without_dump =
       reinterpret_cast<TerminateProcessWithoutDumpProc>(::GetProcAddress(
           ::GetModuleHandle(chrome::kBrowserProcessExecutableName),
           "TerminateProcessWithoutDump"));
-  CHECK(terminate_process_without_dump);
-  terminate_process_without_dump();
+  if (terminate_process_without_dump)
+    terminate_process_without_dump();
+  else
+    ::TerminateProcess(::GetCurrentProcess(), 0);
 }
 
 extern "C" void __declspec(dllexport) ReportCrashWithProtobuf(
