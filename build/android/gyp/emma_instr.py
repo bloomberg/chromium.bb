@@ -185,7 +185,11 @@ def _RunInstrumentCommand(_command, options, _, option_parser):
       print('Error: multiple output files in: %s' % (temp_jar_dir))
       return 1
 
-    shutil.copy(os.path.join(temp_jar_dir, jars[0]), options.output_path)
+    # Delete output_path first to avoid modifying input_path in the case where
+    # input_path is a hardlink to output_path. http://crbug.com/571642
+    if os.path.exists(options.output_path):
+      os.unlink(options.output_path)
+    shutil.move(os.path.join(temp_jar_dir, jars[0]), options.output_path)
   finally:
     shutil.rmtree(temp_dir)
 
