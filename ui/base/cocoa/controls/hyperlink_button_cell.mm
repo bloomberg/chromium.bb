@@ -4,6 +4,8 @@
 
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 
+using hyperlink_button_cell::UnderlineBehavior;
+
 @interface HyperlinkButtonCell ()
 - (void)customizeButtonCell;
 @end
@@ -11,8 +13,7 @@
 @implementation HyperlinkButtonCell
 
 @dynamic textColor;
-@synthesize underlineOnHover = underlineOnHover_;
-@synthesize shouldUnderline = shouldUnderline_;
+@synthesize underlineBehavior = underlineBehavior_;
 
 + (NSColor*)defaultTextColor {
   // Equates to rgb(51, 103, 214) or #3367D6.
@@ -69,7 +70,7 @@
 - (void)customizeButtonCell {
   [self setBordered:NO];
   [self setTextColor:[HyperlinkButtonCell defaultTextColor]];
-  [self setShouldUnderline:NO];
+  [self setUnderlineBehavior:UnderlineBehavior::NEVER];
 
   CGFloat fontSize = [NSFont systemFontSizeForControlSize:[self controlSize]];
   NSFont* font = [NSFont controlContentFontOfSize:fontSize];
@@ -91,9 +92,11 @@
 // Creates the NSDictionary of attributes for the attributed string.
 - (NSDictionary*)linkAttributes {
   NSUInteger underlineMask = NSNoUnderlineStyle;
-  if (shouldUnderline_ &&
-      (!underlineOnHover_ || (mouseIsInside_ && [self isEnabled])))
+  if (underlineBehavior_ == UnderlineBehavior::ALWAYS ||
+      (mouseIsInside_ && [self isEnabled] &&
+       underlineBehavior_ == UnderlineBehavior::ON_HOVER)) {
     underlineMask = NSUnderlinePatternSolid | NSUnderlineStyleSingle;
+  }
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
@@ -131,14 +134,14 @@
     [[NSCursor pointingHandCursor] push];
   else
     [[NSCursor currentCursor] push];
-  if (underlineOnHover_)
+  if (underlineBehavior_ == UnderlineBehavior::ON_HOVER)
     [[self controlView] setNeedsDisplay:YES];
 }
 
 - (void)mouseExited:(NSEvent*)event {
   mouseIsInside_ = NO;
   [NSCursor pop];
-  if (underlineOnHover_)
+  if (underlineBehavior_ == UnderlineBehavior::ON_HOVER)
     [[self controlView] setNeedsDisplay:YES];
 }
 

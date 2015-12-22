@@ -305,7 +305,8 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
         prompt_->GetRatingCount())];
     [userCountField_ setStringValue:base::SysUTF16ToNSString(
         prompt_->GetUserCount())];
-    [[storeLinkButton_ cell] setUnderlineOnHover:YES];
+    [[storeLinkButton_ cell] setUnderlineBehavior:
+        hyperlink_button_cell::UnderlineBehavior::ON_HOVER];
     [[storeLinkButton_ cell] setTextColor:
         skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
   }
@@ -564,7 +565,8 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
     [cell setTarget:self];
     [cell setLinkClickedAction:@selector(onToggleDetailsLinkClicked:)];
     [cell setAlignment:NSLeftTextAlignment];
-    [cell setUnderlineOnHover:YES];
+    [cell setUnderlineBehavior:
+        hyperlink_button_cell::UnderlineBehavior::ON_HOVER];
     [cell setTextColor:
         skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
 

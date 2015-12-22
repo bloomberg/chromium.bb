@@ -424,7 +424,6 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   newCardButton_.reset([[HyperlinkButtonCell
       buttonWithString:l10n_util::GetNSString(
                            IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK)] retain]);
-  [[newCardButton_ cell] setShouldUnderline:NO];
   [newCardButton_ setTarget:self];
   [newCardButton_ setAction:@selector(onNewCard:)];
   [newCardButton_ sizeToFit];

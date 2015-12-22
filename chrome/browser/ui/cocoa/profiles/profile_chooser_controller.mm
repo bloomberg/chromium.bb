@@ -2324,7 +2324,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   base::scoped_nsobject<NSButton> link(
       [[HyperlinkButtonCell buttonWithString:title] retain]);
 
-  [[link cell] setShouldUnderline:NO];
   [[link cell] setTextColor:skia::SkColorToCalibratedNSColor(
       chrome_style::GetLinkColor())];
   [link setTitle:title];

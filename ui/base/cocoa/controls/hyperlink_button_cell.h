@@ -23,16 +23,26 @@
 //
 // Use this if all of your text is a link. If you need text that contains
 // embedded links but also regular text, use HyperlinkTextView.
+
+namespace hyperlink_button_cell {
+
+enum class UI_BASE_EXPORT UnderlineBehavior {
+  ALWAYS,
+  NEVER,
+  ON_HOVER,
+};
+
+}  // namespace hyperlink_button_cell
+
 UI_BASE_EXPORT
 @interface HyperlinkButtonCell : NSButtonCell {
   base::scoped_nsobject<NSColor> textColor_;
-  BOOL shouldUnderline_;
-  BOOL underlineOnHover_;
+  hyperlink_button_cell::UnderlineBehavior underlineBehavior_;
   BOOL mouseIsInside_;
 }
 @property(nonatomic, retain) NSColor* textColor;
-@property(nonatomic, assign) BOOL underlineOnHover;
-@property(nonatomic, assign) BOOL shouldUnderline;
+@property(nonatomic, assign) hyperlink_button_cell::UnderlineBehavior
+    underlineBehavior;
 
 + (NSColor*)defaultTextColor;
 

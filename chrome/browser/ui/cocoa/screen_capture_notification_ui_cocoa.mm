@@ -150,7 +150,6 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
       [[HyperlinkButtonCell alloc]
        initTextCell:l10n_util::GetNSString(
                         IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON)]);
-  [cell setShouldUnderline:NO];
 
   minimizeButton_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
   [minimizeButton_ setCell:cell.get()];

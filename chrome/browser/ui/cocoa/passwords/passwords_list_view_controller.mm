@@ -59,8 +59,6 @@ NSTextField* FederationLabel(const base::string16& text) {
     base::scoped_nsobject<HyperlinkButtonCell> cell([[HyperlinkButtonCell alloc]
         initTextCell:l10n_util::GetNSString(IDS_MANAGE_PASSWORDS_UNDO)]);
     [cell setControlSize:NSSmallControlSize];
-    [cell setShouldUnderline:NO];
-    [cell setUnderlineOnHover:NO];
     [cell setTextColor:skia::SkColorToCalibratedNSColor(
                            chrome_style::GetLinkColor())];
     [undoButton_ setCell:cell.get()];
