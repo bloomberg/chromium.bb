@@ -863,6 +863,9 @@ def RunShellWithReturnCodeAndStderr(command, print_output=False,
                        shell=use_shell, universal_newlines=universal_newlines,
                        env=env)
   if print_output:
+    # It's very hard to stream both stdout and stderr at the same time
+    # without the potential for deadlocks. We will hope for the best
+    # since this code path is rarely used.
     output_array = []
     while True:
       line = p.stdout.readline()
@@ -871,12 +874,12 @@ def RunShellWithReturnCodeAndStderr(command, print_output=False,
       print line.strip("\n")
       output_array.append(line)
     output = "".join(output_array)
+    p.wait()
+    errout = p.stderr.read()
+    if errout:
+      print >> sys.stderr, errout
   else:
-    output = p.stdout.read()
-  p.wait()
-  errout = p.stderr.read()
-  if print_output and errout:
-    print >> sys.stderr, errout
+    output, errout = p.communicate()
   p.stdout.close()
   p.stderr.close()
   return output, errout, p.returncode
@@ -1448,6 +1451,9 @@ class GitVCS(VersionControlSystem):
     env = os.environ.copy()
     if "GIT_EXTERNAL_DIFF" in env:
       del env["GIT_EXTERNAL_DIFF"]
+    # 'cat' is a magical git string that disables pagers on all platforms.
+    env["GIT_PAGER"] = "cat"
+
     # -M/-C will not print the diff for the deleted file when a file is renamed.
     # This is confusing because the original file will not be shown on the
     # review when a file is renamed. So, get a diff with ONLY deletes, then
