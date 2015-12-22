@@ -155,8 +155,6 @@ public class CastSession implements MediaNotificationListener {
     private final CastDevice mCastDevice;
     private final MediaSource mSource;
 
-    // Ids of the connected Cast clients.
-    private Set<String> mClients = new HashSet<String>();
     private Set<String> mNamespaces = new HashSet<String>();
     private GoogleApiClient mApiClient;
     private String mSessionId;
@@ -276,7 +274,7 @@ public class CastSession implements MediaNotificationListener {
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        for (String clientId : mClients) {
+                        for (String clientId : mRouteProvider.getClients()) {
                             Queue<Integer> sequenceNumbersForClient = mStopRequests.get(clientId);
                             if (sequenceNumbersForClient == null) {
                                 sendClientMessageTo(clientId, "remove_session", mSessionId,
@@ -297,7 +295,6 @@ public class CastSession implements MediaNotificationListener {
                         for (String namespace : mNamespaces) unregisterNamespace(namespace);
                         mNamespaces.clear();
 
-                        mClients.clear();
                         mSessionId = null;
                         mApiClient = null;
 
@@ -360,7 +357,7 @@ public class CastSession implements MediaNotificationListener {
 
         if (isMediaStatusMessage(message)) {
             // MEDIA_STATUS needs to be sent to all the clients.
-            for (String clientId : mClients) {
+            for (String clientId : mRouteProvider.getClients()) {
                 if (request != null && clientId.equals(request.clientId)) continue;
 
                 sendClientMessageTo(
@@ -465,10 +462,7 @@ public class CastSession implements MediaNotificationListener {
     private boolean handleClientConnectMessage(JSONObject jsonMessage)
             throws JSONException {
         String clientId = jsonMessage.getString("clientId");
-
-        if (mClients.contains(clientId)) return false;
-
-        mClients.add(clientId);
+        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
 
         sendClientMessageTo(
                 clientId, "new_session", buildSessionMessage(), INVALID_SEQUENCE_NUMBER);
@@ -489,7 +483,7 @@ public class CastSession implements MediaNotificationListener {
     private boolean handleLeaveSessionMessage(JSONObject jsonMessage) throws JSONException {
         String clientId = jsonMessage.getString("clientId");
 
-        if (!mClients.contains(clientId)) return false;
+        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
 
         String sessionId = jsonMessage.getString("message");
         if (!mSessionId.equals(sessionId)) return false;
@@ -499,8 +493,6 @@ public class CastSession implements MediaNotificationListener {
         // TODO(avayvod): "leave" the other clients with the matching origin/tab id.
         // See https://crbug.com/549957.
         sendClientMessageTo(clientId, "leave_session", null, sequenceNumber);
-
-        mClients.remove(clientId);
 
         return true;
     }
@@ -521,7 +513,7 @@ public class CastSession implements MediaNotificationListener {
         assert "v2_message".equals(jsonMessage.getString("type"));
 
         String clientId = jsonMessage.getString("clientId");
-        if (!mClients.contains(clientId)) return false;
+        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
 
         JSONObject jsonCastMessage = jsonMessage.getJSONObject("message");
         String messageType = jsonCastMessage.getString("type");
@@ -639,7 +631,7 @@ public class CastSession implements MediaNotificationListener {
         assert "app_message".equals(jsonMessage.getString("type"));
 
         String clientId = jsonMessage.getString("clientId");
-        if (!mClients.contains(clientId)) return false;
+        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
 
         JSONObject jsonAppMessageWrapper = jsonMessage.getJSONObject("message");
 
@@ -826,7 +818,7 @@ public class CastSession implements MediaNotificationListener {
     }
 
     private void broadcastClientMessage(String type, String message) {
-        for (String clientId : mClients) {
+        for (String clientId : mRouteProvider.getClients()) {
             sendClientMessageTo(clientId, type, message, INVALID_SEQUENCE_NUMBER);
         }
     }

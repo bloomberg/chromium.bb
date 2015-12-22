@@ -24,14 +24,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 /**
  * A {@link MediaRouteProvider} implementation for Cast devices and applications.
  */
-public class CastMediaRouteProvider
-        implements MediaRouteProvider, DiscoveryDelegate {
+public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDelegate {
 
     private static final String TAG = "MediaRouter";
 
@@ -46,7 +46,7 @@ public class CastMediaRouteProvider
             new HashMap<String, DiscoveryCallback>();
     private final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
     private ClientRecord mLastRemovedRouteRecord;
-    private final List<ClientRecord> mClientRecords = new ArrayList<ClientRecord>();
+    private final Map<String, ClientRecord> mClientRecords = new HashMap<String, ClientRecord>();
 
     // There can be only one Cast session at the same time on Android.
     private CastSession mSession;
@@ -73,11 +73,21 @@ public class CastMediaRouteProvider
             MediaRouteManager manager = mRouteManager.get();
             if (manager != null) manager.onSinksReceived(mSourceId, mRouteProvider, mSinks);
         }
-    };
+    }
 
-    @Override
-    public void onSinksReceived(String sourceId, List<MediaSink> sinks) {
-        mHandler.post(new OnSinksReceivedRunnable(mManager, this, sourceId, sinks));
+    /**
+     * @param applicationContext The application context to use for this route provider.
+     * @return Initialized {@link CastMediaRouteProvider} object or null if it's not supported.
+     */
+    @Nullable
+    public static CastMediaRouteProvider create(
+            Context applicationContext, MediaRouteManager manager) {
+        assert applicationContext != null;
+        MediaRouter androidMediaRouter =
+                ChromeMediaRouter.getAndroidMediaRouter(applicationContext);
+        if (androidMediaRouter == null) return null;
+
+        return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
     }
 
     public void onRouteCreated(
@@ -104,8 +114,8 @@ public class CastMediaRouteProvider
         if (mClientRecords.isEmpty()) {
             mRoutes.clear();
         } else {
-            mLastRemovedRouteRecord = mClientRecords.iterator().next();
-            for (ClientRecord client : mClientRecords) {
+            mLastRemovedRouteRecord = mClientRecords.values().iterator().next();
+            for (ClientRecord client : mClientRecords.values()) {
                 mManager.onRouteClosed(client.routeId);
 
                 mRoutes.remove(client.routeId);
@@ -128,25 +138,19 @@ public class CastMediaRouteProvider
     }
 
     public void onMessage(String clientId, String message) {
-        ClientRecord clientRecord = getClientRecordByClientId(clientId);
+        ClientRecord clientRecord = mClientRecords.get(clientId);
         if (clientRecord == null) return;
 
         mManager.onMessage(clientRecord.routeId, message);
     }
 
-    /**
-     * @param applicationContext The application context to use for this route provider.
-     * @return Initialized {@link CastMediaRouteProvider} object or null if it's not supported.
-     */
-    @Nullable
-    public static CastMediaRouteProvider create(
-            Context applicationContext, MediaRouteManager manager) {
-        assert applicationContext != null;
-        MediaRouter androidMediaRouter =
-                ChromeMediaRouter.getAndroidMediaRouter(applicationContext);
-        if (androidMediaRouter == null) return null;
+    public Set<String> getClients() {
+        return mClientRecords.keySet();
+    }
 
-        return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
+    @Override
+    public void onSinksReceived(String sourceId, List<MediaSink> sinks) {
+        mHandler.post(new OnSinksReceivedRunnable(mManager, this, sourceId, sinks));
     }
 
     @Override
@@ -234,7 +238,7 @@ public class CastMediaRouteProvider
 
         if (source.getClientId() != null) {
             String receiverActionClientId = source.getClientId() + RECEIVER_ACTION_PRESENTATION_ID;
-            ClientRecord clientRecord = getClientRecordByClientId(receiverActionClientId);
+            ClientRecord clientRecord = mClientRecords.get(receiverActionClientId);
             if (clientRecord != null) {
                 sendReceiverAction(clientRecord.routeId, sink, receiverActionClientId, "cast");
                 detachRoute(clientRecord.routeId);
@@ -310,12 +314,12 @@ public class CastMediaRouteProvider
     @Override
     public void detachRoute(String routeId) {
         mRoutes.remove(routeId);
-        ClientRecord client = getClientRecordByRouteId(routeId);
 
-        if (client != null) {
-            mClientRecords.remove(client);
-            mLastRemovedRouteRecord = client;
-        }
+        ClientRecord client = getClientRecordByRouteId(routeId);
+        if (client == null) return;
+
+        mClientRecords.remove(client.clientId);
+        mLastRemovedRouteRecord = client;
     }
 
     @Override
@@ -360,7 +364,7 @@ public class CastMediaRouteProvider
 
         ClientRecord client = null;
         if (!mClientRecords.isEmpty()) {
-            client = mClientRecords.iterator().next();
+            client = mClientRecords.values().iterator().next();
         } else if (mLastRemovedRouteRecord != null) {
             client = mLastRemovedRouteRecord;
             return origin.equals(client.origin) && tabId == client.tabId;
@@ -394,16 +398,8 @@ public class CastMediaRouteProvider
     }
 
     @Nullable
-    private ClientRecord getClientRecordByClientId(String clientId) {
-        for (ClientRecord record : mClientRecords) {
-            if (record.clientId.equals(clientId)) return record;
-        }
-        return null;
-    }
-
-    @Nullable
     private ClientRecord getClientRecordByRouteId(String routeId) {
-        for (ClientRecord record : mClientRecords) {
+        for (ClientRecord record : mClientRecords.values()) {
             if (record.routeId.equals(routeId)) return record;
         }
         return null;
@@ -415,15 +411,16 @@ public class CastMediaRouteProvider
         MediaSource source = MediaSource.from(route.sourceId);
         final String clientId = source.getClientId();
 
-        if (clientId == null || getClientRecordByClientId(clientId) != null) return;
+        if (clientId == null || mClientRecords.get(clientId) != null) return;
 
-        mClientRecords.add(new ClientRecord(
-                route.id,
-                clientId,
-                source.getApplicationId(),
-                source.getAutoJoinPolicy(),
-                origin,
-                tabId));
+        mClientRecords.put(clientId,
+                new ClientRecord(
+                        route.id,
+                        clientId,
+                        source.getApplicationId(),
+                        source.getAutoJoinPolicy(),
+                        origin,
+                        tabId));
     }
 
     private void sendReceiverAction(
