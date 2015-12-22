@@ -241,7 +241,7 @@ def main(argv):
   if CheckKVM():
     logging.info('KVM already installed and enabled.')
   else:
-    InstallKVM()
+    logging.warning('KVM is not installed or enabled.')
 
 
 if __name__ == '__main__':

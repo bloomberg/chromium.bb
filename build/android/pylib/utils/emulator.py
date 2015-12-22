@@ -156,8 +156,8 @@ def _GetAvailablePort():
       return port
 
 
-def LaunchTempEmulators(emulator_count, abi, api_level, kill_and_launch=True,
-                        sdcard_size=DEFAULT_SDCARD_SIZE,
+def LaunchTempEmulators(emulator_count, abi, api_level, enable_kvm=False,
+                        kill_and_launch=True, sdcard_size=DEFAULT_SDCARD_SIZE,
                         storage_size=DEFAULT_STORAGE_SIZE, wait_for_boot=True):
   """Create and launch temporary emulators and wait for them to boot.
 
@@ -177,7 +177,8 @@ def LaunchTempEmulators(emulator_count, abi, api_level, kill_and_launch=True,
     avd_name = 'run_tests_avd_%d' % n
     logging.info('Emulator launch %d with avd_name=%s and api=%d',
         n, avd_name, api_level)
-    emulator = Emulator(avd_name, abi, sdcard_size, storage_size)
+    emulator = Emulator(avd_name, abi, enable_kvm=enable_kvm,
+                        sdcard_size=sdcard_size, storage_size=storage_size)
     emulator.CreateAVD(api_level)
     emulator.Launch(kill_all_emulators=(n == 0 and kill_and_launch))
     t.Stop()
@@ -189,7 +190,7 @@ def LaunchTempEmulators(emulator_count, abi, api_level, kill_and_launch=True,
   return emulators
 
 
-def LaunchEmulator(avd_name, abi, kill_and_launch=True,
+def LaunchEmulator(avd_name, abi, kill_and_launch=True, enable_kvm=False,
                    sdcard_size=DEFAULT_SDCARD_SIZE,
                    storage_size=DEFAULT_STORAGE_SIZE):
   """Launch an existing emulator with name avd_name.
@@ -202,8 +203,8 @@ def LaunchEmulator(avd_name, abi, kill_and_launch=True,
     emulator object.
   """
   logging.info('Specified emulator named avd_name=%s launched', avd_name)
-  emulator = Emulator(avd_name, abi, sdcard_size=sdcard_size,
-                      storage_size=storage_size)
+  emulator = Emulator(avd_name, abi, enable_kvm=enable_kvm,
+                      sdcard_size=sdcard_size, storage_size=storage_size)
   emulator.Launch(kill_all_emulators=kill_and_launch)
   emulator.ConfirmLaunch(True)
   return emulator
@@ -239,7 +240,7 @@ class Emulator(object):
   # Time to wait for a 'wait for boot complete' (property set on device).
   _WAITFORBOOT_TIMEOUT = 300
 
-  def __init__(self, avd_name, abi,
+  def __init__(self, avd_name, abi, enable_kvm=False,
                sdcard_size=DEFAULT_SDCARD_SIZE,
                storage_size=DEFAULT_STORAGE_SIZE):
     """Init an Emulator.
@@ -257,6 +258,7 @@ class Emulator(object):
     self.avd_name = avd_name
     self.sdcard_size = sdcard_size
     self.storage_size = storage_size
+    self.enable_kvm = enable_kvm
 
   @staticmethod
   def _DeviceName():
@@ -380,7 +382,7 @@ class Emulator(object):
         '-gpu', 'on',
         '-qemu', '-m', '1024',
         ]
-    if self.abi == 'x86':
+    if self.abi == 'x86' and self.enable_kvm:
       emulator_command.extend([
           # For x86 emulator --enable-kvm will fail early, avoiding accidental
           # runs in a slow mode (i.e. without hardware virtualization support).

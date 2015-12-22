@@ -54,6 +54,8 @@ def main(argv):
   run_parser.add_argument('--launch-without-kill', action='store_false',
                           dest='kill_and_launch', default=True,
                           help='Kill all emulators at launch')
+  run_parser.add_argument('--enable-kvm', action='store_true',
+                          dest='enable_kvm', default=False)
 
   arguments = arg_parser.parse_args(argv[1:])
 
@@ -77,9 +79,8 @@ def main(argv):
   # why don't we just run it?
   if arguments.abi == 'x86':
     if not install_emulator_deps.CheckKVM():
-      logging.critical('ERROR: KVM must be enabled in BIOS, and installed. '
-                       'Enable KVM in BIOS and run install_emulator_deps.py')
-      return 1
+      logging.warning('KVM is not installed or enabled')
+      arguments.enable_kvm = False
     elif not install_emulator_deps.CheckX86Image(arguments.api_level):
       logging.critical('ERROR: System image for x86 AVD not installed. Run '
                        'install_emulator_deps.py')
@@ -111,6 +112,7 @@ def main(argv):
     emulator.LaunchEmulator(
         arguments.name,
         arguments.abi,
+        enable_kvm=arguments.enable_kvm,
         kill_and_launch=arguments.reset_and_launch,
         sdcard_size=arguments.sdcard_size,
         storage_size=arguments.partition_size
@@ -120,6 +122,7 @@ def main(argv):
         arguments.emulator_count,
         arguments.abi,
         arguments.api_level,
+        enable_kvm=arguments.enable_kvm,
         kill_and_launch=arguments.kill_and_launch,
         sdcard_size=arguments.sdcard_size,
         storage_size=arguments.partition_size,
