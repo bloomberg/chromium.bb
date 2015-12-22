@@ -975,10 +975,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)webViewWebProcessDidCrash {
   _webProcessIsDead = YES;
-  SEL cancelJSDialogsSelector =
-      @selector(cancelJavaScriptDialogsForWebController:);
-  if ([self.UIDelegate respondsToSelector:cancelJSDialogsSelector])
-    [self.UIDelegate cancelJavaScriptDialogsForWebController:self];
 
   SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
   if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])

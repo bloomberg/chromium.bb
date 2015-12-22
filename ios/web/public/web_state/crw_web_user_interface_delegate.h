@@ -70,13 +70,6 @@ class GURL;
 // Cancels any outstanding dialogs requested by the methods above.
 - (void)cancelDialogsForWebController:(CRWWebController*)webController;
 
-// Cancels any outstanding JavaScript dialogs requested by the functions above.
-// Note: DEPRECATED, use |cancelDialogsForWebController| instead.
-// TODO(crbug.com/571172): remove this method, once it's not used downstream
-// anymore.
-- (void)cancelJavaScriptDialogsForWebController:
-    (CRWWebController*)webController;
-
 // Displays a context menu for DOM element. |point| and |view| represent the
 // location and UIView where the context menu was triggered by a user gesture.
 // |menuInfo| keys are defined in crw_context_menu_provider.h.
