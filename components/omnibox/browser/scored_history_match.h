@@ -99,9 +99,6 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // Term matches within the page title.
   TermMatches title_matches;
 
-  // True if this is a candidate for in-line autocompletion.
-  bool can_inline;
-
  private:
   friend class ScoredHistoryMatchTest;
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchTest, GetFinalRelevancyScore);

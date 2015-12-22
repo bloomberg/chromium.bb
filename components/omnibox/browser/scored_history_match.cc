@@ -146,7 +146,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     bool is_url_bookmarked,
     TemplateURLService* template_url_service,
     base::Time now)
-    : HistoryMatch(row, 0, false, false), raw_score(0), can_inline(false) {
+    : HistoryMatch(row, 0, false, false), raw_score(0) {
   // NOTE: Call Init() before doing any validity checking to ensure that the
   // class is always initialized after an instance has been constructed. In
   // particular, this ensures that the class is initialized after an instance
@@ -198,7 +198,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     title_matches = SortAndDeoverlapMatches(title_matches);
   }
 
-  // We can inline autocomplete a match if:
+  // We can likely inline autocomplete a match if:
   //  1) there is only one search term
   //  2) AND the match begins immediately after one of the prefixes in
   //     URLPrefix such as http://www and https:// (note that one of these
@@ -212,6 +212,15 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   // prefixes match, we'll choose to inline following the longest one.
   // For a URL like "http://www.washingtonmutual.com", this means
   // typing "w" will inline "ashington..." instead of "ww.washington...".
+  // We cannot be sure about inlining at this stage because this test depends
+  // on the cleaned up URL, which is not necessarily the same as the URL string
+  // used in HistoryQuick provider to construct the match.  For instance, the
+  // cleaned up URL has special characters unescaped so as to allow matches
+  // with them.  This aren't unescaped when HistoryQuick displays the URL;
+  // hence a match in the URL that involves matching the unescaped special
+  // characters may not be able to be inlined given how HistoryQuick displays
+  // it.  This happens in HistoryQuickProvider::QuickMatchToACMatch().
+  bool likely_can_inline = false;
   if (!url_matches.empty() && (terms_vector.size() == 1) &&
       !base::IsUnicodeWhitespace(*lower_string.rbegin())) {
     const base::string16 gurl_spec = base::UTF8ToUTF16(gurl.spec());
@@ -259,9 +268,9 @@ ScoredHistoryMatch::ScoredHistoryMatch(
         const URLPrefix* best_prefix =
             URLPrefix::BestURLPrefix(gurl_spec, base::string16());
         DCHECK(best_prefix);
-        // If the URL is inlineable, we must have a match.  Note the prefix that
-        // makes it inlineable may be empty.
-        can_inline = true;
+        // If the URL is likely to be inlineable, we must have a match.  Note
+        // the prefix that makes it inlineable may be empty.
+        likely_can_inline = true;
         innermost_match = (best_inlineable_prefix->num_components ==
                            best_prefix->num_components);
       }
@@ -274,7 +283,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   raw_score = base::saturated_cast<int>(GetFinalRelevancyScore(
       topicality_score, frequency_score, *hqp_relevance_buckets_));
 
-  if (also_do_hup_like_scoring_ && can_inline) {
+  if (also_do_hup_like_scoring_ && likely_can_inline) {
     // HistoryURL-provider-like scoring gives any match that is
     // capable of being inlined a certain minimum score.  Some of these
     // are given a higher score that lets them be shown in inline.

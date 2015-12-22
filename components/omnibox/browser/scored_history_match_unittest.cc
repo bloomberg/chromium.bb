@@ -357,22 +357,18 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, std::string(), ASCIIToUTF16("g"),
                                 Make1Term("g"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_TRUE(scored_a.can_inline);
     EXPECT_FALSE(scored_a.match_in_scheme);
     ScoredHistoryMatch scored_b(row, visits, std::string(), ASCIIToUTF16("w"),
                                 Make1Term("w"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_TRUE(scored_b.can_inline);
     EXPECT_FALSE(scored_b.match_in_scheme);
     ScoredHistoryMatch scored_c(row, visits, std::string(), ASCIIToUTF16("h"),
                                 Make1Term("h"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_TRUE(scored_c.can_inline);
     EXPECT_TRUE(scored_c.match_in_scheme);
     ScoredHistoryMatch scored_d(row, visits, std::string(), ASCIIToUTF16("o"),
                                 Make1Term("o"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_FALSE(scored_d.can_inline);
     EXPECT_FALSE(scored_d.match_in_scheme);
   }
 
@@ -382,17 +378,14 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, std::string(), ASCIIToUTF16("t"),
                                 Make1Term("t"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_TRUE(scored_a.can_inline);
     EXPECT_FALSE(scored_a.match_in_scheme);
     ScoredHistoryMatch scored_b(row, visits, std::string(), ASCIIToUTF16("f"),
                                 Make1Term("f"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_FALSE(scored_b.can_inline);
     EXPECT_FALSE(scored_b.match_in_scheme);
     ScoredHistoryMatch scored_c(row, visits, std::string(), ASCIIToUTF16("o"),
                                 Make1Term("o"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_FALSE(scored_c.can_inline);
     EXPECT_FALSE(scored_c.match_in_scheme);
   }
 
@@ -403,17 +396,14 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, std::string(), ASCIIToUTF16("t"),
                                 Make1Term("t"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_TRUE(scored_a.can_inline);
     EXPECT_FALSE(scored_a.match_in_scheme);
     ScoredHistoryMatch scored_b(row, visits, std::string(), ASCIIToUTF16("h"),
                                 Make1Term("h"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_TRUE(scored_b.can_inline);
     EXPECT_TRUE(scored_b.match_in_scheme);
     ScoredHistoryMatch scored_c(row, visits, std::string(), ASCIIToUTF16("w"),
                                 Make1Term("w"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_TRUE(scored_c.can_inline);
     EXPECT_FALSE(scored_c.match_in_scheme);
   }
 
@@ -424,17 +414,14 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     ScoredHistoryMatch scored_a(row, visits, "zh-CN", ASCIIToUTF16("x"),
                                 Make1Term("x"), one_word_no_offset, word_starts,
                                 false, nullptr, now);
-    EXPECT_FALSE(scored_a.can_inline);
     EXPECT_FALSE(scored_a.match_in_scheme);
     ScoredHistoryMatch scored_b(row, visits, "zh-CN", ASCIIToUTF16("xn"),
                                 Make1Term("xn"), one_word_no_offset,
                                 word_starts, false, nullptr, now);
-    EXPECT_FALSE(scored_b.can_inline);
     EXPECT_FALSE(scored_b.match_in_scheme);
     ScoredHistoryMatch scored_c(row, visits, "zh-CN", ASCIIToUTF16("w"),
                                 Make1Term("w"), one_word_no_offset,
                                 word_starts, false, nullptr, now);
-    EXPECT_TRUE(scored_c.can_inline);
     EXPECT_FALSE(scored_c.match_in_scheme);
   }
 }

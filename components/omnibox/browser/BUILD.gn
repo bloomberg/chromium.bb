@@ -112,7 +112,6 @@ source_set("browser") {
     "//base:i18n",
     "//base:prefs",
     "//components/bookmarks/browser",
-    "//components/crash/core/common",  # TODO(mpearson): remove once 464926 is fixed.
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//components/metrics",

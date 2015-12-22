@@ -511,17 +511,14 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ(5, matches[0].url_info.id());
   EXPECT_EQ("http://drudgereport.com/", matches[0].url_info.url().spec());
   EXPECT_EQ(ASCIIToUTF16("DRUDGE REPORT 2010"), matches[0].url_info.title());
-  EXPECT_TRUE(matches[0].can_inline);
 
-  // Make sure a trailing space prevents inline-ability but still results
-  // in the expected result.
+  // Make sure a trailing space still results in the expected result.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("DrudgeReport "),
                                              base::string16::npos, kMaxMatches);
   ASSERT_EQ(1U, matches.size());
   EXPECT_EQ(5, matches[0].url_info.id());
   EXPECT_EQ("http://drudgereport.com/", matches[0].url_info.url().spec());
   EXPECT_EQ(ASCIIToUTF16("DRUDGE REPORT 2010"), matches[0].url_info.title());
-  EXPECT_FALSE(matches[0].can_inline);
 
   // Search which should result in multiple results.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("drudge"),
@@ -541,7 +538,6 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
             matches[0].url_info.url().spec());  // Note: URL gets lowercased.
   EXPECT_EQ(ASCIIToUTF16("Practically Perfect Search Result"),
             matches[0].url_info.title());
-  EXPECT_FALSE(matches[0].can_inline);
 
   // Search which should result in very poor result.
   // No results since it will be suppressed by default scoring.
@@ -554,7 +550,6 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
                                              base::string16::npos, kMaxMatches);
   ASSERT_EQ(1U, matches.size());
   EXPECT_EQ(30, matches[0].url_info.id());
-  EXPECT_FALSE(matches[0].can_inline);
 
   // Check that URLs are not escaped an escape time.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("1% wikipedia"),
@@ -564,8 +559,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ("http://en.wikipedia.org/wiki/1%25_rule_(Internet_culture)",
             matches[0].url_info.url().spec());
 
-  // Verify that a single term can appear multiple times in the URL and as long
-  // as one starts the URL it is still inlined.
+  // Verify that a single term can appear multiple times in the URL.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("fubar"),
                                              base::string16::npos, kMaxMatches);
   ASSERT_EQ(1U, matches.size());
@@ -573,7 +567,6 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ("http://fubarfubarandfubar.com/", matches[0].url_info.url().spec());
   EXPECT_EQ(ASCIIToUTF16("Situation Normal -- FUBARED"),
             matches[0].url_info.title());
-  EXPECT_TRUE(matches[0].can_inline);
 }
 
 TEST_F(InMemoryURLIndexTest, CursorPositionRetrieval) {
@@ -619,70 +612,56 @@ TEST_F(InMemoryURLIndexTest, CursorPositionRetrieval) {
 }
 
 TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
-  // "drudgere" - found, can inline
+  // "drudgere" - found
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("drudgere"), base::string16::npos, kMaxMatches);
-  ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
-
-  // "drudgere" - found, can inline
-  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("drudgere"),
-                                             base::string16::npos, kMaxMatches);
-  ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_EQ(1U, matches.size());
 
   // "www.atdmt" - not found
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.atdmt"),
                                              base::string16::npos, kMaxMatches);
   EXPECT_EQ(0U, matches.size());
 
-  // "atdmt" - found, cannot inline
+  // "atdmt" - found
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("atdmt"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(1U, matches.size());
-  EXPECT_FALSE(matches[0].can_inline);
+  EXPECT_EQ(1U, matches.size());
 
-  // "view.atdmt" - found, can inline
+  // "view.atdmt" - found
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("view.atdmt"),
                                              base::string16::npos, kMaxMatches);
   ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
 
-  // "view.atdmt" - found, can inline
+  // "view.atdmt" - found
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("view.atdmt"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_EQ(1U, matches.size());
 
-  // "cnn.com" - found, can inline
+  // "cnn.com" - found
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("cnn.com"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(2U, matches.size());
-  // One match should be inline-able, the other not.
-  EXPECT_TRUE(matches[0].can_inline != matches[1].can_inline);
+  EXPECT_EQ(2U, matches.size());
 
-  // "www.cnn.com" - found, can inline
+  // "www.cnn.com" - found
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.cnn.com"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_EQ(1U, matches.size());
 
   // "ww.cnn.com" - found because we suppress mid-term matches.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("ww.cnn.com"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(0U, matches.size());
+  EXPECT_EQ(0U, matches.size());
 
-  // "www.cnn.com" - found, can inline
+  // "www.cnn.com" - found
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.cnn.com"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(matches[0].can_inline);
+  EXPECT_EQ(1U, matches.size());
 
   // "tp://www.cnn.com" - not found because we don't allow tp as a mid-term
   // match
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("tp://www.cnn.com"),
                                              base::string16::npos, kMaxMatches);
-  ASSERT_EQ(0U, matches.size());
+  EXPECT_EQ(0U, matches.size());
 }
 
 TEST_F(InMemoryURLIndexTest, ProperStringMatching) {

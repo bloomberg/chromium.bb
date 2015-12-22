@@ -20,7 +20,6 @@
         '../ui/gfx/gfx.gyp:gfx_vector_icons',
         '../url/url.gyp:url_lib',
         'bookmarks_browser',
-        'crash_core_common',  # TODO(mpearson): remove once 464926 is fixed.
         'metrics',
         'component_metrics_proto',
         'components_resources.gyp:components_resources',
