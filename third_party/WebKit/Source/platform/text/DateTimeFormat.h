@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -36,6 +37,7 @@ namespace blink {
 // standard 35, Locale Data Markup Language (LDML)[1].
 // [1] LDML http://unicode.org/reports/tr35/tr35-6.html#Date_Format_Patterns
 class PLATFORM_EXPORT DateTimeFormat {
+    STATIC_ONLY(DateTimeFormat);
 public:
     enum FieldType {
         FieldTypeInvalid,

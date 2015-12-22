@@ -26,6 +26,7 @@
 #include "platform/text/BidiContext.h"
 #include "platform/text/BidiRunList.h"
 #include "platform/text/TextDirection.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -35,7 +36,8 @@ namespace blink {
 
 class LayoutObject;
 
-template <class Iterator> class MidpointState {
+template <class Iterator> class MidpointState final {
+    DISALLOW_NEW();
 public:
     MidpointState()
     {
@@ -116,7 +118,8 @@ private:
 
 // The BidiStatus at a given position (typically the end of a line) can
 // be cached and then used to restart bidi resolution at that position.
-struct BidiStatus {
+struct BidiStatus final {
+    DISALLOW_NEW();
     BidiStatus()
         : eor(WTF::Unicode::OtherNeutral)
         , lastStrong(WTF::Unicode::OtherNeutral)
@@ -166,7 +169,8 @@ struct BidiStatus {
     RefPtr<BidiContext> context;
 };
 
-class BidiEmbedding {
+class BidiEmbedding final {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     BidiEmbedding(WTF::Unicode::Direction direction, BidiEmbeddingSource source)
     : m_direction(direction)
@@ -202,7 +206,8 @@ class NoIsolatedRun {
 
 // BidiResolver is WebKit's implementation of the Unicode Bidi Algorithm
 // http://unicode.org/reports/tr9
-template <class Iterator, class Run, class IsolatedRun = NoIsolatedRun> class BidiResolver {
+template <class Iterator, class Run, class IsolatedRun = NoIsolatedRun> class BidiResolver final {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(BidiResolver);
 public:
     BidiResolver()

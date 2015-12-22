@@ -30,6 +30,7 @@
 namespace blink {
 
 struct ExpectedTextRunSize {
+    DISALLOW_NEW();
     const void* pointer;
     int integers[2];
     float float1;

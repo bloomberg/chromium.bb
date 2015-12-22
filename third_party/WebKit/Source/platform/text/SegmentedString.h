@@ -21,6 +21,7 @@
 #define SegmentedString_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
@@ -31,6 +32,7 @@ namespace blink {
 class SegmentedString;
 
 class PLATFORM_EXPORT SegmentedSubstring {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     SegmentedSubstring()
         : m_length(0)
@@ -175,6 +177,7 @@ private:
 };
 
 class PLATFORM_EXPORT SegmentedString {
+    DISALLOW_NEW();
 public:
     SegmentedString()
         : m_currentChar(0)

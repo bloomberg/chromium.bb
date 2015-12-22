@@ -31,6 +31,7 @@
 #define DecodeEscapeSequences_h
 
 #include "wtf/ASCIICType.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
@@ -39,6 +40,7 @@ namespace blink {
 
 // See <http://en.wikipedia.org/wiki/Percent-encoding#Non-standard_implementations>.
 struct Unicode16BitEscapeSequence {
+    STATIC_ONLY(Unicode16BitEscapeSequence);
     enum { sequenceSize = 6 }; // e.g. %u26C4
     static size_t findInString(const String& string, size_t startPosition) { return string.find("%u", startPosition); }
     static size_t findEndOfRun(const String& string, size_t startPosition, size_t endPosition)

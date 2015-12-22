@@ -30,10 +30,12 @@
 #define TextRunIterator_h
 
 #include "platform/text/TextRun.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class TextRunIterator {
+    DISALLOW_NEW();
 public:
     TextRunIterator()
         : m_textRun(0)

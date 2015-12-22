@@ -37,7 +37,8 @@ using namespace WTF;
 
 namespace blink {
 
-class LineBreakIteratorPool {
+class LineBreakIteratorPool final {
+    USING_FAST_MALLOC(LineBreakIteratorPool);
     WTF_MAKE_NONCOPYABLE(LineBreakIteratorPool);
 public:
     static LineBreakIteratorPool& sharedPool()
@@ -111,6 +112,7 @@ enum TextContext { NoContext, PriorContext, PrimaryContext };
 const int textBufferCapacity = 16;
 
 typedef struct {
+    DISALLOW_NEW();
     UText text;
     UChar buffer[textBufferCapacity];
 } UTextWithBuffer;

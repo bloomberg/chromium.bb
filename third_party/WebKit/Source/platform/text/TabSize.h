@@ -5,9 +5,12 @@
 #ifndef TabSize_h
 #define TabSize_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct TabSize {
+    DISALLOW_NEW();
     TabSize(float pixels)
         : m_floatValue(pixels)
         , m_isSpaces(0)

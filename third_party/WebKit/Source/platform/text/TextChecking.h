@@ -33,6 +33,7 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDecoration.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -53,6 +54,7 @@ enum TextCheckingProcessType {
 };
 
 struct GrammarDetail {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     int location;
     int length;
     Vector<String> guesses;
@@ -60,6 +62,7 @@ struct GrammarDetail {
 };
 
 struct TextCheckingResult {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     TextDecorationType decoration;
     int location;
     int length;
@@ -70,7 +73,8 @@ struct TextCheckingResult {
 
 const int unrequestedTextCheckingSequence = -1;
 
-class TextCheckingRequestData {
+class TextCheckingRequestData final {
+    DISALLOW_NEW();
     friend class SpellCheckRequest; // For access to m_sequence.
 public:
     TextCheckingRequestData()

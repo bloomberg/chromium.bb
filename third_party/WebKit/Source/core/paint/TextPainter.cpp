@@ -217,7 +217,7 @@ void TextPainter::paintInternal(int startOffset, int endOffset, int truncationPo
 void TextPainter::paintEmphasisMarkForCombinedText()
 {
     ASSERT(m_combinedText);
-    DEFINE_STATIC_LOCAL(TextRun, placeholderTextRun, (&ideographicFullStopCharacter, 1));
+    TextRun placeholderTextRun(&ideographicFullStopCharacter, 1);
     FloatPoint emphasisMarkTextOrigin(m_textBounds.x().toFloat(), m_textBounds.y().toFloat() + m_font.fontMetrics().ascent() + m_emphasisMarkOffset);
     TextRunPaintInfo textRunPaintInfo(placeholderTextRun);
     textRunPaintInfo.bounds = FloatRect(m_textBounds);

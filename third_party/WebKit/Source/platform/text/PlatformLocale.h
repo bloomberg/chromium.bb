@@ -29,6 +29,7 @@
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
 #include "public/platform/WebLocalizedString.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -36,6 +37,7 @@ namespace blink {
 
 class PLATFORM_EXPORT Locale {
     WTF_MAKE_NONCOPYABLE(Locale);
+    USING_FAST_MALLOC(Locale);
 public:
     static PassOwnPtr<Locale> create(const String& localeIdentifier);
     static Locale& defaultLocale();

@@ -30,6 +30,7 @@
 #define StringTruncator_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -37,6 +38,7 @@ namespace blink {
 class Font;
 
 class PLATFORM_EXPORT StringTruncator {
+    STATIC_ONLY(StringTruncator);
 public:
     static String centerTruncate(const String&, float maxWidth, const Font&);
     static String rightTruncate(const String&, float maxWidth, const Font&);

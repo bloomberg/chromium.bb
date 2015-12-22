@@ -23,13 +23,15 @@
 #ifndef BidiRunList_h
 #define BidiRunList_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
 template <class Run>
-class BidiRunList {
+class BidiRunList final {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(BidiRunList);
 public:
     BidiRunList()

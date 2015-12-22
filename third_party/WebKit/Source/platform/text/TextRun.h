@@ -31,6 +31,7 @@
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,8 +46,8 @@ enum TextJustify {
     TextJustifyDistribute = 0x3
 };
 
-class PLATFORM_EXPORT TextRun {
-    USING_FAST_MALLOC(TextRun);
+class PLATFORM_EXPORT TextRun final {
+    DISALLOW_NEW();
 public:
     enum ExpansionBehaviorFlags {
         ForbidTrailingExpansion = 0 << 0,
