@@ -54,7 +54,7 @@ layer at (8,8) size 512x871 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         text run at (0,89) width 429: "need to enlarge the fonts to read comfortably."
 layer at (547,180) size 200x48
   LayoutBlockFlow (positioned) {SPAN} at (538.66,171.55) size 200x48
-    LayoutText {#text} at (0,-2) size 198x51
-      text run at (0,-2) width 198: "\x{2190} this should be to the right of"
+    LayoutText {#text} at (0,-2) size 200x51
+      text run at (0,-2) width 200: "\x{2190} this should be to the right of"
       text run at (0,14) width 177: "the paragraph, lining up with"
       text run at (0,30) width 68: "the dagger"

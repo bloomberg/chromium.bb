@@ -1,22 +1,22 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x182
-  LayoutBlockFlow {HTML} at (0,0) size 800x182.44
-    LayoutBlockFlow {BODY} at (8,18.72) size 784x147.72
+layer at (0,0) size 800x170
+  LayoutBlockFlow {HTML} at (0,0) size 800x170.44
+    LayoutBlockFlow {BODY} at (8,18.72) size 784x135.72
       LayoutBlockFlow {H3} at (0,0) size 784x22
         LayoutText {#text} at (0,0) size 759x21
           text run at (0,0) width 759: "The glyph for JHA should look different for Nepali and Hindi, depending on the lang attribute."
-      LayoutBlockFlow {P} at (0,40.72) size 784x25
-        LayoutText {#text} at (0,4) size 88x21
-          text run at (0,4) width 88: "Hindi:JHA \x{91D}"
-      LayoutBlockFlow {P} at (0,81.72) size 784x25
-        LayoutText {#text} at (0,4) size 97x21
-          text run at (0,4) width 97: "Nepali:JHA \x{91D}"
-      LayoutBlockFlow {P} at (0,122.72) size 784x25
-        LayoutText {#text} at (0,4) size 83x21
-          text run at (0,4) width 83: "Nepali:JHA "
-        LayoutInline {SPAN} at (0,0) size 15x21
-          LayoutText {#text} at (82,4) size 15x21
-            text run at (82,4) width 15: "\x{91D}"
-        LayoutText {#text} at (96,4) size 305x21
-          text run at (96,4) width 305: " - \"ne\" in \"hi\" should look the same as above."
+      LayoutBlockFlow {P} at (0,40.72) size 784x21
+        LayoutText {#text} at (0,0) size 87x21
+          text run at (0,0) width 87: "Hindi:JHA \x{91D}"
+      LayoutBlockFlow {P} at (0,77.72) size 784x21
+        LayoutText {#text} at (0,0) size 96x21
+          text run at (0,0) width 96: "Nepali:JHA \x{91D}"
+      LayoutBlockFlow {P} at (0,114.72) size 784x21
+        LayoutText {#text} at (0,0) size 81x21
+          text run at (0,0) width 81: "Nepali:JHA "
+        LayoutInline {SPAN} at (0,0) size 16x21
+          LayoutText {#text} at (80,0) size 16x21
+            text run at (80,0) width 16: "\x{91D}"
+        LayoutText {#text} at (95,0) size 291x21
+          text run at (95,0) width 291: " - \"ne\" in \"hi\" should look the same as above."

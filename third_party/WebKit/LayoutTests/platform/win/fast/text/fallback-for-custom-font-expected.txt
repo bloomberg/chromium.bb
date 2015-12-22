@@ -16,10 +16,10 @@ layer at (0,0) size 800x600
             text run at (0,18) width 68: "happening"
         LayoutText {#text} at (67,18) size 5x17
           text run at (67,18) width 5: "."
-      LayoutBlockFlow {P} at (0,52) size 784x39
-        LayoutText {#text} at (0,18) size 192x17
-          text run at (0,18) width 192: "A synthesized oblique bullet: "
+      LayoutBlockFlow {P} at (0,52) size 784x37
+        LayoutText {#text} at (0,15) size 192x17
+          text run at (0,15) width 192: "A synthesized oblique bullet: "
         LayoutInline {SPAN} at (0,0) size 20x32
-          LayoutText {#text} at (191,6) size 20x32
-            text run at (191,6) width 20: "\x{25CF}"
+          LayoutText {#text} at (191,3) size 20x32
+            text run at (191,3) width 20: "\x{25CF}"
         LayoutText {#text} at (0,0) size 0x0

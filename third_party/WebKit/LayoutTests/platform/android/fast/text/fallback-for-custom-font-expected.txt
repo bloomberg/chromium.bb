@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
             text run at (212,0) width 566: "When a webfont is missing a glyph, synthesization from the fallback font isn't happening"
         LayoutText {#text} at (777,0) size 5x19
           text run at (777,0) width 5: "."
-      LayoutBlockFlow {P} at (0,36) size 784x38
+      LayoutBlockFlow {P} at (0,36) size 784x37
         LayoutText {#text} at (0,14) size 174x19
           text run at (0,14) width 174: "A synthesized oblique bullet: "
         LayoutInline {SPAN} at (0,0) size 19x32

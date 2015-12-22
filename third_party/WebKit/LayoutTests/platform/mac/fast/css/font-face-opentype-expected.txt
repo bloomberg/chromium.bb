@@ -34,9 +34,9 @@ layer at (0,0) size 800x600
           text run at (0,0) width 759: "Check if glyphs not in Ahem.otf can be rendered using a fallback font. If the test passes, you should see a single-quote"
           text run at (0,18) width 107: "character below:"
       LayoutBlockFlow (anonymous) at (0,204) size 784x18
-        LayoutInline {SPAN} at (0,0) size 4x16
-          LayoutText {#text} at (0,2) size 4x16
-            text run at (0,2) width 4: "'"
+        LayoutInline {SPAN} at (0,0) size 3x16
+          LayoutText {#text} at (0,1) size 3x16
+            text run at (0,1) width 3: "'"
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0

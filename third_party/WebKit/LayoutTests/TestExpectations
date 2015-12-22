@@ -1234,17 +1234,7 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
 crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ Failure ]
-crbug.com/299010 [ Win ] http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
-crbug.com/299010 [ Linux Mac Win ] fast/css/font-face-opentype.html [ NeedsRebaseline ]
-crbug.com/299010 [ Mac ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsRebaseline ]
-crbug.com/299010 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsRebaseline ]
 crbug.com/299010 fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
-crbug.com/299010 [ Linux Mac Win ] fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
-crbug.com/299010 [ Linux Mac Win ] fast/text/shaping/same-script-different-lang.html [ NeedsRebaseline ]
-crbug.com/299010 [ Linux Win ] fast/block/positioning/047.html [ NeedsRebaseline ]
-crbug.com/299010 [ Linux Win ] fast/text/cg-fallback-bolding.html [ NeedsRebaseline ]
-crbug.com/299010 [ Linux Win ] fast/text/fallback-for-custom-font.html [ NeedsRebaseline ]
-crbug.com/299010 [ Win ] fast/text/unicode-fallback-font.html [ NeedsRebaseline ]
 crbug.com/570656 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Slow ]
 crbug.com/570656 [ Mac ] fast/text/unicode-fallback-font.html [ Slow ]
 
