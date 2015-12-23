@@ -491,9 +491,11 @@ public class CastSession implements MediaNotificationListener {
 
         int sequenceNumber = jsonMessage.optInt("sequenceNumber", INVALID_SEQUENCE_NUMBER);
 
-        // TODO(avayvod): "leave" the other clients with the matching origin/tab id.
-        // See https://crbug.com/549957.
         sendClientMessageTo(clientId, "leave_session", null, sequenceNumber);
+
+        // All clients could've only joined if they're in the same scope. Need to send them
+        // all a "disconnect_session" message.
+        broadcastClientMessage("disconnect_session", sessionId);
 
         return true;
     }
@@ -738,7 +740,9 @@ public class CastSession implements MediaNotificationListener {
 
             // TODO(mlamouri): we should have a more reliable way to handle string, null and Object
             // messages.
-            if ("remove_session".equals(type) || message == null) {
+            if (message == null
+                    || "remove_session".equals(type)
+                    || "disconnect_session".equals(type)) {
                 json.put("message", message);
             } else {
                 JSONObject jsonMessage = new JSONObject(message);
