@@ -4,7 +4,9 @@
 
 #include "ui/views/controls/menu/menu_controller.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_handler.h"

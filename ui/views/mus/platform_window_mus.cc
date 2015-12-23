@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/platform_window_mus.h"
 
+#include "build/build_config.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"

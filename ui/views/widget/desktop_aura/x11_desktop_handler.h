@@ -5,12 +5,14 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_DESKTOP_HANDLER_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_DESKTOP_HANDLER_H_
 
+#include <stdint.h>
 #include <X11/Xlib.h>
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/aura/env_observer.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/x/x11_atom_cache.h"

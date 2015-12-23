@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_MOUSE_CONSTANTS_H_
 #define UI_VIEWS_MOUSE_CONSTANTS_H_
 
-#include "base/basictypes.h"
 
 namespace views {
 

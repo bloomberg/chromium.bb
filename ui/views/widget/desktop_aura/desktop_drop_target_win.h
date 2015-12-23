@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTIOP_DROP_TARGET_WIN_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTIOP_DROP_TARGET_WIN_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/drop_target_win.h"

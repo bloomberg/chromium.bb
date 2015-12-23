@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -153,10 +154,10 @@ void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     // TODO(miu): This is basically media::ComputeLetterboxRegion(), and it
     // looks like others have written this code elsewhere.  Let's considate
     // into a shared function ui/gfx/geometry or around there.
-    const int64 x = static_cast<int64>(capture_size.width()) *
-        holder_bounds.height();
-    const int64 y = static_cast<int64>(capture_size.height()) *
-        holder_bounds.width();
+    const int64_t x =
+        static_cast<int64_t>(capture_size.width()) * holder_bounds.height();
+    const int64_t y =
+        static_cast<int64_t>(capture_size.height()) * holder_bounds.width();
     if (y < x) {
       holder_bounds.ClampToCenteredSize(gfx::Size(
           holder_bounds.width(), static_cast<int>(y / capture_size.width())));

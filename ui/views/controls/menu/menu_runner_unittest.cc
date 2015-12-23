@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/menu/menu_runner.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/menu/menu_delegate.h"
@@ -63,7 +66,7 @@ class MenuRunnerTest : public ViewsTestBase {
 
   // Initializes a MenuRunner with |run_types|. It takes ownership of
   // |menu_item_view_|.
-  void InitMenuRunner(int32 run_types);
+  void InitMenuRunner(int32_t run_types);
 
   MenuItemView* menu_item_view() { return menu_item_view_; }
   TestMenuDelegate* menu_delegate() { return menu_delegate_.get(); }
@@ -89,7 +92,7 @@ MenuRunnerTest::MenuRunnerTest() {}
 
 MenuRunnerTest::~MenuRunnerTest() {}
 
-void MenuRunnerTest::InitMenuRunner(int32 run_types) {
+void MenuRunnerTest::InitMenuRunner(int32_t run_types) {
   menu_runner_.reset(new MenuRunner(menu_item_view_, run_types));
 }
 

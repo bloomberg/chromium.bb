@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_WINDOW_REORDERER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 

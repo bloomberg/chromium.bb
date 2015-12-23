@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_EXAMPLES_BUBBLE_EXAMPLE_H_
 #define UI_VIEWS_EXAMPLES_BUBBLE_EXAMPLE_H_
 
+#include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/examples/example_base.h"
 

@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_IMPL_INTERFACE_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_IMPL_INTERFACE_H_
 
+#include <stdint.h>
+
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace views {
@@ -22,7 +24,7 @@ class MenuRunnerImplInterface {
   // Creates a concrete instance for running |menu_model|.
   // |run_types| is a bitmask of MenuRunner::RunTypes.
   static MenuRunnerImplInterface* Create(ui::MenuModel* menu_model,
-                                         int32 run_types);
+                                         int32_t run_types);
 
   // Returns true if we're in a nested message loop running the menu.
   virtual bool IsRunning() const = 0;
@@ -35,7 +37,7 @@ class MenuRunnerImplInterface {
                                           MenuButton* button,
                                           const gfx::Rect& bounds,
                                           MenuAnchorPosition anchor,
-                                          int32 run_types)
+                                          int32_t run_types)
       WARN_UNUSED_RESULT = 0;
 
   // Hides and cancels the menu.

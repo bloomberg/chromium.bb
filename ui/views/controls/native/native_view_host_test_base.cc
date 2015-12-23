@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/native/native_view_host_test_base.h"
 
+#include "base/macros.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
 

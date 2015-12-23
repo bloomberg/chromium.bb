@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WINDOW_NATIVE_FRAME_VIEW_H_
 #define UI_VIEWS_WINDOW_NATIVE_FRAME_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {

@@ -4,6 +4,7 @@
 
 #include "ui/views/test/test_views_delegate.h"
 
+#include "build/build_config.h"
 #include "ui/aura/env.h"
 #include "ui/wm/core/wm_state.h"
 

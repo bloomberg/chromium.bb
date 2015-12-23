@@ -5,8 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_WIDGET_DELETION_OBSERVER_H_
 #define UI_VIEWS_WIDGET_WIDGET_DELETION_OBSERVER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget_observer.h"
 

@@ -5,8 +5,10 @@
 #ifndef UI_VIEWS_PAINTER_H_
 #define UI_VIEWS_PAINTER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/nine_image_painter_factory.h"

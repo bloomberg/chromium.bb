@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/webview/webview.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -86,8 +89,8 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
  private:
   content::WebContents* web_contents_;
   bool was_shown_;
-  int32 shown_count_;
-  int32 hidden_count_;
+  int32_t shown_count_;
+  int32_t hidden_count_;
   // Set to true if the view containing the webcontents has a valid root window.
   bool valid_root_while_shown_;
 

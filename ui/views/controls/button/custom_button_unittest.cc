@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/button/custom_button.h"
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 #include "ui/events/event_utils.h"

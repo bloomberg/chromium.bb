@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/message_box_view.h"
 
+#include <stddef.h>
+
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"

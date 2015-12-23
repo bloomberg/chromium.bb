@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_MUS_PLATFORM_WINDOW_MUS_H_
 #define UI_VIEWS_MUS_PLATFORM_WINDOW_MUS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

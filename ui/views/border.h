@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_BORDER_H_
 #define UI_VIEWS_BORDER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/views_export.h"
 #include "ui/wm/core/native_cursor_manager.h"

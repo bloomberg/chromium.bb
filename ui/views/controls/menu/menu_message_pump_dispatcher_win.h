@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_PUMP_DISPATCHER_WIN_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_PUMP_DISPATCHER_WIN_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 

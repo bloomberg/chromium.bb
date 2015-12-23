@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_runner_impl.h"
 
+#include "build/build_config.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -22,7 +23,7 @@ namespace internal {
 #if !defined(OS_MACOSX)
 MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
-    int32 run_types) {
+    int32_t run_types) {
   return new MenuRunnerImplAdapter(menu_model);
 }
 #endif
@@ -73,7 +74,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
                                                 MenuButton* button,
                                                 const gfx::Rect& bounds,
                                                 MenuAnchorPosition anchor,
-                                                int32 run_types) {
+                                                int32_t run_types) {
   closing_event_time_ = base::TimeDelta();
   if (running_) {
     // Ignore requests to show the menu while it's already showing. MenuItemView

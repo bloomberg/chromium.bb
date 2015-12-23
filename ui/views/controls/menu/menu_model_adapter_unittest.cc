@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_model_adapter.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/menu_model_delegate.h"

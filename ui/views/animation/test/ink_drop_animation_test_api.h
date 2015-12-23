@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_ANIMATION_TEST_INK_DROP_ANIMATION_TEST_API_H_
 #define UI_VIEWS_ANIMATION_TEST_INK_DROP_ANIMATION_TEST_API_H_
 
+#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace views {

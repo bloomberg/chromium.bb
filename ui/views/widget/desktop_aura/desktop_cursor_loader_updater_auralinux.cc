@@ -4,6 +4,9 @@
 
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater_auralinux.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursors_aura.h"

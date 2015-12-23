@@ -4,11 +4,14 @@
 
 #include "ui/views/corewm/tooltip_controller.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"

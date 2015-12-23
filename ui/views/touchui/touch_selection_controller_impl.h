@@ -5,6 +5,7 @@
 #ifndef UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 #define UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/touch/selection_bound.h"

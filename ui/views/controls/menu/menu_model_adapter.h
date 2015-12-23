@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 namespace ui {

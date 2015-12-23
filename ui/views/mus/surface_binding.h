@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_MUS_SURFACE_BINDING_H_
 #define UI_VIEWS_MUS_SURFACE_BINDING_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"

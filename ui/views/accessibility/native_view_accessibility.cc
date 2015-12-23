@@ -5,6 +5,7 @@
 #include "ui/views/accessibility/native_view_accessibility.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/native/native_view_host.h"

@@ -4,6 +4,8 @@
 
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
 
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -58,7 +60,7 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   }
 }
 
-int32 AXWindowObjWrapper::GetID() {
+int32_t AXWindowObjWrapper::GetID() {
   return AXAuraObjCache::GetInstance()->GetID(window_);
 }
 

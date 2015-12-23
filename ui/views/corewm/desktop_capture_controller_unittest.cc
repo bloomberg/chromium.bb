@@ -5,6 +5,7 @@
 #include "ui/wm/core/capture_controller.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"

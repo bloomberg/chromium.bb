@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/views_export.h"
 

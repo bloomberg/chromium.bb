@@ -5,8 +5,10 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -104,8 +106,8 @@ class VIEWS_EXPORT MenuRunner {
 
   // Creates a new MenuRunner.
   // |run_types| is a bitmask of RunTypes.
-  MenuRunner(ui::MenuModel* menu_model, int32 run_types);
-  MenuRunner(MenuItemView* menu, int32 run_types);
+  MenuRunner(ui::MenuModel* menu_model, int32_t run_types);
+  MenuRunner(MenuItemView* menu, int32_t run_types);
   ~MenuRunner();
 
   // Runs the menu. If this returns MENU_DELETED the method is returning
@@ -135,7 +137,7 @@ class VIEWS_EXPORT MenuRunner {
   // Sets an implementation of RunMenuAt. This is intended to be used at test.
   void SetRunnerHandler(scoped_ptr<MenuRunnerHandler> runner_handler);
 
-  const int32 run_types_;
+  const int32_t run_types_;
 
   // We own this. No scoped_ptr because it is destroyed by calling Release().
   internal::MenuRunnerImplInterface* impl_;

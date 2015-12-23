@@ -73,7 +73,7 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   }
 }
 
-int32 AXViewObjWrapper::GetID() {
+int32_t AXViewObjWrapper::GetID() {
   return AXAuraObjCache::GetInstance()->GetID(view_);
 }
 
@@ -96,7 +96,7 @@ void AXViewObjWrapper::MakeVisible() {
   // TODO(dtseng): Implement.
 }
 
-void AXViewObjWrapper::SetSelection(int32 start, int32 end) {
+void AXViewObjWrapper::SetSelection(int32_t start, int32_t end) {
   // TODO(dtseng): Implement.
 }
 

@@ -4,6 +4,9 @@
 
 #include "ui/views/bubble/bubble_border.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/canvas.h"

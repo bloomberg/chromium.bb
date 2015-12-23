@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_IMPL_ADAPTER_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_IMPL_ADAPTER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ui/views/controls/menu/menu_runner_impl_interface.h"
 
 namespace views {
@@ -24,7 +27,7 @@ class MenuRunnerImplAdapter : public MenuRunnerImplInterface {
                                   MenuButton* button,
                                   const gfx::Rect& bounds,
                                   MenuAnchorPosition anchor,
-                                  int32 types) override;
+                                  int32_t types) override;
   void Cancel() override;
   base::TimeDelta GetClosingEventTime() const override;
 

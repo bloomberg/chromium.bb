@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 
+#include <stddef.h>
 #include <X11/Xutil.h>
 
 #include "ui/aura/client/screen_position_client.h"

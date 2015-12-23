@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/single_split_view.h"
 
+#include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"

@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_MOUSE_WATCHER_VIEW_HOST_H_
 #define UI_VIEWS_MOUSE_WATCHER_VIEW_HOST_H_
 
+#include "base/macros.h"
 #include "ui/views/mouse_watcher.h"
 
 namespace views {

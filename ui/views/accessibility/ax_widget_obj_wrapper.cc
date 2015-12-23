@@ -42,7 +42,7 @@ void AXWidgetObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->state = 0;
 }
 
-int32 AXWidgetObjWrapper::GetID() {
+int32_t AXWidgetObjWrapper::GetID() {
   return AXAuraObjCache::GetInstance()->GetID(widget_);
 }
 

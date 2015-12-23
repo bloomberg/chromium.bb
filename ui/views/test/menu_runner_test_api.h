@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_TEST_MENU_RUNNER_TEST_API_H_
 #define UI_VIEWS_TEST_MENU_RUNNER_TEST_API_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace views {

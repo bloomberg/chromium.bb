@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_LAYOUT_GRID_LAYOUT_H_
 #define UI_VIEWS_LAYOUT_GRID_LAYOUT_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/macros.h"

@@ -7,6 +7,8 @@
 
 #include "ui/views/controls/button/custom_button.h"
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/views/repeat_controller.h"
 
 #if defined(OS_LINUX)

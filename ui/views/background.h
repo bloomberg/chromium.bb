@@ -5,15 +5,16 @@
 #ifndef UI_VIEWS_BACKGROUND_H_
 #define UI_VIEWS_BACKGROUND_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/views_export.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
 #endif  // defined(OS_WIN)
-
-#include "base/basictypes.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/views/views_export.h"
 
 namespace gfx {
 class Canvas;

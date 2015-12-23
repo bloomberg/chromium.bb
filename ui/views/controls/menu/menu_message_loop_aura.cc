@@ -4,7 +4,9 @@
 
 #include "ui/views/controls/menu/menu_message_loop_aura.h"
 
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

@@ -5,10 +5,12 @@
 #ifndef UI_VIEWS_FOCUS_VIEW_STORAGE_H_
 #define UI_VIEWS_FOCUS_VIEW_STORAGE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/views/views_export.h"
 
 namespace base {

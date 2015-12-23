@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
 #define UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
 
+#include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace views {

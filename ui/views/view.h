@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_VIEW_H_
 #define UI_VIEWS_VIEW_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <set>
@@ -14,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.h"

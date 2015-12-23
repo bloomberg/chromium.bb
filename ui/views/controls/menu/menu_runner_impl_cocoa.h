@@ -7,7 +7,10 @@
 
 #include "ui/views/controls/menu/menu_runner_impl_interface.h"
 
+#include <stdint.h>
+
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 @class MenuController;
@@ -26,7 +29,7 @@ class VIEWS_EXPORT MenuRunnerImplCocoa : public MenuRunnerImplInterface {
                                   MenuButton* button,
                                   const gfx::Rect& bounds,
                                   MenuAnchorPosition anchor,
-                                  int32 run_types) override;
+                                  int32_t run_types) override;
   void Cancel() override;
   base::TimeDelta GetClosingEventTime() const override;
 

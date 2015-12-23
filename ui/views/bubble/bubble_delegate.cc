@@ -4,6 +4,7 @@
 
 #include "ui/views/bubble/bubble_delegate.h"
 
+#include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"

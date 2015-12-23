@@ -5,10 +5,11 @@
 #include "ui/views/corewm/cursor_height_provider_win.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <algorithm>
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_hdc.h"
 

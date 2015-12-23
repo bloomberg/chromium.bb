@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
 
 namespace views {

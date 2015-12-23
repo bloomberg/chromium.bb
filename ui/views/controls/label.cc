@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/label.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>

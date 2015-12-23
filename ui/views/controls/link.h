@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/label.h"
 

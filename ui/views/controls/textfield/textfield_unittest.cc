@@ -4,15 +4,20 @@
 
 #include "ui/views/controls/textfield/textfield.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -2122,11 +2127,11 @@ TEST_F(TextfieldTest, GetCompositionCharacterBoundsTest) {
   InitTextfield();
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("abc123");
-  const uint32 char_count = static_cast<uint32>(composition.text.length());
+  const uint32_t char_count = static_cast<uint32_t>(composition.text.length());
   ui::TextInputClient* client = textfield_;
 
   // Compare the composition character bounds with surrounding cursor bounds.
-  for (uint32 i = 0; i < char_count; ++i) {
+  for (uint32_t i = 0; i < char_count; ++i) {
     composition.selection = gfx::Range(i);
     client->SetCompositionText(composition);
     gfx::Point cursor_origin = GetCursorBounds().origin();
@@ -2175,7 +2180,7 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
   // Make sure GetCompositionCharacterBounds never fails for index.
   gfx::Rect rects[kUtf16CharsCount];
   gfx::Rect prev_cursor = GetCursorBounds();
-  for (uint32 i = 0; i < kUtf16CharsCount; ++i)
+  for (uint32_t i = 0; i < kUtf16CharsCount; ++i)
     EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &rects[i]));
 
   // Here we might expect the following results but it actually depends on how

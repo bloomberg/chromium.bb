@@ -4,6 +4,7 @@
 
 #include "ui/views/style/mac/dialog_button_border_mac.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/compositor/canvas_painter.h"

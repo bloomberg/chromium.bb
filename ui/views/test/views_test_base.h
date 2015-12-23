@@ -5,8 +5,10 @@
 #ifndef UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
 #define UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/views/test/scoped_views_test_helper.h"

@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/views/widget/widget_delegate.h"

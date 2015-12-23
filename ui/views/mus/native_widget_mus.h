@@ -5,9 +5,12 @@
 #ifndef UI_VIEWS_MUS_NATIVE_WIDGET_MUS_H_
 #define UI_VIEWS_MUS_NATIVE_WIDGET_MUS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"

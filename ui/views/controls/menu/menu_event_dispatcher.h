@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_EVENT_DISPATCHER_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_EVENT_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 

@@ -4,9 +4,12 @@
 
 #include "ui/views/widget/window_reorderer.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/view_constants_aura.h"

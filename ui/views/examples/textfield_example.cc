@@ -4,6 +4,8 @@
 
 #include "ui/views/examples/textfield_example.h"
 
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
 #include "ui/gfx/range/range.h"

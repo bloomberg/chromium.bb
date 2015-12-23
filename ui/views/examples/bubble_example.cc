@@ -4,6 +4,7 @@
 
 #include "ui/views/examples/bubble_example.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/label_button.h"

@@ -5,9 +5,10 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_AX_AURA_OBJ_WRAPPER_H_
 #define UI_VIEWS_ACCESSIBILITY_AX_AURA_OBJ_WRAPPER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/point.h"
@@ -30,13 +31,13 @@ class VIEWS_EXPORT AXAuraObjWrapper {
   virtual void GetChildren(
       std::vector<AXAuraObjWrapper*>* out_children) = 0;
   virtual void Serialize(ui::AXNodeData* out_node_data) = 0;
-  virtual int32 GetID() = 0;
+  virtual int32_t GetID() = 0;
 
   // Actions.
   virtual void DoDefault() {}
   virtual void Focus() {}
   virtual void MakeVisible() {}
-  virtual void SetSelection(int32 start, int32 end) {}
+  virtual void SetSelection(int32_t start, int32_t end) {}
   virtual void ShowContextMenu() {}
 };
 

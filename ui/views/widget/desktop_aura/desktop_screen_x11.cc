@@ -34,7 +34,7 @@ namespace {
 
 // The delay to perform configuration after RRNotify.  See the comment
 // in |Dispatch()|.
-const int64 kConfigureDelayMs = 500;
+const int64_t kConfigureDelayMs = 500;
 
 double GetDeviceScaleFactor() {
   float device_scale_factor = 1.0f;
@@ -309,8 +309,8 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
                       gfx::XObjectDeleter<XRRCrtcInfo, void, XRRFreeCrtcInfo>>
           crtc(XRRGetCrtcInfo(xdisplay_, resources.get(), output_info->crtc));
 
-      int64 display_id = -1;
-      if (!ui::GetDisplayId(output_id, static_cast<uint8>(i), &display_id)) {
+      int64_t display_id = -1;
+      if (!ui::GetDisplayId(output_id, static_cast<uint8_t>(i), &display_id)) {
         // It isn't ideal, but if we can't parse the EDID data, fallback on the
         // display number.
         display_id = i;

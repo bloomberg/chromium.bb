@@ -33,15 +33,15 @@ AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(aura::Window* window) {
   return CreateInternal<AXWindowObjWrapper>(window, window_to_id_map_);
 }
 
-int32 AXAuraObjCache::GetID(View* view) {
+int32_t AXAuraObjCache::GetID(View* view) {
   return GetIDInternal(view, view_to_id_map_);
 }
 
-int32 AXAuraObjCache::GetID(Widget* widget) {
+int32_t AXAuraObjCache::GetID(Widget* widget) {
   return GetIDInternal(widget, widget_to_id_map_);
 }
 
-int32 AXAuraObjCache::GetID(aura::Window* window) {
+int32_t AXAuraObjCache::GetID(aura::Window* window) {
   return GetIDInternal(window, window_to_id_map_);
 }
 
@@ -68,8 +68,8 @@ void AXAuraObjCache::Remove(aura::Window* window) {
   RemoveInternal(window, window_to_id_map_);
 }
 
-AXAuraObjWrapper* AXAuraObjCache::Get(int32 id) {
-  std::map<int32, AXAuraObjWrapper*>::iterator it = cache_.find(id);
+AXAuraObjWrapper* AXAuraObjCache::Get(int32_t id) {
+  std::map<int32_t, AXAuraObjWrapper*>::iterator it = cache_.find(id);
 
   if (it == cache_.end())
     return NULL;
@@ -77,7 +77,7 @@ AXAuraObjWrapper* AXAuraObjCache::Get(int32 id) {
   return it->second;
 }
 
-void AXAuraObjCache::Remove(int32 id) {
+void AXAuraObjCache::Remove(int32_t id) {
   AXAuraObjWrapper* obj = Get(id);
 
   if (id == -1 || !obj)
@@ -89,7 +89,8 @@ void AXAuraObjCache::Remove(int32 id) {
 
 void AXAuraObjCache::GetTopLevelWindows(
     std::vector<AXAuraObjWrapper*>* children) {
-  for (std::map<aura::Window*, int32>::iterator it = window_to_id_map_.begin();
+  for (std::map<aura::Window*, int32_t>::iterator it =
+           window_to_id_map_.begin();
        it != window_to_id_map_.end(); ++it) {
     if (!it->first->parent())
       children->push_back(GetOrCreate(it->first));
@@ -107,11 +108,12 @@ AXAuraObjCache::~AXAuraObjCache() {
 
 template <typename AuraViewWrapper, typename AuraView>
 AXAuraObjWrapper* AXAuraObjCache::CreateInternal(
-    AuraView* aura_view, std::map<AuraView*, int32>& aura_view_to_id_map) {
+    AuraView* aura_view,
+    std::map<AuraView*, int32_t>& aura_view_to_id_map) {
   if (!aura_view)
     return NULL;
 
-  typename std::map<AuraView*, int32>::iterator it =
+  typename std::map<AuraView*, int32_t>::iterator it =
       aura_view_to_id_map.find(aura_view);
 
   if (it != aura_view_to_id_map.end())
@@ -124,12 +126,14 @@ AXAuraObjWrapper* AXAuraObjCache::CreateInternal(
   return wrapper;
 }
 
-template<typename AuraView> int32 AXAuraObjCache::GetIDInternal(
-    AuraView* aura_view, std::map<AuraView*, int32>& aura_view_to_id_map) {
+template <typename AuraView>
+int32_t AXAuraObjCache::GetIDInternal(
+    AuraView* aura_view,
+    std::map<AuraView*, int32_t>& aura_view_to_id_map) {
   if (!aura_view)
     return -1;
 
-  typename std::map<AuraView*, int32>::iterator it =
+  typename std::map<AuraView*, int32_t>::iterator it =
       aura_view_to_id_map.find(aura_view);
 
   if (it != aura_view_to_id_map.end())
@@ -138,10 +142,11 @@ template<typename AuraView> int32 AXAuraObjCache::GetIDInternal(
   return -1;
 }
 
-template<typename AuraView>
+template <typename AuraView>
 void AXAuraObjCache::RemoveInternal(
-    AuraView* aura_view, std::map<AuraView*, int32>& aura_view_to_id_map) {
-  int32 id = GetID(aura_view);
+    AuraView* aura_view,
+    std::map<AuraView*, int32_t>& aura_view_to_id_map) {
+  int32_t id = GetID(aura_view);
   if (id == -1)
     return;
   aura_view_to_id_map.erase(aura_view);

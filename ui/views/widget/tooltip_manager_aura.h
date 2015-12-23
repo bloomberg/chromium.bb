@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_TOOLTIP_MANAGER_AURA_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/widget/tooltip_manager.h"

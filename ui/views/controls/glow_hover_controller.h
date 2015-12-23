@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_GLOW_HOVER_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/views_export.h"

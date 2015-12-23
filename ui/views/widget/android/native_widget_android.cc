@@ -5,6 +5,7 @@
 #include "ui/views/widget/android/native_widget_android.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "third_party/skia/include/core/SkRegion.h"

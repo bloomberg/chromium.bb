@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_AX_VIEW_OBJ_WRAPPER_H_
 #define UI_VIEWS_ACCESSIBILITY_AX_VIEW_OBJ_WRAPPER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 
 namespace views {
@@ -22,11 +25,11 @@ class AXViewObjWrapper : public AXAuraObjWrapper {
   AXAuraObjWrapper* GetParent() override;
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;
-  int32 GetID() override;
+  int32_t GetID() override;
   void DoDefault() override;
   void Focus() override;
   void MakeVisible() override;
-  void SetSelection(int32 start, int32 end) override;
+  void SetSelection(int32_t start, int32_t end) override;
   void ShowContextMenu() override;
 
  private:

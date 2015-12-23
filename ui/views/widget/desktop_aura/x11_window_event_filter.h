@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/x/x11_atom_cache.h"

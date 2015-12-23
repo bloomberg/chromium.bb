@@ -4,6 +4,7 @@
 
 #include "ui/views/test/widget_test.h"
 
+#include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/root_view.h"
 

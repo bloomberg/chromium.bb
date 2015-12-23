@@ -4,6 +4,7 @@
 
 #include "ui/views/view_targeter.h"
 
+#include "base/macros.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/path.h"

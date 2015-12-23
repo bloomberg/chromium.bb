@@ -5,10 +5,13 @@
 #ifndef UI_VIEWS_CONTROLS_WEBVIEW_WEB_DIALOG_VIEW_H_
 #define UI_VIEWS_CONTROLS_WEBVIEW_WEB_DIALOG_VIEW_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/webview/webview_export.h"

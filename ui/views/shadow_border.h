@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_SHADOW_BORDER_H_
 #define UI_VIEWS_SHADOW_BORDER_H_
 
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/border.h"

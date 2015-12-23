@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WINDOW_NON_CLIENT_VIEW_H_
 #define UI_VIEWS_WINDOW_NON_CLIENT_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
 

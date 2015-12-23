@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme.h"

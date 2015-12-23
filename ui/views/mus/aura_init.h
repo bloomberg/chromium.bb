@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "skia/ext/refptr.h"
 #include "ui/views/mus/mus_export.h"
 

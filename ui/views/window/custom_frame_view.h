@@ -5,8 +5,8 @@
 #ifndef UI_VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
 #define UI_VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/frame_buttons.h"

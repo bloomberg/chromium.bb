@@ -5,6 +5,7 @@
 #include "ui/views/views_switches.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 
 namespace views {
 namespace switches {

@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_HANDLER_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_RUNNER_HANDLER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace views {
 
@@ -23,7 +23,7 @@ class VIEWS_EXPORT MenuRunnerHandler {
                                           const gfx::Rect& bounds,
                                           MenuAnchorPosition anchor,
                                           ui::MenuSourceType source_type,
-                                          int32 types) = 0;
+                                          int32_t types) = 0;
 };
 
 }  // namespace views

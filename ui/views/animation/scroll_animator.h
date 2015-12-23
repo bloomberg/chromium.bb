@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_ANIMATION_SCROLL_ANIMATOR_H_
 #define UI_VIEWS_ANIMATION_SCROLL_ANIMATOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/views_export.h"

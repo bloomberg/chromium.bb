@@ -7,6 +7,7 @@
 #ifndef UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
 #define UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
 
+#include "base/macros.h"
 #include "ui/views/mus/mus_export.h"
 
 namespace mus {

@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/native/native_view_host_aura.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"

@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/root_view.h"
 
+#include "base/macros.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/test/views_test_base.h"

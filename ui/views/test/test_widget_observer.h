@@ -7,8 +7,8 @@
 
 #include <stddef.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {

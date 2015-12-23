@@ -82,7 +82,7 @@ base::scoped_nsobject<NSView> CreateMenuAnchorView(
 // static
 MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
-    int32 run_types) {
+    int32_t run_types) {
   if ((run_types & kNativeRunTypes) != 0 &&
       (run_types & MenuRunner::IS_NESTED) == 0) {
     return new MenuRunnerImplCocoa(menu_model);
@@ -117,7 +117,7 @@ MenuRunner::RunResult MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
                                                      MenuButton* button,
                                                      const gfx::Rect& bounds,
                                                      MenuAnchorPosition anchor,
-                                                     int32 run_types) {
+                                                     int32_t run_types) {
   DCHECK(run_types & kNativeRunTypes);
   DCHECK(!IsRunning());
   DCHECK(parent);

@@ -4,16 +4,18 @@
 
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 
-#include <algorithm>
-#include <vector>
+#include <stddef.h>
 #include <X11/extensions/shape.h>
 #include <X11/Xlib.h>
 #include <X11/Xregion.h>
+#include <algorithm>
+#include <vector>
 
 // Get rid of X11 macros which conflict with gtest.
 #undef Bool
 #undef None
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "third_party/skia/include/core/SkRect.h"

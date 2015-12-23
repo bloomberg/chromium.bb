@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_DROP_HELPER_H_
 #define UI_VIEWS_WIDGET_DROP_HELPER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace gfx {
 class Point;

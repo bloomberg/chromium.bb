@@ -5,7 +5,9 @@
 #ifndef UI_VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 #define UI_VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "ui/views/views_delegate.h"
 
 namespace wm {

@@ -9,7 +9,7 @@
 
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace gfx {
 class Rect;

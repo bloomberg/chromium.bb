@@ -11,14 +11,12 @@
 
 namespace views {
 
-MenuRunner::MenuRunner(ui::MenuModel* menu_model, int32 run_types)
+MenuRunner::MenuRunner(ui::MenuModel* menu_model, int32_t run_types)
     : run_types_(run_types),
-      impl_(internal::MenuRunnerImplInterface::Create(menu_model, run_types)) {
-}
+      impl_(internal::MenuRunnerImplInterface::Create(menu_model, run_types)) {}
 
-MenuRunner::MenuRunner(MenuItemView* menu_view, int32 run_types)
-    : run_types_(run_types), impl_(new internal::MenuRunnerImpl(menu_view)) {
-}
+MenuRunner::MenuRunner(MenuItemView* menu_view, int32_t run_types)
+    : run_types_(run_types), impl_(new internal::MenuRunnerImpl(menu_view)) {}
 
 MenuRunner::~MenuRunner() {
   impl_->Release();

@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_TEST_SLIDER_TEST_API_H_
 #define UI_VIEWS_TEST_SLIDER_TEST_API_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace views {
 

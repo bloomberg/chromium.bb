@@ -6,6 +6,7 @@
 #define UI_VIEWS_REPEAT_CONTROLLER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 
 namespace views {

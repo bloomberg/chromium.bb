@@ -4,6 +4,9 @@
 
 #include "ui/views/examples/multiline_example.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
 #include "ui/gfx/render_text.h"

@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_MENU_MENU_HOST_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 

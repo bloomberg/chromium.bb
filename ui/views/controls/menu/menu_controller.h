@@ -7,11 +7,14 @@
 
 #include "build/build_config.h"
 
+#include <stddef.h>
+
 #include <list>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"

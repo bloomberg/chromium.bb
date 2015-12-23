@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_AURALINUX_H_
 #define UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_AURALINUX_H_
 
+#include "base/macros.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/view.h"
 

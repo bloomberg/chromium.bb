@@ -5,8 +5,8 @@
 #ifndef UI_VIEWS_COLOR_CHOOSER_COLOR_CHOOSER_VIEW_H_
 #define UI_VIEWS_COLOR_CHOOSER_COLOR_CHOOSER_VIEW_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/views/controls/textfield/textfield_controller.h"

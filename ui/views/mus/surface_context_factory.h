@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_MUS_SURFACE_CONTEXT_FACTORY_H_
 #define UI_VIEWS_MUS_SURFACE_CONTEXT_FACTORY_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/gles2/raster_thread_helper.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -39,8 +42,8 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   void RemoveCompositor(ui::Compositor* compositor) override;
   bool DoesCreateTestContexts() override;
-  uint32 GetImageTextureTarget(gfx::BufferFormat format,
-                               gfx::BufferUsage usage) override;
+  uint32_t GetImageTextureTarget(gfx::BufferFormat format,
+                                 gfx::BufferUsage usage) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;

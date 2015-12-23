@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "ui/aura/env.h"

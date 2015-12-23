@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/table/table_utils.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"

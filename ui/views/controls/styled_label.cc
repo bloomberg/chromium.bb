@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/styled_label.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <vector>
 

@@ -5,6 +5,7 @@
 #include "ui/views/controls/scroll_view.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"

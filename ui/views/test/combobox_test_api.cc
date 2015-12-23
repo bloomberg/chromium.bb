@@ -4,6 +4,9 @@
 
 #include "ui/views/test/combobox_test_api.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -25,7 +28,7 @@ class TestMenuRunnerHandler : public MenuRunnerHandler {
                                   const gfx::Rect& bounds,
                                   MenuAnchorPosition anchor,
                                   ui::MenuSourceType source_type,
-                                  int32 types) override {
+                                  int32_t types) override {
     *show_counter_ += 1;
     return MenuRunner::NORMAL_EXIT;
   }

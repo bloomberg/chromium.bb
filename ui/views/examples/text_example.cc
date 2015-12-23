@@ -4,6 +4,7 @@
 
 #include "ui/views/examples/text_example.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"

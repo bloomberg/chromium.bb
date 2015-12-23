@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/models/table_model.h"

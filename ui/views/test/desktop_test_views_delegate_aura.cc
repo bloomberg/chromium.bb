@@ -4,6 +4,7 @@
 
 #include "ui/views/test/desktop_test_views_delegate.h"
 
+#include "build/build_config.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 #if !defined(OS_CHROMEOS)

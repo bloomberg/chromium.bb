@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
@@ -1497,7 +1498,7 @@ gfx::Rect Textfield::GetCaretBounds() const {
   return rect;
 }
 
-bool Textfield::GetCompositionCharacterBounds(uint32 index,
+bool Textfield::GetCompositionCharacterBounds(uint32_t index,
                                               gfx::Rect* rect) const {
   DCHECK(rect);
   if (!HasCompositionText())

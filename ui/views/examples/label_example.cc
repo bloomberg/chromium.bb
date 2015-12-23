@@ -4,6 +4,7 @@
 
 #include "ui/views/examples/label_example.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"

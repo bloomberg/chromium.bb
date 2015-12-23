@@ -4,10 +4,13 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <X11/Xatom.h>
 
 #include "base/event_types.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -121,7 +124,7 @@ const int kRepeatMouseMoveTimeoutMs = 350;
 
 // The minimum alpha before we declare a pixel transparent when searching in
 // our source image.
-const uint32 kMinAlpha = 32;
+const uint32_t kMinAlpha = 32;
 
 // |drag_widget_|'s opacity.
 const unsigned char kDragWidgetOpacity = 0xc0;
@@ -1213,7 +1216,7 @@ bool DesktopDragDropClientAuraX11::IsValidDragImage(
   const SkBitmap* in_bitmap = image.bitmap();
   SkAutoLockPixels in_lock(*in_bitmap);
   for (int y = 0; y < in_bitmap->height(); ++y) {
-    uint32* in_row = in_bitmap->getAddr32(0, y);
+    uint32_t* in_row = in_bitmap->getAddr32(0, y);
 
     for (int x = 0; x < in_bitmap->width(); ++x) {
       if (SkColorGetA(in_row[x]) > kMinAlpha)

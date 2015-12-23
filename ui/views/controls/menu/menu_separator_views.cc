@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_separator.h"
 
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"

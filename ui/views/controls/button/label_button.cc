@@ -4,10 +4,13 @@
 
 #include "ui/views/controls/button/label_button.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"

@@ -5,8 +5,11 @@
 #ifndef UI_VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
 #define UI_VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/views/view.h"
 
@@ -43,7 +46,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
     explicit InitParams(const base::string16& message);
     ~InitParams();
 
-    uint16 options;
+    uint16_t options;
     base::string16 message;
     base::string16 default_prompt;
     int message_width;

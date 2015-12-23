@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_MUS_WINDOW_MANAGER_CONNECTION_H_
 #define UI_VIEWS_MUS_WINDOW_MANAGER_CONNECTION_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"

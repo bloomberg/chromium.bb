@@ -4,11 +4,13 @@
 
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 
-#include <X11/Xlib.h>
+#include <stddef.h>
 #include <X11/keysym.h>
+#include <X11/Xlib.h>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/capture_client.h"

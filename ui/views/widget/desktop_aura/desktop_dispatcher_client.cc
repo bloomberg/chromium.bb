@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 
 namespace views {
 

@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_SINGLE_SPLIT_VIEW_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace views {

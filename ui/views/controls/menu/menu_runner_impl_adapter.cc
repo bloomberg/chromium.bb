@@ -29,7 +29,7 @@ MenuRunner::RunResult MenuRunnerImplAdapter::RunMenuAt(
     MenuButton* button,
     const gfx::Rect& bounds,
     MenuAnchorPosition anchor,
-    int32 types) {
+    int32_t types) {
   return impl_->RunMenuAt(parent, button, bounds, anchor, types);
 }
 

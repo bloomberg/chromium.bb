@@ -4,9 +4,13 @@
 
 #include "ui/views/controls/combobox/combobox.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/models/combobox_model.h"

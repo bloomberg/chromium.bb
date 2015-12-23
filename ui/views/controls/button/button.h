@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
 
+#include "base/macros.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/view.h"
 

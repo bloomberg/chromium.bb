@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/scroll_view.h"
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/test/test_views.h"

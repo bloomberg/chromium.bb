@@ -5,7 +5,10 @@
 #ifndef UI_VIEWS_TEST_X11_PROPERTY_CHANGE_WAITER_H_
 #define UI_VIEWS_TEST_X11_PROPERTY_CHANGE_WAITER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_types.h"

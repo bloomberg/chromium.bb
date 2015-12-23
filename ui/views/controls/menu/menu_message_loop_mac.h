@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_LOOP_MAC_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/controls/menu/menu_message_loop.h"
 
 namespace base {

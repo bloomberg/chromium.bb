@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_VIEW_MODEL_UTILS_H_
 #define UI_VIEWS_VIEW_MODEL_UTILS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/views/views_export.h"
 
 namespace views {

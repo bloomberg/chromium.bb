@@ -4,13 +4,15 @@
 
 #include "ui/views/mus/display_converter.h"
 
+#include <stdint.h>
+
 #include "components/mus/public/cpp/window.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace views {
 
 std::vector<gfx::Display> GetDisplaysFromWindow(mus::Window* window) {
-  static int64 synthesized_display_id = 2000;
+  static int64_t synthesized_display_id = 2000;
   gfx::Display display;
   display.set_id(synthesized_display_id++);
   display.SetScaleAndBounds(

@@ -4,6 +4,8 @@
 
 #include "ui/views/layout/box_layout.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/view.h"

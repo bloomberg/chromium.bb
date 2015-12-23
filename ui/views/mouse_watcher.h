@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_MOUSE_WATCHER_H_
 #define UI_VIEWS_MOUSE_WATCHER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/insets.h"

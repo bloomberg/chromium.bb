@@ -5,6 +5,8 @@
 #include "ui/views/background.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/painter.h"

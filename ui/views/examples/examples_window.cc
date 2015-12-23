@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"

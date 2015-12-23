@@ -6,6 +6,7 @@
 #define UI_VIEWS_COCOA_WIDGET_OWNER_NSWINDOW_ADAPTER_H_
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
 
 @class NSView;

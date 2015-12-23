@@ -4,6 +4,7 @@
 
 #include "ui/views/window/window_button_order_provider.h"
 
+#include "base/macros.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
 

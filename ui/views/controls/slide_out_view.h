@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_SLIDE_OUT_VIEW_H_
 #define UI_VIEWS_CONTROLS_SLIDE_OUT_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"

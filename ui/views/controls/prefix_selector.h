@@ -5,6 +5,10 @@
 #ifndef UI_VIEWS_CONTROLS_PREFIX_SELECTOR_H_
 #define UI_VIEWS_CONTROLS_PREFIX_SELECTOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/base/ime/text_input_client.h"
@@ -35,7 +39,7 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   gfx::Rect GetCaretBounds() const override;
-  bool GetCompositionCharacterBounds(uint32 index,
+  bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override;
   bool HasCompositionText() const override;
   bool GetTextRange(gfx::Range* range) const override;

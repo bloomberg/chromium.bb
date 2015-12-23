@@ -7,8 +7,11 @@
 
 #include "ui/views/controls/menu/menu_runner_impl_interface.h"
 
+#include <stdint.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
@@ -33,7 +36,7 @@ class MenuRunnerImpl : public MenuRunnerImplInterface,
                                   MenuButton* button,
                                   const gfx::Rect& bounds,
                                   MenuAnchorPosition anchor,
-                                  int32 run_types) override;
+                                  int32_t run_types) override;
   void Cancel() override;
   base::TimeDelta GetClosingEventTime() const override;
 

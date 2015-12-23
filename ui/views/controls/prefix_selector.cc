@@ -15,7 +15,7 @@ namespace views {
 
 namespace {
 
-const int64 kTimeBeforeClearingMS = 1000;
+const int64_t kTimeBeforeClearingMS = 1000;
 
 void ConvertRectToScreen(const views::View* src, gfx::Rect* r) {
   DCHECK(src);
@@ -80,7 +80,7 @@ gfx::Rect PrefixSelector::GetCaretBounds() const {
   return rect;
 }
 
-bool PrefixSelector::GetCompositionCharacterBounds(uint32 index,
+bool PrefixSelector::GetCompositionCharacterBounds(uint32_t index,
                                                    gfx::Rect* rect) const {
   // TextInputClient::GetCompositionCharacterBounds is expected to fill |rect|
   // in screen coordinates and GetCaretBounds returns screen coordinates.

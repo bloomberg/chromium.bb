@@ -4,6 +4,7 @@
 
 #include "ui/views/bubble/bubble_window_targeter.h"
 
+#include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event_utils.h"

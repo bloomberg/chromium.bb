@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/checkbox.h"
 

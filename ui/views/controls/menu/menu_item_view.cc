@@ -4,7 +4,10 @@
 
 #include "ui/views/controls/menu/menu_item_view.h"
 
+#include <stddef.h>
+
 #include "base/i18n/case_conversion.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"

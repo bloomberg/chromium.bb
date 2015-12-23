@@ -4,6 +4,8 @@
 
 #include "ui/views/view_model.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "ui/views/view.h"
 

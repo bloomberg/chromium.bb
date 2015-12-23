@@ -4,6 +4,7 @@
 
 #include "ui/views/examples/double_split_view_example.h"
 
+#include "base/macros.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/single_split_view.h"
 #include "ui/views/layout/grid_layout.h"

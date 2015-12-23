@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/table/table_view.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <utility>
 

@@ -4,11 +4,14 @@
 
 #include "ui/views/mus/surface_binding.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/threading/thread_local.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"

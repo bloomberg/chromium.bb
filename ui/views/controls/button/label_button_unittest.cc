@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/button/label_button.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_view_state.h"

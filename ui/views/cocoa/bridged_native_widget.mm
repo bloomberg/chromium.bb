@@ -5,6 +5,8 @@
 #import "ui/views/cocoa/bridged_native_widget.h"
 
 #import <objc/runtime.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"

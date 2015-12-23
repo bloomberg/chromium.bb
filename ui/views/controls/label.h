@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/view.h"
 

@@ -5,10 +5,13 @@
 #ifndef UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_MODEL_H_
 #define UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_MODEL_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/composition_text.h"

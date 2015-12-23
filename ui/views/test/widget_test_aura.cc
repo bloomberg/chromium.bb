@@ -4,6 +4,7 @@
 
 #include "ui/views/test/widget_test.h"
 
+#include "build/build_config.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
