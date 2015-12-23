@@ -340,6 +340,7 @@ public class CastSession implements MediaNotificationListener {
 
     @Override
     public void onStop(int actionSource) {
+        stopApplication();
         mRouteProvider.onSessionStopAction();
     }
 
