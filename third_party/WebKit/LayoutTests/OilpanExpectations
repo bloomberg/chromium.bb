@@ -39,5 +39,7 @@ crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received
 
 crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 
+crbug.com/571711 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+
 crbug.com/451577 [ Linux ] http/tests/inspector/elements/styles/edit-css-with-source-url.html [ Slow ]
 crbug.com/451577 [ Linux ] http/tests/inspector-enabled/shadow-dom-rules-restart.html [ Slow ]
