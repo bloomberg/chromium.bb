@@ -68,6 +68,14 @@ bool IsTestingSnowLeopard() {
 #endif
 }
 
+// This class can be used as a deleter for scoped_ptr<Widget>
+// to call function Widget::CloseNow automatically.
+struct WidgetCloser {
+  inline void operator()(Widget* widget) const { widget->CloseNow(); }
+};
+
+using WidgetAutoclosePtr = scoped_ptr<Widget, WidgetCloser>;
+
 }  // namespace
 
 // A view that keeps track of the events it receives, and consumes all scroll
@@ -157,7 +165,7 @@ TEST_F(WidgetTest, NativeWindowProperty) {
   const char* key = "foo";
   int value = 3;
 
-  Widget* widget = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   EXPECT_EQ(nullptr, widget->GetNativeWindowProperty(key));
 
   widget->SetNativeWindowProperty(key, &value);
@@ -165,8 +173,6 @@ TEST_F(WidgetTest, NativeWindowProperty) {
 
   widget->SetNativeWindowProperty(key, nullptr);
   EXPECT_EQ(nullptr, widget->GetNativeWindowProperty(key));
-
-  widget->CloseNow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -174,25 +180,24 @@ TEST_F(WidgetTest, NativeWindowProperty) {
 
 TEST_F(WidgetTest, GetTopLevelWidget_Native) {
   // Create a hierarchy of native widgets.
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
   gfx::NativeView parent = toplevel->GetNativeView();
   Widget* child = CreateChildPlatformWidget(parent);
 
-  EXPECT_EQ(toplevel, toplevel->GetTopLevelWidget());
-  EXPECT_EQ(toplevel, child->GetTopLevelWidget());
+  EXPECT_EQ(toplevel.get(), toplevel->GetTopLevelWidget());
+  EXPECT_EQ(toplevel.get(), child->GetTopLevelWidget());
 
-  toplevel->CloseNow();
   // |child| should be automatically destroyed with |toplevel|.
 }
 
 // Test if a focus manager and an inputmethod work without CHECK failure
 // when window activation changes.
 TEST_F(WidgetTest, ChangeActivation) {
-  Widget* top1 = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr top1(CreateTopLevelPlatformWidget());
   top1->Show();
   RunPendingMessages();
 
-  Widget* top2 = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr top2(CreateTopLevelPlatformWidget());
   top2->Show();
   RunPendingMessages();
 
@@ -204,14 +209,11 @@ TEST_F(WidgetTest, ChangeActivation) {
 
   top1->Activate();
   RunPendingMessages();
-
-  top1->CloseNow();
-  top2->CloseNow();
 }
 
 // Tests visibility of child widgets.
 TEST_F(WidgetTest, Visibility) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
   gfx::NativeView parent = toplevel->GetNativeView();
   Widget* child = CreateChildPlatformWidget(parent);
 
@@ -240,13 +242,12 @@ TEST_F(WidgetTest, Visibility) {
   EXPECT_TRUE(toplevel->IsVisible());
   EXPECT_FALSE(child->IsVisible());
 
-  toplevel->CloseNow();
   // |child| should be automatically destroyed with |toplevel|.
 }
 
 // Test that child widgets are positioned relative to their parent.
 TEST_F(WidgetTest, ChildBoundsRelativeToParent) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
   Widget* child = CreateChildPlatformWidget(toplevel->GetNativeView());
 
   toplevel->SetBounds(gfx::Rect(160, 100, 320, 200));
@@ -262,13 +263,11 @@ TEST_F(WidgetTest, ChildBoundsRelativeToParent) {
 
   // The child's origin is at (0, 0), but the same size, so bounds should match.
   EXPECT_EQ(toplevel_bounds, child->GetWindowBoundsInScreen());
-
-  toplevel->CloseNow();
 }
 
 // Test z-order of child widgets relative to their parent.
 TEST_F(WidgetTest, ChildStackedRelativeToParent) {
-  Widget* parent = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr parent(CreateTopLevelPlatformWidget());
   Widget* child = CreateChildPlatformWidget(parent->GetNativeView());
 
   parent->SetBounds(gfx::Rect(160, 100, 320, 200));
@@ -283,36 +282,36 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
 
   parent->Show();
   EXPECT_TRUE(child->IsVisible());
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
-  EXPECT_FALSE(IsWindowStackedAbove(parent, child));  // Sanity check.
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
+  EXPECT_FALSE(IsWindowStackedAbove(parent.get(), child));  // Sanity check.
 
-  Widget* popover = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr popover(CreateTopLevelPlatformWidget());
   popover->SetBounds(gfx::Rect(150, 90, 340, 240));
   popover->Show();
 
-  EXPECT_TRUE(IsWindowStackedAbove(popover, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
+  EXPECT_TRUE(IsWindowStackedAbove(popover.get(), child));
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
 
   // Showing the parent again should raise it and its child above the popover.
   parent->Show();
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
-  EXPECT_TRUE(IsWindowStackedAbove(parent, popover));
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   // Test grandchildren.
   Widget* grandchild = CreateChildPlatformWidget(child->GetNativeView());
   grandchild->SetBounds(gfx::Rect(5, 5, 15, 10));
   grandchild->ShowInactive();
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
-  EXPECT_TRUE(IsWindowStackedAbove(parent, popover));
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   popover->Show();
-  EXPECT_TRUE(IsWindowStackedAbove(popover, grandchild));
+  EXPECT_TRUE(IsWindowStackedAbove(popover.get(), grandchild));
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
 
   parent->Show();
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, popover));
+  EXPECT_TRUE(IsWindowStackedAbove(child, popover.get()));
 
   // Test hiding and reshowing.
   parent->Hide();
@@ -320,19 +319,16 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
   parent->Show();
 
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
-  EXPECT_TRUE(IsWindowStackedAbove(parent, popover));
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   grandchild->Hide();
   EXPECT_FALSE(grandchild->IsVisible());
   grandchild->ShowInactive();
 
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent));
-  EXPECT_TRUE(IsWindowStackedAbove(parent, popover));
-
-  popover->CloseNow();
-  parent->CloseNow();
+  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -819,7 +815,7 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
 };
 
 TEST_F(WidgetObserverTest, DISABLED_ActivationChange) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
 
   Widget* toplevel1 = NewWidget();
   Widget* toplevel2 = NewWidget();
@@ -839,12 +835,10 @@ TEST_F(WidgetObserverTest, DISABLED_ActivationChange) {
   EXPECT_EQ(toplevel1, widget_deactivated());
   EXPECT_EQ(toplevel2, widget_activated());
   EXPECT_EQ(toplevel2, active());
-
-  toplevel->CloseNow();
 }
 
 TEST_F(WidgetObserverTest, DISABLED_VisibilityChange) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
 
   Widget* child1 = NewWidget();
   Widget* child2 = NewWidget();
@@ -866,42 +860,38 @@ TEST_F(WidgetObserverTest, DISABLED_VisibilityChange) {
 
   child2->Show();
   EXPECT_EQ(child2, widget_shown());
-
-  toplevel->CloseNow();
 }
 
 TEST_F(WidgetObserverTest, DestroyBubble) {
-  Widget* anchor = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
 
   BubbleDelegateView* bubble_delegate =
       new BubbleDelegateView(anchor->client_view(), BubbleBorder::NONE);
-  Widget* bubble_widget(BubbleDelegateView::CreateBubble(bubble_delegate));
-  bubble_widget->Show();
-  bubble_widget->CloseNow();
+  {
+    WidgetAutoclosePtr bubble_widget(
+        BubbleDelegateView::CreateBubble(bubble_delegate));
+    bubble_widget->Show();
+  }
 
   anchor->Hide();
-  anchor->CloseNow();
 }
 
 TEST_F(WidgetObserverTest, WidgetBoundsChanged) {
-  Widget* child1 = NewWidget();
-  Widget* child2 = NewWidget();
+  WidgetAutoclosePtr child1(NewWidget());
+  WidgetAutoclosePtr child2(NewWidget());
 
   child1->OnNativeWidgetMove();
-  EXPECT_EQ(child1, widget_bounds_changed());
+  EXPECT_EQ(child1.get(), widget_bounds_changed());
 
   child2->OnNativeWidgetMove();
-  EXPECT_EQ(child2, widget_bounds_changed());
+  EXPECT_EQ(child2.get(), widget_bounds_changed());
 
   child1->OnNativeWidgetSizeChanged(gfx::Size());
-  EXPECT_EQ(child1, widget_bounds_changed());
+  EXPECT_EQ(child1.get(), widget_bounds_changed());
 
   child2->OnNativeWidgetSizeChanged(gfx::Size());
-  EXPECT_EQ(child2, widget_bounds_changed());
-
-  child2->CloseNow();
-  child1->CloseNow();
+  EXPECT_EQ(child2.get(), widget_bounds_changed());
 }
 
 // An extension to WidgetBoundsChanged to ensure notifications are forwarded
@@ -957,7 +947,7 @@ TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
 // Test correct behavior when widgets close themselves in response to visibility
 // changes.
 TEST_F(WidgetObserverTest, ClosingOnHiddenParent) {
-  Widget* parent = NewWidget();
+  WidgetAutoclosePtr parent(NewWidget());
   Widget* child = CreateChildPlatformWidget(parent->GetNativeView());
 
   TestWidgetObserver child_observer(child);
@@ -977,22 +967,20 @@ TEST_F(WidgetObserverTest, ClosingOnHiddenParent) {
   parent->Hide();
   RunPendingMessages();
   EXPECT_TRUE(child_observer.widget_closed());
-
-  parent->CloseNow();
 }
 
 // Test behavior of NativeWidget*::GetWindowPlacement on the native desktop.
 TEST_F(WidgetTest, GetWindowPlacement) {
-  Widget* widget;
+  WidgetAutoclosePtr widget;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // On desktop-Linux cheat and use non-desktop widgets. On X11, minimize is
   // asynchronous. Also (harder) showing a window doesn't activate it without
   // user interaction (or extra steps only done for interactive ui tests).
   // Without that, show_state remains in ui::SHOW_STATE_INACTIVE throughout.
   // TODO(tapted): Find a nice way to run this with desktop widgets on Linux.
-  widget = CreateTopLevelPlatformWidget();
+  widget.reset(CreateTopLevelPlatformWidget());
 #else
-  widget = CreateNativeDesktopWidget();
+  widget.reset(CreateNativeDesktopWidget());
 #endif
 
   gfx::Rect expected_bounds(100, 110, 200, 220);
@@ -1049,8 +1037,6 @@ TEST_F(WidgetTest, GetWindowPlacement) {
   native_widget->GetWindowPlacement(&restored_bounds, &show_state);
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, show_state);
   EXPECT_EQ(expected_bounds, restored_bounds);
-
-  widget->CloseNow();
 }
 
 // Test that widget size constraints are properly applied immediately after
@@ -1109,31 +1095,31 @@ TEST_F(WidgetTest, GetWindowBoundsInScreen) {
   const gfx::Rect kTestBounds(150, 150, 400, 300);
   const gfx::Size kTestSize(200, 180);
 
-  // First test a toplevel widget.
-  Widget* widget = CreateTopLevelPlatformWidget();
-  widget->Show();
+  {
+    // First test a toplevel widget.
+    WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+    widget->Show();
 
-  EXPECT_NE(kTestSize.ToString(),
-            widget->GetWindowBoundsInScreen().size().ToString());
-  widget->SetSize(kTestSize);
-  EXPECT_EQ(kTestSize.ToString(),
-            widget->GetWindowBoundsInScreen().size().ToString());
+    EXPECT_NE(kTestSize.ToString(),
+              widget->GetWindowBoundsInScreen().size().ToString());
+    widget->SetSize(kTestSize);
+    EXPECT_EQ(kTestSize.ToString(),
+              widget->GetWindowBoundsInScreen().size().ToString());
 
-  EXPECT_NE(kTestBounds.ToString(),
-            widget->GetWindowBoundsInScreen().ToString());
-  widget->SetBounds(kTestBounds);
-  EXPECT_EQ(kTestBounds.ToString(),
-            widget->GetWindowBoundsInScreen().ToString());
+    EXPECT_NE(kTestBounds.ToString(),
+              widget->GetWindowBoundsInScreen().ToString());
+    widget->SetBounds(kTestBounds);
+    EXPECT_EQ(kTestBounds.ToString(),
+              widget->GetWindowBoundsInScreen().ToString());
 
-  // Changing just the size should not change the origin.
-  widget->SetSize(kTestSize);
-  EXPECT_EQ(kTestBounds.origin().ToString(),
-            widget->GetWindowBoundsInScreen().origin().ToString());
-
-  widget->CloseNow();
+    // Changing just the size should not change the origin.
+    widget->SetSize(kTestSize);
+    EXPECT_EQ(kTestBounds.origin().ToString(),
+              widget->GetWindowBoundsInScreen().origin().ToString());
+  }
 
   // Same tests with a frameless window.
-  widget = CreateTopLevelFramelessPlatformWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelFramelessPlatformWidget());
   widget->Show();
 
   EXPECT_NE(kTestSize.ToString(),
@@ -1156,8 +1142,6 @@ TEST_F(WidgetTest, GetWindowBoundsInScreen) {
   widget->SetSize(kTestSize);
   EXPECT_EQ(kTestBounds.origin().ToString(),
             widget->GetWindowBoundsInScreen().origin().ToString());
-
-  widget->CloseNow();
 }
 
 // Non-Desktop widgets need the shell to maximize/fullscreen window.
@@ -1176,7 +1160,7 @@ TEST_F(WidgetTest, MAYBE_GetRestoredBounds) {
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
-  Widget* toplevel = CreateNativeDesktopWidget();
+  WidgetAutoclosePtr toplevel(CreateNativeDesktopWidget());
   toplevel->Show();
   // Initial restored bounds have non-zero size.
   EXPECT_FALSE(toplevel->GetRestoredBounds().IsEmpty());
@@ -1218,15 +1202,13 @@ TEST_F(WidgetTest, MAYBE_GetRestoredBounds) {
   RunPendingMessages();
   EXPECT_EQ(bounds, toplevel->GetWindowBoundsInScreen());
   EXPECT_EQ(bounds, toplevel->GetRestoredBounds());
-
-  toplevel->CloseNow();
 }
 
 // The key-event propagation from Widget happens differently on aura and
 // non-aura systems because of the difference in IME. So this test works only on
 // aura.
 TEST_F(WidgetTest, KeyboardInputEvent) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
   View* container = toplevel->client_view();
 
   Textfield* textfield = new Textfield();
@@ -1242,8 +1224,6 @@ TEST_F(WidgetTest, KeyboardInputEvent) {
   ui::KeyEvent backspace_r(ui::ET_KEY_RELEASED, ui::VKEY_DELETE, ui::EF_NONE);
   toplevel->OnKeyEvent(&backspace_r);
   EXPECT_FALSE(backspace_r.handled());
-
-  toplevel->Close();
 }
 
 // Verifies bubbles result in a focus lost when shown.
@@ -1301,18 +1281,19 @@ class TestBubbleDelegateView : public BubbleDelegateView {
 };
 
 TEST_F(WidgetTest, BubbleControlsResetOnInit) {
-  Widget* anchor = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
 
-  TestBubbleDelegateView* bubble_delegate =
-      new TestBubbleDelegateView(anchor->client_view());
-  Widget* bubble_widget(BubbleDelegateView::CreateBubble(bubble_delegate));
-  EXPECT_TRUE(bubble_delegate->reset_controls_called_);
-  bubble_widget->Show();
-  bubble_widget->CloseNow();
+  {
+    TestBubbleDelegateView* bubble_delegate =
+        new TestBubbleDelegateView(anchor->client_view());
+    WidgetAutoclosePtr bubble_widget(
+        BubbleDelegateView::CreateBubble(bubble_delegate));
+    EXPECT_TRUE(bubble_delegate->reset_controls_called_);
+    bubble_widget->Show();
+  }
 
   anchor->Hide();
-  anchor->CloseNow();
 }
 
 #if defined(OS_WIN)
@@ -1471,7 +1452,7 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
   EventCountView* cursor_view = new EventCountView;
   cursor_view->SetBounds(60, 0, 50, 40);
 
-  Widget* widget = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   widget->GetRootView()->AddChildView(cursor_view);
 
   // Generate a scroll event on the cursor view.
@@ -1500,8 +1481,6 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
 
   EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_SCROLL));
   EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_MOUSEWHEEL));
-
-  widget->CloseNow();
 }
 
 // Tests that if a scroll-begin gesture is not handled, then subsequent scroll
@@ -1513,7 +1492,7 @@ TEST_F(WidgetTest, GestureScrollEventDispatching) {
   noscroll_view->SetBounds(0, 0, 50, 40);
   scroll_view->SetBounds(60, 0, 40, 40);
 
-  Widget* widget = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   widget->GetRootView()->AddChildView(noscroll_view);
   widget->GetRootView()->AddChildView(scroll_view);
 
@@ -1570,14 +1549,12 @@ TEST_F(WidgetTest, GestureScrollEventDispatching) {
     EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_UPDATE));
     EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_END));
   }
-
-  widget->CloseNow();
 }
 
 // Tests that event-handlers installed on the RootView get triggered correctly.
 // TODO(tdanderson): Clean up this test as part of crbug.com/355680.
 TEST_F(WidgetTest, EventHandlersOnRootView) {
-  Widget* widget = CreateTopLevelNativeWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelNativeWidget());
   View* root_view = widget->GetRootView();
 
   scoped_ptr<EventCountView> view(new EventCountView());
@@ -1691,12 +1668,10 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   EXPECT_EQ(0, h1.GetEventCount(ui::ET_MOUSEWHEEL));
   EXPECT_EQ(0, view->GetEventCount(ui::ET_MOUSEWHEEL));
   EXPECT_EQ(0, h2.GetEventCount(ui::ET_MOUSEWHEEL));
-
-  widget->CloseNow();
 }
 
 TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
-  Widget* widget = CreateTopLevelNativeWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelNativeWidget());
   View* root_view = widget->GetRootView();
   widget->SetBounds(gfx::Rect(0, 0, 100, 100));
 
@@ -1732,8 +1707,6 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
 
   widget->SynthesizeMouseMoveEvent();
   EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_MOVED));
-
-  widget->CloseNow();
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
@@ -1761,7 +1734,7 @@ class MousePressEventConsumer : public ui::EventHandler {
 // Test that mouse presses and mouse releases are dispatched normally when a
 // touch is down.
 TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
-  Widget* widget = CreateTopLevelNativeWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelNativeWidget());
   widget->Show();
   widget->SetSize(gfx::Size(300, 300));
 
@@ -1778,8 +1751,6 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
 
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_RELEASED));
-
-  widget->CloseNow();
 }
 
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
@@ -1797,14 +1768,14 @@ TEST_F(WidgetTest, SingleWindowClosing) {
 class WidgetWindowTitleTest : public WidgetTest {
  protected:
   void RunTest(bool desktop_native_widget) {
-    Widget* widget = new Widget();  // Destroyed by CloseNow() below.
+    WidgetAutoclosePtr widget(new Widget());  // Destroyed by CloseNow().
     Widget::InitParams init_params =
         CreateParams(Widget::InitParams::TYPE_WINDOW);
     widget->Init(init_params);
 
 #if !defined(OS_CHROMEOS)
     if (desktop_native_widget)
-      init_params.native_widget = new PlatformDesktopNativeWidget(widget);
+      init_params.native_widget = new PlatformDesktopNativeWidget(widget.get());
 #else
     DCHECK(!desktop_native_widget)
         << "DesktopNativeWidget does not exist on non-Aura or on ChromeOS.";
@@ -1831,8 +1802,6 @@ class WidgetWindowTitleTest : public WidgetTest {
     EXPECT_TRUE(native_widget->SetWindowTitle(s3));
     // Setting the title to the same thing twice should not cause a change.
     EXPECT_FALSE(native_widget->SetWindowTitle(s3));
-
-    widget->CloseNow();
   }
 };
 
@@ -1920,18 +1889,17 @@ bool RunGetNativeThemeFromDestructor(const Widget::InitParams& in_params,
                                      bool is_first_run) {
   bool needs_second_run = false;
   // Destroyed by CloseNow() below.
-  Widget* widget = new Widget;
+  WidgetAutoclosePtr widget(new Widget);
   Widget::InitParams params(in_params);
   // Deletes itself when the Widget is destroyed.
   params.delegate = new GetNativeThemeFromDestructorView;
 #if !defined(OS_CHROMEOS)
   if (is_first_run) {
-    params.native_widget = new PlatformDesktopNativeWidget(widget);
+    params.native_widget = new PlatformDesktopNativeWidget(widget.get());
     needs_second_run = true;
   }
 #endif
   widget->Init(params);
-  widget->CloseNow();
   return needs_second_run;
 }
 
@@ -2882,7 +2850,7 @@ TEST_F(WidgetTest, GetAllChildWidgets) {
   // +-- w2
   //     +-- w21
   //     +-- w22
-  Widget* toplevel = CreateTopLevelPlatformWidget();
+  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
   Widget* w1 = CreateChildPlatformWidget(toplevel->GetNativeView());
   Widget* w11 = CreateChildPlatformWidget(w1->GetNativeView());
   Widget* w2 = CreateChildPlatformWidget(toplevel->GetNativeView());
@@ -2890,7 +2858,7 @@ TEST_F(WidgetTest, GetAllChildWidgets) {
   Widget* w22 = CreateChildPlatformWidget(w2->GetNativeView());
 
   std::set<Widget*> expected;
-  expected.insert(toplevel);
+  expected.insert(toplevel.get());
   expected.insert(w1);
   expected.insert(w11);
   expected.insert(w2);
@@ -2902,7 +2870,6 @@ TEST_F(WidgetTest, GetAllChildWidgets) {
 
   EXPECT_EQ(expected.size(), widgets.size());
   EXPECT_TRUE(std::equal(expected.begin(), expected.end(), widgets.begin()));
-  toplevel->CloseNow();
 }
 
 // Used by DestroyChildWidgetsInOrder. On destruction adds the supplied name to
@@ -3066,8 +3033,8 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
 // Tests that frame Layout is called when a widget goes fullscreen without
 // changing its size or title.
 TEST_F(WidgetTest, FullscreenFrameLayout) {
-  Widget* widget = CreateTopLevelPlatformWidget();
-  FullscreenAwareFrame* frame = new FullscreenAwareFrame(widget);
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  FullscreenAwareFrame* frame = new FullscreenAwareFrame(widget.get());
   widget->non_client_view()->SetFrameView(frame);  // Owns |frame|.
 
   widget->Maximize();
@@ -3084,8 +3051,6 @@ TEST_F(WidgetTest, FullscreenFrameLayout) {
   } else {
     EXPECT_TRUE(frame->fullscreen_layout_called());
   }
-
-  widget->CloseNow();
 }
 
 #if !defined(OS_CHROMEOS)
@@ -3138,7 +3103,7 @@ TEST_F(WidgetTest, MouseEventTypesViaGenerator) {
   view->set_handle_mode(EventCountView::CONSUME_EVENTS);
   view->SetBounds(10, 10, 50, 40);
 
-  Widget* widget = CreateTopLevelFramelessPlatformWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelFramelessPlatformWidget());
   widget->GetRootView()->AddChildView(view);
 
   widget->SetBounds(gfx::Rect(0, 0, 100, 80));
@@ -3196,8 +3161,6 @@ TEST_F(WidgetTest, MouseEventTypesViaGenerator) {
   EXPECT_EQ(3, view->GetEventCount(ui::ET_MOUSE_RELEASED));
   EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_DRAGGED));
   EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, view->last_flags());
-
-  widget->CloseNow();
 }
 
 // Tests that the root view is correctly set up for Widget types that do not
@@ -3205,7 +3168,7 @@ TEST_F(WidgetTest, MouseEventTypesViaGenerator) {
 // That is, before Widget::ReorderNativeViews() is called which, if called with
 // a root view not set, could cause the root view to get resized to the widget.
 TEST_F(WidgetTest, NonClientWindowValidAfterInit) {
-  Widget* widget = CreateTopLevelFramelessPlatformWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelFramelessPlatformWidget());
   View* root_view = widget->GetRootView();
 
   // Size the root view to exceed the widget bounds.
@@ -3217,8 +3180,6 @@ TEST_F(WidgetTest, NonClientWindowValidAfterInit) {
   EXPECT_EQ(test_rect, root_view->bounds());
   widget->ReorderNativeViews();
   EXPECT_EQ(test_rect, root_view->bounds());
-
-  widget->CloseNow();
 }
 
 #if defined(OS_WIN)
@@ -3390,13 +3351,12 @@ TEST_F(WidgetTest, SysCommandMoveOnNCLButtonDownOnCaptionAndMoveTest) {
 
 // Test that SetAlwaysOnTop and IsAlwaysOnTop are consistent.
 TEST_F(WidgetTest, AlwaysOnTop) {
-  Widget* widget = CreateTopLevelNativeWidget();
+  WidgetAutoclosePtr widget(CreateTopLevelNativeWidget());
   EXPECT_FALSE(widget->IsAlwaysOnTop());
   widget->SetAlwaysOnTop(true);
   EXPECT_TRUE(widget->IsAlwaysOnTop());
   widget->SetAlwaysOnTop(false);
   EXPECT_FALSE(widget->IsAlwaysOnTop());
-  widget->CloseNow();
 }
 
 namespace {
@@ -3419,16 +3379,12 @@ class ScaleFactorView : public View {
   DISALLOW_COPY_AND_ASSIGN(ScaleFactorView);
 };
 
-struct WidgetCloser {
-  inline void operator()(Widget* widget) const { widget->CloseNow(); }
-};
-
 }
 
 // Ensure scale factor changes are propagated from the native Widget.
 TEST_F(WidgetTest, OnDeviceScaleFactorChanged) {
   // Automatically close the widget, but not delete it.
-  scoped_ptr<Widget, WidgetCloser> widget(CreateTopLevelPlatformWidget());
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   ScaleFactorView* view = new ScaleFactorView;
   widget->GetRootView()->AddChildView(view);
   float scale_factor = widget->GetLayer()->device_scale_factor();
