@@ -820,7 +820,8 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
 }
 
-TEST_F(ServiceWorkerWaitForeverInFetchTest, MixedRequestTimeouts) {
+// crbug.com/571271 tracks flakiness in MixedRequestTimeouts.
+TEST_F(ServiceWorkerWaitForeverInFetchTest, DISABLED_MixedRequestTimeouts) {
   ServiceWorkerStatusCode sync_status =
       SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   ServiceWorkerStatusCode fetch_status =
