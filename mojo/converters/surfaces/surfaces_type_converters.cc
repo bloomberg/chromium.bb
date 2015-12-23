@@ -542,6 +542,7 @@ SyncTokenPtr TypeConverter<SyncTokenPtr, gpu::SyncToken>::Convert(
   sync_token->verified_flush = input.verified_flush();
   sync_token->namespace_id =
       static_cast<CommandBufferNamespace>(input.namespace_id());
+  sync_token->extra_data_field = input.extra_data_field();
   sync_token->command_buffer_id = input.command_buffer_id();
   sync_token->release_count = input.release_count();
   return sync_token;
@@ -552,7 +553,7 @@ gpu::SyncToken TypeConverter<gpu::SyncToken, SyncTokenPtr>::Convert(
     const SyncTokenPtr& input) {
   const gpu::CommandBufferNamespace namespace_id =
       static_cast<gpu::CommandBufferNamespace>(input->namespace_id);
-  gpu::SyncToken sync_token(namespace_id, 0,
+  gpu::SyncToken sync_token(namespace_id, input->extra_data_field,
                             input->command_buffer_id, input->release_count);
   if (input->verified_flush)
     sync_token.SetVerifyFlush();
@@ -609,29 +610,6 @@ TypeConverter<cc::TransferableResource, TransferableResourcePtr>::Convert(
 }
 
 // static
-Array<TransferableResourcePtr> TypeConverter<
-    Array<TransferableResourcePtr>,
-    cc::TransferableResourceArray>::Convert(const cc::TransferableResourceArray&
-                                                input) {
-  Array<TransferableResourcePtr> resources(input.size());
-  for (size_t i = 0; i < input.size(); ++i) {
-    resources[i] = TransferableResource::From(input[i]);
-  }
-  return resources;
-}
-
-// static
-cc::TransferableResourceArray
-TypeConverter<cc::TransferableResourceArray, Array<TransferableResourcePtr> >::
-    Convert(const Array<TransferableResourcePtr>& input) {
-  cc::TransferableResourceArray resources(input.size());
-  for (size_t i = 0; i < input.size(); ++i) {
-    resources[i] = input[i].To<cc::TransferableResource>();
-  }
-  return resources;
-}
-
-// static
 ReturnedResourcePtr
 TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::Convert(
     const cc::ReturnedResource& input) {
@@ -653,28 +631,6 @@ TypeConverter<cc::ReturnedResource, ReturnedResourcePtr>::Convert(
   returned.count = input->count;
   returned.lost = input->lost;
   return returned;
-}
-
-// static
-Array<ReturnedResourcePtr>
-TypeConverter<Array<ReturnedResourcePtr>, cc::ReturnedResourceArray>::Convert(
-    const cc::ReturnedResourceArray& input) {
-  Array<ReturnedResourcePtr> resources(input.size());
-  for (size_t i = 0; i < input.size(); ++i) {
-    resources[i] = ReturnedResource::From(input[i]);
-  }
-  return resources;
-}
-
-// static
-cc::ReturnedResourceArray
-TypeConverter<cc::ReturnedResourceArray, Array<ReturnedResourcePtr>>::Convert(
-    const Array<ReturnedResourcePtr>& input) {
-  cc::ReturnedResourceArray resources(input.size());
-  for (size_t i = 0; i < input.size(); ++i) {
-    resources[i] = input[i].To<cc::ReturnedResource>();
-  }
-  return resources;
 }
 
 // static

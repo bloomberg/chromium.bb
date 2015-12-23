@@ -142,21 +142,6 @@ struct MOJO_SURFACES_EXPORT TypeConverter<cc::TransferableResource,
 
 template <>
 struct MOJO_SURFACES_EXPORT
-    TypeConverter<Array<mus::mojom::TransferableResourcePtr>,
-                  cc::TransferableResourceArray> {
-  static Array<mus::mojom::TransferableResourcePtr> Convert(
-      const cc::TransferableResourceArray& input);
-};
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<cc::TransferableResourceArray,
-                  Array<mus::mojom::TransferableResourcePtr>> {
-  static cc::TransferableResourceArray Convert(
-      const Array<mus::mojom::TransferableResourcePtr>& input);
-};
-
-template <>
-struct MOJO_SURFACES_EXPORT
     TypeConverter<mus::mojom::ReturnedResourcePtr, cc::ReturnedResource> {
   static mus::mojom::ReturnedResourcePtr Convert(
       const cc::ReturnedResource& input);
@@ -166,21 +151,6 @@ struct MOJO_SURFACES_EXPORT
     TypeConverter<cc::ReturnedResource, mus::mojom::ReturnedResourcePtr> {
   static cc::ReturnedResource Convert(
       const mus::mojom::ReturnedResourcePtr& input);
-};
-
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<Array<mus::mojom::ReturnedResourcePtr>,
-                  cc::ReturnedResourceArray> {
-  static Array<mus::mojom::ReturnedResourcePtr> Convert(
-      const cc::ReturnedResourceArray& input);
-};
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<cc::ReturnedResourceArray,
-                  Array<mus::mojom::ReturnedResourcePtr>> {
-  static cc::ReturnedResourceArray Convert(
-      const Array<mus::mojom::ReturnedResourcePtr>& input);
 };
 
 template <>
