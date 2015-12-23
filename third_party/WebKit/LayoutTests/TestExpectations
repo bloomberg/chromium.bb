@@ -1325,3 +1325,5 @@ crbug.com/571762 [ Mac10.7 ] inspector/console/inspect-html-all-collection.html 
 crbug.com/571765 [ Linux Trusty Mac10.9 ] inspector/console/worker-eval-contains-stack.html [ Timeout Crash Pass ]
 
 crbug.com/571773 inspector/console/worker-exception-message-contains-stack.html [ Failure Timeout Crash Pass ]
+
+crbug.com/571786 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
