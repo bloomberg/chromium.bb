@@ -1320,3 +1320,5 @@ crbug.com/571716 inspector/audits/audits-panel-functional.html [ Crash Pass ]
 crbug.com/451577 [ XP ] inspector/console/console-stack-overflow.html [ Crash Pass ]
 
 crbug.com/571721 inspector/console/console-xpath.html [ Timeout Pass ]
+
+crbug.com/571762 [ Mac10.7 ] inspector/console/inspect-html-all-collection.html [ Timeout Pass ]
