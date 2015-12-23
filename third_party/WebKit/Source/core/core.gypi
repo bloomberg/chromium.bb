@@ -3911,6 +3911,7 @@
             'html/HTMLTextFormControlElementTest.cpp',
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
+            'html/canvas/CanvasAsyncBlobCreatorTest.cpp',
             'html/canvas/CanvasFontCacheTest.cpp',
             'html/forms/EmailInputTypeTest.cpp',
             'html/forms/FileInputTypeTest.cpp',
