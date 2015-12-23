@@ -3777,7 +3777,7 @@
     { "name": "wait.jp", "include_subdomains": true, "mode": "force-https" },
     { "name": "wdesk.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "wohnsitz-ausland.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "woima.fi", "include_subdomains": true, "mode": "force-https" },
+    { "name": "woima.fi", "include_subdomains": false, "mode": "force-https" },
     { "name": "wolfemg.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "wrldevelopment.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "xiaody.me", "include_subdomains": true, "mode": "force-https" },
