@@ -1128,6 +1128,11 @@ void GraphicsLayer::removeAnimation(int animationId)
     platformLayer()->removeAnimation(animationId);
 }
 
+void GraphicsLayer::abortAnimation(int animationId)
+{
+    platformLayer()->abortAnimation(animationId);
+}
+
 WebLayer* GraphicsLayer::platformLayer() const
 {
     return m_layer->layer();

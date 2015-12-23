@@ -51,6 +51,7 @@ bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() cons
         return false;
     case RunState::WaitingToSendToCompositor:
     case RunState::RunningOnMainThread:
+    case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::WaitingToCancelOnCompositor:
         return true;
     }
@@ -83,6 +84,17 @@ void ScrollAnimatorCompositorCoordinator::removeAnimation()
     }
 }
 
+void ScrollAnimatorCompositorCoordinator::abortAnimation()
+{
+    if (m_compositorPlayer) {
+        if (m_compositorPlayer->isLayerAttached())
+            m_compositorPlayer->abortAnimation(m_compositorAnimationId);
+    } else {
+        if (GraphicsLayer* layer = scrollableArea()->layerForScrolling())
+            layer->abortAnimation(m_compositorAnimationId);
+    }
+}
+
 void ScrollAnimatorCompositorCoordinator::cancelAnimation()
 {
     switch (m_runState) {
@@ -100,6 +112,7 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
     case RunState::RunningOnMainThread:
         resetAnimationState();
         break;
+    case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::RunningOnCompositor:
         m_runState = RunState::WaitingToCancelOnCompositor;
 
@@ -125,6 +138,7 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
     case RunState::WaitingToSendToCompositor:
         break;
     case RunState::RunningOnCompositor:
+    case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::WaitingToCancelOnCompositor:
         resetAnimationState();
     }

@@ -113,6 +113,7 @@ class WebLayerImpl : public blink::WebLayer {
   void removeAnimation(int animation_id,
                        blink::WebCompositorAnimation::TargetProperty) override;
   void pauseAnimation(int animation_id, double time_offset) override;
+  void abortAnimation(int animation_id) override;
   bool hasActiveAnimation() override;
   void setForceRenderSurface(bool force) override;
   void setScrollPositionDouble(blink::WebDoublePoint position) override;

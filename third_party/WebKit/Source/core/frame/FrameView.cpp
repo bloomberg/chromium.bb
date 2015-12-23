@@ -264,7 +264,7 @@ void FrameView::dispose()
     RELEASE_ASSERT(!isInPerformLayout());
 
     if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
-        scrollAnimator->cancelAnimations();
+        scrollAnimator->cancelAnimation();
     cancelProgrammaticScrollAnimation();
 
     detachScrollbars();

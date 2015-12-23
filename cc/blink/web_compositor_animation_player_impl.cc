@@ -68,4 +68,8 @@ void WebCompositorAnimationPlayerImpl::pauseAnimation(int animation_id,
   animation_player_->PauseAnimation(animation_id, time_offset);
 }
 
+void WebCompositorAnimationPlayerImpl::abortAnimation(int animation_id) {
+  animation_player_->AbortAnimation(animation_id);
+}
+
 }  // namespace cc_blink
