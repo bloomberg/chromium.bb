@@ -55,6 +55,7 @@ class ProofVerifierChromium::Job {
       CTVerifier* cert_transparency_verifier,
       int cert_verify_flags,
       const BoundNetLog& net_log);
+  ~Job();
 
   // Starts the proof verification.  If |QUIC_PENDING| is returned, then
   // |callback| will be invoked asynchronously when the verification completes.
@@ -112,6 +113,8 @@ class ProofVerifierChromium::Job {
 
   State next_state_;
 
+  base::TimeTicks start_time_;
+
   BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(Job);
@@ -132,7 +135,19 @@ ProofVerifierChromium::Job::Job(
       cert_transparency_verifier_(cert_transparency_verifier),
       cert_verify_flags_(cert_verify_flags),
       next_state_(STATE_NONE),
+      start_time_(base::TimeTicks::Now()),
       net_log_(net_log) {}
+
+ProofVerifierChromium::Job::~Job() {
+  base::TimeTicks end_time = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES("Net.QuicSession.VerifyProofTime",
+                      end_time - start_time_);
+  // |hostname_| will always be canonicalized to lowercase.
+  if (hostname_.compare("www.google.com") == 0) {
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.VerifyProofTime.google",
+                        end_time - start_time_);
+  }
+}
 
 QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const string& hostname,

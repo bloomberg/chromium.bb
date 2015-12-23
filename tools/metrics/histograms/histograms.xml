@@ -26047,6 +26047,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.VerifyProofTime" units="milliseconds">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Time spent verifying the signature and certificate chain of a server.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.VerifyProofTime.google" units="milliseconds">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Time spent verifying the signature and certificate chain for www.google.com
+    server.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.WriteError" enum="NetErrorCodes">
   <owner>rch@chromium.org</owner>
   <summary>
