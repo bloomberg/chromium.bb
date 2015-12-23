@@ -1291,8 +1291,8 @@ crbug.com/570401 virtual/display_list_2d_canvas/fast/canvas/canvas-shadow-source
 crbug.com/570401 compositing/overflow/updating-scrolling-content.html [ Failure ]
 crbug.com/570401 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ Failure ]
 
-#crbug.com/568867 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
-#crbug.com/568867 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
+crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
+crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
 crbug.com/569514 inspector/sources/debugger-step/debugger-step-into-document-write.html [ NeedsManualRebaseline ]
 crbug.com/569514 inspector/sources/debugger-step/debugger-step-into-inlined-scripts.html [ NeedsManualRebaseline ]
@@ -1331,5 +1331,3 @@ crbug.com/571765 [ Linux Trusty Mac10.9 ] inspector/console/worker-eval-contains
 
 crbug.com/571773 inspector/console/worker-exception-message-contains-stack.html [ Failure Timeout Crash Pass ]
 
-crbug.com/571786 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
-crbug.com/571789 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
