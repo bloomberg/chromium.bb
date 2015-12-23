@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "components/bubble/bubble_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/core/device_client.h"
@@ -102,9 +103,15 @@ void UsbChooserBubbleDelegate::Select(int index) {
     callback_.Run(nullptr);
   }
   callback_.reset();  // Reset |callback_| so that it is only run once.
+
+  if (bubble_controller_)
+    bubble_controller_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
 }
 
-void UsbChooserBubbleDelegate::Cancel() {}
+void UsbChooserBubbleDelegate::Cancel() {
+  if (bubble_controller_)
+    bubble_controller_->CloseBubble(BUBBLE_CLOSE_CANCELED);
+}
 
 void UsbChooserBubbleDelegate::Close() {}
 
@@ -149,4 +156,9 @@ void UsbChooserBubbleDelegate::GotUsbDeviceList(
   }
   if (observer())
     observer()->OnOptionsInitialized();
+}
+
+void UsbChooserBubbleDelegate::set_bubble_controller(
+    BubbleReference bubble_controller) {
+  bubble_controller_ = bubble_controller;
 }

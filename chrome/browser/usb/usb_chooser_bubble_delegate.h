@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
+#include "components/bubble/bubble_reference.h"
 #include "components/webusb/public/interfaces/webusb_permission_bubble.mojom.h"
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -49,6 +50,8 @@ class UsbChooserBubbleDelegate : public ChooserBubbleDelegate,
   void GotUsbDeviceList(
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
+  void set_bubble_controller(BubbleReference bubble_controller);
+
  private:
   content::RenderFrameHost* const render_frame_host_;
   webusb::WebUsbPermissionBubble::GetPermissionCallback callback_;
@@ -57,6 +60,7 @@ class UsbChooserBubbleDelegate : public ChooserBubbleDelegate,
   std::vector<device::UsbDeviceFilter> filters_;
   std::vector<scoped_refptr<device::UsbDevice>> devices_;
   std::vector<base::string16> devices_names_;
+  BubbleReference bubble_controller_;
   base::WeakPtrFactory<UsbChooserBubbleDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbChooserBubbleDelegate);

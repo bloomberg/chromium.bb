@@ -74,7 +74,6 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDelegateView,
   void Close();
 
   // BubbleDelegateView:
-  bool ShouldShowCloseButton() const override;
   bool ShouldShowWindowTitle() const override;
   base::string16 GetWindowTitle() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -288,10 +287,6 @@ void ChooserBubbleUiViewDelegate::Close() {
   GetWidget()->Close();
 }
 
-bool ChooserBubbleUiViewDelegate::ShouldShowCloseButton() const {
-  return true;
-}
-
 bool ChooserBubbleUiViewDelegate::ShouldShowWindowTitle() const {
   return true;
 }
@@ -310,12 +305,17 @@ void ChooserBubbleUiViewDelegate::OnWidgetDestroying(views::Widget* widget) {
 
 void ChooserBubbleUiViewDelegate::ButtonPressed(views::Button* button,
                                                 const ui::Event& event) {
+  button_pressed_ = true;
+
   if (button == connect_button_)
     chooser_bubble_delegate_->Select(table_view_->selection_model().active());
   else
     chooser_bubble_delegate_->Cancel();
-  button_pressed_ = true;
-  owner_->Close();
+
+  if (owner_) {
+    owner_->Close();
+    owner_ = nullptr;
+  }
 }
 
 void ChooserBubbleUiViewDelegate::OnSelectionChanged() {
