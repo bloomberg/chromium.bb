@@ -796,7 +796,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // The primary language, according to the translation-service, always comes first.
         uniqueLanguages.add(trimLocaleToLanguage(getNativeTranslateServiceTargetLanguage()));
         // Merge in the IME locales, if possible.
-        if (!ContextualSearchFieldTrial.disableKeyboardLanguagesForTranslation()) {
+        if (!ContextualSearchFieldTrial.isKeyboardLanguagesForTranslationDisabled()) {
             Context context = mActivity.getApplicationContext();
             if (context != null) {
                 for (String locale : UiUtils.getIMELocales(context)) {
@@ -813,7 +813,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
      */
     private List<String> getAcceptLanguages() {
         List<String> result = new ArrayList<String>();
-        if (!ContextualSearchFieldTrial.disableAcceptLanguagesForTranslation()) {
+        if (!ContextualSearchFieldTrial.isAcceptLanguagesForTranslationDisabled()) {
             String acceptLanguages = getNativeAcceptLanguages();
             for (String language : acceptLanguages.split(",")) {
                 result.add(language);
@@ -841,9 +841,11 @@ public class ContextualSearchManager extends ContextualSearchObservable
      */
     private void forceTranslateIfNeeded(ContextualSearchRequest searchRequest,
             String sourceLanguage) {
+        if (!mPolicy.isTranslationEnabled()) return;
+
         if (!TextUtils.isEmpty(sourceLanguage)) {
             if (mPolicy.needsTranslation(sourceLanguage, getReadableLanguages())) {
-                boolean doForceTranslate = !mPolicy.disableForceTranslationOnebox();
+                boolean doForceTranslate = !mPolicy.isForceTranslationOneboxDisabled();
                 if (doForceTranslate && searchRequest != null) {
                     searchRequest.forceTranslation(sourceLanguage,
                             mPolicy.bestTargetLanguage(getProficientLanguageList()));
@@ -863,7 +865,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private void forceAutoDetectTranslateUnlessDisabled(ContextualSearchRequest searchRequest) {
         // Always trigger translation using auto-detect when we're not resolving,
         // unless disabled by policy.
-        boolean shouldAutoDetectTranslate = !mPolicy.disableAutoDetectTranslationOnebox();
+        if (!mPolicy.isTranslationEnabled()) return;
+
+        boolean shouldAutoDetectTranslate = !mPolicy.isAutoDetectTranslationOneboxDisabled();
         if (shouldAutoDetectTranslate && searchRequest != null) {
             // The translation one-box won't actually show when the source text ends up being
             // the same as the target text, so we err on over-triggering.
@@ -879,7 +883,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * Caches all the native translate language info, so we can avoid repeated JNI calls.
      */
     private void cacheNativeTranslateData() {
-        if (!mPolicy.disableForceTranslationOnebox()) {
+        if (!mPolicy.isTranslationEnabled()) return;
+
+        if (!mPolicy.isForceTranslationOneboxDisabled()) {
             getNativeTranslateServiceTargetLanguage();
             getNativeAcceptLanguages();
         }

@@ -32,6 +32,8 @@ public class ContextualSearchFieldTrial {
 
     // Translation.
     @VisibleForTesting
+    static final String ENABLE_TRANSLATION_FOR_TESTING = "enable_translation_for_testing";
+    @VisibleForTesting
     static final String DISABLE_FORCE_TRANSLATION_ONEBOX = "disable_force_translation_onebox";
     @VisibleForTesting
     static final String DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX =
@@ -47,11 +49,12 @@ public class ContextualSearchFieldTrial {
     private static Boolean sDisableSearchTermResolution;
     private static Boolean sIsPeekPromoEnabled;
     private static Integer sPeekPromoMaxCount;
-    private static Boolean sDisableForceTranslationOnebox;
-    private static Boolean sDisableAutoDetectTranslationOnebox;
-    private static Boolean sDisableAcceptLanguagesForTranslation;
-    private static Boolean sDisableKeyboardLanguagesForTranslation;
-    private static Boolean sEnableEnglishTaregetTranslation;
+    private static Boolean sIsTranslationForTestingEnabled;
+    private static Boolean sIsForceTranslationOneboxDisabled;
+    private static Boolean sIsAutoDetectTranslationOneboxDisabled;
+    private static Boolean sIsAcceptLanguagesForTranslationDisabled;
+    private static Boolean sIsKeyboardLanguagesForTranslationDisabled;
+    private static Boolean sIsEnglishTargetTranslationEnabled;
 
     /**
      * Don't instantiate.
@@ -162,57 +165,67 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
+     * @return Whether any translate is enabled, used for testing only.
+     */
+    static boolean isTranslationForTestingEnabled() {
+        if (sIsTranslationForTestingEnabled == null) {
+            sIsTranslationForTestingEnabled = getBooleanParam(ENABLE_TRANSLATION_FOR_TESTING);
+        }
+        return sIsTranslationForTestingEnabled.booleanValue();
+    }
+
+    /**
      * @return Whether forcing a translation Onebox is disabled.
      */
-    static boolean disableForceTranslationOnebox() {
-        if (sDisableForceTranslationOnebox == null) {
-            sDisableForceTranslationOnebox = getBooleanParam(DISABLE_FORCE_TRANSLATION_ONEBOX);
+    static boolean isForceTranslationOneboxDisabled() {
+        if (sIsForceTranslationOneboxDisabled == null) {
+            sIsForceTranslationOneboxDisabled = getBooleanParam(DISABLE_FORCE_TRANSLATION_ONEBOX);
         }
-        return sDisableForceTranslationOnebox.booleanValue();
+        return sIsForceTranslationOneboxDisabled.booleanValue();
     }
 
     /**
      * @return Whether forcing a translation Onebox based on auto-detection of the source language
      *         is disabled.
      */
-    static boolean disableAutoDetectTranslationOnebox() {
-        if (sDisableAutoDetectTranslationOnebox == null) {
-            sDisableAutoDetectTranslationOnebox = getBooleanParam(
+    static boolean isAutoDetectTranslationOneboxDisabled() {
+        if (sIsAutoDetectTranslationOneboxDisabled == null) {
+            sIsAutoDetectTranslationOneboxDisabled = getBooleanParam(
                     DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX);
         }
-        return sDisableAutoDetectTranslationOnebox.booleanValue();
+        return sIsAutoDetectTranslationOneboxDisabled.booleanValue();
     }
 
     /**
      * @return Whether considering accept-languages for translation is disabled.
      */
-    static boolean disableAcceptLanguagesForTranslation() {
-        if (sDisableAcceptLanguagesForTranslation == null) {
-            sDisableAcceptLanguagesForTranslation = getBooleanParam(
+    static boolean isAcceptLanguagesForTranslationDisabled() {
+        if (sIsAcceptLanguagesForTranslationDisabled == null) {
+            sIsAcceptLanguagesForTranslationDisabled = getBooleanParam(
                     DISABLE_ACCEPT_LANGUAGES_FOR_TRANSLATION);
         }
-        return sDisableAcceptLanguagesForTranslation.booleanValue();
+        return sIsAcceptLanguagesForTranslationDisabled.booleanValue();
     }
 
     /**
      * @return Whether considering keyboards for translation is disabled.
      */
-    static boolean disableKeyboardLanguagesForTranslation() {
-        if (sDisableKeyboardLanguagesForTranslation == null) {
-            sDisableKeyboardLanguagesForTranslation =
+    static boolean isKeyboardLanguagesForTranslationDisabled() {
+        if (sIsKeyboardLanguagesForTranslationDisabled == null) {
+            sIsKeyboardLanguagesForTranslationDisabled =
                     getBooleanParam(DISABLE_KEYBOARD_LANGUAGES_FOR_TRANSLATION);
         }
-        return sDisableKeyboardLanguagesForTranslation.booleanValue();
+        return sIsKeyboardLanguagesForTranslationDisabled.booleanValue();
     }
 
     /**
      * @return Whether English-target translation should be enabled (default is disabled for 'en').
      */
-    static boolean enableEnglishTargetTranslation() {
-        if (sEnableEnglishTaregetTranslation == null) {
-            sEnableEnglishTaregetTranslation = getBooleanParam(ENABLE_ENGLISH_TARGET_TRANSLATION);
+    static boolean isEnglishTargetTranslationEnabled() {
+        if (sIsEnglishTargetTranslationEnabled == null) {
+            sIsEnglishTargetTranslationEnabled = getBooleanParam(ENABLE_ENGLISH_TARGET_TRANSLATION);
         }
-        return sEnableEnglishTaregetTranslation.booleanValue();
+        return sIsEnglishTargetTranslationEnabled.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------
