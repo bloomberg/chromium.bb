@@ -1669,7 +1669,6 @@ template("android_apk") {
     deps = []
     forward_variables_from(invoker,
                            [
-                             "asset_location",
                              "deps",
                              "extensions_to_not_compress",
                              "language_splits",

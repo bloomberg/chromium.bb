@@ -76,9 +76,6 @@ template("test") {
         unittests_binary = "lib${apk_name}.so"
       }
       deps += [ ":$library_name" ]
-      if (defined(invoker.apk_asset_location)) {
-        asset_location = invoker.apk_asset_location
-      }
     }
 
     _test_name = main_target_name

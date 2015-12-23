@@ -853,13 +853,6 @@ template("create_apk") {
         invoker.native_libs_even_when_incremental
   }
 
-  # TODO(agrieve): Remove support for asset_location in favor of using
-  # android_assets() everywhere (http://crbug.com/547162).
-  if (defined(invoker.asset_location)) {
-    _asset_location = invoker.asset_location
-    assert(_asset_location != "")  # Mark as used.
-  }
-
   _version_code = invoker.version_code
   _version_name = invoker.version_name
   assert(_version_code != -1)  # Mark as used.
@@ -931,12 +924,6 @@ template("create_apk") {
         rebase_path(invoker.resource_packaged_apk_path, root_build_dir),
       ]
 
-      if (defined(_asset_location)) {
-        args += [
-          "--asset-dir",
-          rebase_path(_asset_location, root_build_dir),
-        ]
-      }
       if (defined(_resources_zip)) {
         args += [
           "--resource-zips",
