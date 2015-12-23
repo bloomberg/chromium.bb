@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/worker_task_runner.h"
+#include "content/child/worker_thread_registry.h"
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -12,11 +12,11 @@
 
 namespace content {
 
-class WorkerTaskRunnerTest : public testing::Test {
+class WorkerThreadRegistryTest : public testing::Test {
  public:
-  void FakeStart() { task_runner_.DidStartWorkerRunLoop(); }
-  void FakeStop() { task_runner_.WillStopWorkerRunLoop(); }
-  WorkerTaskRunner task_runner_;
+  void FakeStart() { task_runner_.DidStartCurrentWorkerThread(); }
+  void FakeStop() { task_runner_.WillStopCurrentWorkerThread(); }
+  WorkerThreadRegistry task_runner_;
 
  private:
   base::MessageLoop message_loop_;
@@ -30,10 +30,10 @@ class MockObserver : public WorkerThread::Observer {
         .WillByDefault(testing::Invoke(this, &MockObserver::RemoveSelf));
   }
   void RemoveSelf() { WorkerThread::RemoveObserver(this); }
-  WorkerTaskRunner* runner_;
+  WorkerThreadRegistry* runner_;
 };
 
-TEST_F(WorkerTaskRunnerTest, BasicObservingAndWorkerId) {
+TEST_F(WorkerThreadRegistryTest, BasicObservingAndWorkerId) {
   ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
   EXPECT_CALL(o, WillStopCurrentWorkerThread()).Times(1);
@@ -43,7 +43,7 @@ TEST_F(WorkerTaskRunnerTest, BasicObservingAndWorkerId) {
   FakeStop();
 }
 
-TEST_F(WorkerTaskRunnerTest, CanRemoveSelfDuringNotification) {
+TEST_F(WorkerThreadRegistryTest, CanRemoveSelfDuringNotification) {
   MockObserver o;
   o.RemoveSelfOnNotify();
   o.runner_ = &task_runner_;
@@ -53,7 +53,7 @@ TEST_F(WorkerTaskRunnerTest, CanRemoveSelfDuringNotification) {
   FakeStop();
 }
 
-TEST_F(WorkerTaskRunnerTest, TaskRunnerRemovedCorrectly) {
+TEST_F(WorkerThreadRegistryTest, TaskRunnerRemovedCorrectly) {
   ASSERT_EQ(0, WorkerThread::GetCurrentId());
   MockObserver o;
   FakeStart();

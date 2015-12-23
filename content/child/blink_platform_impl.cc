@@ -55,7 +55,7 @@
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/websocket_bridge.h"
-#include "content/child/worker_task_runner.h"
+#include "content/child/worker_thread_registry.h"
 #include "content/public/common/content_client.h"
 #include "net/base/data_url.h"
 #include "net/base/ip_address_number.h"
@@ -1111,16 +1111,15 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
 }
 
 void BlinkPlatformImpl::didStartWorkerRunLoop() {
-  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
-  worker_task_runner->DidStartWorkerRunLoop();
+  // TODO(kinuko): Cleanup this code.
+  WorkerThreadRegistry::Instance()->DidStartCurrentWorkerThread();
 }
 
 void BlinkPlatformImpl::didStopWorkerRunLoop() {
   // TODO(kalman): blink::Platform::didStopWorkerRunLoop should be called
   // willStopWorkerRunLoop, because at this point the run loop hasn't been
   // stopped. WillStopWorkerRunLoop is the correct name.
-  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
-  worker_task_runner->WillStopWorkerRunLoop();
+  WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
 }
 
 blink::WebCrypto* BlinkPlatformImpl::crypto() {

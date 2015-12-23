@@ -10,7 +10,7 @@
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/worker_task_runner.h"
+#include "content/child/worker_thread_registry.h"
 
 namespace content {
 

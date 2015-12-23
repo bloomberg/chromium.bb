@@ -646,7 +646,7 @@
       'child/web_data_consumer_handle_impl_unittest.cc',
       'child/web_process_memory_dump_impl_unittest.cc',
       'child/web_url_loader_impl_unittest.cc',
-      'child/worker_task_runner_unittest.cc',
+      'child/worker_thread_registry_unittest.cc',
       'common/android/address_parser_unittest.cc',
       'common/android/gin_java_bridge_value_unittest.cc',
       'common/cc_messages_unittest.cc',

@@ -5,7 +5,7 @@
 #include "content/child/permissions/permission_dispatcher.h"
 
 #include "base/callback.h"
-#include "content/child/worker_task_runner.h"
+#include "content/public/child/worker_thread.h"
 #include "content/public/common/service_registry.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionObserver.h"
@@ -336,7 +336,7 @@ void PermissionDispatcher::OnPermissionResponse(
   if (worker_thread_id != kNoWorkerThread) {
     // If the worker is no longer running, ::PostTask() will return false and
     // gracefully fail, destroying the callback too.
-    WorkerTaskRunner::Instance()->PostTask(
+    WorkerThread::PostTask(
         worker_thread_id,
         base::Bind(&PermissionDispatcher::RunPermissionCallbackOnWorkerThread,
                    base::Passed(&callback), status));
@@ -361,11 +361,10 @@ void PermissionDispatcher::OnRequestPermissionsResponse(
   if (worker_thread_id != kNoWorkerThread) {
     // If the worker is no longer running, ::PostTask() will return false and
     // gracefully fail, destroying the callback too.
-    WorkerTaskRunner::Instance()->PostTask(
+    WorkerThread::PostTask(
         worker_thread_id,
         base::Bind(&PermissionDispatcher::RunPermissionsCallbackOnWorkerThread,
-                   base::Passed(&callback),
-                   base::Passed(&statuses)));
+                   base::Passed(&callback), base::Passed(&statuses)));
     return;
   }
 
@@ -391,8 +390,8 @@ void PermissionDispatcher::OnPermissionChangedForWorker(
     PermissionStatus status) {
   DCHECK(worker_thread_id != kNoWorkerThread);
 
-  WorkerTaskRunner::Instance()->PostTask(
-      worker_thread_id, base::Bind(callback, GetWebPermissionStatus(status)));
+  WorkerThread::PostTask(worker_thread_id,
+                         base::Bind(callback, GetWebPermissionStatus(status)));
 }
 
 void PermissionDispatcher::GetNextPermissionChange(

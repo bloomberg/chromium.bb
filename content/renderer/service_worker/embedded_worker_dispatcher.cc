@@ -11,7 +11,7 @@
 #include "content/child/child_process.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/worker_task_runner.h"
+#include "content/child/worker_thread_registry.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/public/common/content_client.h"
