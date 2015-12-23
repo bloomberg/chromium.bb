@@ -4,6 +4,8 @@
 
 #include "extensions/common/one_shot_event.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"

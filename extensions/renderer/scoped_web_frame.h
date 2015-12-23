@@ -5,6 +5,7 @@
 #ifndef SCOPED_WEB_FRAME_H_
 #define SCOPED_WEB_FRAME_H_
 
+#include "base/macros.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 

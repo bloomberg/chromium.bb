@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/storage_monitor/storage_monitor.h"

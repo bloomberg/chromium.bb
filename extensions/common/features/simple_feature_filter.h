@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/manifest.h"
 

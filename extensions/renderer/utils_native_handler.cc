@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/utils_native_handler.h"
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"

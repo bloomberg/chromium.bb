@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/v8_schema_registry.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"

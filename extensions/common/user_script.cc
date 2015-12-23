@@ -4,6 +4,9 @@
 
 #include "extensions/common/user_script.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/pickle.h"
@@ -13,7 +16,7 @@
 
 namespace {
 
-// This cannot be a plain int or int64 because we need to generate unique IDs
+// This cannot be a plain int or int64_t because we need to generate unique IDs
 // from multiple threads.
 base::StaticAtomicSequenceNumber g_user_script_id_generator;
 

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <queue>
 #include <utility>
 
+#include "base/macros.h"
 #include "device/serial/data_sink_receiver.h"
 #include "device/serial/data_stream.mojom.h"
 #include "extensions/renderer/api_test_base.h"

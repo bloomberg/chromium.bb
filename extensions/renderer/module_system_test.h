@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_MODULE_SYSTEM_TEST_H_
 #define EXTENSIONS_RENDERER_MODULE_SYSTEM_TEST_H_
 
+#include "base/macros.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/public/context_holder.h"

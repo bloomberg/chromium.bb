@@ -5,11 +5,12 @@
 #ifndef EXTENSIONS_RENDERER_SCRIPTS_RUN_INFO_H_
 #define EXTENSIONS_RENDERER_SCRIPTS_RUN_INFO_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "extensions/common/user_script.h"

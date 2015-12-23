@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 
+#include "base/macros.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/guest_view/common/guest_view_messages.h"
 #include "content/public/child/v8_value_converter.h"

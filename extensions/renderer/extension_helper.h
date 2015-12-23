@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace extensions {

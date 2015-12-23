@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_SET_DISJUNCTION_PERMISSION_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_SET_DISJUNCTION_PERMISSION_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

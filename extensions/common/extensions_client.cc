@@ -4,7 +4,6 @@
 
 #include "extensions/common/extensions_client.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"

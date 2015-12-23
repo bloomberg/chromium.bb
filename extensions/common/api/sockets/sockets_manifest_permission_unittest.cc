@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/values.h"
 #include "extensions/common/api/sockets/sockets_manifest_permission.h"

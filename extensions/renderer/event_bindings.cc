@@ -4,10 +4,11 @@
 
 #include "extensions/renderer/event_bindings.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"

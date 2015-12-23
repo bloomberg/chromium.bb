@@ -4,9 +4,12 @@
 
 #include "extensions/shell/browser/shell_content_browser_client.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"

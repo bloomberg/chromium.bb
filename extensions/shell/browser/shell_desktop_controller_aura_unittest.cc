@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/aura/test/aura_test_base.h"
 
 #if defined(OS_CHROMEOS)

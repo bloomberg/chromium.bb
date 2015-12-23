@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_COMMON_MANIFEST_TEST_H_
 #define EXTENSIONS_COMMON_MANIFEST_TEST_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

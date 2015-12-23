@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSION_WEB_CONTENTS_OBSERVER_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSION_WEB_CONTENTS_OBSERVER_H_
 
+#include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/extension_web_contents_observer.h"
 

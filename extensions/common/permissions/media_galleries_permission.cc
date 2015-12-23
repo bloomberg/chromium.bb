@@ -4,6 +4,8 @@
 
 #include "extensions/common/permissions/media_galleries_permission.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

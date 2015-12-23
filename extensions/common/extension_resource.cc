@@ -4,6 +4,8 @@
 
 #include "extensions/common/extension_resource.h"
 
+#include <stddef.h>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"

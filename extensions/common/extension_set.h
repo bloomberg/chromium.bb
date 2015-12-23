@@ -5,12 +5,15 @@
 #ifndef EXTENSIONS_COMMON_EXTENSION_SET_H_
 #define EXTENSIONS_COMMON_EXTENSION_SET_H_
 
+#include <stddef.h>
+
 #include <iterator>
 #include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"

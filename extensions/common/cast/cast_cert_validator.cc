@@ -8,6 +8,8 @@
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <utility>
 
 #include "base/logging.h"

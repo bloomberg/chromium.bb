@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_AUDIO_CONTROLLER_CHROMEOS_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_AUDIO_CONTROLLER_CHROMEOS_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
 

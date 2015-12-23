@@ -4,6 +4,8 @@
 
 #include "extensions/common/url_pattern_set.h"
 
+#include <stddef.h>
+
 #include <sstream>
 
 #include "base/values.h"

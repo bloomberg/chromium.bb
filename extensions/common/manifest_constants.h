@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_MANIFEST_CONSTANTS_H_
 #define EXTENSIONS_COMMON_MANIFEST_CONSTANTS_H_
 
+#include "build/build_config.h"
+
 namespace extensions {
 
 // Keys used in JSON representation of extensions.

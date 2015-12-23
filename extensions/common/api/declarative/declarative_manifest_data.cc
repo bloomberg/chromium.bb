@@ -4,6 +4,9 @@
 
 #include "extensions/common/api/declarative/declarative_manifest_data.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/manifest_constants.h"

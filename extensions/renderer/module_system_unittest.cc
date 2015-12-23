@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/module_system.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"

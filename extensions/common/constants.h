@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_COMMON_CONSTANTS_H_
 #define EXTENSIONS_COMMON_CONSTANTS_H_
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "ui/base/layout.h"
 

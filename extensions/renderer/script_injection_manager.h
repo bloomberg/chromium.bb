@@ -5,12 +5,15 @@
 #ifndef EXTENSIONS_RENDERER_SCRIPT_INJECTION_MANAGER_H_
 #define EXTENSIONS_RENDERER_SCRIPT_INJECTION_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/script_injection.h"
@@ -90,7 +93,7 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
                                       const GURL& url);
 
   // Handle the GrantInjectionPermission extension message.
-  void HandlePermitScriptInjection(int64 request_id);
+  void HandlePermitScriptInjection(int64_t request_id);
 
   // The map of active web frames to their corresponding statuses. The
   // RunLocation of the frame corresponds to the last location that has ran.

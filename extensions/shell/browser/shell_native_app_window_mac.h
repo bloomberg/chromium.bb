@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "extensions/shell/browser/shell_native_app_window.h"
 
 @class ShellNSWindow;

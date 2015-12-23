@@ -7,9 +7,10 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "extensions/shell/browser/desktop_controller.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window_tree_host_observer.h"

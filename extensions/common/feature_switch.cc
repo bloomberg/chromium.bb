@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "extensions/common/switches.h"
 
 namespace extensions {

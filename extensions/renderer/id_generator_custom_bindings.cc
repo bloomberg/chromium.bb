@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/id_generator_custom_bindings.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 
 namespace extensions {

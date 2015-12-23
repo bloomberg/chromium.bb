@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_API_AUTOMATION_AUTOMATION_API_HELPER_H_
 #define EXTENSIONS_RENDERER_API_AUTOMATION_AUTOMATION_API_HELPER_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/renderer/render_view_observer.h"
 

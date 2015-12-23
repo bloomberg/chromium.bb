@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_BASE_SET_OPERATORS_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_BASE_SET_OPERATORS_H_
 
+#include <stddef.h>
+
 #include <iterator>
 #include <map>
 

@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/context_menus_custom_bindings.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"

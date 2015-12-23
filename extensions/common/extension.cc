@@ -4,10 +4,11 @@
 
 #include "extensions/common/extension.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"

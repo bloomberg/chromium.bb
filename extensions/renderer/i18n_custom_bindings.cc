@@ -4,9 +4,13 @@
 
 #include "extensions/renderer/i18n_custom_bindings.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"

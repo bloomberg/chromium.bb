@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/extensions_render_frame_observer.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
@@ -28,11 +30,10 @@ const char kStackFrameDelimiter[] = "\n    at ";
 //    the given line number and source.
 // |message| will be populated with the error message only (i.e., will not
 // include any stack trace).
-StackTrace GetStackTraceFromMessage(
-    base::string16* message,
-    const base::string16& source,
-    const base::string16& stack_trace,
-    int32 line_number) {
+StackTrace GetStackTraceFromMessage(base::string16* message,
+                                    const base::string16& source,
+                                    const base::string16& stack_trace,
+                                    int32_t line_number) {
   StackTrace result;
   std::vector<base::string16> pieces;
   size_t index = 0;
@@ -84,8 +85,8 @@ void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(
     const base::string16& message,
     const base::string16& source,
     const base::string16& stack_trace_string,
-    int32 line_number,
-    int32 severity_level) {
+    int32_t line_number,
+    int32_t severity_level) {
   base::string16 trimmed_message = message;
   StackTrace stack_trace = GetStackTraceFromMessage(
       &trimmed_message,

@@ -7,6 +7,7 @@
 
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 
 // Writes |message| to the stack so that it shows up in the minidump, then

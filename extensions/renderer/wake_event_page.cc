@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_thread.h"

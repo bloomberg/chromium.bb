@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_URL_PATTERN_SET_H_
 #define EXTENSIONS_COMMON_URL_PATTERN_SET_H_
 
+#include <stddef.h>
+
 #include <iosfwd>
 #include <set>
 

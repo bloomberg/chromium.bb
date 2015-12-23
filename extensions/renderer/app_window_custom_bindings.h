@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_APP_WINDOW_CUSTOM_BINDINGS_H_
 #define EXTENSIONS_RENDERER_APP_WINDOW_CUSTOM_BINDINGS_H_
 
+#include "base/macros.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {

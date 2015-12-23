@@ -6,6 +6,8 @@
 #define EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 class PrefService;

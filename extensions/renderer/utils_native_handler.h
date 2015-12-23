@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_UTILS_NATIVE_HANDLER_H_
 #define EXTENSIONS_RENDERER_UTILS_NATIVE_HANDLER_H_
 
+#include "base/macros.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {

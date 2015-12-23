@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "extensions/browser/mojo/stash_backend.h"
 #include "extensions/common/mojo/stash.mojom.h"
 #include "extensions/renderer/api_test_base.h"

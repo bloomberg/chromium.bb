@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"

@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/content_watcher.h"
 
+#include <stddef.h>
+
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/extension_messages.h"

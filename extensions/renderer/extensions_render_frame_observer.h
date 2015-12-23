@@ -5,7 +5,9 @@
 #ifndef EXTENSIONS_RENDERER_EXTENSIONS_RENDER_FRAME_OBSERVER_H_
 #define EXTENSIONS_RENDERER_EXTENSIONS_RENDER_FRAME_OBSERVER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 
 namespace extensions {
@@ -24,8 +26,8 @@ class ExtensionsRenderFrameObserver
   void DetailedConsoleMessageAdded(const base::string16& message,
                                    const base::string16& source,
                                    const base::string16& stack_trace,
-                                   int32 line_number,
-                                   int32 severity_level) override;
+                                   int32_t line_number,
+                                   int32_t severity_level) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsRenderFrameObserver);
 };

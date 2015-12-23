@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_FEATURES_SIMPLE_FEATURE_H_
 #define EXTENSIONS_COMMON_FEATURES_SIMPLE_FEATURE_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -12,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"

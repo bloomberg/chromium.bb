@@ -4,6 +4,7 @@
 
 #include "extensions/common/image_util.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <vector>
 

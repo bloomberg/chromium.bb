@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
@@ -36,10 +37,10 @@ using IsolatedWorldMap = std::map<std::string, int>;
 base::LazyInstance<IsolatedWorldMap> g_isolated_worlds =
     LAZY_INSTANCE_INITIALIZER;
 
-const int64 kInvalidRequestId = -1;
+const int64_t kInvalidRequestId = -1;
 
 // The id of the next pending injection.
-int64 g_next_pending_id = 0;
+int64_t g_next_pending_id = 0;
 
 // Gets the isolated world ID to use for the given |injection_host|
 // in the given |frame|. If no isolated world has been created for that

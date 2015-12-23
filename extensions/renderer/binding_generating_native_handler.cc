@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/binding_generating_native_handler.h"
 
+#include "base/macros.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
 

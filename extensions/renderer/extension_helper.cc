@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/extension_helper.h"
 
+#include <stddef.h>
+
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"

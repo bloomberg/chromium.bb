@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"

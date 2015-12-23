@@ -4,6 +4,8 @@
 
 #include "extensions/common/permissions/permission_message_test_util.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 

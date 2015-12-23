@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_handlers/webview_info.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"

@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/process_info_native_handler.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "extensions/renderer/script_context.h"

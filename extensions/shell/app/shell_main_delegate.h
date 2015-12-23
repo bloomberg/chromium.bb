@@ -6,8 +6,10 @@
 #define EXTENSIONS_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
 
 namespace content {

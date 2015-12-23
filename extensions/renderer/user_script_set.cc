@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/user_script_set.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/memory/ref_counted.h"

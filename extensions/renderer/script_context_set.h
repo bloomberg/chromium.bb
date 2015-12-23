@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_RENDERER_SCRIPT_CONTEXT_SET_H_
 #define EXTENSIONS_RENDERER_SCRIPT_CONTEXT_SET_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

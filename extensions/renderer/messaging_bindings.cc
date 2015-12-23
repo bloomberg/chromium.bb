@@ -4,14 +4,16 @@
 
 #include "extensions/renderer/messaging_bindings.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
@@ -177,7 +179,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     if (!renderframe)
       return;
 
-    // Arguments are (int32 port_id, string message).
+    // Arguments are (int32_t port_id, string message).
     CHECK(args.Length() == 2 && args[0]->IsInt32() && args[1]->IsString());
 
     int port_id = args[0].As<v8::Int32>()->Value();
@@ -196,7 +198,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
 
   // Forcefully disconnects a port.
   void CloseChannel(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // Arguments are (int32 port_id, boolean notify_browser).
+    // Arguments are (int32_t port_id, boolean notify_browser).
     CHECK_EQ(2, args.Length());
     CHECK(args[0]->IsInt32());
     CHECK(args[1]->IsBoolean());
@@ -218,7 +220,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
   // A new port has been created for a context.  This occurs both when script
   // opens a connection, and when a connection is opened to this script.
   void PortAddRef(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // Arguments are (int32 port_id).
+    // Arguments are (int32_t port_id).
     CHECK_EQ(1, args.Length());
     CHECK(args[0]->IsInt32());
 
@@ -230,7 +232,7 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
   // frames with a reference to a given port, we will disconnect it and notify
   // the other end of the channel.
   void PortRelease(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // Arguments are (int32 port_id).
+    // Arguments are (int32_t port_id).
     CHECK(args.Length() == 1 && args[0]->IsInt32());
     ReleasePort(args[0].As<v8::Int32>()->Value());
   }

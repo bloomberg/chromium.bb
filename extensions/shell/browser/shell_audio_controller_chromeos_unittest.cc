@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/shell_audio_controller_chromeos.h"
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
@@ -56,7 +58,7 @@ class ShellAudioControllerTest : public testing::Test {
   }
 
   // Changes the active state of the node with |id| in |nodes|.
-  void SetNodeActive(AudioNodeList* nodes, uint64 id, bool active) {
+  void SetNodeActive(AudioNodeList* nodes, uint64_t id, bool active) {
     for (AudioNodeList::iterator it = nodes->begin();
          it != nodes->end(); ++it) {
       if (it->id == id) {
@@ -72,7 +74,7 @@ class ShellAudioControllerTest : public testing::Test {
   scoped_ptr<ShellAudioController> controller_;
 
   // Next audio node ID to be returned by CreateNode().
-  uint64 next_node_id_;
+  uint64_t next_node_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellAudioControllerTest);

@@ -4,6 +4,8 @@
 
 #include "extensions/common/stack_frame.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"

@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_COMMON_EVENT_MATCHER_H_
 #define EXTENSIONS_COMMON_EVENT_MATCHER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 

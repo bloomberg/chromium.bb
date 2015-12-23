@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "components/url_matcher/url_matcher.h"
 #include "extensions/common/event_filtering_info.h"

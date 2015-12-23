@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_INJECTION_HOST_H
 #define EXTENSIONS_RENDERER_INJECTION_HOST_H
 
+#include "base/macros.h"
 #include "extensions/common/host_id.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"

@@ -4,10 +4,13 @@
 
 #include "extensions/common/message_bundle.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"

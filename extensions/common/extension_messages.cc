@@ -4,6 +4,8 @@
 
 #include "extensions/common/extension_messages.h"
 
+#include <stddef.h>
+
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"

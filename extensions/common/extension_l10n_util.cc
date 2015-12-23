@@ -4,6 +4,8 @@
 
 #include "extensions/common/extension_l10n_util.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <string>

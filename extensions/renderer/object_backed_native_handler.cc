@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/object_backed_native_handler.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "extensions/renderer/console.h"

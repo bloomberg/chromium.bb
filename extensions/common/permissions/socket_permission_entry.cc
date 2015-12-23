@@ -4,6 +4,8 @@
 
 #include "extensions/common/permissions/socket_permission_entry.h"
 
+#include <stdint.h>
+
 #include <cstdlib>
 #include <sstream>
 #include <tuple>
@@ -25,8 +27,8 @@ using content::SocketPermissionRequest;
 const char kColon = ':';
 const char kDot = '.';
 const char kWildcard[] = "*";
-const uint16 kWildcardPortNumber = 0;
-const uint16 kInvalidPort = 65535;
+const uint16_t kWildcardPortNumber = 0;
+const uint16_t kInvalidPort = 65535;
 
 bool StartsOrEndsWithWhitespace(const std::string& str) {
   return !str.empty() && (base::IsUnicodeWhitespace(str[0]) ||
@@ -182,7 +184,7 @@ bool SocketPermissionEntry::ParseHostPattern(
   int port;
   if (!base::StringToInt(pattern_tokens[1], &port) || port < 1 || port > 65535)
     return false;
-  result.pattern_.port = static_cast<uint16>(port);
+  result.pattern_.port = static_cast<uint16_t>(port);
 
   *entry = result;
   return true;

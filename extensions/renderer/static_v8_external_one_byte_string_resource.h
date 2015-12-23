@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ONE_BYTE_STRING_RESOURCE_H_
 #define EXTENSIONS_RENDERER_STATIC_V8_EXTERNAL_ONE_BYTE_STRING_RESOURCE_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
 #include "v8/include/v8.h"

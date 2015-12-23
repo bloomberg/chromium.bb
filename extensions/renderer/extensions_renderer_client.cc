@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/extensions_renderer_client.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace extensions {

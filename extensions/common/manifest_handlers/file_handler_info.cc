@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

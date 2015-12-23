@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_handler.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/logging.h"

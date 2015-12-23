@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "base/macros.h"
 #include "components/guest_view/renderer/guest_view_container.h"
 #include "v8/include/v8.h"
 

@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
 
+#include "build/build_config.h"
 #include "extensions/common/api/runtime.h"
 
 #if defined(OS_CHROMEOS)

@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "extensions/common/mojo/keep_alive.mojom.h"
 #include "extensions/renderer/api_test_base.h"
 #include "grit/extensions_renderer_resources.h"

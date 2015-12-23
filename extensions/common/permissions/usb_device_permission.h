@@ -5,7 +5,8 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_USB_DEVICE_PERMISSION_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/set_disjunction_permission.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
@@ -17,12 +18,12 @@ class UsbDevicePermission
                                     UsbDevicePermission> {
  public:
   struct CheckParam : public APIPermission::CheckParam {
-    CheckParam(uint16 vendor_id, uint16 product_id, int interface_id)
-      : vendor_id(vendor_id),
-        product_id(product_id),
-        interface_id(interface_id) {}
-    const uint16 vendor_id;
-    const uint16 product_id;
+    CheckParam(uint16_t vendor_id, uint16_t product_id, int interface_id)
+        : vendor_id(vendor_id),
+          product_id(product_id),
+          interface_id(interface_id) {}
+    const uint16_t vendor_id;
+    const uint16_t product_id;
     const int interface_id;
   };
 

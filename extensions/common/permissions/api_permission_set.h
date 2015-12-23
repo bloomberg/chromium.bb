@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_API_PERMISSION_SET_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_API_PERMISSION_SET_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>

@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_tokenizer.h"
+#include "build/build_config.h"
 #include "extensions/common/switches.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 

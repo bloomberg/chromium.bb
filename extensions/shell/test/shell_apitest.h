@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "extensions/shell/test/shell_test.h"
 
 namespace extensions {

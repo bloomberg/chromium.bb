@@ -5,8 +5,11 @@
 #ifndef EXTENSIONS_RENDERER_RENDERER_EXTENSION_REGISTRY_H_
 #define EXTENSIONS_RENDERER_RENDERER_EXTENSION_REGISTRY_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "extensions/common/extension_set.h"
 

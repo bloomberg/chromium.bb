@@ -4,6 +4,8 @@
 
 #include "extensions/common/extension_api.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -13,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

@@ -81,7 +81,7 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
                                           const ExtensionId& extension_id,
                                           int script_id,
                                           const GURL& url);
-  virtual void OnPermitScriptInjection(int64 request_id);
+  virtual void OnPermitScriptInjection(int64_t request_id);
 
   // Tells the ScriptInjectionManager to run tasks associated with
   // document_idle.
@@ -196,7 +196,7 @@ void ScriptInjectionManager::RFOHelper::OnExecuteDeclarativeScript(
 }
 
 void ScriptInjectionManager::RFOHelper::OnPermitScriptInjection(
-    int64 request_id) {
+    int64_t request_id) {
   manager_->HandlePermitScriptInjection(request_id);
 }
 
@@ -448,7 +448,7 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
   }
 }
 
-void ScriptInjectionManager::HandlePermitScriptInjection(int64 request_id) {
+void ScriptInjectionManager::HandlePermitScriptInjection(int64_t request_id) {
   auto iter = pending_injections_.begin();
   for (; iter != pending_injections_.end(); ++iter) {
     if ((*iter)->request_id() == request_id) {

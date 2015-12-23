@@ -4,8 +4,11 @@
 
 #include "extensions/common/url_pattern.h"
 
+#include <stddef.h>
+
 #include <ostream>
 
+#include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"

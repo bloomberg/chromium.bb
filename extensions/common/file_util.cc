@@ -4,6 +4,9 @@
 
 #include "extensions/common/file_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -16,6 +19,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -260,7 +264,7 @@ scoped_ptr<base::DictionaryValue> LoadManifest(
 }
 
 bool ValidateFilePath(const base::FilePath& path) {
-  int64 size = 0;
+  int64_t size = 0;
   return base::PathExists(path) && base::GetFileSize(path, &size) && size != 0;
 }
 

@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_WEBUI_INJECTION_HOST_H_
 #define EXTENSIONS_RENDERER_WEBUI_INJECTION_HOST_H_
 
+#include "base/macros.h"
 #include "extensions/renderer/injection_host.h"
 
 class WebUIInjectionHost : public InjectionHost {

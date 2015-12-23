@@ -4,6 +4,8 @@
 
 #include "extensions/common/permissions/manifest_permission_set.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"

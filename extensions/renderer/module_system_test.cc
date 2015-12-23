@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/module_system_test.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <utility>

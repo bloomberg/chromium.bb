@@ -4,6 +4,8 @@
 
 #include "extensions/common/features/base_feature_provider.h"
 
+#include <stddef.h>
+
 #include <stack>
 #include <utility>
 

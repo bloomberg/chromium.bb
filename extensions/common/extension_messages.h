@@ -5,6 +5,8 @@
 // IPC messages for extensions.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -517,7 +519,7 @@ IPC_MESSAGE_CONTROL2(ExtensionMsg_WakeEventPageResponse,
 // sequence_id so that we can tell which message it is responding to.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_ShouldSuspend,
                      std::string /* extension_id */,
-                     uint64 /* sequence_id */)
+                     uint64_t /* sequence_id */)
 
 // If we complete a round of ShouldSuspend->ShouldSuspendAck messages without
 // the lazy background page becoming active again, we are ready to unload. This
@@ -532,7 +534,7 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_CancelSuspend,
 // Response to the renderer for ExtensionHostMsg_GetAppInstallState.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_GetAppInstallStateResponse,
                     std::string /* state */,
-                    int32 /* callback_id */)
+                    int32_t /* callback_id */)
 
 // Dispatch the Port.onConnect event for message channels.
 IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
@@ -699,19 +701,19 @@ IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ContentScriptsExecuting,
 IPC_MESSAGE_ROUTED3(ExtensionHostMsg_RequestScriptInjectionPermission,
                     std::string /* extension id */,
                     extensions::UserScript::InjectionType /* script type */,
-                    int64 /* request id */)
+                    int64_t /* request id */)
 
 // Sent from the browser to the renderer in reply to a
 // RequestScriptInjectionPermission message, granting permission for a script
 // script to run.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_PermitScriptInjection,
-                    int64 /* request id */)
+                    int64_t /* request id */)
 
 // Sent by the renderer when a web page is checking if its app is installed.
 IPC_MESSAGE_ROUTED3(ExtensionHostMsg_GetAppInstallState,
                     GURL /* requestor_url */,
-                    int32 /* return_route_id */,
-                    int32 /* callback_id */)
+                    int32_t /* return_route_id */,
+                    int32_t /* callback_id */)
 
 // Optional Ack message sent to the browser to notify that the response to a
 // function has been processed.
@@ -721,7 +723,7 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_ResponseAck,
 // Response to ExtensionMsg_ShouldSuspend.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_ShouldSuspendAck,
                      std::string /* extension_id */,
-                     uint64 /* sequence_id */)
+                     uint64_t /* sequence_id */)
 
 // Response to ExtensionMsg_Suspend, after we dispatch the suspend event.
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_SuspendAck,
@@ -791,7 +793,7 @@ IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,
                     base::string16 /* message */,
                     base::string16 /* source */,
                     extensions::StackTrace /* stack trace */,
-                    int32 /* severity level */)
+                    int32_t /* severity level */)
 
 // Sent when a query selector request is made from the automation API.
 // acc_obj_id is the accessibility tree ID of the starting element.

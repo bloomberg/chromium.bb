@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/runtime_custom_bindings.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

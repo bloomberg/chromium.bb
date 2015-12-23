@@ -4,6 +4,8 @@
 
 #include "extensions/utility/unpacker.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <utility>
 

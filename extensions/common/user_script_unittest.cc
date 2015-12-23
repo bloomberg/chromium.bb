@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/pickle.h"
 #include "extensions/common/user_script.h"
@@ -190,7 +192,7 @@ TEST(ExtensionUserScriptTest, Pickle) {
   script1.add_exclude_url_pattern(exclude1);
   script1.add_exclude_url_pattern(exclude2);
 
-  const int64 kId = 12;
+  const int64_t kId = 12;
   script1.set_id(kId);
   const std::string kExtensionId = "foo";
   HostID id(HostID::EXTENSIONS, kExtensionId);

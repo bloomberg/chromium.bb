@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

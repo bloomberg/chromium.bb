@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_MESSAGE_BUNDLE_H_
 #define EXTENSIONS_COMMON_MESSAGE_BUNDLE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

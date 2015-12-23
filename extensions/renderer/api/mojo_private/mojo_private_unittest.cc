@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/api_test_base.h"
 
+#include "base/macros.h"
 #include "gin/modules/module_registry.h"
 
 // A test launcher for tests for the mojoPrivate API defined in

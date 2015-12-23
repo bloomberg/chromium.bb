@@ -4,9 +4,12 @@
 
 #include "extensions/common/features/simple_feature.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "extensions/common/manifest.h"

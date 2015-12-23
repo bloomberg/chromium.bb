@@ -5,7 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_NATIVE_HANDLER_H_
 #define EXTENSIONS_RENDERER_NATIVE_HANDLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

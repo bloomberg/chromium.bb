@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_NETNETWORK_DELEGATE_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_NETNETWORK_DELEGATE_H_
 
+#include "base/macros.h"
 #include "extensions/browser/info_map.h"
 #include "net/base/network_delegate_impl.h"
 

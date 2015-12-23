@@ -4,8 +4,12 @@
 
 #include "extensions/renderer/set_icon_natives.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/renderer/request_sender.h"

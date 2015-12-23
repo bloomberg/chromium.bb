@@ -5,12 +5,15 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_INFO_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_INFO_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permissions_provider.h"

@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 

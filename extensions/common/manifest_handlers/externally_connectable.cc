@@ -4,6 +4,8 @@
 
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/stl_util.h"
