@@ -105,16 +105,14 @@ void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, Lay
         hasVisibleStroke = false;
     }
 
-    AffineTransform fragmentTransform;
     unsigned textFragmentsSize = m_svgInlineTextBox.textFragments().size();
     for (unsigned i = 0; i < textFragmentsSize; ++i) {
         const SVGTextFragment& fragment = m_svgInlineTextBox.textFragments().at(i);
 
         GraphicsContextStateSaver stateSaver(paintInfo.context, false);
         if (fragment.isTransformed()) {
-            fragment.buildFragmentTransform(fragmentTransform);
             stateSaver.save();
-            paintInfo.context.concatCTM(fragmentTransform);
+            paintInfo.context.concatCTM(fragment.buildFragmentTransform());
         }
 
         // Spec: All text decorations except line-through should be drawn before the text is filled and stroked; thus, the text is rendered on top of these decorations.
@@ -172,15 +170,12 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     int startPosition, endPosition;
     m_svgInlineTextBox.selectionStartEnd(startPosition, endPosition);
 
-    AffineTransform fragmentTransform;
     const Vector<SVGTextFragmentWithRange> fragmentInfoList = collectFragmentsInRange(startPosition, endPosition);
     for (const SVGTextFragmentWithRange& fragmentWithRange : fragmentInfoList) {
         const SVGTextFragment& fragment = fragmentWithRange.fragment;
         GraphicsContextStateSaver stateSaver(paintInfo.context);
-        if (fragment.isTransformed()) {
-            fragment.buildFragmentTransform(fragmentTransform);
-            paintInfo.context.concatCTM(fragmentTransform);
-        }
+        if (fragment.isTransformed())
+            paintInfo.context.concatCTM(fragment.buildFragmentTransform());
 
         paintInfo.context.setFillColor(backgroundColor);
         paintInfo.context.fillRect(m_svgInlineTextBox.selectionRectForTextFragment(fragment, fragmentWithRange.startPosition, fragmentWithRange.endPosition, style), backgroundColor);
@@ -474,14 +469,11 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerForeground(const PaintInfo& pa
         strokePaint.setColor(textColor.rgb());
     }
 
-    AffineTransform fragmentTransform;
     for (const SVGTextFragmentWithRange& textMatchInfo : textMatchInfoList) {
         const SVGTextFragment& fragment = textMatchInfo.fragment;
         GraphicsContextStateSaver stateSaver(paintInfo.context);
-        if (fragment.isTransformed()) {
-            fragment.buildFragmentTransform(fragmentTransform);
-            paintInfo.context.concatCTM(fragmentTransform);
-        }
+        if (fragment.isTransformed())
+            paintInfo.context.concatCTM(fragment.buildFragmentTransform());
 
         TextRun textRun = m_svgInlineTextBox.constructTextRun(style, fragment);
         paintText(paintInfo, textRun, fragment, textMatchInfo.startPosition, textMatchInfo.endPosition, fillPaint);
@@ -497,15 +489,13 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& pa
         return;
 
     Color color = LayoutTheme::theme().platformTextSearchHighlightColor(marker->activeMatch());
-    AffineTransform fragmentTransform;
     for (const SVGTextFragmentWithRange& textMatchInfo : textMatchInfoList) {
         const SVGTextFragment& fragment = textMatchInfo.fragment;
 
         GraphicsContextStateSaver stateSaver(paintInfo.context, false);
         if (fragment.isTransformed()) {
             stateSaver.save();
-            fragment.buildFragmentTransform(fragmentTransform);
-            paintInfo.context.concatCTM(fragmentTransform);
+            paintInfo.context.concatCTM(fragment.buildFragmentTransform());
         }
         FloatRect fragmentRect = m_svgInlineTextBox.selectionRectForTextFragment(fragment, textMatchInfo.startPosition, textMatchInfo.endPosition, style);
         paintInfo.context.setFillColor(color);

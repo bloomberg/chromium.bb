@@ -332,8 +332,7 @@ static FloatPoint calculateGlyphPosition(const QueryData* queryData, const SVGTe
 {
     FloatPoint glyphPosition = calculateGlyphPositionWithoutTransform(queryData, fragment, offsetInFragment);
     if (fragment.isTransformed()) {
-        AffineTransform fragmentTransform;
-        fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
+        AffineTransform fragmentTransform = fragment.buildFragmentTransform(SVGTextFragment::TransformIgnoringTextLength);
         glyphPosition = fragmentTransform.mapPoint(glyphPosition);
     }
     return glyphPosition;
@@ -417,12 +416,10 @@ static bool rotationOfCharacterCallback(QueryData* queryData, const SVGTextFragm
     if (!fragment.isTransformed()) {
         data->rotation = 0;
     } else {
-        AffineTransform fragmentTransform;
-        fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
+        AffineTransform fragmentTransform = fragment.buildFragmentTransform(SVGTextFragment::TransformIgnoringTextLength);
         fragmentTransform.scale(1 / fragmentTransform.xScale(), 1 / fragmentTransform.yScale());
         data->rotation = narrowPrecisionToFloat(rad2deg(atan2(fragmentTransform.b(), fragmentTransform.a())));
     }
-
     return true;
 }
 
@@ -488,8 +485,7 @@ static inline void calculateGlyphBoundaries(const QueryData* queryData, const SV
     }
 
     if (fragment.isTransformed()) {
-        AffineTransform fragmentTransform;
-        fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
+        AffineTransform fragmentTransform = fragment.buildFragmentTransform(SVGTextFragment::TransformIgnoringTextLength);
         extent = fragmentTransform.mapRect(extent);
     }
 }
@@ -499,11 +495,7 @@ static inline FloatRect calculateFragmentBoundaries(LineLayoutSVGInlineText text
     float scalingFactor = textLineLayout.scalingFactor();
     ASSERT(scalingFactor);
     float baseline = textLineLayout.scaledFont().fontMetrics().floatAscent() / scalingFactor;
-
-    AffineTransform fragmentTransform;
-    FloatRect fragmentRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height);
-    fragment.buildFragmentTransform(fragmentTransform);
-    return fragmentTransform.mapRect(fragmentRect);
+    return fragment.boundingBox(baseline);
 }
 
 static bool extentOfCharacterCallback(QueryData* queryData, const SVGTextFragment& fragment)

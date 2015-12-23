@@ -183,15 +183,8 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& po
             continue;
 
         SVGInlineTextBox* textBox = toSVGInlineTextBox(box);
-        Vector<SVGTextFragment>& fragments = textBox->textFragments();
-
-        unsigned textFragmentsSize = fragments.size();
-        for (unsigned i = 0; i < textFragmentsSize; ++i) {
-            const SVGTextFragment& fragment = fragments.at(i);
-            FloatRect fragmentRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height);
-            fragment.buildFragmentTransform(fragmentTransform);
-            if (!fragmentTransform.isIdentity())
-                fragmentRect = fragmentTransform.mapRect(fragmentRect);
+        for (const SVGTextFragment& fragment : textBox->textFragments()) {
+            FloatRect fragmentRect = fragment.boundingBox(baseline);
 
             float distance = 0;
             if (!fragmentRect.contains(absolutePoint))
