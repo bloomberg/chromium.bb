@@ -292,7 +292,6 @@ crbug.com/498539 [ Win7 ] inspector/console/console-object-constructor-name.html
 crbug.com/521099 inspector/console/shadow-element.html [ Crash Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/console/console-trace-arguments.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/console/console-trace-in-eval.html [ Failure Pass ]
-crbug.com/498539 [ Win7 Mac10.9 ] inspector/console/worker-exception-message-contains-stack.html [ Failure Pass ]
 crbug.com/498539 [ Retina ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
 crbug.com/498539 [ Mac10.7 ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.html [ Pass Timeout ]
 crbug.com/498539 [ Precise Mac10.7 Win7 ] inspector-protocol/cpu-profiler/record-cpu-profile.html [ Crash Pass ]
@@ -1324,3 +1323,5 @@ crbug.com/571721 inspector/console/console-xpath.html [ Timeout Pass ]
 crbug.com/571762 [ Mac10.7 ] inspector/console/inspect-html-all-collection.html [ Timeout Pass ]
 
 crbug.com/571765 [ Linux Trusty Mac10.9 ] inspector/console/worker-eval-contains-stack.html [ Timeout Crash Pass ]
+
+crbug.com/571773 inspector/console/worker-exception-message-contains-stack.html [ Failure Timeout Crash Pass ]
