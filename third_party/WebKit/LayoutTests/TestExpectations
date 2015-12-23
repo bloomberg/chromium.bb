@@ -1309,6 +1309,8 @@ crbug.com/571361 [ Mac10.6 ] virtual/rootlayerscrolls/fast/scrolling/background-
 
 crbug.com/571590 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
 
+crbug.com/571723 svg/W3C-SVG-1.1-SE/color-prop-05-t.svg [ NeedsRebaseline ]
+
 crbug.com/571709 http/tests/inspector/resource-tree/resource-request-content-while-loading.html [ Timeout Pass ]
 crbug.com/451577 http/tests/inspector/resource-tree/resource-tree-crafted-frame-add.html [ Timeout Pass ]
 crbug.com/571709 http/tests/inspector/resource-tree/resource-tree-events.html [ Timeout Pass ]

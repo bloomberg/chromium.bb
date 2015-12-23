@@ -91,8 +91,12 @@ static SVGPaintDescription requestPaint(const LayoutObject& object, const Comput
     bool hasColor = false;
     switch (paintType) {
     case SVG_PAINTTYPE_CURRENTCOLOR:
-    case SVG_PAINTTYPE_RGBCOLOR:
     case SVG_PAINTTYPE_URI_CURRENTCOLOR:
+        // The keyword `currentcolor` takes its value from the value of the `color` property on the same element.
+        color = style.visitedDependentColor(CSSPropertyColor);
+        hasColor = true;
+        break;
+    case SVG_PAINTTYPE_RGBCOLOR:
     case SVG_PAINTTYPE_URI_RGBCOLOR:
         color = applyToFill ? svgStyle.fillPaintColor() : svgStyle.strokePaintColor();
         hasColor = true;
