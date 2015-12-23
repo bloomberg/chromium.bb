@@ -499,8 +499,9 @@ void ProfileSyncService::OnSessionRestoreComplete() {
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
   if (backend_mode_ == SYNC) {
+    credentials.account_id = signin_->GetAccountIdToUse();
+    DCHECK(!credentials.account_id.empty());
     credentials.email = signin_->GetEffectiveUsername();
-    DCHECK(!credentials.email.empty());
     credentials.sync_token = access_token_;
 
     if (credentials.sync_token.empty())

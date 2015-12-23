@@ -318,7 +318,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   // Only construct an AttachmentUploader and AttachmentDownload if we have sync
   // credentials. We may not have sync credentials because there may not be a
   // signed in sync user (e.g. sync is running in "backup" mode).
-  if (!user_share.sync_credentials.email.empty() &&
+  if (!user_share.sync_credentials.account_id.empty() &&
       !user_share.sync_credentials.scope_set.empty()) {
     scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
         token_service_provider(
@@ -328,7 +328,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
     // per AttachmentService (bug 369536).
     attachment_uploader.reset(new syncer::AttachmentUploaderImpl(
         sync_service_url_, url_request_context_getter_,
-        user_share.sync_credentials.email,
+        user_share.sync_credentials.account_id,
         user_share.sync_credentials.scope_set, token_service_provider,
         store_birthday, model_type));
 
@@ -336,7 +336,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
         new TokenServiceProvider(ui_thread_, token_service_);
     attachment_downloader = syncer::AttachmentDownloader::Create(
         sync_service_url_, url_request_context_getter_,
-        user_share.sync_credentials.email,
+        user_share.sync_credentials.account_id,
         user_share.sync_credentials.scope_set, token_service_provider,
         store_birthday, model_type);
   }

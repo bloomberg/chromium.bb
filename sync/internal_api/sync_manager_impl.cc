@@ -228,7 +228,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   CHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(args->post_factory.get());
-  DCHECK(!args->credentials.email.empty());
+  DCHECK(!args->credentials.account_id.empty());
   DCHECK(!args->credentials.sync_token.empty());
   DCHECK(!args->credentials.scope_set.empty());
   DCHECK(args->cancelation_signal);
@@ -263,7 +263,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
       args->internal_components_factory->BuildDirectoryBackingStore(
           InternalComponentsFactory::STORAGE_ON_DISK,
-          args->credentials.email, absolute_db_path).Pass();
+          args->credentials.account_id, absolute_db_path).Pass();
 
   DCHECK(backing_store.get());
   share_.directory.reset(
@@ -279,9 +279,9 @@ void SyncManagerImpl::Init(InitArgs* args) {
   // sync token so clear sync_token from the UserShare.
   share_.sync_credentials.sync_token = "";
 
-  const std::string& username = args->credentials.email;
-  DVLOG(1) << "Username: " << username;
-  if (!OpenDirectory(username)) {
+  DVLOG(1) << "Username: " << args->credentials.email;
+  DVLOG(1) << "AccountId: " << args->credentials.account_id;
+  if (!OpenDirectory(args->credentials.account_id)) {
     NotifyInitializationFailure();
     LOG(ERROR) << "Sync manager initialization failed!";
     return;
@@ -337,7 +337,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
                                              model_type_registry_.get(),
                                              args->invalidator_client_id)
           .Pass();
-  session_context_->set_account_name(args->credentials.email);
   scheduler_ = args->internal_components_factory->BuildScheduler(
       name_, session_context_.get(), args->cancelation_signal).Pass();
 
@@ -506,9 +505,10 @@ bool SyncManagerImpl::PurgeDisabledTypes(
 void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initialized_);
-  DCHECK(!credentials.email.empty());
+  DCHECK(!credentials.account_id.empty());
   DCHECK(!credentials.sync_token.empty());
   DCHECK(!credentials.scope_set.empty());
+  session_context_->set_account_name(credentials.email);
 
   observing_network_connectivity_changes_ = true;
   if (!connection_manager_->SetAuthToken(credentials.sync_token))

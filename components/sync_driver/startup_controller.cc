@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/startup_controller.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -124,14 +126,13 @@ bool StartupController::TryStart() {
   if (!sync_prefs_->IsSyncRequested())
     return false;
 
-  if (signin_->GetEffectiveUsername().empty())
+  if (signin_->GetAccountIdToUse().empty())
     return false;
 
   if (!token_service_)
     return false;
 
-  if (!token_service_->RefreshTokenIsAvailable(
-          signin_->GetAccountIdToUse())) {
+  if (!token_service_->RefreshTokenIsAvailable(signin_->GetAccountIdToUse())) {
     return false;
   }
 

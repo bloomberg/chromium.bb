@@ -84,7 +84,6 @@ class SYNC_EXPORT SyncSessionContext {
 
   // Account name, set once a directory has been opened.
   void set_account_name(const std::string& name) {
-    DCHECK(account_name_.empty());
     account_name_ = name;
   }
   const std::string& account_name() const { return account_name_; }

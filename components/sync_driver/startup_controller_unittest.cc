@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/startup_controller.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -31,14 +33,16 @@ static const char kStateStringNotStarted[] = "Not started";
 class FakeSigninManagerWrapper : public SigninManagerWrapper {
  public:
   FakeSigninManagerWrapper() : SigninManagerWrapper(NULL) {}
-  std::string GetEffectiveUsername() const override { return account_; }
+  std::string GetEffectiveUsername() const override { return std::string(); }
 
-  std::string GetAccountIdToUse() const override { return account_; }
+  std::string GetAccountIdToUse() const override { return account_id_; }
 
-  void set_account(const std::string& account) { account_ = account; }
+  void set_account_id(const std::string& account_id) {
+    account_id_ = account_id;
+  }
 
  private:
-  std::string account_;
+  std::string account_id_;
 };
 
 class StartupControllerTest : public testing::Test {
@@ -105,7 +109,7 @@ TEST_F(StartupControllerTest, Basic) {
   sync_prefs()->SetSyncSetupCompleted();
   controller()->TryStart();
   EXPECT_FALSE(started());
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   controller()->TryStart();
   EXPECT_FALSE(started());
   token_service()->UpdateCredentials(kTestUser, kTestToken);
@@ -124,7 +128,7 @@ TEST_F(StartupControllerTest, Basic) {
 TEST_F(StartupControllerTest, NotRequested) {
   sync_prefs()->SetSyncSetupCompleted();
   sync_prefs()->SetSyncRequested(false);
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_FALSE(started());
@@ -136,7 +140,7 @@ TEST_F(StartupControllerTest, NotRequested) {
 TEST_F(StartupControllerTest, Managed) {
   sync_prefs()->SetSyncSetupCompleted();
   sync_prefs()->SetManagedForTest(true);
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_FALSE(started());
@@ -148,7 +152,7 @@ TEST_F(StartupControllerTest, Managed) {
 // data type triggers sync startup.
 TEST_F(StartupControllerTest, DataTypeTriggered) {
   sync_prefs()->SetSyncSetupCompleted();
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_FALSE(started());
@@ -170,7 +174,7 @@ TEST_F(StartupControllerTest, DataTypeTriggered) {
 // conditions are met and no data type requests sync.
 TEST_F(StartupControllerTest, FallbackTimer) {
   sync_prefs()->SetSyncSetupCompleted();
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_FALSE(started());
@@ -190,7 +194,7 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
   sync_prefs()->SetPreferredDataTypes(syncer::UserTypes(), types);
   controller()->Reset(syncer::UserTypes());
   sync_prefs()->SetSyncSetupCompleted();
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_TRUE(started());
@@ -208,7 +212,7 @@ TEST_F(StartupControllerTest, FallbackTimerWaits) {
 // Test that sync starts without the user having to explicitly ask for
 // setup when AUTO_START is the startup behavior requested.
 TEST_F(StartupControllerTest, FirstSetupWithAutoStart) {
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_TRUE(started());
@@ -217,7 +221,7 @@ TEST_F(StartupControllerTest, FirstSetupWithAutoStart) {
 // Test that sync starts only after user explicitly asks for setup when
 // MANUAL_START is the startup behavior requested.
 TEST_F(StartupControllerTest, FirstSetupWithManualStart) {
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   SetUpController(MANUAL_START);
   controller()->TryStart();
@@ -229,7 +233,7 @@ TEST_F(StartupControllerTest, FirstSetupWithManualStart) {
 
 TEST_F(StartupControllerTest, Reset) {
   sync_prefs()->SetSyncSetupCompleted();
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   const bool deferred_start =
@@ -248,7 +252,7 @@ TEST_F(StartupControllerTest, Reset) {
 
 // Test that setup-in-progress tracking is persistent across a Reset.
 TEST_F(StartupControllerTest, ResetDuringSetup) {
-  signin()->set_account(kTestUser);
+  signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
 
   // Simulate UI telling us setup is in progress.

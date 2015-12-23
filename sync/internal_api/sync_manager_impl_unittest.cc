@@ -882,6 +882,7 @@ class SyncManagerTest : public testing::Test,
     extensions_activity_ = new ExtensionsActivity();
 
     SyncCredentials credentials;
+    credentials.account_id = "foo@bar.com";
     credentials.email = "foo@bar.com";
     credentials.sync_token = "sometoken";
     OAuth2TokenService::ScopeSet scope_set;

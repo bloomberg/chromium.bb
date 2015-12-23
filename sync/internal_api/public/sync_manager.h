@@ -68,6 +68,9 @@ struct SYNC_EXPORT SyncCredentials {
   SyncCredentials();
   ~SyncCredentials();
 
+  // Account_id of signed in account.
+  std::string account_id;
+
   // The email associated with this account.
   std::string email;
 

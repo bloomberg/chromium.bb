@@ -310,6 +310,7 @@ int SyncClientMain(int argc, char* argv[]) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   SyncCredentials credentials;
+  credentials.account_id = command_line.GetSwitchValueASCII(kEmailSwitch);
   credentials.email = command_line.GetSwitchValueASCII(kEmailSwitch);
   credentials.sync_token = command_line.GetSwitchValueASCII(kTokenSwitch);
   // TODO(akalin): Write a wrapper script that gets a token for an

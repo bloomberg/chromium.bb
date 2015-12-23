@@ -5,6 +5,7 @@
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
 
 #include <cstddef>
+#include <map>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -168,8 +169,7 @@ class BackendSyncClient : public sync_driver::FakeSyncClient {
 class SyncBackendHostTest : public testing::Test {
  protected:
   SyncBackendHostTest()
-      : fake_manager_(NULL) {
-   }
+      : fake_manager_(NULL) {}
 
   ~SyncBackendHostTest() override {}
 
@@ -185,6 +185,7 @@ class SyncBackendHostTest : public testing::Test {
         nullptr,
         sync_prefs_->AsWeakPtr(),
         temp_dir_.path().Append(base::FilePath(kTestSyncDir))));
+    credentials_.account_id = "user@example.com";
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
     credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);

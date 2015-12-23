@@ -233,7 +233,6 @@ void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
     SendInitialSnapshot();
   }
 
-  DCHECK(!session_context_->account_name().empty());
   DCHECK(syncer_.get());
 
   if (mode == CLEAR_SERVER_DATA_MODE) {
