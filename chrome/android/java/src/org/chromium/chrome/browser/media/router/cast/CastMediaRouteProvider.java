@@ -102,6 +102,16 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         mManager.onRouteRequestError(message, requestId);
     }
 
+    public void onClientDisconnected(String clientId) {
+        ClientRecord client = mClientRecords.get(clientId);
+        assert client != null;
+
+        mRoutes.remove(client.routeId);
+        removeClient(client);
+
+        mManager.onRouteClosed(client.routeId);
+    }
+
     public void onSessionStopAction() {
         if (mSession == null) return;
 
@@ -318,11 +328,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     public void detachRoute(String routeId) {
         mRoutes.remove(routeId);
 
-        ClientRecord client = getClientRecordByRouteId(routeId);
-        if (client == null) return;
-
-        mClientRecords.remove(client.clientId);
-        mLastRemovedRouteRecord = client;
+        removeClient(getClientRecordByRouteId(routeId));
     }
 
     @Override
@@ -454,5 +460,12 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         } catch (JSONException e) {
             Log.e(TAG, "Failed to send receiver action message", e);
         }
+    }
+
+    private void removeClient(@Nullable ClientRecord client) {
+        if (client == null) return;
+
+        mLastRemovedRouteRecord = client;
+        mClientRecords.remove(client.clientId);
     }
 }

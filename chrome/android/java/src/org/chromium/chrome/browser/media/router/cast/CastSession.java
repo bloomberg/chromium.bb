@@ -441,6 +441,8 @@ public class CastSession implements MediaNotificationListener {
             String messageType = jsonMessage.getString("type");
             if ("client_connect".equals(messageType)) {
                 success = handleClientConnectMessage(jsonMessage);
+            } else if ("client_disconnect".equals(messageType)) {
+                success = handleClientDisconnectMessage(jsonMessage);
             } else if ("leave_session".equals(messageType)) {
                 success = handleLeaveSessionMessage(jsonMessage);
             } else if ("v2_message".equals(messageType)) {
@@ -460,8 +462,7 @@ public class CastSession implements MediaNotificationListener {
         return true;
     }
 
-    private boolean handleClientConnectMessage(JSONObject jsonMessage)
-            throws JSONException {
+    private boolean handleClientConnectMessage(JSONObject jsonMessage) throws JSONException {
         String clientId = jsonMessage.getString("clientId");
         if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
 
@@ -469,6 +470,15 @@ public class CastSession implements MediaNotificationListener {
                 clientId, "new_session", buildSessionMessage(), INVALID_SEQUENCE_NUMBER);
 
         if (mMediaPlayer != null && !isApiClientInvalid()) mMediaPlayer.requestStatus(mApiClient);
+
+        return true;
+    }
+
+    private boolean handleClientDisconnectMessage(JSONObject jsonMessage) throws JSONException {
+        String clientId = jsonMessage.getString("clientId");
+        if (clientId == null || !mRouteProvider.getClients().contains(clientId)) return false;
+
+        mRouteProvider.onClientDisconnected(clientId);
 
         return true;
     }
