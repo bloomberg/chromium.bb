@@ -43885,6 +43885,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorkerCache.Cache.AddResponseType"
+    enum="ServiceWorkerCacheResponseType">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Records the response type to be added in the Cache by Cache.add()/addAll().
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorkerCache.CacheStorage" units="milliseconds">
   <owner>dmurph@chromium.org</owner>
   <summary>
@@ -76056,6 +76064,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Exists Error"/>
   <int value="2" label="Storage Error"/>
   <int value="3" label="Not Found Error"/>
+</enum>
+
+<enum name="ServiceWorkerCacheResponseType" type="int">
+  <int value="0" label="Basic"/>
+  <int value="1" label="CORS"/>
+  <int value="2" label="Default"/>
+  <int value="3" label="Error"/>
+  <int value="4" label="Opaque"/>
+  <int value="5" label="OpaqueRedirect"/>
 </enum>
 
 <enum name="ServiceWorkerDatabaseStatus" type="int">
