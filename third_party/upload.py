@@ -842,15 +842,12 @@ def GetContentType(filename):
 # Use a shell for subcommands on Windows to get a PATH search.
 use_shell = sys.platform.startswith("win")
 
-def RunShellWithReturnCodeAndStderr(command, print_output=False,
-                           universal_newlines=True,
-                           env=os.environ):
+def RunShellWithReturnCodeAndStderr(command, universal_newlines=True,
+                                    env=os.environ):
   """Run a command and return output from stdout, stderr and the return code.
 
   Args:
     command: Command to execute.
-    print_output: If True, the output is printed to stdout.
-                  If False, both stdout and stderr are ignored.
     universal_newlines: Use universal_newlines flag (default: True).
 
   Returns:
@@ -862,40 +859,20 @@ def RunShellWithReturnCodeAndStderr(command, print_output=False,
   p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                        shell=use_shell, universal_newlines=universal_newlines,
                        env=env)
-  if print_output:
-    # It's very hard to stream both stdout and stderr at the same time
-    # without the potential for deadlocks. We will hope for the best
-    # since this code path is rarely used.
-    output_array = []
-    while True:
-      line = p.stdout.readline()
-      if not line:
-        break
-      print line.strip("\n")
-      output_array.append(line)
-    output = "".join(output_array)
-    p.wait()
-    errout = p.stderr.read()
-    if errout:
-      print >> sys.stderr, errout
-  else:
-    output, errout = p.communicate()
+  output, errout = p.communicate()
   p.stdout.close()
   p.stderr.close()
   return output, errout, p.returncode
 
-def RunShellWithReturnCode(command, print_output=False,
-                           universal_newlines=True,
-                           env=os.environ):
+def RunShellWithReturnCode(command, universal_newlines=True, env=os.environ):
   """Run a command and return output from stdout and the return code."""
-  out, err, retcode = RunShellWithReturnCodeAndStderr(command, print_output,
+  out, err, retcode = RunShellWithReturnCodeAndStderr(command,
                            universal_newlines, env)
   return out, retcode
 
 def RunShell(command, silent_ok=False, universal_newlines=True,
-             print_output=False, env=os.environ):
-  data, retcode = RunShellWithReturnCode(command, print_output,
-                                         universal_newlines, env)
+             env=os.environ):
+  data, retcode = RunShellWithReturnCode(command, universal_newlines, env)
   if retcode:
     ErrorExit("Got error status from %s:\n%s" % (command, data))
   if not silent_ok and not data:
@@ -1768,7 +1745,7 @@ class PerforceVCS(VersionControlSystem):
     args.extend(extra_args)
 
     data, retcode = RunShellWithReturnCode(
-        args, print_output=False, universal_newlines=universal_newlines)
+        args, universal_newlines=universal_newlines)
     if marshal_output and data:
       data = marshal.loads(data)
     return data, retcode
