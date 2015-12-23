@@ -2118,6 +2118,17 @@ void LayoutBlock::computeChildPreferredLogicalWidths(LayoutObject& child, Layout
     }
     minPreferredLogicalWidth = child.minPreferredLogicalWidth();
     maxPreferredLogicalWidth = child.maxPreferredLogicalWidth();
+
+    // For non-replaced blocks if the inline size is min|max-content or a definite size the min|max-content contribution
+    // is that size plus border, padding and margin https://drafts.csswg.org/css-sizing/#block-intrinsic
+    if (child.isLayoutBlock()) {
+        const Length& computedInlineSize = child.styleRef().logicalWidth();
+        if (computedInlineSize.isMaxContent())
+            minPreferredLogicalWidth = maxPreferredLogicalWidth;
+        else if (computedInlineSize.isMinContent())
+            maxPreferredLogicalWidth = minPreferredLogicalWidth;
+    }
+
     if (child.isLayoutBlock() && toLayoutBlock(child).needsRecalcLogicalWidthAfterLayoutChildren())
         m_needsRecalcLogicalWidthAfterLayoutChildren = true;
 }
