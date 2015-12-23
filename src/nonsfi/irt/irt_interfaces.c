@@ -244,8 +244,8 @@ static int irt_write(int fd, const void *buf, size_t count, size_t *nwrote) {
   return 0;
 }
 
-static int irt_seek(int fd, nacl_abi_off_t offset, int whence,
-                    nacl_abi_off_t *new_offset) {
+static int irt_seek(int fd, nacl_irt_off_t offset, int whence,
+                    nacl_irt_off_t *new_offset) {
   off_t result = lseek(fd, offset, whence);
   if (result < 0)
     return errno;

@@ -817,17 +817,23 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
   return libs
 
 def UnsandboxedRuntime(arch, is_canonical):
-  assert arch in ('arm-linux', 'x86-32-linux', 'x86-32-mac')
+  assert arch in ('arm-linux', 'x86-32-linux', 'x86-32-mac', 'x86-64-linux')
 
-  prefix = {
-    'arm-linux': 'arm-linux-gnueabihf-',
-    'x86-32-linux': '',
-    'x86-32-mac': '',
+  compiler = {
+    'arm-linux': 'arm-linux-gnueabihf-gcc',
+    'x86-32-linux': 'gcc',
+    'x86-32-mac': 'gcc',
+    # x86-64 can't use gcc because the gcc available in the bots does not
+    # support x32. clang is good enough for the task, and it is available in
+    # the bots.
+    'x86-64-linux': '%(abs_target_lib_compiler)s/bin/clang',
   }[arch]
+
   arch_cflags = {
     'arm-linux': ['-mcpu=cortex-a9', '-D__arm_nonsfi_linux__'],
     'x86-32-linux': ['-m32'],
     'x86-32-mac': ['-m32'],
+    'x86-64-linux': ['-mx32'],
   }[arch]
 
   libs = {
@@ -848,16 +854,16 @@ def UnsandboxedRuntime(arch, is_canonical):
               # even on non-Linux systems is OK.
               # TODO(dschuff): this include path breaks the input encapsulation
               # for build rules.
-              command.Command([prefix + 'gcc'] + arch_cflags + ['-O2', '-Wall',
+              command.Command([compiler] + arch_cflags + ['-O2', '-Wall',
                   '-Werror', '-I%(top_srcdir)s/..',
                   '-DNACL_LINUX=1', '-DDEFINE_MAIN',
                   '-c', command.path.join('%(support)s', 'irt_interfaces.c'),
                   '-o', command.path.join('%(output)s', 'unsandboxed_irt.o')]),
-              command.Command([prefix + 'gcc'] + arch_cflags + ['-O2', '-Wall',
+              command.Command([compiler] + arch_cflags + ['-O2', '-Wall',
                   '-Werror', '-I%(top_srcdir)s/..',
                   '-c', command.path.join('%(support)s', 'irt_random.c'),
                   '-o', command.path.join('%(output)s', 'irt_random.o')]),
-              command.Command([prefix + 'gcc'] + arch_cflags + ['-O2', '-Wall',
+              command.Command([compiler] + arch_cflags + ['-O2', '-Wall',
                   '-Werror', '-I%(top_srcdir)s/..',
                   '-c', command.path.join('%(untrusted)s', 'irt_query_list.c'),
                   '-o', command.path.join('%(output)s', 'irt_query_list.o')]),

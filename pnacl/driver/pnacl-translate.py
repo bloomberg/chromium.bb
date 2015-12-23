@@ -240,7 +240,9 @@ def SetUpArch():
              'X8664': 'x86_64-none-nacl-gnu',
              'ARM': 'armv7a-none-nacl-gnueabihf',
              'MIPS32': 'mipsel-none-nacl-gnu'},
-        'linux': {'X8632': 'i686-linux-gnu'},
+        'linux':
+            {'X8632': 'i686-linux-gnu',
+             'X8664': 'x86_64-linux-gnux32'},
         'mac': {'X8632': 'i686-apple-darwin'}}
   env.set('TRIPLE', triple_map[env.getone('TARGET_OS')][base_arch])
 
