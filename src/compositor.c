@@ -1041,6 +1041,15 @@ weston_view_damage_below(struct weston_view *view)
 	weston_view_schedule_repaint(view);
 }
 
+/**
+ * \param es    The surface
+ * \param mask  The new set of outputs for the surface
+ *
+ * Sets the surface's set of outputs to the ones specified by
+ * the new output mask provided.  Identifies the outputs that
+ * have changed, the posts enter and leave events for these
+ * outputs as appropriate.
+ */
 static void
 weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 {
@@ -1074,6 +1083,17 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 }
 
 
+/** Recalculate which output(s) the surface has views displayed on
+ *
+ * \param es  The surface to remap to outputs
+ *
+ * Finds the output that is showing the largest amount of one
+ * of the surface's various views.  This output becomes the
+ * surface's primary output for vsync and frame event purposes.
+ *
+ * Also notes the primary outputs of all of the surface's views
+ * in the output_mask for the surface.
+ */
 static void
 weston_surface_assign_output(struct weston_surface *es)
 {
@@ -1110,6 +1130,18 @@ weston_surface_assign_output(struct weston_surface *es)
 	weston_surface_update_output_mask(es, mask);
 }
 
+/** Recalculate which output(s) the view is displayed on
+ *
+ * \param ev  The view to remap to outputs
+ *
+ * Identifies the set of outputs that the view is visible on,
+ * noting them into the output_mask.  The output that the view
+ * is most visible on is set as the view's primary output for
+ * vsync and frame event purposes.
+ *
+ * Also does the same for the view's surface.  See
+ * weston_surface_assign_output().
+ */
 static void
 weston_view_assign_output(struct weston_view *ev)
 {
@@ -1459,6 +1491,12 @@ weston_view_from_global(struct weston_view *view,
 	*vy = floorf(vyf);
 }
 
+/**
+ * \param surface  The surface to be repainted
+ *
+ * Marks the output(s) that the surface is shown on as needing to be
+ * repainted.  See weston_output_schedule_repaint().
+ */
 WL_EXPORT void
 weston_surface_schedule_repaint(struct weston_surface *surface)
 {
@@ -1469,6 +1507,12 @@ weston_surface_schedule_repaint(struct weston_surface *surface)
 			weston_output_schedule_repaint(output);
 }
 
+/**
+ * \param view  The view to be repainted
+ *
+ * Marks the output(s) that the view is shown on as needing to be
+ * repainted.  See weston_output_schedule_repaint().
+ */
 WL_EXPORT void
 weston_view_schedule_repaint(struct weston_view *view)
 {
@@ -4227,6 +4271,31 @@ weston_output_move(struct weston_output *output, int x, int y)
 	}
 }
 
+/** Initialize a weston_output object's parameters
+ *
+ * \param output     The weston_output object to initialize
+ * \param c          The output's compositor
+ * \param x          x coordinate for the output in global coordinate space
+ * \param y          y coordinate for the output in global coordinate space
+ * \param mm_width   Physical width of the output as reported by the backend
+ * \param mm_height  Physical height of the output as reported by the backend
+ * \param transform  Rotation of the output
+ * \param scale      Native scaling factor for the output
+ *
+ * Sets up the transformation, zoom, and geometry of the output using
+ * the input properties.
+ *
+ * Establishes a repaint timer for the output with the relevant display
+ * object's event loop.  See output_repaint_timer_handler().
+ *
+ * The output is assigned an ID.  Weston can support up to 32 distinct
+ * outputs, with IDs numbered from 0-31; the compositor's output_id_pool
+ * is referred to and used to find the first available ID number, and
+ * then this ID is marked as used in output_id_pool.
+ *
+ * The output is also assigned a Wayland global with the wl_output
+ * external interface.
+ */
 WL_EXPORT void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
 		   int x, int y, int mm_width, int mm_height, uint32_t transform,
@@ -4259,6 +4328,10 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->repaint_timer = wl_event_loop_add_timer(loop,
 					output_repaint_timer_handler, output);
 
+	/* Invert the output id pool and look for the lowest numbered
+	 * switch (the least significant bit).  Take that bit's position
+	 * as our ID, and mark it used in the compositor's output_id_pool.
+	 */
 	output->id = ffs(~output->compositor->output_id_pool) - 1;
 	output->compositor->output_id_pool |= 1 << output->id;
 
