@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -49,14 +51,12 @@ class NativeMessagingReaderTest : public testing::Test {
   base::RunLoop run_loop_;
 };
 
-NativeMessagingReaderTest::NativeMessagingReaderTest() {
-}
-
+NativeMessagingReaderTest::NativeMessagingReaderTest() {}
 NativeMessagingReaderTest::~NativeMessagingReaderTest() {}
 
 void NativeMessagingReaderTest::SetUp() {
   ASSERT_TRUE(MakePipe(&read_file_, &write_file_));
-  reader_.reset(new NativeMessagingReader(read_file_.Pass()));
+  reader_.reset(new NativeMessagingReader(std::move(read_file_)));
 }
 
 void NativeMessagingReaderTest::Run() {
@@ -72,7 +72,7 @@ void NativeMessagingReaderTest::Run() {
 }
 
 void NativeMessagingReaderTest::OnMessage(scoped_ptr<base::Value> message) {
-  message_ = message.Pass();
+  message_ = std::move(message);
 }
 
 void NativeMessagingReaderTest::WriteMessage(const std::string& message) {

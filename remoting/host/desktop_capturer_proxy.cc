@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -47,7 +49,7 @@ DesktopCapturerProxy::Core::Core(
     scoped_ptr<webrtc::DesktopCapturer> capturer)
     : proxy_(proxy),
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      capturer_(capturer.Pass()) {
+      capturer_(std::move(capturer)) {
   thread_checker_.DetachFromThread();
 }
 
@@ -87,10 +89,9 @@ void DesktopCapturerProxy::Core::OnCaptureCompleted(
 DesktopCapturerProxy::DesktopCapturerProxy(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_ptr<webrtc::DesktopCapturer> capturer)
-    : capture_task_runner_(capture_task_runner),
-      weak_factory_(this) {
+    : capture_task_runner_(capture_task_runner), weak_factory_(this) {
   core_.reset(new Core(weak_factory_.GetWeakPtr(), capture_task_runner,
-                       capturer.Pass()));
+                       std::move(capturer)));
 }
 
 void DesktopCapturerProxy::Start(Callback* callback) {

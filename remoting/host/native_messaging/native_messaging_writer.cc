@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 
@@ -32,9 +33,7 @@ const size_t kMaximumMessageSize = 1024 * 1024;
 namespace remoting {
 
 NativeMessagingWriter::NativeMessagingWriter(base::File file)
-    : write_stream_(file.Pass()),
-      fail_(false) {
-}
+    : write_stream_(std::move(file)), fail_(false) {}
 
 NativeMessagingWriter::~NativeMessagingWriter() {
 }

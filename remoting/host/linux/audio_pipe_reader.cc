@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
@@ -116,7 +118,7 @@ void AudioPipeReader::TryOpenPipe() {
   file_descriptor_watcher_.StopWatchingFileDescriptor();
   timer_.Stop();
 
-  pipe_ = new_pipe.Pass();
+  pipe_ = std::move(new_pipe);
 
   if (pipe_.IsValid()) {
     // Get buffer size for the pipe.

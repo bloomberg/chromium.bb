@@ -5,6 +5,7 @@
 #include "remoting/host/audio_capturer_linux.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -66,7 +67,7 @@ void AudioCapturerLinux::OnDataRead(
   packet->set_sampling_rate(AudioPipeReader::kSamplingRate);
   packet->set_bytes_per_sample(AudioPipeReader::kBytesPerSample);
   packet->set_channels(AudioPipeReader::kChannels);
-  callback_.Run(packet.Pass());
+  callback_.Run(std::move(packet));
 }
 
 bool AudioCapturer::IsSupported() {

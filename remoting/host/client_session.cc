@@ -5,6 +5,7 @@
 #include "remoting/host/client_session.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
@@ -75,7 +76,7 @@ ClientSession::ClientSession(
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
     const std::vector<HostExtension*>& extensions)
     : event_handler_(event_handler),
-      connection_(connection.Pass()),
+      connection_(std::move(connection)),
       client_jid_(connection_->session()->jid()),
       desktop_environment_factory_(desktop_environment_factory),
       input_tracker_(&host_input_filter_),
@@ -343,7 +344,7 @@ void ClientSession::OnConnectionChannelsConnected(
         CreateAudioEncoder(connection_->session()->config());
     audio_pump_.reset(new AudioPump(
         audio_task_runner_, desktop_environment_->CreateAudioCapturer(),
-        audio_encoder.Pass(), connection_->audio_stub()));
+        std::move(audio_encoder), connection_->audio_stub()));
   }
 
   // Notify the event handler that all our channels are now connected.
@@ -464,9 +465,9 @@ void ClientSession::ResetVideoPipeline() {
   // TODO(sergeyu): Move DesktopCapturerProxy creation to DesktopEnvironment.
   // When using IpcDesktopCapturer the capture thread is not useful.
   scoped_ptr<webrtc::DesktopCapturer> capturer_proxy(new DesktopCapturerProxy(
-      video_capture_task_runner_, video_capturer.Pass()));
+      video_capture_task_runner_, std::move(video_capturer)));
 
-  video_stream_ = connection_->StartVideoStream(capturer_proxy.Pass());
+  video_stream_ = connection_->StartVideoStream(std::move(capturer_proxy));
   video_stream_->SetSizeCallback(
       base::Bind(&ClientSession::OnScreenSizeChanged, base::Unretained(this)));
 

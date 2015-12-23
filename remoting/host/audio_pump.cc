@@ -4,6 +4,8 @@
 
 #include "remoting/host/audio_pump.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -58,8 +60,8 @@ AudioPump::Core::Core(base::WeakPtr<AudioPump> pump,
                       scoped_ptr<AudioEncoder> audio_encoder)
     : pump_(pump),
       pump_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      audio_capturer_(audio_capturer.Pass()),
-      audio_encoder_(audio_encoder.Pass()),
+      audio_capturer_(std::move(audio_capturer)),
+      audio_encoder_(std::move(audio_encoder)),
       enabled_(true),
       bytes_pending_(0) {
   thread_checker_.DetachFromThread();
@@ -99,7 +101,7 @@ void AudioPump::Core::EncodeAudioPacket(scoped_ptr<AudioPacket> packet) {
     return;
 
   scoped_ptr<AudioPacket> encoded_packet =
-      audio_encoder_->Encode(packet.Pass());
+      audio_encoder_->Encode(std::move(packet));
 
   // The audio encoder returns a null audio packet if there's no audio to send.
   if (!encoded_packet)
@@ -123,8 +125,8 @@ AudioPump::AudioPump(
       weak_factory_(this) {
   DCHECK(audio_stub_);
 
-  core_.reset(new Core(weak_factory_.GetWeakPtr(), audio_capturer.Pass(),
-                       audio_encoder.Pass()));
+  core_.reset(new Core(weak_factory_.GetWeakPtr(), std::move(audio_capturer),
+                       std::move(audio_encoder)));
 
   audio_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Core::Start, base::Unretained(core_.get())));
@@ -149,7 +151,7 @@ void AudioPump::SendAudioPacket(scoped_ptr<AudioPacket> packet, int size) {
   DCHECK(packet);
 
   audio_stub_->ProcessAudioPacket(
-      packet.Pass(),
+      std::move(packet),
       base::Bind(&AudioPump::OnPacketSent, weak_factory_.GetWeakPtr(), size));
 }
 

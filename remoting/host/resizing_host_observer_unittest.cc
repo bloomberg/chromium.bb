@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/resizing_host_observer.h"
+
 #include <list>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -11,7 +14,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/host/desktop_resizer.h"
-#include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/screen_resolution.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -109,7 +111,7 @@ class ResizingHostObserverTest : public testing::Test {
     desktop_resizer_ = desktop_resizer.get();
 
     resizing_host_observer_.reset(
-        new ResizingHostObserver(desktop_resizer.Pass()));
+        new ResizingHostObserver(std::move(desktop_resizer)));
     resizing_host_observer_->SetNowFunctionForTesting(
         base::Bind(&ResizingHostObserverTest::GetTimeAndIncrement,
                    base::Unretained(this)));
@@ -148,7 +150,7 @@ TEST_F(ResizingHostObserverTest, NoRestoreResolution) {
   scoped_ptr<FakeDesktopResizer> desktop_resizer(
       new FakeDesktopResizer(initial, false, nullptr, 0,
                              &restore_resolution_call_count));
-  SetDesktopResizer(desktop_resizer.Pass());
+  SetDesktopResizer(std::move(desktop_resizer));
   VerifySizes(nullptr, nullptr, 0);
   resizing_host_observer_.reset();
   EXPECT_EQ(0, restore_resolution_call_count);
@@ -162,7 +164,7 @@ TEST_F(ResizingHostObserverTest, EmptyGetSupportedSizes) {
   scoped_ptr<FakeDesktopResizer> desktop_resizer(
       new FakeDesktopResizer(initial, false, nullptr, 0,
                              &restore_resolution_call_count));
-  SetDesktopResizer(desktop_resizer.Pass());
+  SetDesktopResizer(std::move(desktop_resizer));
 
   ScreenResolution client_sizes[] = { MakeResolution(200, 100),
                                       MakeResolution(100, 200) };
@@ -179,7 +181,7 @@ TEST_F(ResizingHostObserverTest, SelectExactSize) {
   scoped_ptr<FakeDesktopResizer> desktop_resizer(
         new FakeDesktopResizer(MakeResolution(640, 480), true, nullptr, 0,
                                &restore_resolution_call_count));
-  SetDesktopResizer(desktop_resizer.Pass());
+  SetDesktopResizer(std::move(desktop_resizer));
 
   ScreenResolution client_sizes[] = { MakeResolution(200, 100),
                                       MakeResolution(100, 200),
@@ -200,7 +202,7 @@ TEST_F(ResizingHostObserverTest, SelectBestSmallerSize) {
       new FakeDesktopResizer(MakeResolution(640, 480), false,
                              supported_sizes, arraysize(supported_sizes),
                              nullptr));
-  SetDesktopResizer(desktop_resizer.Pass());
+  SetDesktopResizer(std::move(desktop_resizer));
 
   ScreenResolution client_sizes[] = { MakeResolution(639, 479),
                                       MakeResolution(640, 480),
@@ -220,7 +222,7 @@ TEST_F(ResizingHostObserverTest, SelectBestScaleFactor) {
       new FakeDesktopResizer(MakeResolution(200, 100), false,
                              supported_sizes, arraysize(supported_sizes),
                              nullptr));
-  SetDesktopResizer(desktop_resizer.Pass());
+  SetDesktopResizer(std::move(desktop_resizer));
 
   ScreenResolution client_sizes[] = { MakeResolution(1, 1),
                                       MakeResolution(99, 99),
@@ -239,7 +241,7 @@ TEST_F(ResizingHostObserverTest, SelectWidest) {
       new FakeDesktopResizer(MakeResolution(480, 640), false,
                              supported_sizes, arraysize(supported_sizes),
                              nullptr));
-  SetDesktopResizer(desktop_resizer.Pass());
+  SetDesktopResizer(std::move(desktop_resizer));
 
   ScreenResolution client_sizes[] = { MakeResolution(100, 100),
                                       MakeResolution(480, 480),

@@ -4,13 +4,13 @@
 
 #include "remoting/host/backoff_timer.h"
 
+#include <utility>
+
 namespace remoting {
 
-BackoffTimer::BackoffTimer() : timer_(new base::Timer(false, false)) {
-}
+BackoffTimer::BackoffTimer() : timer_(new base::Timer(false, false)) {}
 
-BackoffTimer::~BackoffTimer() {
-}
+BackoffTimer::~BackoffTimer() {}
 
 void BackoffTimer::Start(const tracked_objects::Location& posted_from,
                          base::TimeDelta delay,
@@ -32,6 +32,10 @@ void BackoffTimer::Stop() {
   user_task_.Reset();
   backoff_entry_.reset();
 };
+
+void BackoffTimer::SetTimerForTest(scoped_ptr<base::Timer> timer) {
+  timer_ = std::move(timer);
+}
 
 void BackoffTimer::StartTimer() {
   timer_->Start(

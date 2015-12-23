@@ -61,7 +61,7 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateMac::GetConfig() {
     config->SetString(kHostIdConfigPath, value);
   if (host_config->GetString(kXmppLoginConfigPath, &value))
     config->SetString(kXmppLoginConfigPath, value);
-  return config.Pass();
+  return config;
 }
 
 void DaemonControllerDelegateMac::SetConfigAndStart(
@@ -249,9 +249,8 @@ void DaemonControllerDelegateMac::PreferencePaneCallback(
 }
 
 scoped_refptr<DaemonController> DaemonController::Create() {
-  scoped_ptr<DaemonController::Delegate> delegate(
-      new DaemonControllerDelegateMac());
-  return new DaemonController(delegate.Pass());
+  return new DaemonController(
+      make_scoped_ptr(new DaemonControllerDelegateMac()));
 }
 
 }  // namespace remoting

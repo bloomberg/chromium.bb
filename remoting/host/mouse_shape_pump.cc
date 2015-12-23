@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -56,7 +58,7 @@ MouseShapePump::Core::Core(
     scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor)
     : proxy_(proxy),
       caller_task_runner_(caller_task_runner),
-      mouse_cursor_monitor_(mouse_cursor_monitor.Pass()),
+      mouse_cursor_monitor_(std::move(mouse_cursor_monitor)),
       capture_timer_(true, true) {
   thread_checker_.DetachFromThread();
 }
@@ -124,7 +126,7 @@ MouseShapePump::MouseShapePump(
       weak_factory_(this) {
   core_.reset(new Core(weak_factory_.GetWeakPtr(),
                        base::ThreadTaskRunnerHandle::Get(),
-                       mouse_cursor_monitor.Pass()));
+                       std::move(mouse_cursor_monitor)));
   capture_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Core::Start, base::Unretained(core_.get())));
 }

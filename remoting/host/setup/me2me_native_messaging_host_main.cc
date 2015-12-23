@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -248,7 +250,7 @@ int StartMe2MeNativeMessagingHost() {
     return kInitializationFailed;
 
   pairing_registry =
-      new PairingRegistry(io_thread.task_runner(), delegate.Pass());
+      new PairingRegistry(io_thread.task_runner(), std::move(delegate));
 #else  // defined(OS_WIN)
   pairing_registry =
       CreatePairingRegistry(io_thread.task_runner());
@@ -256,17 +258,13 @@ int StartMe2MeNativeMessagingHost() {
 
   // Set up the native messaging channel.
   scoped_ptr<extensions::NativeMessagingChannel> channel(
-      new PipeMessagingChannel(read_file.Pass(), write_file.Pass()));
+      new PipeMessagingChannel(std::move(read_file), std::move(write_file)));
 
   // Create the native messaging host.
-  scoped_ptr<Me2MeNativeMessagingHost> host(
-      new Me2MeNativeMessagingHost(
-          needs_elevation,
-          static_cast<intptr_t>(native_view_handle),
-          channel.Pass(),
-          daemon_controller,
-          pairing_registry,
-          oauth_client.Pass()));
+  scoped_ptr<Me2MeNativeMessagingHost> host(new Me2MeNativeMessagingHost(
+      needs_elevation, static_cast<intptr_t>(native_view_handle),
+      std::move(channel), daemon_controller, pairing_registry,
+      std::move(oauth_client)));
   host->Start(run_loop.QuitClosure());
 
   // Run the loop until channel is alive.

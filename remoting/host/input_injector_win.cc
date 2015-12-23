@@ -4,8 +4,10 @@
 
 #include "remoting/host/input_injector.h"
 
-#include <windows.h>
 #include <stdint.h>
+#include <windows.h>
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -151,7 +153,7 @@ void InputInjectorWin::InjectTouchEvent(const TouchEvent& event) {
 
 void InputInjectorWin::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  core_->Start(client_clipboard.Pass());
+  core_->Start(std::move(client_clipboard));
 }
 
 InputInjectorWin::Core::Core(
@@ -222,7 +224,7 @@ void InputInjectorWin::Core::Start(
     return;
   }
 
-  clipboard_->Start(client_clipboard.Pass());
+  clipboard_->Start(std::move(client_clipboard));
   touch_injector_.Init();
 }
 

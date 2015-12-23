@@ -210,7 +210,7 @@ void GnubbyAuthHandlerPosix::OnAccepted(int result) {
 
   int connection_id = ++last_connection_id_;
   GnubbySocket* socket =
-      new GnubbySocket(accept_socket_.Pass(), request_timeout_,
+      new GnubbySocket(std::move(accept_socket_), request_timeout_,
                        base::Bind(&GnubbyAuthHandlerPosix::RequestTimedOut,
                                   base::Unretained(this), connection_id));
   active_sockets_[connection_id] = socket;

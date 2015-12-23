@@ -4,6 +4,8 @@
 
 #include "remoting/host/chromeos/mouse_cursor_monitor_aura.h"
 
+#include <utility>
+
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -95,7 +97,7 @@ void MouseCursorMonitorAura::NotifyCursorChanged(const ui::Cursor& cursor) {
   }
 
   scoped_ptr<webrtc::DesktopFrame> image(
-      SkiaBitmapDesktopFrame::Create(cursor_bitmap.Pass()));
+      SkiaBitmapDesktopFrame::Create(std::move(cursor_bitmap)));
   scoped_ptr<webrtc::MouseCursor> cursor_shape(new webrtc::MouseCursor(
       image.release(),
       webrtc::DesktopVector(cursor_hotspot.x(), cursor_hotspot.y())));

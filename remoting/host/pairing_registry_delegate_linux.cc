@@ -60,7 +60,7 @@ scoped_ptr<base::ListValue> PairingRegistryDelegateLinux::LoadAll() {
     pairings->Append(pairing_json.release());
   }
 
-  return pairings.Pass();
+  return pairings;
 }
 
 bool PairingRegistryDelegateLinux::DeleteAll() {

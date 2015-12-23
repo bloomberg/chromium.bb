@@ -4,6 +4,8 @@
 
 #include "remoting/host/ipc_util.h"
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -84,8 +86,8 @@ bool CreateConnectedIpcChannel(
     return false;
   }
 
-  *client_out = client.Pass();
-  *server_out = server.Pass();
+  *client_out = std::move(client);
+  *server_out = std::move(server);
   return true;
 }
 
@@ -128,7 +130,7 @@ bool CreateIpcChannel(
     return false;
   }
 
-  *pipe_out = pipe.Pass();
+  *pipe_out = std::move(pipe);
   return true;
 }
 

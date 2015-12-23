@@ -4,6 +4,8 @@
 
 #include "remoting/host/pairing_registry_delegate_win.h"
 
+#include <utility>
+
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -139,7 +141,7 @@ scoped_ptr<base::ListValue> PairingRegistryDelegateWin::LoadAll() {
       pairings->Append(pairing.ToValue().release());
   }
 
-  return pairings.Pass();
+  return pairings;
 }
 
 bool PairingRegistryDelegateWin::DeleteAll() {
@@ -223,8 +225,8 @@ bool PairingRegistryDelegateWin::Save(const PairingRegistry::Pairing& pairing) {
   std::wstring value_name = base::UTF8ToWide(pairing.client_id());
 
   // Write pairing to the registry.
-  if (!WriteValue(privileged_, value_name.c_str(), secret_json.Pass()) ||
-      !WriteValue(unprivileged_, value_name.c_str(), pairing_json.Pass())) {
+  if (!WriteValue(privileged_, value_name.c_str(), std::move(secret_json)) ||
+      !WriteValue(unprivileged_, value_name.c_str(), std::move(pairing_json))) {
     return false;
   }
 

@@ -8,7 +8,9 @@
 #include <Carbon/Carbon.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <stdint.h>
+
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -154,7 +156,7 @@ void InputInjectorMac::InjectTouchEvent(const TouchEvent& event) {
 
 void InputInjectorMac::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  core_->Start(client_clipboard.Pass());
+  core_->Start(std::move(client_clipboard));
 }
 
 InputInjectorMac::Core::Core(
@@ -341,7 +343,7 @@ void InputInjectorMac::Core::Start(
     return;
   }
 
-  clipboard_->Start(client_clipboard.Pass());
+  clipboard_->Start(std::move(client_clipboard));
 }
 
 void InputInjectorMac::Core::Stop() {

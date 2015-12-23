@@ -65,7 +65,7 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
 
     request_ = iq_sender_->SendIq(
         buzz::STR_SET, directory_bot_jid_,
-        CreateRegistrationRequest(signal_strategy_->GetLocalJid()).Pass(),
+        CreateRegistrationRequest(signal_strategy_->GetLocalJid()),
         base::Bind(&RegisterSupportHostRequest::ProcessResponse,
                    base::Unretained(this)));
   } else if (state == SignalStrategy::DISCONNECTED) {
@@ -90,7 +90,7 @@ scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateRegistrationRequest(
   public_key->AddText(key_pair_->GetPublicKey());
   query->AddElement(public_key);
   query->AddElement(CreateSignature(jid).release());
-  return query.Pass();
+  return query;
 }
 
 scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
@@ -107,7 +107,7 @@ scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
   std::string signature(key_pair_->SignMessage(message));
   signature_tag->AddText(signature);
 
-  return signature_tag.Pass();
+  return signature_tag;
 }
 
 void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,

@@ -256,7 +256,7 @@ ScopedScHandle OpenService(DWORD access) {
                 << "' service";
   }
 
-  return service.Pass();
+  return service;
 }
 
 void InvokeCompletionCallback(
@@ -468,9 +468,8 @@ void DaemonControllerDelegateWin::SetConfigAndStart(
 }
 
 scoped_refptr<DaemonController> DaemonController::Create() {
-  scoped_ptr<DaemonController::Delegate> delegate(
-      new DaemonControllerDelegateWin());
-  return new DaemonController(delegate.Pass());
+  return new DaemonController(
+      make_scoped_ptr(new DaemonControllerDelegateWin()));
 }
 
 }  // namespace remoting

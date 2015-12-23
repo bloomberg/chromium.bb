@@ -7,6 +7,8 @@
 
 #include "remoting/host/policy_watcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -63,7 +65,7 @@ scoped_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
     to->Set(i.key(), value->DeepCopy());
   }
 
-  return to.Pass();
+  return to;
 }
 
 policy::PolicyNamespace GetPolicyNamespace() {
@@ -79,7 +81,7 @@ scoped_ptr<policy::SchemaRegistry> CreateSchemaRegistry() {
   scoped_ptr<policy::SchemaRegistry> schema_registry(
       new policy::SchemaRegistry());
   schema_registry->RegisterComponent(GetPolicyNamespace(), schema);
-  return schema_registry.Pass();
+  return schema_registry;
 }
 
 scoped_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
@@ -99,7 +101,7 @@ scoped_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
     }
   }
 
-  return policy_dict.Pass();
+  return policy_dict;
 }
 
 // Takes a dictionary containing only 1) recognized policy names and 2)
@@ -167,9 +169,9 @@ PolicyWatcher::PolicyWatcher(
     : old_policies_(new base::DictionaryValue()),
       default_values_(new base::DictionaryValue()),
       policy_service_(policy_service),
-      owned_schema_registry_(owned_schema_registry.Pass()),
-      owned_policy_provider_(owned_policy_provider.Pass()),
-      owned_policy_service_(owned_policy_service.Pass()) {
+      owned_schema_registry_(std::move(owned_schema_registry)),
+      owned_policy_provider_(std::move(owned_policy_provider)),
+      owned_policy_service_(std::move(owned_policy_service)) {
   DCHECK(policy_service_);
   DCHECK(owned_schema_registry_);
 
@@ -275,7 +277,7 @@ PolicyWatcher::StoreNewAndReturnChangedPolicies(
   // Save the new policies.
   old_policies_.swap(new_policies);
 
-  return changed_policies.Pass();
+  return changed_policies;
 }
 
 void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -296,7 +298,7 @@ void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 
   // Limit reporting to only the policies that were changed.
   scoped_ptr<base::DictionaryValue> changed_policies =
-      StoreNewAndReturnChangedPolicies(filled_policies.Pass());
+      StoreNewAndReturnChangedPolicies(std::move(filled_policies));
   if (changed_policies->empty()) {
     return;
   }
@@ -308,7 +310,7 @@ void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
   }
 
   // Notify our client of the changed policies.
-  policy_updated_callback_.Run(changed_policies.Pass());
+  policy_updated_callback_.Run(std::move(changed_policies));
 }
 
 void PolicyWatcher::OnPolicyServiceInitialized(policy::PolicyDomain domain) {
@@ -322,7 +324,7 @@ scoped_ptr<PolicyWatcher> PolicyWatcher::CreateFromPolicyLoader(
   scoped_ptr<policy::SchemaRegistry> schema_registry = CreateSchemaRegistry();
   scoped_ptr<policy::AsyncPolicyProvider> policy_provider(
       new policy::AsyncPolicyProvider(schema_registry.get(),
-                                      async_policy_loader.Pass()));
+                                      std::move(async_policy_loader)));
   policy_provider->Init(schema_registry.get());
 
   policy::PolicyServiceImpl::Providers providers;
@@ -331,9 +333,9 @@ scoped_ptr<PolicyWatcher> PolicyWatcher::CreateFromPolicyLoader(
       new policy::PolicyServiceImpl(providers));
 
   policy::PolicyService* borrowed_policy_service = policy_service.get();
-  return make_scoped_ptr(
-      new PolicyWatcher(borrowed_policy_service, policy_service.Pass(),
-                        policy_provider.Pass(), schema_registry.Pass()));
+  return make_scoped_ptr(new PolicyWatcher(
+      borrowed_policy_service, std::move(policy_service),
+      std::move(policy_provider), std::move(schema_registry)));
 }
 
 scoped_ptr<PolicyWatcher> PolicyWatcher::Create(
@@ -370,7 +372,7 @@ scoped_ptr<PolicyWatcher> PolicyWatcher::Create(
 #error OS that is not yet supported by PolicyWatcher code.
 #endif
 
-  return PolicyWatcher::CreateFromPolicyLoader(policy_loader.Pass());
+  return PolicyWatcher::CreateFromPolicyLoader(std::move(policy_loader));
 #endif  // !(OS_CHROMEOS)
 }
 

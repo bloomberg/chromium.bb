@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/client_session.h"
+
 #include <stdint.h>
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
@@ -16,7 +19,6 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
 #include "remoting/codec/video_encoder_verbatim.h"
-#include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/fake_desktop_environment.h"
 #include "remoting/host/fake_host_extension.h"
@@ -179,7 +181,7 @@ void ClientSessionTest::CreateClientSession() {
   // Mock protocol::ConnectionToClient APIs called directly by ClientSession.
   // HostStub is not touched by ClientSession, so we can safely pass nullptr.
   scoped_ptr<protocol::FakeConnectionToClient> connection(
-      new protocol::FakeConnectionToClient(session.Pass()));
+      new protocol::FakeConnectionToClient(std::move(session)));
   connection->set_client_stub(&client_stub_);
   connection_ = connection.get();
 
@@ -191,11 +193,8 @@ void ClientSessionTest::CreateClientSession() {
       task_runner_,  // Encode thread.
       task_runner_,  // Network thread.
       task_runner_,  // UI thread.
-      connection.Pass(),
-      desktop_environment_factory_.get(),
-      base::TimeDelta(),
-      nullptr,
-      extensions_));
+      std::move(connection), desktop_environment_factory_.get(),
+      base::TimeDelta(), nullptr, extensions_));
 }
 
 void ClientSessionTest::ConnectClientSession() {

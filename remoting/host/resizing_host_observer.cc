@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -118,10 +119,9 @@ class CandidateResolution {
 
 ResizingHostObserver::ResizingHostObserver(
     scoped_ptr<DesktopResizer> desktop_resizer)
-    : desktop_resizer_(desktop_resizer.Pass()),
+    : desktop_resizer_(std::move(desktop_resizer)),
       now_function_(base::Bind(base::Time::Now)),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ResizingHostObserver::~ResizingHostObserver() {
   if (!original_resolution_.IsEmpty())

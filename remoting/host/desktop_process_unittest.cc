@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -264,7 +266,7 @@ void DesktopProcessTest::RunDesktopProcess() {
       .WillRepeatedly(Return(false));
 
   DesktopProcess desktop_process(ui_task_runner, io_task_runner_, channel_name);
-  EXPECT_TRUE(desktop_process.Start(desktop_environment_factory.Pass()));
+  EXPECT_TRUE(desktop_process.Start(std::move(desktop_environment_factory)));
 
   ui_task_runner = nullptr;
   run_loop.Run();

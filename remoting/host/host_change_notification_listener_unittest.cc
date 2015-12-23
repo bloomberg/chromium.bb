@@ -78,7 +78,7 @@ class HostChangeNotificationListenerTest : public testing::Test {
     stanza->AddElement(host_changed);
     stanza->AddAttr(buzz::QN_FROM, botJid);
     stanza->AddAttr(buzz::QN_TO, kTestJid);
-    return stanza.Pass();
+    return stanza;
   }
 
   MockListener mock_listener_;

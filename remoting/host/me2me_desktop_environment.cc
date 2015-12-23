@@ -4,6 +4,8 @@
 
 #include "remoting/host/me2me_desktop_environment.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -117,9 +119,7 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
 
     disconnect_window_ = HostWindow::CreateDisconnectWindow();
     disconnect_window_.reset(new HostWindowProxy(
-        caller_task_runner(),
-        ui_task_runner(),
-        disconnect_window_.Pass()));
+        caller_task_runner(), ui_task_runner(), std::move(disconnect_window_)));
     disconnect_window_->Start(client_session_control);
   }
 
@@ -158,7 +158,7 @@ scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
   }
   desktop_environment->SetEnableGnubbyAuth(gnubby_auth_enabled_);
 
-  return desktop_environment.Pass();
+  return std::move(desktop_environment);
 }
 
 void Me2MeDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {

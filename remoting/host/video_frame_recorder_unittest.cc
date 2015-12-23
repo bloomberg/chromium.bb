@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -123,16 +125,15 @@ void VideoFrameRecorderTest::TearDown() {
 
 void VideoFrameRecorderTest::CreateAndWrapEncoder() {
   scoped_ptr<VideoEncoder> encoder(new VideoEncoderVerbatim());
-  encoder_ = recorder_->WrapVideoEncoder(encoder.Pass());
+  encoder_ = recorder_->WrapVideoEncoder(std::move(encoder));
 
   // Encode a dummy frame to bind the wrapper to the TaskRunner.
   EncodeDummyFrame();
 }
 
 scoped_ptr<webrtc::DesktopFrame> VideoFrameRecorderTest::CreateNextFrame() {
-  scoped_ptr<webrtc::DesktopFrame> frame(
-      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kFrameWidth,
-                                                        kFrameHeight)));
+  scoped_ptr<webrtc::DesktopFrame> frame(new webrtc::BasicDesktopFrame(
+      webrtc::DesktopSize(kFrameWidth, kFrameHeight)));
 
   // Fill content, DPI and updated-region based on |frame_count_| so that each
   // generated frame is different.
@@ -142,7 +143,7 @@ scoped_ptr<webrtc::DesktopFrame> VideoFrameRecorderTest::CreateNextFrame() {
   frame->mutable_updated_region()->SetRect(
       webrtc::DesktopRect::MakeWH(frame_count_, frame_count_));
 
-  return frame.Pass();
+  return frame;
 }
 
 void VideoFrameRecorderTest::CreateTestFrames() {

@@ -8,6 +8,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -100,10 +101,9 @@ SessionInputInjectorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
     const base::Closure& inject_sas)
     : input_task_runner_(input_task_runner),
-      nested_executor_(nested_executor.Pass()),
+      nested_executor_(std::move(nested_executor)),
       inject_sas_task_runner_(inject_sas_task_runner),
-      inject_sas_(inject_sas) {
-}
+      inject_sas_(inject_sas) {}
 
 void SessionInputInjectorWin::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
@@ -114,7 +114,7 @@ void SessionInputInjectorWin::Core::Start(
     return;
   }
 
-  nested_executor_->Start(client_clipboard.Pass());
+  nested_executor_->Start(std::move(client_clipboard));
 }
 
 void SessionInputInjectorWin::Core::InjectClipboardEvent(
@@ -219,7 +219,7 @@ SessionInputInjectorWin::SessionInputInjectorWin(
     scoped_ptr<InputInjector> nested_executor,
     scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
     const base::Closure& inject_sas) {
-  core_ = new Core(input_task_runner, nested_executor.Pass(),
+  core_ = new Core(input_task_runner, std::move(nested_executor),
                    inject_sas_task_runner, inject_sas);
 }
 
@@ -228,7 +228,7 @@ SessionInputInjectorWin::~SessionInputInjectorWin() {
 
 void SessionInputInjectorWin::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  core_->Start(client_clipboard.Pass());
+  core_->Start(std::move(client_clipboard));
 }
 
 void SessionInputInjectorWin::InjectClipboardEvent(

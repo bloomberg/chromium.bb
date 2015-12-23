@@ -342,7 +342,7 @@ scoped_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
   AddHostFieldsToLogEntry(log_entry.get());
   log->AddElement(log_entry->ToStanza().release());
   heartbeat->AddElement(log.release());
-  return heartbeat.Pass();
+  return heartbeat;
 }
 
 scoped_ptr<XmlElement> HeartbeatSender::CreateSignature() {
@@ -354,7 +354,7 @@ scoped_ptr<XmlElement> HeartbeatSender::CreateSignature() {
   std::string signature(host_key_pair_->SignMessage(message));
   signature_tag->AddText(signature);
 
-  return signature_tag.Pass();
+  return signature_tag;
 }
 
 }  // namespace remoting

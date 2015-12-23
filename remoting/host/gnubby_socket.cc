@@ -4,6 +4,8 @@
 
 #include "remoting/host/gnubby_socket.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -27,7 +29,7 @@ const char kSshError[] = {0x05};
 GnubbySocket::GnubbySocket(scoped_ptr<net::StreamSocket> socket,
                            const base::TimeDelta& timeout,
                            const base::Closure& timeout_callback)
-    : socket_(socket.Pass()),
+    : socket_(std::move(socket)),
       read_completed_(false),
       read_buffer_(new net::IOBufferWithSize(kRequestReadBufferLength)) {
   timer_.reset(new base::Timer(false, false));
@@ -60,7 +62,7 @@ void GnubbySocket::SendResponse(const std::string& response_data) {
   scoped_ptr<std::string> response(
       new std::string(response_length_string + response_data));
   write_buffer_ = new net::DrainableIOBuffer(
-      new net::StringIOBuffer(response.Pass()), response_len);
+      new net::StringIOBuffer(std::move(response)), response_len);
   DoWrite();
 }
 

@@ -39,14 +39,14 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
   entry->AddRoleField(kValueRoleHost);
   entry->AddEventNameField(kValueEventNameSessionState);
   entry->Set(kKeySessionState, GetValueSessionState(connected));
-  return entry.Pass();
+  return entry;
 }
 
 scoped_ptr<ServerLogEntry> MakeLogEntryForHeartbeat() {
   scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->AddRoleField(kValueRoleHost);
   entry->AddEventNameField(kValueEventNameHeartbeat);
-  return entry.Pass();
+  return entry;
 }
 
 void AddHostFieldsToLogEntry(ServerLogEntry* entry) {

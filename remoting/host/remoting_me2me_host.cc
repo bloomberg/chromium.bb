@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -471,7 +472,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
                          int* exit_code_out,
                          ShutdownWatchdog* shutdown_watchdog)
-    : context_(context.Pass()),
+    : context_(std::move(context)),
       state_(HOST_STARTING),
       use_service_account_(false),
       enable_vp9_(false),
@@ -780,7 +781,7 @@ void HostProcess::CreateAuthenticatorFactory() {
 
         if (delegate)
           pairing_registry_ = new PairingRegistry(context_->file_task_runner(),
-                                                  delegate.Pass());
+                                                  std::move(delegate));
       }
 #endif  // defined(OS_WIN)
 
@@ -802,14 +803,14 @@ void HostProcess::CreateAuthenticatorFactory() {
             key_pair_, context_->url_request_context_getter()));
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
         use_service_account_, host_owner_, local_certificate, key_pair_,
-        token_validator_factory.Pass());
+        std::move(token_validator_factory));
   }
 
 #if defined(OS_POSIX)
   // On Linux and Mac, perform a PAM authorization step after authentication.
-  factory.reset(new PamAuthorizationFactory(factory.Pass()));
+  factory.reset(new PamAuthorizationFactory(std::move(factory)));
 #endif
-  host_->SetAuthenticatorFactory(factory.Pass());
+  host_->SetAuthenticatorFactory(std::move(factory));
 }
 
 // IPC::Listener implementation.
@@ -997,7 +998,7 @@ void HostProcess::InitializePairingRegistry(
   delegate->SetRootKeys(privileged_hkey, unprivileged_hkey);
 
   pairing_registry_ = new PairingRegistry(context_->file_task_runner(),
-                                          delegate.Pass());
+                                          std::move(delegate));
 
   // (Re)Create the authenticator factory now that |pairing_registry_| has been
   // initialized.
@@ -1425,10 +1426,11 @@ void HostProcess::InitializeSignaling() {
       new OAuthTokenGetter::OAuthCredentials(xmpp_server_config_.username,
                                              oauth_refresh_token_,
                                              use_service_account_));
-  oauth_token_getter_.reset(new OAuthTokenGetterImpl(
-      oauth_credentials.Pass(), context_->url_request_context_getter(), false));
+  oauth_token_getter_.reset(
+      new OAuthTokenGetterImpl(std::move(oauth_credentials),
+                               context_->url_request_context_getter(), false));
   signaling_connector_.reset(new SignalingConnector(
-      xmpp_signal_strategy, dns_blackhole_checker.Pass(),
+      xmpp_signal_strategy, std::move(dns_blackhole_checker),
       oauth_token_getter_.get(),
       base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
 
@@ -1438,12 +1440,10 @@ void HostProcess::InitializeSignaling() {
   scoped_ptr<GcdRestClient> gcd_rest_client(new GcdRestClient(
       service_urls->gcd_base_url(), host_id_,
       context_->url_request_context_getter(), oauth_token_getter_.get()));
-  gcd_state_updater_.reset(
-      new GcdStateUpdater(base::Bind(&HostProcess::OnHeartbeatSuccessful,
-                                     base::Unretained(this)),
-                          base::Bind(&HostProcess::OnUnknownHostIdError,
-                                     base::Unretained(this)),
-                          signal_strategy_.get(), gcd_rest_client.Pass()));
+  gcd_state_updater_.reset(new GcdStateUpdater(
+      base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
+      base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
+      signal_strategy_.get(), std::move(gcd_rest_client)));
   PushNotificationSubscriber::Subscription sub;
   sub.channel = "cloud_devices";
   PushNotificationSubscriber::SubscriptionList subs;
@@ -1528,7 +1528,7 @@ void HostProcess::StartHost() {
         new protocol::IceTransportFactory(transport_context));
   }
   scoped_ptr<protocol::SessionManager> session_manager(
-      new protocol::JingleSessionManager(transport_factory.Pass(),
+      new protocol::JingleSessionManager(std::move(transport_factory),
                                          signal_strategy_.get()));
 
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
@@ -1542,12 +1542,12 @@ void HostProcess::StartHost() {
     protocol_config->set_webrtc_supported(true);
   }
 #endif  // !defined(NDEBUG)
-  session_manager->set_protocol_config(protocol_config.Pass());
+  session_manager->set_protocol_config(std::move(protocol_config));
 
   host_.reset(new ChromotingHost(
-      desktop_environment_factory_.get(),
-      session_manager.Pass(), context_->audio_task_runner(),
-      context_->input_task_runner(), context_->video_capture_task_runner(),
+      desktop_environment_factory_.get(), std::move(session_manager),
+      context_->audio_task_runner(), context_->input_task_runner(),
+      context_->video_capture_task_runner(),
       context_->video_encode_task_runner(), context_->network_task_runner(),
       context_->ui_task_runner()));
 
@@ -1555,7 +1555,7 @@ void HostProcess::StartHost() {
     scoped_ptr<VideoFrameRecorderHostExtension> frame_recorder_extension(
         new VideoFrameRecorderHostExtension());
     frame_recorder_extension->SetMaxContentBytes(frame_recorder_buffer_size_);
-    host_->AddExtension(frame_recorder_extension.Pass());
+    host_->AddExtension(std::move(frame_recorder_extension));
   }
 
   // TODO(simonmorris): Get the maximum session duration from a policy.
@@ -1750,7 +1750,7 @@ int HostProcessMain() {
   int exit_code = kSuccessExitCode;
   ShutdownWatchdog shutdown_watchdog(
       base::TimeDelta::FromSeconds(kShutdownTimeoutSeconds));
-  new HostProcess(context.Pass(), &exit_code, &shutdown_watchdog);
+  new HostProcess(std::move(context), &exit_code, &shutdown_watchdog);
 
   // Run the main (also UI) message loop until the host no longer needs it.
   message_loop.Run();

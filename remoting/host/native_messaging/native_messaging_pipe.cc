@@ -4,6 +4,8 @@
 
 #include "remoting/host/native_messaging/native_messaging_pipe.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -11,17 +13,14 @@
 
 namespace remoting {
 
-NativeMessagingPipe::NativeMessagingPipe() {
-}
-
-NativeMessagingPipe::~NativeMessagingPipe() {
-}
+NativeMessagingPipe::NativeMessagingPipe() {}
+NativeMessagingPipe::~NativeMessagingPipe() {}
 
 void NativeMessagingPipe::Start(
     scoped_ptr<extensions::NativeMessageHost> host,
     scoped_ptr<extensions::NativeMessagingChannel> channel) {
-  host_ = host.Pass();
-  channel_ = channel.Pass();
+  host_ = std::move(host);
+  channel_ = std::move(channel);
   channel_->Start(this);
 }
 
@@ -39,7 +38,7 @@ void NativeMessagingPipe::OnDisconnect() {
 void NativeMessagingPipe::PostMessageFromNativeHost(
     const std::string& message) {
   scoped_ptr<base::Value> json = base::JSONReader::Read(message);
-  channel_->SendMessage(json.Pass());
+  channel_->SendMessage(std::move(json));
 }
 
 void NativeMessagingPipe::CloseChannel(const std::string& error_message) {

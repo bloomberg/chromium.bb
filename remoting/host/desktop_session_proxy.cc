@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -229,7 +231,7 @@ bool DesktopSessionProxy::AttachToDesktop(
   if (!client_session_control_.get())
     return false;
 
-  desktop_process_ = desktop_process.Pass();
+  desktop_process_ = std::move(desktop_process);
 
 #if defined(OS_WIN)
   // On Windows: |desktop_process| is a valid handle, but |desktop_pipe| needs
@@ -403,7 +405,7 @@ void DesktopSessionProxy::StartInputInjector(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  client_clipboard_ = client_clipboard.Pass();
+  client_clipboard_ = std::move(client_clipboard);
 }
 
 void DesktopSessionProxy::SetScreenResolution(
@@ -522,7 +524,7 @@ void DesktopSessionProxy::OnCaptureCompleted(
   }
 
   --pending_capture_frame_requests_;
-  PostCaptureCompleted(frame.Pass());
+  PostCaptureCompleted(std::move(frame));
 }
 
 void DesktopSessionProxy::OnMouseCursor(

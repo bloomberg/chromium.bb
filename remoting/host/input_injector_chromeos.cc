@@ -5,6 +5,7 @@
 #include "remoting/host/input_injector_chromeos.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -117,7 +118,7 @@ void InputInjectorChromeos::Core::Start(
 
   // Implemented by remoting::ClipboardAura.
   clipboard_ = Clipboard::Create();
-  clipboard_->Start(client_clipboard.Pass());
+  clipboard_->Start(std::move(client_clipboard));
   point_transformer_.reset(new PointTransformer());
 }
 

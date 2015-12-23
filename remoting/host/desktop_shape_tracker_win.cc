@@ -68,7 +68,7 @@ void DesktopShapeTrackerWin::RefreshDesktopShape() {
 
   // If the shape has changed, refresh |desktop_shape_|.
   if (!EqualRgn(shape_data->desktop_region.get(), old_desktop_region_.get())) {
-    old_desktop_region_ = shape_data->desktop_region.Pass();
+    old_desktop_region_ = std::move(shape_data->desktop_region);
 
     // Determine the size of output buffer required to receive the region.
     DWORD bytes_size = GetRegionData(old_desktop_region_.get(), 0, nullptr);

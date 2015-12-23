@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -24,7 +26,7 @@ namespace {
 scoped_ptr<AudioPacket> MakeAudioPacket() {
   scoped_ptr<AudioPacket> packet(new AudioPacket);
   packet->add_data()->resize(1000);
-  return packet.Pass();
+  return packet;
 }
 
 }  // namespace
@@ -53,7 +55,7 @@ class FakeAudioEncoder : public AudioEncoder {
   ~FakeAudioEncoder() override {}
 
   scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) override {
-    return packet.Pass();
+    return packet;
   }
   int GetBitrate() override {
     return 160000;
@@ -108,7 +110,7 @@ void AudioPumpTest::TearDown() {
 void AudioPumpTest::ProcessAudioPacket(
     scoped_ptr<AudioPacket> audio_packet,
     const base::Closure& done) {
-  sent_packets_.push_back(audio_packet.Pass());
+  sent_packets_.push_back(std::move(audio_packet));
   done_closures_.push_back(done);
 }
 

@@ -4,6 +4,8 @@
 
 #include "remoting/host/desktop_session_agent.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -86,7 +88,8 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
     if (!memory->CreateAndMapAnonymous(size))
       return nullptr;
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-    return make_scoped_ptr(new SharedBuffer(agent, memory.Pass(), size, id));
+    return make_scoped_ptr(
+        new SharedBuffer(agent, std::move(memory), size, id));
   }
 
   ~SharedBuffer() override { agent_->OnSharedBufferDeleted(id()); }
@@ -100,7 +103,7 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
                int id)
       : SharedMemory(memory->memory(), size, 0, id),
         agent_(agent),
-        shared_memory_(memory.Pass()) {}
+        shared_memory_(std::move(memory)) {}
 
   DesktopSessionAgent* agent_;
   scoped_ptr<base::SharedMemory> shared_memory_;
@@ -296,7 +299,7 @@ void DesktopSessionAgent::OnStartSessionAgent(
   // Start the input injector.
   scoped_ptr<protocol::ClipboardStub> clipboard_stub(
       new DesktopSesssionClipboardStub(this));
-  input_injector_->Start(clipboard_stub.Pass());
+  input_injector_->Start(std::move(clipboard_stub));
 
   // Start the audio capturer.
   if (delegate_->desktop_environment_factory().SupportsAudioCapture()) {

@@ -9,6 +9,7 @@
 #include <winternl.h>
 
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -117,7 +118,7 @@ bool ConnectToExecutionServer(uint32_t session_id,
     return false;
   }
 
-  *pipe_out = pipe.Pass();
+  *pipe_out = std::move(pipe);
   return true;
 }
 
@@ -172,7 +173,7 @@ bool CreatePrivilegedToken(ScopedHandle* token_out) {
     return false;
   }
 
-  *token_out = privileged_token.Pass();
+  *token_out = std::move(privileged_token);
   return true;
 }
 
@@ -444,7 +445,7 @@ bool CreateSessionToken(uint32_t session_id, ScopedHandle* token_out) {
   // Revert to the default token.
   CHECK(RevertToSelf());
 
-  *token_out = session_token.Pass();
+  *token_out = std::move(session_token);
   return true;
 }
 

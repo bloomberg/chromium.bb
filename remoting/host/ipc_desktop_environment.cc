@@ -200,7 +200,7 @@ void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
   ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
     i->second->DetachFromDesktop();
-    i->second->AttachToDesktop(desktop_process.Pass(), desktop_pipe);
+    i->second->AttachToDesktop(std::move(desktop_process), desktop_pipe);
   } else {
 #if defined(OS_POSIX)
     DCHECK(desktop_pipe.auto_close);

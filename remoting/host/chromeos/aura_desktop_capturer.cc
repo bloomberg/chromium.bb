@@ -4,6 +4,8 @@
 
 #include "remoting/host/chromeos/aura_desktop_capturer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -49,7 +51,7 @@ void AuraDesktopCapturer::Capture(const webrtc::DesktopRegion&) {
   gfx::Rect window_rect(desktop_window_->bounds().size());
 
   request->set_area(window_rect);
-  desktop_window_->layer()->RequestCopyOfOutput(request.Pass());
+  desktop_window_->layer()->RequestCopyOfOutput(std::move(request));
 }
 
 void AuraDesktopCapturer::OnFrameCaptured(
@@ -64,7 +66,7 @@ void AuraDesktopCapturer::OnFrameCaptured(
   scoped_ptr<SkBitmap> bitmap = result->TakeBitmap();
 
   scoped_ptr<webrtc::DesktopFrame> frame(
-      SkiaBitmapDesktopFrame::Create(bitmap.Pass()));
+      SkiaBitmapDesktopFrame::Create(std::move(bitmap)));
 
   // |VideoFramePump| will not encode the frame if |updated_region| is empty.
   const webrtc::DesktopRect& rect = webrtc::DesktopRect::MakeWH(

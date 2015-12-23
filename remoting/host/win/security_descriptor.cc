@@ -24,7 +24,7 @@ ScopedSd ConvertSddlToSd(const std::string& sddl) {
   memcpy(sd.get(), raw_sd, length);
 
   LocalFree(raw_sd);
-  return sd.Pass();
+  return sd;
 }
 
 // Converts a SID into a text string.
@@ -59,7 +59,7 @@ ScopedSid GetLogonSid(HANDLE token) {
       if (!CopySid(length, logon_sid.get(), groups->Groups[i].Sid))
         return ScopedSid();
 
-      return logon_sid.Pass();
+      return logon_sid;
     }
   }
 

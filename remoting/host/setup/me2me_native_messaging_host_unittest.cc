@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -327,15 +329,15 @@ void Me2MeNativeMessagingHostTest::StartHost() {
           make_scoped_ptr(new MockPairingRegistryDelegate()));
 
   scoped_ptr<extensions::NativeMessagingChannel> channel(
-      new PipeMessagingChannel(input_read_file.Pass(),
-                               output_write_file.Pass()));
+      new PipeMessagingChannel(std::move(input_read_file),
+                               std::move(output_write_file)));
 
   scoped_ptr<OAuthClient> oauth_client(
       new MockOAuthClient("fake_user_email", "fake_refresh_token"));
 
-  host_.reset(new Me2MeNativeMessagingHost(false, 0, channel.Pass(),
+  host_.reset(new Me2MeNativeMessagingHost(false, 0, std::move(channel),
                                            daemon_controller, pairing_registry,
-                                           oauth_client.Pass()));
+                                           std::move(oauth_client)));
   host_->Start(base::Bind(&Me2MeNativeMessagingHostTest::StopHost,
                           base::Unretained(this)));
 
@@ -441,7 +443,7 @@ void Me2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message) {
 
   // Read from output pipe, and verify responses.
   scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
-  VerifyHelloResponse(response.Pass());
+  VerifyHelloResponse(std::move(response));
 
   response = ReadMessageFromOutputPipe();
   EXPECT_FALSE(response);
@@ -534,7 +536,7 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
 
     // Call the verification routine corresponding to the message id.
     ASSERT_TRUE(verify_routines[id]);
-    verify_routines[id](response.Pass());
+    verify_routines[id](std::move(response));
 
     // Clear the pointer so that the routine cannot be called the second time.
     verify_routines[id] = nullptr;

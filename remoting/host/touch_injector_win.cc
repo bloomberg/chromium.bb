@@ -4,6 +4,8 @@
 
 #include "remoting/host/touch_injector_win.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
@@ -189,7 +191,7 @@ void TouchInjectorWin::InjectTouchEvent(const TouchEvent& event) {
 
 void TouchInjectorWin::SetInjectorDelegateForTest(
     scoped_ptr<TouchInjectorWinDelegate> functions) {
-  delegate_ = functions.Pass();
+  delegate_ = std::move(functions);
 }
 
 void TouchInjectorWin::AddNewTouchPoints(const TouchEvent& event) {

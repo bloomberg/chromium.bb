@@ -31,11 +31,9 @@ std::string CastExtension::capability() const {
 scoped_ptr<HostExtensionSession> CastExtension::CreateExtensionSession(
     ClientSessionControl* client_session_control,
     protocol::ClientStub* client_stub) {
-  return CastExtensionSession::Create(network_task_runner_,
-                                      url_request_context_getter_,
-                                      network_settings_,
-                                      client_session_control,
-                                      client_stub).Pass();
+  return CastExtensionSession::Create(
+      network_task_runner_, url_request_context_getter_, network_settings_,
+      client_session_control, client_stub);
 }
 
 }  // namespace remoting

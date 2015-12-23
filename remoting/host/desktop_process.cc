@@ -7,6 +7,8 @@
 
 #include "remoting/host/desktop_process.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
@@ -96,7 +98,7 @@ bool DesktopProcess::Start(
   DCHECK(!desktop_environment_factory_);
   DCHECK(desktop_environment_factory);
 
-  desktop_environment_factory_ = desktop_environment_factory.Pass();
+  desktop_environment_factory_ = std::move(desktop_environment_factory);
 
   // Launch the audio capturing thread.
   scoped_refptr<AutoThreadTaskRunner> audio_task_runner;

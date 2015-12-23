@@ -4,6 +4,8 @@
 
 #include "remoting/host/oauth_token_getter_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_util.h"
@@ -28,7 +30,7 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
     bool auto_refresh)
-    : oauth_credentials_(oauth_credentials.Pass()),
+    : oauth_credentials_(std::move(oauth_credentials)),
       gaia_oauth_client_(
           new gaia::GaiaOAuthClient(url_request_context_getter.get())),
       url_request_context_getter_(url_request_context_getter) {
@@ -37,8 +39,7 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
   }
 }
 
-OAuthTokenGetterImpl::~OAuthTokenGetterImpl() {
-}
+OAuthTokenGetterImpl::~OAuthTokenGetterImpl() {}
 
 void OAuthTokenGetterImpl::OnGetTokensResponse(const std::string& user_email,
                                                const std::string& access_token,

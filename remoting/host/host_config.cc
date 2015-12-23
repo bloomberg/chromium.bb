@@ -21,9 +21,7 @@ scoped_ptr<base::DictionaryValue> HostConfigFromJson(
     return nullptr;
   }
 
-  scoped_ptr<base::DictionaryValue> config(
-      static_cast<base::DictionaryValue*>(value.release()));
-  return config.Pass();
+  return make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
 }
 
 std::string HostConfigToJson(const base::DictionaryValue& host_config) {

@@ -4,6 +4,8 @@
 
 #include "remoting/host/it2me_desktop_environment.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -58,16 +60,12 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
   if (want_user_interface) {
     continue_window_ = HostWindow::CreateContinueWindow();
     continue_window_.reset(new HostWindowProxy(
-        caller_task_runner,
-        ui_task_runner,
-        continue_window_.Pass()));
+        caller_task_runner, ui_task_runner, std::move(continue_window_)));
     continue_window_->Start(client_session_control);
 
     disconnect_window_ = HostWindow::CreateDisconnectWindow();
     disconnect_window_.reset(new HostWindowProxy(
-        caller_task_runner,
-        ui_task_runner,
-        disconnect_window_.Pass()));
+        caller_task_runner, ui_task_runner, std::move(disconnect_window_)));
     disconnect_window_->Start(client_session_control);
   }
 }

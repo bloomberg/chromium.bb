@@ -28,7 +28,7 @@ class GcdRestClientTest : public testing::Test {
   scoped_ptr<base::DictionaryValue> MakePatchDetails(int id) {
     scoped_ptr<base::DictionaryValue> patch_details(new base::DictionaryValue);
     patch_details->SetInteger("id", id);
-    return patch_details.Pass();
+    return patch_details;
   }
 
   void CreateClient(OAuthTokenGetter* token_getter = nullptr) {
@@ -55,7 +55,7 @@ TEST_F(GcdRestClientTest, NetworkErrorGettingToken) {
   FakeOAuthTokenGetter token_getter(OAuthTokenGetter::NETWORK_ERROR, "", "");
   CreateClient(&token_getter);
 
-  client_->PatchState(MakePatchDetails(0).Pass(),
+  client_->PatchState(MakePatchDetails(0),
                       base::Bind(&GcdRestClientTest::OnRequestComplete,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -68,7 +68,7 @@ TEST_F(GcdRestClientTest, AuthErrorGettingToken) {
   FakeOAuthTokenGetter token_getter(OAuthTokenGetter::AUTH_ERROR, "", "");
   CreateClient(&token_getter);
 
-  client_->PatchState(MakePatchDetails(0).Pass(),
+  client_->PatchState(MakePatchDetails(0),
                       base::Bind(&GcdRestClientTest::OnRequestComplete,
                                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
@@ -80,7 +80,7 @@ TEST_F(GcdRestClientTest, AuthErrorGettingToken) {
 TEST_F(GcdRestClientTest, NetworkErrorOnPost) {
   CreateClient();
 
-  client_->PatchState(MakePatchDetails(0).Pass(),
+  client_->PatchState(MakePatchDetails(0),
                       base::Bind(&GcdRestClientTest::OnRequestComplete,
                                  base::Unretained(this)));
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
@@ -97,7 +97,7 @@ TEST_F(GcdRestClientTest, NetworkErrorOnPost) {
 TEST_F(GcdRestClientTest, OtherErrorOnPost) {
   CreateClient();
 
-  client_->PatchState(MakePatchDetails(0).Pass(),
+  client_->PatchState(MakePatchDetails(0),
                       base::Bind(&GcdRestClientTest::OnRequestComplete,
                                  base::Unretained(this)));
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
@@ -114,7 +114,7 @@ TEST_F(GcdRestClientTest, OtherErrorOnPost) {
 TEST_F(GcdRestClientTest, NoSuchHost) {
   CreateClient();
 
-  client_->PatchState(MakePatchDetails(0).Pass(),
+  client_->PatchState(MakePatchDetails(0),
                       base::Bind(&GcdRestClientTest::OnRequestComplete,
                                  base::Unretained(this)));
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
@@ -131,7 +131,7 @@ TEST_F(GcdRestClientTest, NoSuchHost) {
 TEST_F(GcdRestClientTest, Succeed) {
   CreateClient();
 
-  client_->PatchState(MakePatchDetails(0).Pass(),
+  client_->PatchState(MakePatchDetails(0),
                       base::Bind(&GcdRestClientTest::OnRequestComplete,
                                  base::Unretained(this)));
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);

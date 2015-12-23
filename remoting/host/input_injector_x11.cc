@@ -13,6 +13,7 @@
 #undef Status  // Xlib.h #defines this, which breaks protobuf headers.
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -242,7 +243,7 @@ void InputInjectorX11::InjectTouchEvent(const TouchEvent& event) {
 
 void InputInjectorX11::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  core_->Start(client_clipboard.Pass());
+  core_->Start(std::move(client_clipboard));
 }
 
 InputInjectorX11::Core::Core(
@@ -629,7 +630,7 @@ void InputInjectorX11::Core::Start(
 
   InitMouseButtonMap();
 
-  clipboard_->Start(client_clipboard.Pass());
+  clipboard_->Start(std::move(client_clipboard));
 }
 
 void InputInjectorX11::Core::Stop() {
@@ -651,7 +652,7 @@ scoped_ptr<InputInjector> InputInjector::Create(
       new InputInjectorX11(main_task_runner));
   if (!injector->Init())
     return nullptr;
-  return injector.Pass();
+  return std::move(injector);
 }
 
 // static

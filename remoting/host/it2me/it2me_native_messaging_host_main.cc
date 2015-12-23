@@ -4,6 +4,8 @@
 
 #include "remoting/host/it2me/it2me_native_messaging_host_main.h"
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -122,17 +124,17 @@ int StartIt2MeNativeMessagingHost() {
 
   // Set up the native messaging channel.
   scoped_ptr<extensions::NativeMessagingChannel> channel(
-      new PipeMessagingChannel(read_file.Pass(), write_file.Pass()));
+      new PipeMessagingChannel(std::move(read_file), std::move(write_file)));
 
   scoped_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
           message_loop.task_runner(), run_loop.QuitClosure()));
   scoped_ptr<extensions::NativeMessageHost> host(
-      new It2MeNativeMessagingHost(context.Pass(), factory.Pass()));
+      new It2MeNativeMessagingHost(std::move(context), std::move(factory)));
 
   host->Start(native_messaging_pipe.get());
 
-  native_messaging_pipe->Start(host.Pass(), channel.Pass());
+  native_messaging_pipe->Start(std::move(host), std::move(channel));
 
   // Run the loop until channel is alive.
   run_loop.Run();

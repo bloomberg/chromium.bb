@@ -4,6 +4,8 @@
 
 #include "remoting/host/setup/daemon_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -20,7 +22,7 @@ const char kDaemonControllerThreadName[] = "Daemon Controller thread";
 
 DaemonController::DaemonController(scoped_ptr<Delegate> delegate)
     : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      delegate_(delegate.Pass()) {
+      delegate_(std::move(delegate)) {
   // Launch the delegate thread.
   delegate_thread_.reset(new AutoThread(kDaemonControllerThreadName));
 #if defined(OS_WIN)
@@ -118,7 +120,7 @@ void DaemonController::DoSetConfigAndStart(
     const CompletionCallback& done) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
-  delegate_->SetConfigAndStart(config.Pass(), consent, done);
+  delegate_->SetConfigAndStart(std::move(config), consent, done);
 }
 
 void DaemonController::DoUpdateConfig(
@@ -126,7 +128,7 @@ void DaemonController::DoUpdateConfig(
     const CompletionCallback& done) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
-  delegate_->UpdateConfig(config.Pass(), done);
+  delegate_->UpdateConfig(std::move(config), done);
 }
 
 void DaemonController::DoStop(const CompletionCallback& done) {
@@ -164,7 +166,7 @@ void DaemonController::InvokeConfigCallbackAndScheduleNext(
     scoped_ptr<base::DictionaryValue> config) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  done.Run(config.Pass());
+  done.Run(std::move(config));
   ScheduleNext();
 }
 

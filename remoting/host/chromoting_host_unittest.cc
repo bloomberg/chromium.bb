@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/chromoting_host.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
@@ -121,23 +124,19 @@ class ChromotingHostTest : public testing::Test {
   // Helper method to pretend a client is connected to ChromotingHost.
   void SimulateClientConnection(int connection_index, bool authenticate,
                                 bool reject) {
-    scoped_ptr<protocol::ConnectionToClient> connection =
-        ((connection_index == 0) ? owned_connection1_ : owned_connection2_)
-            .Pass();
+    scoped_ptr<protocol::ConnectionToClient> connection = std::move(
+        (connection_index == 0) ? owned_connection1_ : owned_connection2_);
     protocol::ConnectionToClient* connection_ptr = connection.get();
     scoped_ptr<ClientSession> client(new ClientSession(
         host_.get(),
-        task_runner_, // Audio
-        task_runner_, // Input
-        task_runner_, // Video capture
-        task_runner_, // Video encode
-        task_runner_, // Network
-        task_runner_, // UI
-        connection.Pass(),
-        desktop_environment_factory_.get(),
-        base::TimeDelta(),
-        nullptr,
-        std::vector<HostExtension*>()));
+        task_runner_,  // Audio
+        task_runner_,  // Input
+        task_runner_,  // Video capture
+        task_runner_,  // Video encode
+        task_runner_,  // Network
+        task_runner_,  // UI
+        std::move(connection), desktop_environment_factory_.get(),
+        base::TimeDelta(), nullptr, std::vector<HostExtension*>()));
     ClientSession* client_ptr = client.get();
 
     connection_ptr->set_host_stub(client.get());

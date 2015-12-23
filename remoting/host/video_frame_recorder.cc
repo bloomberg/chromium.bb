@@ -4,6 +4,8 @@
 
 #include "remoting/host/video_frame_recorder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -60,7 +62,7 @@ VideoFrameRecorder::RecordingVideoEncoder::RecordingVideoEncoder(
     scoped_ptr<VideoEncoder> encoder,
     scoped_refptr<base::TaskRunner> recorder_task_runner,
     base::WeakPtr<VideoFrameRecorder> recorder)
-    : encoder_(encoder.Pass()),
+    : encoder_(std::move(encoder)),
       recorder_task_runner_(recorder_task_runner),
       recorder_(recorder),
       enable_recording_(false),
@@ -134,12 +136,12 @@ scoped_ptr<VideoEncoder> VideoFrameRecorder::WrapVideoEncoder(
   caller_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   scoped_ptr<RecordingVideoEncoder> recording_encoder(
-      new RecordingVideoEncoder(encoder.Pass(),
+      new RecordingVideoEncoder(std::move(encoder),
                                 caller_task_runner_,
                                 weak_factory_.GetWeakPtr()));
   recording_encoder_ = recording_encoder->AsWeakPtr();
 
-  return recording_encoder.Pass();
+  return std::move(recording_encoder);
 }
 
 void VideoFrameRecorder::DetachVideoEncoderWrapper() {
@@ -201,7 +203,7 @@ scoped_ptr<webrtc::DesktopFrame> VideoFrameRecorder::NextFrame() {
     DCHECK_GE(content_bytes_, 0);
   }
 
-  return frame.Pass();
+  return frame;
 }
 
 void VideoFrameRecorder::SetEncoderTaskRunner(

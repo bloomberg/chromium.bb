@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/json/json_writer.h"
@@ -27,11 +29,9 @@ GcdRestClient::GcdRestClient(const std::string& gcd_base_url,
       gcd_device_id_(gcd_device_id),
       url_request_context_getter_(url_request_context_getter),
       token_getter_(token_getter),
-      clock_(new base::DefaultClock) {
-}
+      clock_(new base::DefaultClock) {}
 
-GcdRestClient::~GcdRestClient() {
-}
+GcdRestClient::~GcdRestClient() {}
 
 void GcdRestClient::PatchState(
     scoped_ptr<base::DictionaryValue> patch_details,
@@ -59,9 +59,9 @@ void GcdRestClient::PatchState(
   scoped_ptr<base::ListValue> patch_list(new base::ListValue);
   base::DictionaryValue* patch_item = new base::DictionaryValue;
   patch_list->Append(patch_item);
-  patch_item->Set("patch", patch_details.Pass());
+  patch_item->Set("patch", std::move(patch_details));
   patch_item->SetDouble("timeMs", now);
-  patch_dict->Set("patches", patch_list.Pass());
+  patch_dict->Set("patches", std::move(patch_list));
 
   // Stringify the message.
   std::string patch_string;
@@ -86,6 +86,10 @@ void GcdRestClient::PatchState(
 
   token_getter_->CallWithToken(
       base::Bind(&GcdRestClient::OnTokenReceived, base::Unretained(this)));
+}
+
+void GcdRestClient::SetClockForTest(scoped_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
 }
 
 void GcdRestClient::OnTokenReceived(OAuthTokenGetter::Status status,

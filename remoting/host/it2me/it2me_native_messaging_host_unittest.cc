@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -76,8 +78,8 @@ class MockIt2MeHost : public It2MeHost {
                 base::WeakPtr<It2MeHost::Observer> observer,
                 const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
                 const std::string& directory_bot_jid)
-      : It2MeHost(context.Pass(),
-                  policy_watcher.Pass(),
+      : It2MeHost(std::move(context),
+                  std::move(policy_watcher),
                   nullptr,
                   observer,
                   xmpp_server_config,
@@ -158,7 +160,7 @@ class MockIt2MeHostFactory : public It2MeHostFactory {
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid) override {
-    return new MockIt2MeHost(context.Pass(), nullptr, observer,
+    return new MockIt2MeHost(std::move(context), nullptr, observer,
                              xmpp_server_config, directory_bot_jid);
   }
 
@@ -311,12 +313,12 @@ void It2MeNativeMessagingHostTest::WriteMessageToInputPipe(
 
 void It2MeNativeMessagingHostTest::VerifyHelloResponse(int request_id) {
   scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
-  VerifyCommonProperties(response.Pass(), "helloResponse", request_id);
+  VerifyCommonProperties(std::move(response), "helloResponse", request_id);
 }
 
 void It2MeNativeMessagingHostTest::VerifyErrorResponse() {
   scoped_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
-  VerifyStringProperty(response.Pass(), "type", "error");
+  VerifyStringProperty(std::move(response), "type", "error");
 }
 
 void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
@@ -337,7 +339,7 @@ void It2MeNativeMessagingHostTest::VerifyConnectResponses(int request_id) {
     if (type == "connectResponse") {
       EXPECT_FALSE(connect_response_received);
       connect_response_received = true;
-      VerifyId(response.Pass(), request_id);
+      VerifyId(std::move(response), request_id);
     } else if (type == "hostStateChanged") {
       std::string state;
       ASSERT_TRUE(response->GetString("state", &state));
@@ -393,7 +395,7 @@ void It2MeNativeMessagingHostTest::VerifyDisconnectResponses(int request_id) {
     if (type == "disconnectResponse") {
       EXPECT_FALSE(disconnect_response_received);
       disconnect_response_received = true;
-      VerifyId(response.Pass(), request_id);
+      VerifyId(std::move(response), request_id);
     } else if (type == "hostStateChanged") {
       std::string state;
       ASSERT_TRUE(response->GetString("state", &state));
@@ -440,8 +442,8 @@ void It2MeNativeMessagingHostTest::StartHost() {
   pipe_.reset(new NativeMessagingPipe());
 
   scoped_ptr<extensions::NativeMessagingChannel> channel(
-      new PipeMessagingChannel(input_read_file.Pass(),
-                               output_write_file.Pass()));
+      new PipeMessagingChannel(std::move(input_read_file),
+                               std::move(output_write_file)));
 
   // Creating a native messaging host with a mock It2MeHostFactory.
   scoped_ptr<extensions::NativeMessageHost> it2me_host(
@@ -450,7 +452,7 @@ void It2MeNativeMessagingHostTest::StartHost() {
           make_scoped_ptr(new MockIt2MeHostFactory())));
   it2me_host->Start(pipe_.get());
 
-  pipe_->Start(it2me_host.Pass(), channel.Pass());
+  pipe_->Start(std::move(it2me_host), std::move(channel));
 
   // Notify the test that the host has finished starting up.
   test_message_loop_->task_runner()->PostTask(

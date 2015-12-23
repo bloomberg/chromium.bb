@@ -4,6 +4,8 @@
 
 #include "remoting/host/cast_extension_session.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -182,7 +184,7 @@ scoped_ptr<CastExtensionSession> CastExtensionSession::Create(
       !cast_extension_session->InitializePeerConnection()) {
     return nullptr;
   }
-  return cast_extension_session.Pass();
+  return cast_extension_session;
 }
 
 void CastExtensionSession::OnCreateSessionDescription(
@@ -236,7 +238,7 @@ void CastExtensionSession::OnCreateVideoCapturer(
 
   if (received_offer_) {
     has_grabbed_capturer_ = true;
-    if (SetupVideoStream(capturer->Pass())) {
+    if (SetupVideoStream(std::move(*capturer))) {
       peer_connection_->CreateAnswer(create_session_desc_observer_, nullptr);
     } else {
       has_grabbed_capturer_ = false;
@@ -528,7 +530,7 @@ bool CastExtensionSession::SetupVideoStream(
   }
 
   scoped_ptr<WebrtcVideoCapturerAdapter> video_capturer_adapter(
-      new WebrtcVideoCapturerAdapter(desktop_capturer.Pass()));
+      new WebrtcVideoCapturerAdapter(std::move(desktop_capturer)));
 
   // Set video stream constraints.
   webrtc::FakeConstraints video_constraints;

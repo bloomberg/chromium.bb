@@ -10,6 +10,8 @@
 
 #include <sddl.h>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/logging.h"
@@ -237,9 +239,8 @@ UnprivilegedProcessDelegate::UnprivilegedProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_ptr<base::CommandLine> target_command)
     : io_task_runner_(io_task_runner),
-      target_command_(target_command.Pass()),
-      event_handler_(nullptr) {
-}
+      target_command_(std::move(target_command)),
+      event_handler_(nullptr) {}
 
 UnprivilegedProcessDelegate::~UnprivilegedProcessDelegate() {
   DCHECK(CalledOnValidThread());
@@ -316,7 +317,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
 
     // Create our own window station and desktop accessible by |logon_sid|.
     WindowStationAndDesktop handles;
-    if (!CreateWindowStationAndDesktop(logon_sid.Pass(), &handles)) {
+    if (!CreateWindowStationAndDesktop(std::move(logon_sid), &handles)) {
       PLOG(ERROR) << "Failed to create a window station and desktop";
       ReportFatalError();
       return;
@@ -325,23 +326,17 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     // Try to launch the worker process. The launched process inherits
     // the window station, desktop and pipe handles, created above.
     ScopedHandle worker_thread;
-    if (!LaunchProcessWithToken(command_line.GetProgram(),
-                                command_line.GetCommandLineString(),
-                                token.Get(),
-                                &process_attributes,
-                                &thread_attributes,
-                                true,
-                                0,
-                                nullptr,
-                                &worker_process,
-                                &worker_thread)) {
+    if (!LaunchProcessWithToken(
+            command_line.GetProgram(), command_line.GetCommandLineString(),
+            token.Get(), &process_attributes, &thread_attributes, true, 0,
+            nullptr, &worker_process, &worker_thread)) {
       ReportFatalError();
       return;
     }
   }
 
-  channel_ = server.Pass();
-  ReportProcessLaunched(worker_process.Pass());
+  channel_ = std::move(server);
+  ReportProcessLaunched(std::move(worker_process));
 }
 
 void UnprivilegedProcessDelegate::Send(IPC::Message* message) {
@@ -415,19 +410,15 @@ void UnprivilegedProcessDelegate::ReportProcessLaunched(
   DCHECK(CalledOnValidThread());
   DCHECK(!worker_process_.IsValid());
 
-  worker_process_ = worker_process.Pass();
+  worker_process_ = std::move(worker_process);
 
   // Report a handle that can be used to wait for the worker process completion,
   // query information about the process and duplicate handles.
   DWORD desired_access =
       SYNCHRONIZE | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION;
   HANDLE temp_handle;
-  if (!DuplicateHandle(GetCurrentProcess(),
-                       worker_process_.Get(),
-                       GetCurrentProcess(),
-                       &temp_handle,
-                       desired_access,
-                       FALSE,
+  if (!DuplicateHandle(GetCurrentProcess(), worker_process_.Get(),
+                       GetCurrentProcess(), &temp_handle, desired_access, FALSE,
                        0)) {
     PLOG(ERROR) << "Failed to duplicate a handle";
     ReportFatalError();
@@ -435,7 +426,7 @@ void UnprivilegedProcessDelegate::ReportProcessLaunched(
   }
   ScopedHandle limited_handle(temp_handle);
 
-  event_handler_->OnProcessLaunched(limited_handle.Pass());
+  event_handler_->OnProcessLaunched(std::move(limited_handle));
 }
 
 }  // namespace remoting

@@ -6,6 +6,8 @@
 
 #include <security/pam_appl.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/environment.h"
@@ -46,15 +48,13 @@ class PamAuthorizer : public protocol::Authenticator {
   scoped_ptr<protocol::Authenticator> underlying_;
   enum { NOT_CHECKED, ALLOWED, DISALLOWED } local_login_status_;
 };
+
 }  // namespace
 
 PamAuthorizer::PamAuthorizer(scoped_ptr<protocol::Authenticator> underlying)
-    : underlying_(underlying.Pass()),
-      local_login_status_(NOT_CHECKED) {
-}
+    : underlying_(std::move(underlying)), local_login_status_(NOT_CHECKED) {}
 
-PamAuthorizer::~PamAuthorizer() {
-}
+PamAuthorizer::~PamAuthorizer() {}
 
 protocol::Authenticator::State PamAuthorizer::state() const {
   if (local_login_status_ == DISALLOWED) {
@@ -93,7 +93,7 @@ void PamAuthorizer::OnMessageProcessed(const base::Closure& resume_callback) {
 scoped_ptr<buzz::XmlElement> PamAuthorizer::GetNextMessage() {
   scoped_ptr<buzz::XmlElement> result(underlying_->GetNextMessage());
   MaybeCheckLocalLogin();
-  return result.Pass();
+  return result;
 }
 
 const std::string& PamAuthorizer::GetAuthKey() const {
@@ -160,14 +160,11 @@ int PamAuthorizer::PamConversation(int num_messages,
   return PAM_SUCCESS;
 }
 
-
 PamAuthorizationFactory::PamAuthorizationFactory(
     scoped_ptr<protocol::AuthenticatorFactory> underlying)
-    : underlying_(underlying.Pass()) {
-}
+    : underlying_(std::move(underlying)) {}
 
-PamAuthorizationFactory::~PamAuthorizationFactory() {
-}
+PamAuthorizationFactory::~PamAuthorizationFactory() {}
 
 scoped_ptr<protocol::Authenticator>
 PamAuthorizationFactory::CreateAuthenticator(
@@ -176,8 +173,7 @@ PamAuthorizationFactory::CreateAuthenticator(
     const buzz::XmlElement* first_message) {
   scoped_ptr<protocol::Authenticator> authenticator(
       underlying_->CreateAuthenticator(local_jid, remote_jid, first_message));
-  return make_scoped_ptr(new PamAuthorizer(authenticator.Pass()));
+  return make_scoped_ptr(new PamAuthorizer(std::move(authenticator)));
 }
-
 
 }  // namespace remoting

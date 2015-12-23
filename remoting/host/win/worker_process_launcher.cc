@@ -4,6 +4,8 @@
 
 #include "remoting/host/win/worker_process_launcher.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -48,14 +50,13 @@ const int kLaunchResultTimeoutSeconds = 5;
 
 namespace remoting {
 
-WorkerProcessLauncher::Delegate::~Delegate() {
-}
+WorkerProcessLauncher::Delegate::~Delegate() {}
 
 WorkerProcessLauncher::WorkerProcessLauncher(
     scoped_ptr<WorkerProcessLauncher::Delegate> launcher_delegate,
     WorkerProcessIpcDelegate* ipc_handler)
     : ipc_handler_(ipc_handler),
-      launcher_delegate_(launcher_delegate.Pass()),
+      launcher_delegate_(std::move(launcher_delegate)),
       exit_code_(CONTROL_C_EXIT),
       ipc_enabled_(false),
       kill_process_timeout_(
@@ -119,7 +120,7 @@ void WorkerProcessLauncher::OnProcessLaunched(
   }
 
   ipc_enabled_ = true;
-  worker_process_ = worker_process.Pass();
+  worker_process_ = std::move(worker_process);
 }
 
 void WorkerProcessLauncher::OnFatalError() {

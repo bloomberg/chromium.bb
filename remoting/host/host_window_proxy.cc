@@ -4,6 +4,8 @@
 
 #include "remoting/host/host_window_proxy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -75,7 +77,7 @@ HostWindowProxy::HostWindowProxy(
   // Detach |host_window| from the calling thread so that |Core| could run it on
   // the |ui_task_runner_| thread.
   host_window->DetachFromThread();
-  core_ = new Core(caller_task_runner, ui_task_runner, host_window.Pass());
+  core_ = new Core(caller_task_runner, ui_task_runner, std::move(host_window));
 }
 
 HostWindowProxy::~HostWindowProxy() {
@@ -97,7 +99,7 @@ HostWindowProxy::Core::Core(
     scoped_ptr<HostWindow> host_window)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
-      host_window_(host_window.Pass()),
+      host_window_(std::move(host_window)),
       weak_factory_(this) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }

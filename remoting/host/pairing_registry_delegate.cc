@@ -4,6 +4,8 @@
 
 #include "remoting/host/pairing_registry_delegate.h"
 
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 
 namespace remoting {
@@ -16,7 +18,7 @@ scoped_refptr<PairingRegistry> CreatePairingRegistry(
   scoped_ptr<PairingRegistry::Delegate> delegate(
       CreatePairingRegistryDelegate());
   if (delegate) {
-    pairing_registry = new PairingRegistry(task_runner, delegate.Pass());
+    pairing_registry = new PairingRegistry(task_runner, std::move(delegate));
   }
   return pairing_registry;
 }

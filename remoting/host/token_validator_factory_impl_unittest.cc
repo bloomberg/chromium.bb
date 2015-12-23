@@ -60,7 +60,7 @@ class SetResponseURLRequestContext: public net::TestURLRequestContext {
         make_scoped_ptr(new net::URLRequestJobFactoryImpl());
     factory->SetProtocolHandler(
         "https", make_scoped_ptr(new FakeProtocolHandler(headers, response)));
-    context_storage_.set_job_factory(factory.Pass());
+    context_storage_.set_job_factory(std::move(factory));
   }
 };
 
@@ -91,10 +91,9 @@ class TokenValidatorFactoryImplTest : public testing::Test {
  protected:
   void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
-    scoped_ptr<net::TestURLRequestContext> context(
-        new SetResponseURLRequestContext());
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_.task_runner(), context.Pass());
+        message_loop_.task_runner(),
+        make_scoped_ptr(new SetResponseURLRequestContext()));
     ThirdPartyAuthConfig config;
     config.token_url = GURL(kTokenUrl);
     config.token_validation_url = GURL(kTokenValidationUrl);

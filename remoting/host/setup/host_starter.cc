@@ -4,6 +4,8 @@
 
 #include "remoting/host/setup/host_starter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
@@ -24,8 +26,8 @@ HostStarter::HostStarter(
     scoped_ptr<gaia::GaiaOAuthClient> oauth_client,
     scoped_ptr<remoting::ServiceClient> service_client,
     scoped_refptr<remoting::DaemonController> daemon_controller)
-    : oauth_client_(oauth_client.Pass()),
-      service_client_(service_client.Pass()),
+    : oauth_client_(std::move(oauth_client)),
+      service_client_(std::move(service_client)),
       daemon_controller_(daemon_controller),
       consent_to_data_collection_(false),
       unregistering_host_(false),
@@ -34,21 +36,16 @@ HostStarter::HostStarter(
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
-HostStarter::~HostStarter() {
-}
+HostStarter::~HostStarter() {}
 
 scoped_ptr<HostStarter> HostStarter::Create(
     const std::string& chromoting_hosts_url,
     net::URLRequestContextGetter* url_request_context_getter) {
-  scoped_ptr<gaia::GaiaOAuthClient> oauth_client(
-      new gaia::GaiaOAuthClient(url_request_context_getter));
-  scoped_ptr<remoting::ServiceClient> service_client(
-      new remoting::ServiceClient(
-          chromoting_hosts_url, url_request_context_getter));
-  scoped_refptr<remoting::DaemonController> daemon_controller(
-      remoting::DaemonController::Create());
   return make_scoped_ptr(new HostStarter(
-      oauth_client.Pass(), service_client.Pass(), daemon_controller));
+      make_scoped_ptr(new gaia::GaiaOAuthClient(url_request_context_getter)),
+      make_scoped_ptr(new remoting::ServiceClient(chromoting_hosts_url,
+                                                  url_request_context_getter)),
+      remoting::DaemonController::Create()));
 }
 
 void HostStarter::StartHost(
@@ -170,7 +167,7 @@ void HostStarter::StartHostProcess() {
   config->SetString("private_key", key_pair_->ToString());
   config->SetString("host_secret_hash", host_secret_hash);
   daemon_controller_->SetConfigAndStart(
-      config.Pass(), consent_to_data_collection_,
+      std::move(config), consent_to_data_collection_,
       base::Bind(&HostStarter::OnHostStarted, base::Unretained(this)));
 }
 

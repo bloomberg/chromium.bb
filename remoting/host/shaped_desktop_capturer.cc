@@ -4,6 +4,8 @@
 
 #include "remoting/host/shaped_desktop_capturer.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "remoting/host/desktop_shape_tracker.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -13,10 +15,9 @@ namespace remoting {
 ShapedDesktopCapturer::ShapedDesktopCapturer(
     scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
     scoped_ptr<DesktopShapeTracker> shape_tracker)
-    : desktop_capturer_(desktop_capturer.Pass()),
-      shape_tracker_(shape_tracker.Pass()),
-      callback_(nullptr) {
-}
+    : desktop_capturer_(std::move(desktop_capturer)),
+      shape_tracker_(std::move(shape_tracker)),
+      callback_(nullptr) {}
 
 ShapedDesktopCapturer::~ShapedDesktopCapturer() {}
 

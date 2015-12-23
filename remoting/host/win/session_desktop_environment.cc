@@ -4,6 +4,8 @@
 
 #include "remoting/host/win/session_desktop_environment.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
@@ -14,19 +16,15 @@
 
 namespace remoting {
 
-SessionDesktopEnvironment::~SessionDesktopEnvironment() {
-}
+SessionDesktopEnvironment::~SessionDesktopEnvironment() {}
 
 scoped_ptr<InputInjector> SessionDesktopEnvironment::CreateInputInjector() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<InputInjector> input_injector = InputInjector::Create(
-      input_task_runner(), ui_task_runner());
-  input_injector.reset(new SessionInputInjectorWin(input_task_runner(),
-                                                   input_injector.Pass(),
-                                                   ui_task_runner(),
-                                                   inject_sas_));
-  return input_injector.Pass();
+  return make_scoped_ptr(new SessionInputInjectorWin(
+      input_task_runner(),
+      InputInjector::Create(input_task_runner(), ui_task_runner()),
+      ui_task_runner(), inject_sas_));
 }
 
 SessionDesktopEnvironment::SessionDesktopEnvironment(
@@ -62,17 +60,15 @@ scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   scoped_ptr<SessionDesktopEnvironment> desktop_environment(
-      new SessionDesktopEnvironment(caller_task_runner(),
-                                    input_task_runner(),
-                                    ui_task_runner(),
-                                    inject_sas_,
+      new SessionDesktopEnvironment(caller_task_runner(), input_task_runner(),
+                                    ui_task_runner(), inject_sas_,
                                     supports_touch_events()));
   if (!desktop_environment->InitializeSecurity(client_session_control,
                                                curtain_enabled())) {
     return nullptr;
   }
 
-  return desktop_environment.Pass();
+  return std::move(desktop_environment);
 }
 
 }  // namespace remoting

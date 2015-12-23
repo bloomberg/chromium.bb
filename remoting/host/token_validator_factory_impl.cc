@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -94,7 +96,7 @@ void TokenValidatorImpl::StartValidateRequest(const std::string& token) {
       new net::UploadBytesElementReader(
           post_body_.data(), post_body_.size()));
   request_->set_upload(
-      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+      net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
   request_->Start();
 }
 

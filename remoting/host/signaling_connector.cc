@@ -4,6 +4,8 @@
 
 #include "remoting/host/signaling_connector.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_util.h"
@@ -45,7 +47,7 @@ SignalingConnector::SignalingConnector(
     const base::Closure& auth_failed_callback)
     : signal_strategy_(signal_strategy),
       auth_failed_callback_(auth_failed_callback),
-      dns_blackhole_checker_(dns_blackhole_checker.Pass()),
+      dns_blackhole_checker_(std::move(dns_blackhole_checker)),
       oauth_token_getter_(oauth_token_getter),
       reconnect_attempts_(0) {
   DCHECK(!auth_failed_callback_.is_null());

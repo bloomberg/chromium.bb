@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -71,7 +72,7 @@ ChromotingHost::ChromotingHost(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : desktop_environment_factory_(desktop_environment_factory),
-      session_manager_(session_manager.Pass()),
+      session_manager_(std::move(session_manager)),
       audio_task_runner_(audio_task_runner),
       input_task_runner_(input_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
@@ -134,7 +135,7 @@ void ChromotingHost::AddExtension(scoped_ptr<HostExtension> extension) {
 void ChromotingHost::SetAuthenticatorFactory(
     scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
   DCHECK(CalledOnValidThread());
-  session_manager_->set_authenticator_factory(authenticator_factory.Pass());
+  session_manager_->set_authenticator_factory(std::move(authenticator_factory));
 }
 
 void ChromotingHost::SetEnableCurtaining(bool enable) {
@@ -283,8 +284,8 @@ void ChromotingHost::OnIncomingSession(
   ClientSession* client = new ClientSession(
       this, audio_task_runner_, input_task_runner_, video_capture_task_runner_,
       video_encode_task_runner_, network_task_runner_, ui_task_runner_,
-      connection.Pass(), desktop_environment_factory_, max_session_duration_,
-      pairing_registry_, extensions_.get());
+      std::move(connection), desktop_environment_factory_,
+      max_session_duration_, pairing_registry_, extensions_.get());
 
   clients_.push_back(client);
 }

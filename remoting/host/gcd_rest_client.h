@@ -53,7 +53,7 @@ class GcdRestClient : public net::URLFetcherDelegate {
   void PatchState(scoped_ptr<base::DictionaryValue> patch_details,
                   const GcdRestClient::ResultCallback& callback);
 
-  void SetClockForTest(scoped_ptr<base::Clock> clock) { clock_ = clock.Pass(); }
+  void SetClockForTest(scoped_ptr<base::Clock> clock);
 
  private:
   void OnTokenReceived(OAuthTokenGetter::Status status,

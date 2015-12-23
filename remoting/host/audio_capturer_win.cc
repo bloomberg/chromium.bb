@@ -4,14 +4,15 @@
 
 #include "remoting/host/audio_capturer_win.h"
 
-#include <windows.h>
 #include <avrt.h>
 #include <mmreg.h>
 #include <mmsystem.h>
-
 #include <stdint.h>
 #include <stdlib.h>
+#include <windows.h>
+
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 
@@ -236,7 +237,7 @@ void AudioCapturerWin::DoCapture() {
       packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
       packet->set_channels(AudioPacket::CHANNELS_STEREO);
 
-      callback_.Run(packet.Pass());
+      callback_.Run(std::move(packet));
     }
 
     hr = audio_capture_client_->ReleaseBuffer(frames);

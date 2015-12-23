@@ -5,6 +5,7 @@
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -43,8 +44,8 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
     scoped_ptr<ChromotingHostContext> context,
     scoped_ptr<It2MeHostFactory> factory)
     : client_(nullptr),
-      host_context_(context.Pass()),
-      factory_(factory.Pass()),
+      host_context_(std::move(context)),
+      factory_(std::move(factory)),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
@@ -90,20 +91,20 @@ void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
 
   std::string type;
   if (!message_dict->GetString("type", &type)) {
-    SendErrorAndExit(response.Pass(), "'type' not found in request.");
+    SendErrorAndExit(std::move(response), "'type' not found in request.");
     return;
   }
 
   response->SetString("type", type + "Response");
 
   if (type == "hello") {
-    ProcessHello(*message_dict, response.Pass());
+    ProcessHello(*message_dict, std::move(response));
   } else if (type == "connect") {
-    ProcessConnect(*message_dict, response.Pass());
+    ProcessConnect(*message_dict, std::move(response));
   } else if (type == "disconnect") {
-    ProcessDisconnect(*message_dict, response.Pass());
+    ProcessDisconnect(*message_dict, std::move(response));
   } else {
-    SendErrorAndExit(response.Pass(), "Unsupported request type: " + type);
+    SendErrorAndExit(std::move(response), "Unsupported request type: " + type);
   }
 }
 
@@ -137,7 +138,7 @@ void It2MeNativeMessagingHost::ProcessHello(
   scoped_ptr<base::ListValue> supported_features_list(new base::ListValue());
   response->Set("supportedFeatures", supported_features_list.release());
 
-  SendMessageToClient(response.Pass());
+  SendMessageToClient(std::move(response));
 }
 
 void It2MeNativeMessagingHost::ProcessConnect(
@@ -146,7 +147,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (it2me_host_.get()) {
-    SendErrorAndExit(response.Pass(),
+    SendErrorAndExit(std::move(response),
                      "Connect can be called only when disconnected.");
     return;
   }
@@ -154,13 +155,13 @@ void It2MeNativeMessagingHost::ProcessConnect(
   XmppSignalStrategy::XmppServerConfig xmpp_config = xmpp_server_config_;
 
   if (!message.GetString("userName", &xmpp_config.username)) {
-    SendErrorAndExit(response.Pass(), "'userName' not found in request.");
+    SendErrorAndExit(std::move(response), "'userName' not found in request.");
     return;
   }
 
   std::string auth_service_with_token;
   if (!message.GetString("authServiceWithToken", &auth_service_with_token)) {
-    SendErrorAndExit(response.Pass(),
+    SendErrorAndExit(std::move(response),
                      "'authServiceWithToken' not found in request.");
     return;
   }
@@ -171,8 +172,8 @@ void It2MeNativeMessagingHost::ProcessConnect(
   const char kOAuth2ServicePrefix[] = "oauth2:";
   if (!base::StartsWith(auth_service_with_token, kOAuth2ServicePrefix,
                         base::CompareCase::SENSITIVE)) {
-    SendErrorAndExit(response.Pass(), "Invalid 'authServiceWithToken': " +
-                                          auth_service_with_token);
+    SendErrorAndExit(std::move(response), "Invalid 'authServiceWithToken': " +
+                                              auth_service_with_token);
     return;
   }
 
@@ -182,26 +183,26 @@ void It2MeNativeMessagingHost::ProcessConnect(
 #if !defined(NDEBUG)
   std::string address;
   if (!message.GetString("xmppServerAddress", &address)) {
-    SendErrorAndExit(response.Pass(),
+    SendErrorAndExit(std::move(response),
                      "'xmppServerAddress' not found in request.");
     return;
   }
 
-  if (!net::ParseHostAndPort(
-           address, &xmpp_server_config_.host, &xmpp_server_config_.port)) {
-    SendErrorAndExit(response.Pass(),
+  if (!net::ParseHostAndPort(address, &xmpp_server_config_.host,
+                             &xmpp_server_config_.port)) {
+    SendErrorAndExit(std::move(response),
                      "Invalid 'xmppServerAddress': " + address);
     return;
   }
 
   if (!message.GetBoolean("xmppServerUseTls", &xmpp_server_config_.use_tls)) {
-    SendErrorAndExit(response.Pass(),
+    SendErrorAndExit(std::move(response),
                      "'xmppServerUseTls' not found in request.");
     return;
   }
 
   if (!message.GetString("directoryBotJid", &directory_bot_jid_)) {
-    SendErrorAndExit(response.Pass(),
+    SendErrorAndExit(std::move(response),
                      "'directoryBotJid' not found in request.");
     return;
   }
@@ -214,7 +215,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
                                           directory_bot_jid_);
   it2me_host_->Connect();
 
-  SendMessageToClient(response.Pass());
+  SendMessageToClient(std::move(response));
 }
 
 void It2MeNativeMessagingHost::ProcessDisconnect(
@@ -226,7 +227,7 @@ void It2MeNativeMessagingHost::ProcessDisconnect(
     it2me_host_->Disconnect();
     it2me_host_ = nullptr;
   }
-  SendMessageToClient(response.Pass());
+  SendMessageToClient(std::move(response));
 }
 
 void It2MeNativeMessagingHost::SendErrorAndExit(
@@ -238,7 +239,7 @@ void It2MeNativeMessagingHost::SendErrorAndExit(
 
   response->SetString("type", "error");
   response->SetString("description", description);
-  SendMessageToClient(response.Pass());
+  SendMessageToClient(std::move(response));
 
   // Trigger a host shutdown by sending an empty message.
   client_->CloseChannel(std::string());
@@ -283,7 +284,7 @@ void It2MeNativeMessagingHost::OnStateChanged(
       ;
   }
 
-  SendMessageToClient(message.Pass());
+  SendMessageToClient(std::move(message));
 }
 
 void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
@@ -293,7 +294,7 @@ void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
 
   message->SetString("type", "natPolicyChanged");
   message->SetBoolean("natTraversalEnabled", nat_traversal_enabled);
-  SendMessageToClient(message.Pass());
+  SendMessageToClient(std::move(message));
 }
 
 // Stores the Access Code for the web-app to query.

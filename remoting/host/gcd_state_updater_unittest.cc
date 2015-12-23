@@ -5,6 +5,7 @@
 #include "remoting/host/gcd_state_updater.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/strings/stringize_macros.h"
@@ -62,7 +63,7 @@ TEST_F(GcdStateUpdaterTest, Success) {
   scoped_ptr<GcdStateUpdater> updater(new GcdStateUpdater(
       base::Bind(&GcdStateUpdaterTest::OnSuccess, base::Unretained(this)),
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
-      &signal_strategy_, rest_client_.Pass()));
+      &signal_strategy_, std::move(rest_client_)));
 
   signal_strategy_.Connect();
   task_runner_->RunUntilIdle();
@@ -86,7 +87,7 @@ TEST_F(GcdStateUpdaterTest, QueuedRequests) {
   scoped_ptr<GcdStateUpdater> updater(new GcdStateUpdater(
       base::Bind(&GcdStateUpdaterTest::OnSuccess, base::Unretained(this)),
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
-      &signal_strategy_, rest_client_.Pass()));
+      &signal_strategy_, std::move(rest_client_)));
 
   // Connect, then re-connect with a different JID while the status
   // update for the first connection is pending.
@@ -130,7 +131,7 @@ TEST_F(GcdStateUpdaterTest, Retry) {
   scoped_ptr<GcdStateUpdater> updater(new GcdStateUpdater(
       base::Bind(&GcdStateUpdaterTest::OnSuccess, base::Unretained(this)),
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
-      &signal_strategy_, rest_client_.Pass()));
+      &signal_strategy_, std::move(rest_client_)));
 
   signal_strategy_.Connect();
   task_runner_->RunUntilIdle();
@@ -155,7 +156,7 @@ TEST_F(GcdStateUpdaterTest, UnknownHost) {
   scoped_ptr<GcdStateUpdater> updater(new GcdStateUpdater(
       base::Bind(&GcdStateUpdaterTest::OnSuccess, base::Unretained(this)),
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
-      &signal_strategy_, rest_client_.Pass()));
+      &signal_strategy_, std::move(rest_client_)));
 
   signal_strategy_.Connect();
   task_runner_->RunUntilIdle();

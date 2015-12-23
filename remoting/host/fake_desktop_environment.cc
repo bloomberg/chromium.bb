@@ -4,6 +4,8 @@
 
 #include "remoting/host/fake_desktop_environment.h"
 
+#include <utility>
+
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/input_injector.h"
@@ -64,7 +66,7 @@ scoped_ptr<AudioCapturer> FakeDesktopEnvironment::CreateAudioCapturer() {
 scoped_ptr<InputInjector> FakeDesktopEnvironment::CreateInputInjector() {
   scoped_ptr<FakeInputInjector> result(new FakeInputInjector());
   last_input_injector_ = result->AsWeakPtr();
-  return result.Pass();
+  return std::move(result);
 }
 
 scoped_ptr<ScreenControls> FakeDesktopEnvironment::CreateScreenControls() {
@@ -77,7 +79,7 @@ FakeDesktopEnvironment::CreateVideoCapturer() {
       new protocol::FakeDesktopCapturer());
   if (!frame_generator_.is_null())
     result->set_frame_generator(frame_generator_);
-  return result.Pass();
+  return std::move(result);
 }
 
 scoped_ptr<webrtc::MouseCursorMonitor>
@@ -105,7 +107,7 @@ scoped_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
   scoped_ptr<FakeDesktopEnvironment> result(new FakeDesktopEnvironment());
   result->set_frame_generator(frame_generator_);
   last_desktop_environment_ = result->AsWeakPtr();
-  return result.Pass();
+  return std::move(result);
 }
 
 void FakeDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {}

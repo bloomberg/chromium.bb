@@ -93,8 +93,7 @@ scoped_ptr<HostExtensionSession> FakeExtension::CreateExtensionSession(
     protocol::ClientStub* client_stub) {
   DCHECK(!was_instantiated());
   was_instantiated_ = true;
-  scoped_ptr<HostExtensionSession> session(new Session(this, message_type_));
-  return session.Pass();
+  return make_scoped_ptr(new Session(this, message_type_));
 }
 
 } // namespace remoting

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -229,8 +231,8 @@ void DaemonProcessWin::LaunchNetworkProcess() {
                            kCopiedSwitchNames, arraysize(kCopiedSwitchNames));
 
   scoped_ptr<UnprivilegedProcessDelegate> delegate(
-      new UnprivilegedProcessDelegate(io_task_runner(), target.Pass()));
-  network_launcher_.reset(new WorkerProcessLauncher(delegate.Pass(), this));
+      new UnprivilegedProcessDelegate(io_task_runner(), std::move(target)));
+  network_launcher_.reset(new WorkerProcessLauncher(std::move(delegate), this));
 }
 
 scoped_ptr<DaemonProcess> DaemonProcess::Create(
@@ -241,7 +243,7 @@ scoped_ptr<DaemonProcess> DaemonProcess::Create(
       new DaemonProcessWin(caller_task_runner, io_task_runner,
                            stopped_callback));
   daemon_process->Initialize();
-  return daemon_process.Pass();
+  return std::move(daemon_process);
 }
 
 void DaemonProcessWin::DisableAutoStart() {

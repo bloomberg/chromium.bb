@@ -4,6 +4,8 @@
 
 #include "remoting/host/chromeos/clipboard_aura.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
@@ -33,7 +35,7 @@ void ClipboardAura::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  client_clipboard_ = client_clipboard.Pass();
+  client_clipboard_ = std::move(client_clipboard);
 
   // Aura doesn't provide a clipboard-changed notification. The only way to
   // detect clipboard changes is by polling.

@@ -124,7 +124,7 @@ void LogMessageHandler::SendLogMessageToClient(
   dictionary->SetString("file", file);
   dictionary->SetInteger("line", line);
 
-  delegate_.Run(dictionary.Pass());
+  delegate_.Run(std::move(dictionary));
 
   suppress_logging_ = false;
 }

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
@@ -30,7 +32,7 @@ GcdStateUpdater::GcdStateUpdater(
     : on_update_successful_callback_(on_update_successful_callback),
       on_unknown_host_id_error_(on_unknown_host_id_error),
       signal_strategy_(signal_strategy),
-      gcd_rest_client_(gcd_rest_client.Pass()) {
+      gcd_rest_client_(std::move(gcd_rest_client)) {
   DCHECK(signal_strategy_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -116,11 +118,11 @@ void GcdStateUpdater::MaybeSendStateUpdate() {
   pending_request_jid_ = signal_strategy_->GetLocalJid();
   base_state->SetString("_jabberId", pending_request_jid_);
   base_state->SetString("_hostVersion", STRINGIZE(VERSION));
-  patch->Set("base", base_state.Pass());
+  patch->Set("base", std::move(base_state));
 
   // Send the update to GCD.
   gcd_rest_client_->PatchState(
-      patch.Pass(),
+      std::move(patch),
       base::Bind(&GcdStateUpdater::OnPatchStateResult, base::Unretained(this)));
 }
 
