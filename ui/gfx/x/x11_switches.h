@@ -5,6 +5,7 @@
 #ifndef UI_GFX_X_X11_SWITCHES_H_
 #define UI_GFX_X_X11_SWITCHES_H_
 
+#include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace switches {

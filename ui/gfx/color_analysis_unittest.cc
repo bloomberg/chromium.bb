@@ -4,6 +4,9 @@
 
 #include "ui/gfx/color_analysis.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"

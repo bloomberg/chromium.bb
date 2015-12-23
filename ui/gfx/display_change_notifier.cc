@@ -4,6 +4,8 @@
 
 #include "ui/gfx/display_change_notifier.h"
 
+#include <stdint.h>
+
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 
@@ -22,7 +24,7 @@ class DisplayComparator {
   }
 
  private:
-  int64 display_id_;
+  int64_t display_id_;
 };
 
 } // anonymous namespace

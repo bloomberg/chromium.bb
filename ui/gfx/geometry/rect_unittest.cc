@@ -4,7 +4,10 @@
 
 #include <limits>
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"

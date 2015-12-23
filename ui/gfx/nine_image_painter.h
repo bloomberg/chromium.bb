@@ -5,10 +5,13 @@
 #ifndef UI_GFX_NINE_IMAGE_PAINTER_H_
 #define UI_GFX_NINE_IMAGE_PAINTER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -27,7 +30,7 @@ class GFX_EXPORT NineImagePainter {
   bool IsEmpty() const;
   Size GetMinimumSize() const;
   void Paint(Canvas* canvas, const Rect& bounds);
-  void Paint(Canvas* canvas, const Rect& bounds, uint8 alpha);
+  void Paint(Canvas* canvas, const Rect& bounds, uint8_t alpha);
 
  private:
   friend class NineImagePainterTest;

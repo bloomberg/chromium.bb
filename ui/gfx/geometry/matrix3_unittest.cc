@@ -5,7 +5,6 @@
 #include <cmath>
 #include <limits>
 
-#include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/matrix3_f.h"
 

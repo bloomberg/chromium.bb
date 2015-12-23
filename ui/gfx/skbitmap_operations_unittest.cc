@@ -4,6 +4,8 @@
 
 #include "ui/gfx/skbitmap_operations.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"

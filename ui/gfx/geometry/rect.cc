@@ -16,6 +16,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "ui/gfx/geometry/insets.h"
 
 namespace gfx {

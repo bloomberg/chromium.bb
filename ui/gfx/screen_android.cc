@@ -5,6 +5,7 @@
 #include "ui/gfx/screen.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size_conversions.h"

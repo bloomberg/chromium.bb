@@ -5,6 +5,7 @@
 #include "ui/gfx/color_profile.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"

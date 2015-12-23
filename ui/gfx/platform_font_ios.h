@@ -5,6 +5,7 @@
 #ifndef UI_GFX_PLATFORM_FONT_IOS_H_
 #define UI_GFX_PLATFORM_FONT_IOS_H_
 
+#include "base/macros.h"
 #include "ui/gfx/platform_font.h"
 
 namespace gfx {

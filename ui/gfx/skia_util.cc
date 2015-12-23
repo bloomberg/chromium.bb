@@ -4,6 +4,9 @@
 
 #include "ui/gfx/skia_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"

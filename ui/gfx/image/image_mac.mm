@@ -5,6 +5,7 @@
 #include "ui/gfx/image/image.h"
 
 #import <AppKit/AppKit.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"

@@ -4,6 +4,8 @@
 
 #include "ui/gfx/font_list_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

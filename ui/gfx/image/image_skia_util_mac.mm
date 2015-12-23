@@ -8,6 +8,7 @@
 #include <limits>
 
 #import <AppKit/AppKit.h>
+#include <stddef.h>
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"

@@ -4,6 +4,8 @@
 
 #include "ui/gfx/gdi_util.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

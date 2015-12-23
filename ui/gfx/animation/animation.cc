@@ -4,6 +4,7 @@
 
 #include "ui/gfx/animation/animation.h"
 
+#include "build/build_config.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"

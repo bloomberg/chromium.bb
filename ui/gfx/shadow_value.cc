@@ -4,6 +4,8 @@
 
 #include "ui/gfx/shadow_value.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/strings/stringprintf.h"

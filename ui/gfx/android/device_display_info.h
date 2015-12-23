@@ -8,7 +8,7 @@
 #include <jni.h>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {

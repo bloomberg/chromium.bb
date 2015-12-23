@@ -4,6 +4,8 @@
 
 #include "ui/gfx/icon_util.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/files/file_util.h"

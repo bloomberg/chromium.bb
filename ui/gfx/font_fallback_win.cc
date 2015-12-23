@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_split.h"

@@ -5,7 +5,8 @@
 #ifndef UI_GFX_COLOR_ANALYSIS_H_
 #define UI_GFX_COLOR_ANALYSIS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"

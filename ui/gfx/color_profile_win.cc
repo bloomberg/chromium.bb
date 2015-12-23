@@ -5,10 +5,12 @@
 #include "ui/gfx/color_profile.h"
 
 #include <windows.h>
+#include <stddef.h>
 #include <map>
 
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 
 namespace gfx {

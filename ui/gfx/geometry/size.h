@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/numerics/safe_math.h"
+#include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
 #if defined(OS_WIN)

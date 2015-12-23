@@ -7,6 +7,7 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "jni/ViewConfigurationHelper_jni.h"
 

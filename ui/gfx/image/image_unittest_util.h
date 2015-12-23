@@ -8,8 +8,9 @@
 #ifndef UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
 #define UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
 
-#include "ui/gfx/image/image.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image.h"
 
 namespace gfx {
 namespace test {

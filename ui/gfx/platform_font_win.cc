@@ -4,10 +4,11 @@
 
 #include "ui/gfx/platform_font_win.h"
 
+#include <windows.h>
 #include <dwrite.h>
 #include <math.h>
+#include <stdint.h>
 #include <wchar.h>
-#include <windows.h>
 
 #include <algorithm>
 
@@ -189,7 +190,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   //    use that.
   base::win::ScopedComPtr<IDWriteFontFamily> font_family;
   BOOL exists = FALSE;
-  uint32 index = 0;
+  uint32_t index = 0;
   hr = font_collection->FindFamilyName(font_info->lfFaceName, &index, &exists);
   // If we fail to find a match then try fallback to the default font on the
   // system. This is what skia does as well.
@@ -259,7 +260,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   base::win::ScopedComPtr<IDWriteFontList> matching_font_list;
   hr = font_family->GetMatchingFonts(weight, stretch, italic,
                                      matching_font_list.Receive());
-  uint32 matching_font_count = 0;
+  uint32_t matching_font_count = 0;
   if (SUCCEEDED(hr))
     matching_font_count = matching_font_list->GetFontCount();
 

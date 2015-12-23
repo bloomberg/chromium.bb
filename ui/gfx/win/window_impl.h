@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"

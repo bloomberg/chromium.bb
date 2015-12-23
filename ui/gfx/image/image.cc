@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_png_rep.h"

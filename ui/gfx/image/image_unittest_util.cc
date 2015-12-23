@@ -7,9 +7,12 @@
 
 #include "ui/gfx/image/image_unittest_util.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"

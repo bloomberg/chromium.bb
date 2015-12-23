@@ -4,6 +4,7 @@
 
 #include "ui/gfx/animation/slide_animation.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"

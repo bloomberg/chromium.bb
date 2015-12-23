@@ -5,9 +5,10 @@
 #ifndef UI_GFX_BUFFER_FORMAT_UTIL_H_
 #define UI_GFX_BUFFER_FORMAT_UTIL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"

@@ -4,6 +4,8 @@
 
 #include "ui/gfx/blit.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "skia/ext/platform_canvas.h"

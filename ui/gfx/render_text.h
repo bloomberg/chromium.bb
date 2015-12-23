@@ -5,6 +5,9 @@
 #ifndef UI_GFX_RENDER_TEXT_H_
 #define UI_GFX_RENDER_TEXT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstring>
 #include <string>
@@ -13,6 +16,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "skia/ext/refptr.h"
@@ -67,7 +71,7 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetUnderlineMetrics(SkScalar thickness, SkScalar position);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);
   virtual void DrawPosText(const SkPoint* pos,
-                           const uint16* glyphs,
+                           const uint16_t* glyphs,
                            size_t glyph_count);
   // Draw underline and strike-through text decorations.
   // Based on |SkCanvas::DrawTextDecorations()| and constants from:

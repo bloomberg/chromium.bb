@@ -5,6 +5,7 @@
 #ifndef UI_GFX_SCOPED_SK_REGION_H_
 #define UI_GFX_SCOPED_SK_REGION_H_
 
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace gfx {

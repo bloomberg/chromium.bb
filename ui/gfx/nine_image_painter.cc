@@ -4,8 +4,11 @@
 
 #include "ui/gfx/nine_image_painter.h"
 
+#include <stddef.h>
+
 #include <limits>
 
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -79,12 +82,12 @@ Size NineImagePainter::GetMinimumSize() const {
 
 void NineImagePainter::Paint(Canvas* canvas, const Rect& bounds) {
   // When no alpha value is specified, use default value of 100% opacity.
-  Paint(canvas, bounds, std::numeric_limits<uint8>::max());
+  Paint(canvas, bounds, std::numeric_limits<uint8_t>::max());
 }
 
 void NineImagePainter::Paint(Canvas* canvas,
                              const Rect& bounds,
-                             const uint8 alpha) {
+                             const uint8_t alpha) {
   if (IsEmpty())
     return;
 

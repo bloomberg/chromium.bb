@@ -10,10 +10,11 @@
 #ifndef UI_GFX_GEOMETRY_VECTOR2D_H_
 #define UI_GFX_GEOMETRY_VECTOR2D_H_
 
+#include <stdint.h>
+
 #include <iosfwd>
 #include <string>
 
-#include "base/basictypes.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -54,7 +55,7 @@ class GFX_EXPORT Vector2d {
   // Gives the square of the diagonal length of the vector. Since this is
   // cheaper to compute than Length(), it is useful when you want to compare
   // relative lengths of different vectors without needing the actual lengths.
-  int64 LengthSquared() const;
+  int64_t LengthSquared() const;
   // Gives the diagonal length of the vector.
   float Length() const;
 

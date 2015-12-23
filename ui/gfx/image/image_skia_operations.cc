@@ -4,8 +4,11 @@
 
 #include "ui/gfx/image/image_skia_operations.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"

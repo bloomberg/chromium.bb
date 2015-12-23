@@ -6,10 +6,12 @@
 #define UI_GFX_ICON_UTIL_H_
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "ui/gfx/geometry/point.h"
@@ -204,7 +206,7 @@ class GFX_EXPORT IconUtil {
   friend class IconUtilTest;
 
   // Returns true if any pixel in the given pixels buffer has an non-zero alpha.
-  static bool PixelsHaveAlpha(const uint32* pixels, size_t num_pixels);
+  static bool PixelsHaveAlpha(const uint32_t* pixels, size_t num_pixels);
 
   // A helper function that initializes a BITMAPV5HEADER structure with a set
   // of values.

@@ -5,6 +5,7 @@
 #ifndef UI_GFX_SCREEN_TYPE_DELEGATE_H_
 #define UI_GFX_SCREEN_TYPE_DELEGATE_H_
 
+#include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

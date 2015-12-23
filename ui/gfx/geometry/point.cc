@@ -4,6 +4,11 @@
 
 #include "ui/gfx/geometry/point.h"
 
+#include "base/strings/stringprintf.h"
+#include "build/build_config.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/point_f.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(OS_IOS)
@@ -11,10 +16,6 @@
 #elif defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
-
-#include "base/strings/stringprintf.h"
-#include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/geometry/point_f.h"
 
 namespace gfx {
 

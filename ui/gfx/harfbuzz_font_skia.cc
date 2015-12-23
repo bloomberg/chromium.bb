@@ -4,11 +4,15 @@
 
 #include "ui/gfx/harfbuzz_font_skia.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <map>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/render_text.h"

@@ -4,6 +4,7 @@
 
 #include "ui/gfx/image/image.h"
 
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 #include <cmath>
 #include <limits>

@@ -5,7 +5,8 @@
 #ifndef UI_GFX_DISPLAY_H_
 #define UI_GFX_DISPLAY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
@@ -51,12 +52,12 @@ class GFX_EXPORT Display {
     TOUCH_SUPPORT_UNAVAILABLE,
   };
 
-  enum : int64 { kInvalidDisplayID = -1 };
+  enum : int64_t { kInvalidDisplayID = -1 };
 
   // Creates a display with kInvalidDisplayID as default.
   Display();
-  explicit Display(int64 id);
-  Display(int64 id, const Rect& bounds);
+  explicit Display(int64_t id);
+  Display(int64_t id, const Rect& bounds);
   ~Display();
 
   // Returns the forced device scale factor, which is given by
@@ -74,8 +75,8 @@ class GFX_EXPORT Display {
 
   // Sets/Gets unique identifier associated with the display.
   // -1 means invalid display and it doesn't not exit.
-  int64 id() const { return id_; }
-  void set_id(int64 id) { id_ = id; }
+  int64_t id() const { return id_; }
+  void set_id(int64_t id) { id_ = id; }
 
   // Gets/Sets the display's bounds in gfx::Screen's coordinates.
   const Rect& bounds() const { return bounds_; }
@@ -135,17 +136,17 @@ class GFX_EXPORT Display {
   bool IsInternal() const;
 
   // Gets/Sets an id of display corresponding to internal panel.
-  static int64 InternalDisplayId();
-  static void SetInternalDisplayId(int64 internal_display_id);
+  static int64_t InternalDisplayId();
+  static void SetInternalDisplayId(int64_t internal_display_id);
 
   // Test if the |id| is for the internal display if any.
-  static bool IsInternalDisplayId(int64 id);
+  static bool IsInternalDisplayId(int64_t id);
 
   // True if there is an internal display.
   static bool HasInternalDisplay();
 
  private:
-  int64 id_;
+  int64_t id_;
   Rect bounds_;
   Rect work_area_;
   float device_scale_factor_;

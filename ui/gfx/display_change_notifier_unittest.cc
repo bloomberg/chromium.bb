@@ -4,6 +4,9 @@
 
 #include "ui/gfx/display_change_notifier.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"

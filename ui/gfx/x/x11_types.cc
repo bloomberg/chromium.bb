@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "ui/gfx/x/x11_switches.h"
 
 namespace gfx {
@@ -30,10 +31,13 @@ XDisplay* OpenNewXDisplay() {
 }
 
 void PutARGBImage(XDisplay* display,
-                  void* visual, int depth,
-                  XID pixmap, void* pixmap_gc,
-                  const uint8* data,
-                  int width, int height) {
+                  void* visual,
+                  int depth,
+                  XID pixmap,
+                  void* pixmap_gc,
+                  const uint8_t* data,
+                  int width,
+                  int height) {
   PutARGBImage(display,
                visual, depth,
                pixmap, pixmap_gc,
@@ -58,13 +62,19 @@ int BitsPerPixelForPixmapDepth(XDisplay* dpy, int depth) {
 }
 
 void PutARGBImage(XDisplay* display,
-                  void* visual, int depth,
-                  XID pixmap, void* pixmap_gc,
-                  const uint8* data,
-                  int data_width, int data_height,
-                  int src_x, int src_y,
-                  int dst_x, int dst_y,
-                  int copy_width, int copy_height) {
+                  void* visual,
+                  int depth,
+                  XID pixmap,
+                  void* pixmap_gc,
+                  const uint8_t* data,
+                  int data_width,
+                  int data_height,
+                  int src_x,
+                  int src_y,
+                  int dst_x,
+                  int dst_y,
+                  int copy_width,
+                  int copy_height) {
   // TODO(scherkus): potential performance impact... consider passing in as a
   // parameter.
   int pixmap_bpp = BitsPerPixelForPixmapDepth(display, depth);

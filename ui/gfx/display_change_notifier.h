@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/gfx/gfx_export.h"
 

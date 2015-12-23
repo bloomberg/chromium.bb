@@ -5,6 +5,8 @@
 #ifndef UI_GFX_SELECTION_MODEL_H_
 #define UI_GFX_SELECTION_MODEL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "ui/gfx/gfx_export.h"

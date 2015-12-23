@@ -6,12 +6,13 @@
 
 #include <math.h>
 
+#include "build/build_config.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/test/gfx_util.h"
+
 #if defined(OS_WIN)
 #include <float.h>
 #endif
-
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/test/gfx_util.h"
 
 namespace gfx {
 namespace {

@@ -4,6 +4,8 @@
 
 #include "ui/gfx/text_utils.h"
 
+#include <stdint.h>
+
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -44,7 +46,7 @@ base::string16 RemoveAcceleratorChar(const base::string16& s,
 
   accelerator_removed.reserve(s.size());
   while (!chars.end()) {
-    int32 c = chars.get();
+    int32_t c = chars.get();
     int array_pos = chars.array_pos();
     chars.Advance();
 

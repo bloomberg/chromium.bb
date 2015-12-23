@@ -7,12 +7,14 @@
 
 #include "ui/gfx/transform.h"
 
-#include <cmath>
-#include <ostream>
-#include <limits>
+#include <stddef.h>
 
-#include "base/basictypes.h"
+#include <cmath>
+#include <limits>
+#include <ostream>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point.h"

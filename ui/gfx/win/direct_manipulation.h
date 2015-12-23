@@ -7,6 +7,7 @@
 
 #include <directmanipulation.h>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/gfx/geometry/rect.h"

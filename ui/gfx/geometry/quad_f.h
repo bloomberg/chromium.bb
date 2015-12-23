@@ -5,6 +5,8 @@
 #ifndef UI_GFX_GEOMETRY_QUAD_F_H_
 #define UI_GFX_GEOMETRY_QUAD_F_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <iosfwd>

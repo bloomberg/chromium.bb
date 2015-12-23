@@ -5,21 +5,20 @@
 #include "ui/gfx/color_utils.h"
 
 #include <math.h>
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include <stdint.h>
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
-#if defined(OS_WIN)
-#include "skia/ext/skia_utils_win.h"
-#endif
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_palette.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#include "skia/ext/skia_utils_win.h"
+#endif
 
 namespace color_utils {
 
@@ -135,14 +134,14 @@ SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
   // If there's no color, we don't care about hue and can do everything based on
   // brightness.
   if (!saturation) {
-    uint8 light;
+    uint8_t light;
 
     if (lightness < 0)
       light = 0;
     else if (lightness >= 1.0)
       light = 255;
     else
-      light = static_cast<uint8>(SkDoubleToFixed(lightness) >> 8);
+      light = static_cast<uint8_t>(SkDoubleToFixed(lightness) >> 8);
 
     return SkColorSetARGB(alpha, light, light, light);
   }

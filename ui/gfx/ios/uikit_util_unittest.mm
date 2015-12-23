@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "testing/platform_test.h"
 #import "ui/gfx/ios/uikit_util.h"
 

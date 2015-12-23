@@ -4,6 +4,9 @@
 
 #include "ui/gfx/break_list.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/range/range.h"

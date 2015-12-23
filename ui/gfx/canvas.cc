@@ -186,11 +186,11 @@ void Canvas::Save() {
   canvas_->save();
 }
 
-void Canvas::SaveLayerAlpha(uint8 alpha) {
+void Canvas::SaveLayerAlpha(uint8_t alpha) {
   canvas_->saveLayerAlpha(NULL, alpha);
 }
 
-void Canvas::SaveLayerAlpha(uint8 alpha, const Rect& layer_bounds) {
+void Canvas::SaveLayerAlpha(uint8_t alpha, const Rect& layer_bounds) {
   SkRect bounds(RectToSkRect(layer_bounds));
   canvas_->saveLayerAlpha(&bounds, alpha);
 }
@@ -340,7 +340,7 @@ void Canvas::DrawImageInt(const ImageSkia& image, int x, int y) {
   DrawImageInt(image, x, y, paint);
 }
 
-void Canvas::DrawImageInt(const ImageSkia& image, int x, int y, uint8 a) {
+void Canvas::DrawImageInt(const ImageSkia& image, int x, int y, uint8_t a) {
   SkPaint paint;
   paint.setAlpha(a);
   DrawImageInt(image, x, y, paint);

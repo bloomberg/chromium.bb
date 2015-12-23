@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/x/x11_types.h"
 

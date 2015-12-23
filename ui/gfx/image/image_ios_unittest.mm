@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #import <QuartzCore/QuartzCore.h>
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"

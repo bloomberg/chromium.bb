@@ -4,6 +4,8 @@
 
 #include "ui/gfx/skbitmap_operations.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <algorithm>
 
@@ -29,11 +31,11 @@ SkBitmap SkBitmapOperations::CreateInvertedBitmap(const SkBitmap& image) {
   inverted.allocN32Pixels(image.width(), image.height());
 
   for (int y = 0; y < image.height(); ++y) {
-    uint32* image_row = image.getAddr32(0, y);
-    uint32* dst_row = inverted.getAddr32(0, y);
+    uint32_t* image_row = image.getAddr32(0, y);
+    uint32_t* dst_row = inverted.getAddr32(0, y);
 
     for (int x = 0; x < image.width(); ++x) {
-      uint32 image_pixel = image_row[x];
+      uint32_t image_pixel = image_row[x];
       dst_row[x] = (image_pixel & 0xFF000000) |
                    (0x00FFFFFF - (image_pixel & 0x00FFFFFF));
     }
@@ -69,13 +71,13 @@ SkBitmap SkBitmapOperations::CreateBlendedBitmap(const SkBitmap& first,
   double first_alpha = 1 - alpha;
 
   for (int y = 0; y < first.height(); ++y) {
-    uint32* first_row = first.getAddr32(0, y);
-    uint32* second_row = second.getAddr32(0, y);
-    uint32* dst_row = blended.getAddr32(0, y);
+    uint32_t* first_row = first.getAddr32(0, y);
+    uint32_t* second_row = second.getAddr32(0, y);
+    uint32_t* dst_row = blended.getAddr32(0, y);
 
     for (int x = 0; x < first.width(); ++x) {
-      uint32 first_pixel = first_row[x];
-      uint32 second_pixel = second_row[x];
+      uint32_t first_pixel = first_row[x];
+      uint32_t second_pixel = second_row[x];
 
       int a = static_cast<int>((SkColorGetA(first_pixel) * first_alpha) +
                                (SkColorGetA(second_pixel) * alpha));
@@ -110,9 +112,9 @@ SkBitmap SkBitmapOperations::CreateMaskedBitmap(const SkBitmap& rgb,
   SkAutoLockPixels lock_masked(masked);
 
   for (int y = 0; y < masked.height(); ++y) {
-    uint32* rgb_row = rgb.getAddr32(0, y);
-    uint32* alpha_row = alpha.getAddr32(0, y);
-    uint32* dst_row = masked.getAddr32(0, y);
+    uint32_t* rgb_row = rgb.getAddr32(0, y);
+    uint32_t* alpha_row = alpha.getAddr32(0, y);
+    uint32_t* dst_row = masked.getAddr32(0, y);
 
     for (int x = 0; x < masked.width(); ++x) {
       unsigned alpha = SkGetPackedA32(alpha_row[x]);
@@ -144,12 +146,12 @@ SkBitmap SkBitmapOperations::CreateButtonBackground(SkColor color,
   SkAutoLockPixels lock_background(background);
 
   for (int y = 0; y < mask.height(); ++y) {
-    uint32* dst_row = background.getAddr32(0, y);
-    uint32* image_row = image.getAddr32(0, y % image.height());
-    uint32* mask_row = mask.getAddr32(0, y);
+    uint32_t* dst_row = background.getAddr32(0, y);
+    uint32_t* image_row = image.getAddr32(0, y % image.height());
+    uint32_t* mask_row = mask.getAddr32(0, y);
 
     for (int x = 0; x < mask.width(); ++x) {
-      uint32 image_pixel = image_row[x % image.width()];
+      uint32_t image_pixel = image_row[x % image.width()];
 
       double img_a = SkColorGetA(image_pixel);
       double img_r = SkColorGetR(image_pixel);
@@ -545,8 +547,8 @@ SkBitmap SkBitmapOperations::CreateTiledBitmap(const SkBitmap& source,
     while (y_pix < 0)
       y_pix += source.height();
 
-    uint32* source_row = source.getAddr32(0, y_pix);
-    uint32* dst_row = cropped.getAddr32(0, y);
+    uint32_t* source_row = source.getAddr32(0, y_pix);
+    uint32_t* dst_row = cropped.getAddr32(0, y);
 
     for (int x = 0; x < dst_w; ++x) {
       int x_pix = (src_x + x) % source.width();
@@ -659,8 +661,8 @@ SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
     SkAutoLockPixels opaque_bitmap_lock(opaque_bitmap);
     for (int y = 0; y < opaque_bitmap.height(); y++) {
       for (int x = 0; x < opaque_bitmap.width(); x++) {
-        uint32 src_pixel = *bitmap.getAddr32(x, y);
-        uint32* dst_pixel = opaque_bitmap.getAddr32(x, y);
+        uint32_t src_pixel = *bitmap.getAddr32(x, y);
+        uint32_t* dst_pixel = opaque_bitmap.getAddr32(x, y);
         SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(src_pixel);
         *dst_pixel = unmultiplied;
       }
@@ -681,9 +683,9 @@ SkBitmap SkBitmapOperations::CreateTransposedBitmap(const SkBitmap& image) {
   SkAutoLockPixels lock_transposed(transposed);
 
   for (int y = 0; y < image.height(); ++y) {
-    uint32* image_row = image.getAddr32(0, y);
+    uint32_t* image_row = image.getAddr32(0, y);
     for (int x = 0; x < image.width(); ++x) {
-      uint32* dst = transposed.getAddr32(y, x);
+      uint32_t* dst = transposed.getAddr32(y, x);
       *dst = image_row[x];
     }
   }

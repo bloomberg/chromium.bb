@@ -5,6 +5,9 @@
 #ifndef UI_GFX_GENERIC_SHARED_MEMORY_ID_H_
 #define UI_GFX_GENERIC_SHARED_MEMORY_ID_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/trace_event/memory_allocator_dump.h"
 #include "ui/gfx/gfx_export.h"
 

@@ -4,6 +4,8 @@
 
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "ui/gfx/ios/uikit_util.h"
 

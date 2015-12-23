@@ -5,7 +5,8 @@
 #ifndef UI_GFX_PAINT_VECTOR_ICON_H_
 #define UI_GFX_PAINT_VECTOR_ICON_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia.h"

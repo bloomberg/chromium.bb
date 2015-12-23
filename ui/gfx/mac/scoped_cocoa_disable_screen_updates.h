@@ -7,8 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/basictypes.h"
 #include "base/mac/mac_util.h"
+#include "base/macros.h"
 
 namespace gfx {
 

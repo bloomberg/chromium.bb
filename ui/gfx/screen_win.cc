@@ -5,6 +5,7 @@
 #include "ui/gfx/screen_win.h"
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -26,8 +27,8 @@ MONITORINFOEX GetMonitorInfoForMonitor(HMONITOR monitor) {
 }
 
 gfx::Display GetDisplay(const MONITORINFOEX& monitor_info) {
-  int64 id = static_cast<int64>(
-      base::Hash(base::WideToUTF8(monitor_info.szDevice)));
+  int64_t id =
+      static_cast<int64_t>(base::Hash(base::WideToUTF8(monitor_info.szDevice)));
   gfx::Rect bounds = gfx::Rect(monitor_info.rcMonitor);
   gfx::Display display(id);
   display.set_bounds(gfx::win::ScreenToDIPRect(bounds));

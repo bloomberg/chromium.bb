@@ -5,10 +5,11 @@
 #ifndef UI_GFX_BREAK_LIST_H_
 #define UI_GFX_BREAK_LIST_H_
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "ui/gfx/range/range.h"
 

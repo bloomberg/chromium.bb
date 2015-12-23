@@ -5,7 +5,8 @@
 #ifndef UI_GFX_PAINT_THROBBER_H_
 #define UI_GFX_PAINT_THROBBER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"

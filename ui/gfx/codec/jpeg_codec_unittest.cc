@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
@@ -12,7 +14,7 @@ namespace {
 
 // A JPEG image used by TopSitesMigrationTest, whose size is 1x1.
 // This image causes an invalid-read error to libjpeg-turbo 1.0.1.
-const uint8 kTopSitesMigrationTestImage[] =
+const uint8_t kTopSitesMigrationTestImage[] =
     "\xff\xd8\xff\xe0\x00\x10\x4a\x46\x49\x46\x00\x01\x01\x00\x00\x01"
     "\x00\x01\x00\x00\xff\xdb\x00\x43\x00\x03\x02\x02\x03\x02\x02\x03"
     "\x03\x03\x03\x04\x03\x03\x04\x05\x08\x05\x05\x04\x04\x05\x0a\x07"

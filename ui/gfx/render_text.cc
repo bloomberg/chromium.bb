@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/rbbi.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -277,7 +278,7 @@ void SkiaTextRenderer::SetUnderlineMetrics(SkScalar thickness,
 }
 
 void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
-                                   const uint16* glyphs,
+                                   const uint16_t* glyphs,
                                    size_t glyph_count) {
   const size_t byte_length = glyph_count * sizeof(glyphs[0]);
   canvas_skia_->drawPosText(&glyphs[0], byte_length, &pos[0], paint_);

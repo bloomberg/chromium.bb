@@ -7,10 +7,12 @@
 #ifndef UI_GFX_TEXT_ELIDER_H_
 #define UI_GFX_TEXT_ELIDER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/text_constants.h"

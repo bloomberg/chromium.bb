@@ -5,6 +5,7 @@
 #include "ui/gfx/scrollbar_size.h"
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

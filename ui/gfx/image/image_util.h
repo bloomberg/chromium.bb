@@ -5,9 +5,10 @@
 #ifndef UI_GFX_IMAGE_IMAGE_UTIL_H_
 #define UI_GFX_IMAGE_IMAGE_UTIL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {

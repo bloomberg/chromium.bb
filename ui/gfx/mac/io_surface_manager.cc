@@ -5,9 +5,12 @@
 #include "ui/gfx/mac/io_surface_manager.h"
 
 #include <IOSurface/IOSurface.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace gfx {
@@ -17,13 +20,13 @@ IOSurfaceManager* g_instance = NULL;
 
 void AddIntegerValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
-                     int32 value) {
+                     int32_t value) {
   base::ScopedCFTypeRef<CFNumberRef> number(
       CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
   CFDictionaryAddValue(dictionary, key, number.get());
 }
 
-int32 BytesPerElement(gfx::BufferFormat format, int plane) {
+int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       DCHECK_EQ(plane, 0);
@@ -33,7 +36,7 @@ int32 BytesPerElement(gfx::BufferFormat format, int plane) {
       DCHECK_EQ(plane, 0);
       return 4;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
-      static int32 bytes_per_element[] = {1, 2};
+      static int32_t bytes_per_element[] = {1, 2};
       DCHECK_LT(static_cast<size_t>(plane), arraysize(bytes_per_element));
       return bytes_per_element[plane];
     case gfx::BufferFormat::UYVY_422:
@@ -56,7 +59,7 @@ int32 BytesPerElement(gfx::BufferFormat format, int plane) {
   return 0;
 }
 
-int32 PixelFormat(gfx::BufferFormat format) {
+int32_t PixelFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       return 'L008';

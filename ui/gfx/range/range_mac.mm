@@ -4,6 +4,8 @@
 
 #include "ui/gfx/range/range.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/logging.h"

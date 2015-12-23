@@ -5,6 +5,8 @@
 #ifndef UI_GFX_NATIVE_PIXMAP_HANDLE_OZONE_H_
 #define UI_GFX_NATIVE_PIXMAP_HANDLE_OZONE_H_
 
+#include <stdint.h>
+
 #include "base/file_descriptor_posix.h"
 
 namespace gfx {

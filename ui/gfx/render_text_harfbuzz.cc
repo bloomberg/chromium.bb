@@ -10,10 +10,12 @@
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
+#include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
@@ -132,7 +134,7 @@ bool AsciiBreak(UChar32 first_char, UChar32 current_char) {
 size_t FindRunBreakingCharacter(const base::string16& text,
                                 size_t run_start,
                                 size_t run_break) {
-  const int32 run_length = static_cast<int32>(run_break - run_start);
+  const int32_t run_length = static_cast<int32_t>(run_break - run_start);
   base::i18n::UTF16CharIterator iter(text.c_str() + run_start, run_length);
   const UChar32 first_char = iter.get();
   // The newline character should form a single run so that the line breaker
@@ -1266,7 +1268,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     run->strike = style.style(STRIKE);
     run->diagonal_strike = style.style(DIAGONAL_STRIKE);
     run->underline = style.style(UNDERLINE);
-    int32 script_item_break = 0;
+    int32_t script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
     CHECK_GT(static_cast<size_t>(script_item_break), run_break);
     // Odd BiDi embedding levels correspond to RTL runs.
@@ -1466,7 +1468,7 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
   // buffer holds our text, run information to be used by the shaping engine,
   // and the resulting glyph data.
   hb_buffer_t* buffer = hb_buffer_create();
-  hb_buffer_add_utf16(buffer, reinterpret_cast<const uint16*>(text.c_str()),
+  hb_buffer_add_utf16(buffer, reinterpret_cast<const uint16_t*>(text.c_str()),
                       text.length(), run->range.start(), run->range.length());
   hb_buffer_set_script(buffer, ICUScriptToHBScript(run->script));
   hb_buffer_set_direction(buffer,
@@ -1490,14 +1492,14 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
   run->glyph_count = glyph_count;
   hb_glyph_position_t* hb_positions =
       hb_buffer_get_glyph_positions(buffer, NULL);
-  run->glyphs.reset(new uint16[run->glyph_count]);
+  run->glyphs.reset(new uint16_t[run->glyph_count]);
   run->glyph_to_char.resize(run->glyph_count);
   run->positions.reset(new SkPoint[run->glyph_count]);
   run->width = 0.0f;
 
   for (size_t i = 0; i < run->glyph_count; ++i) {
-    DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16>::max());
-    run->glyphs[i] = static_cast<uint16>(infos[i].codepoint);
+    DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16_t>::max());
+    run->glyphs[i] = static_cast<uint16_t>(infos[i].codepoint);
     run->glyph_to_char[i] = infos[i].cluster;
     const SkScalar x_offset = SkFixedToScalar(hb_positions[i].x_offset);
     const SkScalar y_offset = SkFixedToScalar(hb_positions[i].y_offset);

@@ -24,8 +24,8 @@ void Vector2d::Subtract(const Vector2d& other) {
   y_ -= other.y_;
 }
 
-int64 Vector2d::LengthSquared() const {
-  return static_cast<int64>(x_) * x_ + static_cast<int64>(y_) * y_;
+int64_t Vector2d::LengthSquared() const {
+  return static_cast<int64_t>(x_) * x_ + static_cast<int64_t>(y_) * y_;
 }
 
 float Vector2d::Length() const {

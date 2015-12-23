@@ -5,15 +5,15 @@
 #ifndef UI_GFX_NATIVE_WIDGET_TYPES_H_
 #define UI_GFX_NATIVE_WIDGET_TYPES_H_
 
+#include <stdint.h>
+
+#include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/gfx/gfx_export.h"
 
 #if defined(OS_ANDROID)
 #include <jni.h>
 #endif
-
-#include "base/basictypes.h"
-#include "base/logging.h"
-#include "ui/gfx/gfx_export.h"
 
 // This file provides cross platform typedefs for native widget types.
 //   NativeWindow: this is a handle to a native, top-level window
@@ -203,13 +203,13 @@ typedef intptr_t NativeViewId;
   typedef unsigned long PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
 #elif defined(OS_ANDROID)
-  typedef uint32 PluginWindowHandle;
+  typedef uint32_t PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
 #elif defined(USE_OZONE)
   typedef intptr_t PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
 #else
-  typedef uint32 PluginWindowHandle;
+  typedef uint32_t PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
 #endif
 

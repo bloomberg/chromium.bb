@@ -6,6 +6,7 @@
 #define UI_GFX_ANIMATION_ANIMATION_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "ui/gfx/animation/animation_container_element.h"

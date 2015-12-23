@@ -17,6 +17,7 @@
 #include <string>
 
 #include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"

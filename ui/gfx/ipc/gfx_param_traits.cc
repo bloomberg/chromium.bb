@@ -4,6 +4,9 @@
 
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -23,10 +26,10 @@ struct SkBitmap_Data {
   SkAlphaType fAlphaType;
 
   // The width of the bitmap in pixels.
-  uint32 fWidth;
+  uint32_t fWidth;
 
   // The height of the bitmap in pixels.
-  uint32 fHeight;
+  uint32_t fHeight;
 
   void InitSkBitmapDataForTransfer(const SkBitmap& bitmap) {
     const SkImageInfo& info = bitmap.info();

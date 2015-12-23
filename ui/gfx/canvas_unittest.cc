@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"

@@ -5,7 +5,11 @@
 #ifndef UI_GFX_RENDER_TEXT_HARFBUZZ_H_
 #define UI_GFX_RENDER_TEXT_HARFBUZZ_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
@@ -63,9 +67,9 @@ struct GFX_EXPORT TextRunHarfBuzz {
   UBiDiLevel level;
   UScriptCode script;
 
-  scoped_ptr<uint16[]> glyphs;
+  scoped_ptr<uint16_t[]> glyphs;
   scoped_ptr<SkPoint[]> positions;
-  std::vector<uint32> glyph_to_char;
+  std::vector<uint32_t> glyph_to_char;
   size_t glyph_count;
 
   Font font;

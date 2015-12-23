@@ -5,10 +5,12 @@
 #ifndef UI_GFX_RANGE_RANGE_H_
 #define UI_GFX_RANGE_RANGE_H_
 
+#include <stddef.h>
+
 #include <ostream>
 #include <string>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
 #if defined(OS_MACOSX)

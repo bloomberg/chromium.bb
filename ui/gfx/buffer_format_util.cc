@@ -5,6 +5,7 @@
 #include "ui/gfx/buffer_format_util.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 
 namespace gfx {

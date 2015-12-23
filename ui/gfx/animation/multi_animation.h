@@ -5,8 +5,11 @@
 #ifndef UI_GFX_ANIMATION_MULTI_ANIMATION_H_
 #define UI_GFX_ANIMATION_MULTI_ANIMATION_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/tween.h"
 

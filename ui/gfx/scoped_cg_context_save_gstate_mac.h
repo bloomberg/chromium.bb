@@ -7,6 +7,8 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+#include "base/macros.h"
+
 namespace gfx {
 
 class ScopedCGContextSaveGState {

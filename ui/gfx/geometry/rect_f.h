@@ -8,6 +8,7 @@
 #include <iosfwd>
 #include <string>
 
+#include "build/build_config.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_f.h"

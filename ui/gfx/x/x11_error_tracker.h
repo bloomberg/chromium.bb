@@ -7,7 +7,7 @@
 
 #include <X11/Xlib.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {

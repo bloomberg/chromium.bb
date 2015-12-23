@@ -4,8 +4,8 @@
 
 #include "ui/gfx/render_text_mac.h"
 
-#include <ApplicationServices/ApplicationServices.h>
 #import <AppKit/AppKit.h>
+#include <ApplicationServices/ApplicationServices.h>
 #include <CoreText/CoreText.h>
 
 #include <algorithm>
@@ -15,6 +15,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"

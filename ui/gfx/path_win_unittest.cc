@@ -4,9 +4,12 @@
 
 #include "ui/gfx/path_win.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/win/scoped_gdi_object.h"
 #include "skia/ext/skia_utils_win.h"
 #include "testing/gtest/include/gtest/gtest.h"

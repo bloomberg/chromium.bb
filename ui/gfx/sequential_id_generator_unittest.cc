@@ -4,6 +4,8 @@
 
 #include "ui/gfx/sequential_id_generator.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,7 +14,7 @@ namespace ui {
 typedef testing::Test SequentialIDGeneratorTest;
 
 TEST(SequentialIDGeneratorTest, AddRemove) {
-  const uint32 kMinID = 2;
+  const uint32_t kMinID = 2;
   SequentialIDGenerator generator(kMinID);
 
   EXPECT_EQ(2U, generator.GetGeneratedID(45));
@@ -39,7 +41,7 @@ TEST(SequentialIDGeneratorTest, AddRemove) {
 }
 
 TEST(SequentialIDGeneratorTest, RemoveMultipleNumbers) {
-  const uint32 kMinID = 4;
+  const uint32_t kMinID = 4;
   SequentialIDGenerator generator(kMinID);
 
   EXPECT_EQ(4U, generator.GetGeneratedID(45));

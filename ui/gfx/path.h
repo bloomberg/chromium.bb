@@ -5,7 +5,9 @@
 #ifndef UI_GFX_PATH_H_
 #define UI_GFX_PATH_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"

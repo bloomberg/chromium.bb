@@ -6,11 +6,13 @@
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
+#include <stdint.h>
 
 #include <map>
 
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_change_notifier.h"
@@ -19,7 +21,7 @@ namespace {
 
 // The delay to handle the display configuration changes.
 // See comments in ScreenMac::HandleDisplayReconfiguration.
-const int64 kConfigureDelayMs = 500;
+const int64_t kConfigureDelayMs = 500;
 
 gfx::Rect ConvertCoordinateSystem(NSRect ns_rect) {
   // Primary monitor is defined as the monitor with the menubar,
@@ -225,12 +227,12 @@ class ScreenMac : public gfx::Screen {
       return std::vector<gfx::Display>(1, GetPrimaryDisplay());
     }
 
-    typedef std::map<int64, NSScreen*> ScreenIdsToScreensMap;
+    typedef std::map<int64_t, NSScreen*> ScreenIdsToScreensMap;
     ScreenIdsToScreensMap screen_ids_to_screens;
     for (NSScreen* screen in [NSScreen screens]) {
       NSDictionary* screen_device_description = [screen deviceDescription];
-      int64 screen_id = [[screen_device_description
-        objectForKey:@"NSScreenNumber"] unsignedIntValue];
+      int64_t screen_id = [[screen_device_description
+          objectForKey:@"NSScreenNumber"] unsignedIntValue];
       screen_ids_to_screens[screen_id] = screen;
     }
 

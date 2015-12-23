@@ -5,6 +5,8 @@
 #ifndef UI_GFX_UTF16_INDEXING_H_
 #define UI_GFX_UTF16_INDEXING_H_
 
+#include <stddef.h>
+
 #include "base/strings/string16.h"
 #include "ui/gfx/gfx_export.h"
 

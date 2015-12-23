@@ -5,8 +5,8 @@
 #ifndef UI_GFX_IMAGE_CANVAS_IMAGE_SOURCE_H_
 #define UI_GFX_IMAGE_CANVAS_IMAGE_SOURCE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia_source.h"

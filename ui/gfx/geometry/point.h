@@ -9,6 +9,7 @@
 #include <string>
 #include <tuple>
 
+#include "build/build_config.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gfx_export.h"
 

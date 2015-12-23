@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -48,7 +49,7 @@ float GetForcedDeviceScaleFactorImpl() {
   return static_cast<float>(scale_in_double);
 }
 
-int64 internal_display_id_ = -1;
+int64_t internal_display_id_ = -1;
 
 }  // namespace
 
@@ -79,14 +80,13 @@ Display::Display()
       touch_support_(TOUCH_SUPPORT_UNKNOWN) {
 }
 
-Display::Display(int64 id)
+Display::Display(int64_t id)
     : id_(id),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
       rotation_(ROTATE_0),
-      touch_support_(TOUCH_SUPPORT_UNKNOWN) {
-}
+      touch_support_(TOUCH_SUPPORT_UNKNOWN) {}
 
-Display::Display(int64 id, const gfx::Rect& bounds)
+Display::Display(int64_t id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
@@ -196,18 +196,18 @@ bool Display::IsInternal() const {
 }
 
 // static
-int64 Display::InternalDisplayId() {
+int64_t Display::InternalDisplayId() {
   DCHECK_NE(kInvalidDisplayID, internal_display_id_);
   return internal_display_id_;
 }
 
 // static
-void Display::SetInternalDisplayId(int64 internal_display_id) {
+void Display::SetInternalDisplayId(int64_t internal_display_id) {
   internal_display_id_ = internal_display_id;
 }
 
 // static
-bool Display::IsInternalDisplayId(int64 display_id) {
+bool Display::IsInternalDisplayId(int64_t display_id) {
   DCHECK_NE(kInvalidDisplayID, display_id);
   return HasInternalDisplay() && internal_display_id_ == display_id;
 }

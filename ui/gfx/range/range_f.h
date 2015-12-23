@@ -8,7 +8,6 @@
 #include <ostream>
 #include <string>
 
-#include "base/basictypes.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/range/range.h"
 

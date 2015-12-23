@@ -5,6 +5,8 @@
 #ifndef UI_GFX_TEST_FONTCONFIG_UTIL_LINUX_H_
 #define UI_GFX_TEST_FONTCONFIG_UTIL_LINUX_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_path.h"

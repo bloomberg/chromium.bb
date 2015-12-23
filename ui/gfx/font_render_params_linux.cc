@@ -5,6 +5,8 @@
 #include "ui/gfx/font_render_params.h"
 
 #include <fontconfig/fontconfig.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/containers/mru_cache.h"
@@ -16,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/linux_font_delegate.h"
@@ -49,7 +52,7 @@ struct QueryResult {
 
 // Keyed by hashes of FontRenderParamQuery structs from
 // HashFontRenderParamsQuery().
-typedef base::MRUCache<uint32, QueryResult> Cache;
+typedef base::MRUCache<uint32_t, QueryResult> Cache;
 
 // A cache and the lock that must be held while accessing it.
 // GetFontRenderParams() is called by both the UI thread and the sandbox IPC
@@ -189,7 +192,7 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
 
 // Serialize |query| into a string and hash it to a value suitable for use as a
 // cache key.
-uint32 HashFontRenderParamsQuery(const FontRenderParamsQuery& query) {
+uint32_t HashFontRenderParamsQuery(const FontRenderParamsQuery& query) {
   return base::Hash(base::StringPrintf(
       "%d|%d|%d|%s|%f", query.pixel_size, query.point_size, query.style,
       base::JoinString(query.families, ",").c_str(),
@@ -214,7 +217,7 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
     }
 #endif
   }
-  const uint32 hash = HashFontRenderParamsQuery(actual_query);
+  const uint32_t hash = HashFontRenderParamsQuery(actual_query);
   SynchronizedCache* synchronized_cache = g_synchronized_cache.Pointer();
 
   {

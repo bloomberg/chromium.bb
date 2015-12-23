@@ -8,7 +8,6 @@
 
 #include <cmath>
 
-#include "base/basictypes.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/font.h"

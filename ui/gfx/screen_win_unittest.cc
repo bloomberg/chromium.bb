@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <windows.h>
+#include <stddef.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/display.h"

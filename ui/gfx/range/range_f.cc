@@ -4,6 +4,8 @@
 
 #include "ui/gfx/range/range_f.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
