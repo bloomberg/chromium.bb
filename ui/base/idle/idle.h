@@ -6,6 +6,7 @@
 #define UI_BASE_IDLE_IDLE_H_
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {

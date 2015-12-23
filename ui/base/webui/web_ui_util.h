@@ -5,6 +5,8 @@
 #ifndef UI_BASE_WEBUI_WEB_UI_UTIL_H_
 #define UI_BASE_WEBUI_WEB_UI_UTIL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/string_piece.h"

@@ -21,7 +21,7 @@ namespace {
 
 bool CheckCharacterComposeTable(
     const ui::CharacterComposer::ComposeBuffer& compose_sequence,
-    uint32* composed_character) {
+    uint32_t* composed_character) {
   const ui::TreeComposeChecker kTreeComposeChecker(kCompositions);
   return kTreeComposeChecker.CheckSequence(compose_sequence,
                                            composed_character) !=
@@ -30,7 +30,7 @@ bool CheckCharacterComposeTable(
 
 // Converts |character| to UTF16 string.
 // Returns false when |character| is not a valid character.
-bool UTF32CharacterToUTF16(uint32 character, base::string16* output) {
+bool UTF32CharacterToUTF16(uint32_t character, base::string16* output) {
   output->clear();
   // Reject invalid character. (e.g. codepoint greater than 0x10ffff)
   if (!CBU_IS_UNICODE_CHAR(character))
@@ -113,7 +113,7 @@ bool CharacterComposer::FilterKeyPressSequenceMode(const KeyEvent& event) {
   compose_buffer_.push_back(event.GetDomKey());
 
   // Check compose table.
-  uint32 composed_character_utf32 = 0;
+  uint32_t composed_character_utf32 = 0;
   if (CheckCharacterComposeTable(compose_buffer_, &composed_character_utf32)) {
     // Key press is recognized as a part of composition.
     if (composed_character_utf32 != 0) {
@@ -176,9 +176,9 @@ bool CharacterComposer::FilterKeyPressHexMode(const KeyEvent& event) {
 
 void CharacterComposer::CommitHex() {
   DCHECK(composition_mode_ == HEX_MODE);
-  uint32 composed_character_utf32 = 0;
+  uint32_t composed_character_utf32 = 0;
   for (size_t i = 0; i != hex_buffer_.size(); ++i) {
-    const uint32 digit = hex_buffer_[i];
+    const uint32_t digit = hex_buffer_[i];
     DCHECK(0 <= digit && digit < 16);
     composed_character_utf32 <<= 4;
     composed_character_utf32 |= digit;

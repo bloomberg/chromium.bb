@@ -4,6 +4,8 @@
 
 #include "ui/base/template_expressions.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 
 namespace ui {

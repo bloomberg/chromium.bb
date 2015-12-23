@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/view_prop.h"

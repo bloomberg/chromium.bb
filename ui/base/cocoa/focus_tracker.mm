@@ -4,7 +4,6 @@
 
 #import "ui/base/cocoa/focus_tracker.h"
 
-#include "base/basictypes.h"
 
 @implementation FocusTracker
 

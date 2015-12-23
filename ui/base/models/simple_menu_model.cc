@@ -4,6 +4,8 @@
 
 #include "ui/base/models/simple_menu_model.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/base/l10n/l10n_util.h"

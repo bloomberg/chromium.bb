@@ -8,6 +8,7 @@
 #define UI_BASE_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
 
 #include <shlobj.h>
+#include <stddef.h>
 #include <map>
 #include <string>
 #include <vector>

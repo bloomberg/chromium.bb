@@ -5,10 +5,14 @@
 #ifndef UI_BASE_IME_IME_ENGINE_HANDLER_INTERFACE_H_
 #define UI_BASE_IME_IME_ENGINE_HANDLER_INTERFACE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
-#include "base/basictypes.h"
+
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ime/ui_base_ime_export.h"
@@ -108,9 +112,9 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // Otherwise |anchor_pos| is equal to |cursor_pos|. If not all surrounding
   // text is given |offset_pos| indicates the starting offset of |text|.
   virtual void SetSurroundingText(const std::string& text,
-                                  uint32 cursor_pos,
-                                  uint32 anchor_pos,
-                                  uint32 offset_pos) = 0;
+                                  uint32_t cursor_pos,
+                                  uint32_t anchor_pos,
+                                  uint32_t offset_pos) = 0;
 
   // Called when the composition bounds changed.
   virtual void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) = 0;
@@ -231,7 +235,7 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
 
   // Called when the candidate in lookup table is clicked. The |index| is 0
   // based candidate index in lookup table.
-  virtual void CandidateClicked(uint32 index) = 0;
+  virtual void CandidateClicked(uint32_t index) = 0;
 
   // This function returns the current property of the candidate window.
   // The caller can use the returned value as the default property and

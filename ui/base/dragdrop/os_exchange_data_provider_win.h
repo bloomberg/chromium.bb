@@ -7,6 +7,7 @@
 
 #include <objidl.h>
 #include <shlobj.h>
+#include <stddef.h>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,7 @@
 #define IDataObjectAsyncCapability IAsyncOperation
 #endif
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/dragdrop/os_exchange_data.h"

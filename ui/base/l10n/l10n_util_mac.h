@@ -5,10 +5,11 @@
 #ifndef UI_BASE_L10N_L10N_UTIL_MAC_H_
 #define UI_BASE_L10N_L10N_UTIL_MAC_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
 

@@ -4,7 +4,6 @@
 
 #include "ui/base/idle/screensaver_window_finder_x11.h"
 
-#include "base/basictypes.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 

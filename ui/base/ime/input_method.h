@@ -5,10 +5,12 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_H_
 #define UI_BASE_IME_INPUT_METHOD_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/event_types.h"
+#include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -50,7 +52,7 @@ class InputMethod {
 #if defined(OS_WIN)
   typedef LRESULT NativeEventResult;
 #else
-  typedef int32 NativeEventResult;
+  typedef int32_t NativeEventResult;
 #endif
 
   virtual ~InputMethod() {}

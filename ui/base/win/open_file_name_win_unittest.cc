@@ -4,7 +4,10 @@
 
 #include "ui/base/win/open_file_name_win.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

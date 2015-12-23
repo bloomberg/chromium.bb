@@ -5,6 +5,8 @@
 #ifndef UI_BASE_HIT_TEST_H_
 #define UI_BASE_HIT_TEST_H_
 
+#include "build/build_config.h"
+
 #if !defined(OS_WIN)
 
 // Defines the same symbolic names used by the WM_NCHITTEST Notification under

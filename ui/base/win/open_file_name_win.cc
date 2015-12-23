@@ -5,6 +5,7 @@
 #include "ui/base/win/open_file_name_win.h"
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 

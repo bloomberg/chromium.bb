@@ -5,6 +5,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 
 #include "base/pickle.h"
+#include "build/build_config.h"
 #include "url/gurl.h"
 
 namespace ui {

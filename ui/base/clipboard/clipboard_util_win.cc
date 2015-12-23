@@ -8,9 +8,9 @@
 #include <shlwapi.h>
 #include <wininet.h>  // For INTERNET_MAX_URL_LENGTH.
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"

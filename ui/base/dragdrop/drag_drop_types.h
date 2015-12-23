@@ -5,7 +5,9 @@
 #ifndef UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_
 #define UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
@@ -27,8 +29,8 @@ class UI_BASE_EXPORT DragDropTypes {
   };
 
 #if defined(OS_WIN)
-  static uint32 DragOperationToDropEffect(int drag_operation);
-  static int DropEffectToDragOperation(uint32 effect);
+  static uint32_t DragOperationToDropEffect(int drag_operation);
+  static int DropEffectToDragOperation(uint32_t effect);
 #endif
 };
 

@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"

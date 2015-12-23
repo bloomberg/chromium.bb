@@ -282,7 +282,7 @@ ClipboardAndroid::~ClipboardAndroid() {
   DCHECK(CalledOnValidThread());
 }
 
-uint64 ClipboardAndroid::GetSequenceNumber(ClipboardType /* type */) const {
+uint64_t ClipboardAndroid::GetSequenceNumber(ClipboardType /* type */) const {
   DCHECK(CalledOnValidThread());
   // TODO: implement this. For now this interface will advertise
   // that the clipboard never changes. That's fine as long as we
@@ -352,8 +352,8 @@ void ClipboardAndroid::ReadAsciiText(ClipboardType type,
 void ClipboardAndroid::ReadHTML(ClipboardType type,
                                 base::string16* markup,
                                 std::string* src_url,
-                                uint32* fragment_start,
-                                uint32* fragment_end) const {
+                                uint32_t* fragment_start,
+                                uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   if (src_url)
@@ -363,7 +363,7 @@ void ClipboardAndroid::ReadHTML(ClipboardType type,
   *markup = base::UTF8ToUTF16(input);
 
   *fragment_start = 0;
-  *fragment_end = static_cast<uint32>(markup->length());
+  *fragment_end = static_cast<uint32_t>(markup->length());
 }
 
 void ClipboardAndroid::ReadRTF(ClipboardType type, std::string* result) const {

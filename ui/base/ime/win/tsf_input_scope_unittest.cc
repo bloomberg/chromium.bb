@@ -5,6 +5,7 @@
 #include "ui/base/ime/win/tsf_input_scope.h"
 
 #include <InputScope.h>
+#include <stddef.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 

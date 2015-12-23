@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"

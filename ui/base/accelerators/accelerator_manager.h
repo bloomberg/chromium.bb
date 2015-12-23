@@ -9,7 +9,7 @@
 #include <map>
 #include <utility>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/events/event_constants.h"

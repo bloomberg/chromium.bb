@@ -5,8 +5,9 @@
 #ifndef UI_BASE_IME_IME_INPUT_CONTEXT_HANDLER_INTERFACE_H_
 #define UI_BASE_IME_IME_INPUT_CONTEXT_HANDLER_INTERFACE_H_
 
+#include <stdint.h>
+
 #include <string>
-#include "base/basictypes.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
@@ -19,11 +20,11 @@ class UI_BASE_IME_EXPORT IMEInputContextHandlerInterface {
 
   // Called when the engine updates composition text.
   virtual void UpdateCompositionText(const CompositionText& text,
-                                     uint32 cursor_pos,
+                                     uint32_t cursor_pos,
                                      bool visible) = 0;
 
   // Called when the engine request deleting surrounding string.
-  virtual void DeleteSurroundingText(int32 offset, uint32 length) = 0;
+  virtual void DeleteSurroundingText(int32_t offset, uint32_t length) = 0;
 };
 
 }  // namespace ui

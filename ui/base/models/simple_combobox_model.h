@@ -5,6 +5,7 @@
 #ifndef UI_BASE_MODELS_SIMPLE_COMBOBOX_MODEL_H_
 #define UI_BASE_MODELS_SIMPLE_COMBOBOX_MODEL_H_
 
+#include "base/macros.h"
 #include "ui/base/models/combobox_model.h"
 
 #include <vector>

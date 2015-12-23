@@ -5,9 +5,12 @@
 #include "ui/base/ime/remote_input_method_win.h"
 
 #include <InputScope.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -94,7 +97,7 @@ class MockTextInputClient : public DummyTextInputClient {
     return text_input_mode_;
   }
   gfx::Rect GetCaretBounds() const override { return caret_bounds_; }
-  bool GetCompositionCharacterBounds(uint32 index,
+  bool GetCompositionCharacterBounds(uint32_t index,
                                      gfx::Rect* rect) const override {
     // Emulate the situation of crbug.com/328237.
     if (emulate_pepper_flash_)
@@ -164,9 +167,7 @@ class MockRemoteInputMethodDelegateWin
   bool text_input_client_updated_called() const {
     return text_input_client_updated_called_;
   }
-  const std::vector<int32>& input_scopes() const {
-    return input_scopes_;
-  }
+  const std::vector<int32_t>& input_scopes() const { return input_scopes_; }
   const std::vector<gfx::Rect>& composition_character_bounds() const {
     return composition_character_bounds_;
   }
@@ -181,7 +182,7 @@ class MockRemoteInputMethodDelegateWin
   void CancelComposition() override { cancel_composition_called_ = true; }
 
   void OnTextInputClientUpdated(
-      const std::vector<int32>& input_scopes,
+      const std::vector<int32_t>& input_scopes,
       const std::vector<gfx::Rect>& composition_character_bounds) override {
     text_input_client_updated_called_ = true;
     input_scopes_ = input_scopes;
@@ -190,7 +191,7 @@ class MockRemoteInputMethodDelegateWin
 
   bool cancel_composition_called_;
   bool text_input_client_updated_called_;
-  std::vector<int32> input_scopes_;
+  std::vector<int32_t> input_scopes_;
   std::vector<gfx::Rect> composition_character_bounds_;
   DISALLOW_COPY_AND_ASSIGN(MockRemoteInputMethodDelegateWin);
 };

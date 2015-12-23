@@ -4,8 +4,10 @@
 
 #include "ui/base/ime/input_method_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/auto_reset.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
@@ -268,7 +270,7 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
     // A mask to determine the previous key state from |lparam|. The value is 1
     // if the key is down before the message is sent, or it is 0 if the key is
     // up.
-    const uint32 kPrevKeyDownBit = 0x40000000;
+    const uint32_t kPrevKeyDownBit = 0x40000000;
     if (ch == kCarriageReturn && !(lparam & kPrevKeyDownBit))
       accept_carriage_return_ = true;
     // Conditionally ignore '\r' events to work around crbug.com/319100.

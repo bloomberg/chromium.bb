@@ -11,11 +11,13 @@
 // we use a void* for Visual*). The Xlib headers are highly polluting so we try
 // hard to limit their spread into the rest of the code.
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/event_types.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/events/event_constants.h"

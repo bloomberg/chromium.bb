@@ -4,6 +4,9 @@
 
 #include "ui/base/cursor/cursors_aura.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/point.h"

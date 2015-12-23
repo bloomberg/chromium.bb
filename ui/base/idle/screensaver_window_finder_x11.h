@@ -5,8 +5,8 @@
 #ifndef UI_BASE_IDLE_SCREENSAVER_WINDOW_FINDER_X11_H_
 #define UI_BASE_IDLE_SCREENSAVER_WINDOW_FINDER_X11_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/base/x/x11_util.h"
 
 namespace ui {

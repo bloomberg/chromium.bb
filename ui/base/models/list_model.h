@@ -5,10 +5,12 @@
 #ifndef UI_BASE_MODELS_LIST_MODEL_H_
 #define UI_BASE_MODELS_LIST_MODEL_H_
 
+#include <stddef.h>
+
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"

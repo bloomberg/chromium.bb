@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"

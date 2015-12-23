@@ -5,6 +5,7 @@
 #include "ui/base/accelerators/accelerator_manager.h"
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"

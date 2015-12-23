@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

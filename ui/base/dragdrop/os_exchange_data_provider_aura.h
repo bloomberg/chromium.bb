@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/vector2d.h"

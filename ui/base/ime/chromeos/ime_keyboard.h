@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 

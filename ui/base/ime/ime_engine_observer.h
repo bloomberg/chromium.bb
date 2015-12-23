@@ -5,6 +5,7 @@
 #ifndef UI_BASE_IME_IME_ENGINE_OBSERVER_H_
 #define UI_BASE_IME_IME_ENGINE_OBSERVER_H_
 
+#include "build/build_config.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 
 namespace ui {

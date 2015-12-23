@@ -4,7 +4,6 @@
 
 #include "ui/base/idle/idle.h"
 
-#include "base/basictypes.h"
 
 #if defined(USE_X11)
 #include "ui/base/idle/idle_query_x11.h"

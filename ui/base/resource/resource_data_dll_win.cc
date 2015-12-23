@@ -4,6 +4,8 @@
 
 #include "ui/base/resource/resource_data_dll_win.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/win/resource_util.h"
@@ -17,7 +19,7 @@ ResourceDataDLL::ResourceDataDLL(HINSTANCE module) : module_(module) {
 ResourceDataDLL::~ResourceDataDLL() {
 }
 
-bool ResourceDataDLL::HasResource(uint16 resource_id) const {
+bool ResourceDataDLL::HasResource(uint16_t resource_id) const {
   void* data_ptr;
   size_t data_size;
   return base::win::GetDataResourceFromModule(module_,
@@ -26,7 +28,7 @@ bool ResourceDataDLL::HasResource(uint16 resource_id) const {
                                               &data_size);
 }
 
-bool ResourceDataDLL::GetStringPiece(uint16 resource_id,
+bool ResourceDataDLL::GetStringPiece(uint16_t resource_id,
                                      base::StringPiece* data) const {
   DCHECK(data);
   void* data_ptr;
@@ -42,7 +44,7 @@ bool ResourceDataDLL::GetStringPiece(uint16 resource_id,
 }
 
 base::RefCountedStaticMemory* ResourceDataDLL::GetStaticMemory(
-    uint16 resource_id) const {
+    uint16_t resource_id) const {
   void* data_ptr;
   size_t data_size;
   if (base::win::GetDataResourceFromModule(module_, resource_id, &data_ptr,

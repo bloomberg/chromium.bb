@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_RESOURCE_REQUEST_POLICY_H_
 #define CHROME_RENDERER_EXTENSIONS_RESOURCE_REQUEST_POLICY_H_
 
+#include "base/macros.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

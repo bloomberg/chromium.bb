@@ -5,7 +5,6 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_INITIALIZER_H_
 #define UI_BASE_IME_INPUT_METHOD_INITIALIZER_H_
 
-#include "base/basictypes.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {

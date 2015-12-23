@@ -5,6 +5,10 @@
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_AURA_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_AURA_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace ui {
@@ -29,8 +33,8 @@ class ClipboardAura : public Clipboard {
   void ReadHTML(ClipboardType type,
                 base::string16* markup,
                 std::string* src_url,
-                uint32* fragment_start,
-                uint32* fragment_end) const override;
+                uint32_t* fragment_start,
+                uint32_t* fragment_end) const override;
   void ReadRTF(ClipboardType type, std::string* result) const override;
   SkBitmap ReadImage(ClipboardType type) const override;
   void ReadCustomData(ClipboardType clipboard_type,

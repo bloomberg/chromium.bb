@@ -5,6 +5,7 @@
 #import "ui/base/cocoa/controls/hover_image_menu_button.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/cocoa/controls/hover_image_menu_button_cell.h"
 #include "ui/events/test/cocoa_test_event_utils.h"

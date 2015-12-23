@@ -4,12 +4,13 @@
 
 #include "ui/base/ime/input_method_chromeos.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cstring>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
@@ -187,7 +188,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   gfx::Rect composition_head;
   std::vector<gfx::Rect> rects;
   if (client->HasCompositionText()) {
-    uint32 i = 0;
+    uint32_t i = 0;
     gfx::Rect rect;
     while (client->GetCompositionCharacterBounds(i++, &rect))
       rects.push_back(rect);
@@ -414,7 +415,7 @@ void InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
   // If a key event was not filtered by |context_| and |character_composer_|,
   // then it means the key event didn't generate any result text. So we need
   // to send corresponding character to the focused text input client.
-  uint16 ch = event->GetCharacter();
+  uint16_t ch = event->GetCharacter();
   if (ch)
     client->InsertChar(*event);
 }
@@ -500,7 +501,7 @@ void InputMethodChromeOS::CommitText(const std::string& text) {
 }
 
 void InputMethodChromeOS::UpdateCompositionText(const CompositionText& text,
-                                                uint32 cursor_pos,
+                                                uint32_t cursor_pos,
                                                 bool visible) {
   if (IsTextInputTypeNone())
     return;
@@ -562,12 +563,13 @@ void InputMethodChromeOS::HidePreeditText() {
   }
 }
 
-void InputMethodChromeOS::DeleteSurroundingText(int32 offset, uint32 length) {
+void InputMethodChromeOS::DeleteSurroundingText(int32_t offset,
+                                                uint32_t length) {
   if (!composition_.text.empty())
     return;  // do nothing if there is ongoing composition.
 
   if (GetTextInputClient()) {
-    uint32 before = offset >= 0 ? 0U : static_cast<uint32>(-1 * offset);
+    uint32_t before = offset >= 0 ? 0U : static_cast<uint32_t>(-1 * offset);
     GetTextInputClient()->ExtendSelectionAndDelete(before, length - before);
   }
 }
@@ -590,7 +592,7 @@ bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {
 
 void InputMethodChromeOS::ExtractCompositionText(
     const CompositionText& text,
-    uint32 cursor_position,
+    uint32_t cursor_position,
     CompositionText* out_composition) const {
   out_composition->Clear();
   out_composition->text = text.text;
@@ -608,7 +610,7 @@ void InputMethodChromeOS::ExtractCompositionText(
   } while (char_iterator.Advance());
 
   // The text length in Unicode characters.
-  uint32 char_length = static_cast<uint32>(char16_offsets.size());
+  uint32_t char_length = static_cast<uint32_t>(char16_offsets.size());
   // Make sure we can convert the value of |char_length| as well.
   char16_offsets.push_back(length);
 
@@ -620,8 +622,8 @@ void InputMethodChromeOS::ExtractCompositionText(
   const CompositionUnderlines text_underlines = text.underlines;
   if (!text_underlines.empty()) {
     for (size_t i = 0; i < text_underlines.size(); ++i) {
-      const uint32 start = text_underlines[i].start_offset;
-      const uint32 end = text_underlines[i].end_offset;
+      const uint32_t start = text_underlines[i].start_offset;
+      const uint32_t end = text_underlines[i].end_offset;
       if (start >= end)
         continue;
       CompositionUnderline underline(
@@ -633,8 +635,8 @@ void InputMethodChromeOS::ExtractCompositionText(
 
   DCHECK(text.selection.start() <= text.selection.end());
   if (text.selection.start() < text.selection.end()) {
-    const uint32 start = text.selection.start();
-    const uint32 end = text.selection.end();
+    const uint32_t start = text.selection.start();
+    const uint32_t end = text.selection.end();
     CompositionUnderline underline(char16_offsets[start],
                                    char16_offsets[end],
                                    SK_ColorBLACK,

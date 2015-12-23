@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
 

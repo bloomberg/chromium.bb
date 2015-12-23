@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/ui_base_export.h"

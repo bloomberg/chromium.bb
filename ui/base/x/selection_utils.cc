@@ -4,6 +4,8 @@
 
 #include "ui/base/x/selection_utils.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/i18n/icu_string_conversions.h"

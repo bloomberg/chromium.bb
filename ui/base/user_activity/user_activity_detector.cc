@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"

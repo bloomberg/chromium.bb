@@ -17,6 +17,7 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/string_compare.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -820,7 +821,7 @@ base::string16 GetStringFUTF16Int(int message_id, int a) {
   return GetStringFUTF16(message_id, base::UTF8ToUTF16(base::IntToString(a)));
 }
 
-base::string16 GetStringFUTF16Int(int message_id, int64 a) {
+base::string16 GetStringFUTF16Int(int message_id, int64_t a) {
   return GetStringFUTF16(message_id, base::UTF8ToUTF16(base::Int64ToString(a)));
 }
 

@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/input_method_factory.h"
 
+#include "build/build_config.h"
 #include "ui/base/ime/mock_input_method.h"
 
 #if defined(OS_CHROMEOS)

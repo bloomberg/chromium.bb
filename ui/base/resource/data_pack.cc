@@ -19,17 +19,17 @@
 
 namespace {
 
-static const uint32 kFileFormatVersion = 4;
+static const uint32_t kFileFormatVersion = 4;
 // Length of file header: version, entry count and text encoding type.
-static const size_t kHeaderLength = 2 * sizeof(uint32) + sizeof(uint8);
+static const size_t kHeaderLength = 2 * sizeof(uint32_t) + sizeof(uint8_t);
 
 #pragma pack(push,2)
 struct DataPackEntry {
-  uint16 resource_id;
-  uint32 file_offset;
+  uint16_t resource_id;
+  uint32_t file_offset;
 
   static int CompareById(const void* void_key, const void* void_entry) {
-    uint16 key = *reinterpret_cast<const uint16*>(void_key);
+    uint16_t key = *reinterpret_cast<const uint16_t*>(void_key);
     const DataPackEntry* entry =
         reinterpret_cast<const DataPackEntry*>(void_entry);
     if (key < entry->resource_id) {
@@ -116,9 +116,9 @@ bool DataPack::LoadImpl() {
   }
 
   // Parse the header of the file.
-  // First uint32: version; second: resource count;
-  const uint32* ptr = reinterpret_cast<const uint32*>(mmap_->data());
-  uint32 version = ptr[0];
+  // First uint32_t: version; second: resource count;
+  const uint32_t* ptr = reinterpret_cast<const uint32_t*>(mmap_->data());
+  uint32_t version = ptr[0];
   if (version != kFileFormatVersion) {
     LOG(ERROR) << "Bad data pack version: got " << version << ", expected "
                << kFileFormatVersion;
@@ -130,7 +130,7 @@ bool DataPack::LoadImpl() {
   resource_count_ = ptr[1];
 
   // third: text encoding.
-  const uint8* ptr_encoding = reinterpret_cast<const uint8*>(ptr + 2);
+  const uint8_t* ptr_encoding = reinterpret_cast<const uint8_t*>(ptr + 2);
   text_encoding_type_ = static_cast<TextEncodingType>(*ptr_encoding);
   if (text_encoding_type_ != UTF8 && text_encoding_type_ != UTF16 &&
       text_encoding_type_ != BINARY) {
@@ -172,12 +172,12 @@ bool DataPack::LoadImpl() {
   return true;
 }
 
-bool DataPack::HasResource(uint16 resource_id) const {
+bool DataPack::HasResource(uint16_t resource_id) const {
   return !!bsearch(&resource_id, mmap_->data() + kHeaderLength, resource_count_,
                    sizeof(DataPackEntry), DataPackEntry::CompareById);
 }
 
-bool DataPack::GetStringPiece(uint16 resource_id,
+bool DataPack::GetStringPiece(uint16_t resource_id,
                               base::StringPiece* data) const {
   // It won't be hard to make this endian-agnostic, but it's not worth
   // bothering to do right now.
@@ -217,7 +217,7 @@ bool DataPack::GetStringPiece(uint16 resource_id,
 }
 
 base::RefCountedStaticMemory* DataPack::GetStaticMemory(
-    uint16 resource_id) const {
+    uint16_t resource_id) const {
   base::StringPiece piece;
   if (!GetStringPiece(resource_id, &piece))
     return NULL;
@@ -243,7 +243,7 @@ void DataPack::CheckForDuplicateResources(
   for (size_t i = 0; i < resource_count_ + 1; ++i) {
     const DataPackEntry* entry = reinterpret_cast<const DataPackEntry*>(
         mmap_->data() + kHeaderLength + (i * sizeof(DataPackEntry)));
-    const uint16 resource_id = entry->resource_id;
+    const uint16_t resource_id = entry->resource_id;
     const float resource_scale = GetScaleForScaleFactor(scale_factor_);
     for (const ResourceHandle* handle : packs) {
       if (HasOnlyMaterialDesignAssets() !=
@@ -262,7 +262,7 @@ void DataPack::CheckForDuplicateResources(
 
 // static
 bool DataPack::WritePack(const base::FilePath& path,
-                         const std::map<uint16, base::StringPiece>& resources,
+                         const std::map<uint16_t, base::StringPiece>& resources,
                          TextEncodingType textEncodingType) {
   FILE* file = base::OpenFile(path, "wb");
   if (!file)
@@ -276,7 +276,7 @@ bool DataPack::WritePack(const base::FilePath& path,
 
   // Note: the python version of this function explicitly sorted keys, but
   // std::map is a sorted associative container, we shouldn't have to do that.
-  uint32 entry_count = resources.size();
+  uint32_t entry_count = resources.size();
   if (fwrite(&entry_count, sizeof(entry_count), 1, file) != 1) {
     LOG(ERROR) << "Failed to write entry count";
     base::CloseFile(file);
@@ -291,21 +291,21 @@ bool DataPack::WritePack(const base::FilePath& path,
     return false;
   }
 
-  uint8 write_buffer = static_cast<uint8>(textEncodingType);
-  if (fwrite(&write_buffer, sizeof(uint8), 1, file) != 1) {
+  uint8_t write_buffer = static_cast<uint8_t>(textEncodingType);
+  if (fwrite(&write_buffer, sizeof(uint8_t), 1, file) != 1) {
     LOG(ERROR) << "Failed to write file text resources encoding";
     base::CloseFile(file);
     return false;
   }
 
-  // Each entry is a uint16 + a uint32. We have an extra entry after the last
-  // item so we can compute the size of the list item.
-  uint32 index_length = (entry_count + 1) * sizeof(DataPackEntry);
-  uint32 data_offset = kHeaderLength + index_length;
-  for (std::map<uint16, base::StringPiece>::const_iterator it =
+  // Each entry is a uint16_t + a uint32_t. We have an extra entry after the
+  // last item so we can compute the size of the list item.
+  uint32_t index_length = (entry_count + 1) * sizeof(DataPackEntry);
+  uint32_t data_offset = kHeaderLength + index_length;
+  for (std::map<uint16_t, base::StringPiece>::const_iterator it =
            resources.begin();
        it != resources.end(); ++it) {
-    uint16 resource_id = it->first;
+    uint16_t resource_id = it->first;
     if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1) {
       LOG(ERROR) << "Failed to write id for " << resource_id;
       base::CloseFile(file);
@@ -323,7 +323,7 @@ bool DataPack::WritePack(const base::FilePath& path,
 
   // We place an extra entry after the last item that allows us to read the
   // size of the last item.
-  uint16 resource_id = 0;
+  uint16_t resource_id = 0;
   if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1) {
     LOG(ERROR) << "Failed to write extra resource id.";
     base::CloseFile(file);
@@ -336,7 +336,7 @@ bool DataPack::WritePack(const base::FilePath& path,
     return false;
   }
 
-  for (std::map<uint16, base::StringPiece>::const_iterator it =
+  for (std::map<uint16_t, base::StringPiece>::const_iterator it =
            resources.begin();
        it != resources.end(); ++it) {
     if (fwrite(it->second.data(), it->second.length(), 1, file) != 1) {

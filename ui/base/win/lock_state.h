@@ -5,7 +5,6 @@
 #ifndef UI_BASE_WIN_LOCK_STATE_H_
 #define UI_BASE_WIN_LOCK_STATE_H_
 
-#include "base/basictypes.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {

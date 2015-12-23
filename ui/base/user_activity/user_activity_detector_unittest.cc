@@ -5,6 +5,7 @@
 #include "ui/base/user_activity/user_activity_detector.h"
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"

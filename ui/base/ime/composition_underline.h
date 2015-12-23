@@ -5,9 +5,10 @@
 #ifndef UI_BASE_IME_COMPOSITION_UNDERLINE_H_
 #define UI_BASE_IME_COMPOSITION_UNDERLINE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace ui {
@@ -23,14 +24,14 @@ struct CompositionUnderline {
         background_color(SK_ColorTRANSPARENT) {}
 
   // TODO(huangs): remove this constructor.
-  CompositionUnderline(uint32 s, uint32 e, SkColor c, bool t)
+  CompositionUnderline(uint32_t s, uint32_t e, SkColor c, bool t)
       : start_offset(s),
         end_offset(e),
         color(c),
         thick(t),
         background_color(SK_ColorTRANSPARENT) {}
 
-  CompositionUnderline(uint32 s, uint32 e, SkColor c, bool t, SkColor bc)
+  CompositionUnderline(uint32_t s, uint32_t e, SkColor c, bool t, SkColor bc)
       : start_offset(s),
         end_offset(e),
         color(c),
@@ -48,8 +49,8 @@ struct CompositionUnderline {
     return !(*this == rhs);
   }
 
-  uint32 start_offset;
-  uint32 end_offset;
+  uint32_t start_offset;
+  uint32_t end_offset;
   SkColor color;
   bool thick;
   SkColor background_color;

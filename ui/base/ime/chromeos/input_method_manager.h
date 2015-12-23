@@ -5,6 +5,8 @@
 #ifndef UI_BASE_IME_CHROMEOS_INPUT_METHOD_MANAGER_H_
 #define UI_BASE_IME_CHROMEOS_INPUT_METHOD_MANAGER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

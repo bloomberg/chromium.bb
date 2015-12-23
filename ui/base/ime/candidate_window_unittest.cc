@@ -5,6 +5,8 @@
 
 #include "ui/base/ime/candidate_window.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"

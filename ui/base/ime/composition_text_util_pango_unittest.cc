@@ -5,12 +5,14 @@
 #include "ui/base/ime/composition_text_util_pango.h"
 
 #include <pango/pango-attributes.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
 
@@ -26,9 +28,9 @@ struct AttributeInfo {
 struct Underline {
   unsigned start_offset;
   unsigned end_offset;
-  uint32 color;
+  uint32_t color;
   bool thick;
-  uint32 background_color;
+  uint32_t background_color;
 };
 
 struct TestData {

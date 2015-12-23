@@ -7,6 +7,7 @@
 
 #include <objidl.h>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/ui_base_export.h"
 

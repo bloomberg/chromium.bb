@@ -5,6 +5,8 @@
 #ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
 
+#include <stdint.h>
+
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"
@@ -31,7 +33,7 @@ class UI_BASE_IME_EXPORT MockIMECandidateWindowHandler
   void UpdateLookupTable(const ui::CandidateWindow& candidate_window,
                          bool visible) override;
   void UpdatePreeditText(const base::string16& text,
-                         uint32 cursor_pos,
+                         uint32_t cursor_pos,
                          bool visible) override;
   void SetCursorBounds(const gfx::Rect& cursor_bounds,
                        const gfx::Rect& composition_head) override;

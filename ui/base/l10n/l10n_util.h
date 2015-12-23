@@ -8,10 +8,14 @@
 #ifndef UI_BASE_L10N_L10N_UTIL_H_
 #define UI_BASE_L10N_L10N_UTIL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
 #if defined(OS_MACOSX)
@@ -160,7 +164,7 @@ UI_BASE_EXPORT base::string16 GetStringFUTF16(int message_id,
 
 // Convenience functions to get a string with a single number as a parameter.
 UI_BASE_EXPORT base::string16 GetStringFUTF16Int(int message_id, int a);
-base::string16 GetStringFUTF16Int(int message_id, int64 a);
+base::string16 GetStringFUTF16Int(int message_id, int64_t a);
 
 // Get a resource string using |number| with a locale-specific plural rule.
 // |message_id| points to a message in the ICU syntax.

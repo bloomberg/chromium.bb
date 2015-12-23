@@ -8,7 +8,6 @@
 #include <jni.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/memory_mapped_file.h"
 #include "ui/base/ui_base_export.h"
 

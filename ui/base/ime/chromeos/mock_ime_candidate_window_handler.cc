@@ -25,7 +25,7 @@ void MockIMECandidateWindowHandler::UpdateLookupTable(
 
 void MockIMECandidateWindowHandler::UpdatePreeditText(
     const base::string16& text,
-    uint32 cursor_pos,
+    uint32_t cursor_pos,
     bool visible) {}
 
 void MockIMECandidateWindowHandler::SetCursorBounds(

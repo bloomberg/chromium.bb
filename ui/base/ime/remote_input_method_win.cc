@@ -4,7 +4,11 @@
 
 #include "ui/base/ime/remote_input_method_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/metro.h"
@@ -67,9 +71,9 @@ std::string GetLocaleString(LCID Locale_id, LCTYPE locale_type) {
   return result;
 }
 
-std::vector<int32> GetInputScopesAsInt(TextInputType text_input_type,
-                                       TextInputMode text_input_mode) {
-  std::vector<int32> result;
+std::vector<int32_t> GetInputScopesAsInt(TextInputType text_input_type,
+                                         TextInputMode text_input_mode) {
+  std::vector<int32_t> result;
   // An empty vector represents |text_input_type| is TEXT_INPUT_TYPE_NONE.
   if (text_input_type == TEXT_INPUT_TYPE_NONE)
     return result;
@@ -78,7 +82,7 @@ std::vector<int32> GetInputScopesAsInt(TextInputType text_input_type,
       tsf_inputscope::GetInputScopes(text_input_type, text_input_mode);
   result.reserve(input_scopes.size());
   for (size_t i = 0; i < input_scopes.size(); ++i)
-    result.push_back(static_cast<int32>(input_scopes[i]));
+    result.push_back(static_cast<int32_t>(input_scopes[i]));
   return result;
 }
 
@@ -91,7 +95,7 @@ std::vector<gfx::Rect> GetCompositionCharacterBounds(
   if (client->HasCompositionText()) {
     gfx::Range range;
     if (client->GetCompositionTextRange(&range)) {
-      for (uint32 i = 0; i < range.length(); ++i) {
+      for (uint32_t i = 0; i < range.length(); ++i) {
         gfx::Rect rect;
         if (!client->GetCompositionCharacterBounds(i, &rect))
           break;
@@ -144,7 +148,7 @@ class RemoteInputMethodWin : public InputMethod,
   }
 
   void SetFocusedTextInputClient(TextInputClient* client) override {
-    std::vector<int32> prev_input_scopes;
+    std::vector<int32_t> prev_input_scopes;
     std::swap(input_scopes_, prev_input_scopes);
     std::vector<gfx::Rect> prev_bounds;
     std::swap(composition_character_bounds_, prev_bounds);
@@ -203,7 +207,7 @@ class RemoteInputMethodWin : public InputMethod,
   void OnTextInputTypeChanged(const TextInputClient* client) override {
     if (!text_input_client_ || text_input_client_ != client)
       return;
-    std::vector<int32> prev_input_scopes;
+    std::vector<int32_t> prev_input_scopes;
     std::swap(input_scopes_, prev_input_scopes);
     input_scopes_ = GetInputScopesAsInt(client->GetTextInputType(),
                                         client->GetTextInputMode());
@@ -339,7 +343,7 @@ class RemoteInputMethodWin : public InputMethod,
   internal::RemoteInputMethodDelegateWin* remote_delegate_;
 
   TextInputClient* text_input_client_;
-  std::vector<int32> input_scopes_;
+  std::vector<int32_t> input_scopes_;
   std::vector<gfx::Rect> composition_character_bounds_;
   bool is_candidate_popup_open_;
   bool is_ime_;

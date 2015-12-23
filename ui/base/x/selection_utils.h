@@ -5,6 +5,7 @@
 #ifndef UI_BASE_X_SELECTION_UTILS_H_
 #define UI_BASE_X_SELECTION_UTILS_H_
 
+#include <stddef.h>
 #include <X11/Xlib.h>
 
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
@@ -12,7 +13,6 @@
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted_memory.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_export.h"

@@ -4,6 +4,8 @@
 
 #include "ui/base/ime/composition_text.h"
 
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

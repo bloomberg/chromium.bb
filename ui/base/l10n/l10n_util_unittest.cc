@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
+#include <stddef.h>
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include <cstdlib>
-#endif
-
-#include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/ui_base_paths.h"
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#include <cstdlib>
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

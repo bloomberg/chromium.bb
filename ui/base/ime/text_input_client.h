@@ -5,7 +5,9 @@
 #ifndef UI_BASE_IME_TEXT_INPUT_CLIENT_H_
 #define UI_BASE_IME_TEXT_INPUT_CLIENT_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/composition_text.h"
@@ -93,7 +95,7 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // (Density Independent Pixel).
   // TODO(ime): Have a clear spec whether the returned value is DIP or not.
   // http://crbug.com/360334
-  virtual bool GetCompositionCharacterBounds(uint32 index,
+  virtual bool GetCompositionCharacterBounds(uint32_t index,
                                              gfx::Rect* rect) const = 0;
 
   // Returns true if there is composition text.

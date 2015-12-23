@@ -4,6 +4,8 @@
 
 #include "ui/base/models/list_selection_model.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 

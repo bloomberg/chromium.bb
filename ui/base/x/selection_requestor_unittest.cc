@@ -4,6 +4,9 @@
 
 #include "ui/base/x/selection_requestor.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"

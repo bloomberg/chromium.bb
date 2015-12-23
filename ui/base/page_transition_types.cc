@@ -20,13 +20,13 @@ PageTransition PageTransitionStripQualifier(PageTransition type) {
   return static_cast<PageTransition>(type & ~PAGE_TRANSITION_QUALIFIER_MASK);
 }
 
-bool PageTransitionIsValidType(int32 type) {
+bool PageTransitionIsValidType(int32_t type) {
   PageTransition t = PageTransitionStripQualifier(
       static_cast<PageTransition>(type));
   return (t <= PAGE_TRANSITION_LAST_CORE);
 }
 
-PageTransition PageTransitionFromInt(int32 type) {
+PageTransition PageTransitionFromInt(int32_t type) {
   if (!PageTransitionIsValidType(type)) {
     NOTREACHED() << "Invalid transition type " << type;
 
@@ -37,7 +37,7 @@ PageTransition PageTransitionFromInt(int32 type) {
 }
 
 bool PageTransitionIsMainFrame(PageTransition type) {
-  int32 t = PageTransitionStripQualifier(type);
+  int32_t t = PageTransitionStripQualifier(type);
   return (t != PAGE_TRANSITION_AUTO_SUBFRAME &&
           t != PAGE_TRANSITION_MANUAL_SUBFRAME);
 }
@@ -51,12 +51,12 @@ bool PageTransitionIsNewNavigation(PageTransition type) {
       !PageTransitionCoreTypeIs(type, PAGE_TRANSITION_RELOAD);
 }
 
-int32 PageTransitionGetQualifier(PageTransition type) {
+int32_t PageTransitionGetQualifier(PageTransition type) {
   return type & PAGE_TRANSITION_QUALIFIER_MASK;
 }
 
 bool PageTransitionIsWebTriggerable(PageTransition type) {
-  int32 t = PageTransitionStripQualifier(type);
+  int32_t t = PageTransitionStripQualifier(type);
   switch (t) {
     case PAGE_TRANSITION_LINK:
     case PAGE_TRANSITION_AUTO_SUBFRAME:
@@ -68,7 +68,7 @@ bool PageTransitionIsWebTriggerable(PageTransition type) {
 }
 
 const char* PageTransitionGetCoreTransitionString(PageTransition type) {
-  int32 t = PageTransitionStripQualifier(type);
+  int32_t t = PageTransitionStripQualifier(type);
   switch (t) {
     case PAGE_TRANSITION_LINK: return "link";
     case PAGE_TRANSITION_TYPED: return "typed";

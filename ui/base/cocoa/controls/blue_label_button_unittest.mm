@@ -5,6 +5,7 @@
 #import "ui/base/cocoa/controls/blue_label_button.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #import "testing/gtest_mac.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 

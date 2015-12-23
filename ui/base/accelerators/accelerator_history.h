@@ -5,6 +5,7 @@
 #ifndef UI_BASE_ACCELERATORS_ACCELERATOR_HISTORY_H_
 #define UI_BASE_ACCELERATORS_ACCELERATOR_HISTORY_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ui_base_export.h"

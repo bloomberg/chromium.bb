@@ -4,7 +4,9 @@
 
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {

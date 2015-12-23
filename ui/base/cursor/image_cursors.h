@@ -5,6 +5,7 @@
 #ifndef UI_BASE_CURSOR_IMAGE_CURSORS_H_
 #define UI_BASE_CURSOR_IMAGE_CURSORS_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"

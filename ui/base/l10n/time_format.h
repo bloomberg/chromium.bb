@@ -5,7 +5,7 @@
 #ifndef UI_BASE_L10N_TIME_FORMAT_H_
 #define UI_BASE_L10N_TIME_FORMAT_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
 

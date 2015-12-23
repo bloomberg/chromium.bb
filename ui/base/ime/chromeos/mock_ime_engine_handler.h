@@ -5,6 +5,9 @@
 #ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_ENGINE_HANDLER_H_
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_ENGINE_HANDLER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/event.h"
@@ -26,11 +29,11 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
   bool IsInterestedInKeyEvent() const override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
                        KeyEventDoneCallback& callback) override;
-  void CandidateClicked(uint32 index) override;
+  void CandidateClicked(uint32_t index) override;
   void SetSurroundingText(const std::string& text,
-                          uint32 cursor_pos,
-                          uint32 anchor_pos,
-                          uint32 offset_pos) override;
+                          uint32_t cursor_pos,
+                          uint32_t anchor_pos,
+                          uint32_t offset_pos) override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
 
   int focus_in_call_count() const { return focus_in_call_count_; }
@@ -55,11 +58,11 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
     return last_set_surrounding_text_;
   }
 
-  uint32 last_set_surrounding_cursor_pos() const {
+  uint32_t last_set_surrounding_cursor_pos() const {
     return last_set_surrounding_cursor_pos_;
   }
 
-  uint32 last_set_surrounding_anchor_pos() const {
+  uint32_t last_set_surrounding_anchor_pos() const {
     return last_set_surrounding_anchor_pos_;
   }
 
@@ -127,8 +130,8 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
   InputContext last_text_input_context_;
   std::string last_activated_property_;
   std::string last_set_surrounding_text_;
-  uint32 last_set_surrounding_cursor_pos_;
-  uint32 last_set_surrounding_anchor_pos_;
+  uint32_t last_set_surrounding_cursor_pos_;
+  uint32_t last_set_surrounding_anchor_pos_;
   scoped_ptr<ui::KeyEvent> last_processed_key_event_;
   KeyEventDoneCallback last_passed_callback_;
   std::string active_component_id_;

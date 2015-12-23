@@ -5,8 +5,9 @@
 #ifndef UI_BASE_DRAGDROP_DROP_TARGET_EVENT_H_
 #define UI_BASE_DRAGDROP_DROP_TARGET_EVENT_H_
 
-#include "ui/events/event.h"
+#include "base/macros.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/events/event.h"
 
 namespace ui {
 

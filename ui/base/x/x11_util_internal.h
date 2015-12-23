@@ -18,6 +18,7 @@ extern "C" {
 #include <X11/Xlib.h>
 }
 
+#include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {

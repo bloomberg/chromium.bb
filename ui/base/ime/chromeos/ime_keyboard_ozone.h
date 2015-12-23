@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {

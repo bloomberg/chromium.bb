@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
 

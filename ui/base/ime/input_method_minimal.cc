@@ -4,6 +4,8 @@
 
 #include "ui/base/ime/input_method_minimal.h"
 
+#include <stdint.h>
+
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -35,7 +37,7 @@ void InputMethodMinimal::DispatchKeyEvent(ui::KeyEvent* event) {
   // Insert the character.
   ignore_result(DispatchKeyEventPostIME(event));
   if (event->type() == ET_KEY_PRESSED && GetTextInputClient()) {
-    const uint16 ch = event->GetCharacter();
+    const uint16_t ch = event->GetCharacter();
     if (ch) {
       GetTextInputClient()->InsertChar(*event);
       event->StopPropagation();

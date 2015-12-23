@@ -8,6 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 
 @class CrTrackingAreaOwnerProxy;

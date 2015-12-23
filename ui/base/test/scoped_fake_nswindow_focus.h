@@ -5,6 +5,7 @@
 #ifndef UI_BASE_TEST_SCOPED_FAKE_NSWINDOW_FOCUS_H_
 #define UI_BASE_TEST_SCOPED_FAKE_NSWINDOW_FOCUS_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {

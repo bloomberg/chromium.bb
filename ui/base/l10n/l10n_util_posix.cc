@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
+#include "build/build_config.h"
+
 #if defined(OS_CHROMEOS)
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #endif
 

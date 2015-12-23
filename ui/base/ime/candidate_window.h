@@ -5,9 +5,12 @@
 #ifndef UI_BASE_IME_CANDIDATE_WINDOW_H_
 #define UI_BASE_IME_CANDIDATE_WINDOW_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
-#include "base/basictypes.h"
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/infolist_entry.h"
 #include "ui/base/ime/ui_base_ime_export.h"
@@ -70,12 +73,12 @@ class UI_BASE_IME_EXPORT CandidateWindow {
                           bool* has_highlighted) const;
 
   // Returns the number of candidates in one page.
-  uint32 page_size() const { return property_->page_size; }
-  void set_page_size(uint32 page_size) { property_->page_size = page_size; }
+  uint32_t page_size() const { return property_->page_size; }
+  void set_page_size(uint32_t page_size) { property_->page_size = page_size; }
 
   // Returns the cursor index of the currently selected candidate.
-  uint32 cursor_position() const { return property_->cursor_position; }
-  void set_cursor_position(uint32 cursor_position) {
+  uint32_t cursor_position() const { return property_->cursor_position; }
+  void set_cursor_position(uint32_t cursor_position) {
     property_->cursor_position = cursor_position;
   }
 

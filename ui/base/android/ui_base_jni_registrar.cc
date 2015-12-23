@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/macros.h"
 #include "ui/base/clipboard/clipboard_android.h"
 #include "ui/base/device_form_factor_android.h"
 #include "ui/base/l10n/l10n_util_android.h"

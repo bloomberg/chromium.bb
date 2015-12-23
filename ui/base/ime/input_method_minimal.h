@@ -5,6 +5,7 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_MINIMAL_H_
 #define UI_BASE_IME_INPUT_METHOD_MINIMAL_H_
 
+#include "base/macros.h"
 #include "ui/base/ime/input_method_base.h"
 
 namespace ui {

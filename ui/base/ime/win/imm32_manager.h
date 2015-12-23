@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/ui_base_ime_export.h"

@@ -9,7 +9,6 @@
 
 #include <windows.h>
 
-#include "base/basictypes.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {

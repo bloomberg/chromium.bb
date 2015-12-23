@@ -8,8 +8,8 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/x/x11_types.h"
 

@@ -7,7 +7,7 @@
 
 #include <ole2.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {

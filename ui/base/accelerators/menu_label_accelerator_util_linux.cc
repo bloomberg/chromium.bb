@@ -4,6 +4,8 @@
 
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 
 namespace {

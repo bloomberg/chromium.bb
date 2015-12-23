@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"

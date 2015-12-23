@@ -6,8 +6,10 @@
 #define UI_BASE_RESOURCE_RESOURCE_DATA_DLL_WIN_H_
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/base/resource/resource_handle.h"
 
 namespace ui {
@@ -18,11 +20,11 @@ class ResourceDataDLL : public ResourceHandle {
   ~ResourceDataDLL() override;
 
   // ResourceHandle implementation:
-  bool HasResource(uint16 resource_id) const override;
-  bool GetStringPiece(uint16 resource_id,
+  bool HasResource(uint16_t resource_id) const override;
+  bool GetStringPiece(uint16_t resource_id,
                       base::StringPiece* data) const override;
   base::RefCountedStaticMemory* GetStaticMemory(
-      uint16 resource_id) const override;
+      uint16_t resource_id) const override;
   TextEncodingType GetTextEncodingType() const override;
   ScaleFactor GetScaleFactor() const override;
   bool HasOnlyMaterialDesignAssets() const override;

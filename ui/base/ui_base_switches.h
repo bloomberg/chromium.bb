@@ -8,6 +8,7 @@
 #define UI_BASE_UI_BASE_SWITCHES_H_
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
 namespace switches {

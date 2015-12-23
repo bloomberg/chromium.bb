@@ -6,6 +6,7 @@
 #define UI_BASE_IME_IME_BRIDGE_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"

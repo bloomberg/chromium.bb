@@ -5,8 +5,9 @@
 #ifndef UI_BASE_VIEW_PROP_H_
 #define UI_BASE_VIEW_PROP_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 

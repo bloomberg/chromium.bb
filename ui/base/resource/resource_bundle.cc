@@ -4,6 +4,8 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <utility>
 #include <vector>
@@ -13,6 +15,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -467,7 +470,7 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   if (scale_factor != ui::SCALE_FACTOR_100P) {
     for (size_t i = 0; i < data_packs_.size(); i++) {
       if (data_packs_[i]->GetScaleFactor() == scale_factor &&
-          data_packs_[i]->GetStringPiece(static_cast<uint16>(resource_id),
+          data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
                                          &data))
         return data;
     }
@@ -478,7 +481,7 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_200P ||
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_300P ||
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE) &&
-        data_packs_[i]->GetStringPiece(static_cast<uint16>(resource_id),
+        data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
                                        &data))
       return data;
   }
@@ -508,7 +511,7 @@ base::string16 ResourceBundle::GetLocalizedString(int message_id) {
   }
 
   base::StringPiece data;
-  if (!locale_resources_data_->GetStringPiece(static_cast<uint16>(message_id),
+  if (!locale_resources_data_->GetStringPiece(static_cast<uint16_t>(message_id),
                                               &data)) {
     // Fall back on the main data pack (shouldn't be any strings here except in
     // unittests).
@@ -822,7 +825,7 @@ bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
                                 bool* fell_back_to_1x) const {
   DCHECK(fell_back_to_1x);
   scoped_refptr<base::RefCountedMemory> memory(
-      data_handle.GetStaticMemory(static_cast<uint16>(resource_id)));
+      data_handle.GetStaticMemory(static_cast<uint16_t>(resource_id)));
   if (!memory.get())
     return false;
 
@@ -893,15 +896,16 @@ bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
   for (;;) {
     if (size - pos < kPngChunkMetadataSize)
       break;
-    uint32 length = 0;
+    uint32_t length = 0;
     base::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
     if (size - pos - kPngChunkMetadataSize < length)
       break;
-    if (length == 0 && memcmp(buf + pos + sizeof(uint32), kPngScaleChunkType,
-                              arraysize(kPngScaleChunkType)) == 0) {
+    if (length == 0 &&
+        memcmp(buf + pos + sizeof(uint32_t), kPngScaleChunkType,
+               arraysize(kPngScaleChunkType)) == 0) {
       return true;
     }
-    if (memcmp(buf + pos + sizeof(uint32), kPngDataChunkType,
+    if (memcmp(buf + pos + sizeof(uint32_t), kPngDataChunkType,
                arraysize(kPngDataChunkType)) == 0) {
       // Stop looking for custom chunks, any custom chunks should be before an
       // IDAT chunk.

@@ -5,6 +5,7 @@
 #ifndef UI_BASE_COCOA_SCOPED_CG_CONTEXT_SMOOTH_FONTS_H_
 #define UI_BASE_COCOA_SCOPED_CG_CONTEXT_SMOOTH_FONTS_H_
 
+#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 

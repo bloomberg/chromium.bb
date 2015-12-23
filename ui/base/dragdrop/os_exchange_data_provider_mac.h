@@ -6,6 +6,7 @@
 #define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_MAC_H_
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
 @class NSPasteboard;

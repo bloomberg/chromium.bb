@@ -5,7 +5,8 @@
 #ifndef UI_BASE_IME_CHROMEOS_IME_CNADIDATE_WINDOW_HANDLER_INTERFACE_H_
 #define UI_BASE_IME_CHROMEOS_IME_CNADIDATE_WINDOW_HANDLER_INTERFACE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
@@ -31,7 +32,7 @@ class UI_BASE_IME_EXPORT IMECandidateWindowHandlerInterface {
   // Called when the IME updates the preedit text. The |text| is given in
   // UTF-16 encoding.
   virtual void UpdatePreeditText(const base::string16& text,
-                                 uint32 cursor_pos,
+                                 uint32_t cursor_pos,
                                  bool visible) = 0;
 
   // Called when the application changes its caret bounds.

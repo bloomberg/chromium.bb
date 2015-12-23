@@ -4,6 +4,8 @@
 
 #include "ui/base/l10n/l10n_util_android.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"

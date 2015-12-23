@@ -9,11 +9,14 @@
 #ifndef UI_BASE_RESOURCE_DATA_PACK_H_
 #define UI_BASE_RESOURCE_DATA_PACK_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
@@ -52,15 +55,15 @@ class UI_BASE_EXPORT DataPack : public ResourceHandle {
   // |textEncodingType| specified. If no text resources are present, please
   // indicate BINARY.
   static bool WritePack(const base::FilePath& path,
-                        const std::map<uint16, base::StringPiece>& resources,
+                        const std::map<uint16_t, base::StringPiece>& resources,
                         TextEncodingType textEncodingType);
 
   // ResourceHandle implementation:
-  bool HasResource(uint16 resource_id) const override;
-  bool GetStringPiece(uint16 resource_id,
+  bool HasResource(uint16_t resource_id) const override;
+  bool GetStringPiece(uint16_t resource_id,
                       base::StringPiece* data) const override;
   base::RefCountedStaticMemory* GetStaticMemory(
-      uint16 resource_id) const override;
+      uint16_t resource_id) const override;
   TextEncodingType GetTextEncodingType() const override;
   ui::ScaleFactor GetScaleFactor() const override;
   bool HasOnlyMaterialDesignAssets() const override;

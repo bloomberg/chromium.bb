@@ -4,14 +4,19 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base_paths.h"
 #include "base/big_endian.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -105,16 +110,16 @@ void AddCustomChunk(const base::StringPiece& custom_chunk,
       kPngMagic));
   std::vector<unsigned char>::iterator ihdr_start =
       bitmap_data->begin() + arraysize(kPngMagic);
-  char ihdr_length_data[sizeof(uint32)];
-  for (size_t i = 0; i < sizeof(uint32); ++i)
+  char ihdr_length_data[sizeof(uint32_t)];
+  for (size_t i = 0; i < sizeof(uint32_t); ++i)
     ihdr_length_data[i] = *(ihdr_start + i);
-  uint32 ihdr_chunk_length = 0;
+  uint32_t ihdr_chunk_length = 0;
   base::ReadBigEndian(reinterpret_cast<char*>(ihdr_length_data),
                       &ihdr_chunk_length);
-  EXPECT_TRUE(std::equal(
-      ihdr_start + sizeof(uint32),
-      ihdr_start + sizeof(uint32) + sizeof(kPngIHDRChunkType),
-      kPngIHDRChunkType));
+  EXPECT_TRUE(
+      std::equal(ihdr_start + sizeof(uint32_t),
+                 ihdr_start + sizeof(uint32_t) + sizeof(kPngIHDRChunkType),
+                 kPngIHDRChunkType));
 
   bitmap_data->insert(ihdr_start + kPngChunkMetadataSize + ihdr_chunk_length,
                       custom_chunk.begin(), custom_chunk.end());
@@ -136,7 +141,7 @@ void CreateDataPackWithSingleBitmap(const base::FilePath& path,
   if (custom_chunk.size() > 0)
     AddCustomChunk(custom_chunk, &bitmap_data);
 
-  std::map<uint16, base::StringPiece> resources;
+  std::map<uint16_t, base::StringPiece> resources;
   resources[3u] = base::StringPiece(
       reinterpret_cast<const char*>(&bitmap_data[0]), bitmap_data.size());
   DataPack::WritePack(path, resources, ui::DataPack::BINARY);

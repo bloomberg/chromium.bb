@@ -4,6 +4,8 @@
 
 #include "ui/base/ime/input_method_chromeos.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <X11/Xlib.h>
 #undef Bool
 #undef FocusIn
@@ -13,6 +15,7 @@
 #include <cstring>
 
 #include "base/i18n/char_iterator.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,8 +45,8 @@ const base::string16 kSampleText = base::UTF8ToUTF16(
 
 typedef IMEEngineHandlerInterface::KeyEventDoneCallback KeyEventCallback;
 
-uint32 GetOffsetInUTF16(
-    const base::string16& utf16_string, uint32 utf8_offset) {
+uint32_t GetOffsetInUTF16(const base::string16& utf16_string,
+                          uint32_t utf8_offset) {
   DCHECK_LT(utf8_offset, utf16_string.size());
   base::i18n::UTF16CharIterator char_iterator(&utf16_string);
   for (size_t i = 0; i < utf8_offset; ++i)
@@ -104,9 +107,9 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
 
 class SynchronousKeyEventHandler {
  public:
-  SynchronousKeyEventHandler(uint32 expected_keyval,
-                             uint32 expected_keycode,
-                             uint32 expected_state,
+  SynchronousKeyEventHandler(uint32_t expected_keyval,
+                             uint32_t expected_keycode,
+                             uint32_t expected_state,
                              KeyEventHandlerBehavior behavior)
       : expected_keyval_(expected_keyval),
         expected_keycode_(expected_keycode),
@@ -115,9 +118,9 @@ class SynchronousKeyEventHandler {
 
   virtual ~SynchronousKeyEventHandler() {}
 
-  void Run(uint32 keyval,
-           uint32 keycode,
-           uint32 state,
+  void Run(uint32_t keyval,
+           uint32_t keycode,
+           uint32_t state,
            const KeyEventCallback& callback) {
     EXPECT_EQ(expected_keyval_, keyval);
     EXPECT_EQ(expected_keycode_, keycode);
@@ -126,9 +129,9 @@ class SynchronousKeyEventHandler {
   }
 
  private:
-  const uint32 expected_keyval_;
-  const uint32 expected_keycode_;
-  const uint32 expected_state_;
+  const uint32_t expected_keyval_;
+  const uint32_t expected_keycode_;
+  const uint32_t expected_state_;
   const KeyEventHandlerBehavior behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousKeyEventHandler);
@@ -136,18 +139,18 @@ class SynchronousKeyEventHandler {
 
 class AsynchronousKeyEventHandler {
  public:
-  AsynchronousKeyEventHandler(uint32 expected_keyval,
-                              uint32 expected_keycode,
-                              uint32 expected_state)
+  AsynchronousKeyEventHandler(uint32_t expected_keyval,
+                              uint32_t expected_keycode,
+                              uint32_t expected_state)
       : expected_keyval_(expected_keyval),
         expected_keycode_(expected_keycode),
         expected_state_(expected_state) {}
 
   virtual ~AsynchronousKeyEventHandler() {}
 
-  void Run(uint32 keyval,
-           uint32 keycode,
-           uint32 state,
+  void Run(uint32_t keyval,
+           uint32_t keycode,
+           uint32_t state,
            const KeyEventCallback& callback) {
     EXPECT_EQ(expected_keyval_, keyval);
     EXPECT_EQ(expected_keycode_, keycode);
@@ -160,9 +163,9 @@ class AsynchronousKeyEventHandler {
   }
 
  private:
-  const uint32 expected_keyval_;
-  const uint32 expected_keycode_;
-  const uint32 expected_state_;
+  const uint32_t expected_keyval_;
+  const uint32_t expected_keycode_;
+  const uint32_t expected_state_;
   KeyEventCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousKeyEventHandler);
@@ -171,15 +174,15 @@ class AsynchronousKeyEventHandler {
 class SetSurroundingTextVerifier {
  public:
   SetSurroundingTextVerifier(const std::string& expected_surrounding_text,
-                             uint32 expected_cursor_position,
-                             uint32 expected_anchor_position)
+                             uint32_t expected_cursor_position,
+                             uint32_t expected_anchor_position)
       : expected_surrounding_text_(expected_surrounding_text),
         expected_cursor_position_(expected_cursor_position),
         expected_anchor_position_(expected_anchor_position) {}
 
   void Verify(const std::string& text,
-              uint32 cursor_pos,
-              uint32 anchor_pos) {
+              uint32_t cursor_pos,
+              uint32_t anchor_pos) {
     EXPECT_EQ(expected_surrounding_text_, text);
     EXPECT_EQ(expected_cursor_position_, cursor_pos);
     EXPECT_EQ(expected_anchor_position_, anchor_pos);
@@ -187,8 +190,8 @@ class SetSurroundingTextVerifier {
 
  private:
   const std::string expected_surrounding_text_;
-  const uint32 expected_cursor_position_;
-  const uint32 expected_anchor_position_;
+  const uint32_t expected_cursor_position_;
+  const uint32_t expected_anchor_position_;
 
   DISALLOW_COPY_AND_ASSIGN(SetSurroundingTextVerifier);
 };
@@ -551,7 +554,7 @@ TEST_F(InputMethodChromeOSTest, OnCaretBoundsChanged) {
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_NoAttribute) {
   const base::string16 kSampleAsciiText = UTF8ToUTF16("Sample Text");
-  const uint32 kCursorPos = 2UL;
+  const uint32_t kCursorPos = 2UL;
 
   CompositionText chromeos_composition_text;
   chromeos_composition_text.text = kSampleAsciiText;
@@ -572,7 +575,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_NoAttribute) {
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
-  const uint32 kCursorPos = 2UL;
+  const uint32_t kCursorPos = 2UL;
 
   // Set up chromeos composition text with one underline attribute.
   CompositionText composition_text;
@@ -601,7 +604,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
-  const uint32 kCursorPos = 2UL;
+  const uint32_t kCursorPos = 2UL;
 
   // Set up chromeos composition text with one underline attribute.
   CompositionText composition_text;
@@ -630,7 +633,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
-  const uint32 kCursorPos = 2UL;
+  const uint32_t kCursorPos = 2UL;
 
   // Set up chromeos composition text with one underline attribute.
   CompositionText composition_text;
@@ -656,7 +659,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
 }
 
 TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
-  const uint32 kCursorPos = 2UL;
+  const uint32_t kCursorPos = 2UL;
 
   // Set up chromeos composition text with one underline attribute.
   CompositionText composition_text;
@@ -683,7 +686,7 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
 
 TEST_F(InputMethodChromeOSTest,
        ExtractCompositionTextTest_SelectionStartWithCursor) {
-  const uint32 kCursorPos = 1UL;
+  const uint32_t kCursorPos = 1UL;
 
   // Set up chromeos composition text with one underline attribute.
   CompositionText composition_text;
@@ -714,7 +717,7 @@ TEST_F(InputMethodChromeOSTest,
 
 TEST_F(InputMethodChromeOSTest,
        ExtractCompositionTextTest_SelectionEndWithCursor) {
-  const uint32 kCursorPos = 4UL;
+  const uint32_t kCursorPos = 4UL;
 
   // Set up chromeos composition text with one underline attribute.
   CompositionText composition_text;

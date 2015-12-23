@@ -4,17 +4,20 @@
 
 #include "ui/base/accelerators/accelerator.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include <stdint.h>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/strings/grit/ui_strings.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 #if !defined(OS_WIN) && (defined(USE_AURA) || defined(OS_MACOSX))
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -217,7 +220,7 @@ base::string16 Accelerator::GetShortcutText() const {
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));
     shortcut += key;
 #elif defined(USE_AURA) || defined(OS_MACOSX)
-    const uint16 c = DomCodeToUsLayoutCharacter(
+    const uint16_t c = DomCodeToUsLayoutCharacter(
         UsLayoutKeyboardCodeToDomCode(key_code_), false);
     if (c != 0)
       shortcut +=

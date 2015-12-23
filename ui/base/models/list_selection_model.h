@@ -5,9 +5,11 @@
 #ifndef UI_BASE_MODELS_LIST_SELECTION_MODEL_H_
 #define UI_BASE_MODELS_LIST_SELECTION_MODEL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {

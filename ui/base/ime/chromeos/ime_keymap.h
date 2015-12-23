@@ -6,7 +6,6 @@
 #define UI_BASE_IME_CHROMEOS_IME_KEYMAP_H_
 
 #include <string>
-#include "base/basictypes.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 

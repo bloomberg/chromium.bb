@@ -7,9 +7,9 @@
 
 #include <stack>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace ui {
 

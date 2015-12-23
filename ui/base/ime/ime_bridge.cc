@@ -5,8 +5,11 @@
 #include "ui/base/ime/ime_bridge.h"
 
 #include <map>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 
 namespace ui {
 

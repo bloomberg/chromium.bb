@@ -52,7 +52,7 @@ gfx::Rect DummyTextInputClient::GetCaretBounds() const {
 }
 
 bool DummyTextInputClient::GetCompositionCharacterBounds(
-    uint32 index,
+    uint32_t index,
     gfx::Rect* rect) const {
   return false;
 }

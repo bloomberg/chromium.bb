@@ -5,8 +5,8 @@
 #include "ui/base/ime/composition_text_util_pango.h"
 
 #include <pango/pango-attributes.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
 #include "base/i18n/char_iterator.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

@@ -5,9 +5,10 @@
 #ifndef UI_BASE_IME_REMOTE_INPUT_METHOD_DELEGATE_WIN_H_
 #define UI_BASE_IME_REMOTE_INPUT_METHOD_DELEGATE_WIN_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -26,12 +27,12 @@ class UI_BASE_IME_EXPORT RemoteInputMethodDelegateWin {
   // Notifies that properties of the focused TextInputClient is changed.
   // Note that an empty |input_scopes| represents that TextInputType is
   // TEXT_INPUT_TYPE_NONE.
-  // Caveats: |input_scopes| is defined as std::vector<int32> rather than
+  // Caveats: |input_scopes| is defined as std::vector<int32_t> rather than
   // std::vector<InputScope> because the wire format of IPC message
-  // MetroViewerHostMsg_ImeTextInputClientUpdated uses std::vector<int32> to
+  // MetroViewerHostMsg_ImeTextInputClientUpdated uses std::vector<int32_t> to
   // avoid dependency on <InputScope.h> header.
   virtual void OnTextInputClientUpdated(
-      const std::vector<int32>& input_scopes,
+      const std::vector<int32_t>& input_scopes,
       const std::vector<gfx::Rect>& composition_character_bounds) = 0;
 };
 

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

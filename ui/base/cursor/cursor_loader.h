@@ -6,6 +6,7 @@
 #define UI_BASE_CURSOR_CURSOR_LOADER_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/display.h"

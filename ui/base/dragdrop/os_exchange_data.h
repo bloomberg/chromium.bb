@@ -14,8 +14,8 @@
 #include <objidl.h>
 #endif
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/download_file_interface.h"

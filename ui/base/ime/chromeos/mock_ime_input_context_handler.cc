@@ -24,7 +24,7 @@ void MockIMEInputContextHandler::CommitText(const std::string& text) {
 
 void MockIMEInputContextHandler::UpdateCompositionText(
     const ui::CompositionText& text,
-    uint32 cursor_pos,
+    uint32_t cursor_pos,
     bool visible) {
   ++update_preedit_text_call_count_;
   last_update_composition_arg_.composition_text.CopyFrom(text);
@@ -32,8 +32,8 @@ void MockIMEInputContextHandler::UpdateCompositionText(
   last_update_composition_arg_.is_visible = visible;
 }
 
-void MockIMEInputContextHandler::DeleteSurroundingText(int32 offset,
-                                                       uint32 length) {
+void MockIMEInputContextHandler::DeleteSurroundingText(int32_t offset,
+                                                       uint32_t length) {
   ++delete_surrounding_text_call_count_;
   last_delete_surrounding_text_arg_.offset = offset;
   last_delete_surrounding_text_arg_.length = length;

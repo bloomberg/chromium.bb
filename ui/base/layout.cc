@@ -4,13 +4,15 @@
 
 #include "ui/base/layout.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"

@@ -4,7 +4,9 @@
 
 #include "ui/base/ime/win/imm32_manager.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -70,9 +72,9 @@ void GetCompositionUnderlines(HIMC imm_context,
                               ui::CompositionUnderlines* underlines) {
   int clause_size = ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
                                               NULL, 0);
-  int clause_length = clause_size / sizeof(uint32);
+  int clause_length = clause_size / sizeof(uint32_t);
   if (clause_length) {
-    scoped_ptr<uint32[]> clause_data(new uint32[clause_length]);
+    scoped_ptr<uint32_t[]> clause_data(new uint32_t[clause_length]);
     if (clause_data.get()) {
       ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
                                 clause_data.get(), clause_size);
@@ -85,8 +87,8 @@ void GetCompositionUnderlines(HIMC imm_context,
         underline.background_color = SK_ColorTRANSPARENT;
 
         // Use thick underline for the target clause.
-        if (underline.start_offset >= static_cast<uint32>(target_start) &&
-            underline.end_offset <= static_cast<uint32>(target_end)) {
+        if (underline.start_offset >= static_cast<uint32_t>(target_start) &&
+            underline.end_offset <= static_cast<uint32_t>(target_end)) {
           underline.thick = true;
         }
         underlines->push_back(underline);
@@ -327,19 +329,19 @@ void IMM32Manager::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
     underline.background_color = SK_ColorTRANSPARENT;
     if (target_start > 0) {
       underline.start_offset = 0U;
-      underline.end_offset = static_cast<uint32>(target_start);
+      underline.end_offset = static_cast<uint32_t>(target_start);
       underline.thick = false;
       composition->underlines.push_back(underline);
     }
     if (target_end > target_start) {
-      underline.start_offset = static_cast<uint32>(target_start);
-      underline.end_offset = static_cast<uint32>(target_end);
+      underline.start_offset = static_cast<uint32_t>(target_start);
+      underline.end_offset = static_cast<uint32_t>(target_end);
       underline.thick = true;
       composition->underlines.push_back(underline);
     }
     if (target_end < length) {
-      underline.start_offset = static_cast<uint32>(target_end);
-      underline.end_offset = static_cast<uint32>(length);
+      underline.start_offset = static_cast<uint32_t>(target_end);
+      underline.end_offset = static_cast<uint32_t>(length);
       underline.thick = false;
       composition->underlines.push_back(underline);
     }

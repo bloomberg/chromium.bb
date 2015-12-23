@@ -5,6 +5,7 @@
 #ifndef UI_BASE_TOUCH_TOUCH_DEVICE_H_
 #define UI_BASE_TOUCH_TOUCH_DEVICE_H_
 
+#include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
 #if defined(OS_ANDROID)

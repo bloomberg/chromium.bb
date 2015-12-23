@@ -4,6 +4,7 @@
 
 #include "ui/base/x/x11_foreign_window_manager.h"
 
+#include <stddef.h>
 #include <X11/Xlib.h>
 
 #include "base/compiler_specific.h"

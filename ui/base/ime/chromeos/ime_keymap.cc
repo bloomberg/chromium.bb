@@ -4,9 +4,12 @@
 
 #include "ui/base/ime/chromeos/ime_keymap.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 
 namespace ui {
 

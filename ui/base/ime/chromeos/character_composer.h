@@ -5,8 +5,12 @@
 #ifndef UI_BASE_IME_CHROMEOS_CHARACTER_COMPOSER_H_
 #define UI_BASE_IME_CHROMEOS_CHARACTER_COMPOSER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/keycodes/dom/dom_key.h"

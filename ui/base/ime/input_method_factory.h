@@ -5,7 +5,6 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_FACTORY_H_
 #define UI_BASE_IME_INPUT_METHOD_FACTORY_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/input_method_initializer.h"

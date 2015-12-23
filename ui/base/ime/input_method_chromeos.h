@@ -5,11 +5,13 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_CHROMEOS_H_
 #define UI_BASE_IME_INPUT_METHOD_CHROMEOS_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/ime/chromeos/character_composer.h"
@@ -43,7 +45,7 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
  protected:
   // Converts |text| into CompositionText.
   void ExtractCompositionText(const CompositionText& text,
-                              uint32 cursor_position,
+                              uint32_t cursor_position,
                               CompositionText* out_composition) const;
 
   // Process a key returned from the input method.
@@ -100,9 +102,9 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
   // ui::IMEInputContextHandlerInterface overrides:
   void CommitText(const std::string& text) override;
   void UpdateCompositionText(const CompositionText& text,
-                             uint32 cursor_pos,
+                             uint32_t cursor_pos,
                              bool visible) override;
-  void DeleteSurroundingText(int32 offset, uint32 length) override;
+  void DeleteSurroundingText(int32_t offset, uint32_t length) override;
 
   // Hides the composition text.
   void HidePreeditText();

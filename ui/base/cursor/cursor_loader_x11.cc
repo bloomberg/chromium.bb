@@ -9,6 +9,7 @@
 #include <X11/Xlib.h>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"

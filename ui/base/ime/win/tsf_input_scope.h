@@ -9,7 +9,6 @@
 #include <Windows.h>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ime/ui_base_ime_export.h"

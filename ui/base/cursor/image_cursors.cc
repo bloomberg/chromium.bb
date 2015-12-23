@@ -5,8 +5,10 @@
 #include "ui/base/cursor/image_cursors.h"
 
 #include <float.h>
+#include <stddef.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"

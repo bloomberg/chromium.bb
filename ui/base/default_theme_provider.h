@@ -7,8 +7,9 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_export.h"
 

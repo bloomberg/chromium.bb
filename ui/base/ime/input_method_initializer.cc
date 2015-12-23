@@ -4,6 +4,8 @@
 
 #include "ui/base/ime/input_method_initializer.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/ime_bridge.h"
 #elif defined(USE_AURA) && defined(OS_LINUX)

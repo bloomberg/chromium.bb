@@ -4,6 +4,9 @@
 
 #include "ui/base/resource/data_pack.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/files/file.h"
@@ -12,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -162,7 +166,7 @@ TEST_P(DataPackTest, Write) {
   std::string four("four");
   std::string fifteen("fifteen");
 
-  std::map<uint16, base::StringPiece> resources;
+  std::map<uint16_t, base::StringPiece> resources;
   resources.insert(std::make_pair(1, base::StringPiece(one)));
   resources.insert(std::make_pair(2, base::StringPiece(two)));
   resources.insert(std::make_pair(15, base::StringPiece(fifteen)));

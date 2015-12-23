@@ -5,7 +5,12 @@
 #ifndef UI_BASE_TEST_TEST_CLIPBOARD_H_
 #define UI_BASE_TEST_TEST_CLIPBOARD_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
+
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -22,7 +27,7 @@ class TestClipboard : public Clipboard {
   static Clipboard* CreateForCurrentThread();
 
   // Clipboard overrides.
-  uint64 GetSequenceNumber(ClipboardType type) const override;
+  uint64_t GetSequenceNumber(ClipboardType type) const override;
   bool IsFormatAvailable(const FormatType& format,
                          ClipboardType type) const override;
   void Clear(ClipboardType type) override;
@@ -34,8 +39,8 @@ class TestClipboard : public Clipboard {
   void ReadHTML(ClipboardType type,
                 base::string16* markup,
                 std::string* src_url,
-                uint32* fragment_start,
-                uint32* fragment_end) const override;
+                uint32_t* fragment_start,
+                uint32_t* fragment_end) const override;
   void ReadRTF(ClipboardType type, std::string* result) const override;
   SkBitmap ReadImage(ClipboardType type) const override;
   void ReadCustomData(ClipboardType clipboard_type,
@@ -65,7 +70,7 @@ class TestClipboard : public Clipboard {
     DataStore();
     ~DataStore();
     void Clear();
-    uint64 sequence_number;
+    uint64_t sequence_number;
     std::map<FormatType, std::string> data;
     std::string url_title;
     std::string html_src_url;

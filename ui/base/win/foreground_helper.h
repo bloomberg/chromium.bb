@@ -6,6 +6,7 @@
 #define UI_BASE_WIN_FOREGROUND_HELPER_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/win/window_impl.h"
 

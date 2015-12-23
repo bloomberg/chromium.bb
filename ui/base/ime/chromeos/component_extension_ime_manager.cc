@@ -4,8 +4,11 @@
 
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"

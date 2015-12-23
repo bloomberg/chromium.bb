@@ -5,7 +5,7 @@
 #ifndef UI_BASE_IDLE_IDLE_QUERY_X11_H_
 #define UI_BASE_IDLE_IDLE_QUERY_X11_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace ui {

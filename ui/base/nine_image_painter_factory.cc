@@ -4,6 +4,8 @@
 
 #include "ui/base/nine_image_painter_factory.h"
 
+#include <stddef.h>
+
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/nine_image_painter.h"
 

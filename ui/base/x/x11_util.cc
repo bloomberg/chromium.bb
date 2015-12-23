@@ -23,6 +23,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
@@ -34,6 +35,7 @@
 #include "base/sys_byteorder.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPostConfig.h"

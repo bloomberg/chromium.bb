@@ -8,6 +8,7 @@
 #include <Foundation/Foundation.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "ui/base/accelerators/platform_accelerator.h"
 
 namespace ui {

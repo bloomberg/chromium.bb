@@ -14,9 +14,10 @@
 
 #include "build/build_config.h"
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
@@ -143,8 +144,8 @@ TYPED_TEST(ClipboardTest, HTMLTest) {
               Contains(ASCIIToUTF16(Clipboard::kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetHtmlFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
-  uint32 fragment_start;
-  uint32 fragment_end;
+  uint32_t fragment_start;
+  uint32_t fragment_end;
   this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
@@ -214,8 +215,8 @@ TYPED_TEST(ClipboardTest, MultipleBufferTest) {
   EXPECT_EQ(text, text_result);
 
   base::string16 markup_result;
-  uint32 fragment_start;
-  uint32 fragment_end;
+  uint32_t fragment_start;
+  uint32_t fragment_end;
   this->clipboard().ReadHTML(CLIPBOARD_TYPE_SELECTION, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
@@ -240,8 +241,8 @@ TYPED_TEST(ClipboardTest, TrickyHTMLTest) {
               Contains(ASCIIToUTF16(Clipboard::kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetHtmlFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
-  uint32 fragment_start;
-  uint32 fragment_end;
+  uint32_t fragment_start;
+  uint32_t fragment_end;
   this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
@@ -270,8 +271,8 @@ TYPED_TEST(ClipboardTest, UnicodeHTMLTest) {
               Contains(ASCIIToUTF16(Clipboard::kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetHtmlFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
-  uint32 fragment_start;
-  uint32 fragment_end;
+  uint32_t fragment_start;
+  uint32_t fragment_end;
   this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
@@ -323,8 +324,8 @@ TYPED_TEST(ClipboardTest, MultiFormatTest) {
       Clipboard::GetPlainTextWFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetPlainTextFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
-  uint32 fragment_start;
-  uint32 fragment_end;
+  uint32_t fragment_start;
+  uint32_t fragment_end;
   this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
@@ -374,7 +375,7 @@ TYPED_TEST(ClipboardTest, URLTest) {
 
 static void TestBitmapWrite(Clipboard* clipboard,
                             const gfx::Size& size,
-                            const uint32* bitmap_data) {
+                            const uint32_t* bitmap_data) {
   {
     ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
     SkBitmap bitmap;
@@ -391,7 +392,7 @@ static void TestBitmapWrite(Clipboard* clipboard,
   EXPECT_EQ(size, gfx::Size(image.width(), image.height()));
   SkAutoLockPixels image_lock(image);
   for (int j = 0; j < image.height(); ++j) {
-    const uint32* row_address = image.getAddr32(0, j);
+    const uint32_t* row_address = image.getAddr32(0, j);
     for (int i = 0; i < image.width(); ++i) {
       int offset = i + j * image.width();
       EXPECT_EQ(bitmap_data[offset], row_address[i]) << "i = " << i
@@ -401,7 +402,7 @@ static void TestBitmapWrite(Clipboard* clipboard,
 }
 
 TYPED_TEST(ClipboardTest, SharedBitmapTest) {
-  const uint32 fake_bitmap_1[] = {
+  const uint32_t fake_bitmap_1[] = {
       0x46061626, 0xf69f5988, 0x793f2937, 0xfa55b986,
       0x78772152, 0x87692a30, 0x36322a25, 0x4320401b,
       0x91848c21, 0xc3177b3c, 0x6946155c, 0x64171952,
@@ -411,7 +412,7 @@ TYPED_TEST(ClipboardTest, SharedBitmapTest) {
     TestBitmapWrite(&this->clipboard(), gfx::Size(4, 3), fake_bitmap_1);
   }
 
-  const uint32 fake_bitmap_2[] = {
+  const uint32_t fake_bitmap_2[] = {
       0x46061626, 0xf69f5988,
       0x793f2937, 0xfa55b986,
       0x78772152, 0x87692a30,
@@ -524,8 +525,8 @@ TYPED_TEST(ClipboardTest, HyperlinkTest) {
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       Clipboard::GetHtmlFormatType(), CLIPBOARD_TYPE_COPY_PASTE));
-  uint32 fragment_start;
-  uint32 fragment_end;
+  uint32_t fragment_start;
+  uint32_t fragment_end;
   this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &html_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_EQ(kExpectedHtml,
@@ -615,7 +616,7 @@ TYPED_TEST(ClipboardTest, WriteEverything) {
 // written to.
 // TODO(dcheng): Add a version to test CLIPBOARD_TYPE_SELECTION.
 TYPED_TEST(ClipboardTest, GetSequenceNumber) {
-  const uint64 first_sequence_number =
+  const uint64_t first_sequence_number =
       this->clipboard().GetSequenceNumber(CLIPBOARD_TYPE_COPY_PASTE);
 
   {
@@ -627,7 +628,7 @@ TYPED_TEST(ClipboardTest, GetSequenceNumber) {
   // the message loop to make sure we get the notification.
   base::RunLoop().RunUntilIdle();
 
-  const uint64 second_sequence_number =
+  const uint64_t second_sequence_number =
       this->clipboard().GetSequenceNumber(CLIPBOARD_TYPE_COPY_PASTE);
 
   EXPECT_NE(first_sequence_number, second_sequence_number);

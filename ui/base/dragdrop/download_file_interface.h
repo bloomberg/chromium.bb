@@ -7,7 +7,6 @@
 
 #include "build/build_config.h"
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
 #include "ui/base/ui_base_export.h"

@@ -6,7 +6,9 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"

@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/chromeos/ime_keyboard_x11.h"
 
+#include <stddef.h>
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 

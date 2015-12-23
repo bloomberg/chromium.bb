@@ -8,8 +8,8 @@
 #ifndef UI_BASE_L10N_FORMATTER_H_
 #define UI_BASE_L10N_FORMATTER_H_
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/msgfmt.h"

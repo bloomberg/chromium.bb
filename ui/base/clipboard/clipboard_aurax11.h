@@ -7,6 +7,10 @@
 
 #include "ui/base/clipboard/clipboard.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace ui {
@@ -19,7 +23,7 @@ class ClipboardAuraX11 : public Clipboard {
   ~ClipboardAuraX11() override;
 
   // Clipboard overrides:
-  uint64 GetSequenceNumber(ClipboardType type) const override;
+  uint64_t GetSequenceNumber(ClipboardType type) const override;
   bool IsFormatAvailable(const FormatType& format,
                          ClipboardType type) const override;
   void Clear(ClipboardType type) override;
@@ -31,8 +35,8 @@ class ClipboardAuraX11 : public Clipboard {
   void ReadHTML(ClipboardType type,
                 base::string16* markup,
                 std::string* src_url,
-                uint32* fragment_start,
-                uint32* fragment_end) const override;
+                uint32_t* fragment_start,
+                uint32_t* fragment_end) const override;
   void ReadRTF(ClipboardType type, std::string* result) const override;
   SkBitmap ReadImage(ClipboardType type) const override;
   void ReadCustomData(ClipboardType clipboard_type,

@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"

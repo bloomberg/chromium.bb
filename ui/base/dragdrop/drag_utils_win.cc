@@ -7,6 +7,7 @@
 #include <objidl.h>
 #include <shlobj.h>
 #include <shobjidl.h>
+#include <stddef.h>
 
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"

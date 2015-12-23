@@ -5,7 +5,7 @@
 #ifndef UI_BASE_THEME_PROVIDER_H_
 #define UI_BASE_THEME_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_export.h"

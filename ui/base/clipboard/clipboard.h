@@ -5,6 +5,7 @@
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
@@ -13,11 +14,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/ui_base_export.h"
 
@@ -114,7 +117,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     // Copyable and assignable, since this is essentially an opaque value type.
   };
 
-  static bool IsSupportedClipboardType(int32 type) {
+  static bool IsSupportedClipboardType(int32_t type) {
     switch (type) {
       case CLIPBOARD_TYPE_COPY_PASTE:
         return true;
@@ -126,7 +129,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     return false;
   }
 
-  static ClipboardType FromInt(int32 type) {
+  static ClipboardType FromInt(int32_t type) {
     return static_cast<ClipboardType>(type);
   }
 
@@ -176,8 +179,8 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   virtual void ReadHTML(ClipboardType type,
                         base::string16* markup,
                         std::string* src_url,
-                        uint32* fragment_start,
-                        uint32* fragment_end) const = 0;
+                        uint32_t* fragment_start,
+                        uint32_t* fragment_end) const = 0;
 
   // Reads RTF from the clipboard, if available. Stores the result as a byte
   // vector.

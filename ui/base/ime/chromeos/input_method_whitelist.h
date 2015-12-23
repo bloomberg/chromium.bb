@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 

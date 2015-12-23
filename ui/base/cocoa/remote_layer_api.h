@@ -9,6 +9,8 @@
 #import <Cocoa/Cocoa.h>
 #endif  // __OBJC__
 
+#include <stdint.h>
+
 #include "ui/base/ui_base_export.h"
 
 // The CGSConnectionID is used to create the CAContext in the process that is

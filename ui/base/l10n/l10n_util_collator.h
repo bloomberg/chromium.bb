@@ -5,6 +5,8 @@
 #ifndef UI_BASE_L10N_L10N_UTIL_COLLATOR_H_
 #define UI_BASE_L10N_L10N_UTIL_COLLATOR_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 #include <string>

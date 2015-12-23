@@ -5,8 +5,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #import <AppKit/AppKit.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/bundle_locations.h"

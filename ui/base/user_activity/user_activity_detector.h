@@ -5,8 +5,8 @@
 #ifndef UI_BASE_USER_ACTIVITY_USER_ACTIVITY_DETECTOR_H_
 #define UI_BASE_USER_ACTIVITY_USER_ACTIVITY_DETECTOR_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/base/ui_base_export.h"

@@ -5,7 +5,7 @@
 #ifndef UI_BASE_USER_ACTIVITY_USER_ACTIVITY_OBSERVER_H_
 #define UI_BASE_USER_ACTIVITY_USER_ACTIVITY_OBSERVER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {

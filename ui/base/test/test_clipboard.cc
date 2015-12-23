@@ -25,7 +25,7 @@ Clipboard* TestClipboard::CreateForCurrentThread() {
   return clipboard;
 }
 
-uint64 TestClipboard::GetSequenceNumber(ClipboardType type) const {
+uint64_t TestClipboard::GetSequenceNumber(ClipboardType type) const {
   return GetStore(type).sequence_number;
 }
 
@@ -75,8 +75,8 @@ void TestClipboard::ReadAsciiText(ClipboardType type,
 void TestClipboard::ReadHTML(ClipboardType type,
                              base::string16* markup,
                              std::string* src_url,
-                             uint32* fragment_start,
-                             uint32* fragment_end) const {
+                             uint32_t* fragment_start,
+                             uint32_t* fragment_end) const {
   markup->clear();
   src_url->clear();
   const DataStore& store = GetStore(type);
@@ -85,7 +85,7 @@ void TestClipboard::ReadHTML(ClipboardType type,
     *markup = base::UTF8ToUTF16(it->second);
   *src_url = store.html_src_url;
   *fragment_start = 0;
-  *fragment_end = base::checked_cast<uint32>(markup->size());
+  *fragment_end = base::checked_cast<uint32_t>(markup->size());
 }
 
 void TestClipboard::ReadRTF(ClipboardType type, std::string* result) const {

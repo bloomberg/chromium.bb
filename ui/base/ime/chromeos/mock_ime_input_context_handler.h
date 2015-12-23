@@ -5,6 +5,8 @@
 #ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 
+#include <stdint.h>
+
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/ui_base_ime_export.h"
@@ -16,13 +18,13 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
  public:
   struct UpdateCompositionTextArg {
     ui::CompositionText composition_text;
-    uint32 cursor_pos;
+    uint32_t cursor_pos;
     bool is_visible;
   };
 
   struct DeleteSurroundingTextArg {
-    int32 offset;
-    uint32 length;
+    int32_t offset;
+    uint32_t length;
   };
 
   MockIMEInputContextHandler();
@@ -30,9 +32,9 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
 
   void CommitText(const std::string& text) override;
   void UpdateCompositionText(const ui::CompositionText& text,
-                             uint32 cursor_pos,
+                             uint32_t cursor_pos,
                              bool visible) override;
-  void DeleteSurroundingText(int32 offset, uint32 length) override;
+  void DeleteSurroundingText(int32_t offset, uint32_t length) override;
 
   int commit_text_call_count() const { return commit_text_call_count_; }
 

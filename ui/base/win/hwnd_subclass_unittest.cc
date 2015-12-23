@@ -4,7 +4,7 @@
 
 #include "ui/base/win/hwnd_subclass.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/win/window_impl.h"
 

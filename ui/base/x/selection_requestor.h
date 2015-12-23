@@ -5,11 +5,13 @@
 #ifndef UI_BASE_X_SELECTION_REQUESTOR_H_
 #define UI_BASE_X_SELECTION_REQUESTOR_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/event_types.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

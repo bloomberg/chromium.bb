@@ -4,9 +4,12 @@
 
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/location.h"
 #import "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "base/native_library.h"
 #include "ui/gfx/animation/tween.h"
 
@@ -34,8 +37,8 @@ extern "C" {
 
 typedef float float32;
 
-typedef int32 CGSWindow;
-typedef int32 CGSConnection;
+typedef int32_t CGSWindow;
+typedef int32_t CGSConnection;
 
 typedef struct {
   float32 x;
@@ -53,8 +56,8 @@ CGError CGSSetWindowTransform(const CGSConnection cid,
                               CGAffineTransform transform);
 CGError CGSSetWindowWarp(const CGSConnection cid,
                          const CGSWindow wid,
-                         int32 w,
-                         int32 h,
+                         int32_t w,
+                         int32_t h,
                          CGPointWarp* mesh);
 CGError CGSSetWindowAlpha(const CGSConnection cid,
                           const CGSWindow wid,
