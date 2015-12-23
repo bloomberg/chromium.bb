@@ -299,7 +299,7 @@ void RenderViewTest::TearDown() {
   scoped_ptr<blink::WebLeakDetector> leak_detector =
       make_scoped_ptr(blink::WebLeakDetector::create(this));
 
-  leak_detector->prepareForLeakDetection(GetMainFrame());
+  leak_detector->prepareForLeakDetection();
 
   view_ = NULL;
   mock_process_.reset();

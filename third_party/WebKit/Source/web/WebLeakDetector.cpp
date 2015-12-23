@@ -62,7 +62,7 @@ public:
 
     ~WebLeakDetectorImpl() override {}
 
-    void prepareForLeakDetection(WebLocalFrame*) override;
+    void prepareForLeakDetection() override;
     void collectGarbageAndReport() override;
 
 private:
@@ -75,7 +75,7 @@ private:
     int m_numberOfGCNeeded;
 };
 
-void WebLeakDetectorImpl::prepareForLeakDetection(WebLocalFrame* frame)
+void WebLeakDetectorImpl::prepareForLeakDetection()
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);

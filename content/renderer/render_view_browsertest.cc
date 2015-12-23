@@ -957,6 +957,30 @@ TEST_F(RenderViewImplTest, PaintAfterSwapOut) {
   new_view->Release();
 }
 
+// Verify that the renderer process doesn't crash when device scale factor
+// changes after a cross-process navigation has commited.
+// See https://crbug.com/571603.
+TEST_F(RenderViewImplTest, SetZoomLevelAfterCrossProcessNavigation) {
+  // This test should only run with out-of-process iframes enabled.
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    return;
+
+  // The bug reproduces if zoom is used for devices scale factor.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableUseZoomForDSF);
+
+  LoadHTML("Hello world!");
+
+  // Swap the main frame out after which it should become a WebRemoteFrame.
+  TestRenderFrame* main_frame =
+      static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
+  main_frame->SwapOut(kProxyRoutingId, true, content::FrameReplicationState());
+  EXPECT_TRUE(view()->webview()->mainFrame()->isWebRemoteFrame());
+
+  // This should not cause a crash.
+  view()->OnDeviceScaleFactorChanged();
+}
+
 // Test that we get the correct UpdateState message when we go back twice
 // quickly without committing.  Regression test for http://crbug.com/58082.
 // Disabled: http://crbug.com/157357 .

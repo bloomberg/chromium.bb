@@ -567,6 +567,8 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendCandidateWindowEvents);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, RenderFrameClearedAfterClose);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, PaintAfterSwapOut);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
+                           SetZoomLevelAfterCrossProcessNavigation);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
                            ConverViewportToScreenWithZoomForDSF);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,

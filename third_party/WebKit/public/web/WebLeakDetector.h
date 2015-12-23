@@ -79,7 +79,7 @@ public:
 
     // Perform initial stage of preparing for leak detection,
     // releasing references to resources held globally.
-    virtual void prepareForLeakDetection(WebLocalFrame*) = 0;
+    virtual void prepareForLeakDetection() = 0;
 
     // Garbage collect Blink's heaps and report leak counts.
     // |WebLeakDetectorClient::onLeakDetectionComplete()| is called

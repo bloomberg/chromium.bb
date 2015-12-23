@@ -3079,6 +3079,11 @@ double WebViewImpl::setZoomLevel(double zoomLevel)
     else
         m_zoomLevel = zoomLevel;
 
+    // TODO(nasko): Setting zoom level needs to be refactored to support
+    // out-of-process iframes. See https://crbug.com/528407.
+    if (mainFrame()->isWebRemoteFrame())
+        return m_zoomLevel;
+
     LocalFrame* frame = mainFrameImpl()->frame();
     if (!WebLocalFrameImpl::pluginContainerFromFrame(frame)) {
         float zoomFactor = m_zoomFactorOverride ? m_zoomFactorOverride : static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
