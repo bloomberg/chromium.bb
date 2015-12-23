@@ -285,6 +285,8 @@ void ExtensionSettingsHandler::RegisterMessages() {
   // TODO(devlin): Take this out when everyone's been updated.
   Profile::FromWebUI(web_ui())->GetPrefs()->ClearPref(
       prefs::kExtensionsUIDismissedADTPromo);
+
+  content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 }
 
 void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
