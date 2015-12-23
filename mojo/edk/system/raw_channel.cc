@@ -202,12 +202,16 @@ void RawChannel::Init(Delegate* delegate) {
 }
 
 void RawChannel::EnsureLazyInitialized() {
-  if (!initialized_) {
-    internal::g_io_thread_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&RawChannel::LockAndCallLazyInitialize,
-        weak_ptr_factory_.GetWeakPtr()));
+  {
+    base::AutoLock locker(write_lock_);
+    if (initialized_)
+      return;
   }
+
+  internal::g_io_thread_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&RawChannel::LockAndCallLazyInitialize,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RawChannel::LockAndCallLazyInitialize() {
@@ -286,11 +290,10 @@ void RawChannel::Shutdown() {
       base::AutoLock read_locker(read_lock_);
       base::AutoLock locker(write_lock_);
       OnShutdownNoLock(std::move(read_buffer_), std::move(write_buffer_));
+      if (initialized_)
+        base::MessageLoop::current()->RemoveDestructionObserver(this);
     }
 
-    if (initialized_) {
-      base::MessageLoop::current()->RemoveDestructionObserver(this);
-    }
     delete this;
     return;
   }

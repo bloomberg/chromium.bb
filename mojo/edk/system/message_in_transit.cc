@@ -166,6 +166,7 @@ void MessageInTransit::ConstructorHelper(Type type,
 
   // |total_size| is updated below, from the other values.
   header()->type = type;
+  header()->unusedforalignment = 0;
   header()->num_bytes = num_bytes;
   header()->unused = 0;
   header()->route_id = 0;
