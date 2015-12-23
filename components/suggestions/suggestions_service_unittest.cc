@@ -50,8 +50,8 @@ const char kTestImpressionUrl[] =
     "https://www.google.com/chromesuggestions/click?q=123&cd=-1";
 const char kTestClickUrl[] =
     "https://www.google.com/chromesuggestions/click?q=123&cd=0";
-const char kBlacklistUrl[] = "http://blacklist.com";
-const char kBlacklistUrlAlt[] = "http://blacklist-atl.com";
+const char kBlacklistedUrl[] = "http://blacklist.com";
+const char kBlacklistedUrlAlt[] = "http://blacklist-atl.com";
 const int64 kTestDefaultExpiry = 1402200000000000;
 const int64 kTestSetExpiry = 1404792000000000;
 
@@ -69,13 +69,6 @@ scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
     fetcher->set_response_headers(download_headers);
   }
   return fetcher.Pass();
-}
-
-std::string GetExpectedBlacklistRequestUrl(const GURL& blacklist_url) {
-  std::stringstream request_url;
-  request_url << suggestions::kSuggestionsBlacklistURLPrefix
-              << net::EscapeQueryParamValue(blacklist_url.spec(), true);
-  return request_url.str();
 }
 
 // GMock matcher for protobuf equality.
@@ -240,7 +233,7 @@ class SuggestionsServiceTest : public testing::Test {
     SuggestionsProfile suggestions_profile = CreateSuggestionsProfile();
 
     // Set up net::FakeURLFetcherFactory.
-    factory_.SetFakeResponse(GURL(kSuggestionsURL),
+    factory_.SetFakeResponse(SuggestionsService::BuildSuggestionsURL(),
                              suggestions_profile.SerializeAsString(),
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
@@ -307,10 +300,10 @@ class SuggestionsServiceTest : public testing::Test {
     base::TimeDelta delay = base::TimeDelta::FromHours(1);
     suggestions_service->set_blacklist_delay(delay);
     SuggestionsProfile suggestions_profile = CreateSuggestionsProfile();
-    GURL blacklist_url(kBlacklistUrl);
+    GURL blacklisted_url(kBlacklistedUrl);
 
     // Blacklist expectations.
-    EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklist_url)))
+    EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklisted_url)))
         .WillOnce(Return(true));
     EXPECT_CALL(*mock_thumbnail_manager_,
                 Initialize(EqualsProto(suggestions_profile)));
@@ -321,18 +314,18 @@ class SuggestionsServiceTest : public testing::Test {
     if (is_uploaded) {
       // URL is not in local blacklist.
       EXPECT_CALL(*mock_blacklist_store_,
-                  GetTimeUntilURLReadyForUpload(Eq(blacklist_url), _))
+                  GetTimeUntilURLReadyForUpload(Eq(blacklisted_url), _))
           .WillOnce(Return(false));
     } else {
       // URL is not yet candidate for upload.
       base::TimeDelta negative_delay = base::TimeDelta::FromHours(-1);
       EXPECT_CALL(*mock_blacklist_store_,
-                  GetTimeUntilURLReadyForUpload(Eq(blacklist_url), _))
+                  GetTimeUntilURLReadyForUpload(Eq(blacklisted_url), _))
           .WillOnce(DoAll(SetArgPointee<1>(negative_delay), Return(true)));
     }
 
-    Blacklist(suggestions_service.get(), blacklist_url);
-    UndoBlacklist(suggestions_service.get(), blacklist_url);
+    Blacklist(suggestions_service.get(), blacklisted_url);
+    UndoBlacklist(suggestions_service.get(), blacklisted_url);
 
     EXPECT_EQ(1, suggestions_data_callback_count_);
     EXPECT_FALSE(blacklisting_failed_);
@@ -391,6 +384,9 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
   ASSERT_TRUE(suggestions_service != NULL);
 
   // We should get served from cache.
+  // TODO(treib,mathp): Is this the correct behavior when the credentials have
+  // expired? Currently, the SuggestionsService immediately serves from cache,
+  // before even attempting any online auth.
   EXPECT_CALL(*mock_thumbnail_manager_, Initialize(_));
   EXPECT_CALL(*mock_blacklist_store_, FilterSuggestions(_));
   EXPECT_CALL(*mock_blacklist_store_, GetTimeUntilReadyForUpload(_))
@@ -414,14 +410,16 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
   EXPECT_TRUE(suggestions_service != NULL);
 
   // Fake a request error.
-  factory_.SetFakeResponse(GURL(kSuggestionsURL), "irrelevant", net::HTTP_OK,
+  factory_.SetFakeResponse(SuggestionsService::BuildSuggestionsURL(),
+                           "irrelevant", net::HTTP_OK,
                            net::URLRequestStatus::FAILED);
 
   EXPECT_CALL(*mock_blacklist_store_, GetTimeUntilReadyForUpload(_))
       .WillOnce(Return(false));
 
   // Send the request. Empty data will be returned to the callback.
-  suggestions_service->IssueRequestIfNoneOngoing(GURL(kSuggestionsURL));
+  suggestions_service->IssueRequestIfNoneOngoing(
+      SuggestionsService::BuildSuggestionsURL());
 
   // (Testing only) wait until suggestion fetch is complete.
   io_message_loop_.RunUntilIdle();
@@ -433,8 +431,8 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
   EXPECT_TRUE(suggestions_service != NULL);
 
   // Fake a non-200 response code.
-  factory_.SetFakeResponse(GURL(kSuggestionsURL), "irrelevant",
-                           net::HTTP_BAD_REQUEST,
+  factory_.SetFakeResponse(SuggestionsService::BuildSuggestionsURL(),
+                           "irrelevant", net::HTTP_BAD_REQUEST,
                            net::URLRequestStatus::SUCCESS);
 
   // Expect that an upload to the blacklist is scheduled.
@@ -442,7 +440,8 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
       .WillOnce(Return(false));
 
   // Send the request. Empty data will be returned to the callback.
-  suggestions_service->IssueRequestIfNoneOngoing(GURL(kSuggestionsURL));
+  suggestions_service->IssueRequestIfNoneOngoing(
+      SuggestionsService::BuildSuggestionsURL());
 
   // (Testing only) wait until suggestion fetch is complete.
   io_message_loop_.RunUntilIdle();
@@ -459,28 +458,29 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
   base::TimeDelta no_delay = base::TimeDelta::FromSeconds(0);
   suggestions_service->set_blacklist_delay(no_delay);
 
-  GURL blacklist_url(kBlacklistUrl);
-  std::string request_url = GetExpectedBlacklistRequestUrl(blacklist_url);
+  GURL blacklisted_url(kBlacklistedUrl);
+  GURL request_url(
+      SuggestionsService::BuildSuggestionsBlacklistURL(blacklisted_url));
   SuggestionsProfile suggestions_profile = CreateSuggestionsProfile();
-  factory_.SetFakeResponse(GURL(request_url),
+  factory_.SetFakeResponse(request_url,
                            suggestions_profile.SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(*mock_thumbnail_manager_,
               Initialize(EqualsProto(suggestions_profile)));
 
   // Expected calls to the blacklist store.
-  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklist_url)))
+  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklisted_url)))
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_blacklist_store_, FilterSuggestions(_));
   EXPECT_CALL(*mock_blacklist_store_, GetTimeUntilReadyForUpload(_))
       .WillOnce(DoAll(SetArgPointee<0>(no_delay), Return(true)))
       .WillOnce(Return(false));
   EXPECT_CALL(*mock_blacklist_store_, GetCandidateForUpload(_))
-      .WillOnce(DoAll(SetArgPointee<0>(blacklist_url), Return(true)));
-  EXPECT_CALL(*mock_blacklist_store_, RemoveUrl(Eq(blacklist_url)))
+      .WillOnce(DoAll(SetArgPointee<0>(blacklisted_url), Return(true)));
+  EXPECT_CALL(*mock_blacklist_store_, RemoveUrl(Eq(blacklisted_url)))
       .WillOnce(Return(true));
 
-  Blacklist(suggestions_service.get(), blacklist_url);
+  Blacklist(suggestions_service.get(), blacklisted_url);
 
   // Wait on the upload task. This only works when the scheduling task is not
   // for future execution (note how both the SuggestionsService's scheduling
@@ -499,11 +499,11 @@ TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
   scoped_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != NULL);
-  GURL blacklist_url(kBlacklistUrl);
-  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklist_url)))
+  GURL blacklisted_url(kBlacklistedUrl);
+  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklisted_url)))
       .WillOnce(Return(false));
 
-  Blacklist(suggestions_service.get(), blacklist_url);
+  Blacklist(suggestions_service.get(), blacklisted_url);
 
   EXPECT_TRUE(blacklisting_failed_);
   EXPECT_EQ(0, suggestions_data_callback_count_);
@@ -517,27 +517,28 @@ TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
   base::TimeDelta no_delay = base::TimeDelta::FromSeconds(0);
   suggestions_service->set_blacklist_delay(no_delay);
 
-  GURL blacklist_url(kBlacklistUrl);
-  std::string request_url = GetExpectedBlacklistRequestUrl(blacklist_url);
-  GURL blacklist_url_alt(kBlacklistUrlAlt);
-  std::string request_url_alt = GetExpectedBlacklistRequestUrl(
-    blacklist_url_alt);
+  GURL blacklisted_url(kBlacklistedUrl);
+  GURL request_url(
+      SuggestionsService::BuildSuggestionsBlacklistURL(blacklisted_url));
+  GURL blacklisted_url_alt(kBlacklistedUrlAlt);
+  GURL request_url_alt(
+      SuggestionsService::BuildSuggestionsBlacklistURL(blacklisted_url_alt));
   SuggestionsProfile suggestions_profile = CreateSuggestionsProfile();
 
   // Note: we want to set the response for the blacklist URL to first
   // succeed, then fail. This doesn't seem possible. For simplicity of testing,
   // we'll pretend the URL changed in the BlacklistStore between the first and
   // the second request, and adjust expectations accordingly.
-  factory_.SetFakeResponse(GURL(request_url), "irrelevant", net::HTTP_OK,
+  factory_.SetFakeResponse(request_url, "irrelevant", net::HTTP_OK,
                            net::URLRequestStatus::FAILED);
-  factory_.SetFakeResponse(GURL(request_url_alt),
+  factory_.SetFakeResponse(request_url_alt,
                            suggestions_profile.SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   // Expectations.
   EXPECT_CALL(*mock_thumbnail_manager_,
               Initialize(EqualsProto(suggestions_profile)));
-  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklist_url)))
+  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklisted_url)))
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_blacklist_store_, FilterSuggestions(_));
   EXPECT_CALL(*mock_blacklist_store_, GetTimeUntilReadyForUpload(_))
@@ -545,13 +546,13 @@ TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
       .WillOnce(DoAll(SetArgPointee<0>(no_delay), Return(true)))
       .WillOnce(Return(false));
   EXPECT_CALL(*mock_blacklist_store_, GetCandidateForUpload(_))
-      .WillOnce(DoAll(SetArgPointee<0>(blacklist_url), Return(true)))
-      .WillOnce(DoAll(SetArgPointee<0>(blacklist_url_alt), Return(true)));
-  EXPECT_CALL(*mock_blacklist_store_, RemoveUrl(Eq(blacklist_url_alt)))
+      .WillOnce(DoAll(SetArgPointee<0>(blacklisted_url), Return(true)))
+      .WillOnce(DoAll(SetArgPointee<0>(blacklisted_url_alt), Return(true)));
+  EXPECT_CALL(*mock_blacklist_store_, RemoveUrl(Eq(blacklisted_url_alt)))
       .WillOnce(Return(true));
 
   // Blacklist call, first request attempt.
-  Blacklist(suggestions_service.get(), blacklist_url);
+  Blacklist(suggestions_service.get(), blacklisted_url);
   EXPECT_EQ(1, suggestions_data_callback_count_);
   EXPECT_FALSE(blacklisting_failed_);
 
@@ -575,10 +576,10 @@ TEST_F(SuggestionsServiceTest, UndoBlacklistURL) {
   base::TimeDelta delay = base::TimeDelta::FromHours(1);
   suggestions_service->set_blacklist_delay(delay);
   SuggestionsProfile suggestions_profile = CreateSuggestionsProfile();
-  GURL blacklist_url(kBlacklistUrl);
+  GURL blacklisted_url(kBlacklistedUrl);
 
   // Blacklist expectations.
-  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklist_url)))
+  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklisted_url)))
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_thumbnail_manager_,
               Initialize(EqualsProto(suggestions_profile)))
@@ -589,13 +590,13 @@ TEST_F(SuggestionsServiceTest, UndoBlacklistURL) {
       .WillOnce(DoAll(SetArgPointee<0>(delay), Return(true)));
   // Undo expectations.
   EXPECT_CALL(*mock_blacklist_store_,
-              GetTimeUntilURLReadyForUpload(Eq(blacklist_url), _))
+              GetTimeUntilURLReadyForUpload(Eq(blacklisted_url), _))
       .WillOnce(DoAll(SetArgPointee<1>(delay), Return(true)));
-  EXPECT_CALL(*mock_blacklist_store_, RemoveUrl(Eq(blacklist_url)))
+  EXPECT_CALL(*mock_blacklist_store_, RemoveUrl(Eq(blacklisted_url)))
     .WillOnce(Return(true));
 
-  Blacklist(suggestions_service.get(), blacklist_url);
-  UndoBlacklist(suggestions_service.get(), blacklist_url);
+  Blacklist(suggestions_service.get(), blacklisted_url);
+  UndoBlacklist(suggestions_service.get(), blacklisted_url);
 
   EXPECT_EQ(2, suggestions_data_callback_count_);
   EXPECT_FALSE(blacklisting_failed_);
@@ -610,14 +611,15 @@ TEST_F(SuggestionsServiceTest, ClearBlacklist) {
   base::TimeDelta delay = base::TimeDelta::FromHours(1);
   suggestions_service->set_blacklist_delay(delay);
   SuggestionsProfile suggestions_profile = CreateSuggestionsProfile();
-  GURL blacklist_url(kBlacklistUrl);
+  GURL blacklisted_url(kBlacklistedUrl);
 
-  factory_.SetFakeResponse(GURL(suggestions::kSuggestionsBlacklistClearURL),
-                           suggestions_profile.SerializeAsString(),
-                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  factory_.SetFakeResponse(
+      SuggestionsService::BuildSuggestionsBlacklistClearURL(),
+      suggestions_profile.SerializeAsString(), net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
 
   // Blacklist expectations.
-  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklist_url)))
+  EXPECT_CALL(*mock_blacklist_store_, BlacklistUrl(Eq(blacklisted_url)))
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_thumbnail_manager_,
               Initialize(EqualsProto(suggestions_profile)))
@@ -627,7 +629,7 @@ TEST_F(SuggestionsServiceTest, ClearBlacklist) {
       .WillOnce(DoAll(SetArgPointee<0>(delay), Return(true)));
   EXPECT_CALL(*mock_blacklist_store_, ClearBlacklist());
 
-  Blacklist(suggestions_service.get(), blacklist_url);
+  Blacklist(suggestions_service.get(), blacklisted_url);
   suggestions_service->ClearBlacklist(base::Bind(
       &SuggestionsServiceTest::CheckCallback, base::Unretained(this)));
 
@@ -658,7 +660,8 @@ TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
   string blacklisted_url = "http://blacklisted.com/a?b=c&d=e";
   string encoded_blacklisted_url =
       "http%3A%2F%2Fblacklisted.com%2Fa%3Fb%3Dc%26d%3De";
-  string blacklist_request_prefix(kSuggestionsBlacklistURLPrefix);
+  string blacklist_request_prefix(
+      SuggestionsService::BuildSuggestionsBlacklistURLPrefix());
   request_url.reset(
       new GURL(blacklist_request_prefix + encoded_blacklisted_url));
   fetcher.reset();

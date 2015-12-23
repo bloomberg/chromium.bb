@@ -55,12 +55,6 @@ void LogResponseState(SuggestionsResponseState state) {
                             RESPONSE_STATE_SIZE);
 }
 
-GURL BuildBlacklistRequestURL(const std::string& blacklist_url_prefix,
-                              const GURL& candidate_url) {
-  return GURL(blacklist_url_prefix +
-              net::EscapeQueryParamValue(candidate_url.spec(), true));
-}
-
 // Runs each callback in |requestors| on |suggestions|, then deallocates
 // |requestors|.
 void DispatchRequestsAndClear(
@@ -84,6 +78,21 @@ const int kSchedulingBackoffMultiplier = 2;
 // this are rejected. This means the maximum backoff is at least 5 / 2 minutes.
 const int kSchedulingMaxDelaySec = 5 * 60;
 
+// TODO(mathp): Put this in TemplateURL.
+const char kSuggestionsURLFormat[] =
+    "https://www.google.com/chromesuggestions?t=%s";
+const char kSuggestionsBlacklistURLPrefixFormat[] =
+    "https://www.google.com/chromesuggestions/blacklist?t=%s&url=";
+const char kSuggestionsBlacklistURLParam[] = "url";
+const char kSuggestionsBlacklistClearURLFormat[] =
+    "https://www.google.com/chromesuggestions/blacklist/clear?t=%s";
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+const char kDeviceType[] = "2";
+#else
+const char kDeviceType[] = "1";
+#endif
+
 // Format string for OAuth2 authentication headers.
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 
@@ -93,31 +102,14 @@ const char kFaviconURL[] =
 const char kPingURL[] =
     "https://www.google.com/chromesuggestions/click?q=%lld&cd=%d";
 
+// The default expiry timeout is 168 hours.
+const int64 kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
+
 const base::Feature kOAuth2AuthenticationFeature {
   "SuggestionsServiceOAuth2", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 }  // namespace
-
-// TODO(mathp): Put this in TemplateURL.
-// TODO(fserb): Add logic to decide the device type of the request.
-#if defined(OS_ANDROID) || defined(OS_IOS)
-const char kSuggestionsURL[] = "https://www.google.com/chromesuggestions?t=2";
-const char kSuggestionsBlacklistURLPrefix[] =
-    "https://www.google.com/chromesuggestions/blacklist?t=2&url=";
-const char kSuggestionsBlacklistClearURL[] =
-    "https://www.google.com/chromesuggestions/blacklist/clear?t=2";
-#else
-const char kSuggestionsURL[] = "https://www.google.com/chromesuggestions?t=1";
-const char kSuggestionsBlacklistURLPrefix[] =
-    "https://www.google.com/chromesuggestions/blacklist?t=1&url=";
-const char kSuggestionsBlacklistClearURL[] =
-    "https://www.google.com/chromesuggestions/blacklist/clear?t=1";
-#endif
-const char kSuggestionsBlacklistURLParam[] = "url";
-
-// The default expiry timeout is 168 hours.
-const int64 kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 
 // Helper class for fetching OAuth2 access tokens.
 // To get a token, call |GetAccessToken|. Does not support multiple concurrent
@@ -185,8 +177,6 @@ SuggestionsService::SuggestionsService(
       blacklist_store_(blacklist_store.Pass()),
       scheduling_delay_(TimeDelta::FromSeconds(kDefaultSchedulingDelaySec)),
       token_fetcher_(new AccessTokenFetcher(signin_manager, token_service)),
-      suggestions_url_(kSuggestionsURL),
-      blacklist_url_prefix_(kSuggestionsBlacklistURLPrefix),
       weak_ptr_factory_(this) {}
 
 SuggestionsService::~SuggestionsService() {}
@@ -208,7 +198,7 @@ void SuggestionsService::FetchSuggestionsData(
     ServeFromCache();
 
     // Issue a network request to refresh the suggestions in the cache.
-    IssueRequestIfNoneOngoing(suggestions_url_);
+    IssueRequestIfNoneOngoing(BuildSuggestionsURL());
   } else {
     NOTREACHED();
   }
@@ -271,7 +261,7 @@ void SuggestionsService::UndoBlacklistURL(
 void SuggestionsService::ClearBlacklist(const ResponseCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   blacklist_store_->ClearBlacklist();
-  IssueRequestIfNoneOngoing(GURL(kSuggestionsBlacklistClearURL));
+  IssueRequestIfNoneOngoing(BuildSuggestionsBlacklistClearURL());
   waiting_requestors_.push_back(callback);
   ServeFromCache();
 }
@@ -280,7 +270,7 @@ void SuggestionsService::ClearBlacklist(const ResponseCallback& callback) {
 bool SuggestionsService::GetBlacklistedUrl(const net::URLFetcher& request,
                                            GURL* url) {
   bool is_blacklist_request = base::StartsWith(
-      request.GetOriginalURL().spec(), kSuggestionsBlacklistURLPrefix,
+      request.GetOriginalURL().spec(), BuildSuggestionsBlacklistURLPrefix(),
       base::CompareCase::SENSITIVE);
   if (!is_blacklist_request) return false;
 
@@ -303,6 +293,34 @@ void SuggestionsService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   SuggestionsStore::RegisterProfilePrefs(registry);
   BlacklistStore::RegisterProfilePrefs(registry);
+}
+
+// static
+bool SuggestionsService::UseOAuth2() {
+  return base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature);
+}
+
+// static
+GURL SuggestionsService::BuildSuggestionsURL() {
+  return GURL(base::StringPrintf(kSuggestionsURLFormat, kDeviceType));
+}
+
+// static
+std::string SuggestionsService::BuildSuggestionsBlacklistURLPrefix() {
+  return base::StringPrintf(kSuggestionsBlacklistURLPrefixFormat, kDeviceType);
+}
+
+// static
+GURL SuggestionsService::BuildSuggestionsBlacklistURL(
+    const GURL& candidate_url) {
+  return GURL(BuildSuggestionsBlacklistURLPrefix() +
+              net::EscapeQueryParamValue(candidate_url.spec(), true));
+}
+
+// static
+GURL SuggestionsService::BuildSuggestionsBlacklistClearURL() {
+  return GURL(base::StringPrintf(kSuggestionsBlacklistClearURLFormat,
+                                 kDeviceType));
 }
 
 void SuggestionsService::SetDefaultExpiryTimestamp(
@@ -334,11 +352,6 @@ void SuggestionsService::IssueRequestIfNoneOngoing(const GURL& url) {
     // No access token required.
     IssueSuggestionsRequest(url, std::string());
   }
-}
-
-// static
-bool SuggestionsService::UseOAuth2() {
-  return base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature);
 }
 
 void SuggestionsService::IssueSuggestionsRequest(
@@ -498,12 +511,11 @@ void SuggestionsService::ScheduleBlacklistUpload() {
 void SuggestionsService::UploadOneFromBlacklist() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  GURL blacklist_url;
-  if (blacklist_store_->GetCandidateForUpload(&blacklist_url)) {
+  GURL blacklisted_url;
+  if (blacklist_store_->GetCandidateForUpload(&blacklisted_url)) {
     // Issue a blacklisting request. Even if this request ends up not being sent
     // because of an ongoing request, a blacklist request is later scheduled.
-    IssueRequestIfNoneOngoing(
-        BuildBlacklistRequestURL(blacklist_url_prefix_, blacklist_url));
+    IssueRequestIfNoneOngoing(BuildSuggestionsBlacklistURL(blacklisted_url));
     return;
   }
 

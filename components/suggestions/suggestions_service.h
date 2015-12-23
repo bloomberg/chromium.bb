@@ -39,12 +39,6 @@ namespace suggestions {
 class BlacklistStore;
 class SuggestionsStore;
 
-extern const char kSuggestionsURL[];
-extern const char kSuggestionsBlacklistURLPrefix[];
-extern const char kSuggestionsBlacklistURLParam[];
-extern const char kSuggestionsBlacklistClearURL[];
-extern const int64 kDefaultExpiryUsec;
-
 // An interface to fetch server suggestions asynchronously.
 class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
  public:
@@ -110,28 +104,41 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Register SuggestionsService related prefs in the Profile prefs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Sets default timestamp for suggestions which do not have expiry timestamp.
-  void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,
-                                 int64 timestamp_usec);
-
-  // Issues a network request if there isn't already one happening. Visible for
-  // testing.
-  void IssueRequestIfNoneOngoing(const GURL& url);
-
  private:
   friend class SuggestionsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
                            FetchSuggestionsDataNoAccessToken);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
+                           IssueRequestIfNoneOngoingError);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
+                           IssueRequestIfNoneOngoingResponseNotOK);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURL);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLRequestFails);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, ClearBlacklist);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURL);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURLFailsHelper);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, GetBlacklistedUrl);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, CheckDefaultTimeStamps);
 
   // Returns whether OAuth2 authentication is enabled. If false, cookies are
   // used for authentication.
   static bool UseOAuth2();
+
+  // Helpers to build the various suggestions URLs. These are static members
+  // rather than local functions in the .cc file to make them accessible to
+  // tests.
+  static GURL BuildSuggestionsURL();
+  static std::string BuildSuggestionsBlacklistURLPrefix();
+  static GURL BuildSuggestionsBlacklistURL(const GURL& candidate_url);
+  static GURL BuildSuggestionsBlacklistClearURL();
+
+  // Sets default timestamp for suggestions which do not have expiry timestamp.
+  void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,
+                                 int64 timestamp_usec);
+
+  // Issues a network request if there isn't already one happening.
+  void IssueRequestIfNoneOngoing(const GURL& url);
 
   // Issues a network request for suggestions (fetch, blacklist, or clear
   // blacklist, depending on |url|). |access_token| is used only if OAuth2
@@ -207,12 +214,6 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // The start time of the previous suggestions request. This is used to measure
   // the latency of requests. Initially zero.
   base::TimeTicks last_request_started_time_;
-
-  // The URL to fetch suggestions data from.
-  GURL suggestions_url_;
-
-  // Prefix for building the blacklisting URL.
-  std::string blacklist_url_prefix_;
 
   // Queue of callbacks. These are flushed when fetch request completes.
   std::vector<ResponseCallback> waiting_requestors_;
