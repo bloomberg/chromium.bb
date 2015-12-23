@@ -64,12 +64,6 @@ void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
     m_runState = RunState::WaitingToSendToCompositor;
 }
 
-void ProgrammaticScrollAnimator::cancelAnimation()
-{
-    ASSERT(m_runState != RunState::RunningOnCompositorButNeedsUpdate);
-    ScrollAnimatorCompositorCoordinator::cancelAnimation();
-}
-
 void ProgrammaticScrollAnimator::tickAnimation(double monotonicTime)
 {
     if (m_runState != RunState::RunningOnMainThread)
@@ -160,7 +154,6 @@ void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange(WebComposi
 
 void ProgrammaticScrollAnimator::notifyCompositorAnimationFinished(int groupId)
 {
-    ASSERT(m_runState != RunState::RunningOnCompositorButNeedsUpdate);
     ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(groupId);
 }
 

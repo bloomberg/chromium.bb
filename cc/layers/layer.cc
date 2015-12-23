@@ -1880,12 +1880,6 @@ void Layer::RemoveAnimation(int animation_id,
   SetNeedsCommit();
 }
 
-void Layer::AbortAnimation(int animation_id) {
-  DCHECK(layer_animation_controller_);
-  layer_animation_controller_->AbortAnimation(animation_id);
-  SetNeedsCommit();
-}
-
 void Layer::SetLayerAnimationControllerForTest(
     scoped_refptr<LayerAnimationController> controller) {
   DCHECK(layer_animation_controller_);

@@ -1041,7 +1041,7 @@ bool ScrollAnimatorMac::setScrollbarsVisibleForTesting(bool show)
     return false;
 }
 
-void ScrollAnimatorMac::cancelAnimation()
+void ScrollAnimatorMac::cancelAnimations()
 {
     m_haveScrolledSincePageLoad = false;
 

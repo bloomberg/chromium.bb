@@ -203,7 +203,6 @@ public:
     bool addAnimation(PassOwnPtr<WebCompositorAnimation>);
     void pauseAnimation(int animationId, double /*timeOffset*/);
     void removeAnimation(int animationId);
-    void abortAnimation(int animationId);
 
     // Layer contents
     void setContentsToImage(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);

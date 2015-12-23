@@ -153,13 +153,6 @@ void AnimationPlayer::RemoveAnimation(int animation_id) {
   }
 }
 
-void AnimationPlayer::AbortAnimation(int animation_id) {
-  DCHECK(element_animations_);
-  element_animations_->layer_animation_controller()->AbortAnimation(
-      animation_id);
-  SetNeedsCommit();
-}
-
 void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
   if (layer_id_ != player_impl->layer_id()) {
     if (player_impl->layer_id())

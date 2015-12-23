@@ -29,7 +29,6 @@ public:
     virtual void addAnimation(WebCompositorAnimation*) = 0;
     virtual void removeAnimation(int animationId) = 0;
     virtual void pauseAnimation(int animationId, double timeOffset) = 0;
-    virtual void abortAnimation(int animationId) = 0;
 };
 
 } // namespace blink

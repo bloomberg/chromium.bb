@@ -278,10 +278,6 @@ void WebLayerImpl::pauseAnimation(int animation_id, double time_offset) {
   layer_->PauseAnimation(animation_id, time_offset);
 }
 
-void WebLayerImpl::abortAnimation(int animation_id) {
-  layer_->AbortAnimation(animation_id);
-}
-
 bool WebLayerImpl::hasActiveAnimation() {
   return layer_->HasActiveAnimation();
 }

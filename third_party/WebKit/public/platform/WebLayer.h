@@ -160,11 +160,6 @@ public:
     // Pauses all animations with the given id.
     virtual void pauseAnimation(int animationId, double timeOffset) = 0;
 
-    // Aborts all animations with the given id. Different from removeAnimation
-    // in that aborting an animation stops it from affecting both the pending
-    // and active tree.
-    virtual void abortAnimation(int animationId) = 0;
-
     // Returns true if this layer has any active animations - useful for tests.
     virtual bool hasActiveAnimation() = 0;
 

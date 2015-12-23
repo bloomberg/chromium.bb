@@ -453,8 +453,6 @@ void ScrollableArea::layerForScrollingDidChange(WebCompositorAnimationTimeline* 
 {
     if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
         programmaticScrollAnimator->layerForCompositedScrollingDidChange(timeline);
-    if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
-        scrollAnimator->layerForCompositedScrollingDidChange(timeline);
 }
 
 bool ScrollableArea::scheduleAnimation()
@@ -470,8 +468,8 @@ void ScrollableArea::serviceScrollAnimations(double monotonicTime)
 {
     bool requiresAnimationService = false;
     if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator()) {
-        scrollAnimator->tickAnimation(monotonicTime);
-        if (scrollAnimator->hasAnimationThatRequiresService())
+        scrollAnimator->serviceScrollAnimations();
+        if (scrollAnimator->hasRunningAnimation())
             requiresAnimationService = true;
     }
     if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator()) {
@@ -487,24 +485,18 @@ void ScrollableArea::updateCompositorScrollAnimations()
 {
     if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
         programmaticScrollAnimator->updateCompositorAnimations();
-
-    if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
-        scrollAnimator->updateCompositorAnimations();
 }
 
 void ScrollableArea::notifyCompositorAnimationFinished(int groupId)
 {
     if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
         programmaticScrollAnimator->notifyCompositorAnimationFinished(groupId);
-
-    if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
-        scrollAnimator->notifyCompositorAnimationFinished(groupId);
 }
 
 void ScrollableArea::cancelScrollAnimation()
 {
     if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
-        scrollAnimator->cancelAnimation();
+        scrollAnimator->cancelAnimations();
 }
 
 void ScrollableArea::cancelProgrammaticScrollAnimation()

@@ -34,14 +34,11 @@
 #include "platform/Timer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
-#include "public/platform/WebCompositorAnimationDelegate.h"
-#include "public/platform/WebCompositorAnimationPlayerClient.h"
 #include "public/platform/WebScrollOffsetAnimationCurve.h"
 
 namespace blink {
 
 class ScrollAnimatorTest;
-class WebCompositorAnimationTimeline;
 
 class PLATFORM_EXPORT ScrollAnimator final : public ScrollAnimatorBase {
 public:
@@ -53,26 +50,20 @@ public:
     ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
     void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
-    // ScrollAnimatorCompositorCoordinator implementation.
-    void tickAnimation(double monotonicTime) override;
-    void cancelAnimation() override;
-    void resetAnimationState() override;
-    void updateCompositorAnimations() override;
-    void notifyCompositorAnimationFinished(int groupId) override;
-    void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) override;
+    void cancelAnimations() override;
+    void serviceScrollAnimations() override;
+    bool hasRunningAnimation() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
+    void animationTimerFired();
+
     OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;
-    double m_lastTickTime;
     double m_startTime;
     WTF::TimeFunction m_timeFunction;
-
 private:
     FloatPoint desiredTargetPosition() const;
-
-    FloatPoint m_targetOffset;
 };
 
 } // namespace blink
