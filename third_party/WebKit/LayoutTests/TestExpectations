@@ -1312,3 +1312,5 @@ crbug.com/451577 http/tests/inspector/resource-tree/resource-tree-crafted-frame-
 crbug.com/571709 http/tests/inspector/resource-tree/resource-tree-events.html [ Timeout Pass ]
 crbug.com/571709 http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
 crbug.com/571709 http/tests/inspector/resource-tree/resource-tree-frame-in-crafted-frame.html [ Timeout Pass ]
+
+crbug.com/571710 http/tests/inspector/search/source-frame-search.html [ Timeout Pass ]
