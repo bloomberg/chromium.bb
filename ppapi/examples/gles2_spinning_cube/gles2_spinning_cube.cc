@@ -19,6 +19,7 @@
 // include-guards), make sure this is the last file #include'd in this file.
 #undef NDEBUG
 #include <assert.h>
+#include <stdint.h>
 
 namespace {
 

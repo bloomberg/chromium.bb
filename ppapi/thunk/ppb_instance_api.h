@@ -5,8 +5,11 @@
 #ifndef PPAPI_THUNK_INSTANCE_API_H_
 #define PPAPI_THUNK_INSTANCE_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -148,14 +151,14 @@ class PPB_Instance_API {
                                 PP_URLComponents_Dev* components) = 0;
 #if !defined(OS_NACL)
   // Content Decryptor.
-  virtual void PromiseResolved(PP_Instance instance, uint32 promise_id) = 0;
+  virtual void PromiseResolved(PP_Instance instance, uint32_t promise_id) = 0;
   virtual void PromiseResolvedWithSession(PP_Instance instance,
-                                          uint32 promise_id,
+                                          uint32_t promise_id,
                                           PP_Var session_id_var) = 0;
   virtual void PromiseRejected(PP_Instance instance,
-                               uint32 promise_id,
+                               uint32_t promise_id,
                                PP_CdmExceptionCode exception_code,
-                               uint32 system_code,
+                               uint32_t system_code,
                                PP_Var error_description_var) = 0;
   virtual void SessionMessage(PP_Instance instance,
                               PP_Var session_id_var,
@@ -175,7 +178,7 @@ class PPB_Instance_API {
   virtual void LegacySessionError(PP_Instance instance,
                                   PP_Var session_id_var,
                                   PP_CdmExceptionCode exception_code,
-                                  uint32 system_code,
+                                  uint32_t system_code,
                                   PP_Var error_description_var) = 0;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,

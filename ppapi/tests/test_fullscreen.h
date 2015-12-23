@@ -5,6 +5,8 @@
 #ifndef PAPPI_TESTS_TEST_FULLSCREEN_H_
 #define PAPPI_TESTS_TEST_FULLSCREEN_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/cpp/fullscreen.h"

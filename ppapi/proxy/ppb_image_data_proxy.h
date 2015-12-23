@@ -5,6 +5,9 @@
 #ifndef PPAPI_PPB_IMAGE_DATA_PROXY_H_
 #define PPAPI_PPB_IMAGE_DATA_PROXY_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
@@ -121,7 +124,7 @@ class PPAPI_PROXY_EXPORT SimpleImageData : public ImageData {
 
  private:
   base::SharedMemory shm_;
-  uint32 size_;
+  uint32_t size_;
   int map_count_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleImageData);

@@ -4,7 +4,11 @@
 
 #include "ppapi/nacl_irt/manifest_service.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message_filter.h"

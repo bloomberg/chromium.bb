@@ -38,13 +38,13 @@ void VarTracker::CheckThreadingPreconditions() const {
 #endif
 }
 
-int32 VarTracker::AddVar(Var* var) {
+int32_t VarTracker::AddVar(Var* var) {
   CheckThreadingPreconditions();
 
   return AddVarInternal(var, ADD_VAR_TAKE_ONE_REFERENCE);
 }
 
-Var* VarTracker::GetVar(int32 var_id) const {
+Var* VarTracker::GetVar(int32_t var_id) const {
   CheckThreadingPreconditions();
 
   VarMap::const_iterator result = live_vars_.find(var_id);
@@ -58,10 +58,10 @@ Var* VarTracker::GetVar(const PP_Var& var) const {
 
   if (!IsVarTypeRefcounted(var.type))
     return NULL;
-  return GetVar(static_cast<int32>(var.value.as_id));
+  return GetVar(static_cast<int32_t>(var.value.as_id));
 }
 
-bool VarTracker::AddRefVar(int32 var_id) {
+bool VarTracker::AddRefVar(int32_t var_id) {
   CheckThreadingPreconditions();
 
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
@@ -91,10 +91,10 @@ bool VarTracker::AddRefVar(const PP_Var& var) {
 
   if (!IsVarTypeRefcounted(var.type))
     return true;
-  return AddRefVar(static_cast<int32>(var.value.as_id));
+  return AddRefVar(static_cast<int32_t>(var.value.as_id));
 }
 
-bool VarTracker::ReleaseVar(int32 var_id) {
+bool VarTracker::ReleaseVar(int32_t var_id) {
   CheckThreadingPreconditions();
 
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
@@ -134,15 +134,15 @@ bool VarTracker::ReleaseVar(const PP_Var& var) {
 
   if (!IsVarTypeRefcounted(var.type))
     return false;
-  return ReleaseVar(static_cast<int32>(var.value.as_id));
+  return ReleaseVar(static_cast<int32_t>(var.value.as_id));
 }
 
-int32 VarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {
+int32_t VarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {
   // If the plugin manages to create millions of strings.
-  if (last_var_id_ == std::numeric_limits<int32>::max() >> kPPIdTypeBits)
+  if (last_var_id_ == std::numeric_limits<int32_t>::max() >> kPPIdTypeBits)
     return 0;
 
-  int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
+  int32_t new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
   std::pair<VarMap::iterator, bool> was_inserted =
       live_vars_.insert(std::make_pair(
           new_id, VarInfo(var, mode == ADD_VAR_TAKE_ONE_REFERENCE ? 1 : 0)));
@@ -152,7 +152,7 @@ int32 VarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {
   return new_id;
 }
 
-VarTracker::VarMap::iterator VarTracker::GetLiveVar(int32 id) {
+VarTracker::VarMap::iterator VarTracker::GetLiveVar(int32_t id) {
   return live_vars_.find(id);
 }
 
@@ -181,15 +181,15 @@ bool VarTracker::IsVarTypeRefcounted(PP_VarType type) {
 }
 
 VarTracker::VarMap::iterator VarTracker::GetLiveVar(const PP_Var& var) {
-  return live_vars_.find(static_cast<int32>(var.value.as_id));
+  return live_vars_.find(static_cast<int32_t>(var.value.as_id));
 }
 
 VarTracker::VarMap::const_iterator VarTracker::GetLiveVar(const PP_Var& var)
     const {
-  return live_vars_.find(static_cast<int32>(var.value.as_id));
+  return live_vars_.find(static_cast<int32_t>(var.value.as_id));
 }
 
-PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
+PP_Var VarTracker::MakeArrayBufferPPVar(uint32_t size_in_bytes) {
   CheckThreadingPreconditions();
 
   scoped_refptr<ArrayBufferVar> array_buffer(CreateArrayBuffer(size_in_bytes));
@@ -198,7 +198,7 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes) {
   return array_buffer->GetPPVar();
 }
 
-PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
+PP_Var VarTracker::MakeArrayBufferPPVar(uint32_t size_in_bytes,
                                         const void* data) {
   CheckThreadingPreconditions();
 
@@ -206,7 +206,7 @@ PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
   return array_buffer ? array_buffer->GetPPVar() : PP_MakeNull();
 }
 
-ArrayBufferVar* VarTracker::MakeArrayBufferVar(uint32 size_in_bytes,
+ArrayBufferVar* VarTracker::MakeArrayBufferVar(uint32_t size_in_bytes,
                                                const void* data) {
   CheckThreadingPreconditions();
 
@@ -217,7 +217,7 @@ ArrayBufferVar* VarTracker::MakeArrayBufferVar(uint32 size_in_bytes,
   return array_buffer;
 }
 
-PP_Var VarTracker::MakeArrayBufferPPVar(uint32 size_in_bytes,
+PP_Var VarTracker::MakeArrayBufferPPVar(uint32_t size_in_bytes,
                                         base::SharedMemoryHandle handle) {
   CheckThreadingPreconditions();
 

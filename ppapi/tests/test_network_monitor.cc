@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_network_monitor.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "ppapi/cpp/completion_callback.h"

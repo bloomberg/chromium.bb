@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/websocket_resource.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <set>
 #include <string>
@@ -273,7 +275,7 @@ int32_t WebSocketResource::SendMessage(const PP_Var& message) {
     if (!message_arraybuffer.get())
       return PP_ERROR_BADARGUMENT;
     uint8_t* message_data = static_cast<uint8_t*>(message_arraybuffer->Map());
-    uint32 message_length = message_arraybuffer->ByteLength();
+    uint32_t message_length = message_arraybuffer->ByteLength();
     std::vector<uint8_t> message_vector(message_data,
                                         message_data + message_length);
     Post(RENDERER, PpapiHostMsg_WebSocket_SendBinary(message_vector));

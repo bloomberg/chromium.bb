@@ -5,10 +5,13 @@
 #ifndef PPAPI_PROXY_FILE_CHOOSER_RESOURCE_H_
 #define PPAPI_PROXY_FILE_CHOOSER_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/array_writer.h"

@@ -5,8 +5,10 @@
 #ifndef PPAPI_PROXY_FLASH_MENU_RESOURCE_H_
 #define PPAPI_PROXY_FLASH_MENU_RESOURCE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_flash_menu_api.h"

@@ -4,6 +4,8 @@
 
 // From ppb_websocket.idl modified Mon May  6 10:11:29 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_websocket.h"

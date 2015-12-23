@@ -4,6 +4,9 @@
 
 #include "ppapi/tests/test_audio_config.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/tests/testing_instance.h"

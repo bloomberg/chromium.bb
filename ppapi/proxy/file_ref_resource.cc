@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/file_ref_resource.h"
 
+#include <stddef.h>
+
 #include "base/numerics/safe_conversions.h"
 #include "ppapi/c/pp_directory_entry.h"
 #include "ppapi/c/pp_instance.h"

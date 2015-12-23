@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_UDP_SOCKET_H_
 #define PPAPI_TESTS_TEST_UDP_SOCKET_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "ppapi/c/pp_stdint.h"

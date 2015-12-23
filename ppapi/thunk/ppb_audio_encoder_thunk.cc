@@ -4,6 +4,8 @@
 
 // From ppb_audio_encoder.idl modified Mon Sep  7 10:17:53 2015.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio_encoder.h"

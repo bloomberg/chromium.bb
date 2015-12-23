@@ -10,6 +10,8 @@
 #ifndef PPAPI_HOST_DISPATCH_HOST_MESSAGE_H_
 #define PPAPI_HOST_DISPATCH_HOST_MESSAGE_H_
 
+#include <stdint.h>
+
 #include "base/profiler/scoped_profile.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"

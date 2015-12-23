@@ -5,7 +5,9 @@
 #ifndef PPAPI_PROXY_CAMERA_DEVICE_RESOURCE_H_
 #define PPAPI_PROXY_CAMERA_DEVICE_RESOURCE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/private/pp_video_capture_format.h"
 #include "ppapi/proxy/connection.h"

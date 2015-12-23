@@ -4,9 +4,12 @@
 
 #include "ppapi/shared_impl/file_ref_util.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 
 namespace ppapi {
 

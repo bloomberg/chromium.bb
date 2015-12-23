@@ -4,6 +4,8 @@
 
 // From ppb_mouse_lock.idl modified Wed May 15 13:57:07 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_mouse_lock.h"

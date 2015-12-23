@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/thunk/thunk.h"
+#include <stdint.h>
+
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_browser_font_singleton_api.h"
 #include "ppapi/thunk/ppb_browser_font_trusted_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {

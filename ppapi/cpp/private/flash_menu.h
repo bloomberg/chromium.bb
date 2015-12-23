@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_FLASH_MENU_H_
 #define PPAPI_CPP_PRIVATE_FLASH_MENU_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/cpp/resource.h"
 

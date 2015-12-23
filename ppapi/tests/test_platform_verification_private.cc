@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_platform_verification_private.h"
 
+#include <stdint.h>
+
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/platform_verification.h"

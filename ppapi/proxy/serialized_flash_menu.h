@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace base {

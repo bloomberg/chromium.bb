@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <argz.h>
+#include <stddef.h>
 #include <string.h>
 
 #include "build/build_config.h"

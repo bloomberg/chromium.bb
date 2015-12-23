@@ -5,6 +5,9 @@
 #ifndef PPAPI_CPP_ARRAY_OUTPUT_H_
 #define PPAPI_CPP_ARRAY_OUTPUT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "ppapi/c/pp_array_output.h"

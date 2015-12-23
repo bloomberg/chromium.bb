@@ -4,6 +4,8 @@
 
 // From ppb_url_request_info.idl modified Mon May  6 10:11:29 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/shared_impl/tracked_callback.h"

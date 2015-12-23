@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_CASE_H_
 #define PPAPI_TESTS_TEST_CASE_H_
 
+#include <stdint.h>
+
 #include <cmath>
 #include <limits>
 #include <map>

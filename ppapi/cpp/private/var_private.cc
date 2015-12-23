@@ -4,6 +4,8 @@
 
 #include "ppapi/cpp/private/var_private.h"
 
+#include <stddef.h>
+
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/cpp/instance_handle.h"

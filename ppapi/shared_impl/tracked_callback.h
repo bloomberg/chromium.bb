@@ -5,11 +5,13 @@
 #ifndef PPAPI_SHARED_IMPL_TRACKED_CALLBACK_H_
 #define PPAPI_SHARED_IMPL_TRACKED_CALLBACK_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"

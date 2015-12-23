@@ -8,6 +8,7 @@
 #define PPAPI_NACL_IRT_PUBLIC_IRT_PPAPI_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "ppapi/c/ppp.h"
 

@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/resource_message_test_sink.h"
 
+#include <stddef.h>
+
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/serialized_handle.h"
@@ -14,10 +16,10 @@ namespace proxy {
 namespace {
 
 // Backend for GetAllResource[Calls|Replies]Matching.
-template<class WrapperMessage, class Params>
-std::vector<std::pair<Params, IPC::Message> >
-GetAllResourceMessagesMatching(const ResourceMessageTestSink& sink,
-                               uint32 id) {
+template <class WrapperMessage, class Params>
+std::vector<std::pair<Params, IPC::Message>> GetAllResourceMessagesMatching(
+    const ResourceMessageTestSink& sink,
+    uint32_t id) {
   std::vector<std::pair<Params, IPC::Message> > result;
   for (size_t i = 0; i < sink.message_count(); i++) {
     const IPC::Message* msg = sink.GetMessageAt(i);
@@ -67,7 +69,7 @@ void ResourceMessageTestSink::SetSyncReplyMessage(IPC::Message* reply_msg) {
 }
 
 bool ResourceMessageTestSink::GetFirstResourceCallMatching(
-    uint32 id,
+    uint32_t id,
     ResourceMessageCallParams* params,
     IPC::Message* nested_msg) const {
   ResourceCallVector matching_messages =
@@ -82,7 +84,7 @@ bool ResourceMessageTestSink::GetFirstResourceCallMatching(
 }
 
 bool ResourceMessageTestSink::GetFirstResourceReplyMatching(
-    uint32 id,
+    uint32_t id,
     ResourceMessageReplyParams* params,
     IPC::Message* nested_msg) {
   ResourceReplyVector matching_messages =
@@ -97,28 +99,27 @@ bool ResourceMessageTestSink::GetFirstResourceReplyMatching(
 }
 
 ResourceMessageTestSink::ResourceCallVector
-ResourceMessageTestSink::GetAllResourceCallsMatching(uint32 id) {
+ResourceMessageTestSink::GetAllResourceCallsMatching(uint32_t id) {
   return GetAllResourceMessagesMatching<PpapiHostMsg_ResourceCall,
                                         ResourceMessageCallParams>(*this, id);
 }
 
 ResourceMessageTestSink::ResourceReplyVector
-ResourceMessageTestSink::GetAllResourceRepliesMatching(uint32 id) {
+ResourceMessageTestSink::GetAllResourceRepliesMatching(uint32_t id) {
   return GetAllResourceMessagesMatching<PpapiPluginMsg_ResourceReply,
                                         ResourceMessageReplyParams>(*this, id);
 }
 
 ResourceSyncCallHandler::ResourceSyncCallHandler(
     ResourceMessageTestSink* test_sink,
-    uint32 incoming_type,
+    uint32_t incoming_type,
     int32_t result,
     const IPC::Message& reply_msg)
     : test_sink_(test_sink),
       incoming_type_(incoming_type),
       result_(result),
       serialized_handle_(NULL),
-      reply_msg_(reply_msg) {
-}
+      reply_msg_(reply_msg) {}
 
 ResourceSyncCallHandler::~ResourceSyncCallHandler() {
 }

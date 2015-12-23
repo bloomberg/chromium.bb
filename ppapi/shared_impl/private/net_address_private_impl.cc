@@ -4,6 +4,20 @@
 
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
+#include <stddef.h>
+#include <string.h>
+
+#include <string>
+
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "build/build_config.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
+#include "ppapi/shared_impl/proxy_lock.h"
+#include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/thunk.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <winsock2.h>
@@ -13,20 +27,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #endif
-
-#include <string.h>
-
-#include <string>
-
-#include "base/basictypes.h"
-#include "base/logging.h"
-#include "base/strings/stringprintf.h"
-#include "build/build_config.h"
-#include "ppapi/c/pp_var.h"
-#include "ppapi/c/private/ppb_net_address_private.h"
-#include "ppapi/shared_impl/proxy_lock.h"
-#include "ppapi/shared_impl/var.h"
-#include "ppapi/thunk/thunk.h"
 
 #if defined(OS_MACOSX)
 // This is a bit evil, but it's standard operating procedure for |s6_addr|....
@@ -54,7 +54,7 @@ namespace {
 // Define our own net-host-net conversion, rather than reuse the one in
 // base/sys_byteorder.h, to simplify the NaCl port. NaCl has no byte swap
 // primitives.
-uint16 ConvertFromNetEndian16(uint16 x) {
+uint16_t ConvertFromNetEndian16(uint16_t x) {
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
   return (x << 8) | (x >> 8);
 #else
@@ -62,7 +62,7 @@ uint16 ConvertFromNetEndian16(uint16 x) {
 #endif
 }
 
-uint16 ConvertToNetEndian16(uint16 x) {
+uint16_t ConvertToNetEndian16(uint16_t x) {
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
   return (x << 8) | (x >> 8);
 #else
@@ -451,7 +451,7 @@ bool NetAddressPrivateImpl::SockaddrToNetAddress(
 // static
 bool NetAddressPrivateImpl::IPEndPointToNetAddress(
     const std::vector<unsigned char>& address,
-    uint16 port,
+    uint16_t port,
     PP_NetAddress_Private* addr) {
   if (!addr)
     return false;
@@ -484,7 +484,7 @@ bool NetAddressPrivateImpl::IPEndPointToNetAddress(
 bool NetAddressPrivateImpl::NetAddressToIPEndPoint(
     const PP_NetAddress_Private& addr,
     std::vector<unsigned char>* address,
-    uint16* port) {
+    uint16_t* port) {
   if (!address || !port)
     return false;
 

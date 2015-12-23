@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_DEV_AUDIO_INPUT_DEV_H_
 #define PPAPI_CPP_DEV_AUDIO_INPUT_DEV_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ppapi/c/dev/ppb_audio_input_dev.h"

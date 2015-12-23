@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_OUTPUT_PROTECTION_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_OUTPUT_PROTECTION_PRIVATE_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_output_protection_private.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/resource.h"

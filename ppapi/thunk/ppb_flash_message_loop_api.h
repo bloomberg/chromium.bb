@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_FLASH_MESSAGE_LOOP_API_H_
 #define PPAPI_THUNK_PPB_FLASH_MESSAGE_LOOP_API_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 

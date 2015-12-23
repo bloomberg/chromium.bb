@@ -4,6 +4,8 @@
 
 // From trusted/ppb_file_chooser_trusted.idl modified Fri Feb  7 08:29:41 2014.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/device_enumeration_resource_helper.h"

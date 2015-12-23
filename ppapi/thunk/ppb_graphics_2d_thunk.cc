@@ -4,6 +4,7 @@
 
 // From ppb_graphics_2d.idl modified Wed May 15 13:57:07 2013.
 
+#include <stdint.h>
 #include <string.h>
 
 #include "ppapi/c/pp_completion_callback.h"

@@ -38,6 +38,8 @@
 // include-guards), make sure this is the last file #include'd in this file.
 #undef NDEBUG
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #define fourcc(a, b, c, d)                                               \
   (((uint32_t)(a) << 0) | ((uint32_t)(b) << 8) | ((uint32_t)(c) << 16) | \

@@ -5,10 +5,12 @@
 #ifndef PPAPI_CPP_IMAGE_DATA_H_
 #define PPAPI_CPP_IMAGE_DATA_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/cpp/point.h"
-#include "ppapi/cpp/size.h"
 #include "ppapi/cpp/resource.h"
+#include "ppapi/cpp/size.h"
 
 /// @file
 /// This file defines the APIs for determining how a browser

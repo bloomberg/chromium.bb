@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_COMPLETION_CALLBACK_H_
 #define PPAPI_CPP_COMPLETION_CALLBACK_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/logging.h"

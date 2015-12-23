@@ -4,12 +4,13 @@
 
 #include "ppapi/tests/test_var_deprecated.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include <limits>
 
-#include "ppapi/c/pp_var.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/c/pp_var.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"

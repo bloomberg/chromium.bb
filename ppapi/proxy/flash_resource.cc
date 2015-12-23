@@ -4,12 +4,15 @@
 
 #include "ppapi/proxy/flash_resource.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/containers/mru_cache.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
@@ -118,7 +121,7 @@ double FlashResource::GetLocalTimeZoneOffset(PP_Instance instance,
   // Note that TimeTicks does not continue counting across sleep/resume on all
   // platforms. This may be acceptable for 10 seconds, but if in the future this
   // is changed to one minute or more, then we should consider using base::Time.
-  const int64 kMaxCachedLocalOffsetAgeInSeconds = 10;
+  const int64_t kMaxCachedLocalOffsetAgeInSeconds = 10;
   base::TimeDelta expiration_delta =
       base::TimeDelta::FromSeconds(kMaxCachedLocalOffsetAgeInSeconds);
 

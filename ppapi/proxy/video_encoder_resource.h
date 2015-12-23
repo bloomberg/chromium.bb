@@ -5,8 +5,11 @@
 #ifndef PPAPI_PROXY_VIDEO_ENCODER_RESOURCE_H_
 #define PPAPI_PROXY_VIDEO_ENCODER_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <deque>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"

@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_HOST_RESOLVER_PRIVATE_API_H_
 #define PPAPI_THUNK_PPB_HOST_RESOLVER_PRIVATE_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"

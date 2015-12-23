@@ -5,6 +5,8 @@
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_FILE_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_FILE_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"

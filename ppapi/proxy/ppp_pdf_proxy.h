@@ -5,6 +5,7 @@
 #ifndef PPAPI_PROXY_PPP_PDF_PROXY_H_
 #define PPAPI_PROXY_PPP_PDF_PROXY_H_
 
+#include "base/macros.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/proxy/interface_proxy.h"
 

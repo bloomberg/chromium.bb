@@ -5,9 +5,12 @@
 #ifndef PPAPI_PROXY_PPP_CONTENT_DECRYPTOR_PRIVATE_PROXY_H_
 #define PPAPI_PROXY_PPP_CONTENT_DECRYPTOR_PRIVATE_PROXY_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/proxy/interface_proxy.h"

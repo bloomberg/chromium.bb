@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppp_input_event_proxy.h"
 
+#include "build/build_config.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"

@@ -4,6 +4,8 @@
 
 // From ppb_tcp_socket.idl modified Sun Sep 15 16:14:21 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_tcp_socket.h"

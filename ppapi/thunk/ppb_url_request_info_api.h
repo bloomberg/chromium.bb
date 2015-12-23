@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_URL_REQUEST_INFO_API_H_
 #define PPAPI_THUNK_URL_REQUEST_INFO_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 

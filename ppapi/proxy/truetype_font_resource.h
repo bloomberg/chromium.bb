@@ -5,9 +5,12 @@
 #ifndef PPAPI_PROXY_TRUETYPE_FONT_RESOURCE_H_
 #define PPAPI_PROXY_TRUETYPE_FONT_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
+#include "base/macros.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"

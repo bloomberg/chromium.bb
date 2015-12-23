@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_var.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include <limits>

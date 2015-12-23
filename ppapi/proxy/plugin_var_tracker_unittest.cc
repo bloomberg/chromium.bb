@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "ipc/ipc_test_sink.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
@@ -15,7 +17,7 @@ namespace proxy {
 
 namespace {
 
-PP_Var MakeObject(int32 object_id) {
+PP_Var MakeObject(int32_t object_id) {
   PP_Var ret;
   ret.type = PP_VARTYPE_OBJECT;
   ret.value.as_id = object_id;
@@ -50,13 +52,13 @@ class PluginVarTrackerTest : public PluginProxyTest {
  protected:
   // Asserts that there is a unique "release object" IPC message in the test
   // sink. This will return the var ID from the message or -1 if none found.
-  int32 GetObjectIDForUniqueReleaseObject() {
+  int32_t GetObjectIDForUniqueReleaseObject() {
     const IPC::Message* release_msg = sink().GetUniqueMessageMatching(
         PpapiHostMsg_PPBVar_ReleaseObject::ID);
     if (!release_msg)
       return -1;
 
-    base::Tuple<int64> id;
+    base::Tuple<int64_t> id;
     PpapiHostMsg_PPBVar_ReleaseObject::Read(release_msg, &id);
     return base::get<0>(id);
   }

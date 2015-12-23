@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/scoped_pp_var.h"
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"

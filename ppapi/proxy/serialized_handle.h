@@ -5,11 +5,12 @@
 #ifndef PPAPI_PROXY_SERIALIZED_HANDLES_H_
 #define PPAPI_PROXY_SERIALIZED_HANDLES_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/atomicops.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
@@ -37,18 +38,17 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   struct Header {
     Header() : type(INVALID), size(0), open_flags(0) {}
     Header(Type type_arg,
-           uint32 size_arg,
-           int32 open_flags_arg,
+           uint32_t size_arg,
+           int32_t open_flags_arg,
            PP_Resource file_io_arg)
         : type(type_arg),
           size(size_arg),
           open_flags(open_flags_arg),
-          file_io(file_io_arg) {
-    }
+          file_io(file_io_arg) {}
 
     Type type;
-    uint32 size;
-    int32 open_flags;
+    uint32_t size;
+    int32_t open_flags;
     PP_Resource file_io;
   };
 
@@ -57,7 +57,7 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   explicit SerializedHandle(Type type);
 
   // Create a shared memory handle.
-  SerializedHandle(const base::SharedMemoryHandle& handle, uint32 size);
+  SerializedHandle(const base::SharedMemoryHandle& handle, uint32_t size);
 
   // Create a socket or file handle.
   SerializedHandle(const Type type,
@@ -71,7 +71,7 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     DCHECK(is_shmem());
     return shm_handle_;
   }
-  uint32 size() const {
+  uint32_t size() const {
     DCHECK(is_shmem());
     return size_;
   }
@@ -79,13 +79,11 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     DCHECK(is_socket() || is_file());
     return descriptor_;
   }
-  int32 open_flags() const {
-    return open_flags_;
-  }
+  int32_t open_flags() const { return open_flags_; }
   PP_Resource file_io() const {
     return file_io_;
   }
-  void set_shmem(const base::SharedMemoryHandle& handle, uint32 size) {
+  void set_shmem(const base::SharedMemoryHandle& handle, uint32_t size) {
     type_ = SHARED_MEMORY;
     shm_handle_ = handle;
     size_ = size;
@@ -100,7 +98,7 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     size_ = 0;
   }
   void set_file_handle(const IPC::PlatformFileForTransit& descriptor,
-                       int32 open_flags,
+                       int32_t open_flags,
                        PP_Resource file_io) {
     type_ = FILE;
 
@@ -144,13 +142,13 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   // efficient strategy.
   // These are valid if type == SHARED_MEMORY.
   base::SharedMemoryHandle shm_handle_;
-  uint32 size_;
+  uint32_t size_;
 
   // This is valid if type == SOCKET || type == FILE.
   IPC::PlatformFileForTransit descriptor_;
 
   // The following fields are valid if type == FILE.
-  int32 open_flags_;
+  int32_t open_flags_;
   // This is non-zero if file writes require quota checking.
   PP_Resource file_io_;
 };

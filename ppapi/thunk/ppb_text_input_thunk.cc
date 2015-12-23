@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/ppb_text_input_controller.h"
 #include "ppapi/shared_impl/var.h"

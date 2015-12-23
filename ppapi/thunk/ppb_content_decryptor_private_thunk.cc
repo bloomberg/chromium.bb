@@ -5,6 +5,8 @@
 // From private/ppb_content_decryptor_private.idl modified Mon Mar 30 22:35:33
 // 2015.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
 #include "ppapi/shared_impl/tracked_callback.h"

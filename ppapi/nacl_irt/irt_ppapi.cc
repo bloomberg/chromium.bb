@@ -8,6 +8,8 @@
 // IPC_MESSAGE_MACROS_LOG_ENABLED so ppapi_messages.h will generate the
 // ViewMsgLog et al. functions.
 
+#include <stdint.h>
+
 #include "base/threading/thread.h"
 #include "ipc/ipc_logging.h"
 #include "ppapi/nacl_irt/irt_interfaces.h"

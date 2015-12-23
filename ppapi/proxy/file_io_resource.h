@@ -5,9 +5,12 @@
 #ifndef PPAPI_PROXY_FILE_IO_RESOURCE_H_
 #define PPAPI_PROXY_FILE_IO_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/private/pp_file_handle.h"

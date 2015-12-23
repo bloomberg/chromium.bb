@@ -5,10 +5,12 @@
 #ifndef PPAPI_SHARED_IMPL_FLASH_CLIPBOARD_FORMAT_REGISTRY_H_
 #define PPAPI_SHARED_IMPL_FLASH_CLIPBOARD_FORMAT_REGISTRY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 

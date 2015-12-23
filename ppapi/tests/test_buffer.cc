@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_buffer.h"
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/graphics_2d.h"

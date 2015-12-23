@@ -5,10 +5,12 @@
 #ifndef PPAPI_PROXY_UDP_SOCKET_FILTER_H_
 #define PPAPI_PROXY_UDP_SOCKET_FILTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"

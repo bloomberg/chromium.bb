@@ -5,10 +5,12 @@
 #ifndef PPAPI_PROXY_NACL_MESSAGE_SCANNER_H_
 #define PPAPI_PROXY_NACL_MESSAGE_SCANNER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "ppapi/c/pp_resource.h"

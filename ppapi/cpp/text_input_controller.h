@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_TEXT_INPUT_CONTROLLER_H_
 #define PPAPI_CPP_TEXT_INPUT_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/ppb_text_input_controller.h"

@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_AUDIO_ENCODER_H_
 #define PPAPI_CPP_AUDIO_ENCODER_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/cpp/audio_buffer.h"

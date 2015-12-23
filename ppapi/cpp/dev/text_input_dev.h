@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_DEV_TEXT_INPUT_DEV_H_
 #define PPAPI_CPP_DEV_TEXT_INPUT_DEV_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/dev/ppb_text_input_dev.h"

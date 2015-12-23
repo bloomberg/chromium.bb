@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_NETWORK_LIST_H_
 #define PPAPI_CPP_NETWORK_LIST_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

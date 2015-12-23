@@ -4,6 +4,8 @@
 
 // From ppb_messaging.idl modified Tue Mar 24 16:53:47 2015.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/shared_impl/tracked_callback.h"

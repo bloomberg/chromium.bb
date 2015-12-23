@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_CORE_H_
 #define PPAPI_CPP_CORE_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_core.h"
 
 /// @file

@@ -26,17 +26,14 @@ using ppapi::proxy::PluginResourceTracker;
 
 namespace ppapi {
 
-PluginArrayBufferVar::PluginArrayBufferVar(uint32 size_in_bytes)
+PluginArrayBufferVar::PluginArrayBufferVar(uint32_t size_in_bytes)
     : buffer_(size_in_bytes),
       plugin_handle_(base::SharedMemory::NULLHandle()),
-      size_in_bytes_(size_in_bytes) {
-}
+      size_in_bytes_(size_in_bytes) {}
 
-PluginArrayBufferVar::PluginArrayBufferVar(uint32 size_in_bytes,
+PluginArrayBufferVar::PluginArrayBufferVar(uint32_t size_in_bytes,
                                            SharedMemoryHandle plugin_handle)
-    : plugin_handle_(plugin_handle),
-      size_in_bytes_(size_in_bytes) {
-}
+    : plugin_handle_(plugin_handle), size_in_bytes_(size_in_bytes) {}
 
 PluginArrayBufferVar::~PluginArrayBufferVar() {
   Unmap();
@@ -72,7 +69,7 @@ void PluginArrayBufferVar::Unmap() {
     shmem_->Unmap();
 }
 
-uint32 PluginArrayBufferVar::ByteLength() {
+uint32_t PluginArrayBufferVar::ByteLength() {
   return size_in_bytes_;
 }
 

@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_FLASH_CLIPBOARD_H_
 #define PPAPI_TESTS_TEST_FLASH_CLIPBOARD_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/private/ppb_flash_clipboard.h"

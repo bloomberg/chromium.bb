@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_FILE_SYSTEM_API_H_
 #define PPAPI_THUNK_PPB_FILE_SYSTEM_API_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_file_system.h"

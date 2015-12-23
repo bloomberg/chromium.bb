@@ -70,23 +70,23 @@ bool PPB_VideoDecoder_Shared::SetResetCallback(
 }
 
 bool PPB_VideoDecoder_Shared::SetBitstreamBufferCallback(
-    int32 bitstream_buffer_id,
+    int32_t bitstream_buffer_id,
     scoped_refptr<TrackedCallback> callback) {
   return bitstream_buffer_callbacks_.insert(std::make_pair(bitstream_buffer_id,
                                                            callback)).second;
 }
 
-void PPB_VideoDecoder_Shared::RunFlushCallback(int32 result) {
+void PPB_VideoDecoder_Shared::RunFlushCallback(int32_t result) {
   flush_callback_->Run(result);
 }
 
-void PPB_VideoDecoder_Shared::RunResetCallback(int32 result) {
+void PPB_VideoDecoder_Shared::RunResetCallback(int32_t result) {
   reset_callback_->Run(result);
 }
 
 void PPB_VideoDecoder_Shared::RunBitstreamBufferCallback(
-    int32 bitstream_buffer_id,
-    int32 result) {
+    int32_t bitstream_buffer_id,
+    int32_t result) {
   CallbackById::iterator it =
       bitstream_buffer_callbacks_.find(bitstream_buffer_id);
   DCHECK(it != bitstream_buffer_callbacks_.end());

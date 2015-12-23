@@ -5,7 +5,6 @@
 #ifndef PPAPI_PROXY_INTERFACE_PROXY_H_
 #define PPAPI_PROXY_INTERFACE_PROXY_H_
 
-#include "base/basictypes.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/c/pp_completion_callback.h"

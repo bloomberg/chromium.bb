@@ -5,8 +5,11 @@
 #ifndef PPAPI_PROXY_NETWORK_MONITOR_RESOURCE_H_
 #define PPAPI_PROXY_NETWORK_MONITOR_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <list>
 
+#include "base/macros.h"
 #include "ppapi/proxy/network_list_resource.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"

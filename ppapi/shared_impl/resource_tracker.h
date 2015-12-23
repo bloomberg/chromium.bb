@@ -5,10 +5,12 @@
 #ifndef PPAPI_SHARED_IMPL_RESOURCE_TRACKER_H_
 #define PPAPI_SHARED_IMPL_RESOURCE_TRACKER_H_
 
+#include <stdint.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -92,7 +94,7 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   // cancels pending callbacks for the resource.
   void LastPluginRefWasDeleted(Resource* object);
 
-  int32 GetNextResourceValue();
+  int32_t GetNextResourceValue();
 
   // In debug mode, checks whether |res| comes from the same resource tracker.
   bool CanOperateOnResource(PP_Resource res);
@@ -121,7 +123,7 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   typedef base::hash_map<PP_Resource, ResourceAndRefCount> ResourceMap;
   ResourceMap live_resources_;
 
-  int32 last_resource_value_;
+  int32_t last_resource_value_;
 
   // On the host side, we want to check that we are only called on the main
   // thread. This is to protect us from accidentally using the tracker from

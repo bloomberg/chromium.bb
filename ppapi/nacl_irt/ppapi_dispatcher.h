@@ -5,6 +5,8 @@
 #ifndef PPAPI_NACL_IRT_PPAPI_DISPATCHER_H_
 #define PPAPI_NACL_IRT_PPAPI_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -62,8 +64,8 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
       const base::SharedMemoryHandle& handle,
       base::ProcessId remote_pid) override;
   std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
-  uint32 Register(proxy::PluginDispatcher* plugin_dispatcher) override;
-  void Unregister(uint32 plugin_dispatcher_id) override;
+  uint32_t Register(proxy::PluginDispatcher* plugin_dispatcher) override;
+  void Unregister(uint32_t plugin_dispatcher_id) override;
 
   // PluginProxyDelegate implementation.
   IPC::Sender* GetBrowserSender() override;
@@ -87,8 +89,8 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 
   std::set<PP_Instance> instances_;
-  std::map<uint32, proxy::PluginDispatcher*> plugin_dispatchers_;
-  uint32 next_plugin_dispatcher_id_;
+  std::map<uint32_t, proxy::PluginDispatcher*> plugin_dispatchers_;
+  uint32_t next_plugin_dispatcher_id_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WaitableEvent* shutdown_event_;

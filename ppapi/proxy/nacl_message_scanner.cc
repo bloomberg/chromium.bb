@@ -4,10 +4,13 @@
 
 #include "ppapi/proxy/nacl_message_scanner.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/proxy/ppapi_messages.h"

@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_trace_event.h"
 
+#include <stdint.h>
+
 #include "ppapi/cpp/module.h"
 #include "ppapi/tests/testing_instance.h"
 

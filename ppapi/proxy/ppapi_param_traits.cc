@@ -4,12 +4,16 @@
 
 #include "ppapi/proxy/ppapi_param_traits.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>  // For memcpy
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/serialized_var.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
+#include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 
@@ -156,7 +160,7 @@ void ParamTraits<PP_NetAddress_Private>::Write(Message* m,
 bool ParamTraits<PP_NetAddress_Private>::Read(const Message* m,
                                               base::PickleIterator* iter,
                                               param_type* p) {
-  uint16 size;
+  uint16_t size;
   if (!ReadParam(m, iter, &size))
     return false;
   if (size > sizeof(p->data))

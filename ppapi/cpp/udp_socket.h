@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_UDP_SOCKET_H_
 #define PPAPI_CPP_UDP_SOCKET_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/pass_ref.h"

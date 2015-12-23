@@ -5,6 +5,8 @@
 #ifndef PAPPI_TESTS_TEST_TCP_SOCKET_H_
 #define PAPPI_TESTS_TEST_TCP_SOCKET_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "ppapi/c/pp_stdint.h"

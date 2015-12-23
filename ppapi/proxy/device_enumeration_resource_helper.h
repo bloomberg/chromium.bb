@@ -5,9 +5,11 @@
 #ifndef PPAPI_PROXY_DEVICE_ENUMERATION_RESOURCE_HELPER_H_
 #define PPAPI_PROXY_DEVICE_ENUMERATION_RESOURCE_HELPER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"

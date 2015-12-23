@@ -4,6 +4,8 @@
 
 // From ppb_udp_socket.idl modified Fri Mar 13 17:49:57 2015.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_udp_socket.h"

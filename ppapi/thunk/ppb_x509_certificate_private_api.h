@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_X509_CERTIFICATE_PRIVATE_API_H_
 #define PPAPI_THUNK_PPB_X509_CERTIFICATE_PRIVATE_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 

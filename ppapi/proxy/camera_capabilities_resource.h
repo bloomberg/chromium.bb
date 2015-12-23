@@ -5,9 +5,12 @@
 #ifndef PPAPI_PROXY_CAMERA_CAPABILITIES_RESOURCE_H_
 #define PPAPI_PROXY_CAMERA_CAPABILITIES_RESOURCE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/resource.h"

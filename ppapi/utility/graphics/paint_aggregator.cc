@@ -4,6 +4,8 @@
 
 #include "ppapi/utility/graphics/paint_aggregator.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "ppapi/cpp/logging.h"

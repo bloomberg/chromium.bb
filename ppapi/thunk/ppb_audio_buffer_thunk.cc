@@ -4,6 +4,8 @@
 
 // From ppb_audio_buffer.idl modified Thu May 15 17:11:43 2014.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/shared_impl/tracked_callback.h"

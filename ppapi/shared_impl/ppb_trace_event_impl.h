@@ -5,6 +5,8 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_TRACE_EVENT_IMPL_H_
 #define PPAPI_SHARED_IMPL_PPB_TRACE_EVENT_IMPL_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_trace_event_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"

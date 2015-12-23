@@ -5,9 +5,11 @@
 #ifndef PPAPI_PROXY_PPB_AUDIO_PROXY_H_
 #define PPAPI_PROXY_PPB_AUDIO_PROXY_H_
 
+#include <stdint.h>
+
 #include <utility>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "ipc/ipc_platform_file.h"

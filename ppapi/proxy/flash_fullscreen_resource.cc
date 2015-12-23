@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/flash_fullscreen_resource.h"
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/proxy/ppapi_messages.h"
 

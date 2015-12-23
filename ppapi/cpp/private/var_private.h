@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_VAR_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_VAR_PRIVATE_H_
 
+#include <stdint.h>
+
 #include "ppapi/cpp/var.h"
 
 namespace pp {

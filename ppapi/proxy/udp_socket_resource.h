@@ -5,8 +5,10 @@
 #ifndef PPAPI_PROXY_UDP_SOCKET_RESOURCE_H_
 #define PPAPI_PROXY_UDP_SOCKET_RESOURCE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/udp_socket_resource_base.h"
 #include "ppapi/thunk/ppb_udp_socket_api.h"

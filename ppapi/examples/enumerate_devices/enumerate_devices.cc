@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <vector>
 
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/dev/device_ref_dev.h"
-#include "ppapi/cpp/dev/video_capture_dev.h"
-#include "ppapi/cpp/dev/video_capture_client_dev.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/device_ref_dev.h"
+#include "ppapi/cpp/dev/video_capture_client_dev.h"
+#include "ppapi/cpp/dev/video_capture_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/flash.h"

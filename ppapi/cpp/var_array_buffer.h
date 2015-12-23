@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_VAR_ARRAY_BUFFER_H_
 #define PPAPI_CPP_VAR_ARRAY_BUFFER_H_
 
+#include <stdint.h>
+
 #include "ppapi/cpp/var.h"
 
 /// @file

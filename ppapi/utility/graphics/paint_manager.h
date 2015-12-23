@@ -5,6 +5,9 @@
 #ifndef PPAPI_UTILITY_GRAPHICS_PAINT_MANAGER_H_
 #define PPAPI_UTILITY_GRAPHICS_PAINT_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "ppapi/cpp/graphics_2d.h"

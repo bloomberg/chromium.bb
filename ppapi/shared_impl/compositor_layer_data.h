@@ -5,6 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_COMPOSITOR_LAYER_DATA_H_
 #define PPAPI_SHARED_IMPL_COMPOSITOR_LAYER_DATA_H_
 
+#include <stdint.h>
 #include <string.h>
 
 #include "base/logging.h"

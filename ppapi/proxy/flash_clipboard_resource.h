@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_FLASH_CLIPBOARD_RESOURCE_H_
 #define PPAPI_PROXY_FLASH_CLIPBOARD_RESOURCE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/shared_impl/flash_clipboard_format_registry.h"

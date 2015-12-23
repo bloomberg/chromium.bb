@@ -4,6 +4,8 @@
 
 // From ppb_video_decoder.idl modified Wed Aug 12 17:59:47 2015.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_video_decoder.h"

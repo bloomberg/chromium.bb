@@ -4,6 +4,8 @@
 
 // From ../test_thunk/simple.idl modified Fri Nov 16 11:26:06 2012.
 
+#include <stdint.h>
+
 #include "ppapi/c/../test_thunk/simple.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/tracked_callback.h"

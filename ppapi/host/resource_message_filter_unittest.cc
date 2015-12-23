@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -41,13 +43,12 @@ class MyResourceHost : public ResourceHost {
   MyResourceHost(PpapiHost* host,
                  PP_Instance instance,
                  PP_Resource resource,
-                 uint32 msg_type,
-                 uint32 reply_msg_type)
+                 uint32_t msg_type,
+                 uint32_t reply_msg_type)
       : ResourceHost(host, instance, resource),
         msg_type_(msg_type),
         reply_msg_type_(reply_msg_type),
-        last_reply_message_loop_(NULL) {
-  }
+        last_reply_message_loop_(NULL) {}
 
   const IPC::Message& last_handled_msg() const { return last_handled_msg_; }
   const IPC::Message& last_reply_msg() const { return last_reply_msg_; }
@@ -78,8 +79,8 @@ class MyResourceHost : public ResourceHost {
   }
 
  private:
-  uint32 msg_type_;
-  uint32 reply_msg_type_;
+  uint32_t msg_type_;
+  uint32_t reply_msg_type_;
 
   IPC::Message last_handled_msg_;
   IPC::Message last_reply_msg_;
@@ -97,8 +98,8 @@ class MyResourceFilter : public ResourceMessageFilter {
   // should be handled.
   MyResourceFilter(const base::Thread& io_thread,
                    const base::Thread& bg_thread,
-                   uint32 msg_type,
-                   uint32 reply_msg_type)
+                   uint32_t msg_type,
+                   uint32_t reply_msg_type)
       : ResourceMessageFilter(io_thread.task_runner()),
         task_runner_(bg_thread.task_runner()),
         msg_type_(msg_type),
@@ -130,8 +131,8 @@ class MyResourceFilter : public ResourceMessageFilter {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  uint32 msg_type_;
-  uint32 reply_msg_type_;
+  uint32_t msg_type_;
+  uint32_t reply_msg_type_;
 
   IPC::Message last_handled_msg_;
   base::MessageLoop* last_message_loop_;
@@ -174,7 +175,7 @@ class ResourceMessageFilterTest : public testing::Test {
     EXPECT_EQ(filter1->last_handled_msg().type(), message1.type());
     EXPECT_EQ(filter1->last_message_loop(), bg_thread1.message_loop());
     EXPECT_EQ(host.last_reply_msg().type(),
-              static_cast<uint32>(REPLY_MSG1_TYPE));
+              static_cast<uint32_t>(REPLY_MSG1_TYPE));
     EXPECT_EQ(host.last_reply_message_loop(), io_thread.message_loop());
     g_handler_completion.Reset();
 
@@ -184,7 +185,7 @@ class ResourceMessageFilterTest : public testing::Test {
     EXPECT_EQ(filter2->last_handled_msg().type(), message2.type());
     EXPECT_EQ(filter2->last_message_loop(), bg_thread2.message_loop());
     EXPECT_EQ(host.last_reply_msg().type(),
-              static_cast<uint32>(REPLY_MSG2_TYPE));
+              static_cast<uint32_t>(REPLY_MSG2_TYPE));
     EXPECT_EQ(host.last_reply_message_loop(), io_thread.message_loop());
     g_handler_completion.Reset();
 
@@ -192,7 +193,7 @@ class ResourceMessageFilterTest : public testing::Test {
     host.HandleMessage(message3, &context);
     EXPECT_EQ(host.last_handled_msg().type(), message3.type());
     EXPECT_EQ(host.last_reply_msg().type(),
-              static_cast<uint32>(REPLY_MSG3_TYPE));
+              static_cast<uint32_t>(REPLY_MSG3_TYPE));
 
     io_thread.Stop();
     bg_thread1.Stop();

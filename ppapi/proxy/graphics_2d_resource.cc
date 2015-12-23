@@ -32,9 +32,10 @@ Graphics2DResource::Graphics2DResource(Connection connection,
       scale_(1.0f) {
   // These checks are copied from PPB_ImageData_Impl::Init to make tests passed.
   // Let's remove/refactor this when start to refactor ImageData.
-  bool bad_args = size.width <= 0 || size.height <= 0 ||
-      static_cast<int64>(size.width) * static_cast<int64>(size.height) >=
-          std::numeric_limits<int32>::max() / 4;
+  bool bad_args =
+      size.width <= 0 || size.height <= 0 ||
+      static_cast<int64_t>(size.width) * static_cast<int64_t>(size.height) >=
+          std::numeric_limits<int32_t>::max() / 4;
   if (!bad_args && !sent_create_to_renderer()) {
     SendCreate(RENDERER,
         PpapiHostMsg_Graphics2D_Create(size, is_always_opaque));

@@ -56,7 +56,7 @@ int32_t PlatformVerificationPrivateResource::ChallengePlatform(
     return PP_ERROR_BADARGUMENT;
 
   uint8_t* challenge_data = static_cast<uint8_t*>(challenge_buffer->Map());
-  uint32 challenge_length = challenge_buffer->ByteLength();
+  uint32_t challenge_length = challenge_buffer->ByteLength();
   std::vector<uint8_t> challenge_vector(challenge_data,
                                         challenge_data + challenge_length);
   challenge_buffer->Unmap();

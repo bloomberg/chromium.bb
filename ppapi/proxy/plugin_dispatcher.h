@@ -5,12 +5,14 @@
 #ifndef PPAPI_PROXY_PLUGIN_DISPATCHER_H_
 #define PPAPI_PROXY_PLUGIN_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
@@ -74,7 +76,7 @@ struct InstanceData {
     ~FlushInfo();
     bool flush_pending;
     HostResource resource;
-    int32 put_offset;
+    int32_t put_offset;
   };
   FlushInfo flush_info_;
 };
@@ -94,8 +96,8 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
     // Registers the plugin dispatcher and returns an ID.
     // Plugin dispatcher IDs will be used to dispatch messages from the browser.
     // Each call to Register() has to be matched with a call to Unregister().
-    virtual uint32 Register(PluginDispatcher* plugin_dispatcher) = 0;
-    virtual void Unregister(uint32 plugin_dispatcher_id) = 0;
+    virtual uint32_t Register(PluginDispatcher* plugin_dispatcher) = 0;
+    virtual void Unregister(uint32_t plugin_dispatcher_id) = 0;
   };
 
   // Constructor for the plugin side. The init and shutdown functions will be
@@ -181,7 +183,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   // Returns the Preferences.
   const Preferences& preferences() const { return preferences_; }
 
-  uint32 plugin_dispatcher_id() const { return plugin_dispatcher_id_; }
+  uint32_t plugin_dispatcher_id() const { return plugin_dispatcher_id_; }
   bool incognito() const { return incognito_; }
 
  private:
@@ -215,7 +217,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   bool received_preferences_;
   Preferences preferences_;
 
-  uint32 plugin_dispatcher_id_;
+  uint32_t plugin_dispatcher_id_;
 
   // Set to true when the instances associated with this dispatcher are
   // incognito mode.

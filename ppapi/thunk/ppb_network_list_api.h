@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_NETWORK_LIST_API_H_
 #define PPAPI_THUNK_PPB_NETWORK_LIST_API_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ppapi/c/ppb_network_list.h"

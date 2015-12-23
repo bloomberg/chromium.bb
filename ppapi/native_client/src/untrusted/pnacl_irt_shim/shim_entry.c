@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include <stdint.h>
+
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/nacl_macros.h"

@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_FILE_IO_API_H_
 #define PPAPI_THUNK_PPB_FILE_IO_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/private/pp_file_handle.h"

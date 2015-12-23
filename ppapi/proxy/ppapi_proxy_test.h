@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
@@ -146,8 +149,8 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
 
     // PluginDispatcher::PluginDelegate implementation.
     std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
-    uint32 Register(PluginDispatcher* plugin_dispatcher) override;
-    void Unregister(uint32 plugin_dispatcher_id) override;
+    uint32_t Register(PluginDispatcher* plugin_dispatcher) override;
+    void Unregister(uint32_t plugin_dispatcher_id) override;
 
     // PluginProxyDelegate implementation.
     IPC::Sender* GetBrowserSender() override;

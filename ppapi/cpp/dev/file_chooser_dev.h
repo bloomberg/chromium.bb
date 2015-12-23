@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_DEV_FILE_CHOOSER_DEV_H_
 #define PPAPI_CPP_DEV_FILE_CHOOSER_DEV_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"

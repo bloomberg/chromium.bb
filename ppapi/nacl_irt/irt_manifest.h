@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "build/build_config.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace ppapi {

@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_TRUSTED_BROWSER_FONT_TRUSTED_H_
 #define PPAPI_CPP_TRUSTED_BROWSER_FONT_TRUSTED_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"

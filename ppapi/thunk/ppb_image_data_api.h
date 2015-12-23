@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_IMAGE_DATA_API_H_
 #define PPAPI_THUNK_PPB_IMAGE_DATA_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_image_data.h"
 

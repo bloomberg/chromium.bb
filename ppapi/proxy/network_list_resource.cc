@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/network_list_resource.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

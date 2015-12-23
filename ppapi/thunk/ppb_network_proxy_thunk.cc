@@ -4,6 +4,8 @@
 
 // From ppb_network_proxy.idl modified Tue Jun 25 15:45:53 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_network_proxy.h"

@@ -5,9 +5,12 @@
 #ifndef PPAPI_PROXY_PPB_INSTANCE_PROXY_H_
 #define PPAPI_PROXY_PPB_INSTANCE_PROXY_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
@@ -111,14 +114,14 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                               PP_URLComponents_Dev* components) override;
   PP_Var GetPluginReferrerURL(PP_Instance instance,
                               PP_URLComponents_Dev* components) override;
-  void PromiseResolved(PP_Instance instance, uint32 promise_id) override;
+  void PromiseResolved(PP_Instance instance, uint32_t promise_id) override;
   void PromiseResolvedWithSession(PP_Instance instance,
-                                  uint32 promise_id,
+                                  uint32_t promise_id,
                                   PP_Var session_id_var) override;
   void PromiseRejected(PP_Instance instance,
-                       uint32 promise_id,
+                       uint32_t promise_id,
                        PP_CdmExceptionCode exception_code,
-                       uint32 system_code,
+                       uint32_t system_code,
                        PP_Var error_description_var) override;
   void SessionMessage(PP_Instance instance,
                       PP_Var session_id_var,
@@ -138,7 +141,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void LegacySessionError(PP_Instance instance,
                           PP_Var session_id_var,
                           PP_CdmExceptionCode exception_code,
-                          uint32 system_code,
+                          uint32_t system_code,
                           PP_Var error_description_var) override;
   void DeliverBlock(PP_Instance instance,
                     PP_Resource decrypted_block,

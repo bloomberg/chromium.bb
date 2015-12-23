@@ -16,6 +16,7 @@
 // can be compared to tools/metrics/histograms/histograms.xml to determine if
 // any interfaces have been left out.
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,9 +36,9 @@ int main(int argc, char **argv) {
             argv[0]);
     return 1;
   }
-  std::vector<std::pair<uint32, char*>> hashes;
+  std::vector<std::pair<uint32_t, char*>> hashes;
   for (int i = 1; i < argc; i++) {
-    uint32 data = base::Hash(argv[i], strlen(argv[i]));
+    uint32_t data = base::Hash(argv[i], strlen(argv[i]));
 
     // Strip off the signed bit because UMA doesn't support negative values,
     // but takes a signed int as input.

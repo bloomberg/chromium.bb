@@ -4,6 +4,8 @@
 
 #include "ppapi/cpp/private/camera_capabilities_private.h"
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/cpp/instance_handle.h"

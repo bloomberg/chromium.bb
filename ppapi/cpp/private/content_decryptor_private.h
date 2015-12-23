@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_CONTENT_DECRYPTOR_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_CONTENT_DECRYPTOR_PRIVATE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

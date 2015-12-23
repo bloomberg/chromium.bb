@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_IME_INPUT_EVENT_H_
 #define PPAPI_TESTS_TEST_IME_INPUT_EVENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>

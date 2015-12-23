@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_HOST_RESOLVER_H_
 #define PPAPI_TESTS_TEST_HOST_RESOLVER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/ppb_host_resolver.h"

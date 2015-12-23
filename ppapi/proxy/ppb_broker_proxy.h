@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PPB_BROKER_PROXY_H_
 #define PPAPI_PROXY_PPB_BROKER_PROXY_H_
 
+#include <stdint.h>
+
 #include "base/sync_socket.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"

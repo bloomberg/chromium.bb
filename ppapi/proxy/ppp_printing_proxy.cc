@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"

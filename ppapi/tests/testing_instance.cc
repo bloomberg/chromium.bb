@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/testing_instance.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cstring>
 #include <iomanip>

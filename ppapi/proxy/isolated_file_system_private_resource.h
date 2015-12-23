@@ -19,8 +19,11 @@
 #ifndef PPAPI_PROXY_ISOLATED_FILE_SYSTEM_PRIVATE_RESOURCE_H_
 #define PPAPI_PROXY_ISOLATED_FILE_SYSTEM_PRIVATE_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"

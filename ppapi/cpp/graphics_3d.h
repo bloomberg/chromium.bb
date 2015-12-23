@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_GRAPHICS_3D_H_
 #define PPAPI_CPP_GRAPHICS_3D_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/cpp/resource.h"
 

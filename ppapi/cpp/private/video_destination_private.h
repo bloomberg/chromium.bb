@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_VIDEO_DESTINATION_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_VIDEO_DESTINATION_PRIVATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/pp_time.h"

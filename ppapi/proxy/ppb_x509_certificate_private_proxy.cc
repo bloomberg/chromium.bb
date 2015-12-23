@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 
+#include "base/macros.h"
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"

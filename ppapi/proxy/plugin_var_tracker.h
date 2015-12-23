@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_stdint.h"
@@ -70,11 +70,11 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
   void DidDeleteInstance(PP_Instance instance) override;
   int TrackSharedMemoryHandle(PP_Instance instance,
                               base::SharedMemoryHandle file,
-                              uint32 size_in_bytes) override;
+                              uint32_t size_in_bytes) override;
   bool StopTrackingSharedMemoryHandle(int id,
                                       PP_Instance instance,
                                       base::SharedMemoryHandle* handle,
-                                      uint32* size_in_bytes) override;
+                                      uint32_t* size_in_bytes) override;
 
   // Notification that a plugin-implemented object (PPP_Class) was created by
   // the plugin or deallocated by WebKit over IPC.
@@ -99,13 +99,13 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
 
  private:
   // VarTracker protected overrides.
-  int32 AddVarInternal(Var* var, AddVarRefMode mode) override;
+  int32_t AddVarInternal(Var* var, AddVarRefMode mode) override;
   void TrackedObjectGettingOneRef(VarMap::const_iterator iter) override;
   void ObjectGettingZeroRef(VarMap::iterator iter) override;
   bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) override;
-  ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) override;
+  ArrayBufferVar* CreateArrayBuffer(uint32_t size_in_bytes) override;
   ArrayBufferVar* CreateShmArrayBuffer(
-      uint32 size_in_bytes,
+      uint32_t size_in_bytes,
       base::SharedMemoryHandle handle) override;
 
  private:
@@ -114,7 +114,7 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
 
   // Represents a var as received from the host.
   struct HostVar {
-    HostVar(PluginDispatcher* d, int32 i);
+    HostVar(PluginDispatcher* d, int32_t i);
 
     bool operator<(const HostVar& other) const;
 
@@ -125,7 +125,7 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
     // The object ID that the host generated to identify the object. This is
     // unique only within that host: different hosts could give us different
     // objects with the same ID.
-    int32 host_object_id;
+    int32_t host_object_id;
   };
 
   struct PluginImplementedVar {
@@ -151,7 +151,7 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
     // that it implements that it previously released but got again through
     // indirect means would be extremely rare, and we only allow var scripting
     // in limited cases anyway.
-    int32 plugin_object_id;
+    int32_t plugin_object_id;
   };
 
   // Returns the existing var ID for the given object var, creating and
@@ -173,7 +173,7 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
       PluginDispatcher* dispatcher);
 
   // Maps host vars in the host to IDs in the plugin process.
-  typedef std::map<HostVar, int32> HostVarToPluginVarMap;
+  typedef std::map<HostVar, int32_t> HostVarToPluginVarMap;
   HostVarToPluginVarMap host_var_to_plugin_var_;
 
   // Maps "user data" for plugin implemented objects (PPP_Class) that are

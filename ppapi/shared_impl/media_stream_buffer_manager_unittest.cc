@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/media_stream_buffer_manager.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"

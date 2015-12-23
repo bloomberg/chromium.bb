@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_SERIALIZED_STRUCTS_H_
 #define PPAPI_PROXY_SERIALIZED_STRUCTS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/media_stream_buffer_manager.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"

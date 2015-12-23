@@ -4,6 +4,8 @@
 
 // From private/ppb_file_io_private.idl modified Tue Mar 26 15:29:46 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_file_io_private.h"

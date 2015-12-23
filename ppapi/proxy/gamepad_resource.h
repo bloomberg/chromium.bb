@@ -5,8 +5,8 @@
 #ifndef PPAPI_PROXY_GAMEPAD_RESOURCE_H_
 #define PPAPI_PROXY_GAMEPAD_RESOURCE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/ppb_gamepad.h"

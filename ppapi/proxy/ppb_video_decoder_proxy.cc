@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/proxy/enter_proxy.h"
@@ -230,9 +231,10 @@ void PPB_VideoDecoder_Proxy::OnMsgCreate(
           instance, graphics_context.host_resource(), profile));
 }
 
-void PPB_VideoDecoder_Proxy::OnMsgDecode(
-    const HostResource& decoder,
-    const HostResource& buffer, int32 id, uint32 size) {
+void PPB_VideoDecoder_Proxy::OnMsgDecode(const HostResource& decoder,
+                                         const HostResource& buffer,
+                                         int32_t id,
+                                         uint32_t size) {
   EnterHostFromHostResourceForceCallback<PPB_VideoDecoder_Dev_API> enter(
       decoder, callback_factory_,
       &PPB_VideoDecoder_Proxy::SendMsgEndOfBitstreamACKToPlugin, decoder, id);
@@ -254,7 +256,8 @@ void PPB_VideoDecoder_Proxy::OnMsgAssignPictureBuffers(
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgReusePictureBuffer(
-    const HostResource& decoder, int32 picture_buffer_id) {
+    const HostResource& decoder,
+    int32_t picture_buffer_id) {
   EnterHostFromHostResource<PPB_VideoDecoder_Dev_API> enter(decoder);
   if (enter.succeeded())
     enter.object()->ReusePictureBuffer(picture_buffer_id);
@@ -283,7 +286,9 @@ void PPB_VideoDecoder_Proxy::OnMsgDestroy(const HostResource& decoder) {
 }
 
 void PPB_VideoDecoder_Proxy::SendMsgEndOfBitstreamACKToPlugin(
-    int32_t result, const HostResource& decoder, int32 id) {
+    int32_t result,
+    const HostResource& decoder,
+    int32_t id) {
   dispatcher()->Send(new PpapiMsg_PPBVideoDecoder_EndOfBitstreamACK(
       API_ID_PPB_VIDEO_DECODER_DEV, decoder, id, result));
 }

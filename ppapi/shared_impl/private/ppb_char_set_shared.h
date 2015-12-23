@@ -5,7 +5,8 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_CHAR_SET_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_CHAR_SET_SHARED_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/trusted/ppb_char_set_trusted.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"

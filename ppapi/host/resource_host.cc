@@ -4,6 +4,8 @@
 
 #include "ppapi/host/resource_host.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/ppapi_host.h"

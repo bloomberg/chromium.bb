@@ -5,9 +5,11 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_MESSAGE_LOOP_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_MESSAGE_LOOP_SHARED_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 #include "ppapi/shared_impl/resource.h"
@@ -46,7 +48,7 @@ class PPAPI_SHARED_EXPORT MessageLoopShared
   //       proxy operations (e.g., MessageLoop::QuitClosure).
   virtual void PostClosure(const tracked_objects::Location& from_here,
                            const base::Closure& closure,
-                           int64 delay_ms) = 0;
+                           int64_t delay_ms) = 0;
 
   virtual base::SingleThreadTaskRunner* GetTaskRunner() = 0;
 

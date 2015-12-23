@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_FLASH_FILE_H_
 #define PPAPI_TESTS_TEST_FLASH_FILE_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "ppapi/tests/test_case.h"

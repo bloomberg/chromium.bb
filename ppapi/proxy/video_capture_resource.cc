@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/video_capture_resource.h"
 
+#include <stddef.h>
+
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
 #include "ppapi/proxy/plugin_dispatcher.h"

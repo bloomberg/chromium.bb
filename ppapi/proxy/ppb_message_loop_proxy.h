@@ -5,8 +5,10 @@
 #ifndef PPAPI_PROXY_PPB_MESSAGE_LOOP_PROXY_H_
 #define PPAPI_PROXY_PPB_MESSAGE_LOOP_PROXY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -56,7 +58,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   struct TaskInfo {
     tracked_objects::Location from_here;
     base::Closure closure;
-    int64 delay_ms;
+    int64_t delay_ms;
   };
 
   // Returns true if the object is associated with the current thread.
@@ -71,7 +73,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
   //       proxy operations (e.g., MessageLoop::QuitClosure).
   void PostClosure(const tracked_objects::Location& from_here,
                    const base::Closure& closure,
-                   int64 delay_ms) override;
+                   int64_t delay_ms) override;
   base::SingleThreadTaskRunner* GetTaskRunner() override;
   bool CurrentlyHandlingBlockingMessage() override;
 

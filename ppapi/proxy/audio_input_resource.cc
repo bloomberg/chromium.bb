@@ -255,7 +255,7 @@ void AudioInputResource::Run() {
 
   // This is a constantly increasing counter that is used to verify on the
   // browser side that buffers are in sync.
-  uint32 buffer_index = 0;
+  uint32_t buffer_index = 0;
 
   while (true) {
     int pending_data = 0;

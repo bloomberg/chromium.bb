@@ -5,6 +5,8 @@
 #ifndef PPAPI_C_PRIVATE_PPP_PDF_H_
 #define PPAPI_C_PRIVATE_PPP_PDF_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/pp_print_settings_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"

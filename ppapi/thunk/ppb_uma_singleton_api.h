@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_UMA_PRIVATE_API_H_
 #define PPAPI_THUNK_PPB_UMA_PRIVATE_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/shared_impl/singleton_resource_id.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 

@@ -5,9 +5,12 @@
 #ifndef PPAPI_SHARED_IMPL_VAR_H_
 #define PPAPI_SHARED_IMPL_VAR_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_var.h"
@@ -54,7 +57,7 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
   //
   // Contrast to GetOrCreateVarID which creates the ID and a ref on behalf of
   // the plugin.
-  int32 GetExistingVarID() const;
+  int32_t GetExistingVarID() const;
 
  protected:
   friend class base::RefCounted<Var>;
@@ -69,18 +72,18 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
   //
   // This function will take a reference to the var that will be passed to the
   // caller.
-  int32 GetOrCreateVarID();
+  int32_t GetOrCreateVarID();
 
   // Sets the internal object ID. This assumes that the ID hasn't been set
   // before. This is used in cases where the ID is generated externally.
-  void AssignVarID(int32 id);
+  void AssignVarID(int32_t id);
 
   // Reset the assigned object ID.
   void ResetVarID() { var_id_ = 0; }
 
  private:
   // This will be 0 if no ID has been assigned (this happens lazily).
-  int32 var_id_;
+  int32_t var_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Var);
 };
@@ -100,7 +103,7 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
 class PPAPI_SHARED_EXPORT StringVar : public Var {
  public:
   explicit StringVar(const std::string& str);
-  StringVar(const char* str, uint32 len);
+  StringVar(const char* str, uint32_t len);
   ~StringVar() override;
 
   const std::string& value() const { return value_; }
@@ -122,7 +125,7 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
   // The return value will have a reference count of 1. Internally, this will
   // create a StringVar and return the reference to it in the var.
   static PP_Var StringToPPVar(const std::string& str);
-  static PP_Var StringToPPVar(const char* str, uint32 len);
+  static PP_Var StringToPPVar(const char* str, uint32_t len);
 
   // Same as StringToPPVar but avoids a copy by destructively swapping the
   // given string into the newly created StringVar. The string must already be
@@ -162,7 +165,7 @@ class PPAPI_SHARED_EXPORT ArrayBufferVar : public Var {
 
   virtual void* Map() = 0;
   virtual void Unmap() = 0;
-  virtual uint32 ByteLength() = 0;
+  virtual uint32_t ByteLength() = 0;
 
   // Creates a new shared memory region, and copies the data in the
   // ArrayBufferVar into it. On the plugin side, host_shm_handle_id will be set

@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_file_system.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "ppapi/c/pp_errors.h"

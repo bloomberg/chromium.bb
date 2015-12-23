@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/url_response_info_resource.h"
 
+#include <stdint.h>
+
 #include "ppapi/proxy/file_ref_resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"

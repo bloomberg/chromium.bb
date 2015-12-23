@@ -36,14 +36,13 @@ SerializedHandle::SerializedHandle(Type type_param)
 }
 
 SerializedHandle::SerializedHandle(const base::SharedMemoryHandle& handle,
-                                   uint32 size)
+                                   uint32_t size)
     : type_(SHARED_MEMORY),
       shm_handle_(handle),
       size_(size),
       descriptor_(IPC::InvalidPlatformFileForTransit()),
       open_flags_(0),
-      file_io_(0) {
-}
+      file_io_(0) {}
 
 SerializedHandle::SerializedHandle(
     Type type,
@@ -113,7 +112,7 @@ bool SerializedHandle::ReadHeader(base::PickleIterator* iter, Header* hdr) {
   bool valid_type = false;
   switch (type) {
     case SHARED_MEMORY: {
-      uint32 size = 0;
+      uint32_t size = 0;
       if (!iter->ReadUInt32(&size))
         return false;
       hdr->size = size;

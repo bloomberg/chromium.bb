@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_WEBSOCKET_H_
 #define PPAPI_CPP_WEBSOCKET_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/cpp/resource.h"
 

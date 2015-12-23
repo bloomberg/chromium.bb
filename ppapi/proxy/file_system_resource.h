@@ -5,10 +5,13 @@
 #ifndef PPAPI_PROXY_FILE_SYSTEM_RESOURCE_H_
 #define PPAPI_PROXY_FILE_SYSTEM_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_resource.h"

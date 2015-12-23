@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_FLASH_FULLSCREEN_FOR_BROWSER_UI_H_
 #define PPAPI_TESTS_TEST_FLASH_FULLSCREEN_FOR_BROWSER_UI_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/cpp/compositor.h"

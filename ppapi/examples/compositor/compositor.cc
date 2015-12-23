@@ -34,6 +34,8 @@
 // include-guards), make sure this is the last file #include'd in this file.
 #undef NDEBUG
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 
 // When compiling natively on Windows, PostMessage can be #define-d to
 // something else.

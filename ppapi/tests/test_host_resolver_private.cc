@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_host_resolver_private.h"
 
+#include <stddef.h>
+
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/private/host_resolver_private.h"

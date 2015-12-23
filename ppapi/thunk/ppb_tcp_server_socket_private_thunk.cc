@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/shared_impl/tracked_callback.h"

@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_TRUETYPE_FONT_API_H_
 #define PPAPI_THUNK_PPB_TRUETYPE_FONT_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"

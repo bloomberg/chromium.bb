@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,13 +13,13 @@
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_opengles2.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/device_ref_dev.h"
-#include "ppapi/cpp/dev/video_capture_dev.h"
 #include "ppapi/cpp/dev/video_capture_client_dev.h"
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/graphics_3d_client.h"
+#include "ppapi/cpp/dev/video_capture_dev.h"
 #include "ppapi/cpp/graphics_3d.h"
+#include "ppapi/cpp/graphics_3d_client.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"

@@ -5,9 +5,12 @@
 #ifndef PPAPI_PROXY_PPP_PRINTING_PROXY_H_
 #define PPAPI_PROXY_PPP_PRINTING_PROXY_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/proxy/interface_proxy.h"
 

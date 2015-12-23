@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/serialized_flash_menu.h"
 
+#include <stdint.h>
+
 #include "ipc/ipc_message.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/proxy/ppapi_param_traits.h"

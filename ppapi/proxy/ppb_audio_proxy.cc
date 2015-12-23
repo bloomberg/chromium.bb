@@ -5,7 +5,9 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/simple_thread.h"
+#include "build/build_config.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -18,8 +20,8 @@
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/thunk/ppb_audio_config_api.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_audio_config_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 

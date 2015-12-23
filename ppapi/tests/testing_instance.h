@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TESTING_INSTANCE_H_
 #define PPAPI_TESTS_TESTING_INSTANCE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/utility/completion_callback_factory.h"

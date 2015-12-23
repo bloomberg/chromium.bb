@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppp_find_proxy.h"
 
+#include "build/build_config.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"

@@ -6,6 +6,9 @@
 
 #include "ppapi/tests/test_media_stream_video_track.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"

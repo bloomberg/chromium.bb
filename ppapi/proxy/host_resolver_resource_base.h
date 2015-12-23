@@ -5,11 +5,13 @@
 #ifndef PPAPI_PROXY_HOST_RESOLVER_RESOURCE_BASE_H_
 #define PPAPI_PROXY_HOST_RESOLVER_RESOURCE_BASE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/proxy/plugin_resource.h"

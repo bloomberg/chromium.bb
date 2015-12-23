@@ -5,10 +5,12 @@
 #ifndef PPAPI_PROXY_RESOURCE_REPLY_THREAD_REGISTRAR_H_
 #define PPAPI_PROXY_RESOURCE_REPLY_THREAD_REGISTRAR_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "ppapi/c/pp_resource.h"

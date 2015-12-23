@@ -5,10 +5,12 @@
 #ifndef PPAPI_PROXY_NETWORK_LIST_RESOURCE_H_
 #define PPAPI_PROXY_NETWORK_LIST_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"

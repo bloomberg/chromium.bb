@@ -233,7 +233,7 @@ void ResourceTracker::LastPluginRefWasDeleted(Resource* object) {
   object->NotifyLastPluginRefWasDeleted();
 }
 
-int32 ResourceTracker::GetNextResourceValue() {
+int32_t ResourceTracker::GetNextResourceValue() {
 #if defined(NDEBUG)
   return ++last_resource_value_;
 #else

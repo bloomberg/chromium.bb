@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_OUTPUT_PROTECTION_API_H_
 #define PPAPI_THUNK_OUTPUT_PROTECTION_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_output_protection_private.h"
 
 namespace ppapi {

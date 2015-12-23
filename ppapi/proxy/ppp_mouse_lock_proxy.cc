@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppp_mouse_lock_proxy.h"
 
+#include "build/build_config.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"

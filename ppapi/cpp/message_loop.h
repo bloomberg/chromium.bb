@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_MESSAGE_LOOP_H_
 #define PPAPI_CPP_MESSAGE_LOOP_H_
 
+#include <stdint.h>
+
 #include "ppapi/cpp/resource.h"
 
 /// @file

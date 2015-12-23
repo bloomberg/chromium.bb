@@ -5,7 +5,8 @@
 #ifndef PPAPI_SHARED_IMPL_PPAPI_PERMISSIONS_H_
 #define PPAPI_SHARED_IMPL_PPAPI_PERMISSIONS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
@@ -53,7 +54,7 @@ class PPAPI_SHARED_EXPORT PpapiPermissions {
   PpapiPermissions();
 
   // Initializes with the given permissions bits set.
-  explicit PpapiPermissions(uint32 perms);
+  explicit PpapiPermissions(uint32_t perms);
 
   ~PpapiPermissions();
 
@@ -64,15 +65,15 @@ class PPAPI_SHARED_EXPORT PpapiPermissions {
   // Returns the effective permissions given the "base" permissions granted
   // to the given plugin and the current command line flags, which may enable
   // more features.
-  static PpapiPermissions GetForCommandLine(uint32 base_perms);
+  static PpapiPermissions GetForCommandLine(uint32_t base_perms);
 
   bool HasPermission(Permission perm) const;
 
   // Returns the internal permission bits. Use for serialization only.
-  uint32 GetBits() const { return permissions_; }
+  uint32_t GetBits() const { return permissions_; }
 
  private:
-  uint32 permissions_;
+  uint32_t permissions_;
 
   // Note: Copy & assign supported.
 };

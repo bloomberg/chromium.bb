@@ -5,9 +5,11 @@
 #ifndef PPAPI_THUNK_ENTER_H_
 #define PPAPI_THUNK_ENTER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"

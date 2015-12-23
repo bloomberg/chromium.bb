@@ -5,8 +5,10 @@
 #ifndef PPAPI_PROXY_VIDEO_FRAME_RESOURCE_H_
 #define PPAPI_PROXY_VIDEO_FRAME_RESOURCE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
 #include "ppapi/shared_impl/resource.h"

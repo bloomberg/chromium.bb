@@ -7,9 +7,11 @@
 // plugin implementors can export their derivation of Module by just
 // linking to this implementation.
 
+#include <stdint.h>
+
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppp.h"
-#include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_embedder.h"
 

@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/device_enumeration_resource_helper.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

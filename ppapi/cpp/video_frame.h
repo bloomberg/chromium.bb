@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_VIDEO_FRAME_H_
 #define PPAPI_CPP_VIDEO_FRAME_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/size.h"

@@ -5,11 +5,13 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_INPUT_EVENT_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_INPUT_EVENT_SHARED_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_input_event_api.h"

@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_flash_drm.h"
 
+#include <stdint.h>
+
 #if defined(PPAPI_OS_WIN)
 #include <Windows.h>
 #endif

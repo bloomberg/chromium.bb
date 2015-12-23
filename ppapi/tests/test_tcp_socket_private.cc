@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_tcp_socket_private.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include <new>

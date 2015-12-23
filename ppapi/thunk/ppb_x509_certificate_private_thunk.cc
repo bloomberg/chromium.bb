@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_x509_certificate_private_api.h"

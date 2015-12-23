@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/var.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/logging.h"
@@ -90,7 +92,7 @@ DictionaryVar* Var::AsDictionaryVar() { return NULL; }
 ResourceVar* Var::AsResourceVar() { return NULL; }
 
 PP_Var Var::GetPPVar() {
-  int32 id = GetOrCreateVarID();
+  int32_t id = GetOrCreateVarID();
   if (!id)
     return PP_MakeNull();
 
@@ -101,13 +103,15 @@ PP_Var Var::GetPPVar() {
   return result;
 }
 
-int32 Var::GetExistingVarID() const { return var_id_; }
+int32_t Var::GetExistingVarID() const {
+  return var_id_;
+}
 
 Var::Var() : var_id_(0) {}
 
 Var::~Var() {}
 
-int32 Var::GetOrCreateVarID() {
+int32_t Var::GetOrCreateVarID() {
   VarTracker* tracker = PpapiGlobals::Get()->GetVarTracker();
   if (var_id_) {
     if (!tracker->AddRefVar(var_id_))
@@ -120,7 +124,7 @@ int32 Var::GetOrCreateVarID() {
   return var_id_;
 }
 
-void Var::AssignVarID(int32 id) {
+void Var::AssignVarID(int32_t id) {
   DCHECK(!var_id_);  // Must not have already been generated.
   var_id_ = id;
 }
@@ -131,7 +135,7 @@ StringVar::StringVar() {}
 
 StringVar::StringVar(const std::string& str) : value_(str) {}
 
-StringVar::StringVar(const char* str, uint32 len) : value_(str, len) {}
+StringVar::StringVar(const char* str, uint32_t len) : value_(str, len) {}
 
 StringVar::~StringVar() {}
 
@@ -141,11 +145,11 @@ PP_VarType StringVar::GetType() const { return PP_VARTYPE_STRING; }
 
 // static
 PP_Var StringVar::StringToPPVar(const std::string& var) {
-  return StringToPPVar(var.c_str(), static_cast<uint32>(var.size()));
+  return StringToPPVar(var.c_str(), static_cast<uint32_t>(var.size()));
 }
 
 // static
-PP_Var StringVar::StringToPPVar(const char* data, uint32 len) {
+PP_Var StringVar::StringToPPVar(const char* data, uint32_t len) {
   scoped_refptr<StringVar> str(new StringVar(data, len));
   if (!str.get() || !base::IsStringUTF8(str->value()))
     return PP_MakeNull();

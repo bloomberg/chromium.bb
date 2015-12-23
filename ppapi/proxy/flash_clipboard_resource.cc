@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/flash_clipboard_resource.h"
 
+#include <stddef.h>
+
 #include "base/numerics/safe_conversions.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"

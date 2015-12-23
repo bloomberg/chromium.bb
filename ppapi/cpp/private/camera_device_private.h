@@ -6,6 +6,8 @@
 #ifndef PPAPI_CPP_PRIVATE_CAMERA_DEVICE_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_CAMERA_DEVICE_PRIVATE_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_camera_device_private.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/var.h"

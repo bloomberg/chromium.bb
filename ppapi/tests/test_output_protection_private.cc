@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_output_protection_private.h"
 
+#include <stdint.h>
+
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(OutputProtectionPrivate);

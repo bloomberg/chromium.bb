@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PROXY_COMPLETION_CALLBACK_FACTORY_H_
 #define PPAPI_PROXY_PROXY_COMPLETION_CALLBACK_FACTORY_H_
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "ppapi/cpp/completion_callback.h"

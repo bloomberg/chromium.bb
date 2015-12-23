@@ -6,6 +6,7 @@
 #define PPAPI_SHARED_IMPL_PPB_VIEW_SHARED_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/resource.h"

@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 
+#include <stddef.h>
+
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 

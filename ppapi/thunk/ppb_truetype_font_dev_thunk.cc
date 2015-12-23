@@ -4,6 +4,8 @@
 
 // From dev/ppb_truetype_font_dev.idl modified Fri Nov  1 16:12:12 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"

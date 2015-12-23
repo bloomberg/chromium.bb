@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_CHAR_SET_H_
 #define PPAPI_TESTS_TEST_CHAR_SET_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

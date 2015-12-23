@@ -5,7 +5,10 @@
 #ifndef PPAPI_PROXY_PPP_TEXT_INPUT_PROXY_H_
 #define PPAPI_PROXY_PPP_TEXT_INPUT_PROXY_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"

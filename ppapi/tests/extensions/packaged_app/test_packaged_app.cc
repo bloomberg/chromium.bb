@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <pthread.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include <sstream>

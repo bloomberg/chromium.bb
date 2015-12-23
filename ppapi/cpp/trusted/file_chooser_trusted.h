@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_TRUSTED_FILE_CHOOSER_TRUSTED_H_
 #define PPAPI_CPP_TRUSTED_FILE_CHOOSER_TRUSTED_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/cpp/dev/file_chooser_dev.h"

@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/var.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 

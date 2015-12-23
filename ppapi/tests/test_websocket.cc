@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_websocket.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 

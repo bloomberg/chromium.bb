@@ -5,8 +5,10 @@
 #ifndef PPAPI_SHARED_IMPL_PPP_INSTANCE_COMBINED_H_
 #define PPAPI_SHARED_IMPL_PPP_INSTANCE_COMBINED_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 

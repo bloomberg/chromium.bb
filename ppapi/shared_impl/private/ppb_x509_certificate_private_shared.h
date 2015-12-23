@@ -5,8 +5,11 @@
 #ifndef PPAPI_SHARED_IMPL_PRIVATE_PPB_X509_CERTIFICATE_PRIVATE_IMPL_H_
 #define PPAPI_SHARED_IMPL_PRIVATE_PPB_X509_CERTIFICATE_PRIVATE_IMPL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "ppapi/c/private/ppb_x509_certificate_private.h"

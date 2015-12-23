@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <math.h>
+#include <stdint.h>
 
 #include <algorithm>
 

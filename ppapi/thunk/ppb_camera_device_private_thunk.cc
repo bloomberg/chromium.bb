@@ -4,6 +4,8 @@
 
 // From private/ppb_camera_device_private.idl modified Wed Feb 18 16:44:52 2015.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_camera_device_private.h"

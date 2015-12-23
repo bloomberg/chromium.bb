@@ -5,6 +5,8 @@
 // From private/ppb_display_color_profile_private.idl modified Mon Apr  7
 // 08:56:43 2014.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_display_color_profile_private.h"

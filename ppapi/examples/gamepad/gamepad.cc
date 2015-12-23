@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <algorithm>
 #include <cmath>
-#include <stdarg.h>
-#include <stdio.h>
 
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_input_event.h"

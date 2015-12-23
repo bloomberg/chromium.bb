@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_FLASH_MENU_API_H_
 #define PPAPI_THUNK_PPB_FLASH_MENU_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 

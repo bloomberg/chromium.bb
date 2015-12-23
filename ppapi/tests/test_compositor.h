@@ -5,6 +5,8 @@
 #ifndef PAPPI_TESTS_TEST_COMPOSITOR_H_
 #define PAPPI_TESTS_TEST_COMPOSITOR_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 

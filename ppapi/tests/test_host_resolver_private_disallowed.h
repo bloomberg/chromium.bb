@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_HOST_RESOLVER_PRIVATE_DISALLOWED_H_
 #define PPAPI_TESTS_TEST_HOST_RESOLVER_PRIVATE_DISALLOWED_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/cpp/private/host_resolver_private.h"

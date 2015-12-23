@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_MEDIA_STREAM_AUDIO_TRACK_API_H_
 #define PPAPI_THUNK_PPB_MEDIA_STREAM_AUDIO_TRACK_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_media_stream_audio_track.h"
 
 namespace ppapi {

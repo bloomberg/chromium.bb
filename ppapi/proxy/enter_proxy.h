@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_ENTER_PROXY_H_
 #define PPAPI_PROXY_ENTER_PROXY_H_
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/host_dispatcher.h"

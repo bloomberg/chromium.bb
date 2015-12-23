@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PROXY_ARRAY_OUTPUT_H_
 #define PPAPI_PROXY_PROXY_ARRAY_OUTPUT_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"

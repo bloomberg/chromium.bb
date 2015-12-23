@@ -4,6 +4,8 @@
 
 // From dev/ppb_printing_dev.idl modified Tue May  7 14:43:00 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"

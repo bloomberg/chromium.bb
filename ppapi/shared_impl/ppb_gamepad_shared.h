@@ -5,6 +5,8 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_GAMEPAD_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_GAMEPAD_SHARED_H_
 
+#include <stddef.h>
+
 #include "base/atomicops.h"
 #include "base/strings/string16.h"
 #include "ppapi/c/ppb_gamepad.h"

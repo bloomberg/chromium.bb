@@ -4,12 +4,13 @@
 
 #include "ppapi/tests/test_browser_font.h"
 
+#include <stdint.h>
 #include <string.h>
 
-#include "ppapi/tests/test_utils.h"
-#include "ppapi/tests/testing_instance.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/trusted/browser_font_trusted.h"
+#include "ppapi/tests/test_utils.h"
+#include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(BrowserFont);
 

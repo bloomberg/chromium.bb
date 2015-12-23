@@ -7,6 +7,7 @@
 // C++ wrappers.
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"

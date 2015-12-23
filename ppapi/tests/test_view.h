@@ -5,6 +5,8 @@
 #ifndef PPAPI_TEST_TEST_VIEW_H_
 #define PPAPI_TEST_TEST_VIEW_H_
 
+#include <stdint.h>
+
 #include "ppapi/cpp/view.h"
 #include "ppapi/tests/test_case.h"
 

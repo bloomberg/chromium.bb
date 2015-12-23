@@ -546,13 +546,13 @@ PP_Var PPB_Instance_Proxy::GetPluginReferrerURL(
 }
 
 void PPB_Instance_Proxy::PromiseResolved(PP_Instance instance,
-                                         uint32 promise_id) {
+                                         uint32_t promise_id) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_PromiseResolved(
       API_ID_PPB_INSTANCE, instance, promise_id));
 }
 
 void PPB_Instance_Proxy::PromiseResolvedWithSession(PP_Instance instance,
-                                                    uint32 promise_id,
+                                                    uint32_t promise_id,
                                                     PP_Var session_id_var) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_PromiseResolvedWithSession(
       API_ID_PPB_INSTANCE, instance, promise_id,
@@ -560,9 +560,9 @@ void PPB_Instance_Proxy::PromiseResolvedWithSession(PP_Instance instance,
 }
 
 void PPB_Instance_Proxy::PromiseRejected(PP_Instance instance,
-                                         uint32 promise_id,
+                                         uint32_t promise_id,
                                          PP_CdmExceptionCode exception_code,
-                                         uint32 system_code,
+                                         uint32_t system_code,
                                          PP_Var error_description_var) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_PromiseRejected(
       API_ID_PPB_INSTANCE,
@@ -634,7 +634,7 @@ void PPB_Instance_Proxy::SessionClosed(PP_Instance instance,
 void PPB_Instance_Proxy::LegacySessionError(PP_Instance instance,
                                             PP_Var session_id_var,
                                             PP_CdmExceptionCode exception_code,
-                                            uint32 system_code,
+                                            uint32_t system_code,
                                             PP_Var error_description_var) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_LegacySessionError(
       API_ID_PPB_INSTANCE, instance,

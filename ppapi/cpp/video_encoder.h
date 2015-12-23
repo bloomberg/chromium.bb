@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_VIDEO_ENCODER_H_
 #define PPAPI_CPP_VIDEO_ENCODER_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/cpp/completion_callback.h"

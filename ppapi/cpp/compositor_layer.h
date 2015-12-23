@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_COMPOSITOR_LAYER_H_
 #define PPAPI_CPP_COMPOSITOR_LAYER_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_compositor_layer.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/image_data.h"

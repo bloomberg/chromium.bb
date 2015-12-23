@@ -5,7 +5,10 @@
 #ifndef PPAPI_PROXY_OUTPUT_PROTECTION_RESOURCE_H_
 #define PPAPI_PROXY_OUTPUT_PROTECTION_RESOURCE_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/c/private/ppb_output_protection_private.h"
 #include "ppapi/proxy/device_enumeration_resource_helper.h"
 #include "ppapi/proxy/plugin_resource.h"

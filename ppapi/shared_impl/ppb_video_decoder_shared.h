@@ -5,11 +5,13 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_VIDEO_DECODER_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_VIDEO_DECODER_SHARED_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -42,12 +44,12 @@ class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
  protected:
   bool SetFlushCallback(scoped_refptr<TrackedCallback> callback);
   bool SetResetCallback(scoped_refptr<TrackedCallback> callback);
-  bool SetBitstreamBufferCallback(int32 bitstream_buffer_id,
+  bool SetBitstreamBufferCallback(int32_t bitstream_buffer_id,
                                   scoped_refptr<TrackedCallback> callback);
 
-  void RunFlushCallback(int32 result);
-  void RunResetCallback(int32 result);
-  void RunBitstreamBufferCallback(int32 bitstream_buffer_id, int32 result);
+  void RunFlushCallback(int32_t result);
+  void RunResetCallback(int32_t result);
+  void RunBitstreamBufferCallback(int32_t bitstream_buffer_id, int32_t result);
 
   // Tell command buffer to process all commands it has received so far.
   void FlushCommandBuffer();
@@ -59,7 +61,7 @@ class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
  private:
   // Key: bitstream_buffer_id, value: callback to run when bitstream decode is
   // done.
-  typedef std::map<int32, scoped_refptr<TrackedCallback> > CallbackById;
+  typedef std::map<int32_t, scoped_refptr<TrackedCallback>> CallbackById;
 
   scoped_refptr<TrackedCallback> flush_callback_;
   scoped_refptr<TrackedCallback> reset_callback_;

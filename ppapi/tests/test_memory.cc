@@ -4,6 +4,9 @@
 
 #include "ppapi/tests/test_memory.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"

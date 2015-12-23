@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_PPB_VIDEO_DECODER_PROXY_H_
 #define PPAPI_PROXY_PPB_VIDEO_DECODER_PROXY_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
@@ -38,23 +41,24 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
                    const ppapi::HostResource& graphics_context,
                    PP_VideoDecoder_Profile profile,
                    ppapi::HostResource* result);
-  void OnMsgDecode(
-      const ppapi::HostResource& decoder,
-      const ppapi::HostResource& buffer, int32 id, uint32 size);
+  void OnMsgDecode(const ppapi::HostResource& decoder,
+                   const ppapi::HostResource& buffer,
+                   int32_t id,
+                   uint32_t size);
   void OnMsgAssignPictureBuffers(
       const ppapi::HostResource& decoder,
       const std::vector<PP_PictureBuffer_Dev>& buffers);
-  void OnMsgReusePictureBuffer(
-      const ppapi::HostResource& decoder,
-      int32 picture_buffer_id);
+  void OnMsgReusePictureBuffer(const ppapi::HostResource& decoder,
+                               int32_t picture_buffer_id);
   void OnMsgFlush(const ppapi::HostResource& decoder);
   void OnMsgReset(const ppapi::HostResource& decoder);
   void OnMsgDestroy(const ppapi::HostResource& decoder);
 
   // Send a message from the renderer process to the plugin process to tell it
   // to run its callback.
-  void SendMsgEndOfBitstreamACKToPlugin(
-      int32_t result, const ppapi::HostResource& decoder, int32 id);
+  void SendMsgEndOfBitstreamACKToPlugin(int32_t result,
+                                        const ppapi::HostResource& decoder,
+                                        int32_t id);
   void SendMsgFlushACKToPlugin(
       int32_t result, const ppapi::HostResource& decoder);
   void SendMsgResetACKToPlugin(

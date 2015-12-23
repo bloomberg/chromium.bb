@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_post_message.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <algorithm>
 #include <map>

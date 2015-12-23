@@ -5,7 +5,7 @@
 #ifndef PPAPI_HOST_RESOURCE_MESSAGE_HANDLER_H_
 #define PPAPI_HOST_RESOURCE_MESSAGE_HANDLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/host/ppapi_host_export.h"
 

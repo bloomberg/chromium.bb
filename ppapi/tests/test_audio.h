@@ -5,6 +5,8 @@
 #ifndef PAPPI_TESTS_TEST_AUDIO_H_
 #define PAPPI_TESTS_TEST_AUDIO_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/ppb_audio.h"

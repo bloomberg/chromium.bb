@@ -4,6 +4,7 @@
 
 // From ppb_url_loader.idl modified Tue May  7 14:43:00 2013.
 
+#include <stdint.h>
 #include <string.h>
 
 #include "ppapi/c/pp_completion_callback.h"

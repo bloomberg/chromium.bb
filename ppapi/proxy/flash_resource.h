@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_FLASH_RESOURCE_H_
 #define PPAPI_PROXY_FLASH_RESOURCE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_flash.h"

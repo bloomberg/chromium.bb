@@ -4,6 +4,9 @@
 
 #include "ppapi/shared_impl/test_utils.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 
 #include "base/containers/hash_tables.h"

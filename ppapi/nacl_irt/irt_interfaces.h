@@ -5,6 +5,7 @@
 #ifndef PPAPI_NACL_IRT_IRT_INTERFACES_H_
 #define PPAPI_NACL_IRT_IRT_INTERFACES_H_
 
+#include <stddef.h>
 #include <stdlib.h>
 
 extern const struct nacl_irt_ppapihook nacl_irt_ppapihook;

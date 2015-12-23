@@ -11,16 +11,17 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/tracked_objects.h"
 #include "ipc/message_filter.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppp.h"
-#include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/shared_impl/api_id.h"
 
 namespace IPC {

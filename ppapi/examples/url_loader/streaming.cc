@@ -9,6 +9,8 @@
 //
 // The other mode is to stream to a file instead. See stream_to_file.cc
 
+#include <stdint.h>
+
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/url_loader.h"

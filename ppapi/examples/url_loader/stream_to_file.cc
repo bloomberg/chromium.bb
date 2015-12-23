@@ -9,6 +9,8 @@
 // This example uses PostMessage between the plugin and the url_loader.html
 // page in this directory to start the load and to communicate the result.
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"

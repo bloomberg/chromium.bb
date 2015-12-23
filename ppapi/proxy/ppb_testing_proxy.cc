@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/ppb_testing_proxy.h"
 
+#include <stddef.h>
+
 #include "base/message_loop/message_loop.h"
 #include "ppapi/c/private/ppb_testing_private.h"
 #include "ppapi/proxy/enter_proxy.h"

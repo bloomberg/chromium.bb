@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 
 namespace ppapi {
 

@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/proxy/enter_proxy.h"

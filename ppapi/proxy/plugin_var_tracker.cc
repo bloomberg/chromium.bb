@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/plugin_var_tracker.h"
 
+#include <stddef.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "ipc/ipc_message.h"
@@ -37,10 +39,8 @@ Connection GetConnectionForInstance(PP_Instance instance) {
 
 }  // namespace
 
-PluginVarTracker::HostVar::HostVar(PluginDispatcher* d, int32 i)
-    : dispatcher(d),
-      host_object_id(i) {
-}
+PluginVarTracker::HostVar::HostVar(PluginDispatcher* d, int32_t i)
+    : dispatcher(d), host_object_id(i) {}
 
 bool PluginVarTracker::HostVar::operator<(const HostVar& other) const {
   if (dispatcher < other.dispatcher)
@@ -159,7 +159,7 @@ void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
 
   // Convert the host object to a normal var valid in the plugin.
   HostVarToPluginVarMap::iterator found = host_var_to_plugin_var_.find(
-      HostVar(dispatcher, static_cast<int32>(host_object.value.as_id)));
+      HostVar(dispatcher, static_cast<int32_t>(host_object.value.as_id)));
   if (found == host_var_to_plugin_var_.end()) {
     NOTREACHED();
     return;
@@ -303,12 +303,12 @@ void PluginVarTracker::DidDeleteDispatcher(PluginDispatcher* dispatcher) {
   }
 }
 
-ArrayBufferVar* PluginVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
+ArrayBufferVar* PluginVarTracker::CreateArrayBuffer(uint32_t size_in_bytes) {
   return new PluginArrayBufferVar(size_in_bytes);
 }
 
 ArrayBufferVar* PluginVarTracker::CreateShmArrayBuffer(
-    uint32 size_in_bytes,
+    uint32_t size_in_bytes,
     base::SharedMemoryHandle handle) {
   return new PluginArrayBufferVar(size_in_bytes, handle);
 }
@@ -353,9 +353,9 @@ bool PluginVarTracker::ValidatePluginObjectCall(
   return found->second.ppp_class == ppp_class;
 }
 
-int32 PluginVarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {
+int32_t PluginVarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {
   // Normal adding.
-  int32 new_id = VarTracker::AddVarInternal(var, mode);
+  int32_t new_id = VarTracker::AddVarInternal(var, mode);
 
   // Need to add proxy objects to the host var map.
   ProxyObjectVar* proxy_object = var->AsProxyObjectVar();
@@ -443,7 +443,7 @@ bool PluginVarTracker::DeleteObjectInfoIfNecessary(VarMap::iterator iter) {
 PP_Var PluginVarTracker::GetOrCreateObjectVarID(ProxyObjectVar* object) {
   // We can't use object->GetPPVar() because we don't want to affect the
   // refcount, so we have to add everything manually here.
-  int32 var_id = object->GetExistingVarID();
+  int32_t var_id = object->GetExistingVarID();
   if (!var_id) {
     var_id = AddVarInternal(object, ADD_VAR_CREATE_WITH_NO_REFERENCE);
     object->AssignVarID(var_id);
@@ -481,7 +481,7 @@ scoped_refptr<ProxyObjectVar> PluginVarTracker::FindOrMakePluginVarFromHostVar(
   if (found == host_var_to_plugin_var_.end()) {
     // Create a new object.
     return scoped_refptr<ProxyObjectVar>(
-        new ProxyObjectVar(dispatcher, static_cast<int32>(var.value.as_id)));
+        new ProxyObjectVar(dispatcher, static_cast<int32_t>(var.value.as_id)));
   }
 
   // Have this host var, look up the object.
@@ -498,7 +498,7 @@ scoped_refptr<ProxyObjectVar> PluginVarTracker::FindOrMakePluginVarFromHostVar(
 
 int PluginVarTracker::TrackSharedMemoryHandle(PP_Instance instance,
                                               base::SharedMemoryHandle handle,
-                                              uint32 size_in_bytes) {
+                                              uint32_t size_in_bytes) {
   NOTREACHED();
   return -1;
 }
@@ -507,7 +507,7 @@ bool PluginVarTracker::StopTrackingSharedMemoryHandle(
     int id,
     PP_Instance instance,
     base::SharedMemoryHandle* handle,
-    uint32* size_in_bytes) {
+    uint32_t* size_in_bytes) {
   NOTREACHED();
   return false;
 }

@@ -4,6 +4,9 @@
 
 #include "ppapi/tests/test_net_address.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cstring>
 
 #include "ppapi/cpp/net_address.h"

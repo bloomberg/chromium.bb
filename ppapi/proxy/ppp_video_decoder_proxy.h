@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_PPP_VIDEO_DECODER_PROXY_H_
 #define PPAPI_PROXY_PPP_VIDEO_DECODER_PROXY_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"

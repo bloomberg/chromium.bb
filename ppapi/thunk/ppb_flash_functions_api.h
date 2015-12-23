@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_FLASH_FUNCTIONS_API_H_
 #define PPAPI_THUNK_PPB_FLASH_FUNCTIONS_API_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/private/ppb_flash.h"

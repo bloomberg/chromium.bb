@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_image_data.h"
 
+#include <stdint.h>
+
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"

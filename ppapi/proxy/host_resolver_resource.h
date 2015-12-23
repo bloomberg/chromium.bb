@@ -5,8 +5,10 @@
 #ifndef PPAPI_PROXY_HOST_RESOLVER_RESOURCE_H_
 #define PPAPI_PROXY_HOST_RESOLVER_RESOURCE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/proxy/host_resolver_resource_base.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/thunk/ppb_host_resolver_api.h"

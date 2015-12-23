@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_PRINTING_H_
 #define PPAPI_TESTS_TEST_PRINTING_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/tests/test_case.h"

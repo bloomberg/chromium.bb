@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_POINT_H_
 #define PPAPI_CPP_POINT_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_point.h"
 
 /// @file

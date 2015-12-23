@@ -4,6 +4,8 @@
 
 // From ppb_host_resolver.idl modified Mon Jun 24 15:10:54 2013.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_host_resolver.h"

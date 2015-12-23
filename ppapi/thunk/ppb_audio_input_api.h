@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_AUDIO_INPUT_API_H_
 #define PPAPI_THUNK_AUDIO_INPUT_API_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"

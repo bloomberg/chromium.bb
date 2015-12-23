@@ -4,6 +4,8 @@
 
 // From ppb_compositor_layer.idl modified Thu Jan 29 16:28:15 2015.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_compositor_layer.h"

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_timeouts.h"
@@ -178,7 +180,7 @@ TEST_F(PPP_Instance_Private_ProxyTest, PPPInstancePrivate) {
   EXPECT_EQ(1, plugin().var_tracker().GetRefCountForObject(instance_obj));
   // Check the host-side var exists with the expected id and has 1 refcount (the
   // refcount on behalf of the plugin).
-  int32 expected_host_id =
+  int32_t expected_host_id =
       plugin().var_tracker().GetHostObject(instance_obj).value.as_id;
   Var* host_var = host().var_tracker().GetVar(expected_host_id);
   ASSERT_TRUE(host_var);

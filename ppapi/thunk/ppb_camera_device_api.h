@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_CAMERA_DEVICE_API_H_
 #define PPAPI_THUNK_PPB_CAMERA_DEVICE_API_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/private/ppb_camera_device_private.h"

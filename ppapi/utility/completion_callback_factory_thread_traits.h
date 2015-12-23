@@ -5,6 +5,8 @@
 #ifndef PPAPI_UTILITY_THREAD_SAFE_THREAD_TRAITS_H_
 #define PPAPI_UTILITY_THREAD_SAFE_THREAD_TRAITS_H_
 
+#include <stdint.h>
+
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/utility/threading/lock.h"

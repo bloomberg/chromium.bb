@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 

@@ -5,8 +5,11 @@
 #ifndef PPAPI_PROXY_PPB_VAR_DEPRECATED_PROXY_H_
 #define PPAPI_PROXY_PPB_VAR_DEPRECATED_PROXY_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -35,8 +38,8 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
 
  private:
   // Message handlers.
-  void OnMsgAddRefObject(int64 object_id);
-  void OnMsgReleaseObject(int64 object_id);
+  void OnMsgAddRefObject(int64_t object_id);
+  void OnMsgReleaseObject(int64_t object_id);
   void OnMsgHasProperty(SerializedVarReceiveInput var,
                         SerializedVarReceiveInput name,
                         SerializedVarOutParam exception,
@@ -77,18 +80,18 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
                       SerializedVarOutParam exception,
                       SerializedVarReturnValue result);
   void OnMsgIsInstanceOfDeprecated(SerializedVarReceiveInput var,
-                                   int64 ppp_class,
-                                   int64* ppp_class_data,
+                                   int64_t ppp_class,
+                                   int64_t* ppp_class_data,
                                    PP_Bool* result);
   void OnMsgCreateObjectDeprecated(PP_Instance instance,
-                                   int64 ppp_class,
-                                   int64 ppp_class_data,
+                                   int64_t ppp_class,
+                                   int64_t ppp_class_data,
                                    SerializedVarReturnValue result);
 
   // Call in the host for messages that can be reentered.
   void SetAllowPluginReentrancy();
 
-  void DoReleaseObject(int64 object_id);
+  void DoReleaseObject(int64_t object_id);
 
   const PPB_Var_Deprecated* ppb_var_impl_;
 

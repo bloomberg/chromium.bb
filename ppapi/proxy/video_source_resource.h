@@ -5,8 +5,11 @@
 #ifndef PPAPI_PROXY_VIDEO_SOURCE_RESOURCE_H_
 #define PPAPI_PROXY_VIDEO_SOURCE_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/connection.h"

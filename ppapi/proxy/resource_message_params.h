@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_RESOURCE_MESSAGE_PARAMS_H_
 #define PPAPI_PROXY_RESOURCE_MESSAGE_PARAMS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/ref_counted.h"

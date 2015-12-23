@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_DEV_VIDEO_CAPTURE_CLIENT_DEV_H_
 #define PPAPI_CPP_DEV_VIDEO_CAPTURE_CLIENT_DEV_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ppapi/c/dev/pp_video_capture_dev.h"

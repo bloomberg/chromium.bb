@@ -5,9 +5,11 @@
 #ifndef PPAPI_PROXY_FILE_REF_RESOURCE_H_
 #define PPAPI_PROXY_FILE_REF_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"

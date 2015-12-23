@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_INPUT_EVENT_H_
 #define PPAPI_CPP_INPUT_EVENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

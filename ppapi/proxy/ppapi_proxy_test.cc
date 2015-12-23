@@ -270,14 +270,13 @@ PluginProxyTestHarness::PluginDelegateMock::GetGloballySeenInstanceIDSet() {
   return &instance_id_set_;
 }
 
-uint32 PluginProxyTestHarness::PluginDelegateMock::Register(
+uint32_t PluginProxyTestHarness::PluginDelegateMock::Register(
     PluginDispatcher* plugin_dispatcher) {
   return 0;
 }
 
 void PluginProxyTestHarness::PluginDelegateMock::Unregister(
-    uint32 plugin_dispatcher_id) {
-}
+    uint32_t plugin_dispatcher_id) {}
 
 IPC::Sender* PluginProxyTestHarness::PluginDelegateMock::GetBrowserSender() {
   return browser_sender_;

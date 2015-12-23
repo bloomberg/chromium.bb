@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_DEV_BUFFER_DEV_H_
 #define PPAPI_CPP_DEV_BUFFER_DEV_H_
 
+#include <stdint.h>
+
 #include "ppapi/cpp/resource.h"
 
 namespace pp {

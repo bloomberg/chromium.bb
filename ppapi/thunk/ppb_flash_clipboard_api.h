@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_FLASH_CLIPBOARD_API_H_
 #define PPAPI_THUNK_PPB_FLASH_CLIPBOARD_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/shared_impl/singleton_resource_id.h"
 

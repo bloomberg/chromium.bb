@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cmath>
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <cmath>
 
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_input_event.h"

@@ -5,8 +5,10 @@
 #ifndef PPAPI_PPB_FLASH_MESSAGE_LOOP_PROXY_H_
 #define PPAPI_PPB_FLASH_MESSAGE_LOOP_PROXY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_instance.h"

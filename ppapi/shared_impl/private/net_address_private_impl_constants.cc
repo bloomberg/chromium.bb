@@ -4,6 +4,7 @@
 
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
+#include "build/build_config.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 
 namespace ppapi {

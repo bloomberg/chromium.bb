@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/dev/file_chooser_dev.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"

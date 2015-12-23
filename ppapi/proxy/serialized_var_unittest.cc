@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/ppapi_proxy_test.h"
+#include <stdint.h>
 
+#include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/proxy/proxy_object_var.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/proxy_lock.h"

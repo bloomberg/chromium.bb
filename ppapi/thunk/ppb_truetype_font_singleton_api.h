@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_TRUETYPE_FONT_SINGLETON_API_H_
 #define PPAPI_THUNK_PPB_TRUETYPE_FONT_SINGLETON_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"

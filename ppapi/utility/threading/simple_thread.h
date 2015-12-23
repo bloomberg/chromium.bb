@@ -5,6 +5,7 @@
 #ifndef PPAPI_UTILITY_THREADING_SIMPLE_THREAD_H_
 #define PPAPI_UTILITY_THREADING_SIMPLE_THREAD_H_
 
+#include <stddef.h>
 #ifdef WIN32
 #include <windows.h>
 #else

@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppb_broker_proxy.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/proxy/enter_proxy.h"
@@ -12,8 +13,8 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/tracked_callback.h"
-#include "ppapi/thunk/ppb_broker_api.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_broker_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 

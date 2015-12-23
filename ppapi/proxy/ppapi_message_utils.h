@@ -5,7 +5,6 @@
 #ifndef PPAPI_PROXY_PPAPI_MESSAGE_UTILS_H_
 #define PPAPI_PROXY_PPAPI_MESSAGE_UTILS_H_
 
-#include "base/basictypes.h"
 #include "base/pickle.h"
 #include "base/tuple.h"
 #include "ipc/ipc_message.h"

@@ -5,6 +5,8 @@
 #ifndef PPAPI_UTILITY_COMPLETION_CALLBACK_FACTORY_H_
 #define PPAPI_UTILITY_COMPLETION_CALLBACK_FACTORY_H_
 
+#include <stdint.h>
+
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/utility/completion_callback_factory_thread_traits.h"
 

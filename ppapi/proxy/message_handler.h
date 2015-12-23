@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_MESSAGE_HANDLER_H_
 #define PPAPI_PROXY_MESSAGE_HANDLER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_resource.h"

@@ -5,8 +5,10 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_AUDIO_CONFIG_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_AUDIO_CONFIG_SHARED_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"
 

@@ -6,6 +6,8 @@
 
 #include "ppapi/native_client/src/untrusted/pnacl_irt_shim/irt_shim_ppapi.h"
 
+#include <stdint.h>
+
 #include "native_client/src/untrusted/irt/irt.h"
 #include "ppapi/nacl_irt/irt_ppapi.h"
 #include "ppapi/nacl_irt/public/irt_ppapi.h"

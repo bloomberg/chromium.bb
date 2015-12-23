@@ -4,8 +4,11 @@
 
 #include "ppapi/shared_impl/file_ref_create_info.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ppapi/c/pp_file_info.h"
 
 namespace ppapi {

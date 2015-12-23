@@ -5,6 +5,10 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_AUDIO_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_AUDIO_SHARED_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"

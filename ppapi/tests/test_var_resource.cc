@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_var_resource.h"
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/cpp/instance.h"

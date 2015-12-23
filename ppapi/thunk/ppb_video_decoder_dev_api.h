@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_VIDEO_DECODER_DEV_API_H_
 #define PPAPI_THUNK_VIDEO_DECODER_DEV_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 

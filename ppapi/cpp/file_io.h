@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_FILE_IO_H_
 #define PPAPI_CPP_FILE_IO_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_time.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/resource.h"

@@ -100,8 +100,8 @@ bool PPB_Graphics3D_Shared::HasPendingSwap() const {
 }
 
 bool PPB_Graphics3D_Shared::CreateGLES2Impl(
-    int32 command_buffer_size,
-    int32 transfer_buffer_size,
+    int32_t command_buffer_size,
+    int32_t transfer_buffer_size,
     gpu::gles2::GLES2Implementation* share_gles2) {
   gpu::CommandBuffer* command_buffer = GetCommandBuffer();
   DCHECK(command_buffer);
@@ -113,8 +113,8 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
 
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
-  const int32 kMinTransferBufferSize = 256 * 1024;
-  const int32 kMaxTransferBufferSize = 16 * 1024 * 1024;
+  const int32_t kMinTransferBufferSize = 256 * 1024;
+  const int32_t kMaxTransferBufferSize = 16 * 1024 * 1024;
   transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
   const bool bind_creates_resources = true;

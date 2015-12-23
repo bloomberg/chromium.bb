@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_RECT_H_
 #define PPAPI_CPP_RECT_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/size.h"

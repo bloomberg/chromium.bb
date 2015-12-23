@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_AUDIO_ENCODER_API_H_
 #define PPAPI_THUNK_AUDIO_ENCODER_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_audio_encoder.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 

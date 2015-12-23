@@ -5,6 +5,8 @@
 #ifndef PAPPI_TESTS_TEST_URL_LOADER_H_
 #define PAPPI_TESTS_TEST_URL_LOADER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/private/ppb_file_io_private.h"

@@ -5,6 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_PPAPI_CONSTANTS_H_
 #define PPAPI_SHARED_IMPL_PPAPI_CONSTANTS_H_
 
+#include "build/build_config.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {

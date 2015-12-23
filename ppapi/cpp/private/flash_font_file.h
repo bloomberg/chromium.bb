@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_FLASH_FONT_FILE_H_
 #define PPAPI_CPP_PRIVATE_FLASH_FONT_FILE_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/cpp/resource.h"
 

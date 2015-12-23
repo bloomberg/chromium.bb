@@ -4,12 +4,14 @@
 
 #include "ppapi/tests/test_x509_certificate_private.h"
 
+#include <stdint.h>
+
 #include <cmath>
 #include <limits>
 
 #include "ppapi/cpp/private/x509_certificate_private.h"
-#include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(X509CertificatePrivate);

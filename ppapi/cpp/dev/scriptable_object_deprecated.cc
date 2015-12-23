@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
+
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/cpp/module.h"

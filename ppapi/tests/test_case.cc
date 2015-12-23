@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_case.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include <algorithm>

@@ -5,6 +5,8 @@
 // From private/ppb_camera_capabilities_private.idl modified Thu Feb 19 09:06:18
 // 2015.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_camera_capabilities_private.h"
 #include "ppapi/shared_impl/tracked_callback.h"

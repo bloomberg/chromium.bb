@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/array_writer.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "ppapi/shared_impl/ppapi_globals.h"

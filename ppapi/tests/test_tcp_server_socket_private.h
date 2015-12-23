@@ -5,6 +5,8 @@
 #ifndef PPAPI_TESTS_TEST_TCP_SERVER_SOCKET_PRIVATE_H_
 #define PPAPI_TESTS_TEST_TCP_SERVER_SOCKET_PRIVATE_H_
 
+#include <stddef.h>
+
 #include <cstddef>
 #include <string>
 

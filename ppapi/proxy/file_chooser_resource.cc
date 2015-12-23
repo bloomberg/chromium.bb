@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/file_chooser_resource.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "ipc/ipc_message.h"

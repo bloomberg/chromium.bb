@@ -238,8 +238,9 @@ bool IsInstanceOf(PP_Var var,
     return false;
 
   PP_Bool result = PP_FALSE;
-  int64 class_int = static_cast<int64>(reinterpret_cast<intptr_t>(ppp_class));
-  int64 class_data_int = 0;
+  int64_t class_int =
+      static_cast<int64_t>(reinterpret_cast<intptr_t>(ppp_class));
+  int64_t class_data_int = 0;
   dispatcher->Send(new PpapiHostMsg_PPBVar_IsInstanceOfDeprecated(
       API_ID_PPB_VAR_DEPRECATED, SerializedVarSendInput(dispatcher, var),
       class_int, &class_data_int, &result));
@@ -261,9 +262,10 @@ PP_Var CreateObject(PP_Instance instance,
     return PP_MakeUndefined();  // Object already exists with this user data.
 
   ReceiveSerializedVarReturnValue result;
-  int64 class_int = static_cast<int64>(reinterpret_cast<intptr_t>(ppp_class));
-  int64 data_int =
-      static_cast<int64>(reinterpret_cast<intptr_t>(ppp_class_data));
+  int64_t class_int =
+      static_cast<int64_t>(reinterpret_cast<intptr_t>(ppp_class));
+  int64_t data_int =
+      static_cast<int64_t>(reinterpret_cast<intptr_t>(ppp_class_data));
   dispatcher->Send(new PpapiHostMsg_PPBVar_CreateObjectDeprecated(
       API_ID_PPB_VAR_DEPRECATED, instance, class_int, data_int,
       &result));
@@ -355,13 +357,13 @@ bool PPB_Var_Deprecated_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_Var_Deprecated_Proxy::OnMsgAddRefObject(int64 object_id) {
+void PPB_Var_Deprecated_Proxy::OnMsgAddRefObject(int64_t object_id) {
   PP_Var var = { PP_VARTYPE_OBJECT };
   var.value.as_id = object_id;
   ppb_var_impl_->AddRef(var);
 }
 
-void PPB_Var_Deprecated_Proxy::OnMsgReleaseObject(int64 object_id) {
+void PPB_Var_Deprecated_Proxy::OnMsgReleaseObject(int64_t object_id) {
   // Ok, so this is super subtle.
   // When the browser side sends a sync IPC message that returns a var, and the
   // plugin wants to give ownership of that var to the browser, dropping all
@@ -489,8 +491,8 @@ void PPB_Var_Deprecated_Proxy::OnMsgConstruct(
 
 void PPB_Var_Deprecated_Proxy::OnMsgIsInstanceOfDeprecated(
     SerializedVarReceiveInput var,
-    int64 ppp_class,
-    int64* ppp_class_data,
+    int64_t ppp_class,
+    int64_t* ppp_class_data,
     PP_Bool* result) {
   SetAllowPluginReentrancy();
   *result = PPP_Class_Proxy::IsInstanceOf(ppb_var_impl_,
@@ -501,8 +503,8 @@ void PPB_Var_Deprecated_Proxy::OnMsgIsInstanceOfDeprecated(
 
 void PPB_Var_Deprecated_Proxy::OnMsgCreateObjectDeprecated(
     PP_Instance instance,
-    int64 ppp_class,
-    int64 class_data,
+    int64_t ppp_class,
+    int64_t class_data,
     SerializedVarReturnValue result) {
   SetAllowPluginReentrancy();
   result.Return(dispatcher(), PPP_Class_Proxy::CreateProxiedObject(
@@ -516,7 +518,7 @@ void PPB_Var_Deprecated_Proxy::SetAllowPluginReentrancy() {
     static_cast<HostDispatcher*>(dispatcher())->set_allow_plugin_reentrancy();
 }
 
-void PPB_Var_Deprecated_Proxy::DoReleaseObject(int64 object_id) {
+void PPB_Var_Deprecated_Proxy::DoReleaseObject(int64_t object_id) {
   PP_Var var = { PP_VARTYPE_OBJECT };
   var.value.as_id = object_id;
   ppb_var_impl_->Release(var);

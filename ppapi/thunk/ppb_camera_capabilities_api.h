@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_CAMERA_CAPABILITIES_API_H_
 #define PPAPI_THUNK_PPB_CAMERA_CAPABILITIES_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/private/ppb_camera_capabilities_private.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 

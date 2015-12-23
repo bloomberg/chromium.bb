@@ -5,10 +5,12 @@
 #ifndef PPAPI_PROXY_PLUGIN_RESOURCE_H_
 #define PPAPI_PROXY_PLUGIN_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"

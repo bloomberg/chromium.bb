@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_AUDIO_BUFFER_H_
 #define PPAPI_CPP_AUDIO_BUFFER_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/cpp/resource.h"
 

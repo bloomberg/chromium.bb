@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_COMPOSITOR_H_
 #define PPAPI_CPP_COMPOSITOR_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_compositor.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/compositor_layer.h"

@@ -13,14 +13,17 @@
 #include <unistd.h>
 #endif
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <limits>
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/trusted/ppp_broker.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
+#include "ppapi/c/trusted/ppp_broker.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 

@@ -5,10 +5,12 @@
 #ifndef PPAPI_SHARED_IMPL_ARRAY_WRITER_H_
 #define PPAPI_SHARED_IMPL_ARRAY_WRITER_H_
 
+#include <stdint.h>
 #include <string.h>
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_resource.h"

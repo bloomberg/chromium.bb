@@ -4,6 +4,8 @@
 
 // From ppb_video_frame.idl modified Mon Apr  7 08:56:43 2014.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/shared_impl/tracked_callback.h"

@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_ISOLATED_FILE_SYSTEM_PRIVATE_API_H_
 #define PPAPI_THUNK_PPB_ISOLATED_FILE_SYSTEM_PRIVATE_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/shared_impl/singleton_resource_id.h"

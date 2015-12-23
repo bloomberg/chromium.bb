@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_test_internals.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 namespace {

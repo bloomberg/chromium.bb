@@ -6,13 +6,14 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 
 namespace ppapi {
 
 PpapiPermissions::PpapiPermissions() : permissions_(0) {}
 
-PpapiPermissions::PpapiPermissions(uint32 perms) : permissions_(perms) {}
+PpapiPermissions::PpapiPermissions(uint32_t perms) : permissions_(perms) {}
 
 PpapiPermissions::~PpapiPermissions() {}
 
@@ -22,8 +23,8 @@ PpapiPermissions PpapiPermissions::AllPermissions() {
 }
 
 // static
-PpapiPermissions PpapiPermissions::GetForCommandLine(uint32 base_perms) {
-  uint32 additional_permissions = 0;
+PpapiPermissions PpapiPermissions::GetForCommandLine(uint32_t base_perms) {
+  uint32_t additional_permissions = 0;
 
 #if !defined(OS_NACL)
   // Testing permissions. The testing flag implies all permissions since the
@@ -41,7 +42,7 @@ bool PpapiPermissions::HasPermission(Permission perm) const {
   // more than one permission bit. We may want to change how permissions are
   // represented in the future so don't want callers making assumptions about
   // bits.
-  uint32 perm_int = static_cast<uint32>(perm);
+  uint32_t perm_int = static_cast<uint32_t>(perm);
   if (!perm_int)
     return true;  // You always have "no permission".
   DCHECK((perm_int & (perm_int - 1)) == 0);

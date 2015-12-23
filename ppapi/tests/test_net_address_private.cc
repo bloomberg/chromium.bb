@@ -4,10 +4,12 @@
 
 #include "ppapi/tests/test_net_address_private.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
-#include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
+#include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 

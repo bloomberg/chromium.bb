@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/resource_creation_proxy.h"
 
+#include "build/build_config.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/proxy/audio_encoder_resource.h"

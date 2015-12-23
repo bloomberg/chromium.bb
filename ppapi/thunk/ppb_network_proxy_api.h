@@ -5,7 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_NETWORK_PROXY_API_H_
 #define PPAPI_THUNK_PPB_NETWORK_PROXY_API_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/singleton_resource_id.h"

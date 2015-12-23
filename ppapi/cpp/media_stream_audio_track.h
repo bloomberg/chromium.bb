@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_MEDIA_STREAM_AUDIO_TRACK_H_
 #define PPAPI_CPP_MEDIA_STREAM_AUDIO_TRACK_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/c/ppb_media_stream_audio_track.h"

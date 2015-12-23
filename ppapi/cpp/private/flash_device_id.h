@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_PRIVATE_FLASH_DEVICE_ID_H_
 #define PPAPI_CPP_PRIVATE_FLASH_DEVICE_ID_H_
 
+#include <stdint.h>
+
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/resource.h"
 

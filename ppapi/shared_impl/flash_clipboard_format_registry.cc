@@ -4,8 +4,11 @@
 
 #include "ppapi/shared_impl/flash_clipboard_format_registry.h"
 
+#include <stddef.h>
+
 #include <cctype>
 
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace ppapi {

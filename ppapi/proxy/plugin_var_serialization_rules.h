@@ -5,7 +5,7 @@
 #ifndef PPAPI_PROXY_PLUGIN_VAR_SERIALIZATION_RULES_H_
 #define PPAPI_PROXY_PLUGIN_VAR_SERIALIZATION_RULES_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 

@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_RAW_VAR_DATA_H_
 #define PPAPI_PROXY_RAW_VAR_DATA_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
@@ -81,7 +84,7 @@ class PPAPI_PROXY_EXPORT RawVarDataGraph {
   // array buffers in IPC messages to using shared memory. This is only used
   // for testing purposes where we need to transmit small buffers using shmem
   // (in order to have fast tests).
-  static void SetMinimumArrayBufferSizeForShmemForTest(uint32 threshold);
+  static void SetMinimumArrayBufferSizeForShmemForTest(uint32_t threshold);
 
   // A list of the nodes in the graph.
   ScopedVector<RawVarData> data_;

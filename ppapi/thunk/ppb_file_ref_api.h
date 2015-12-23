@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_FILE_REF_API_H_
 #define PPAPI_THUNK_PPB_FILE_REF_API_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/linked_ptr.h"

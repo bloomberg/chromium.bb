@@ -5,6 +5,9 @@
 #ifndef PPAPI_PROXY_COMPOSITOR_LAYER_RESOURCE_H_
 #define PPAPI_PROXY_COMPOSITOR_LAYER_RESOURCE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ppapi/c/ppb_compositor_layer.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"

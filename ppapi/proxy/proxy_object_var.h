@@ -5,7 +5,10 @@
 #ifndef PPAPI_PROXY_PROXY_OBJECT_VAR_H_
 #define PPAPI_PROXY_PROXY_OBJECT_VAR_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/var.h"
 
@@ -20,8 +23,7 @@ class PluginDispatcher;
 // integrating this with PP_Var creation.
 class PPAPI_PROXY_EXPORT ProxyObjectVar : public Var {
  public:
-  ProxyObjectVar(proxy::PluginDispatcher* dispatcher,
-                 int32 host_var_id);
+  ProxyObjectVar(proxy::PluginDispatcher* dispatcher, int32_t host_var_id);
 
   ~ProxyObjectVar() override;
 
@@ -30,20 +32,20 @@ class PPAPI_PROXY_EXPORT ProxyObjectVar : public Var {
   PP_VarType GetType() const override;
 
   proxy::PluginDispatcher* dispatcher() const { return dispatcher_; }
-  int32 host_var_id() const { return host_var_id_; }
+  int32_t host_var_id() const { return host_var_id_; }
 
   void* user_data() const { return user_data_; }
   void set_user_data(void* ud) { user_data_ = ud; }
 
   // Expose AssignVarID on Var so the PluginResourceTracker can call us when
   // it's creating IDs.
-  void AssignVarID(int32 id);
+  void AssignVarID(int32_t id);
 
   void clear_dispatcher() { dispatcher_ = NULL; }
 
  private:
   proxy::PluginDispatcher* dispatcher_;
-  int32 host_var_id_;
+  int32_t host_var_id_;
 
   // When this object is created as representing a var implemented by the
   // plugin, this stores the user data so that we can look it up later. See

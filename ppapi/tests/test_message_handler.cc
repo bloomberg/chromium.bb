@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_message_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <algorithm>
 #include <map>

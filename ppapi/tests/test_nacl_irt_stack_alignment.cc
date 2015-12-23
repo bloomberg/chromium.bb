@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_nacl_irt_stack_alignment.h"
 
+#include <stddef.h>
+
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/instance.h"

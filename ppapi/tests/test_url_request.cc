@@ -6,6 +6,8 @@
 
 #include "ppapi/tests/test_url_request.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <string>
 

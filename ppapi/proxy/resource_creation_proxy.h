@@ -5,9 +5,12 @@
 #ifndef PPAPI_PROXY_RESOURCE_CREATION_PROXY_H_
 #define PPAPI_PROXY_RESOURCE_CREATION_PROXY_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"

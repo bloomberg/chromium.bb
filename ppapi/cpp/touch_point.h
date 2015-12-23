@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_TOUCH_POINT_H_
 #define PPAPI_CPP_TOUCH_POINT_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"

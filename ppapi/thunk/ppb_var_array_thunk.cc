@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_var_array.h"
 #include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/proxy_lock.h"

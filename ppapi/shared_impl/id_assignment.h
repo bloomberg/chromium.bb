@@ -5,9 +5,10 @@
 #ifndef PPAPI_SHARED_IMPL_ID_ASSIGNMENT_H_
 #define PPAPI_SHARED_IMPL_ID_ASSIGNMENT_H_
 
+#include <stdint.h>
+
 #include <limits>
 
-#include "base/basictypes.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
@@ -24,7 +25,7 @@ enum PPIdType {
 
 PPAPI_SHARED_EXPORT extern const unsigned int kPPIdTypeBits;
 
-extern const int32 kMaxPPId;
+extern const int32_t kMaxPPId;
 
 // The least significant bits are the type, the rest are the value.
 template <typename T>

@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_file_chooser.h"
 
+#include <stddef.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/dev/file_chooser_dev.h"

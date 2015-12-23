@@ -6,6 +6,7 @@
 
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 

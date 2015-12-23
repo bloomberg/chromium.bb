@@ -5,8 +5,10 @@
 #ifndef PPAPI_PROXY_TCP_SERVER_SOCKET_PRIVATE_RESOURCE_H_
 #define PPAPI_PROXY_TCP_SERVER_SOCKET_PRIVATE_RESOURCE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"

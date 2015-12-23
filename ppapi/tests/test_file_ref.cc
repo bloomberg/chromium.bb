@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_file_ref.h"
 
+#include <stddef.h>
 #include <stdio.h>
 
 #include <sstream>

@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/media_stream_track_resource_base.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "ppapi/proxy/ppapi_messages.h"
 

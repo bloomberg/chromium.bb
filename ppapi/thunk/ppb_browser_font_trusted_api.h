@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_BROWSER_FONT_TRUSTED_API_H_
 #define PPAPI_THUNK_PPB_BROWSER_FONT_TRUSTED_API_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 

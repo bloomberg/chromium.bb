@@ -4,13 +4,14 @@
 
 #include "ppapi/tests/test_audio.h"
 
+#include <stddef.h>
 #include <string.h>
 
-#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/tests/testing_instance.h"
 #include "ppapi/tests/test_utils.h"
+#include "ppapi/tests/testing_instance.h"
 
 #if defined(__native_client__)
 #include "native_client/src/untrusted/irt/irt.h"

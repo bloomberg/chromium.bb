@@ -4,6 +4,8 @@
 
 // From dev/ppb_file_chooser_dev.idl modified Fri Feb  7 08:29:41 2014.
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"

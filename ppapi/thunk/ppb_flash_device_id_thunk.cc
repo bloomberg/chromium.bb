@@ -4,6 +4,8 @@
 
 // From private/ppb_flash_device_id.idl modified Thu Dec 20 13:10:26 2012.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_device_id.h"

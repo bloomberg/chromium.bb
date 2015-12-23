@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_TRUETYPE_FONT_H_
 #define PPAPI_CPP_TRUETYPE_FONT_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/cpp/completion_callback.h"

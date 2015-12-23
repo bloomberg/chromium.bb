@@ -4,6 +4,8 @@
 
 #include "ppapi/cpp/video_encoder.h"
 
+#include <stddef.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_video_encoder.h"
 #include "ppapi/cpp/completion_callback.h"

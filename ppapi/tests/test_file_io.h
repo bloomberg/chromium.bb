@@ -5,6 +5,8 @@
 #ifndef PAPPI_TESTS_TEST_FILE_IO_H_
 #define PAPPI_TESTS_TEST_FILE_IO_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/tests/test_case.h"

@@ -34,27 +34,25 @@ class ResourceMessageTestSink : public IPC::TestSink {
   // Searches the queue for the first resource call message with a nested
   // message matching the given ID. On success, returns true and populates the
   // given params and nested message.
-  bool GetFirstResourceCallMatching(
-      uint32 id,
-      ResourceMessageCallParams* params,
-      IPC::Message* nested_msg) const;
+  bool GetFirstResourceCallMatching(uint32_t id,
+                                    ResourceMessageCallParams* params,
+                                    IPC::Message* nested_msg) const;
 
   // Like GetFirstResourceCallMatching except for replies.
-  bool GetFirstResourceReplyMatching(
-      uint32 id,
-      ResourceMessageReplyParams* params,
-      IPC::Message* nested_msg);
+  bool GetFirstResourceReplyMatching(uint32_t id,
+                                     ResourceMessageReplyParams* params,
+                                     IPC::Message* nested_msg);
 
   // Searches the queue for all resource call messages with a nested message
   // matching the given ID.
   typedef std::pair<ResourceMessageCallParams, IPC::Message> ResourceCall;
   typedef std::vector<ResourceCall> ResourceCallVector;
-  ResourceCallVector GetAllResourceCallsMatching(uint32 id);
+  ResourceCallVector GetAllResourceCallsMatching(uint32_t id);
 
   // Like GetAllResourceCallsMatching except for replies.
   typedef std::pair<ResourceMessageReplyParams, IPC::Message> ResourceReply;
   typedef std::vector<ResourceReply> ResourceReplyVector;
-  ResourceReplyVector GetAllResourceRepliesMatching(uint32 id);
+  ResourceReplyVector GetAllResourceRepliesMatching(uint32_t id);
 
  private:
   scoped_ptr<IPC::Message> sync_reply_msg_;
@@ -79,7 +77,7 @@ class ResourceMessageTestSink : public IPC::TestSink {
 class ResourceSyncCallHandler : public IPC::Listener {
  public:
   ResourceSyncCallHandler(ResourceMessageTestSink* test_sink,
-                          uint32 incoming_type,
+                          uint32_t incoming_type,
                           int32_t result,
                           const IPC::Message& reply_msg);
   ~ResourceSyncCallHandler() override;
@@ -97,7 +95,7 @@ class ResourceSyncCallHandler : public IPC::Listener {
 
  private:
   ResourceMessageTestSink* test_sink_;
-  uint32 incoming_type_;
+  uint32_t incoming_type_;
   int32_t result_;
   const SerializedHandle* serialized_handle_;  // Non-owning pointer.
   IPC::Message reply_msg_;

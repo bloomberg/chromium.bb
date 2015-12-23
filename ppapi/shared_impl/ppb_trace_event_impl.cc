@@ -4,7 +4,6 @@
 
 #include "ppapi/shared_impl/ppb_trace_event_impl.h"
 
-#include "base/basictypes.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "ppapi/thunk/thunk.h"

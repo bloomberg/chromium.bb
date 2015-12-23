@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_host_resolver.h"
 
+#include <stddef.h>
+
 #include "ppapi/cpp/host_resolver.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/tcp_socket.h"

@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/flash_file_resource.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"

@@ -5,8 +5,11 @@
 #ifndef PPAPI_PROXY_WEBSOCKET_RESOURCE_H_
 #define PPAPI_PROXY_WEBSOCKET_RESOURCE_H_
 
+#include <stdint.h>
+
 #include <queue>
 
+#include "base/macros.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"

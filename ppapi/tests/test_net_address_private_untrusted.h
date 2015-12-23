@@ -5,6 +5,8 @@
 #ifndef PAPPI_TESTS_TEST_NET_ADDRESS_PRIVATE_UNTRUSTED_H_
 #define PAPPI_TESTS_TEST_NET_ADDRESS_PRIVATE_UNTRUSTED_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "ppapi/cpp/private/tcp_socket_private.h"

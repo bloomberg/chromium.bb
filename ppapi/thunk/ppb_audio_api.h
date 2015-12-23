@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_AUDIO_API_H_
 #define PPAPI_THUNK_PPB_AUDIO_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"

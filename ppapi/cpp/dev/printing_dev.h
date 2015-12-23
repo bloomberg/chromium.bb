@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_DEV_PRINTING_DEV_H_
 #define PPAPI_CPP_DEV_PRINTING_DEV_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance_handle.h"

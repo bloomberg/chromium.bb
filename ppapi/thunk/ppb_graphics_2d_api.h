@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_GRAPHICS_2D_API_H_
 #define PPAPI_THUNK_PPB_GRAPHICS_2D_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"

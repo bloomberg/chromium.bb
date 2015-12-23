@@ -8,6 +8,8 @@
 // start up procedure so we just exclude it.
 #if defined(OS_NACL_SFI)
 
+#include <stdint.h>
+
 #include "base/at_exit.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/irt_core.h"

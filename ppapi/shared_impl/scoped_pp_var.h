@@ -5,6 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_SCOPED_PP_VAR_H_
 #define PPAPI_SHARED_IMPL_SCOPED_PP_VAR_H_
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "base/macros.h"

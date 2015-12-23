@@ -5,7 +5,10 @@
 #ifndef PPAPI_PROXY_BROKER_DISPATCHER_H_
 #define PPAPI_PROXY_BROKER_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/c/trusted/ppp_broker.h"
 #include "ppapi/proxy/proxy_channel.h"
 

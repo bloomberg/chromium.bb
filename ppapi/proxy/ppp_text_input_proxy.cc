@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppp_text_input_proxy.h"
 
+#include "build/build_config.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"

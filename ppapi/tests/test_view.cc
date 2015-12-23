@@ -4,6 +4,8 @@
 
 #include "ppapi/tests/test_view.h"
 
+#include <stddef.h>
+
 #include <sstream>
 
 #include "ppapi/c/pp_time.h"

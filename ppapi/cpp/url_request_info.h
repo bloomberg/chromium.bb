@@ -5,6 +5,8 @@
 #ifndef PPAPI_CPP_URL_REQUEST_INFO_H_
 #define PPAPI_CPP_URL_REQUEST_INFO_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/var.h"

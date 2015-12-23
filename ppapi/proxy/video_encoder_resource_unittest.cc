@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/video_encoder_resource.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/memory/shared_memory.h"
@@ -511,7 +513,7 @@ TEST_F(VideoEncoderResourceTest, GetSupportedProfiles0_1) {
 
     ASSERT_EQ(profiles_response.size(), static_cast<uint32_t>(cb.result()));
 
-    for (uint32 i = 0; i < profiles_response.size(); i++) {
+    for (uint32_t i = 0; i < profiles_response.size(); i++) {
       ASSERT_EQ(profiles_response[i].profile, profiles[i].profile);
       ASSERT_EQ(profiles_response[i].max_resolution.width,
                 profiles[i].max_resolution.width);

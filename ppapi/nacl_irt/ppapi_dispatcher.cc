@@ -4,6 +4,8 @@
 
 #include "ppapi/nacl_irt/ppapi_dispatcher.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 
@@ -82,13 +84,13 @@ std::set<PP_Instance>* PpapiDispatcher::GetGloballySeenInstanceIDSet() {
   return &instances_;
 }
 
-uint32 PpapiDispatcher::Register(proxy::PluginDispatcher* plugin_dispatcher) {
+uint32_t PpapiDispatcher::Register(proxy::PluginDispatcher* plugin_dispatcher) {
   if (!plugin_dispatcher ||
-      plugin_dispatchers_.size() >= std::numeric_limits<uint32>::max()) {
+      plugin_dispatchers_.size() >= std::numeric_limits<uint32_t>::max()) {
     return 0;
   }
 
-  uint32 id = 0;
+  uint32_t id = 0;
   do {
     // Although it is unlikely, make sure that we won't cause any trouble
     // when the counter overflows.
@@ -99,7 +101,7 @@ uint32 PpapiDispatcher::Register(proxy::PluginDispatcher* plugin_dispatcher) {
   return id;
 }
 
-void PpapiDispatcher::Unregister(uint32 plugin_dispatcher_id) {
+void PpapiDispatcher::Unregister(uint32_t plugin_dispatcher_id) {
   plugin_dispatchers_.erase(plugin_dispatcher_id);
 }
 
@@ -203,12 +205,12 @@ void PpapiDispatcher::OnPluginDispatcherMessageReceived(
     const IPC::Message& msg) {
   // The first parameter should be a plugin dispatcher ID.
   base::PickleIterator iter(msg);
-  uint32 id = 0;
+  uint32_t id = 0;
   if (!iter.ReadUInt32(&id)) {
     NOTREACHED();
     return;
   }
-  std::map<uint32, proxy::PluginDispatcher*>::iterator dispatcher =
+  std::map<uint32_t, proxy::PluginDispatcher*>::iterator dispatcher =
       plugin_dispatchers_.find(id);
   if (dispatcher != plugin_dispatchers_.end())
     dispatcher->second->OnMessageReceived(msg);

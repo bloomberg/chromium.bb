@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_TCP_SOCKET_PRIVATE_API_H_
 #define PPAPI_THUNK_PPB_TCP_SOCKET_PRIVATE_API_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"

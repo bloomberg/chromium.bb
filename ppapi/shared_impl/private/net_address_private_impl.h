@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_net_address.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
@@ -27,12 +27,12 @@ class PPAPI_SHARED_EXPORT NetAddressPrivateImpl {
                                    PP_NetAddress_Private* net_addr);
 
   static bool IPEndPointToNetAddress(const std::vector<unsigned char>& address,
-                                     uint16 port,
+                                     uint16_t port,
                                      PP_NetAddress_Private* net_addr);
 
   static bool NetAddressToIPEndPoint(const PP_NetAddress_Private& net_addr,
                                      std::vector<unsigned char>* address,
-                                     uint16* port);
+                                     uint16_t* port);
 
   static std::string DescribeNetAddress(const PP_NetAddress_Private& addr,
                                         bool include_port);

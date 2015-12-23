@@ -5,7 +5,9 @@
 #ifndef PPAPI_PROXY_PPB_TESTING_PROXY_H_
 #define PPAPI_PROXY_PPB_TESTING_PROXY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_testing_private.h"

@@ -28,8 +28,8 @@ namespace {
 // When sending array buffers, if the size is over 256K, we use shared
 // memory instead of sending the data over IPC. Light testing suggests
 // shared memory is much faster for 256K and larger messages.
-static const uint32 kMinimumArrayBufferSizeForShmem = 256 * 1024;
-static uint32 g_minimum_array_buffer_size_for_shmem =
+static const uint32_t kMinimumArrayBufferSizeForShmem = 256 * 1024;
+static uint32_t g_minimum_array_buffer_size_for_shmem =
     kMinimumArrayBufferSizeForShmem;
 
 struct StackEntry {
@@ -214,7 +214,7 @@ std::vector<SerializedHandle*> RawVarDataGraph::GetHandles() {
 
 // static
 void RawVarDataGraph::SetMinimumArrayBufferSizeForShmemForTest(
-    uint32 threshold) {
+    uint32_t threshold) {
   if (threshold == 0)
     g_minimum_array_buffer_size_for_shmem = kMinimumArrayBufferSizeForShmem;
   else
@@ -444,7 +444,7 @@ PP_Var ArrayBufferRawVarData::CreatePPVar(PP_Instance instance) {
   switch (type_) {
     case ARRAY_BUFFER_SHMEM_HOST: {
       base::SharedMemoryHandle host_handle;
-      uint32 size_in_bytes;
+      uint32_t size_in_bytes;
       bool ok = PpapiGlobals::Get()->GetVarTracker()->
           StopTrackingSharedMemoryHandle(host_shm_handle_id_,
                                          instance,
@@ -467,7 +467,7 @@ PP_Var ArrayBufferRawVarData::CreatePPVar(PP_Instance instance) {
     }
     case ARRAY_BUFFER_NO_SHMEM: {
       result = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          static_cast<uint32>(data_.size()), data_.data());
+          static_cast<uint32_t>(data_.size()), data_.data());
       break;
     }
     default:

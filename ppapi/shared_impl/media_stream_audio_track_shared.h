@@ -5,6 +5,8 @@
 #ifndef PPAPI_SHARED_IMPL_MEDIA_STREAM_AUDIO_TRACK_SHARED_H_
 #define PPAPI_SHARED_IMPL_MEDIA_STREAM_AUDIO_TRACK_SHARED_H_
 
+#include <stdint.h>
+
 #include "ppapi/c/ppb_audio_buffer.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
