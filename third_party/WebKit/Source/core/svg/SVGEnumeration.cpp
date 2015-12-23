@@ -30,9 +30,6 @@
 
 #include "core/svg/SVGEnumeration.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 
 namespace blink {
@@ -46,7 +43,7 @@ SVGEnumerationBase::~SVGEnumerationBase()
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGEnumerationBase::cloneForAnimation(const String& value) const
 {
     RefPtrWillBeRawPtr<SVGEnumerationBase> svgEnumeration = clone();
-    svgEnumeration->setValueAsString(value, IGNORE_EXCEPTION);
+    svgEnumeration->setValueAsString(value);
     return svgEnumeration.release();
 }
 
@@ -67,7 +64,7 @@ void SVGEnumerationBase::setValue(unsigned short value)
     notifyChange();
 }
 
-void SVGEnumerationBase::setValueAsString(const String& string, ExceptionState& exceptionState)
+SVGParsingError SVGEnumerationBase::setValueAsString(const String& string)
 {
     for (const auto& entry : m_entries) {
         if (string == entry.second) {
@@ -75,12 +72,12 @@ void SVGEnumerationBase::setValueAsString(const String& string, ExceptionState& 
             ASSERT(entry.first);
             m_value = entry.first;
             notifyChange();
-            return;
+            return NoError;
         }
     }
 
-    exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");
     notifyChange();
+    return ParsingAttributeFailedError;
 }
 
 void SVGEnumerationBase::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)

@@ -30,9 +30,6 @@
 
 #include "core/svg/SVGBoolean.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 
 namespace blink {
@@ -42,15 +39,17 @@ String SVGBoolean::valueAsString() const
     return m_value ? "true" : "false";
 }
 
-void SVGBoolean::setValueAsString(const String& value, ExceptionState& exceptionState)
+SVGParsingError SVGBoolean::setValueAsString(const String& value)
 {
     if (value == "true") {
         m_value = true;
-    } else if (value == "false") {
-        m_value = false;
-    } else {
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid.");
+        return NoError;
     }
+    if (value == "false") {
+        m_value = false;
+        return NoError;
+    }
+    return ParsingAttributeFailedError;
 }
 
 void SVGBoolean::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)

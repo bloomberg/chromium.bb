@@ -32,6 +32,7 @@
 #define SVGNumberOptionalNumber_h
 
 #include "core/svg/SVGNumber.h"
+#include "core/svg/SVGParsingError.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -51,7 +52,7 @@ public:
     PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     String valueAsString() const override;
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
     void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;

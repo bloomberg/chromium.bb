@@ -41,9 +41,9 @@ public:
         , m_fySet(false)
         , m_frSet(false)
     {
-        m_cx->setValueAsString("50%", IGNORE_EXCEPTION);
-        m_cy->setValueAsString("50%", IGNORE_EXCEPTION);
-        m_r->setValueAsString("50%", IGNORE_EXCEPTION);
+        m_cx->setValueAsString("50%");
+        m_cy->setValueAsString("50%");
+        m_r->setValueAsString("50%");
     }
 
     SVGLength* cx() const { return m_cx.get(); }

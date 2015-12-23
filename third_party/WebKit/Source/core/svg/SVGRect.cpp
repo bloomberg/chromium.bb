@@ -21,8 +21,6 @@
 
 #include "core/svg/SVGRect.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
@@ -47,10 +45,8 @@ PassRefPtrWillBeRawPtr<SVGRect> SVGRect::clone() const
 }
 
 template<typename CharType>
-void SVGRect::parse(const CharType*& ptr, const CharType* end, ExceptionState& exceptionState)
+bool SVGRect::parse(const CharType*& ptr, const CharType* end)
 {
-    const CharType* start = ptr;
-
     skipOptionalSVGSpaces(ptr, end);
 
     float x = 0.0f;
@@ -59,45 +55,43 @@ void SVGRect::parse(const CharType*& ptr, const CharType* end, ExceptionState& e
     float height = 0.0f;
     bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y) && parseNumber(ptr, end, width) && parseNumber(ptr, end, height, DisallowWhitespace);
 
-    if (!valid) {
-        exceptionState.throwDOMException(SyntaxError, "Problem parsing rect \"" + String(start, end - start) + "\"");
-        setInvalid();
-        return;
-    }
+    if (!valid)
+        return false;
 
-    skipOptionalSVGSpaces(ptr, end);
-    if (ptr < end) { // nothing should come after the last, fourth number
-        exceptionState.throwDOMException(SyntaxError, "Problem parsing rect \"" + String(start, end - start) + "\"");
-        setInvalid();
-        return;
+    if (skipOptionalSVGSpaces(ptr, end)) {
+        // Nothing should come after the last, fourth number.
+        return false;
     }
 
     m_value = FloatRect(x, y, width, height);
     m_isValid = true;
+    return true;
 }
 
-void SVGRect::setValueAsString(const String& string, ExceptionState& exceptionState)
+SVGParsingError SVGRect::setValueAsString(const String& string)
 {
-    if (string.isNull()) {
-        setInvalid();
-        return;
-    }
+    setInvalid();
+
+    if (string.isNull())
+        return NoError;
+
     if (string.isEmpty()) {
         m_value = FloatRect(0.0f, 0.0f, 0.0f, 0.0f);
         m_isValid = true;
-        return;
+        return NoError;
     }
 
+    bool valid;
     if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
         const LChar* end = ptr + string.length();
-        parse(ptr, end, exceptionState);
-        return;
+        valid = parse(ptr, end);
+    } else {
+        const UChar* ptr = string.characters16();
+        const UChar* end = ptr + string.length();
+        valid = parse(ptr, end);
     }
-
-    const UChar* ptr = string.characters16();
-    const UChar* end = ptr + string.length();
-    parse(ptr, end, exceptionState);
+    return valid ? NoError : ParsingAttributeFailedError;
 }
 
 String SVGRect::valueAsString() const

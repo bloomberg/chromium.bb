@@ -131,10 +131,10 @@ float SVGLengthTearOff::valueInSpecifiedUnits()
     return target()->valueInSpecifiedUnits();
 }
 
-void SVGLengthTearOff::setValueInSpecifiedUnits(float value, ExceptionState& es)
+void SVGLengthTearOff::setValueInSpecifiedUnits(float value, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        es.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
         return;
     }
     target()->setValueInSpecifiedUnits(value);
@@ -147,20 +147,23 @@ String SVGLengthTearOff::valueAsString()
     return hasExposedLengthUnit() ? target()->valueAsString() : String::number(0);
 }
 
-void SVGLengthTearOff::setValueAsString(const String& str, ExceptionState& es)
+void SVGLengthTearOff::setValueAsString(const String& str, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
-        es.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
         return;
     }
 
     String oldValue = target()->valueAsString();
 
-    target()->setValueAsString(str, es);
+    SVGParsingError status = target()->setValueAsString(str);
 
-    if (!es.hadException() && !hasExposedLengthUnit()) {
-        target()->setValueAsString(oldValue, ASSERT_NO_EXCEPTION); // rollback to old value
-        es.throwDOMException(SyntaxError, "The value provided ('" + str + "') is invalid.");
+    if (status == NoError && !hasExposedLengthUnit()) {
+        target()->setValueAsString(oldValue); // rollback to old value
+        status = ParsingAttributeFailedError;
+    }
+    if (status != NoError) {
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + str + "') is invalid.");
         return;
     }
 

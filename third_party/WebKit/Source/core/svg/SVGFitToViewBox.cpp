@@ -38,7 +38,7 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedViewBoxRect(contextElement));
     }
 
-    void setBaseValueAsString(const String&, SVGParsingError&) override;
+    SVGParsingError setBaseValueAsString(const String&) override;
 
 protected:
     SVGAnimatedViewBoxRect(SVGElement* contextElement)
@@ -47,21 +47,15 @@ protected:
     }
 };
 
-void SVGAnimatedViewBoxRect::setBaseValueAsString(const String& value, SVGParsingError& parseError)
+SVGParsingError SVGAnimatedViewBoxRect::setBaseValueAsString(const String& value)
 {
-    TrackExceptionState es;
+    SVGParsingError parseStatus = baseValue()->setValueAsString(value);
 
-    baseValue()->setValueAsString(value, es);
-
-    if (es.hadException()) {
-        parseError = ParsingAttributeFailedError;
-        return;
-    }
-
-    if (baseValue()->width() < 0 || baseValue()->height() < 0) {
-        parseError = NegativeValueForbiddenError;
+    if (parseStatus == NoError && (baseValue()->width() < 0 || baseValue()->height() < 0)) {
+        parseStatus = NegativeValueForbiddenError;
         baseValue()->setInvalid();
     }
+    return parseStatus;
 }
 
 SVGFitToViewBox::SVGFitToViewBox(SVGElement* element, PropertyMapPolicy propertyMapPolicy)

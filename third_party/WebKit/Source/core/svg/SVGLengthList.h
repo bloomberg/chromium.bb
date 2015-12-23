@@ -31,8 +31,8 @@
 #ifndef SVGLengthList_h
 #define SVGLengthList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGLength.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGListPropertyHelper.h"
 
 namespace blink {
@@ -50,7 +50,7 @@ public:
 
     ~SVGLengthList() override;
 
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     // SVGPropertyBase:
     PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
@@ -72,7 +72,7 @@ private:
     PassRefPtrWillBeRawPtr<SVGLength> createPaddingItem() const override;
 
     template <typename CharType>
-    void parseInternal(const CharType*& ptr, const CharType* end, ExceptionState&);
+    SVGParsingError parseInternal(const CharType*& ptr, const CharType* end);
 
     SVGLengthMode m_mode;
 };

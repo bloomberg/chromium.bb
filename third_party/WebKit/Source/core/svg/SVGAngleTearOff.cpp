@@ -114,10 +114,13 @@ void SVGAngleTearOff::setValueAsString(const String& value, ExceptionState& exce
 
     String oldValue = target()->valueAsString();
 
-    target()->setValueAsString(value, exceptionState);
+    SVGParsingError status = target()->setValueAsString(value);
 
-    if (!exceptionState.hadException() && !hasExposedAngleUnit()) {
-        target()->setValueAsString(oldValue, ASSERT_NO_EXCEPTION); // rollback to old value
+    if (status == NoError && !hasExposedAngleUnit()) {
+        target()->setValueAsString(oldValue); // rollback to old value
+        status = ParsingAttributeFailedError;
+    }
+    if (status != NoError) {
         exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid.");
         return;
     }

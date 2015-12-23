@@ -21,9 +21,6 @@
 
 #include "core/svg/SVGPreserveAspectRatio.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/geometry/FloatRect.h"
@@ -151,12 +148,12 @@ bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType*
     return true;
 }
 
-void SVGPreserveAspectRatio::setValueAsString(const String& string, ExceptionState& exceptionState)
+SVGParsingError SVGPreserveAspectRatio::setValueAsString(const String& string)
 {
     setDefault();
 
     if (string.isEmpty())
-        return;
+        return NoError;
 
     bool valid = false;
     if (string.is8Bit()) {
@@ -168,10 +165,7 @@ void SVGPreserveAspectRatio::setValueAsString(const String& string, ExceptionSta
         const UChar* end = ptr + string.length();
         valid = parseInternal(ptr, end, true);
     }
-
-    if (!valid) {
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");
-    }
+    return valid ? NoError : ParsingAttributeFailedError;
 }
 
 bool SVGPreserveAspectRatio::parse(const LChar*& ptr, const LChar* end, bool validate)

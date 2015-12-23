@@ -31,6 +31,7 @@
 #ifndef SVGPoint_h
 #define SVGPoint_h
 
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
 #include "platform/geometry/FloatPoint.h"
 
@@ -66,7 +67,7 @@ public:
     FloatPoint matrixTransform(const AffineTransform&) const;
 
     String valueAsString() const override;
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
     void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
@@ -79,7 +80,7 @@ private:
     explicit SVGPoint(const FloatPoint&);
 
     template<typename CharType>
-    void parse(const CharType*& ptr, const CharType* end, ExceptionState&);
+    bool parse(const CharType*& ptr, const CharType* end);
 
     FloatPoint m_value;
 };

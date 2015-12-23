@@ -45,7 +45,7 @@ public:
     }
 
     void setDefaultValueAsString(const String&);
-    void setBaseValueAsString(const String&, SVGParsingError&) override;
+    SVGParsingError setBaseValueAsString(const String&) override;
 
 protected:
     SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGLength> initialValue)

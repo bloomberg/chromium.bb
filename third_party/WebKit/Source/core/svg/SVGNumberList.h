@@ -31,8 +31,8 @@
 #ifndef SVGNumberList_h
 #define SVGNumberList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGNumber.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGListPropertyHelper.h"
 
 namespace blink {
@@ -50,7 +50,7 @@ public:
 
     ~SVGNumberList() override;
 
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     // SVGPropertyBase:
     String valueAsString() const override;

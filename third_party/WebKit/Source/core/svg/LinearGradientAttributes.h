@@ -39,7 +39,7 @@ public:
         , m_x2Set(false)
         , m_y2Set(false)
     {
-        m_x2->setValueAsString("100%", ASSERT_NO_EXCEPTION);
+        m_x2->setValueAsString("100%");
     }
 
     SVGLength* x1() const { return m_x1.get(); }

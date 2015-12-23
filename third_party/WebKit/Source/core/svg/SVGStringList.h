@@ -31,12 +31,13 @@
 #ifndef SVGStringList_h
 #define SVGStringList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/SVGString.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
 
 namespace blink {
 
+class ExceptionState;
 class SVGStringListTearOff;
 
 // Implementation of SVGStringList spec:
@@ -74,7 +75,7 @@ public:
     void replaceItem(const String&, size_t, ExceptionState&);
 
     // SVGPropertyBase:
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
     String valueAsString() const override;
 
     void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;

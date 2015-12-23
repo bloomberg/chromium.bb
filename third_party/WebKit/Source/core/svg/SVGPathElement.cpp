@@ -36,13 +36,14 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedPathLength(contextElement));
     }
 
-    void setBaseValueAsString(const String& value, SVGParsingError& parseError) override
+    SVGParsingError setBaseValueAsString(const String& value) override
     {
-        SVGAnimatedNumber::setBaseValueAsString(value, parseError);
+        SVGParsingError parseStatus = SVGAnimatedNumber::setBaseValueAsString(value);
 
         ASSERT(contextElement());
-        if (parseError == NoError && baseValue()->value() < 0)
+        if (parseStatus == NoError && baseValue()->value() < 0)
             contextElement()->document().accessSVGExtensions().reportError("A negative value for path attribute <pathLength> is not allowed");
+        return parseStatus;
     }
 
 private:

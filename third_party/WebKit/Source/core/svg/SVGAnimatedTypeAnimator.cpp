@@ -98,22 +98,22 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyF
         return SVGColorProperty::create(value);
     case AnimatedNumber: {
         RefPtrWillBeRawPtr<SVGNumber> property = SVGNumber::create();
-        property->setValueAsString(value, IGNORE_EXCEPTION);
+        property->setValueAsString(value);
         return property.release();
     }
     case AnimatedLength: {
         RefPtrWillBeRawPtr<SVGLength> property = SVGLength::create();
-        property->setValueAsString(value, IGNORE_EXCEPTION);
+        property->setValueAsString(value);
         return property.release();
     }
     case AnimatedLengthList: {
         RefPtrWillBeRawPtr<SVGLengthList> property = SVGLengthList::create();
-        property->setValueAsString(value, IGNORE_EXCEPTION);
+        property->setValueAsString(value);
         return property.release();
     }
     case AnimatedString: {
         RefPtrWillBeRawPtr<SVGString> property = SVGString::create();
-        property->setValueAsString(value, IGNORE_EXCEPTION);
+        property->setValueAsString(value);
         return property.release();
     }
 

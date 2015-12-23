@@ -30,8 +30,6 @@
 
 #include "core/svg/SVGPoint.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/transforms/AffineTransform.h"
@@ -55,28 +53,24 @@ PassRefPtrWillBeRawPtr<SVGPoint> SVGPoint::clone() const
 }
 
 template<typename CharType>
-void SVGPoint::parse(const CharType*& ptr, const CharType* end, ExceptionState& exceptionState)
+bool SVGPoint::parse(const CharType*& ptr, const CharType* end)
 {
-    const CharType* start = ptr;
-
     skipOptionalSVGSpaces(ptr, end);
 
     float x = 0.0f;
     float y = 0.0f;
     bool valid = parseNumber(ptr, end, x) && parseNumber(ptr, end, y, DisallowWhitespace);
 
-    if (!valid) {
-        exceptionState.throwDOMException(SyntaxError, "Problem parsing point \"" + String(start, end - start) + "\"");
-        return;
-    }
+    if (!valid)
+        return false;
 
-    skipOptionalSVGSpaces(ptr, end);
-    if (ptr < end) { // nothing should come after the last, fourth number
-        exceptionState.throwDOMException(SyntaxError, "Problem parsing point \"" + String(start, end - start) + "\"");
-        return;
+    if (skipOptionalSVGSpaces(ptr, end)) {
+        // Nothing should come after the second number.
+        return false;
     }
 
     m_value = FloatPoint(x, y);
+    return true;
 }
 
 FloatPoint SVGPoint::matrixTransform(const AffineTransform& transform) const
@@ -86,23 +80,24 @@ FloatPoint SVGPoint::matrixTransform(const AffineTransform& transform) const
     return FloatPoint::narrowPrecision(newX, newY);
 }
 
-void SVGPoint::setValueAsString(const String& string, ExceptionState& exceptionState)
+SVGParsingError SVGPoint::setValueAsString(const String& string)
 {
     if (string.isEmpty()) {
         m_value = FloatPoint(0.0f, 0.0f);
-        return;
+        return NoError;
     }
 
+    bool valid;
     if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
         const LChar* end = ptr + string.length();
-        parse(ptr, end, exceptionState);
-        return;
+        valid = parse(ptr, end);
+    } else {
+        const UChar* ptr = string.characters16();
+        const UChar* end = ptr + string.length();
+        valid = parse(ptr, end);
     }
-
-    const UChar* ptr = string.characters16();
-    const UChar* end = ptr + string.length();
-    parse(ptr, end, exceptionState);
+    return valid ? NoError : ParsingAttributeFailedError;
 }
 
 String SVGPoint::valueAsString() const

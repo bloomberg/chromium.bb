@@ -21,9 +21,6 @@
 
 #include "core/svg/SVGAngle.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/MathExtras.h"
@@ -236,22 +233,22 @@ static bool parseValue(const String& value, float& valueInSpecifiedUnits, SVGAng
     return true;
 }
 
-void SVGAngle::setValueAsString(const String& value, ExceptionState& exceptionState)
+SVGParsingError SVGAngle::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         newValueSpecifiedUnits(SVG_ANGLETYPE_UNSPECIFIED, 0);
-        return;
+        return NoError;
     }
 
     if (value == "auto") {
         newValueSpecifiedUnits(SVG_ANGLETYPE_UNSPECIFIED, 0);
         m_orientType->setEnumValue(SVGMarkerOrientAuto);
-        return;
+        return NoError;
     }
     if (value == "auto-start-reverse") {
         newValueSpecifiedUnits(SVG_ANGLETYPE_UNSPECIFIED, 0);
         m_orientType->setEnumValue(SVGMarkerOrientAutoStartReverse);
-        return;
+        return NoError;
     }
 
     float valueInSpecifiedUnits = 0;
@@ -259,14 +256,13 @@ void SVGAngle::setValueAsString(const String& value, ExceptionState& exceptionSt
 
     bool success = value.is8Bit() ? parseValue<LChar>(value, valueInSpecifiedUnits, unitType)
                                   : parseValue<UChar>(value, valueInSpecifiedUnits, unitType);
-    if (!success) {
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid.");
-        return;
-    }
+    if (!success)
+        return ParsingAttributeFailedError;
 
     m_orientType->setEnumValue(SVGMarkerOrientAngle);
     m_unitType = unitType;
     m_valueInSpecifiedUnits = valueInSpecifiedUnits;
+    return NoError;
 }
 
 void SVGAngle::newValueSpecifiedUnits(SVGAngleType unitType, float valueInSpecifiedUnits)

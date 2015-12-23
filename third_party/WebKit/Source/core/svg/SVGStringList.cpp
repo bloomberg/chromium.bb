@@ -102,12 +102,14 @@ void SVGStringList::parseInternal(const CharType*& ptr, const CharType* end)
     }
 }
 
-void SVGStringList::setValueAsString(const String& data, ExceptionState&)
+SVGParsingError SVGStringList::setValueAsString(const String& data)
 {
     // FIXME: Add more error checking and reporting.
     m_values.clear();
+
     if (data.isEmpty())
-        return;
+        return NoError;
+
     if (data.is8Bit()) {
         const LChar* ptr = data.characters8();
         const LChar* end = ptr + data.length();
@@ -117,6 +119,7 @@ void SVGStringList::setValueAsString(const String& data, ExceptionState&)
         const UChar* end = ptr + data.length();
         parseInternal(ptr, end);
     }
+    return NoError;
 }
 
 String SVGStringList::valueAsString() const

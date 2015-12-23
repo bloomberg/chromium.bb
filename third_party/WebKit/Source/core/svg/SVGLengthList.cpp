@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGLengthList.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
@@ -48,7 +47,7 @@ PassRefPtrWillBeRawPtr<SVGLengthList> SVGLengthList::clone()
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLengthList::cloneForAnimation(const String& value) const
 {
     RefPtrWillBeRawPtr<SVGLengthList> ret = SVGLengthList::create(m_mode);
-    ret->setValueAsString(value, IGNORE_EXCEPTION);
+    ret->setValueAsString(value);
     return ret.release();
 }
 
@@ -72,7 +71,7 @@ String SVGLengthList::valueAsString() const
 }
 
 template <typename CharType>
-void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, ExceptionState& exceptionState)
+SVGParsingError SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end)
 {
     clear();
     while (ptr < end) {
@@ -81,34 +80,38 @@ void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, Exc
             ptr++;
         if (ptr == start)
             break;
-
-        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(m_mode);
         String valueString(start, ptr - start);
         if (valueString.isEmpty())
-            return;
-        length->setValueAsString(valueString, exceptionState);
-        if (exceptionState.hadException())
-            return;
+            break;
+
+        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(m_mode);
+        SVGParsingError lengthParseStatus = length->setValueAsString(valueString);
+        if (lengthParseStatus != NoError)
+            return lengthParseStatus;
         append(length);
         skipOptionalSVGSpacesOrDelimiter(ptr, end);
     }
+    return NoError;
 }
 
-void SVGLengthList::setValueAsString(const String& value, ExceptionState& exceptionState)
+SVGParsingError SVGLengthList::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         clear();
-        return;
+        return NoError;
     }
+
+    SVGParsingError parseStatus;
     if (value.is8Bit()) {
         const LChar* ptr = value.characters8();
         const LChar* end = ptr + value.length();
-        parseInternal(ptr, end, exceptionState);
+        parseStatus = parseInternal(ptr, end);
     } else {
         const UChar* ptr = value.characters16();
         const UChar* end = ptr + value.length();
-        parseInternal(ptr, end, exceptionState);
+        parseStatus = parseInternal(ptr, end);
     }
+    return parseStatus;
 }
 
 void SVGLengthList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)

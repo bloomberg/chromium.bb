@@ -23,12 +23,12 @@
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/svg/SVGLengthContext.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGProperty.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class ExceptionState;
 class QualifiedName;
 
 class SVGLengthTearOff;
@@ -75,7 +75,7 @@ public:
     float scaleByPercentage(float) const;
 
     String valueAsString() const override;
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     void newValueSpecifiedUnits(CSSPrimitiveValue::UnitType, float valueInSpecifiedUnits);
     void convertToSpecifiedUnits(CSSPrimitiveValue::UnitType, const SVGLengthContext&);

@@ -31,7 +31,7 @@
 #ifndef SVGPointList_h
 #define SVGPointList_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/SVGPoint.h"
 #include "core/svg/properties/SVGListPropertyHelper.h"
 
@@ -50,7 +50,7 @@ public:
 
     ~SVGPointList() override;
 
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     // SVGPropertyBase:
     String valueAsString() const override;

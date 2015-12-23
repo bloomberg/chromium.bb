@@ -69,11 +69,11 @@ bool SVGNumberList::parse(const CharType*& ptr, const CharType* end)
     return true;
 }
 
-void SVGNumberList::setValueAsString(const String& value, ExceptionState& exceptionState)
+SVGParsingError SVGNumberList::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         clear();
-        return;
+        return NoError;
     }
 
     bool valid = false;
@@ -88,10 +88,11 @@ void SVGNumberList::setValueAsString(const String& value, ExceptionState& except
     }
 
     if (!valid) {
-        exceptionState.throwDOMException(SyntaxError, "Problem parsing number list \""+value+"\"");
         // No call to |clear()| here. SVG policy is to use valid items before error.
         // Spec: http://www.w3.org/TR/SVG/single-page.html#implnote-ErrorProcessing
+        return ParsingAttributeFailedError;
     }
+    return NoError;
 }
 
 void SVGNumberList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)

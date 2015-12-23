@@ -32,13 +32,11 @@
 #define SVGPath_h
 
 #include "core/css/CSSPathValue.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/properties/SVGProperty.h"
 
 namespace blink {
-
-class ExceptionState;
-class Path;
 
 class SVGPath : public SVGPropertyBase {
 public:
@@ -62,7 +60,7 @@ public:
     PassRefPtrWillBeRawPtr<SVGPath> clone() const;
     PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
     String valueAsString() const override;
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
     void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;

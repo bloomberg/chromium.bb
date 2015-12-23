@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGPath.h"
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "core/SVGNames.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGPathBlender.h"
@@ -94,13 +93,14 @@ PassRefPtrWillBeRawPtr<SVGPath> SVGPath::clone() const
     return SVGPath::create(m_pathValue);
 }
 
-
-void SVGPath::setValueAsString(const String& string, ExceptionState& exceptionState)
+SVGParsingError SVGPath::setValueAsString(const String& string)
 {
+    SVGParsingError parseStatus = NoError;
     OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     if (!buildByteStreamFromString(string, *byteStream))
-        exceptionState.throwDOMException(SyntaxError, "Problem parsing path \"" + string + "\"");
+        parseStatus = ParsingAttributeFailedError;
     m_pathValue = CSSPathValue::create(byteStream.release());
+    return parseStatus;
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPath::cloneForAnimation(const String& value) const

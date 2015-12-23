@@ -29,8 +29,8 @@
  */
 
 #include "core/svg/SVGInteger.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGAnimationElement.h"
 
 namespace blink {
@@ -50,20 +50,21 @@ String SVGInteger::valueAsString() const
     return String::number(m_value);
 }
 
-void SVGInteger::setValueAsString(const String& string, ExceptionState& exceptionState)
+SVGParsingError SVGInteger::setValueAsString(const String& string)
 {
     if (string.isEmpty()) {
         m_value = 0;
-        return;
+        return NoError;
     }
 
     bool valid = true;
     m_value = stripLeadingAndTrailingHTMLSpaces(string).toIntStrict(&valid);
 
     if (!valid) {
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");
         m_value = 0;
+        return ParsingAttributeFailedError;
     }
+    return NoError;
 }
 
 void SVGInteger::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)

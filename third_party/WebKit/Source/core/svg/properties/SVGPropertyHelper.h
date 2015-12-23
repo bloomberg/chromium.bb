@@ -5,7 +5,6 @@
 #ifndef SVGPropertyHelper_h
 #define SVGPropertyHelper_h
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/properties/SVGProperty.h"
 
 namespace blink {
@@ -21,7 +20,7 @@ public:
     virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String& value) const
     {
         RefPtrWillBeRawPtr<Derived> property = Derived::create();
-        property->setValueAsString(value, IGNORE_EXCEPTION);
+        property->setValueAsString(value);
         return property.release();
     }
 };

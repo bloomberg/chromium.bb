@@ -73,16 +73,18 @@ String SVGNumberOptionalNumber::valueAsString() const
     return String::number(m_firstNumber->value()) + " " + String::number(m_secondNumber->value());
 }
 
-void SVGNumberOptionalNumber::setValueAsString(const String& value, ExceptionState& exceptionState)
+SVGParsingError SVGNumberOptionalNumber::setValueAsString(const String& value)
 {
     float x, y;
+    SVGParsingError parseStatus = NoError;
     if (!parseNumberOptionalNumber(value, x, y)) {
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid.");
+        parseStatus = ParsingAttributeFailedError;
         x = y = 0;
     }
 
     m_firstNumber->setValue(x);
     m_secondNumber->setValue(y);
+    return parseStatus;
 }
 
 void SVGNumberOptionalNumber::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)

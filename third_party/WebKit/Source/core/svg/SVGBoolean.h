@@ -31,6 +31,7 @@
 #ifndef SVGBoolean_h
 #define SVGBoolean_h
 
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
 
 namespace blink {
@@ -49,7 +50,7 @@ public:
     PassRefPtrWillBeRawPtr<SVGBoolean> clone() const { return create(m_value); }
 
     String valueAsString() const override;
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
     void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;

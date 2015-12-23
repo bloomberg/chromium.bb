@@ -266,11 +266,11 @@ String SVGTransformList::valueAsString() const
     return builder.toString();
 }
 
-void SVGTransformList::setValueAsString(const String& value, ExceptionState& exceptionState)
+SVGParsingError SVGTransformList::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         clear();
-        return;
+        return NoError;
     }
 
     bool valid = false;
@@ -286,8 +286,10 @@ void SVGTransformList::setValueAsString(const String& value, ExceptionState& exc
 
     if (!valid) {
         clear();
-        exceptionState.throwDOMException(SyntaxError, "Problem parsing transform list=\""+value+"\"");
+        return ParsingAttributeFailedError;
     }
+
+    return NoError;
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGTransformList::cloneForAnimation(const String& value) const

@@ -31,11 +31,10 @@
 #ifndef SVGEnumeration_h
 #define SVGEnumeration_h
 
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGProperty.h"
 
 namespace blink {
-
-class ExceptionState;
 
 class SVGEnumerationBase : public SVGPropertyBase {
 public:
@@ -56,7 +55,7 @@ public:
     PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     String valueAsString() const override;
-    void setValueAsString(const String&, ExceptionState&);
+    SVGParsingError setValueAsString(const String&);
 
     void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
     void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
