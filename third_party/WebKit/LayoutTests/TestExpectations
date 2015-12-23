@@ -1316,3 +1316,5 @@ crbug.com/571709 http/tests/inspector/resource-tree/resource-tree-frame-in-craft
 crbug.com/571710 http/tests/inspector/search/source-frame-search.html [ Timeout Pass ]
 
 crbug.com/571716 inspector/audits/audits-panel-functional.html [ Crash Pass ]
+
+crbug.com/451577 [ XP ] inspector/console/console-stack-overflow.html [ Crash Pass ]
