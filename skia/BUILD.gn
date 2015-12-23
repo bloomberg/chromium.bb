@@ -278,6 +278,9 @@ config("skia_library_config") {
 component("skia") {
   sources = [
     # Chrome sources.
+    "config/SkUserConfig.h",
+    "config/sk_ref_cnt_ext_debug.h",
+    "config/sk_ref_cnt_ext_release.h",
     "ext/SkDiscardableMemory_chrome.cc",
     "ext/SkMemory_new_handler.cpp",
     "ext/analysis_canvas.cc",
@@ -441,6 +444,7 @@ component("skia") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
+    ":skia_config",
     ":skia_library_config",
     "//build/config/compiler:no_chromium_code",
   ]
