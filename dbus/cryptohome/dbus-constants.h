@@ -114,6 +114,7 @@ const char kCryptohomeFlushAndSignBootAttributes[] =
 const char kCryptohomeGetLoginStatus[] = "GetLoginStatus";
 const char kCryptohomeGetTpmStatus[] = "GetTpmStatus";
 const char kCryptohomeGetEndorsementInfo[] = "GetEndorsementInfo";
+const char kCryptohomeRenameCryptohome[] = "RenameCryptohome";
 
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
