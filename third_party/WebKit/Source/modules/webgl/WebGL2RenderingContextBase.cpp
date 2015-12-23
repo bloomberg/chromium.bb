@@ -546,6 +546,10 @@ void WebGL2RenderingContextBase::pixelStorei(GLenum pname, GLint param)
 {
     if (isContextLost())
         return;
+    if (param < 0) {
+        synthesizeGLError(GL_INVALID_VALUE, "pixelStorei", "negative value");
+        return;
+    }
     switch (pname) {
     case GL_PACK_ROW_LENGTH:
         m_packRowLength = param;

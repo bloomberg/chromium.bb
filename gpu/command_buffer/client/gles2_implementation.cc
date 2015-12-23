@@ -1795,19 +1795,19 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
       break;
     case GL_UNPACK_ROW_LENGTH_EXT:
       unpack_row_length_ = param;
-      return;
+      break;
     case GL_UNPACK_IMAGE_HEIGHT:
       unpack_image_height_ = param;
-      return;
+      break;
     case GL_UNPACK_SKIP_ROWS_EXT:
       unpack_skip_rows_ = param;
-      return;
+      break;
     case GL_UNPACK_SKIP_PIXELS_EXT:
       unpack_skip_pixels_ = param;
-      return;
+      break;
     case GL_UNPACK_SKIP_IMAGES:
       unpack_skip_images_ = param;
-      return;
+      break;
     case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
       pack_reverse_row_order_ =
           IsAnglePackReverseRowOrderAvailable() ? (param != 0) : false;

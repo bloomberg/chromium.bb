@@ -2526,12 +2526,12 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
   static const GLint kTexSubYOffset = 103;
 
   struct {
-    cmds::PixelStorei pixel_store_i;
+    cmds::PixelStorei pixel_store_i[4];
     cmds::TexImage2D tex_image_2d;
   } texImageExpected;
 
   struct  {
-    cmds::PixelStorei pixel_store_i;
+    cmds::PixelStorei pixel_store_i[4];
     cmds::TexImage2D tex_image_2d;
     cmds::TexSubImage2D tex_sub_image_2d;
   } texSubImageExpected;
@@ -2570,8 +2570,14 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
             GL_TEXTURE_2D, kLevel, kTexSubXOffset, kTexSubYOffset,
             kSrcSubImageWidth, kSrcSubImageHeight, kFormat, kType,
             src_pixels.get());
-        texSubImageExpected.pixel_store_i.Init(
+        texSubImageExpected.pixel_store_i[0].Init(
             GL_UNPACK_ALIGNMENT, alignment);
+        texSubImageExpected.pixel_store_i[1].Init(
+            GL_UNPACK_ROW_LENGTH_EXT, kSrcWidth);
+        texSubImageExpected.pixel_store_i[2].Init(
+            GL_UNPACK_SKIP_PIXELS_EXT, kSrcSubImageX0);
+        texSubImageExpected.pixel_store_i[3].Init(
+            GL_UNPACK_SKIP_ROWS_EXT, kSrcSubImageY0);
         texSubImageExpected.tex_image_2d.Init(
             GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight,
             kFormat, kType, 0, 0);
@@ -2586,7 +2592,13 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
             GL_TEXTURE_2D, kLevel, kFormat,
             kSrcSubImageWidth, kSrcSubImageHeight, kBorder, kFormat, kType,
             src_pixels.get());
-        texImageExpected.pixel_store_i.Init(GL_UNPACK_ALIGNMENT, alignment);
+        texImageExpected.pixel_store_i[0].Init(GL_UNPACK_ALIGNMENT, alignment);
+        texImageExpected.pixel_store_i[1].Init(
+            GL_UNPACK_ROW_LENGTH_EXT, kSrcWidth);
+        texImageExpected.pixel_store_i[2].Init(
+            GL_UNPACK_SKIP_PIXELS_EXT, kSrcSubImageX0);
+        texImageExpected.pixel_store_i[3].Init(
+            GL_UNPACK_SKIP_ROWS_EXT, kSrcSubImageY0);
         texImageExpected.tex_image_2d.Init(
             GL_TEXTURE_2D, kLevel, kFormat, kSrcSubImageWidth,
             kSrcSubImageHeight, kFormat, kType, mem.id, mem.offset);
