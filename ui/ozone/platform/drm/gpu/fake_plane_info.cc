@@ -8,19 +8,15 @@
 
 namespace ui {
 
-FakePlaneInfo::FakePlaneInfo(uint32_t crtc_id, uint32_t crtc_mask) {
-  id = crtc_id;
-  allowed_crtc_mask = crtc_mask;
-  allowed_formats.push_back(std::move(DRM_FORMAT_XRGB8888));
+FakePlaneInfo::FakePlaneInfo(uint32_t plane_id, uint32_t crtc_mask)
+    : id(plane_id), allowed_crtc_mask(crtc_mask) {
+  allowed_formats.push_back(DRM_FORMAT_XRGB8888);
 }
 
-FakePlaneInfo::FakePlaneInfo(uint32_t crtc_id,
+FakePlaneInfo::FakePlaneInfo(uint32_t plane_id,
                              uint32_t crtc_mask,
-                             const std::vector<uint32_t>& formats) {
-  id = crtc_id;
-  allowed_crtc_mask = crtc_mask;
-  allowed_formats = formats;
-}
+                             const std::vector<uint32_t>& formats)
+    : id(plane_id), allowed_crtc_mask(crtc_mask), allowed_formats(formats) {}
 
 FakePlaneInfo::~FakePlaneInfo() {}
 

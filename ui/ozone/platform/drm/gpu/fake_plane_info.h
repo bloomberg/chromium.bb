@@ -12,8 +12,8 @@
 namespace ui {
 
 struct FakePlaneInfo {
-  FakePlaneInfo(uint32_t crtc_id, uint32_t crtc_mask);
-  FakePlaneInfo(uint32_t crtc_id,
+  FakePlaneInfo(uint32_t plane_id, uint32_t crtc_mask);
+  FakePlaneInfo(uint32_t plane_id,
                 uint32_t crtc_mask,
                 const std::vector<uint32_t>& formats);
   ~FakePlaneInfo();
