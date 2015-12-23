@@ -135,7 +135,8 @@ RendererSchedulerImpl::AnyThread::AnyThread()
     : awaiting_touch_start_response(false),
       in_idle_period(false),
       begin_main_frame_on_critical_path(false),
-      last_gesture_was_compositor_driven(false) {}
+      last_gesture_was_compositor_driven(false),
+      have_seen_touchstart(false) {}
 
 RendererSchedulerImpl::AnyThread::~AnyThread() {}
 
@@ -452,6 +453,7 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
         // |last_gesture_was_compositor_driven| to the default. We don't know
         // yet where the gesture will run.
         AnyThread().last_gesture_was_compositor_driven = false;
+        AnyThread().have_seen_touchstart = true;
         break;
 
       case blink::WebInputEvent::TouchMove:
@@ -724,6 +726,16 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   // Don't block expensive tasks if we are expecting a navigation.
   if (MainThreadOnly().navigation_task_expected_count > 0) {
+    block_expensive_loading_tasks = false;
+    block_expensive_timer_tasks = false;
+  }
+
+  // Only block expensive tasks if we have seen a touch start, i.e. don't block
+  // expensive timers on desktop because it's causing too many problems with
+  // legitimate webcontent using mousehandlers for various things.
+  // See http://crbug.com/570845 and http://crbug.com/570845 for details.
+  // TODO(alexclarke): Revisit the throttling decisions and mechanism.
+  if (!AnyThread().have_seen_touchstart) {
     block_expensive_loading_tasks = false;
     block_expensive_timer_tasks = false;
   }

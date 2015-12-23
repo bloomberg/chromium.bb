@@ -308,6 +308,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     bool in_idle_period;
     bool begin_main_frame_on_critical_path;
     bool last_gesture_was_compositor_driven;
+    bool have_seen_touchstart;
   };
 
   struct CompositorThreadOnly {
