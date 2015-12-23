@@ -27,11 +27,13 @@ namespace base {
 
 namespace internal {
 
+template<typename CFT>
 struct ScopedCFTypeRefTraits {
-  static void Retain(CFTypeRef object) {
+  static CFT InvalidValue() { return nullptr; }
+  static void Retain(CFT object) {
     CFRetain(object);
   }
-  static void Release(CFTypeRef object) {
+  static void Release(CFT object) {
     CFRelease(object);
   }
 };
@@ -39,20 +41,8 @@ struct ScopedCFTypeRefTraits {
 }  // namespace internal
 
 template<typename CFT>
-class ScopedCFTypeRef
-    : public ScopedTypeRef<CFT, internal::ScopedCFTypeRefTraits> {
- public:
-  typedef CFT element_type;
-
-  explicit ScopedCFTypeRef(
-      CFT object = NULL,
-      base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
-      : ScopedTypeRef<CFT,
-                      internal::ScopedCFTypeRefTraits>(object, policy) {}
-
-  ScopedCFTypeRef(const ScopedCFTypeRef<CFT>& that)
-      : ScopedTypeRef<CFT, internal::ScopedCFTypeRefTraits>(that) {}
-};
+using ScopedCFTypeRef =
+    ScopedTypeRef<CFT, internal::ScopedCFTypeRefTraits<CFT>>;
 
 }  // namespace base
 

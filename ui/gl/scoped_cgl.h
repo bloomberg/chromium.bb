@@ -14,6 +14,7 @@ namespace base {
 
 template<>
 struct ScopedTypeRefTraits<CGLContextObj> {
+  static CGLContextObj InvalidValue() { return nullptr; }
   static void Retain(CGLContextObj object) {
     CGLRetainContext(object);
   }
@@ -24,6 +25,7 @@ struct ScopedTypeRefTraits<CGLContextObj> {
 
 template<>
 struct ScopedTypeRefTraits<CGLPixelFormatObj> {
+  static CGLPixelFormatObj InvalidValue() { return nullptr; }
   static void Retain(CGLPixelFormatObj object) {
     CGLRetainPixelFormat(object);
   }

@@ -22,8 +22,9 @@ namespace base {
 //
 //   template<>
 //   struct ScopedTypeRefTraits<CGLContextObj> {
-//     void Retain(CGLContextObj object) { CGLContextRetain(object); }
-//     void Release(CGLContextObj object) { CGLContextRelease(object); }
+//     static CGLContextObj InvalidValue() { return nullptr; }
+//     static void Retain(CGLContextObj object) { CGLContextRetain(object); }
+//     static void Release(CGLContextObj object) { CGLContextRelease(object); }
 //   };
 //
 // For the many types that have pass-by-pointer create functions, the function
@@ -51,7 +52,7 @@ class ScopedTypeRef {
   typedef T element_type;
 
   ScopedTypeRef(
-      T object = NULL,
+      T object = Traits::InvalidValue(),
       base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
       : object_(object) {
     if (object_ && policy == base::scoped_policy::RETAIN)
@@ -82,7 +83,7 @@ class ScopedTypeRef {
     return &object_;
   }
 
-  void reset(T object = NULL,
+  void reset(T object = Traits::InvalidValue(),
              base::scoped_policy::OwnershipPolicy policy =
                 base::scoped_policy::ASSUME) {
     if (object && policy == base::scoped_policy::RETAIN)
@@ -119,7 +120,7 @@ class ScopedTypeRef {
   // Release(), use ScopedTypeRef<>::reset().
   T release() WARN_UNUSED_RESULT {
     T temp = object_;
-    object_ = NULL;
+    object_ = Traits::InvalidValue();
     return temp;
   }
 
