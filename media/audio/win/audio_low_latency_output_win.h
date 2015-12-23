@@ -95,6 +95,8 @@
 
 #include <Audioclient.h>
 #include <MMDeviceAPI.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 

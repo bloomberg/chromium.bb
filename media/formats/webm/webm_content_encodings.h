@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_WEBM_CONTENT_ENCODINGS_H_
 #define MEDIA_FORMATS_WEBM_WEBM_CONTENT_ENCODINGS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

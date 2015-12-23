@@ -7,6 +7,8 @@
 
 #include "media/base/channel_mixing_matrix.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 

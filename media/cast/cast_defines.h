@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_CAST_DEFINES_H_
 #define MEDIA_CAST_CAST_DEFINES_H_
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 
 namespace media {

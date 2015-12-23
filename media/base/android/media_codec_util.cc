@@ -4,6 +4,8 @@
 
 #include "media/base/android/media_codec_util.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/android/build_info.h"

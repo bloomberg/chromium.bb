@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_TEST_UTILITY_BARCODE_H_
 #define MEDIA_CAST_TEST_UTILITY_BARCODE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/ref_counted.h"

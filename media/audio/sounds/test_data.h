@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
 #define MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

@@ -4,6 +4,8 @@
 
 #include "media/base/text_renderer.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"

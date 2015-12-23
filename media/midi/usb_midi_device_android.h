@@ -6,6 +6,7 @@
 #define MEDIA_MIDI_USB_MIDI_DEVICE_ANDROID_H_
 
 #include <jni.h>
+#include <stdint.h>
 #include <string>
 #include <vector>
 

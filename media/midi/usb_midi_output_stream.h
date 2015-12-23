@@ -5,6 +5,7 @@
 #ifndef MEDIA_MIDI_USB_MIDI_OUTPUT_STREAM_H_
 #define MEDIA_MIDI_USB_MIDI_OUTPUT_STREAM_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

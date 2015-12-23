@@ -4,6 +4,7 @@
 
 #include "media/cast/sender/video_encoder.h"
 
+#include "build/build_config.h"
 #include "media/cast/sender/external_video_encoder.h"
 #include "media/cast/sender/video_encoder_impl.h"
 

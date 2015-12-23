@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_WEBM_INFO_PARSER_H_
 #define MEDIA_FORMATS_WEBM_WEBM_INFO_PARSER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"

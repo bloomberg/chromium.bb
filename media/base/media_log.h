@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_MEDIA_LOG_H_
 #define MEDIA_BASE_MEDIA_LOG_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <sstream>
 #include <string>
 

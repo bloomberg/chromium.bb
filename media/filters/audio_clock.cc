@@ -4,6 +4,8 @@
 
 #include "media/filters/audio_clock.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

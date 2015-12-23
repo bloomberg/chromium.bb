@@ -4,7 +4,11 @@
 
 #include "media/cdm/cenc_utils.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

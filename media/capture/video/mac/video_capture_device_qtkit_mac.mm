@@ -5,6 +5,7 @@
 #import "media/capture/video/mac/video_capture_device_qtkit_mac.h"
 
 #import <QTKit/QTKit.h>
+#include <stddef.h>
 
 #include "base/debug/crash_logging.h"
 #include "base/location.h"

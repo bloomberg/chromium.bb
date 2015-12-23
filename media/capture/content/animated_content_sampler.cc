@@ -4,6 +4,9 @@
 
 #include "media/capture/content/animated_content_sampler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 namespace media {

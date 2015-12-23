@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/macros.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"

@@ -5,6 +5,9 @@
 #ifndef MEDIA_FILTERS_VIDEO_RENDERER_ALGORITHM_H_
 #define MEDIA_FILTERS_VIDEO_RENDERER_ALGORITHM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/callback.h"

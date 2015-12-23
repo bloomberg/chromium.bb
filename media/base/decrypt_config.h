@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_DECRYPT_CONFIG_H_
 #define MEDIA_BASE_DECRYPT_CONFIG_H_
 
+#include <stdint.h>
+
 #include <iosfwd>
 #include <string>
 #include <vector>

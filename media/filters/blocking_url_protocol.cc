@@ -4,7 +4,10 @@
 
 #include "media/filters/blocking_url_protocol.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "media/base/data_source.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 

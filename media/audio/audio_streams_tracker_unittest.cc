@@ -4,6 +4,8 @@
 
 #include "media/audio/audio_streams_tracker.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

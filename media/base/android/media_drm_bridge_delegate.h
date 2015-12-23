@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_DELEGATE_H_
 #define MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

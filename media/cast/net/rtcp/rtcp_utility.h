@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_UTILITY_H_
 #define MEDIA_CAST_RTCP_RTCP_UTILITY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/big_endian.h"
 #include "base/macros.h"
 #include "media/cast/logging/logging_defines.h"

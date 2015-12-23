@@ -18,6 +18,8 @@
 #ifndef MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
 #define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"

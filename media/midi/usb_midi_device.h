@@ -5,6 +5,9 @@
 #ifndef MEDIA_MIDI_USB_MIDI_DEVICE_H_
 #define MEDIA_MIDI_USB_MIDI_DEVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"

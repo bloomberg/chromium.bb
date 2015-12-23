@@ -5,6 +5,9 @@
 #ifndef MEDIA_FORMATS_MP4_AVC_H_
 #define MEDIA_FORMATS_MP4_AVC_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

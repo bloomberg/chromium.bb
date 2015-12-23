@@ -4,12 +4,15 @@
 
 #include "media/formats/mp4/mp4_stream_parser.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"

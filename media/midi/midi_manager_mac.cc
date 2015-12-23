@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 
 #include <CoreAudio/HostTime.h>
+#include <stddef.h>
 
 using base::IntToString;
 using base::SysCFStringRefToUTF8;

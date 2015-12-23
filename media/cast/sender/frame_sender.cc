@@ -8,6 +8,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/constants.h"

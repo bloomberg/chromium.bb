@@ -9,6 +9,7 @@
 #include <initguid.h>
 #include <mmsystem.h>
 #include <setupapi.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

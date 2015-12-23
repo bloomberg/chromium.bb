@@ -10,6 +10,7 @@
 // that moves across the screen
 
 #include <math.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <functional>

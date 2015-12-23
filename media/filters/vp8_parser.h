@@ -8,6 +8,9 @@
 #ifndef MEDIA_FILTERS_VP8_PARSER_H_
 #define MEDIA_FILTERS_VP8_PARSER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/filters/vp8_bool_decoder.h"

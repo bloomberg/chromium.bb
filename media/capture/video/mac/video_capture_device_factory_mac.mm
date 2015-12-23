@@ -5,9 +5,11 @@
 #include "media/capture/video/mac/video_capture_device_factory_mac.h"
 
 #import <IOKit/audio/IOAudioTypes.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"

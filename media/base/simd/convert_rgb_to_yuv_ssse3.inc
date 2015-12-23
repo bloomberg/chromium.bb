@@ -3,7 +3,7 @@
 ; found in the LICENSE file.
 
 ;
-; void SYMBOL(const uint8* argb, uint8* y, uint8* u, uint8* v, int width);
+; void SYMBOL(const uint8_t* argb, uint8_t* y, uint8_t* u, uint8_t* v, int width);
 ;
 ; The main code that converts RGB pixels to YUV pixels. This function roughly
 ; consists of three parts: converting one ARGB pixel to YUV pixels, converting

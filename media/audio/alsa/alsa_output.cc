@@ -34,6 +34,8 @@
 
 #include "media/audio/alsa/alsa_output.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

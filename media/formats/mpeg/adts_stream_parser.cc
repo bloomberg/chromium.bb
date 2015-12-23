@@ -4,6 +4,8 @@
 
 #include "media/formats/mpeg/adts_stream_parser.h"
 
+#include <stddef.h>
+
 #include "media/formats/mpeg/adts_constants.h"
 
 namespace media {

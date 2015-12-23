@@ -8,6 +8,8 @@
 #ifndef MEDIA_VIDEO_CAPTURE_FAKE_VIDEO_CAPTURE_DEVICE_H_
 #define MEDIA_VIDEO_CAPTURE_FAKE_VIDEO_CAPTURE_DEVICE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/atomicops.h"

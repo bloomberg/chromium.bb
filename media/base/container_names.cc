@@ -4,10 +4,13 @@
 
 #include "media/base/container_names.h"
 
+#include <stddef.h>
+
 #include <cctype>
 #include <limits>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/base/bit_reader.h"
 
 namespace media {

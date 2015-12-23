@@ -34,6 +34,9 @@
 // - Raw event log of the simulation session tagged with the unique test ID,
 //   written out to the specified file path.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -43,6 +46,7 @@
 #include "base/files/scoped_file.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

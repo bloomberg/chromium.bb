@@ -5,6 +5,9 @@
 #ifndef MEDIA_VIDEO_FAKE_VIDEO_ENCODE_ACCELERATOR_H_
 #define MEDIA_VIDEO_FAKE_VIDEO_ENCODE_ACCELERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <queue>
 #include <vector>

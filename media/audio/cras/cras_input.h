@@ -6,6 +6,8 @@
 #define MEDIA_AUDIO_CRAS_CRAS_INPUT_H_
 
 #include <cras_client.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 

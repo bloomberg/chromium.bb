@@ -6,6 +6,8 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <list>
@@ -15,6 +17,7 @@
 #include "base/bind.h"
 #include "base/containers/stack_container.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_provider.h"

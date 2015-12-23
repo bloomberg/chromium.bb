@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_ENCRYPTED_MEDIA_PLAYER_SUPPORT_H_
 #define MEDIA_BLINK_ENCRYPTED_MEDIA_PLAYER_SUPPORT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

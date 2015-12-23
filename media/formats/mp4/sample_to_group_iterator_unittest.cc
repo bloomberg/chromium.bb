@@ -4,6 +4,10 @@
 
 #include "media/formats/mp4/sample_to_group_iterator.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -4,6 +4,7 @@
 
 #include "media/formats/mp4/box_reader.h"
 
+#include <stddef.h>
 #include <string.h>
 #include <algorithm>
 #include <set>

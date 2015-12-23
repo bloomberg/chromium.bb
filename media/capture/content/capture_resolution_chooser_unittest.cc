@@ -4,7 +4,10 @@
 
 #include "media/capture/content/capture_resolution_chooser.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using tracked_objects::Location;

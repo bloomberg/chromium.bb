@@ -4,6 +4,8 @@
 
 #include "media/audio/cras/audio_manager_cras.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/command_line.h"

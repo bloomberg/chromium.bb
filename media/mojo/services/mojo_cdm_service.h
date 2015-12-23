@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_CDM_SERVICE_H_
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_SERVICE_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

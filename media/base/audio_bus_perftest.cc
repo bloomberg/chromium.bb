@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/fake_audio_render_callback.h"

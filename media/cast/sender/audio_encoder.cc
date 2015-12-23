@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/audio_encoder.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <string>
@@ -11,10 +13,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 
 #if !defined(OS_IOS)
 #include "third_party/opus/src/include/opus.h"

@@ -13,6 +13,7 @@
 
 #include <audioclient.h>
 #include <mmdeviceapi.h>
+#include <stdint.h>
 #include <string>
 
 #include "base/macros.h"

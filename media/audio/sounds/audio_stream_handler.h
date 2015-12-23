@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_SOUNDS_AUDIO_STREAM_HANDLER_H_
 #define MEDIA_AUDIO_SOUNDS_AUDIO_STREAM_HANDLER_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"

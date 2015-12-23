@@ -4,6 +4,8 @@
 
 #include "media/midi/midi_message_util.h"
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

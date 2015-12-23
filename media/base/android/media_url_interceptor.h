@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_URL_INTERCEPTOR_H_
 #define MEDIA_BASE_ANDROID_MEDIA_URL_INTERCEPTOR_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/android/jni_android.h"

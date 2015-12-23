@@ -6,6 +6,7 @@
 #define MEDIA_BASE_MAC_COREMEDIA_GLUE_H_
 
 #include <CoreVideo/CoreVideo.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/macros.h"

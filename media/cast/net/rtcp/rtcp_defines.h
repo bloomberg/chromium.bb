@@ -5,9 +5,13 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_DEFINES_H_
 #define MEDIA_CAST_RTCP_RTCP_DEFINES_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_defines.h"

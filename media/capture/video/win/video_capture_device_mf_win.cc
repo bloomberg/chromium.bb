@@ -6,6 +6,7 @@
 
 #include <mfapi.h>
 #include <mferror.h>
+#include <stddef.h>
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"

@@ -4,6 +4,8 @@
 
 #include "media/filters/audio_file_reader.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/logging.h"

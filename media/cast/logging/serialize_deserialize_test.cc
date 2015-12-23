@@ -5,6 +5,9 @@
 // Joint LogSerializer and LogDeserializer testing to make sure they stay in
 // sync.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/logging/log_deserializer.h"
 #include "media/cast/logging/log_serializer.h"

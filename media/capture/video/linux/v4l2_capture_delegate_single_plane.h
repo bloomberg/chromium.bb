@@ -5,6 +5,8 @@
 #ifndef MEDIA_VIDEO_CAPTURE_LINUX_V4L2_CAPTURE_DELEGATE_SINGLE_PLANE_H_
 #define MEDIA_VIDEO_CAPTURE_LINUX_V4L2_CAPTURE_DELEGATE_SINGLE_PLANE_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "media/capture/video/linux/v4l2_capture_delegate.h"
 #include "media/capture/video/video_capture_device.h"

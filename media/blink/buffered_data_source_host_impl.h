@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_BUFFERED_DATA_SOURCE_HOST_IMPL_H_
 #define MEDIA_BLINK_BUFFERED_DATA_SOURCE_HOST_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/blink/buffered_data_source.h"

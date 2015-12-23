@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_STREAM_PARSER_BUFFER_H_
 #define MEDIA_BASE_STREAM_PARSER_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/macros.h"

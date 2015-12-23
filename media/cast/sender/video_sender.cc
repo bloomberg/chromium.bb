@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/video_sender.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>

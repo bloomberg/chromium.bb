@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_SENDER_CODECS_VP8_VP8_ENCODER_H_
 #define MEDIA_CAST_SENDER_CODECS_VP8_VP8_ENCODER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"

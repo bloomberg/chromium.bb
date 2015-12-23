@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_NET_RTP_RTP_PACKETIZER_H_
 #define MEDIA_CAST_NET_RTP_RTP_PACKETIZER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 #include <list>
 #include <map>

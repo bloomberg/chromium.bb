@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_H_
 
 #include <jni.h>
+#include <stdint.h>
 #include <string>
 #include <vector>
 

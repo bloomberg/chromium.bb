@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_RESOURCE_MULTIBUFFER_DATA_PROVIDER_H_
 #define MEDIA_BLINK_RESOURCE_MULTIBUFFER_DATA_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"

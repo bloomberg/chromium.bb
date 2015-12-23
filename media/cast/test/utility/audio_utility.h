@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_TEST_UTILITY_AUDIO_UTILITY_H_
 #define MEDIA_CAST_TEST_UTILITY_AUDIO_UTILITY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/audio/simple_sources.h"
 

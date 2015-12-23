@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_WEBSOURCEBUFFER_IMPL_H_
 #define MEDIA_BLINK_WEBSOURCEBUFFER_IMPL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"

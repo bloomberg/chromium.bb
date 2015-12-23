@@ -5,7 +5,10 @@
 #ifndef MEDIA_VIDEO_CAPTURE_LINUX_V4L2_CAPTURE_DELEGATE_MULTI_PLANE_H_
 #define MEDIA_VIDEO_CAPTURE_LINUX_V4L2_CAPTURE_DELEGATE_MULTI_PLANE_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "media/capture/video/linux/v4l2_capture_delegate.h"
 
 #if defined(OS_OPENBSD)

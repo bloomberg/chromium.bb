@@ -5,6 +5,9 @@
 #ifndef MEDIA_FILTERS_GPU_VIDEO_DECODER_H_
 #define MEDIA_FILTERS_GPU_VIDEO_DECODER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <set>

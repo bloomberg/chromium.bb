@@ -4,6 +4,8 @@
 
 #include "media/base/fake_text_track_stream.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"

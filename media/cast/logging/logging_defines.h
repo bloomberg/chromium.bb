@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_LOGGING_LOGGING_DEFINES_H_
 #define MEDIA_CAST_LOGGING_LOGGING_DEFINES_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>

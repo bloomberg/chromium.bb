@@ -5,8 +5,11 @@
 #ifndef MEDIA_FORMATS_MP4_AAC_H_
 #define MEDIA_FORMATS_MP4_AAC_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "build/build_config.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"

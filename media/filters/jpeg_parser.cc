@@ -6,6 +6,7 @@
 
 #include "base/big_endian.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 using base::BigEndianReader;
 

@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_RECEIVER_FRAME_RECEIVER_H_
 #define MEDIA_CAST_RECEIVER_FRAME_RECEIVER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
 #include "base/macros.h"

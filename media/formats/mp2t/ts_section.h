@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MP2T_TS_SECTION_H_
 #define MEDIA_FORMATS_MP2T_TS_SECTION_H_
 
+#include <stdint.h>
+
 namespace media {
 namespace mp2t {
 

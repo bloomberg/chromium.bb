@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_CDM_H_
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

@@ -11,10 +11,13 @@
 // encrypted request for comments specification is here
 // http://wiki.webmproject.org/encryption/webm-encryption-rfc
 
+#include <stddef.h>
+
 #include <iomanip>
 #include <limits>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/formats/webm/webm_constants.h"
 

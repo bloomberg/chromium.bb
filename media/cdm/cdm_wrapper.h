@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_CDM_WRAPPER_H_
 #define MEDIA_CDM_CDM_WRAPPER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

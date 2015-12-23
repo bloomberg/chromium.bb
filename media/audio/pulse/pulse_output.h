@@ -20,6 +20,8 @@
 #ifndef MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
 #define MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/macros.h"

@@ -19,6 +19,8 @@
 #ifndef MEDIA_RENDERERS_AUDIO_RENDERER_IMPL_H_
 #define MEDIA_RENDERERS_AUDIO_RENDERER_IMPL_H_
 
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/macros.h"

@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_STREAM_PARSER_H_
 #define MEDIA_BASE_STREAM_PARSER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <string>

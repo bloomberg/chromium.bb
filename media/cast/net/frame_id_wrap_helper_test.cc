@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include <gtest/gtest.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport_defines.h"
 

@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_AUDIO_CLOCK_H_
 #define MEDIA_FILTERS_AUDIO_CLOCK_H_
 
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/macros.h"

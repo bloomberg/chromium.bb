@@ -5,6 +5,9 @@
 #ifndef MEDIA_BLINK_URL_INDEX_H_
 #define MEDIA_BLINK_URL_INDEX_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 

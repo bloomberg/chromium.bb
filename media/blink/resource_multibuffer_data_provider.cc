@@ -4,6 +4,8 @@
 
 #include "media/blink/resource_multibuffer_data_provider.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/callback_helpers.h"

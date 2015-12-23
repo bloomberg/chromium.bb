@@ -5,6 +5,9 @@
 #ifndef MEDIA_FORMATS_COMMON_STREAM_PARSER_TEST_BASE_H_
 #define MEDIA_FORMATS_COMMON_STREAM_PARSER_TEST_BASE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/audio_decoder_config.h"

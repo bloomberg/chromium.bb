@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/mojo_cdm.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"

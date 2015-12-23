@@ -4,6 +4,8 @@
 
 #include "media/capture/content/smooth_event_sampler.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/trace_event/trace_event.h"

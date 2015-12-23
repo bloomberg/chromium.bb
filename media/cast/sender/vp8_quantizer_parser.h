@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_SENDER_VP8_QUANTIZER_PARSER_H_
 #define MEDIA_CAST_SENDER_VP8_QUANTIZER_PARSER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "media/cast/cast_config.h"
 
 namespace media {

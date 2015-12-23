@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_SENDER_SOFTWARE_VIDEO_ENCODER_H_
 #define MEDIA_CAST_SENDER_SOFTWARE_VIDEO_ENCODER_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "media/cast/sender/sender_encoded_frame.h"
 

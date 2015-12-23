@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_CLIENT_ANDROID_H_
 #define MEDIA_BASE_ANDROID_MEDIA_CLIENT_ANDROID_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>

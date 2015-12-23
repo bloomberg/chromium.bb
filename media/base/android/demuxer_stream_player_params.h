@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_DEMUXER_STREAM_PLAYER_PARAMS_H_
 #define MEDIA_BASE_ANDROID_DEMUXER_STREAM_PLAYER_PARAMS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "media/base/audio_decoder_config.h"

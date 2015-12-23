@@ -5,6 +5,7 @@
 #include "media/midi/usb_midi_output_stream.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/midi/midi_message_util.h"
 #include "media/midi/usb_midi_device.h"
 

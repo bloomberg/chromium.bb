@@ -4,6 +4,8 @@
 
 #include "key_system_config_selector.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"

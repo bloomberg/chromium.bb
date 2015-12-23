@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/mojo_media_client.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_stream_sink.h"

@@ -13,12 +13,12 @@
 ; Use movq to save the output.
 %define MOVQ movq
 
-; void ScaleYUVToRGB32Row_MMX(const uint8* y_buf,
-;                             const uint8* u_buf,
-;                             const uint8* v_buf,
-;                             uint8* rgb_buf,
+; void ScaleYUVToRGB32Row_MMX(const uint8_t* y_buf,
+;                             const uint8_t* u_buf,
+;                             const uint8_t* v_buf,
+;                             uint8_t* rgb_buf,
 ;                             ptrdiff_t width,
 ;                             ptrdiff_t source_dx);
-;                             const int16* convert_table);
+;                             const int16_t* convert_table);
 %define SYMBOL ScaleYUVToRGB32Row_MMX
 %include "scale_yuv_to_rgb_mmx.inc"

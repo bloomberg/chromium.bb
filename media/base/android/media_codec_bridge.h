@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
 #define MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <set>

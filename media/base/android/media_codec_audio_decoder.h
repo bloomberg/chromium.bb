@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_AUDIO_DECODER_H_
 #define MEDIA_BASE_ANDROID_MEDIA_CODEC_AUDIO_DECODER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/android/media_codec_decoder.h"
 

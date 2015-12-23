@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 // MSVC++ requires this to be set before any other includes to get M_PI.
 #define _USE_MATH_DEFINES
-#include <cmath>
 
 #include "media/audio/simple_sources.h"
 
+#include <stddef.h>
+
 #include <algorithm>
+#include <cmath>
 
 #include "base/files/file.h"
 #include "base/lazy_instance.h"

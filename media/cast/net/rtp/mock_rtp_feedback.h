@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_NET_RTP_MOCK_RTP_FEEDBACK_H_
 #define MEDIA_CAST_NET_RTP_MOCK_RTP_FEEDBACK_H_
 
+#include <stdint.h>
+
 #include "media/cast/net/rtp/rtp_parser/rtp_feedback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

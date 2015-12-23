@@ -5,6 +5,9 @@
 #ifndef MEDIA_MIDI_MIDI_MANAGER_H_
 #define MEDIA_MIDI_MIDI_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 

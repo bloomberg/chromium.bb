@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_NET_RTCP_RTCP_BUILDER_H_
 #define MEDIA_CAST_NET_RTCP_RTCP_BUILDER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <list>
 #include <string>

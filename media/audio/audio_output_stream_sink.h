@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_STREAM_SINK_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_STREAM_SINK_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"

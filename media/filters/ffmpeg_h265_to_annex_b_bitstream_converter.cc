@@ -4,6 +4,8 @@
 
 #include "media/filters/ffmpeg_h265_to_annex_b_bitstream_converter.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "media/base/decrypt_config.h"
 #include "media/ffmpeg/ffmpeg_common.h"

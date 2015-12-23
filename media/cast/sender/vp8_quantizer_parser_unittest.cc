@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <cstdlib>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/receiver/video_decoder.h"

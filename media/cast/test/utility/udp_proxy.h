@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_TEST_UTILITY_UDP_PROXY_H_
 #define MEDIA_CAST_TEST_UTILITY_UDP_PROXY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

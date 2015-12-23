@@ -4,6 +4,7 @@
 
 #include "media/blink/buffered_resource_loader.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>

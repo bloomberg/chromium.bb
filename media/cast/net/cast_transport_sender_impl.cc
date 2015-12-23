@@ -4,8 +4,11 @@
 
 #include "media/cast/net/cast_transport_sender_impl.h"
 
+#include <stddef.h>
+
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/udp_transport.h"
 #include "net/base/net_errors.h"

@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_WEBM_CRYPTO_HELPERS_H_
 #define MEDIA_FORMATS_WEBM_WEBM_CRYPTO_HELPERS_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "media/base/decoder_buffer.h"
 

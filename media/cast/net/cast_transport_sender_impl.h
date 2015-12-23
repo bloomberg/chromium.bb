@@ -24,6 +24,8 @@
 #ifndef MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
 #define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 

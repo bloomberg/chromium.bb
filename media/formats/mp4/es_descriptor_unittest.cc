@@ -4,6 +4,8 @@
 
 #include "media/formats/mp4/es_descriptor.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

@@ -11,10 +11,10 @@
   SECTION_TEXT
   CPU       MMX
 
-;void LinearScaleYUVToRGB32Row_MMX_X64(const uint8* y_buf,
-;                                      const uint8* u_buf,
-;                                      const uint8* v_buf,
-;                                      uint8* rgb_buf,
+;void LinearScaleYUVToRGB32Row_MMX_X64(const uint8_t* y_buf,
+;                                      const uint8_t* u_buf,
+;                                      const uint8_t* v_buf,
+;                                      uint8_t* rgb_buf,
 ;                                      ptrdiff_t width,
 ;                                      ptrdiff_t source_dx);
 %define SYMBOL LinearScaleYUVToRGB32Row_MMX_X64

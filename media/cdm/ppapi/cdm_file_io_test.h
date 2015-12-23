@@ -5,6 +5,7 @@
 #ifndef MEDIA_CDM_PPAPI_CDM_FILE_IO_TEST_H_
 #define MEDIA_CDM_PPAPI_CDM_FILE_IO_TEST_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <list>

@@ -4,9 +4,13 @@
 
 #include "media/midi/usb_midi_output_stream.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "media/midi/usb_midi_device.h"

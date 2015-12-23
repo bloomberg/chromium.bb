@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_NET_RTP_FRAMER_H_
 #define MEDIA_CAST_NET_RTP_FRAMER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/macros.h"

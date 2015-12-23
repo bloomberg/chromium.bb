@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_TEST_LOOPBACK_TRANSPORT_H_
 #define MEDIA_CAST_TEST_LOOPBACK_TRANSPORT_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

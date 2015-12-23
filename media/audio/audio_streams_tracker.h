@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_STREAMS_TRACKER_H_
 #define MEDIA_AUDIO_AUDIO_STREAMS_TRACKER_H_
 
+#include <stddef.h>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"

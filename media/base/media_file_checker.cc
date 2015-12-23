@@ -4,6 +4,9 @@
 
 #include "media/base/media_file_checker.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/bind.h"

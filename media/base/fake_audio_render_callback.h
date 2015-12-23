@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_FAKE_AUDIO_RENDER_CALLBACK_H_
 #define MEDIA_BASE_FAKE_AUDIO_RENDER_CALLBACK_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_renderer_sink.h"

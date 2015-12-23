@@ -4,6 +4,8 @@
 
 #include "media/cast/test/utility/default_config.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/constants.h"

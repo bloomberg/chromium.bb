@@ -33,6 +33,8 @@
 #ifndef MEDIA_BASE_SEEKABLE_BUFFER_H_
 #define MEDIA_BASE_SEEKABLE_BUFFER_H_
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/macros.h"

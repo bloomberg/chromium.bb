@@ -4,7 +4,10 @@
 
 #include "media/capture/video/file_video_capture_device.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "media/base/video_capture_types.h"

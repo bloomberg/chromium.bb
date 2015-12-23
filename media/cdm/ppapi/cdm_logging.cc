@@ -26,12 +26,13 @@
 #if defined(OS_POSIX)
 #include <errno.h>
 #include <pthread.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #endif
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <iomanip>

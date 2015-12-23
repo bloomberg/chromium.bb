@@ -6,6 +6,7 @@
 #define MEDIA_MIDI_MIDI_MANAGER_ALSA_H_
 
 #include <alsa/asoundlib.h>
+#include <stdint.h>
 #include <map>
 #include <vector>
 

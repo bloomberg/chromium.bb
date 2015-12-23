@@ -5,6 +5,7 @@
 #include <MMDeviceAPI.h>
 #include <mmsystem.h>
 #include <Functiondiscoverykeys_devpkey.h>  // MMDeviceAPI.h must come first
+#include <stddef.h>
 
 #include "media/audio/win/audio_manager_win.h"
 

@@ -18,6 +18,8 @@
 
 #include "media/cast/logging/log_serializer.h"
 
+#include <stdint.h>
+
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

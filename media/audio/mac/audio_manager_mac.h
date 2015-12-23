@@ -7,6 +7,7 @@
 
 #include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/AudioHardware.h>
+#include <stddef.h>
 #include <list>
 #include <string>
 

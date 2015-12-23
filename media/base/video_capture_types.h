@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_VIDEO_CAPTURE_TYPES_H_
 #define MEDIA_BASE_VIDEO_CAPTURE_TYPES_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "build/build_config.h"

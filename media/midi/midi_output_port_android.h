@@ -6,6 +6,7 @@
 #define MEDIA_MIDI_MIDI_OUTPUT_PORT_ANDROID_H_
 
 #include <jni.h>
+#include <stdint.h>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"

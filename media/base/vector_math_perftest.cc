@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/base/vector_math.h"
 #include "media/base/vector_math_testing.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -240,10 +240,10 @@
 %endmacro
 
 ;
-; extern "C" void ConvertARGBToYUVRow_SSSE3(const uint8* argb,
-;                                           uint8* y,
-;                                           uint8* u,
-;                                           uint8* v,
+; extern "C" void ConvertARGBToYUVRow_SSSE3(const uint8_t* argb,
+;                                           uint8_t* y,
+;                                           uint8_t* u,
+;                                           uint8_t* v,
 ;                                           ptrdiff_t width);
 ;
 %define SYMBOL          ConvertARGBToYUVRow_SSSE3
@@ -253,10 +253,10 @@
 %include "convert_rgb_to_yuv_ssse3.inc"
 
 ;
-; extern "C" void ConvertRGBToYUVRow_SSSE3(const uint8* rgb,
-;                                          uint8* y,
-;                                          uint8* u,
-;                                          uint8* v,
+; extern "C" void ConvertRGBToYUVRow_SSSE3(const uint8_t* rgb,
+;                                          uint8_t* y,
+;                                          uint8_t* u,
+;                                          uint8_t* v,
 ;                                          ptrdiff_t width);
 ;
 %define SYMBOL          ConvertRGBToYUVRow_SSSE3
@@ -266,10 +266,10 @@
 %include "convert_rgb_to_yuv_ssse3.inc"
 
 ;
-; extern "C" void ConvertARGBToYUVEven_SSSE3(const uint8* argb,
-;                                            uint8* y,
-;                                            uint8* u,
-;                                            uint8* v,
+; extern "C" void ConvertARGBToYUVEven_SSSE3(const uint8_t* argb,
+;                                            uint8_t* y,
+;                                            uint8_t* u,
+;                                            uint8_t* v,
 ;                                            ptrdiff_t width);
 ;
 %define SYMBOL          ConvertARGBToYUVEven_SSSE3
@@ -279,10 +279,10 @@
 %include "convert_rgb_to_yuv_ssse3.inc"
 
 ;
-; extern "C" void ConvertARGBToYUVOdd_SSSE3(const uint8* argb,
-;                                           uint8* y,
-;                                           uint8* u,
-;                                           uint8* v,
+; extern "C" void ConvertARGBToYUVOdd_SSSE3(const uint8_t* argb,
+;                                           uint8_t* y,
+;                                           uint8_t* u,
+;                                           uint8_t* v,
 ;                                           ptrdiff_t width);
 ;
 %define SYMBOL          ConvertARGBToYUVOdd_SSSE3
@@ -292,10 +292,10 @@
 %include "convert_rgb_to_yuv_ssse3.inc"
 
 ;
-; extern "C" void ConvertRGBToYUVEven_SSSE3(const uint8* rgb,
-;                                           uint8* y,
-;                                           uint8* u,
-;                                           uint8* v,
+; extern "C" void ConvertRGBToYUVEven_SSSE3(const uint8_t* rgb,
+;                                           uint8_t* y,
+;                                           uint8_t* u,
+;                                           uint8_t* v,
 ;                                           ptrdiff_t width);
 ;
 %define SYMBOL          ConvertRGBToYUVEven_SSSE3
@@ -305,10 +305,10 @@
 %include "convert_rgb_to_yuv_ssse3.inc"
 
 ;
-; extern "C" void ConvertRGBToYUVOdd_SSSE3(const uint8* rgb,
-;                                          uint8* y,
-;                                          uint8* u,
-;                                          uint8* v,
+; extern "C" void ConvertRGBToYUVOdd_SSSE3(const uint8_t* rgb,
+;                                          uint8_t* y,
+;                                          uint8_t* u,
+;                                          uint8_t* v,
 ;                                          ptrdiff_t width);
 ;
 %define SYMBOL          ConvertRGBToYUVOdd_SSSE3

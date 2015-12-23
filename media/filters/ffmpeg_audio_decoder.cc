@@ -4,6 +4,8 @@
 
 #include "media/filters/ffmpeg_audio_decoder.h"
 
+#include <stdint.h>
+
 #include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_buffer.h"

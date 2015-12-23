@@ -6,10 +6,12 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
+#include "build/build_config.h"
 #include "media/base/vector_math.h"
 #include "media/base/vector_math_testing.h"
 #include "testing/gtest/include/gtest/gtest.h"

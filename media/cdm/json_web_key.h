@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_JSON_WEB_KEY_H_
 #define MEDIA_CDM_JSON_WEB_KEY_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>

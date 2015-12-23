@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MP4_SAMPLE_TO_GROUP_ITERATOR_H_
 #define MEDIA_FORMATS_MP4_SAMPLE_TO_GROUP_ITERATOR_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

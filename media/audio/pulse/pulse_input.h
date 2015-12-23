@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_PULSE_PULSE_INPUT_H_
 
 #include <pulse/pulseaudio.h>
+#include <stddef.h>
 #include <string>
 
 #include "base/macros.h"

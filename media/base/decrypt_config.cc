@@ -4,6 +4,8 @@
 
 #include "media/base/decrypt_config.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 

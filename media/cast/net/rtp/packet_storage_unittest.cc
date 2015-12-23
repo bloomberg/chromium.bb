@@ -4,6 +4,7 @@
 
 #include "media/cast/net/rtp/packet_storage.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>

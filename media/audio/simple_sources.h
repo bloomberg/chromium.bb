@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_SIMPLE_SOURCES_H_
 #define MEDIA_AUDIO_SIMPLE_SOURCES_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
 #include "media/audio/audio_io.h"

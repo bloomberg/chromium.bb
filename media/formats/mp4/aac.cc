@@ -4,9 +4,12 @@
 
 #include "media/formats/mp4/aac.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "media/base/bit_reader.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mpeg/adts_constants.h"

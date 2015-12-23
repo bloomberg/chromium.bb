@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_AUDIO_RENDERER_MIXER_H_
 #define MEDIA_BASE_AUDIO_RENDERER_MIXER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 

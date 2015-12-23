@@ -4,6 +4,8 @@
 
 #include "media/base/mac/video_frame_mac.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"

@@ -4,8 +4,11 @@
 
 #include "media/mojo/services/media_type_converters.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
+#include "base/macros.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
@@ -27,8 +30,8 @@ void CompareBytes(uint8_t* original_data, uint8_t* result_data, size_t length) {
 
 // Compare the actual video frame bytes (|rows| rows of |row|bytes| data),
 // skipping any padding that may be in either frame.
-void CompareRowBytes(uint8* original_data,
-                     uint8* result_data,
+void CompareRowBytes(uint8_t* original_data,
+                     uint8_t* result_data,
                      size_t rows,
                      size_t row_bytes,
                      size_t original_stride,

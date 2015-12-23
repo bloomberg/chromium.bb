@@ -4,10 +4,15 @@
 
 #include "media/audio/audio_output_device.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/base/limits.h"
 

@@ -6,16 +6,20 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#if defined(OS_OPENBSD)
-#include <sys/videoio.h>
-#else
-#include <linux/videodev2.h>
-#endif
+#include <stdint.h>
 #include <sys/ioctl.h>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
+#include "build/build_config.h"
+
+#if defined(OS_OPENBSD)
+#include <sys/videoio.h>
+#else
+#include <linux/videodev2.h>
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/linux/video_capture_device_chromeos.h"
 #endif

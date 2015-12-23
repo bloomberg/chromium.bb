@@ -5,6 +5,7 @@
 #ifndef MEDIA_MIDI_MIDI_MESSAGE_QUEUE_H_
 #define MEDIA_MIDI_MIDI_MESSAGE_QUEUE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <deque>

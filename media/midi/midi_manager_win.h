@@ -5,6 +5,8 @@
 #ifndef MEDIA_MIDI_MIDI_MANAGER_WIN_H_
 #define MEDIA_MIDI_MIDI_MANAGER_WIN_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

@@ -5,6 +5,8 @@
 #ifndef MEDIA_TEST_PIPELINE_INTEGRATION_TEST_BASE_H_
 #define MEDIA_TEST_PIPELINE_INTEGRATION_TEST_BASE_H_
 
+#include <stdint.h>
+
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "media/audio/clockless_audio_sink.h"

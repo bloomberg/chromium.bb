@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_SDK_MEDIA_CODEC_BRIDGE_H_
 
 #include <jni.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <set>

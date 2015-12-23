@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/cras/audio_manager_cras.h"

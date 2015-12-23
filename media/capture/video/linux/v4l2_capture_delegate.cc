@@ -13,6 +13,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/linux/v4l2_capture_delegate_multi_plane.h"
 #include "media/capture/video/linux/v4l2_capture_delegate_single_plane.h"

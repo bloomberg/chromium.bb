@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_VIDEO_UTIL_H_
 #define MEDIA_BASE_VIDEO_UTIL_H_
 
+#include <stdint.h>
+
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

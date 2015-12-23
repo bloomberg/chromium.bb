@@ -4,6 +4,9 @@
 
 #include "media/filters/ffmpeg_video_decoder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 

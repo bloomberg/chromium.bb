@@ -5,6 +5,7 @@
 #include "media/audio/android/opensles_output.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/android/audio_manager_android.h"
 

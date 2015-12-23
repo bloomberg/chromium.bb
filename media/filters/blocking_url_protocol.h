@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_BLOCKING_URL_PROTOCOL_H_
 #define MEDIA_FILTERS_BLOCKING_URL_PROTOCOL_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"

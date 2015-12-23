@@ -6,6 +6,7 @@
 #ifndef MEDIA_MIDI_USB_MIDI_DESCRIPTOR_PARSER_H_
 #define MEDIA_MIDI_USB_MIDI_DESCRIPTOR_PARSER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

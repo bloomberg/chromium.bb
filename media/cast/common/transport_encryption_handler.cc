@@ -4,6 +4,8 @@
 
 #include "media/cast/common/transport_encryption_handler.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"

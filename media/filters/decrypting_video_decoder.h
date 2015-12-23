@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_DECRYPTING_VIDEO_DECODER_H_
 #define MEDIA_FILTERS_DECRYPTING_VIDEO_DECODER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

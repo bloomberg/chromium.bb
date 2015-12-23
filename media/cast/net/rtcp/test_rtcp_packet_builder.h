@@ -7,6 +7,8 @@
 #ifndef MEDIA_CAST_RTCP_TEST_RTCP_PACKET_BUILDER_H_
 #define MEDIA_CAST_RTCP_TEST_RTCP_PACKET_BUILDER_H_
 
+#include <stdint.h>
+
 #include "base/big_endian.h"
 #include "base/macros.h"
 #include "media/cast/net/cast_transport_defines.h"

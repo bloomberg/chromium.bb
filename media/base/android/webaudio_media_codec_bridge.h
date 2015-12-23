@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_WEBAUDIO_MEDIA_CODEC_BRIDGE_H_
 
 #include <jni.h>
+#include <stdint.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"

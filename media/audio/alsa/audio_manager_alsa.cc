@@ -4,10 +4,13 @@
 
 #include "media/audio/alsa/audio_manager_alsa.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/launch.h"

@@ -7,6 +7,8 @@
 
 #include "video_decode_accelerator.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

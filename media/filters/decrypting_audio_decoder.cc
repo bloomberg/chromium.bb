@@ -4,6 +4,8 @@
 
 #include "media/filters/decrypting_audio_decoder.h"
 
+#include <stdint.h>
+
 #include <cstdlib>
 
 #include "base/bind.h"

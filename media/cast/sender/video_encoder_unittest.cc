@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
+#include <stdint.h>
+
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/sender/fake_video_encode_accelerator_factory.h"
-#include "media/cast/sender/video_frame_factory.h"
 #include "media/cast/sender/video_encoder.h"
+#include "media/cast/sender/video_frame_factory.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"

@@ -22,6 +22,7 @@
 #define MEDIA_AUDIO_ALSA_ALSA_OUTPUT_H_
 
 #include <alsa/asoundlib.h>
+#include <stdint.h>
 
 #include <string>
 

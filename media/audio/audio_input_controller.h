@@ -5,7 +5,11 @@
 #ifndef MEDIA_AUDIO_AUDIO_INPUT_CONTROLLER_H_
 #define MEDIA_AUDIO_AUDIO_INPUT_CONTROLLER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
+
 #include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/files/file.h"
@@ -16,6 +20,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"

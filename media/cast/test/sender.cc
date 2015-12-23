@@ -5,6 +5,8 @@
 // Test application that simulates a cast sender - Data can be either generated
 // or read from a file.
 
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/at_exit.h"

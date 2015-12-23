@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_WEBAUDIOSOURCEPROVIDER_IMPL_H_
 #define MEDIA_BLINK_WEBAUDIOSOURCEPROVIDER_IMPL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/callback.h"

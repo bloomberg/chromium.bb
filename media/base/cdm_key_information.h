@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_CDM_KEY_INFORMATION_H_
 #define MEDIA_BASE_CDM_KEY_INFORMATION_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

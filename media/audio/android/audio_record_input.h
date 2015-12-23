@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_ANDROID_AUDIO_RECORD_INPUT_H_
 #define MEDIA_AUDIO_ANDROID_AUDIO_RECORD_INPUT_H_
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"

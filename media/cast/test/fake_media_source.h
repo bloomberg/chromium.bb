@@ -10,6 +10,8 @@
 #ifndef MEDIA_CAST_TEST_FAKE_MEDIA_SOURCE_H_
 #define MEDIA_CAST_TEST_FAKE_MEDIA_SOURCE_H_
 
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/files/file_path.h"

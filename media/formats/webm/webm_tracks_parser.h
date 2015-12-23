@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_WEBM_TRACKS_PARSER_H_
 #define MEDIA_FORMATS_WEBM_WEBM_TRACKS_PARSER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>

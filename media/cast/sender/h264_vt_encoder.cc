@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/h264_vt_encoder.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -15,6 +17,7 @@
 #include "base/macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "media/base/mac/corevideo_glue.h"
 #include "media/base/mac/video_frame_mac.h"
 #include "media/cast/cast_defines.h"

@@ -4,6 +4,8 @@
 
 #include "media/capture/content/thread_safe_capture_oracle.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/logging.h"

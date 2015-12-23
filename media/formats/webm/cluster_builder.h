@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_CLUSTER_BUILDER_H_
 #define MEDIA_FORMATS_WEBM_CLUSTER_BUILDER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 

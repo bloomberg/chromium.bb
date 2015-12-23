@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_OPUS_CONSTANTS_H_
 #define MEDIA_FILTERS_OPUS_CONSTANTS_H_
 
+#include <stdint.h>
+
 namespace media {
 
 // The Opus specification is part of IETF RFC 6716:

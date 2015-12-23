@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_AUDIO_HASH_H_
 #define MEDIA_BASE_AUDIO_HASH_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

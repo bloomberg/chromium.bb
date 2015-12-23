@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_WEBM_CLUSTER_PARSER_H_
 #define MEDIA_FORMATS_WEBM_WEBM_CLUSTER_PARSER_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <set>

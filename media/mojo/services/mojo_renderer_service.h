@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_RENDERER_SERVICE_H_
 #define MEDIA_MOJO_SERVICES_MOJO_RENDERER_SERVICE_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

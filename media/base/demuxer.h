@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_DEMUXER_H_
 #define MEDIA_BASE_DEMUXER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

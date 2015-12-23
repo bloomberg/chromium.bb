@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"

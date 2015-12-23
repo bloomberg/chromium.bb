@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/sender/vp8_quantizer_parser.h"
 #include "base/logging.h"
+#include "base/macros.h"
+#include "media/cast/sender/vp8_quantizer_parser.h"
 
 namespace media {
 namespace cast {

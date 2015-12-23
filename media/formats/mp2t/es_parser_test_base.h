@@ -5,6 +5,9 @@
 #ifndef MEDIA_FORMATS_MP2T_ES_PARSER_TEST_BASE_H_
 #define MEDIA_FORMATS_MP2T_ES_PARSER_TEST_BASE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <sstream>
 #include <string>
 #include <vector>

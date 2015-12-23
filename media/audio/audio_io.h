@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_IO_H_
 #define MEDIA_AUDIO_AUDIO_IO_H_
 
+#include <stdint.h>
+
 #include "media/base/audio_bus.h"
 
 // Low-level audio output support. To make sound there are 3 objects involved:

@@ -5,16 +5,20 @@
 #ifndef MEDIA_VIDEO_CAPTURE_LINUX_V4L2_VIDEO_CAPTURE_DELEGATE_H_
 #define MEDIA_VIDEO_CAPTURE_LINUX_V4L2_VIDEO_CAPTURE_DELEGATE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/files/scoped_file.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "build/build_config.h"
+#include "media/capture/video/video_capture_device.h"
+
 #if defined(OS_OPENBSD)
 #include <sys/videoio.h>
 #else
 #include <linux/videodev2.h>
 #endif
-
-#include "base/files/scoped_file.h"
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "media/capture/video/video_capture_device.h"
 
 namespace tracked_objects {
 class Location;

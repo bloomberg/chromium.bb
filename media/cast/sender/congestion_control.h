@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_CONGESTION_CONTROL_CONGESTION_CONTROL_H_
 #define MEDIA_CAST_CONGESTION_CONTROL_CONGESTION_CONTROL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"

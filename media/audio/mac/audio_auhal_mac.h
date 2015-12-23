@@ -19,6 +19,8 @@
 
 #include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/CoreAudio.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"

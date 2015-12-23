@@ -4,7 +4,10 @@
 
 #include "media/capture/video/linux/video_capture_device_chromeos.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

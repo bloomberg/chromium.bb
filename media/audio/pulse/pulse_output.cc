@@ -5,6 +5,7 @@
 #include "media/audio/pulse/pulse_output.h"
 
 #include <pulse/pulseaudio.h>
+#include <stdint.h>
 
 #include "base/single_thread_task_runner.h"
 #include "media/audio/audio_manager_base.h"

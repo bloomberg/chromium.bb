@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_BIT_READER_H_
 #define MEDIA_BASE_BIT_READER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

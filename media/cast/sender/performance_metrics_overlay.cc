@@ -4,6 +4,9 @@
 
 #include "media/cast/sender/performance_metrics_overlay.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 

@@ -4,6 +4,8 @@
 
 #include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_audio_decoder.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_CONTROLLER_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
 #include "base/macros.h"

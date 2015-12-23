@@ -7,6 +7,8 @@
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"

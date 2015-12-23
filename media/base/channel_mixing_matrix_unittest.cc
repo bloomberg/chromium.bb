@@ -7,8 +7,11 @@
 
 #include "media/base/channel_mixing_matrix.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

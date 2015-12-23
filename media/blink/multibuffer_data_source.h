@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_MULTIBUFFER_DATA_SOURCE_H_
 #define MEDIA_BLINK_MULTIBUFFER_DATA_SOURCE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

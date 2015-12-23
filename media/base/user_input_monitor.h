@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_USER_INPUT_MONITOR_H_
 #define MEDIA_BASE_USER_INPUT_MONITOR_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

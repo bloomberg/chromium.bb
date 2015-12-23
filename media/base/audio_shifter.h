@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_AUDIO_SHIFTER_H
 #define MEDIA_BASE_AUDIO_SHIFTER_H
 
+#include <stddef.h>
+
 #include <deque>
 
 #include "base/memory/linked_ptr.h"

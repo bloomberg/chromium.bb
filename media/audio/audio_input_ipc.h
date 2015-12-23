@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_INPUT_IPC_H_
 #define MEDIA_AUDIO_AUDIO_INPUT_IPC_H_
 
+#include <stdint.h>
+
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "media/audio/audio_parameters.h"

@@ -4,18 +4,20 @@
 
 #include <windows.h>
 #include <mmsystem.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/base_paths.h"
 #include "base/memory/aligned_memory.h"
 #include "base/sync_socket.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
-#include "media/base/limits.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/simple_sources.h"
+#include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

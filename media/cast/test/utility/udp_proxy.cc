@@ -9,6 +9,7 @@
 #include "media/cast/test/utility/udp_proxy.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"

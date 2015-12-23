@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MP2T_ES_ADAPTER_VIDEO_H_
 #define MEDIA_FORMATS_MP2T_ES_ADAPTER_VIDEO_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <list>
 #include <utility>

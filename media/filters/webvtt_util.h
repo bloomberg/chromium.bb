@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_WEBVTT_UTIL_H_
 #define MEDIA_FILTERS_WEBVTT_UTIL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 namespace media {

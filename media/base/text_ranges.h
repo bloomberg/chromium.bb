@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_TEXT_RANGES_H_
 #define MEDIA_BASE_TEXT_RANGES_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/macros.h"

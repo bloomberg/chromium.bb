@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/external_video_encoder.h"
 
+#include <stdint.h>
+
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "testing/gtest/include/gtest/gtest.h"

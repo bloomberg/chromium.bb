@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_CDM_PROMISE_ADAPTER_H_
 #define MEDIA_BASE_CDM_PROMISE_ADAPTER_H_
 
+#include <stdint.h>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

@@ -4,6 +4,8 @@
 
 #include "media/audio/alsa/alsa_util.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 

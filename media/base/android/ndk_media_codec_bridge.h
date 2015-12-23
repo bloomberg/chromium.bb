@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_NDK_MEDIA_CODEC_BRIDGE_H_
 
 #include <media/NdkMediaCodec.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/macros.h"

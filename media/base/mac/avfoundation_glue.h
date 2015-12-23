@@ -16,6 +16,8 @@
 #import <Foundation/Foundation.h>
 #endif  // defined(__OBJC__)
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/mac/coremedia_glue.h"
 #include "media/base/media_export.h"

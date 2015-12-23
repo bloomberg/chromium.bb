@@ -4,7 +4,10 @@
 
 #include "media/audio/pulse/pulse_util.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"

@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <limits>
 
+#include "base/macros.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
 

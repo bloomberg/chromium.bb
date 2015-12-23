@@ -4,8 +4,11 @@
 
 #include "media/filters/frame_processor.h"
 
+#include <stdint.h>
+
 #include <cstdlib>
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"

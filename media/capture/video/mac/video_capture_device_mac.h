@@ -11,6 +11,7 @@
 #define MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include <string>
 

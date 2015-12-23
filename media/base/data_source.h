@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_DATA_SOURCE_H_
 #define MEDIA_BASE_DATA_SOURCE_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"

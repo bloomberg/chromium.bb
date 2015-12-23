@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_DATA_BUFFER_H_
 #define MEDIA_BASE_DATA_BUFFER_H_
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

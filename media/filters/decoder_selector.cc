@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"

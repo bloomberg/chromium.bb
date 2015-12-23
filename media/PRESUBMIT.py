@@ -32,7 +32,7 @@ def _CheckForUseOfWrongClock(input_api, output_api):
   #
   #   using base::Time;
   #   ...
-  #   int64 foo_us = foo_s * Time::kMicrosecondsPerSecond;
+  #   int64_t foo_us = foo_s * Time::kMicrosecondsPerSecond;
   using_base_time_decl_pattern = r'^\s*using\s+(::)?base::Time\s*;'
 
   # Regular expression to detect references to the kXXX constants in the

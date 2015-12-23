@@ -4,6 +4,8 @@
 
 #include "media/base/test_data_util.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"

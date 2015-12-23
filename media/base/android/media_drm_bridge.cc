@@ -4,6 +4,8 @@
 
 #include "media/base/android/media_drm_bridge.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/android/build_info.h"
@@ -15,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

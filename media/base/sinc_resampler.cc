@@ -82,6 +82,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #include <xmmintrin.h>

@@ -5,6 +5,7 @@
 #include "media/renderers/audio_renderer_impl.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include <algorithm>
 

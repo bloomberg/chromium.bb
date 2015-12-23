@@ -4,11 +4,15 @@
 
 #include "media/cast/receiver/audio_decoder.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sys_byteorder.h"
+#include "build/build_config.h"
 #include "third_party/opus/src/include/opus.h"
 
 namespace media {

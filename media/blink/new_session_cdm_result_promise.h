@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_NEW_SESSION_CDM_RESULT_PROMISE_H_
 #define MEDIA_BLINK_NEW_SESSION_CDM_RESULT_PROMISE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

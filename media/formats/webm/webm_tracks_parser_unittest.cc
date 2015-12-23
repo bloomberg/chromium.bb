@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "media/base/channel_layout.h"
 #include "media/base/mock_media_log.h"

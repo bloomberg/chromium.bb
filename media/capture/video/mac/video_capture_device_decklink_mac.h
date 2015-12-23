@@ -11,6 +11,8 @@
 #include "media/capture/video/video_capture_device.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"

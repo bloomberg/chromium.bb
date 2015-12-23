@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_CAST_CONFIG_H_
 #define MEDIA_CAST_CAST_CONFIG_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"

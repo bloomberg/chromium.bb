@@ -4,6 +4,9 @@
 
 #include "media/mojo/services/media_type_converters.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"

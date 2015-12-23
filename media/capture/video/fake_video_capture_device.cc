@@ -4,6 +4,8 @@
 
 #include "media/capture/video/fake_video_capture_device.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

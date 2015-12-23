@@ -4,6 +4,9 @@
 
 #include "media/mojo/services/mojo_decryptor.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"

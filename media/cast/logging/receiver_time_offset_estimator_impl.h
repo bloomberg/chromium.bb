@@ -5,11 +5,14 @@
 #ifndef MEDIA_CAST_LOGGING_RECEIVER_TIME_OFFSET_ESTIMATOR_IMPL_H_
 #define MEDIA_CAST_LOGGING_RECEIVER_TIME_OFFSET_ESTIMATOR_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "media/cast/common/mod_util.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/receiver_time_offset_estimator.h"

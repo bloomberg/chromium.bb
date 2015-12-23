@@ -5,6 +5,9 @@
 #ifndef MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_
 #define MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/big_endian.h"
+#include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"

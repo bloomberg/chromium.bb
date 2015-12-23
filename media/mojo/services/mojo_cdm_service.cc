@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"

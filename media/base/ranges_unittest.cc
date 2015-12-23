@@ -4,6 +4,8 @@
 
 #include "media/base/ranges.h"
 
+#include <stddef.h>
+
 #include <sstream>
 
 #include "base/strings/string_piece.h"

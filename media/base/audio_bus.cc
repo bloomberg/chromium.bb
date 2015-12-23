@@ -4,6 +4,7 @@
 
 #include "media/base/audio_bus.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>

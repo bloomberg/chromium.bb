@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/mojo_demuxer_stream_adapter.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "media/base/decoder_buffer.h"

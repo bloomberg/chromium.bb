@@ -8,6 +8,7 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_H_
 #define MEDIA_CAST_RTCP_RTCP_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>

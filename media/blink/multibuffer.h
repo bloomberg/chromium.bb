@@ -5,6 +5,7 @@
 #ifndef MEDIA_BLINK_MULTIBUFFER_H_
 #define MEDIA_BLINK_MULTIBUFFER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
@@ -17,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "media/base/data_buffer.h"
 #include "media/blink/interval_map.h"
 #include "media/blink/lru.h"

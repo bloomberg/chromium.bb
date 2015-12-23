@@ -8,6 +8,7 @@
 
 #include "media/base/audio_hash.h"
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_bus.h"
 

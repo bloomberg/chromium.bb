@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_AUDIO_BUS_H_
 #define MEDIA_BASE_AUDIO_BUS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

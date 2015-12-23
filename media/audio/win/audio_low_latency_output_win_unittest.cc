@@ -4,6 +4,8 @@
 
 #include <windows.h>
 #include <mmsystem.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/environment.h"
 #include "base/files/file_util.h"

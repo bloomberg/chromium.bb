@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_SENDER_H264_VT_ENCODER_H_
 #define MEDIA_CAST_SENDER_H264_VT_ENCODER_H_
 
+#include <stdint.h>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"

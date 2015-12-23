@@ -4,6 +4,8 @@
 
 #include "media/base/channel_mixer.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"

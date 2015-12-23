@@ -5,6 +5,9 @@
 #ifndef MEDIA_FILTERS_VIDEO_CADENCE_ESTIMATOR_H_
 #define MEDIA_FILTERS_VIDEO_CADENCE_ESTIMATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

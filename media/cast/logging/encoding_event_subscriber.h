@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_LOGGING_ENCODING_EVENT_SUBSCRIBER_H_
 #define MEDIA_CAST_LOGGING_ENCODING_EVENT_SUBSCRIBER_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/macros.h"

@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/synchronization/lock.h"
 #include "media/base/container_names.h"

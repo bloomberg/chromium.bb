@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "media/blink/buffered_data_source_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

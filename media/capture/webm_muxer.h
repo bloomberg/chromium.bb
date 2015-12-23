@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_LIBWEBM_MUXER_H_
 #define MEDIA_FILTERS_LIBWEBM_MUXER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"

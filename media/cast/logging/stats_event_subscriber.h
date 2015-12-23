@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_LOGGING_STATS_EVENT_SUBSCRIBER_H_
 #define MEDIA_CAST_LOGGING_STATS_EVENT_SUBSCRIBER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"

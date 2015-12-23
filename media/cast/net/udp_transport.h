@@ -5,10 +5,13 @@
 #ifndef MEDIA_CAST_NET_UDP_TRANSPORT_H_
 #define MEDIA_CAST_NET_UDP_TRANSPORT_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender.h"

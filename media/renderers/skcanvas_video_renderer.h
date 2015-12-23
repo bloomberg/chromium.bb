@@ -5,6 +5,9 @@
 #ifndef MEDIA_RENDERERS_SKCANVAS_VIDEO_RENDERER_H_
 #define MEDIA_RENDERERS_SKCANVAS_VIDEO_RENDERER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"

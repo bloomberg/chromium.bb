@@ -4,6 +4,8 @@
 
 #include "media/blink/encrypted_media_player_support.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"

@@ -5,6 +5,9 @@
 #ifndef MEDIA_FILTERS_CHUNK_DEMUXER_H_
 #define MEDIA_FILTERS_CHUNK_DEMUXER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <string>

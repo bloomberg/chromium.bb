@@ -8,6 +8,8 @@
 #include <windows.h>
 #include <mmsystem.h>
 #include <mmreg.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

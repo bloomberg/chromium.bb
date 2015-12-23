@@ -6,6 +6,7 @@
 #define MEDIA_MIDI_MIDI_MANAGER_MAC_H_
 
 #include <CoreMIDI/MIDIServices.h>
+#include <stdint.h>
 #include <map>
 #include <string>
 #include <vector>

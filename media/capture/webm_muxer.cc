@@ -15,7 +15,7 @@ namespace media {
 
 namespace {
 
-void WriteOpusHeader(const media::AudioParameters& params, uint8* header) {
+void WriteOpusHeader(const media::AudioParameters& params, uint8_t* header) {
   // See https://wiki.xiph.org/OggOpus#ID_Header.
   // Set magic signature.
   std::string label = "OpusHead";
@@ -25,14 +25,14 @@ void WriteOpusHeader(const media::AudioParameters& params, uint8* header) {
   // Set channel count.
   header[OPUS_EXTRADATA_CHANNELS_OFFSET] = params.channels();
   // Set pre-skip
-  uint16 skip = 0;
-  memcpy(header + OPUS_EXTRADATA_SKIP_SAMPLES_OFFSET, &skip, sizeof(uint16));
+  uint16_t skip = 0;
+  memcpy(header + OPUS_EXTRADATA_SKIP_SAMPLES_OFFSET, &skip, sizeof(uint16_t));
   // Set original input sample rate in Hz.
-  uint32 sample_rate = params.sample_rate();
+  uint32_t sample_rate = params.sample_rate();
   memcpy(header + OPUS_EXTRADATA_SAMPLE_RATE_OFFSET, &sample_rate,
-         sizeof(uint32));
+         sizeof(uint32_t));
   // Set output gain in dB.
-  uint16 gain = 0;
+  uint16_t gain = 0;
   memcpy(header + OPUS_EXTRADATA_GAIN_OFFSET, &gain, 2);
 
   // Set channel mapping.
@@ -217,7 +217,7 @@ void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
   DCHECK_EQ(params.sample_rate(), audio_track->sample_rate());
   DCHECK_EQ(params.channels(), static_cast<int>(audio_track->channels()));
 
-  uint8 opus_header[OPUS_EXTRADATA_SIZE];
+  uint8_t opus_header[OPUS_EXTRADATA_SIZE];
   WriteOpusHeader(params, opus_header);
 
   if (!audio_track->SetCodecPrivate(opus_header, OPUS_EXTRADATA_SIZE))

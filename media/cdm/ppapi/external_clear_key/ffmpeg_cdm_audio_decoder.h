@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_FFMPEG_CDM_AUDIO_DECODER_H_
 #define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_FFMPEG_CDM_AUDIO_DECODER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"

@@ -5,6 +5,9 @@
 #ifndef MEDIA_CDM_PPAPI_CDM_FILE_IO_IMPL_H_
 #define MEDIA_CDM_PPAPI_CDM_FILE_IO_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>

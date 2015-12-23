@@ -5,6 +5,7 @@
 #include "media/capture/video/mac/video_capture_device_decklink_mac.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"

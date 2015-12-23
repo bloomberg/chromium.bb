@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_CDM_SESSION_ADAPTER_H_
 #define MEDIA_BLINK_CDM_SESSION_ADAPTER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>

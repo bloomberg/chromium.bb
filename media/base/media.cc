@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"

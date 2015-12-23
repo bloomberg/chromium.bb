@@ -5,9 +5,12 @@
 #ifndef MEDIA_BASE_VIDEO_DECODER_CONFIG_H_
 #define MEDIA_BASE_VIDEO_DECODER_CONFIG_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"

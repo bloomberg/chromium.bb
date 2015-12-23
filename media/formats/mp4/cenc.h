@@ -5,6 +5,9 @@
 #ifndef MEDIA_FORMATS_MP4_CENC_H_
 #define MEDIA_FORMATS_MP4_CENC_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "media/base/decrypt_config.h"

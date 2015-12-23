@@ -11,6 +11,8 @@
 #define MEDIA_AUDIO_LINUX_CRAS_UNIFIED_H_
 
 #include <cras_client.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"

@@ -5,6 +5,9 @@
 #ifndef MEDIA_VIDEO_VIDEO_ENCODE_ACCELERATOR_H_
 #define MEDIA_VIDEO_VIDEO_ENCODE_ACCELERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 

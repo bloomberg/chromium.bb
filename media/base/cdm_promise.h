@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_CDM_PROMISE_H_
 #define MEDIA_BASE_CDM_PROMISE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/logging.h"

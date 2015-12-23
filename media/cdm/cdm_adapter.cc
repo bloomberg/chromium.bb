@@ -4,6 +4,8 @@
 
 #include "media/cdm/cdm_adapter.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"

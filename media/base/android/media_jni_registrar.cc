@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/macros.h"
 
 #include "media/audio/android/audio_manager_android.h"
 #include "media/audio/android/audio_record_input.h"

@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_PROXY_DECRYPTOR_H_
 #define MEDIA_CDM_PROXY_DECRYPTOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -14,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/base/eme_constants.h"

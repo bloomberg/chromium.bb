@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_CENC_UTILS_H_
 #define MEDIA_CDM_CENC_UTILS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "media/base/media_export.h"

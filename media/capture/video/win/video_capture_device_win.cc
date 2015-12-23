@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <list>
 
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"

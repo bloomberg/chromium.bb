@@ -5,6 +5,7 @@
 #include "media/audio/cras/cras_unified.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/audio/cras/audio_manager_cras.h"
 
 namespace media {

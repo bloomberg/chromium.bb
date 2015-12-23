@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_KEYBOARD_EVENT_COUNTER_H_
 #define MEDIA_BASE_KEYBOARD_EVENT_COUNTER_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/macros.h"

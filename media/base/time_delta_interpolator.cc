@@ -4,6 +4,8 @@
 
 #include "media/base/time_delta_interpolator.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

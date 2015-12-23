@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/base_paths.h"
 #include "base/cpu.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/base/simd/convert_yuv_to_rgb.h"
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +41,8 @@ static const int kPerfTestIterations = 2000;
 class YUVConvertPerfTest : public testing::Test {
  public:
   YUVConvertPerfTest()
-      : yuv_bytes_(new uint8[kYUV12Size]),
-        rgb_bytes_converted_(new uint8[kRGBSize]) {
+      : yuv_bytes_(new uint8_t[kYUV12Size]),
+        rgb_bytes_converted_(new uint8_t[kRGBSize]) {
     base::FilePath path;
     CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &path));
     path = path.Append(FILE_PATH_LITERAL("media"))
@@ -47,7 +51,7 @@ class YUVConvertPerfTest : public testing::Test {
                .Append(FILE_PATH_LITERAL("bali_640x360_P420.yuv"));
 
     // Verify file size is correct.
-    int64 actual_size = 0;
+    int64_t actual_size = 0;
     base::GetFileSize(path, &actual_size);
     CHECK_EQ(actual_size, kYUV12Size);
 
@@ -58,8 +62,8 @@ class YUVConvertPerfTest : public testing::Test {
     CHECK_EQ(bytes_read, kYUV12Size);
   }
 
-  scoped_ptr<uint8[]> yuv_bytes_;
-  scoped_ptr<uint8[]> rgb_bytes_converted_;
+  scoped_ptr<uint8_t[]> yuv_bytes_;
+  scoped_ptr<uint8_t[]> rgb_bytes_converted_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(YUVConvertPerfTest);

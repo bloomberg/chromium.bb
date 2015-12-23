@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "media/base/test_data_util.h"
 #include "media/formats/common/stream_parser_test_base.h"
 #include "media/formats/mpeg/mpeg1_audio_stream_parser.h"

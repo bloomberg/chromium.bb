@@ -14,6 +14,8 @@
 #include <SLES/OpenSLES_Android.h>
 #undef const
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_logging.h"
 #include "media/audio/audio_parameters.h"

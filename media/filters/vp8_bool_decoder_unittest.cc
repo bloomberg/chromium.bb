@@ -4,8 +4,12 @@
 
 #include "media/filters/vp8_bool_decoder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

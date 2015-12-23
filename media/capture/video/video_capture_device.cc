@@ -6,7 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/i18n/timezone.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "media/base/media_switches.h"
 
 namespace media {

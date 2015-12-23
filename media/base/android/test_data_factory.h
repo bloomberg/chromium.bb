@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_ANDROID_TEST_DATA_FACTORY_H_
 #define MEDIA_BASE_ANDROID_TEST_DATA_FACTORY_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <set>
 #include <vector>

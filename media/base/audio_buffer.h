@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_AUDIO_BUFFER_H_
 #define MEDIA_BASE_AUDIO_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

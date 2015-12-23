@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_CDM_INITIALIZED_PROMISE_H_
 #define MEDIA_BASE_CDM_INITIALIZED_PROMISE_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"

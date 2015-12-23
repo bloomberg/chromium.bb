@@ -43,6 +43,8 @@
 #ifndef MEDIA_FILTERS_VP8_BOOL_DECODER_H_
 #define MEDIA_FILTERS_VP8_BOOL_DECODER_H_
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 #include "base/logging.h"

@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_IN_MEMORY_URL_PROTOCOL_H_
 #define MEDIA_FILTERS_IN_MEMORY_URL_PROTOCOL_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "media/filters/ffmpeg_glue.h"

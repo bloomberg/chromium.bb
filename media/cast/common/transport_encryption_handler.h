@@ -6,6 +6,9 @@
 #define MEDIA_CAST_COMMON_TRANSPORT_ENCRYPTION_HANDLER_H_
 
 // Helper class to handle encryption for the Cast Transport library.
+
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

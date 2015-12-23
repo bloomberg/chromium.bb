@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_FAKE_AUDIO_RENDERER_SINK_H_
 #define MEDIA_BASE_FAKE_AUDIO_RENDERER_SINK_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

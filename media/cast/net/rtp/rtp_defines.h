@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_NET_RTP_RTP_DEFINES_H_
 #define MEDIA_CAST_NET_RTP_RTP_DEFINES_H_
 
+#include <stdint.h>
+
 #include "media/cast/net/rtcp/rtcp_defines.h"
 
 namespace media {

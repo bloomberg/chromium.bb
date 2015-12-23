@@ -7,6 +7,8 @@
 
 #include "base/callback.h"
 
+#include <stdint.h>
+
 #include <string>
 
 namespace media {

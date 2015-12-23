@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_CDM_ADAPTER_H_
 #define MEDIA_CDM_CDM_ADAPTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

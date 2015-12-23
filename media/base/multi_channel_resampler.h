@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_MULTI_CHANNEL_RESAMPLER_H_
 #define MEDIA_BASE_MULTI_CHANNEL_RESAMPLER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/callback.h"

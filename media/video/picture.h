@@ -5,6 +5,8 @@
 #ifndef MEDIA_VIDEO_PICTURE_H_
 #define MEDIA_VIDEO_PICTURE_H_
 
+#include <stdint.h>
+
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"

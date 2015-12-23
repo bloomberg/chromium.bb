@@ -4,6 +4,7 @@
 
 // TODO(henrika): add test which included |start_frame| in Consume() call.
 
+#include "base/macros.h"
 #include "media/base/audio_fifo.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

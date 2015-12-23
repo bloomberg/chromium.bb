@@ -4,6 +4,7 @@
 
 #include "media/capture/video/linux/v4l2_capture_delegate_multi_plane.h"
 
+#include <stddef.h>
 #include <sys/mman.h>
 
 namespace media {

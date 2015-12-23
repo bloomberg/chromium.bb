@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MPEG_MPEG_AUDIO_STREAM_PARSER_BASE_H_
 #define MEDIA_FORMATS_MPEG_MPEG_AUDIO_STREAM_PARSER_BASE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 

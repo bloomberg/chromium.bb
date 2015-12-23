@@ -6,6 +6,7 @@
 
 #include <mfapi.h>
 #include <mferror.h>
+#include <stddef.h>
 
 #include "base/command_line.h"
 #include "base/macros.h"

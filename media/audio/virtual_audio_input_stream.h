@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_VIRTUAL_AUDIO_INPUT_STREAM_H_
 #define MEDIA_AUDIO_VIRTUAL_AUDIO_INPUT_STREAM_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 

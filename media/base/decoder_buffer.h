@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_DECODER_BUFFER_H_
 #define MEDIA_BASE_DECODER_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 

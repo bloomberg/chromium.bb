@@ -4,6 +4,8 @@
 
 #include "media/base/audio_hardware_config.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 

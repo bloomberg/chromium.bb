@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/net/rtp/frame_buffer.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "media/cast/net/cast_transport_defines.h"
+#include "media/cast/net/rtp/frame_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

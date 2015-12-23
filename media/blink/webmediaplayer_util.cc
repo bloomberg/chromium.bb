@@ -5,6 +5,7 @@
 #include "media/blink/webmediaplayer_util.h"
 
 #include <math.h>
+#include <stddef.h>
 #include <string>
 
 #include "base/metrics/histogram.h"

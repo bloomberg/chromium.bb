@@ -8,12 +8,16 @@
 // correct rate.  We always pass in a very large destination buffer with the
 // expectation that FillBuffer() will fill as much as it can but no more.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>  // For std::min().
 #include <cmath>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"

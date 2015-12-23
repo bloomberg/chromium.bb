@@ -4,12 +4,16 @@
 
 #include "media/cdm/proxy_decryptor.h"
 
+#include <stddef.h>
+
 #include <cstring>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_factory.h"

@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 // This class stores VideoToolbox library symbol pointers.

@@ -5,6 +5,7 @@
 #include "media/base/video_capture_types.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"

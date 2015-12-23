@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_ACCESS_UNIT_QUEUE_H_
 #define MEDIA_BASE_ANDROID_ACCESS_UNIT_QUEUE_H_
 
+#include <stddef.h>
+
 #include <list>
 
 #include "base/macros.h"

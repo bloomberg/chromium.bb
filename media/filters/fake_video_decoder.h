@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_FAKE_VIDEO_DECODER_H_
 #define MEDIA_FILTERS_FAKE_VIDEO_DECODER_H_
 
+#include <stddef.h>
+
 #include <list>
 
 #include "base/bind.h"

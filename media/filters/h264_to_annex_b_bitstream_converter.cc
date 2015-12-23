@@ -4,6 +4,8 @@
 
 #include "media/filters/h264_to_annex_b_bitstream_converter.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "media/filters/h264_parser.h"
 #include "media/formats/mp4/box_definitions.h"

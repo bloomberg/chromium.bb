@@ -14,11 +14,11 @@
 %define MOVQ movntq
 
 ;
-; extern "C" void ConvertYUVToRGB32Row_SSE(const uint8* y_buf,
-;                                          const uint8* u_buf,
-;                                          const uint8* v_buf,
-;                                          uint8* rgb_buf,
+; extern "C" void ConvertYUVToRGB32Row_SSE(const uint8_t* y_buf,
+;                                          const uint8_t* u_buf,
+;                                          const uint8_t* v_buf,
+;                                          uint8_t* rgb_buf,
 ;                                          ptrdiff_t width);
-;                                          const int16* convert_table);
+;                                          const int16_t* convert_table);
 %define SYMBOL ConvertYUVToRGB32Row_SSE
 %include "convert_yuv_to_rgb_mmx.inc"

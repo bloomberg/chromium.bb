@@ -7,6 +7,8 @@
 
 #include <media/NdkMediaCodec.h>
 #include <media/NdkMediaFormat.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"

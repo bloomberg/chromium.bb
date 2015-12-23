@@ -8,6 +8,8 @@
 #ifndef MEDIA_VIDEO_CAPTURE_WIN_SINK_FILTER_OBSERVER_WIN_H_
 #define MEDIA_VIDEO_CAPTURE_WIN_SINK_FILTER_OBSERVER_WIN_H_
 
+#include <stdint.h>
+
 namespace media {
 
 class SinkFilterObserver {

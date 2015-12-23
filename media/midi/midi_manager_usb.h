@@ -5,6 +5,9 @@
 #ifndef MEDIA_MIDI_MIDI_MANAGER_USB_H_
 #define MEDIA_MIDI_MIDI_MANAGER_USB_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 

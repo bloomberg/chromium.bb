@@ -5,6 +5,9 @@
 #include "media/base/user_input_monitor.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <stddef.h>
+
+#include "base/macros.h"
 
 namespace media {
 namespace {

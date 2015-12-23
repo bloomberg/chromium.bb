@@ -13,6 +13,8 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_DISPATCHER_IMPL_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_DISPATCHER_IMPL_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 

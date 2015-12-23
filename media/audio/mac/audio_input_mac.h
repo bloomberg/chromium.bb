@@ -7,6 +7,7 @@
 
 #include <AudioToolbox/AudioFormat.h>
 #include <AudioToolbox/AudioQueue.h>
+#include <stdint.h>
 
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"

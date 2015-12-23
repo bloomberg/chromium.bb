@@ -4,6 +4,8 @@
 
 #include "media/audio/virtual_audio_output_stream.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "media/audio/virtual_audio_input_stream.h"
 

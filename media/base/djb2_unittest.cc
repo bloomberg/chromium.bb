@@ -4,6 +4,8 @@
 
 #include "media/base/djb2.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 uint8_t kTestData[] = {1, 2, 3};

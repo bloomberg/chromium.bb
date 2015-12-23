@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_CACHE_UTIL_H_
 #define MEDIA_BLINK_CACHE_UTIL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/time/time.h"

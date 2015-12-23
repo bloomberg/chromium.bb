@@ -6,6 +6,8 @@
 
 #import <CoreMedia/CoreMedia.h>
 #import <CoreVideo/CoreVideo.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/location.h"
 #include "base/logging.h"

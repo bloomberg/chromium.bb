@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_CDM_SERVICE_CONTEXT_H_
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_SERVICE_CONTEXT_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/macros.h"

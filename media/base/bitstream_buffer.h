@@ -5,6 +5,10 @@
 #ifndef MEDIA_BASE_BITSTREAM_BUFFER_H_
 #define MEDIA_BASE_BITSTREAM_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "media/base/decrypt_config.h"

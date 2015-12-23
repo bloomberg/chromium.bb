@@ -6,6 +6,8 @@
 #define MEDIA_MIDI_MIDI_MANAGER_ANDROID_H_
 
 #include <jni.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"

@@ -4,6 +4,8 @@
 
 #include "media/midi/usb_midi_device_factory_android.h"
 
+#include <stddef.h>
+
 #include "base/android/context_utils.h"
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"

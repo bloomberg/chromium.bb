@@ -4,6 +4,8 @@
 
 #include "media/formats/mp4/es_descriptor.h"
 
+#include <stddef.h>
+
 #include "media/base/bit_reader.h"
 #include "media/formats/mp4/rcheck.h"
 

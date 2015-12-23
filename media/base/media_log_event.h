@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_MEDIA_LOG_EVENT_H_
 #define MEDIA_BASE_MEDIA_LOG_EVENT_H_
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "base/values.h"
 

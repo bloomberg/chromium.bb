@@ -4,12 +4,15 @@
 
 #include "media/base/fake_demuxer_stream.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"

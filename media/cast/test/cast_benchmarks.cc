@@ -22,6 +22,7 @@
 // $ pprof ./out/Release/cast_benchmarks $PROFILE_FILE --gv
 
 #include <math.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>

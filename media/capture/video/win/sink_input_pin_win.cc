@@ -9,8 +9,10 @@
 // Avoid including strsafe.h via dshow as it will cause build warnings.
 #define NO_DSHOW_STRSAFE
 #include <dshow.h>
+#include <stdint.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace media {
 

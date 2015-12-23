@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_NET_PACING_PACED_SENDER_H_
 #define MEDIA_CAST_NET_PACING_PACED_SENDER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <tuple>
 #include <vector>

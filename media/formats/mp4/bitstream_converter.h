@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MP4_BITSTREAM_CONVERTER_H_
 #define MEDIA_FORMATS_MP4_BITSTREAM_CONVERTER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/ref_counted.h"

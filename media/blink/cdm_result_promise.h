@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_CDM_RESULT_PROMISE_H_
 #define MEDIA_BLINK_CDM_RESULT_PROMISE_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_keys.h"

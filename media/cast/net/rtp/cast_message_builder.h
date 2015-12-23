@@ -7,6 +7,8 @@
 #ifndef MEDIA_CAST_NET_RTP_CAST_MESSAGE_BUILDER_H_
 #define MEDIA_CAST_NET_RTP_CAST_MESSAGE_BUILDER_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 

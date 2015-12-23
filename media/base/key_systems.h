@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_KEY_SYSTEMS_H_
 #define MEDIA_BASE_KEY_SYSTEMS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

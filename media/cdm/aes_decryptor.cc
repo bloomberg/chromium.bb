@@ -4,10 +4,13 @@
 
 #include "media/cdm/aes_decryptor.h"
 
+#include <stddef.h>
+
 #include <list>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/encryptor.h"

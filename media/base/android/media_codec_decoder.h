@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_DECODER_H_
 #define MEDIA_BASE_ANDROID_MEDIA_CODEC_DECODER_H_
 
+#include <stddef.h>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"

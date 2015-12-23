@@ -5,6 +5,9 @@
 #ifndef MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
 #define MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MP2T_TS_SECTION_PSI_H_
 #define MEDIA_FORMATS_MP2T_TS_SECTION_PSI_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "media/base/byte_queue.h"

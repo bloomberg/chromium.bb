@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_WEBMEDIAPLAYER_PARAMS_H_
 #define MEDIA_BLINK_WEBMEDIAPLAYER_PARAMS_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

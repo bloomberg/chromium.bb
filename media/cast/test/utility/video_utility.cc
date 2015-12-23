@@ -5,6 +5,8 @@
 #include "media/cast/test/utility/video_utility.h"
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <cstdio>
 
 #include "base/rand_util.h"

@@ -5,6 +5,7 @@
 #include "media/audio/win/avrt_wrapper_win.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace avrt {
 

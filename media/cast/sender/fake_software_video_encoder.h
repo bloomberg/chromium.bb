@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_SENDER_FAKE_SOFTWARE_VIDEO_ENCODER_H_
 #define MEDIA_CAST_SENDER_FAKE_SOFTWARE_VIDEO_ENCODER_H_
 
+#include <stdint.h>
+
 #include "media/cast/cast_config.h"
 #include "media/cast/sender/software_video_encoder.h"
 #include "ui/gfx/geometry/size.h"

@@ -4,6 +4,8 @@
 
 #include "media/formats/mp2t/es_adapter_video.h"
 
+#include <stddef.h>
+
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp2t/mp2t_common.h"

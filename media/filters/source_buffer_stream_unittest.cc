@@ -4,6 +4,7 @@
 
 #include "media/filters/source_buffer_stream.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -11,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

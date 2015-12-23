@@ -5,6 +5,9 @@
 #ifndef MEDIA_RENDERERS_VIDEO_RENDERER_IMPL_H_
 #define MEDIA_RENDERERS_VIDEO_RENDERER_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/macros.h"

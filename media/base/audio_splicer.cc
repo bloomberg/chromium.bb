@@ -4,10 +4,13 @@
 
 #include "media/base/audio_splicer.h"
 
+#include <stdint.h>
+
 #include <cstdlib>
 #include <deque>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_decoder_config.h"

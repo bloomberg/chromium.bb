@@ -5,6 +5,8 @@
 #ifndef MEDIA_CRYPTO_AES_DECRYPTOR_H_
 #define MEDIA_CRYPTO_AES_DECRYPTOR_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>

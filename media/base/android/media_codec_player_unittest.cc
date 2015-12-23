@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "media/base/android/demuxer_android.h"
 #include "media/base/android/media_codec_player.h"

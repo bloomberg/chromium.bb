@@ -14,6 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "media/audio/audio_manager.h"
 
 #include "media/audio/audio_output_dispatcher.h"

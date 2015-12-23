@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_WEBM_STREAM_PARSER_H_
 #define MEDIA_FORMATS_WEBM_WEBM_STREAM_PARSER_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

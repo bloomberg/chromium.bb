@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

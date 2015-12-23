@@ -4,6 +4,8 @@
 
 #include "media/cast/test/linux_output_window.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_SOURCE_BUFFER_RANGE_H_
 #define MEDIA_FILTERS_SOURCE_BUFFER_RANGE_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/callback.h"

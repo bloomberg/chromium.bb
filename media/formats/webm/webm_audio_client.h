@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_WEBM_AUDIO_CLIENT_H_
 #define MEDIA_FORMATS_WEBM_WEBM_AUDIO_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

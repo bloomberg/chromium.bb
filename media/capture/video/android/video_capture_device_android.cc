@@ -4,6 +4,8 @@
 
 #include "media/capture/video/android/video_capture_device_android.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_number_conversions.h"

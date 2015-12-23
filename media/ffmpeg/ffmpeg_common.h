@@ -5,6 +5,8 @@
 #ifndef MEDIA_FFMPEG_FFMPEG_COMMON_H_
 #define MEDIA_FFMPEG_FFMPEG_COMMON_H_
 
+#include <stdint.h>
+
 // Used for FFmpeg error codes.
 #include <cerrno>
 

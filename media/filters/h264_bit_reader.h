@@ -7,6 +7,7 @@
 #ifndef MEDIA_FILTERS_H264_BIT_READER_H_
 #define MEDIA_FILTERS_H264_BIT_READER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
 

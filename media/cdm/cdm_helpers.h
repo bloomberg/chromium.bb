@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_CDM_HELPERS_H_
 #define MEDIA_CDM_CDM_HELPERS_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/cdm/api/content_decryption_module.h"
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "media/base/container_names.h"
 #include "media/base/test_data_util.h"

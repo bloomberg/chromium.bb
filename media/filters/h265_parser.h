@@ -7,6 +7,7 @@
 #ifndef MEDIA_FILTERS_H265_PARSER_H_
 #define MEDIA_FILTERS_H265_PARSER_H_
 
+#include <stdint.h>
 #include <sys/types.h>
 
 #include <map>

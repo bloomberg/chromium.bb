@@ -5,6 +5,9 @@
 #ifndef MEDIA_CAST_SENDER_EXTERNAL_VIDEO_ENCODER_H_
 #define MEDIA_CAST_SENDER_EXTERNAL_VIDEO_ENCODER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_TEST_UTILITY_TEST_UTIL_H
 #define MEDIA_CAST_TEST_UTILITY_TEST_UTIL_H
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

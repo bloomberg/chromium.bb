@@ -5,6 +5,8 @@
 #ifndef MEDIA_BLINK_BUFFERED_RESOURCE_LOADER_H_
 #define MEDIA_BLINK_BUFFERED_RESOURCE_LOADER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"

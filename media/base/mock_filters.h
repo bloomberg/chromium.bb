@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_MOCK_FILTERS_H_
 #define MEDIA_BASE_MOCK_FILTERS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"

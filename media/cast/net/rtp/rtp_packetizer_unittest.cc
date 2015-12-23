@@ -4,8 +4,10 @@
 
 #include "media/cast/net/rtp/rtp_packetizer.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/net/pacing/paced_sender.h"

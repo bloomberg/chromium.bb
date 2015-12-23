@@ -5,6 +5,9 @@
 #ifndef MEDIA_FORMATS_MP4_BOX_DEFINITIONS_H_
 #define MEDIA_FORMATS_MP4_BOX_DEFINITIONS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

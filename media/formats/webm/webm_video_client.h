@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_WEBM_WEBM_VIDEO_CLIENT_H_
 #define MEDIA_FORMATS_WEBM_WEBM_VIDEO_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

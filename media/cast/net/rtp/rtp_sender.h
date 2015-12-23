@@ -7,6 +7,9 @@
 #ifndef MEDIA_CAST_NET_RTP_RTP_SENDER_H_
 #define MEDIA_CAST_NET_RTP_RTP_SENDER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 

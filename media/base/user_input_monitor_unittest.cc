@@ -6,6 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "media/base/keyboard_event_counter.h"
 #include "media/base/user_input_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -4,6 +4,9 @@
 
 #include "media/base/android/media_source_player.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/android/jni_android.h"
@@ -13,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/android/audio_decoder_job.h"

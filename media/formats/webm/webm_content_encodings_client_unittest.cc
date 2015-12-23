@@ -4,6 +4,8 @@
 
 #include "media/formats/webm/webm_content_encodings_client.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"

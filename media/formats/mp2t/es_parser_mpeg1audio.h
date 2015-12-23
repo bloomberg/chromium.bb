@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MP2T_ES_PARSER_MPEG1AUDIO_H_
 #define MEDIA_FORMATS_MP2T_ES_PARSER_MPEG1AUDIO_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <utility>
 

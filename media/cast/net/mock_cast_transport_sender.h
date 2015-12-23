@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_SENDER_H_
 #define MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_SENDER_H_
 
+#include <stdint.h>
+
 #include "media/cast/net/cast_transport_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

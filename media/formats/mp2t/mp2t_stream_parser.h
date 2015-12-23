@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MP2T_MP2T_STREAM_PARSER_H_
 #define MEDIA_FORMATS_MP2T_MP2T_STREAM_PARSER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 

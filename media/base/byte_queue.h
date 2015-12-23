@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_BYTE_QUEUE_H_
 #define MEDIA_BASE_BYTE_QUEUE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"

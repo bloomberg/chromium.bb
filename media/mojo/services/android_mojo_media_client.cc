@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/mojo_media_client.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/android/android_cdm_factory.h"
 #include "media/base/bind_to_current_loop.h"

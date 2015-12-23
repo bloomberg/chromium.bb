@@ -10,6 +10,9 @@
 #ifndef MEDIA_FILTERS_H264_BITSTREAM_BUFFER_H_
 #define MEDIA_FILTERS_H264_BITSTREAM_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/gtest_prod_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/media_export.h"

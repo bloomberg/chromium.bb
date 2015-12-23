@@ -6,6 +6,8 @@
 #define MEDIA_BASE_ANDROID_AUDIO_DECODER_JOB_H_
 
 #include <jni.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <vector>
 
 #include "base/callback.h"

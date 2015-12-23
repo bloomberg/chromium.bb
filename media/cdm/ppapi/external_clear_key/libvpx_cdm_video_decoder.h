@@ -5,6 +5,8 @@
 #ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_LIBVPX_CDM_VIDEO_DECODER_H_
 #define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_LIBVPX_CDM_VIDEO_DECODER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "media/cdm/api/content_decryption_module.h"

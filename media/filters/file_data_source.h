@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_FILE_DATA_SOURCE_H_
 #define MEDIA_FILTERS_FILE_DATA_SOURCE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"

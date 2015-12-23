@@ -4,6 +4,9 @@
 
 #include "media/filters/opus_audio_decoder.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 
 #include "base/single_thread_task_runner.h"

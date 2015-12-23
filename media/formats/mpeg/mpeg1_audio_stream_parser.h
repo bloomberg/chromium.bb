@@ -5,6 +5,8 @@
 #ifndef MEDIA_FORMATS_MPEG_MPEG1_AUDIO_STREAM_PARSER_H_
 #define MEDIA_FORMATS_MPEG_MPEG1_AUDIO_STREAM_PARSER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/formats/mpeg/mpeg_audio_stream_parser_base.h"

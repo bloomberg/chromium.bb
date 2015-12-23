@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_AUDIO_DISCARD_HELPER_H_
 #define MEDIA_BASE_AUDIO_DISCARD_HELPER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"

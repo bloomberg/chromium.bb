@@ -4,6 +4,9 @@
 
 #include "media/base/mac/video_frame_mac.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "media/base/mac/corevideo_glue.h"

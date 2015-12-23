@@ -4,6 +4,9 @@
 
 #include "media/midi/midi_message_queue.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

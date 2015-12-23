@@ -19,6 +19,7 @@
 #define MMNOMCI
 #define MMNOMMIO
 #include <mmsystem.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <functional>
