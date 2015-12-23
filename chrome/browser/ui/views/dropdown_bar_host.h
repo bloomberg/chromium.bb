@@ -74,9 +74,9 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   virtual gfx::Rect GetDialogPosition(gfx::Rect avoid_overlapping_rect) = 0;
 
   // Moves the widget to the provided location, moves it to top
-  // in the z-order (HWND_TOP, not HWND_TOPMOST for windows) and shows
-  // the widget (if hidden).
-  virtual void SetDialogPosition(const gfx::Rect& new_pos) = 0;
+  // in the z-order (HWND_TOP, not HWND_TOPMOST for windows), and sets the size
+  // of the |view_|.
+  virtual void SetDialogPosition(const gfx::Rect& new_pos);
 
   // Overridden from views::FocusChangeListener:
   void OnWillChangeFocus(views::View* focused_before,
@@ -132,9 +132,6 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   // Returns the host widget.
   views::Widget* host() const { return host_.get(); }
 
-  // Returns the animation offset.
-  int animation_offset() const { return animation_offset_; }
-
   // Retrieves the boundary that the dropdown widget has to work with
   // within the Chrome frame window. The boundary differs depending on
   // the dropdown bar implementation. The default implementation
@@ -156,13 +153,13 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   // The BrowserView that created us.
   BrowserView* browser_view_;
 
+  // A parent View to |view_| that is used to clip when animating the bar
+  // between the shown and hidden states.
+  views::View* clip_view_;
+
   // Our view, which is responsible for drawing the UI.
   views::View* view_;
   DropdownBarHostDelegate* delegate_;
-
-  // The y position pixel offset of the widget while animating the
-  // dropdown widget.
-  int animation_offset_;
 
   // The animation class to use when opening the Dropdown widget.
   scoped_ptr<gfx::SlideAnimation> animation_;

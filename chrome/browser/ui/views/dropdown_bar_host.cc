@@ -25,12 +25,18 @@ bool DropdownBarHost::disable_animations_during_testing_ = false;
 
 DropdownBarHost::DropdownBarHost(BrowserView* browser_view)
     : browser_view_(browser_view),
+      clip_view_(new views::View()),
       view_(NULL),
       delegate_(NULL),
-      animation_offset_(0),
       focus_manager_(NULL),
       esc_accel_target_registered_(false),
-      is_visible_(false) {}
+      is_visible_(false) {
+  // The |clip_view_| must paint to a layer so that it can clip descendent Views
+  // which also paint to a Layer.
+  clip_view_->SetPaintToLayer(true);
+  clip_view_->SetFillsBoundsOpaquely(false);
+  clip_view_->layer()->SetMasksToBounds(true);
+}
 
 void DropdownBarHost::Init(views::View* host_view,
                            views::View* view,
@@ -48,7 +54,8 @@ void DropdownBarHost::Init(views::View* host_view,
   params.parent = browser_view_->GetWidget()->GetNativeView();
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   host_->Init(params);
-  host_->SetContentsView(view_);
+  host_->SetContentsView(clip_view_);
+  clip_view_->AddChildView(view_);
 
   SetHostViewNative(host_view);
 
@@ -63,8 +70,9 @@ void DropdownBarHost::Init(views::View* host_view,
     NOTREACHED();
   }
 
-  // Start the process of animating the opening of the widget.
   animation_.reset(new gfx::SlideAnimation(this));
+  // Update the widget and |view_| bounds to the hidden state.
+  AnimationProgressed(animation_.get());
 }
 
 DropdownBarHost::~DropdownBarHost() {
@@ -76,6 +84,10 @@ void DropdownBarHost::Show(bool animate) {
   // Stores the currently focused view, and tracks focus changes so that we can
   // restore focus when the dropdown widget is closed.
   focus_tracker_.reset(new views::ExternalFocusTracker(view_, focus_manager_));
+
+  SetDialogPosition(GetDialogPosition(gfx::Rect()));
+
+  host_->Show();
 
   bool was_visible = is_visible_;
   is_visible_ = true;
@@ -131,6 +143,15 @@ bool DropdownBarHost::IsVisible() const {
   return is_visible_;
 }
 
+void DropdownBarHost::SetDialogPosition(const gfx::Rect& new_pos) {
+  view_->SetSize(new_pos.size());
+
+  if (new_pos.IsEmpty())
+    return;
+
+  host()->SetBounds(new_pos);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DropdownBarHost, views::FocusChangeListener implementation:
 void DropdownBarHost::OnWillChangeFocus(views::View* focused_before,
@@ -166,24 +187,15 @@ void DropdownBarHost::OnDidChangeFocus(views::View* focused_before,
 void DropdownBarHost::AnimationProgressed(const gfx::Animation* animation) {
   // First, we calculate how many pixels to slide the widget.
   gfx::Size pref_size = view_->GetPreferredSize();
-  animation_offset_ = static_cast<int>((1.0 - animation_->GetCurrentValue()) *
-                                       pref_size.height());
+  int view_offset = static_cast<int>((animation_->GetCurrentValue() - 1.0) *
+                                     pref_size.height());
 
-  // This call makes sure it appears in the right location, the size and shape
-  // is correct and that it slides in the right direction.
-  gfx::Rect dlg_rect = GetDialogPosition(gfx::Rect());
-  SetDialogPosition(dlg_rect);
-
-  // Let the view know if we are animating, and at which offset to draw the
-  // edges.
-  delegate_->SetAnimationOffset(animation_offset_);
-  view_->SchedulePaint();
+  // This call makes sure |view_| appears in the right location, the size and
+  // shape is correct and that it slides in the right direction.
+  view_->SetPosition(gfx::Point(0, view_offset));
 }
 
 void DropdownBarHost::AnimationEnded(const gfx::Animation* animation) {
-  // Place the dropdown widget in its fully opened state.
-  animation_offset_ = 0;
-
   if (!animation_->IsShowing()) {
     // Animation has finished closing.
     host_->Hide();

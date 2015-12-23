@@ -78,9 +78,6 @@ class LocationBarView : public LocationBar,
   // The location bar view's class name.
   static const char kViewClassName[];
 
-  // Returns the offset used during dropdown animation.
-  int dropdown_animation_offset() const { return dropdown_animation_offset_; }
-
   class Delegate {
    public:
     // Should return the current web contents.
@@ -388,7 +385,6 @@ class LocationBarView : public LocationBar,
 
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;
-  void SetAnimationOffset(int offset) override;
 
   // TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;
@@ -473,12 +469,6 @@ class LocationBarView : public LocationBar,
 
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
-
-  // During dropdown animation, the host clips the widget and draws only the
-  // bottom part of it. The view needs to know the pixel offset at which we are
-  // drawing the widget so that we can draw the curved edges that attach to the
-  // toolbar in the right location.
-  int dropdown_animation_offset_;
 
   // This is a debug state variable that stores if the WebContents was null
   // during the last RefreshPageAction.

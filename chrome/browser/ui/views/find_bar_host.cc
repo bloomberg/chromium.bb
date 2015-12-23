@@ -300,21 +300,14 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   gfx::Rect new_pos = FindBarController::GetLocationForFindbarView(
       view_location, widget_bounds, avoid_overlapping_rect);
 
-  // While we are animating, the Find window will grow bottoms up so we need to
-  // re-position the widget so that it appears to grow out of the toolbar.
-  if (animation_offset() > 0)
-    new_pos.Offset(0, std::min(0, -animation_offset()));
-
   return new_pos;
 }
 
 void FindBarHost::SetDialogPosition(const gfx::Rect& new_pos) {
+  DropdownBarHost::SetDialogPosition(new_pos);
+
   if (new_pos.IsEmpty())
     return;
-
-  if (!host()->IsVisible())
-    host()->Show();
-  host()->SetBounds(new_pos);
 
   // Tell the immersive mode controller about the find bar's new bounds. The
   // immersive mode controller uses the bounds to keep the top-of-window views
