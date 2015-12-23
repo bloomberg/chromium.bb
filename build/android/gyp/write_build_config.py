@@ -318,12 +318,9 @@ def main(argv):
       deps_info['dex_path'] = options.dex_path
     if options.type == 'android_apk':
       deps_info['apk_path'] = options.apk_path
-    config['javac'] = {
-      'classpath': javac_classpath,
-    }
-    config['java'] = {
-      'full_classpath': java_full_classpath
-    }
+
+    # Classpath values filled in below (after applying tested_apk_config).
+    config['javac'] = {}
 
   if options.type in ('java_binary', 'java_library'):
     # Only resources might have srcjars (normal srcjar targets are listed in
@@ -396,13 +393,16 @@ def main(argv):
   # An instrumentation test apk should exclude the dex files that are in the apk
   # under test.
   if options.type == 'android_apk' and options.tested_apk_config:
-    tested_apk_deps = Deps([options.tested_apk_config])
     tested_apk_library_deps = tested_apk_deps.All('java_library')
     tested_apk_deps_dex_files = [c['dex_path'] for c in tested_apk_library_deps]
+    # Include in the classpath classes that are added directly to the apk under
+    # test (those that are not a part of a java_library).
+    tested_apk_config = GetDepConfig(options.tested_apk_config)
+    javac_classpath.append(tested_apk_config['jar_path'])
+    # Exclude dex files from the test apk that exist within the apk under test.
     deps_dex_files = [
         p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
 
-    tested_apk_config = GetDepConfig(options.tested_apk_config)
     expected_tested_package = tested_apk_config['package_name']
     AndroidManifest(options.android_manifest).CheckInstrumentation(
         expected_tested_package)
@@ -418,6 +418,12 @@ def main(argv):
     config['final_dex'] = {}
     dex_config = config['final_dex']
     dex_config['dependency_dex_files'] = deps_dex_files
+
+  if options.type in ('java_binary', 'java_library', 'android_apk'):
+    config['javac']['classpath'] = javac_classpath
+    config['java'] = {
+      'full_classpath': java_full_classpath
+    }
 
   if options.type == 'android_apk':
     config['dist_jar'] = {
