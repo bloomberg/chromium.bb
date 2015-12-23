@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 // Cannot forward declare StringPiece because it is a typedef.
 #include "base/strings/string_piece.h"

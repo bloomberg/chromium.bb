@@ -4,6 +4,8 @@
 
 #include "extensions/browser/image_loader.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 

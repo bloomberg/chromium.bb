@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
 #define EXTENSIONS_BROWSER_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "extensions/browser/api/capture_web_contents_function.h"
 #include "extensions/browser/api/execute_code_function.h"
 #include "extensions/browser/extension_function.h"
@@ -444,13 +447,13 @@ class WebViewInternalClearDataFunction
   // WebViewInternalExtensionFunction implementation.
   bool RunAsyncSafe(WebViewGuest* guest) override;
 
-  uint32 GetRemovalMask();
+  uint32_t GetRemovalMask();
   void ClearDataDone();
 
   // Removal start time.
   base::Time remove_since_;
   // Removal mask, corresponds to StoragePartition::RemoveDataMask enum.
-  uint32 remove_mask_;
+  uint32_t remove_mask_;
   // Tracks any data related or parse errors.
   bool bad_message_;
 

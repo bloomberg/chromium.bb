@@ -4,7 +4,6 @@
 
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 
-#include "base/basictypes.h"
 
 namespace extensions {
 

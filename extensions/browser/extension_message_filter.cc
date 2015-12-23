@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_message_filter.h"
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/crx_file/id_util.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"

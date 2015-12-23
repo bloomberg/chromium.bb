@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "extensions/browser/user_script_loader.h"
 

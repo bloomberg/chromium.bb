@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_VERIFIER_DELEGATE_H_
 #define EXTENSIONS_BROWSER_CONTENT_VERIFIER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "extensions/browser/content_verify_job.h"
@@ -21,12 +23,12 @@ class Extension;
 
 // A pointer to the bytes of a public key, and the number of bytes.
 struct ContentVerifierKey {
-  const uint8* data;
+  const uint8_t* data;
   int size;
 
   ContentVerifierKey() : data(NULL), size(0) {}
 
-  ContentVerifierKey(const uint8* data, int size) {
+  ContentVerifierKey(const uint8_t* data, int size) {
     this->data = data;
     this->size = size;
   }

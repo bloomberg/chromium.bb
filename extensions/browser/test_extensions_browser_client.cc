@@ -5,6 +5,7 @@
 #include "extensions/browser/test_extensions_browser_client.h"
 
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/test_runtime_api_delegate.h"

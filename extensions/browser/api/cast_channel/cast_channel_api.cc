@@ -4,6 +4,9 @@
 
 #include "extensions/browser/api/cast_channel/cast_channel_api.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <string>
 #include <utility>
@@ -247,7 +250,7 @@ net::IPEndPoint* CastChannelOpenFunction::ParseConnectInfo(
   net::IPAddressNumber ip_address;
   CHECK(net::ParseIPLiteralToNumber(connect_info.ip_address, &ip_address));
   return new net::IPEndPoint(ip_address,
-                             static_cast<uint16>(connect_info.port));
+                             static_cast<uint16_t>(connect_info.port));
 }
 
 bool CastChannelOpenFunction::PrePrepare() {

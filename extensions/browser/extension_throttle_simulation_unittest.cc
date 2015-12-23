@@ -12,11 +12,14 @@
 //    anti-DDoS throttling for various different actual downtimes is what
 //    we expect it to be.
 
+#include <stddef.h>
+
 #include <cmath>
 #include <limits>
 #include <vector>
 
 #include "base/environment.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"

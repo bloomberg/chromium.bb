@@ -5,11 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -118,7 +120,7 @@ class NetworkingPrivateServiceClient
   // Callbacks to extension api function objects. Keep reference to API object
   // and are released in ShutdownOnUIThread. Run when WiFiService calls back
   // into NetworkingPrivateServiceClient's callback wrappers.
-  typedef int32 ServiceCallbacksID;
+  typedef int32_t ServiceCallbacksID;
   struct ServiceCallbacks {
     ServiceCallbacks();
     ~ServiceCallbacks();

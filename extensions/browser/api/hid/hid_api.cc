@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/hid/hid_api.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

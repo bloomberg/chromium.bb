@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "extensions/browser/api/cast_channel/cast_transport.h"

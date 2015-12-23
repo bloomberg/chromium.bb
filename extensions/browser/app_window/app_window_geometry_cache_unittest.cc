@@ -4,6 +4,8 @@
 
 #include "extensions/browser/app_window/app_window_geometry_cache.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/files/file_path.h"

@@ -5,10 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_API_WEB_REQUEST_UPLOAD_DATA_PRESENTER_H_
 #define EXTENSIONS_BROWSER_API_WEB_REQUEST_UPLOAD_DATA_PRESENTER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {

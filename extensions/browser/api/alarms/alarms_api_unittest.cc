@@ -4,6 +4,8 @@
 
 // This file tests the chrome.alarms extension API.
 
+#include <stddef.h>
+
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents.h"

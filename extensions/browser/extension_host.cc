@@ -215,12 +215,12 @@ void ExtensionHost::OnBackgroundEventDispatched(const std::string& event_name,
                     OnBackgroundEventDispatched(this, event_name, event_id));
 }
 
-void ExtensionHost::OnNetworkRequestStarted(uint64 request_id) {
+void ExtensionHost::OnNetworkRequestStarted(uint64_t request_id) {
   FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
                     OnNetworkRequestStarted(this, request_id));
 }
 
-void ExtensionHost::OnNetworkRequestDone(uint64 request_id) {
+void ExtensionHost::OnNetworkRequestDone(uint64_t request_id) {
   FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
                     OnNetworkRequestDone(this, request_id));
 }

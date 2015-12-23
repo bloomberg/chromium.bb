@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/common/api/system_display.h"
 

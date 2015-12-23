@@ -4,10 +4,13 @@
 
 #include "extensions/browser/mojo/stash_backend.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/environment/async_waiter.h"
 

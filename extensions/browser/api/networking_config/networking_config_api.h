@@ -5,8 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_CONFIG_NETWORKING_CONFIG_API_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_CONFIG_NETWORKING_CONFIG_API_H_
 
-#include "extensions/common/api/networking_config.h"
+#include "base/macros.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/api/networking_config.h"
 
 namespace extensions {
 

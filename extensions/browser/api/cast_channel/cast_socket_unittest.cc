@@ -4,9 +4,12 @@
 
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -32,7 +35,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const int64 kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
+const int64_t kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
 
 using ::testing::_;
 using ::testing::A;
@@ -162,7 +165,7 @@ class TestCastSocket : public CastSocketImpl {
  public:
   static scoped_ptr<TestCastSocket> Create(
       Logger* logger,
-      uint64 device_capabilities = cast_channel::CastDeviceCapability::NONE) {
+      uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
     return scoped_ptr<TestCastSocket>(
         new TestCastSocket(CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL,
                            kDistantTimeoutMillis, logger, device_capabilities));
@@ -170,7 +173,7 @@ class TestCastSocket : public CastSocketImpl {
 
   static scoped_ptr<TestCastSocket> CreateSecure(
       Logger* logger,
-      uint64 device_capabilities = cast_channel::CastDeviceCapability::NONE) {
+      uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
     return scoped_ptr<TestCastSocket>(new TestCastSocket(
         CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL_VERIFIED,
         kDistantTimeoutMillis, logger, device_capabilities));
@@ -178,9 +181,9 @@ class TestCastSocket : public CastSocketImpl {
 
   explicit TestCastSocket(const net::IPEndPoint& ip_endpoint,
                           ChannelAuthType channel_auth,
-                          int64 timeout_ms,
+                          int64_t timeout_ms,
                           Logger* logger,
-                          uint64 device_capabilities)
+                          uint64_t device_capabilities)
       : CastSocketImpl("some_extension_id",
                        ip_endpoint,
                        channel_auth,

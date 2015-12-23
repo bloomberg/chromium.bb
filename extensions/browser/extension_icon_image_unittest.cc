@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/json/json_file_value_serializer.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "content/public/browser/notification_service.h"

@@ -5,6 +5,7 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"

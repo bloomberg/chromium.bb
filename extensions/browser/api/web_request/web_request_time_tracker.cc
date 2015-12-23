@@ -100,15 +100,15 @@ ExtensionWebRequestTimeTracker::~ExtensionWebRequestTimeTracker() {
 }
 
 void ExtensionWebRequestTimeTracker::LogRequestStartTime(
-    int64 request_id,
+    int64_t request_id,
     const base::Time& start_time,
     const GURL& url,
     void* profile) {
   // Trim old completed request logs.
   while (request_ids_.size() > kMaxRequestsLogged) {
-    int64 to_remove = request_ids_.front();
+    int64_t to_remove = request_ids_.front();
     request_ids_.pop();
-    std::map<int64, RequestTimeLog>::iterator iter =
+    std::map<int64_t, RequestTimeLog>::iterator iter =
         request_time_logs_.find(to_remove);
     if (iter != request_time_logs_.end() && iter->second.completed) {
       request_time_logs_.erase(iter);
@@ -130,7 +130,8 @@ void ExtensionWebRequestTimeTracker::LogRequestStartTime(
 }
 
 void ExtensionWebRequestTimeTracker::LogRequestEndTime(
-    int64 request_id, const base::Time& end_time) {
+    int64_t request_id,
+    const base::Time& end_time) {
   if (request_time_logs_.find(request_id) == request_time_logs_.end())
     return;
 
@@ -161,7 +162,7 @@ std::set<std::string> ExtensionWebRequestTimeTracker::GetExtensionIds(
   return result;
 }
 
-void ExtensionWebRequestTimeTracker::Analyze(int64 request_id) {
+void ExtensionWebRequestTimeTracker::Analyze(int64_t request_id) {
   RequestTimeLog& log = request_time_logs_[request_id];
 
   // Ignore really short requests. Time spent on these is negligible, and any
@@ -209,7 +210,7 @@ void ExtensionWebRequestTimeTracker::Analyze(int64 request_id) {
 
 void ExtensionWebRequestTimeTracker::IncrementExtensionBlockTime(
     const std::string& extension_id,
-    int64 request_id,
+    int64_t request_id,
     const base::TimeDelta& block_time) {
   if (request_time_logs_.find(request_id) == request_time_logs_.end())
     return;
@@ -218,7 +219,7 @@ void ExtensionWebRequestTimeTracker::IncrementExtensionBlockTime(
 }
 
 void ExtensionWebRequestTimeTracker::IncrementTotalBlockTime(
-    int64 request_id,
+    int64_t request_id,
     const base::TimeDelta& block_time) {
   if (request_time_logs_.find(request_id) == request_time_logs_.end())
     return;
@@ -226,7 +227,7 @@ void ExtensionWebRequestTimeTracker::IncrementTotalBlockTime(
   log.block_duration += block_time;
 }
 
-void ExtensionWebRequestTimeTracker::SetRequestCanceled(int64 request_id) {
+void ExtensionWebRequestTimeTracker::SetRequestCanceled(int64_t request_id) {
   // Canceled requests won't actually hit the network, so we can't compare
   // their request time to the time spent waiting on the extension. Just ignore
   // them.
@@ -236,7 +237,7 @@ void ExtensionWebRequestTimeTracker::SetRequestCanceled(int64 request_id) {
   request_time_logs_.erase(request_id);
 }
 
-void ExtensionWebRequestTimeTracker::SetRequestRedirected(int64 request_id) {
+void ExtensionWebRequestTimeTracker::SetRequestRedirected(int64_t request_id) {
   // When a request is redirected, we have no way of knowing how long the
   // request would have taken, so we can't say how much an extension slowed
   // down this request. Just ignore it.

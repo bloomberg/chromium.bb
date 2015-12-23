@@ -131,13 +131,13 @@ const unsigned int kMaxOutstandingPermissionRequests = 1024;
 const int kInvalidPermissionRequestID = 0;
 
 // ClearData API constants.
-const uint32 WEB_VIEW_REMOVE_DATA_MASK_APPCACHE = 1 << 0;
-const uint32 WEB_VIEW_REMOVE_DATA_MASK_CACHE = 1 << 1;
-const uint32 WEB_VIEW_REMOVE_DATA_MASK_COOKIES = 1 << 2;
-const uint32 WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS = 1 << 3;
-const uint32 WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB = 1 << 4;
-const uint32 WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE = 1 << 5;
-const uint32 WEB_VIEW_REMOVE_DATA_MASK_WEBSQL = 1 << 6;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_APPCACHE = 1 << 0;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_CACHE = 1 << 1;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_COOKIES = 1 << 2;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS = 1 << 3;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB = 1 << 4;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE = 1 << 5;
+const uint32_t WEB_VIEW_REMOVE_DATA_MASK_WEBSQL = 1 << 6;
 
 // Other.
 const char kWebViewContentScriptManagerKeyName[] =

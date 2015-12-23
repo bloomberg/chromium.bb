@@ -4,6 +4,7 @@
 
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 
+#include "base/macros.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
@@ -30,8 +31,8 @@ using guest_view::GuestViewMessageFilter;
 
 namespace extensions {
 
-const uint32 ExtensionsGuestViewMessageFilter::kFilteredMessageClasses[] =
-    {GuestViewMsgStart, ExtensionsGuestViewMsgStart};
+const uint32_t ExtensionsGuestViewMessageFilter::kFilteredMessageClasses[] = {
+    GuestViewMsgStart, ExtensionsGuestViewMsgStart};
 
 ExtensionsGuestViewMessageFilter::ExtensionsGuestViewMessageFilter(
     int render_process_id,

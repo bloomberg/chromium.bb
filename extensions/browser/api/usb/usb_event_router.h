@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_USB_USB_EVENT_ROUTER_H_
 #define EXTENSIONS_BROWSER_API_USB_USB_EVENT_ROUTER_H_
 
+#include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"

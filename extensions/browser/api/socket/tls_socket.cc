@@ -22,10 +22,10 @@
 
 namespace {
 
-// Returns the SSL protocol version (as a uint16) represented by a string.
+// Returns the SSL protocol version (as a uint16_t) represented by a string.
 // Returns 0 if the string is invalid.
-uint16 SSLProtocolVersionFromString(const std::string& version_str) {
-  uint16 version = 0;  // Invalid.
+uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
+  uint16_t version = 0;  // Invalid.
   if (version_str == "tls1") {
     version = net::SSL_PROTOCOL_VERSION_TLS1;
   } else if (version_str == "tls1.1") {
@@ -148,7 +148,7 @@ bool TLSSocket::SetNoDelay(bool no_delay) {
 }
 
 int TLSSocket::Listen(const std::string& address,
-                      uint16 port,
+                      uint16_t port,
                       int backlog,
                       std::string* error_msg) {
   *error_msg = kTLSSocketTypeInvalidError;
@@ -246,7 +246,7 @@ void TLSSocket::UpgradeSocketToTLS(
   net::SSLConfig ssl_config;
   ssl_config_service->GetSSLConfig(&ssl_config);
   if (options && options->tls_version.get()) {
-    uint16 version_min = 0, version_max = 0;
+    uint16_t version_min = 0, version_max = 0;
     api::socket::TLSVersionConstraints* versions = options->tls_version.get();
     if (versions->min.get()) {
       version_min = SSLProtocolVersionFromString(*versions->min.get());

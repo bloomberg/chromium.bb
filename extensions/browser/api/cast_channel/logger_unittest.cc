@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/test/simple_test_clock.h"
@@ -32,9 +35,9 @@ class CastChannelLoggerTest : public testing::Test {
   bool Uncompress(const char* input, int length, std::string* output) {
     z_stream stream = {0};
 
-    stream.next_in = reinterpret_cast<uint8*>(const_cast<char*>(input));
+    stream.next_in = reinterpret_cast<uint8_t*>(const_cast<char*>(input));
     stream.avail_in = length;
-    stream.next_out = reinterpret_cast<uint8*>(&(*output)[0]);
+    stream.next_out = reinterpret_cast<uint8_t*>(&(*output)[0]);
     stream.avail_out = output->size();
 
     bool success = false;

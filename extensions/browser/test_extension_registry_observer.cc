@@ -4,6 +4,7 @@
 
 #include "extensions/browser/test_extension_registry_observer.h"
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "extensions/browser/extension_registry.h"
 

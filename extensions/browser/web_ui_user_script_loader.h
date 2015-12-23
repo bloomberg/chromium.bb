@@ -5,9 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_WEB_UI_USER_SCRIPT_LOADER_H_
 #define EXTENSIONS_BROWSER_WEB_UI_USER_SCRIPT_LOADER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/user_script_loader.h"
 

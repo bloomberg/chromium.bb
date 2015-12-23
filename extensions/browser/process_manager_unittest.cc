@@ -4,6 +4,7 @@
 
 #include "extensions/browser/process_manager.h"
 
+#include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"

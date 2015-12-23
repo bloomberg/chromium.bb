@@ -109,7 +109,7 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
                                const base::TimeDelta& timeout,
                                bool keep_alive,
                                const scoped_refptr<Logger>& logger,
-                               uint64 device_capabilities)
+                               uint64_t device_capabilities)
     : CastSocket(owner_extension_id),
       owner_extension_id_(owner_extension_id),
       channel_id_(0),

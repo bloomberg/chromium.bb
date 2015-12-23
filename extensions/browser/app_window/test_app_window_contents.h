@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_
 #define EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "extensions/browser/app_window/app_window.h"
 
@@ -23,7 +25,7 @@ class TestAppWindowContents : public AppWindowContents {
 
   // apps:AppWindowContents:
   void Initialize(content::BrowserContext* context, const GURL& url) override;
-  void LoadContents(int32 creator_process_id) override;
+  void LoadContents(int32_t creator_process_id) override;
   void NativeWindowChanged(NativeAppWindow* native_app_window) override;
   void NativeWindowClosed() override;
   void DispatchWindowShownForTests() const override;

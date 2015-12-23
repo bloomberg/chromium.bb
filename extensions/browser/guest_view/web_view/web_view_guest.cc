@@ -4,11 +4,14 @@
 
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -77,8 +80,8 @@ namespace {
 
 // Returns storage partition removal mask from web_view clearData mask. Note
 // that storage partition mask is a subset of webview's data removal mask.
-uint32 GetStoragePartitionRemovalMask(uint32 web_view_removal_mask) {
-  uint32 mask = 0;
+uint32_t GetStoragePartitionRemovalMask(uint32_t web_view_removal_mask) {
+  uint32_t mask = 0;
   if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_APPCACHE)
     mask |= StoragePartition::REMOVE_DATA_MASK_APPCACHE;
   if (web_view_removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_COOKIES)
@@ -404,9 +407,9 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
 }
 
 void WebViewGuest::ClearDataInternal(base::Time remove_since,
-                                     uint32 removal_mask,
+                                     uint32_t removal_mask,
                                      const base::Closure& callback) {
-  uint32 storage_partition_removal_mask =
+  uint32_t storage_partition_removal_mask =
       GetStoragePartitionRemovalMask(removal_mask);
   if (!storage_partition_removal_mask) {
     callback.Run();
@@ -506,9 +509,9 @@ void WebViewGuest::WillDestroy() {
 }
 
 bool WebViewGuest::AddMessageToConsole(WebContents* source,
-                                       int32 level,
+                                       int32_t level,
                                        const base::string16& message,
-                                       int32 line_no,
+                                       int32_t line_no,
                                        const base::string16& source_id) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   // Log levels are from base/logging.h: LogSeverity.
@@ -729,7 +732,7 @@ void WebViewGuest::Terminate() {
 }
 
 bool WebViewGuest::ClearData(base::Time remove_since,
-                             uint32 removal_mask,
+                             uint32_t removal_mask,
                              const base::Closure& callback) {
   content::RecordAction(UserMetricsAction("WebView.Guest.ClearData"));
   content::StoragePartition* partition =

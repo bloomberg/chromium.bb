@@ -5,9 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_LINUX_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_LINUX_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
@@ -212,7 +215,7 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
                               scoped_ptr<base::DictionaryValue>& access_point);
 
   // Maps the WPA security flags to a human readable string.
-  void MapSecurityFlagsToString(uint32 securityFlags, std::string* security);
+  void MapSecurityFlagsToString(uint32_t securityFlags, std::string* security);
 
   // Gets the connected access point path on the given device. Internally gets
   // all active connections then checks if the device matches the requested

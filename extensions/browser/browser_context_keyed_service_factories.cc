@@ -4,6 +4,7 @@
 
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 
+#include "build/build_config.h"
 #include "extensions/browser/api/alarms/alarm_manager.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/audio/audio_api.h"

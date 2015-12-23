@@ -4,6 +4,8 @@
 
 #include "extensions/browser/event_router.h"
 
+#include <stddef.h>
+
 #include <tuple>
 #include <utility>
 

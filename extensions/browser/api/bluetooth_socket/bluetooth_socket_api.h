@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_BLUETOOTH_SOCKET_BLUETOOTH_SOCKET_API_H_
 #define EXTENSIONS_BROWSER_API_BLUETOOTH_SOCKET_BLUETOOTH_SOCKET_API_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/containers/hash_tables.h"

@@ -4,6 +4,9 @@
 
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -89,7 +92,7 @@ TEST(ExtensionWebRequestTimeTrackerTest, Delays) {
 
   // Now issue a bunch more requests and ensure that the old delays are
   // forgotten.
-  for (int64 i = 4; i < 500; ++i) {
+  for (int64_t i = 4; i < 500; ++i) {
     tracker.LogRequestStartTime(i, start, GURL(), profile);
     tracker.LogRequestEndTime(i, start + kRequestDelta);
   }
@@ -116,7 +119,7 @@ TEST(ExtensionWebRequestTimeTrackerTest, Delegate) {
   int request_nr = 0;
 
   // Check that (only) the last moderate delay triggers the delegate callback.
-  for (int64 i = 0; i < num_moderate_delays; ++i) {
+  for (int64_t i = 0; i < num_moderate_delays; ++i) {
     request_nr++;
     if (i == num_moderate_delays-1) {
       EXPECT_CALL(*delegate,
@@ -131,7 +134,7 @@ TEST(ExtensionWebRequestTimeTrackerTest, Delegate) {
   }
 
   // Check that (only) the last excessive delay triggers the delegate callback.
-  for (int64 i = 0; i < num_excessive_delays; ++i) {
+  for (int64_t i = 0; i < num_excessive_delays; ++i) {
     request_nr++;
     if (i == num_excessive_delays-1) {
       EXPECT_CALL(*delegate,

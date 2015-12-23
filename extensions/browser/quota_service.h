@@ -14,12 +14,15 @@
 #ifndef EXTENSIONS_BROWSER_QUOTA_SERVICE_H_
 #define EXTENSIONS_BROWSER_QUOTA_SERVICE_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -92,7 +95,7 @@ class QuotaLimitHeuristic {
   struct Config {
     // The maximum number of tokens a bucket can contain, and is refilled to
     // every epoch.
-    int64 refill_token_count;
+    int64_t refill_token_count;
 
     // Specifies how frequently the bucket is logically refilled with tokens.
     base::TimeDelta refill_interval;
@@ -126,7 +129,7 @@ class QuotaLimitHeuristic {
 
    private:
     base::TimeTicks expiration_;
-    int64 num_tokens_;
+    int64_t num_tokens_;
     DISALLOW_COPY_AND_ASSIGN(Bucket);
   };
   typedef std::list<Bucket*> BucketList;

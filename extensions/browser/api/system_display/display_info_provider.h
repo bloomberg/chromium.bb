@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_SYSTEM_DISPLAY_DISPLAY_INFO_PROVIDER_H_
 #define EXTENSIONS_BROWSER_API_SYSTEM_DISPLAY_DISPLAY_INFO_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -64,7 +66,7 @@ class DisplayInfoProvider {
   // GetAllDisplaysInfo()
   static api::system_display::DisplayUnitInfo* CreateDisplayUnitInfo(
       const gfx::Display& display,
-      int64 primary_display_id);
+      int64_t primary_display_id);
 
  private:
   static DisplayInfoProvider* Create();

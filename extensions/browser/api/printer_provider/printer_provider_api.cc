@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <utility>

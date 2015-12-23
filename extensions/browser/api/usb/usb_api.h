@@ -5,9 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_API_USB_USB_API_H_
 #define EXTENSIONS_BROWSER_API_USB_USB_API_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "device/usb/usb_device.h"

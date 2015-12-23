@@ -5,12 +5,14 @@
 #ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_SOCKET_H_
 #define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_SOCKET_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -149,7 +151,7 @@ class CastSocketImpl : public CastSocket {
                  const base::TimeDelta& connect_timeout,
                  bool keep_alive,
                  const scoped_refptr<Logger>& logger,
-                 uint64 device_capabilities);
+                 uint64_t device_capabilities);
 
   // Ensures that the socket is closed.
   ~CastSocketImpl() override;
@@ -335,7 +337,7 @@ class CastSocketImpl : public CastSocket {
   bool is_canceled_;
 
   // Capabilities declared by the cast device.
-  uint64 device_capabilities_;
+  uint64_t device_capabilities_;
 
   // Whether the channel is audio only as identified by the device
   // certificate during channel authentication.

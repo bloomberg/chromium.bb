@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_H_
 #define EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_API_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <set>
@@ -12,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"

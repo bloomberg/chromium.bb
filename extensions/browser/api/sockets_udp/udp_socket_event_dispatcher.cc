@@ -102,7 +102,7 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     int bytes_read,
     scoped_refptr<net::IOBuffer> io_buffer,
     const std::string& address,
-    uint16 port) {
+    uint16_t port) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   // If |bytes_read| == 0, the message contained no data.

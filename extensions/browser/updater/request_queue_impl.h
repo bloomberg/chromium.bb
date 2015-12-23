@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_UPDATER_REQUEST_QUEUE_IMPL_H_
 #define EXTENSIONS_BROWSER_UPDATER_REQUEST_QUEUE_IMPL_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 

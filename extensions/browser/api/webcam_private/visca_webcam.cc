@@ -4,7 +4,11 @@
 
 #include "extensions/browser/api/webcam_private/visca_webcam.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_thread.h"
 

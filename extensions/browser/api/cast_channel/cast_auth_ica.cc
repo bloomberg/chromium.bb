@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/cast_channel/cast_auth_ica.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/lazy_instance.h"
 #include "crypto/signature_verifier.h"
@@ -25,7 +27,7 @@ static const net::SHA256HashValue kDefaultFingerprintICA = { {
 } };
 
 // Built in public key for verifying trusted authorities data.
-const uint8 kPublicKey[] = {
+const uint8_t kPublicKey[] = {
     0x30, 0x82, 0x01, 0x22, 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86,
     0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0F, 0x00,
     0x30, 0x82, 0x01, 0x0A, 0x02, 0x82, 0x01, 0x01, 0x00, 0xC3, 0x8D, 0xEC,
@@ -64,17 +66,13 @@ bool VerifySignature(const std::string& signature, const std::string& data) {
   unsigned int hash_len = 32;
 
   if (!verifier.VerifyInitRSAPSS(
-          hash_alg,
-          mask_hash_alg,
-          hash_len,
-          reinterpret_cast<const uint8*>(signature.data()),
-          signature.size(),
-          kPublicKey,
-          sizeof(kPublicKey))) {
+          hash_alg, mask_hash_alg, hash_len,
+          reinterpret_cast<const uint8_t*>(signature.data()), signature.size(),
+          kPublicKey, sizeof(kPublicKey))) {
     return false;
   }
 
-  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(data.data()),
+  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(data.data()),
                         data.size());
 
   return verifier.VerifyFinal();

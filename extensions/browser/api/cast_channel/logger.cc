@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/cast_channel/logger.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 
@@ -77,9 +79,9 @@ scoped_ptr<char[]> Compress(const std::string& input, size_t* length) {
   size_t out_size = deflateBound(&stream, input.size());
   scoped_ptr<char[]> out(new char[out_size]);
 
-  stream.next_in = reinterpret_cast<uint8*>(const_cast<char*>(input.data()));
+  stream.next_in = reinterpret_cast<uint8_t*>(const_cast<char*>(input.data()));
   stream.avail_in = input.size();
-  stream.next_out = reinterpret_cast<uint8*>(out.get());
+  stream.next_out = reinterpret_cast<uint8_t*>(out.get());
   stream.avail_out = out_size;
 
   // Do a one-shot compression. This will return Z_STREAM_END only if |output|

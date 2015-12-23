@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/app_current_window_internal/app_current_window_internal_api.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/command_line.h"

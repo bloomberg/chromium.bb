@@ -4,6 +4,8 @@
 
 #include "extensions/browser/value_store/value_store_unittest.h"
 
+#include <stddef.h>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"

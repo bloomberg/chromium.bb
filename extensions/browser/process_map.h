@@ -5,10 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_PROCESS_MAP_H_
 #define EXTENSIONS_BROWSER_PROCESS_MAP_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/features/feature.h"
 

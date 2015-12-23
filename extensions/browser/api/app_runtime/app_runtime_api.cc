@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/metrics/histogram.h"

@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_SOCKET_APP_FIREWALL_HOLE_MANAGER_H_
 #define EXTENSIONS_BROWSER_API_SOCKET_APP_FIREWALL_HOLE_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/scoped_observer.h"

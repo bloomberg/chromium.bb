@@ -5,9 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_APP_SORTING_H_
 #define EXTENSIONS_BROWSER_APP_SORTING_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 

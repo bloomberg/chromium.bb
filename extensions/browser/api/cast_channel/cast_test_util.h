@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/cast_transport.h"

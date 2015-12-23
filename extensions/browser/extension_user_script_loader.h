@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_USER_SCRIPT_LOADER_H_
 #define EXTENSIONS_BROWSER_EXTENSION_USER_SCRIPT_LOADER_H_
 
+#include "base/macros.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/user_script_loader.h"
 #include "extensions/common/extension.h"

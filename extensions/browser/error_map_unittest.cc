@@ -4,6 +4,8 @@
 
 #include "extensions/browser/error_map.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"

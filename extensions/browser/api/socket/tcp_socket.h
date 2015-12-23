@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_SOCKET_TCP_SOCKET_H_
 #define EXTENSIONS_BROWSER_API_SOCKET_TCP_SOCKET_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "extensions/browser/api/socket/socket.h"
@@ -32,7 +34,7 @@ class TCPSocket : public Socket {
   void Connect(const net::AddressList& address,
                const CompletionCallback& callback) override;
   void Disconnect() override;
-  int Bind(const std::string& address, uint16 port) override;
+  int Bind(const std::string& address, uint16_t port) override;
   void Read(int count, const ReadCompletionCallback& callback) override;
   void RecvFrom(int count, const RecvFromCompletionCallback& callback) override;
   void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
@@ -42,7 +44,7 @@ class TCPSocket : public Socket {
   bool SetKeepAlive(bool enable, int delay) override;
   bool SetNoDelay(bool no_delay) override;
   int Listen(const std::string& address,
-             uint16 port,
+             uint16_t port,
              int backlog,
              std::string* error_msg) override;
   void Accept(const AcceptCompletionCallback& callback) override;

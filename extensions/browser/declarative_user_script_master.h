@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/common/host_id.h"

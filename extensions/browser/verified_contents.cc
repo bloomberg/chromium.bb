@@ -4,6 +4,8 @@
 
 #include "extensions/browser/verified_contents.h"
 
+#include <stddef.h>
+
 #include "base/base64url.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -23,9 +25,9 @@ namespace {
 // parameters.  The signature algorithm is "RSA256" aka "RSASSA-PKCS-v1_5 using
 // SHA-256 hash algorithm". This is defined in PKCS #1 (RFC 3447).
 // It is encoding: { OID sha256WithRSAEncryption      PARAMETERS NULL }
-const uint8 kSignatureAlgorithm[15] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
-                                       0x86, 0x48, 0x86, 0xf7, 0x0d,
-                                       0x01, 0x01, 0x0b, 0x05, 0x00};
+const uint8_t kSignatureAlgorithm[15] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
+                                         0x86, 0x48, 0x86, 0xf7, 0x0d,
+                                         0x01, 0x01, 0x0b, 0x05, 0x00};
 
 const char kBlockSizeKey[] = "block_size";
 const char kContentHashesKey[] = "content_hashes";
@@ -67,12 +69,12 @@ DictionaryValue* FindDictionaryWithValue(const ListValue* list,
 
 namespace extensions {
 
-VerifiedContents::VerifiedContents(const uint8* public_key, int public_key_size)
+VerifiedContents::VerifiedContents(const uint8_t* public_key,
+                                   int public_key_size)
     : public_key_(public_key),
       public_key_size_(public_key_size),
       valid_signature_(false),  // Guilty until proven innocent.
-      block_size_(0) {
-}
+      block_size_(0) {}
 
 VerifiedContents::~VerifiedContents() {
 }
@@ -306,26 +308,23 @@ bool VerifiedContents::VerifySignature(const std::string& protected_value,
                                        const std::string& signature_bytes) {
   crypto::SignatureVerifier signature_verifier;
   if (!signature_verifier.VerifyInit(
-          kSignatureAlgorithm,
-          sizeof(kSignatureAlgorithm),
-          reinterpret_cast<const uint8*>(signature_bytes.data()),
-          signature_bytes.size(),
-          public_key_,
-          public_key_size_)) {
+          kSignatureAlgorithm, sizeof(kSignatureAlgorithm),
+          reinterpret_cast<const uint8_t*>(signature_bytes.data()),
+          signature_bytes.size(), public_key_, public_key_size_)) {
     VLOG(1) << "Could not verify signature - VerifyInit failure";
     return false;
   }
 
   signature_verifier.VerifyUpdate(
-      reinterpret_cast<const uint8*>(protected_value.data()),
+      reinterpret_cast<const uint8_t*>(protected_value.data()),
       protected_value.size());
 
   std::string dot(".");
-  signature_verifier.VerifyUpdate(reinterpret_cast<const uint8*>(dot.data()),
+  signature_verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(dot.data()),
                                   dot.size());
 
   signature_verifier.VerifyUpdate(
-      reinterpret_cast<const uint8*>(payload.data()), payload.size());
+      reinterpret_cast<const uint8_t*>(payload.data()), payload.size());
 
   if (!signature_verifier.VerifyFinal()) {
     VLOG(1) << "Could not verify signature - VerifyFinal failure";

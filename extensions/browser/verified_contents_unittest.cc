@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -51,7 +53,7 @@ TEST(VerifiedContents, Simple) {
   // Initialize the VerifiedContents object.
   std::string public_key;
   ASSERT_TRUE(GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key));
-  VerifiedContents contents(reinterpret_cast<const uint8*>(public_key.data()),
+  VerifiedContents contents(reinterpret_cast<const uint8_t*>(public_key.data()),
                             public_key.size());
   base::FilePath verified_contents_path =
       path.AppendASCII("verified_contents.json");
@@ -139,7 +141,7 @@ TEST(VerifiedContents, FailsOnBase64) {
   // Initialize the VerifiedContents object.
   std::string public_key;
   ASSERT_TRUE(GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key));
-  VerifiedContents contents(reinterpret_cast<const uint8*>(public_key.data()),
+  VerifiedContents contents(reinterpret_cast<const uint8_t*>(public_key.data()),
                             public_key.size());
 
   base::FilePath verified_contents_path =

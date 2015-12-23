@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "device/core/mock_device_client.h"
 #include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_connection.h"
@@ -36,11 +40,11 @@ const char* kTestDeviceIds[] = {"A", "B", "C", "D", "E"};
 // feature reports. The first implements usage page 0xFF00 and has a single
 // report without and ID. The second implements usage page 0xFF01 and has a
 // single report with ID 1.
-const uint8 kReportDescriptor[] = {0x06, 0x00, 0xFF, 0x08, 0xA1, 0x01, 0x15,
-                                   0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95,
-                                   0x08, 0x08, 0x81, 0x02, 0x08, 0x91, 0x02,
-                                   0x08, 0xB1, 0x02, 0xC0};
-const uint8 kReportDescriptorWithIDs[] = {
+const uint8_t kReportDescriptor[] = {0x06, 0x00, 0xFF, 0x08, 0xA1, 0x01, 0x15,
+                                     0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95,
+                                     0x08, 0x08, 0x81, 0x02, 0x08, 0x91, 0x02,
+                                     0x08, 0xB1, 0x02, 0xC0};
+const uint8_t kReportDescriptorWithIDs[] = {
     0x06, 0x01, 0xFF, 0x08, 0xA1, 0x01, 0x15, 0x00, 0x26,
     0xFF, 0x00, 0x85, 0x01, 0x75, 0x08, 0x95, 0x08, 0x08,
     0x81, 0x02, 0x08, 0x91, 0x02, 0x08, 0xB1, 0x02, 0xC0};
@@ -188,7 +192,7 @@ class HidApiTest : public ShellApiTest {
                  int vendor_id,
                  int product_id,
                  bool report_id) {
-    std::vector<uint8> report_descriptor;
+    std::vector<uint8_t> report_descriptor;
     if (report_id) {
       report_descriptor.insert(
           report_descriptor.begin(), kReportDescriptorWithIDs,

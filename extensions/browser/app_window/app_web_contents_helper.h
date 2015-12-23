@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WEB_CONTENTS_HELPER_H_
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_WEB_CONTENTS_HELPER_H_
 
+#include "base/macros.h"
 #include "content/public/common/media_stream_request.h"
 
 namespace blink {

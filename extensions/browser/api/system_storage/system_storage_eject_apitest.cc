@@ -5,6 +5,7 @@
 // SystemStorage eject API browser tests.
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/storage_info.h"

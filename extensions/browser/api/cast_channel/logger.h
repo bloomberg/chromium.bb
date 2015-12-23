@@ -5,11 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_LOGGER_H_
 #define EXTENSIONS_BROWSER_API_CAST_CHANNEL_LOGGER_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

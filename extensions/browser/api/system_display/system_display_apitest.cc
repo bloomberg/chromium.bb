@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/debug/leak_annotations.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/system_display/system_display_api.h"
 #include "extensions/browser/api_test_utils.h"
@@ -104,7 +108,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
       extensions::api::system_display::DisplayUnitInfo* unit) override {
-    int64 id = display.id();
+    int64_t id = display.id();
     unit->name = "DISPLAY NAME FOR " + base::Int64ToString(id);
     if (id == 1)
       unit->mirroring_source_id = "0";

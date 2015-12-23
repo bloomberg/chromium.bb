@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_COMPUTED_HASHES_H_
 #define EXTENSIONS_BROWSER_COMPUTED_HASHES_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

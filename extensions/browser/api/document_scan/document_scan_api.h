@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/api/document_scan/document_scan_interface.h"

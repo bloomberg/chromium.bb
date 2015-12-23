@@ -5,12 +5,15 @@
 #ifndef EXTENSIONS_BROWSER_API_SOCKET_SOCKET_H_
 #define EXTENSIONS_BROWSER_API_SOCKET_SOCKET_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "net/base/completion_callback.h"
@@ -36,7 +39,7 @@ typedef base::Callback<void(int, scoped_refptr<net::IOBuffer> io_buffer)>
 typedef base::Callback<void(int,
                             scoped_refptr<net::IOBuffer> io_buffer,
                             const std::string&,
-                            uint16)> RecvFromCompletionCallback;
+                            uint16_t)> RecvFromCompletionCallback;
 typedef base::Callback<void(int, net::TCPClientSocket*)>
     AcceptCompletionCallback;
 
@@ -73,7 +76,7 @@ class Socket : public ApiResource {
   virtual void Connect(const net::AddressList& address,
                        const CompletionCallback& callback) = 0;
   virtual void Disconnect() = 0;
-  virtual int Bind(const std::string& address, uint16 port) = 0;
+  virtual int Bind(const std::string& address, uint16_t port) = 0;
 
   // The |callback| will be called with the number of bytes read into the
   // buffer, or a negative number if an error occurred.
@@ -95,7 +98,7 @@ class Socket : public ApiResource {
   virtual bool SetKeepAlive(bool enable, int delay);
   virtual bool SetNoDelay(bool no_delay);
   virtual int Listen(const std::string& address,
-                     uint16 port,
+                     uint16_t port,
                      int backlog,
                      std::string* error_msg);
   virtual void Accept(const AcceptCompletionCallback& callback);
@@ -108,11 +111,11 @@ class Socket : public ApiResource {
   virtual SocketType GetSocketType() const = 0;
 
   static bool StringAndPortToIPEndPoint(const std::string& ip_address_str,
-                                        uint16 port,
+                                        uint16_t port,
                                         net::IPEndPoint* ip_end_point);
   static void IPEndPointToStringAndPort(const net::IPEndPoint& address,
                                         std::string* ip_address_str,
-                                        uint16* port);
+                                        uint16_t* port);
 
  protected:
   explicit Socket(const std::string& owner_extension_id_);

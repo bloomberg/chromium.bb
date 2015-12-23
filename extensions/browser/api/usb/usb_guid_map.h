@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"

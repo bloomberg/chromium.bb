@@ -60,7 +60,7 @@ void UDPSocket::Connect(const net::AddressList& address,
   callback.Run(result);
 }
 
-int UDPSocket::Bind(const std::string& address, uint16 port) {
+int UDPSocket::Bind(const std::string& address, uint16_t port) {
   if (IsBound())
     return net::ERR_CONNECTION_FAILED;
 
@@ -226,7 +226,7 @@ void UDPSocket::OnRecvFromComplete(scoped_refptr<net::IOBuffer> io_buffer,
                                    int result) {
   DCHECK(!recv_from_callback_.is_null());
   std::string ip;
-  uint16 port = 0;
+  uint16_t port = 0;
   if (result > 0 && address.get()) {
     IPEndPointToStringAndPort(address->data, &ip, &port);
   }

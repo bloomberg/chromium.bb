@@ -4,14 +4,19 @@
 
 #include "extensions/browser/extension_prefs.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <iterator>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/app_sorting.h"
@@ -852,7 +857,7 @@ namespace {
 // Serializes a 64bit integer as a string value.
 void SaveInt64(base::DictionaryValue* dictionary,
                const char* key,
-               const int64 value) {
+               const int64_t value) {
   if (!dictionary)
     return;
 
@@ -863,7 +868,7 @@ void SaveInt64(base::DictionaryValue* dictionary,
 // Deserializes a 64bit integer stored as a string value.
 bool ReadInt64(const base::DictionaryValue* dictionary,
                const char* key,
-               int64* value) {
+               int64_t* value) {
   if (!dictionary)
     return false;
 
@@ -884,7 +889,7 @@ void SaveTime(base::DictionaryValue* dictionary,
 // The opposite of SaveTime. If |key| is not found, this returns an empty Time
 // (is_null() will return true).
 base::Time ReadTime(const base::DictionaryValue* dictionary, const char* key) {
-  int64 value;
+  int64_t value;
   if (ReadInt64(dictionary, key, &value))
     return base::Time::FromInternalValue(value);
 
@@ -1587,7 +1592,7 @@ base::Time ExtensionPrefs::GetInstallTime(
   std::string install_time_str;
   if (!extension->GetString(kPrefInstallTime, &install_time_str))
     return base::Time();
-  int64 install_time_i64 = 0;
+  int64_t install_time_i64 = 0;
   if (!base::StringToInt64(install_time_str, &install_time_i64))
     return base::Time();
   return base::Time::FromInternalValue(install_time_i64);
@@ -1610,7 +1615,7 @@ base::Time ExtensionPrefs::GetLastLaunchTime(
   std::string launch_time_str;
   if (!extension->GetString(kPrefLastLaunchTime, &launch_time_str))
     return base::Time();
-  int64 launch_time_i64 = 0;
+  int64_t launch_time_i64 = 0;
   if (!base::StringToInt64(launch_time_str, &launch_time_i64))
     return base::Time();
   return base::Time::FromInternalValue(launch_time_i64);

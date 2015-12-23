@@ -160,7 +160,7 @@ bool ExtensionThrottleEntry::ShouldRejectRequest(
   return reject_request;
 }
 
-int64 ExtensionThrottleEntry::ReserveSendingTimeForNextRequest(
+int64_t ExtensionThrottleEntry::ReserveSendingTimeForNextRequest(
     const base::TimeTicks& earliest_time) {
   base::TimeTicks now = ImplGetTimeNow();
 

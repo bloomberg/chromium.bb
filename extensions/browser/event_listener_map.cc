@@ -4,6 +4,8 @@
 
 #include "extensions/browser/event_listener_map.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/values.h"

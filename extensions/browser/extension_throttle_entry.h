@@ -5,10 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_THROTTLE_ENTRY_H_
 #define EXTENSIONS_BROWSER_EXTENSION_THROTTLE_ENTRY_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "extensions/browser/extension_throttle_entry_interface.h"
 #include "net/base/backoff_entry.h"
@@ -86,7 +88,7 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
 
   // Implementation of ExtensionThrottleEntryInterface.
   bool ShouldRejectRequest(const net::URLRequest& request) const override;
-  int64 ReserveSendingTimeForNextRequest(
+  int64_t ReserveSendingTimeForNextRequest(
       const base::TimeTicks& earliest_time) override;
   base::TimeTicks GetExponentialBackoffReleaseTime() const override;
   void UpdateWithResponse(int status_code) override;

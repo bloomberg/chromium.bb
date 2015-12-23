@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_PREFS_SCOPE_H_
 #define EXTENSIONS_BROWSER_EXTENSION_PREFS_SCOPE_H_
 
-#include "base/basictypes.h"
 
 namespace extensions {
 

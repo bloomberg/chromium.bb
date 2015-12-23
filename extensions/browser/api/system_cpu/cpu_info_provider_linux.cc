@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/system_cpu/cpu_info_provider.h"
 
+#include <stdint.h>
+
 #include <cstdio>
 #include <sstream>
 
@@ -47,8 +49,8 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
     if (line.compare(0, 3, "cpu") != 0)
       continue;
 
-    uint64 user = 0, nice = 0, sys = 0, idle = 0;
-    uint32 pindex = 0;
+    uint64_t user = 0, nice = 0, sys = 0, idle = 0;
+    uint32_t pindex = 0;
     int vals =
         sscanf(line.c_str(),
                "cpu%" PRIu32 " %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,

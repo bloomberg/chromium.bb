@@ -5,7 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_CONTENTS_H_
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_CONTENTS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -31,7 +33,7 @@ class AppWindowContentsImpl : public AppWindowContents,
 
   // AppWindowContents
   void Initialize(content::BrowserContext* context, const GURL& url) override;
-  void LoadContents(int32 creator_process_id) override;
+  void LoadContents(int32_t creator_process_id) override;
   void NativeWindowChanged(NativeAppWindow* native_app_window) override;
   void NativeWindowClosed() override;
   void DispatchWindowShownForTests() const override;

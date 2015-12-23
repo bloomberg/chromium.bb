@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_CAPTURE_WEB_CONTENTS_FUNCTION_H_
 #define EXTENSIONS_BROWSER_API_CAPTURE_WEB_CONTENTS_FUNCTION_H_
 
+#include "base/macros.h"
 #include "content/public/browser/readback_types.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/extension_types.h"

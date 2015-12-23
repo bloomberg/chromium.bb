@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_GEOMETRY_CACHE_H_
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_GEOMETRY_CACHE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>

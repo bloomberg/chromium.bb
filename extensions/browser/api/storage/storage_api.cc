@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/storage/storage_api.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 #include <vector>

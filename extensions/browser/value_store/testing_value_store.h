@@ -5,10 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "extensions/browser/value_store/value_store.h"
 
 // ValueStore for testing, with an in-memory storage but the ability to

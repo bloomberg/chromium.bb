@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_
 #define EXTENSIONS_BROWSER_API_EXTENSION_VIEW_EXTENSION_VIEW_INTERNAL_API_H_
 
+#include "base/macros.h"
 #include "extensions/browser/api/capture_web_contents_function.h"
 #include "extensions/browser/api/execute_code_function.h"
 #include "extensions/browser/extension_function.h"

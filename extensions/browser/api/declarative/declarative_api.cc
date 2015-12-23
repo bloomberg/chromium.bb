@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/declarative/declarative_api.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"

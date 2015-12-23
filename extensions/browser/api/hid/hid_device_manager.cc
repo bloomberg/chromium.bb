@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/hid/hid_device_manager.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <utility>
 #include <vector>
@@ -54,7 +56,7 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
     output->collections.push_back(make_linked_ptr(api_collection));
   }
 
-  const std::vector<uint8>& report_descriptor = input->report_descriptor();
+  const std::vector<uint8_t>& report_descriptor = input->report_descriptor();
   if (report_descriptor.size() > 0) {
     output->report_descriptor.assign(report_descriptor.begin(),
                                      report_descriptor.end());

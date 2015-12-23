@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 
 namespace extensions {

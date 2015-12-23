@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_RULES_REGISTRY_H__
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_RULES_REGISTRY_H__
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -12,6 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"

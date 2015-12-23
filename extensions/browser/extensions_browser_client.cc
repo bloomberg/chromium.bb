@@ -4,7 +4,6 @@
 
 #include "extensions/browser/extensions_browser_client.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "components/update_client/update_client.h"
 #include "extensions/browser/extension_error.h"

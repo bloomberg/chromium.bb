@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/extension.h"
 

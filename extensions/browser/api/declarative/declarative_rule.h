@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"

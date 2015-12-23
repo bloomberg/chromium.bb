@@ -7,7 +7,10 @@
 
 #include "extensions/browser/api/webcam_private/webcam.h"
 
+#include <stdint.h>
+
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 
 namespace extensions {
 

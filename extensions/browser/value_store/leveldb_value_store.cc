@@ -4,12 +4,15 @@
 
 #include "extensions/browser/value_store/leveldb_value_store.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -329,7 +332,7 @@ bool LeveldbValueStore::OnMemoryDump(
     return true;
 
   std::string value;
-  uint64 size;
+  uint64_t size;
   bool res = db_->GetProperty("leveldb.approximate-memory-usage", &value);
   DCHECK(res);
   res = base::StringToUint64(value, &size);

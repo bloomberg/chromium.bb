@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/serial/serial_device_enumerator.h"

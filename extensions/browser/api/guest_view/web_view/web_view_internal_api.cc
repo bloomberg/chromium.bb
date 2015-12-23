@@ -52,7 +52,7 @@ const char kViewInstanceIdError[] = "view_instance_id is missing.";
 const char kDuplicatedContentScriptNamesError[] =
     "The given content script name already exists.";
 
-uint32 MaskForKey(const char* key) {
+uint32_t MaskForKey(const char* key) {
   if (strcmp(key, kAppCacheKey) == 0)
     return webview::WEB_VIEW_REMOVE_DATA_MASK_APPCACHE;
   if (strcmp(key, kCacheKey) == 0)
@@ -830,14 +830,14 @@ WebViewInternalClearDataFunction::~WebViewInternalClearDataFunction() {
 // Parses the |dataToRemove| argument to generate the remove mask. Sets
 // |bad_message_| (like EXTENSION_FUNCTION_VALIDATE would if this were a bool
 // method) if 'dataToRemove' is not present.
-uint32 WebViewInternalClearDataFunction::GetRemovalMask() {
+uint32_t WebViewInternalClearDataFunction::GetRemovalMask() {
   base::DictionaryValue* data_to_remove;
   if (!args_->GetDictionary(2, &data_to_remove)) {
     bad_message_ = true;
     return 0;
   }
 
-  uint32 remove_mask = 0;
+  uint32_t remove_mask = 0;
   for (base::DictionaryValue::Iterator i(*data_to_remove); !i.IsAtEnd();
        i.Advance()) {
     bool selected = false;

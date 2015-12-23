@@ -64,7 +64,7 @@ void BluetoothApiPairingDelegate::DisplayPinCode(
 
 void BluetoothApiPairingDelegate::DisplayPasskey(
     device::BluetoothDevice* device,
-    uint32 passkey) {
+    uint32_t passkey) {
   bt_private::PairingEvent event;
   PopulatePairingEvent(
       device, bt_private::PAIRING_EVENT_TYPE_DISPLAYPASSKEY, &event);
@@ -73,7 +73,7 @@ void BluetoothApiPairingDelegate::DisplayPasskey(
 }
 
 void BluetoothApiPairingDelegate::KeysEntered(device::BluetoothDevice* device,
-                                              uint32 entered) {
+                                              uint32_t entered) {
   bt_private::PairingEvent event;
   PopulatePairingEvent(
       device, bt_private::PAIRING_EVENT_TYPE_KEYSENTERED, &event);
@@ -83,7 +83,7 @@ void BluetoothApiPairingDelegate::KeysEntered(device::BluetoothDevice* device,
 
 void BluetoothApiPairingDelegate::ConfirmPasskey(
     device::BluetoothDevice* device,
-    uint32 passkey) {
+    uint32_t passkey) {
   bt_private::PairingEvent event;
   PopulatePairingEvent(
       device, bt_private::PAIRING_EVENT_TYPE_CONFIRMPASSKEY, &event);

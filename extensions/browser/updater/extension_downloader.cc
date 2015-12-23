@@ -4,6 +4,8 @@
 
 #include "extensions/browser/updater/extension_downloader.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"

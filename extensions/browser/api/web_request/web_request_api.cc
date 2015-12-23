@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/web_request/web_request_api.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>

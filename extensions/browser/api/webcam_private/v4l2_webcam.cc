@@ -12,6 +12,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 
 #define V4L2_CID_PAN_SPEED (V4L2_CID_CAMERA_CLASS_BASE+32)

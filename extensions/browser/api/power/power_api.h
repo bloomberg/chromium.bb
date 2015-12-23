@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"

@@ -40,7 +40,7 @@ void AppWindowContentsImpl::Initialize(content::BrowserContext* context,
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }
 
-void AppWindowContentsImpl::LoadContents(int32 creator_process_id) {
+void AppWindowContentsImpl::LoadContents(int32_t creator_process_id) {
   // If the new view is in the same process as the creator, block the created
   // RVH from loading anything until the background page has had a chance to
   // do any initialization it wants. If it's a different process, the new RVH

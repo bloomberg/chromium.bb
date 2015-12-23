@@ -5,10 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_H_
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sessions/core/session_id.h"
@@ -58,7 +61,7 @@ class AppWindowContents {
                           const GURL& url) = 0;
 
   // Called to load the contents, after the app window is created.
-  virtual void LoadContents(int32 creator_process_id) = 0;
+  virtual void LoadContents(int32_t creator_process_id) = 0;
 
   // Called when the native window changes.
   virtual void NativeWindowChanged(NativeAppWindow* native_app_window) = 0;
@@ -164,7 +167,7 @@ class AppWindow : public content::WebContentsDelegate,
     std::string window_key;
 
     // The process ID of the process that requested the create.
-    int32 creator_process_id;
+    int32_t creator_process_id;
 
     // Initial state of the window.
     ui::WindowShowState state;

@@ -4,12 +4,15 @@
 
 #include "extensions/browser/content_hash_fetcher.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/base64.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"

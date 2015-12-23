@@ -4,11 +4,14 @@
 
 #include "extensions/browser/api/system_info/system_info_api.h"
 
+#include <stdint.h>
+
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"

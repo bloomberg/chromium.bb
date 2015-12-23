@@ -4,6 +4,8 @@
 
 #include "extensions/browser/app_window/app_window.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -16,6 +18,7 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"

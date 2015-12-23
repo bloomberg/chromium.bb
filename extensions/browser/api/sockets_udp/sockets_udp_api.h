@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_SOCKETS_UDP_SOCKETS_UDP_API_H_
 #define EXTENSIONS_BROWSER_API_SOCKETS_UDP_SOCKETS_UDP_API_H_
 
+#include <stddef.h>
+
 #include "base/gtest_prod_util.h"
 #include "extensions/browser/api/socket/socket_api.h"
 #include "extensions/common/api/sockets_udp.h"

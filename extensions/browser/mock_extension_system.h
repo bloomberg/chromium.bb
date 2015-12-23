@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_MOCK_EXTENSION_SYSTEM_H_
 #define EXTENSIONS_BROWSER_MOCK_EXTENSION_SYSTEM_H_
 
+#include "base/macros.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"

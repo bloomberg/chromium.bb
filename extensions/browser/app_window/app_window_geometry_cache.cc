@@ -4,6 +4,8 @@
 
 #include "extensions/browser/app_window/app_window_geometry_cache.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -246,7 +248,7 @@ void AppWindowGeometryCache::LoadGeometryFromStorage(
         }
         std::string ts_as_string;
         if (stored_window->GetString("ts", &ts_as_string)) {
-          int64 ts;
+          int64_t ts;
           if (base::StringToInt64(ts_as_string, &ts)) {
             window_data.last_change = base::Time::FromInternalValue(ts);
           }

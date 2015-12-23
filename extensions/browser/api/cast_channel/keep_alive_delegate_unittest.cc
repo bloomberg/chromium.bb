@@ -4,6 +4,9 @@
 
 #include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
@@ -20,8 +23,8 @@ namespace api {
 namespace cast_channel {
 namespace {
 
-const int64 kTestPingTimeoutMillis = 1000;
-const int64 kTestLivenessTimeoutMillis = 10000;
+const int64_t kTestPingTimeoutMillis = 1000;
+const int64_t kTestLivenessTimeoutMillis = 10000;
 
 // Extends MockTimer with a mockable method ResetTriggered() which permits
 // test code to set GMock expectations for Timer::Reset().

@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_LOAD_MONITORING_EXTENSION_HOST_QUEUE_H_
 #define EXTENSIONS_BROWSER_LOAD_MONITORING_EXTENSION_HOST_QUEUE_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/callback.h"

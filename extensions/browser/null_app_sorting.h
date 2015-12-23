@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_NULL_APP_SORTING_H_
 #define EXTENSIONS_BROWSER_NULL_APP_SORTING_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "extensions/browser/app_sorting.h"

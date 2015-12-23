@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_UI_URL_FETCHER_H
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"

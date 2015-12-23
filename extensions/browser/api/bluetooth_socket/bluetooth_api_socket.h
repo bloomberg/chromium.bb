@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_uuid.h"

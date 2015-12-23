@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKET_TLS_SOCKET_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SOCKET_TLS_SOCKET_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "extensions/browser/api/socket/socket.h"
@@ -65,7 +67,7 @@ class TLSSocket : public ResumableTCPSocket {
 
   // Fails. TLSSocket is only a client.
   int Listen(const std::string& address,
-             uint16 port,
+             uint16_t port,
              int backlog,
              std::string* error_msg) override;
 

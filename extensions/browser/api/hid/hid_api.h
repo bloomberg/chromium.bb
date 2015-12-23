@@ -5,8 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_API_HID_HID_API_H_
 #define EXTENSIONS_BROWSER_API_HID_HID_API_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/api_resource_manager.h"

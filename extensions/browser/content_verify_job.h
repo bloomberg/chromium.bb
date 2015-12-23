@@ -5,9 +5,12 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_VERIFY_JOB_H_
 #define EXTENSIONS_BROWSER_CONTENT_VERIFY_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -120,7 +123,7 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   std::string queue_;
 
   // The total bytes we've read.
-  int64 total_bytes_read_;
+  int64_t total_bytes_read_;
 
   // The index of the block we're currently on.
   int current_block_;

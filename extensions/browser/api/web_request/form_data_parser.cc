@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/web_request/form_data_parser.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/lazy_instance.h"

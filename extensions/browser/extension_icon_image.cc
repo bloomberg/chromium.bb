@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/notification_types.h"

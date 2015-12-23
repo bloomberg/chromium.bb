@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_LAZY_BACKGROUND_TASK_QUEUE_H_
 #define EXTENSIONS_BROWSER_LAZY_BACKGROUND_TASK_QUEUE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 

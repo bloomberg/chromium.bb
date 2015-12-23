@@ -53,7 +53,7 @@ void DisplayInfoProvider::InitializeForTesting(
 // Creates new DisplayUnitInfo struct for |display|.
 api::system_display::DisplayUnitInfo*
 DisplayInfoProvider::CreateDisplayUnitInfo(const gfx::Display& display,
-                                           int64 primary_display_id) {
+                                           int64_t primary_display_id) {
   api::system_display::DisplayUnitInfo* unit =
       new api::system_display::DisplayUnitInfo();
   const gfx::Rect& bounds = display.bounds();
@@ -79,7 +79,7 @@ void DisplayInfoProvider::EnableUnifiedDesktop(bool enable) {}
 DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
   // TODO(scottmg): Native is wrong http://crbug.com/133312
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  int64 primary_id = screen->GetPrimaryDisplay().id();
+  int64_t primary_id = screen->GetPrimaryDisplay().id();
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
   DisplayInfo all_displays;
   for (const gfx::Display& display : displays) {

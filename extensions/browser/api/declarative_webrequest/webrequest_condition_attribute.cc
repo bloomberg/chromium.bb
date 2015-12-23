@@ -4,12 +4,15 @@
 
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition_attribute.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

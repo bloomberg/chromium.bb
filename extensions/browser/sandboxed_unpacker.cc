@@ -4,6 +4,9 @@
 
 #include "extensions/browser/sandboxed_unpacker.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/bind.h"
@@ -18,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "build/build_config.h"
 #include "components/crx_file/crx_file.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
@@ -60,14 +64,14 @@ namespace {
 
 void RecordSuccessfulUnpackTimeHistograms(const base::FilePath& crx_path,
                                           const base::TimeDelta unpack_time) {
-  const int64 kBytesPerKb = 1024;
-  const int64 kBytesPerMb = 1024 * 1024;
+  const int64_t kBytesPerKb = 1024;
+  const int64_t kBytesPerMb = 1024 * 1024;
 
   UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackSuccessTime", unpack_time);
 
   // To get a sense of how CRX size impacts unpack time, record unpack
   // time for several increments of CRX size.
-  int64 crx_file_size;
+  int64_t crx_file_size;
   if (!base::GetFileSize(crx_path, &crx_file_size)) {
     UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccessCantGetCrxSize", 1);
     return;

@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "device/bluetooth/bluetooth_adapter.h"

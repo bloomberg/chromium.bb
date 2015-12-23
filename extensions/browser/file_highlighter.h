@@ -5,9 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_FILE_HIGHLIGHTER_H_
 #define EXTENSIONS_BROWSER_FILE_HIGHLIGHTER_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 class DictionaryValue;

@@ -18,6 +18,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 
 namespace extensions {

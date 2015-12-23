@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 
+#include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extensions_browser_client.h"

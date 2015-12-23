@@ -4,6 +4,8 @@
 
 #include "extensions/browser/extension_user_script_loader.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

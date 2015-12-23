@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
 
+#include "base/macros.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
 
 namespace extensions {

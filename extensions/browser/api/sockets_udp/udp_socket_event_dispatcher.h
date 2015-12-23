@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_SOCKETS_UDP_UDP_SOCKET_EVENT_DISPATCHER_H_
 #define EXTENSIONS_BROWSER_API_SOCKETS_UDP_UDP_SOCKET_EVENT_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "extensions/browser/api/api_resource_manager.h"
@@ -73,7 +75,7 @@ class UDPSocketEventDispatcher
                               int bytes_read,
                               scoped_refptr<net::IOBuffer> io_buffer,
                               const std::string& address,
-                              uint16 port);
+                              uint16_t port);
 
   // Post an extension event from IO to UI thread
   static void PostEvent(const ReceiveParams& params, scoped_ptr<Event> event);

@@ -5,8 +5,10 @@
 #include "extensions/browser/api/cast_channel/cast_transport.h"
 
 #include <stddef.h>
+#include <stdint.h>
 #include <queue>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
@@ -130,12 +132,12 @@ class MockSocket : public net::Socket {
                    int buf_len,
                    const net::CompletionCallback& callback));
 
-  virtual int SetReceiveBufferSize(int32 size) {
+  virtual int SetReceiveBufferSize(int32_t size) {
     NOTREACHED();
     return 0;
   }
 
-  virtual int SetSendBufferSize(int32 size) {
+  virtual int SetSendBufferSize(int32_t size) {
     NOTREACHED();
     return 0;
   }

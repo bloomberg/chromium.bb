@@ -5,11 +5,14 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_ERROR_H_
 #define EXTENSIONS_BROWSER_EXTENSION_ERROR_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "extensions/common/stack_frame.h"
 #include "url/gurl.h"

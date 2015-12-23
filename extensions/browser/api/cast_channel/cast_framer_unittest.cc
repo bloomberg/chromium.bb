@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 

@@ -5,10 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_H_
 #define EXTENSIONS_BROWSER_VALUE_STORE_VALUE_STORE_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/value_store/value_store_change.h"

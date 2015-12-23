@@ -5,8 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -144,7 +147,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   // Partition data that are newer than |removal_since| will be removed.
   // |removal_mask| corresponds to bitmask in StoragePartition::RemoveDataMask.
   bool ClearData(const base::Time remove_since,
-                 uint32 removal_mask,
+                 uint32_t removal_mask,
                  const base::Closure& callback);
 
   ScriptExecutor* script_executor() { return script_executor_.get(); }
@@ -157,7 +160,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   ~WebViewGuest() override;
 
   void ClearDataInternal(const base::Time remove_since,
-                         uint32 removal_mask,
+                         uint32_t removal_mask,
                          const base::Closure& callback);
 
   void OnWebViewNewWindowResponse(int new_window_instance_id,
@@ -205,9 +208,9 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
 
   // WebContentsDelegate implementation.
   bool AddMessageToConsole(content::WebContents* source,
-                           int32 level,
+                           int32_t level,
                            const base::string16& message,
-                           int32 line_no,
+                           int32_t line_no,
                            const base::string16& source_id) final;
   void CloseContents(content::WebContents* source) final;
   bool HandleContextMenu(const content::ContextMenuParams& params) final;

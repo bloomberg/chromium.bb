@@ -4,6 +4,9 @@
 
 #include "extensions/browser/api/cast_channel/cast_transport.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 
@@ -409,7 +412,7 @@ int CastTransportImpl::DoRead() {
 
   // Read up to num_bytes_to_read into |current_read_buffer_|.
   return socket_->Read(
-      read_buffer_.get(), base::checked_cast<uint32>(num_bytes_to_read),
+      read_buffer_.get(), base::checked_cast<uint32_t>(num_bytes_to_read),
       base::Bind(&CastTransportImpl::OnReadResult, base::Unretained(this)));
 }
 
@@ -432,7 +435,7 @@ int CastTransportImpl::DoReadComplete(int result) {
     logger_->LogSocketEventForMessage(
         channel_id_, proto::MESSAGE_READ, current_message_->namespace_(),
         base::StringPrintf("Message size: %u",
-                           static_cast<uint32>(message_size)));
+                           static_cast<uint32_t>(message_size)));
     SetReadState(READ_STATE_DO_CALLBACK);
   } else if (framing_error != CHANNEL_ERROR_NONE) {
     DCHECK(!current_message_);

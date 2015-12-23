@@ -5,10 +5,15 @@
 #ifndef EXTENSIONS_BROWSER_API_SOCKET_SOCKET_API_H_
 #define EXTENSIONS_BROWSER_API_SOCKET_SOCKET_API_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/extension_function.h"
@@ -218,7 +223,7 @@ class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
 
   int socket_id_;
   std::string hostname_;
-  uint16 port_;
+  uint16_t port_;
 };
 
 class SocketDisconnectFunction : public SocketAsyncApiFunction {
@@ -250,7 +255,7 @@ class SocketBindFunction : public SocketAsyncApiFunction {
  private:
   int socket_id_;
   std::string address_;
-  uint16 port_;
+  uint16_t port_;
 };
 
 class SocketListenFunction : public SocketAsyncApiFunction {
@@ -342,7 +347,7 @@ class SocketRecvFromFunction : public SocketAsyncApiFunction {
   void OnCompleted(int result,
                    scoped_refptr<net::IOBuffer> io_buffer,
                    const std::string& address,
-                   uint16 port);
+                   uint16_t port);
 
  private:
   scoped_ptr<api::socket::RecvFrom::Params> params_;
@@ -372,7 +377,7 @@ class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
   scoped_refptr<net::IOBuffer> io_buffer_;
   size_t io_buffer_size_;
   std::string hostname_;
-  uint16 port_;
+  uint16_t port_;
 };
 
 class SocketSetKeepAliveFunction : public SocketAsyncApiFunction {

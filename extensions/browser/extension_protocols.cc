@@ -4,6 +4,9 @@
 
 #include "extensions/browser/extension_protocols.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -14,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -143,7 +147,7 @@ void ReadResourceFilePathAndLastModifiedTime(
   base::Time dir_creation_time = GetFileCreationTime(directory);
   UMA_HISTOGRAM_TIMES("Extensions.ResourceDirectoryTimestampQueryLatency",
                       query_timer.Elapsed());
-  int64 delta_seconds = (*last_modified_time - dir_creation_time).InSeconds();
+  int64_t delta_seconds = (*last_modified_time - dir_creation_time).InSeconds();
   if (delta_seconds >= 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedDelta",
                                 delta_seconds,
@@ -232,7 +236,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     URLRequestFileJob::SetExtraRequestHeaders(headers);
   }
 
-  void OnSeekComplete(int64 result) override {
+  void OnSeekComplete(int64_t result) override {
     DCHECK_EQ(seek_position_, 0);
     seek_position_ = result;
     // TODO(asargent) - we'll need to add proper support for range headers.
@@ -281,7 +285,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   scoped_ptr<base::ElapsedTimer> request_timer_;
 
   // The position we seeked to in the file.
-  int64 seek_position_;
+  int64_t seek_position_;
 
   // The number of bytes of content we read from the file.
   int bytes_read_;

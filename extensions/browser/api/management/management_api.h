@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_MANAGEMENT_MANAGEMENT_API_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"

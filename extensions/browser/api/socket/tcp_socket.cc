@@ -117,7 +117,7 @@ void TCPSocket::Disconnect() {
   accept_socket_.reset(NULL);
 }
 
-int TCPSocket::Bind(const std::string& address, uint16 port) {
+int TCPSocket::Bind(const std::string& address, uint16_t port) {
   return net::ERR_FAILED;
 }
 
@@ -181,7 +181,7 @@ bool TCPSocket::SetNoDelay(bool no_delay) {
 }
 
 int TCPSocket::Listen(const std::string& address,
-                      uint16 port,
+                      uint16_t port,
                       int backlog,
                       std::string* error_msg) {
   if (socket_mode_ == CLIENT) {

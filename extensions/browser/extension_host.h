@@ -5,10 +5,13 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_HOST_H_
 #define EXTENSIONS_BROWSER_EXTENSION_HOST_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
@@ -91,11 +94,11 @@ class ExtensionHost : public DeferredStartRenderHost,
 
   // Called by the ProcessManager when a network request is started by the
   // extension corresponding to this ExtensionHost.
-  void OnNetworkRequestStarted(uint64 request_id);
+  void OnNetworkRequestStarted(uint64_t request_id);
 
   // Called by the ProcessManager when a previously started network request is
   // finished.
-  void OnNetworkRequestDone(uint64 request_id);
+  void OnNetworkRequestDone(uint64_t request_id);
 
   // content::WebContentsObserver:
   bool OnMessageReceived(const IPC::Message& message,

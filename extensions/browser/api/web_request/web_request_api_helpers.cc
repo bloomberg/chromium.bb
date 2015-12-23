@@ -4,6 +4,9 @@
 
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <utility>
@@ -93,7 +96,7 @@ void ClearCacheOnNavigationOnUI() {
 }
 
 bool ParseCookieLifetime(net::ParsedCookie* cookie,
-                         int64* seconds_till_expiry) {
+                         int64_t* seconds_till_expiry) {
   // 'Max-Age' is processed first because according to:
   // http://tools.ietf.org/html/rfc6265#section-5.3 'Max-Age' attribute
   // overrides 'Expires' attribute.
@@ -891,7 +894,7 @@ static bool DoesResponseCookieMatchFilter(net::ParsedCookie* cookie,
     return false;
   if (filter->age_upper_bound || filter->age_lower_bound ||
       (filter->session_cookie && *filter->session_cookie)) {
-    int64 seconds_to_expiry;
+    int64_t seconds_to_expiry;
     bool lifetime_parsed = ParseCookieLifetime(cookie, &seconds_to_expiry);
     if (filter->age_upper_bound && seconds_to_expiry > *filter->age_upper_bound)
       return false;

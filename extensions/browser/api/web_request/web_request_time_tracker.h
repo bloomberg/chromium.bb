@@ -5,12 +5,16 @@
 #ifndef EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_TIME_TRACKER_H_
 #define EXTENSIONS_BROWSER_API_WEB_REQUEST_WEB_REQUEST_TIME_TRACKER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
@@ -48,30 +52,30 @@ class ExtensionWebRequestTimeTracker {
   ~ExtensionWebRequestTimeTracker();
 
   // Records the time that a request was created.
-  void LogRequestStartTime(int64 request_id, const base::Time& start_time,
-                           const GURL& url, void* profile);
+  void LogRequestStartTime(int64_t request_id,
+                           const base::Time& start_time,
+                           const GURL& url,
+                           void* profile);
 
   // Records the time that a request either completed or encountered an error.
-  void LogRequestEndTime(int64 request_id, const base::Time& end_time);
+  void LogRequestEndTime(int64_t request_id, const base::Time& end_time);
 
   // Records an additional delay for the given request caused by the given
   // extension.
-  void IncrementExtensionBlockTime(
-      const std::string& extension_id,
-      int64 request_id,
-      const base::TimeDelta& block_time);
+  void IncrementExtensionBlockTime(const std::string& extension_id,
+                                   int64_t request_id,
+                                   const base::TimeDelta& block_time);
 
   // Records an additional delay for the given request caused by all extensions
   // combined.
-  void IncrementTotalBlockTime(
-      int64 request_id,
-      const base::TimeDelta& block_time);
+  void IncrementTotalBlockTime(int64_t request_id,
+                               const base::TimeDelta& block_time);
 
   // Called when an extension has canceled the given request.
-  void SetRequestCanceled(int64 request_id);
+  void SetRequestCanceled(int64_t request_id);
 
   // Called when an extension has redirected the given request to another URL.
-  void SetRequestRedirected(int64 request_id);
+  void SetRequestRedirected(int64_t request_id);
 
   // Takes ownership of |delegate|.
   void SetDelegate(ExtensionWebRequestTimeTrackerDelegate* delegate);
@@ -92,22 +96,22 @@ class ExtensionWebRequestTimeTracker {
 
   // Called after a request finishes, to analyze the delays and warn the user
   // if necessary.
-  void Analyze(int64 request_id);
+  void Analyze(int64_t request_id);
 
   // Returns a list of all extension IDs that contributed to delay for |log|.
   std::set<std::string> GetExtensionIds(const RequestTimeLog& log) const;
 
   // A map of recent request IDs to timing info for each request.
-  std::map<int64, RequestTimeLog> request_time_logs_;
+  std::map<int64_t, RequestTimeLog> request_time_logs_;
 
   // A list of recent request IDs that we know about. Used to limit the size of
   // the logs.
-  std::queue<int64> request_ids_;
+  std::queue<int64_t> request_ids_;
 
   // The set of recent requests that have been delayed either a large or
   // moderate amount by extensions.
-  std::set<int64> excessive_delays_;
-  std::set<int64> moderate_delays_;
+  std::set<int64_t> excessive_delays_;
+  std::set<int64_t> moderate_delays_;
 
   // Defaults to a delegate that sets warnings in the extension service.
   scoped_ptr<ExtensionWebRequestTimeTrackerDelegate> delegate_;

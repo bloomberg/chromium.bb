@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_BLUETOOTH_BLUETOOTH_API_PAIRING_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_BLUETOOTH_BLUETOOTH_API_PAIRING_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"
@@ -31,9 +33,11 @@ class BluetoothApiPairingDelegate
   void RequestPasskey(device::BluetoothDevice* device) override;
   void DisplayPinCode(device::BluetoothDevice* device,
                       const std::string& pincode) override;
-  void DisplayPasskey(device::BluetoothDevice* device, uint32 passkey) override;
-  void KeysEntered(device::BluetoothDevice* device, uint32 entered) override;
-  void ConfirmPasskey(device::BluetoothDevice* device, uint32 passkey) override;
+  void DisplayPasskey(device::BluetoothDevice* device,
+                      uint32_t passkey) override;
+  void KeysEntered(device::BluetoothDevice* device, uint32_t entered) override;
+  void ConfirmPasskey(device::BluetoothDevice* device,
+                      uint32_t passkey) override;
   void AuthorizePairing(device::BluetoothDevice* device) override;
 
  private:

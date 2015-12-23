@@ -7,7 +7,7 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_CONSTANTS_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_CONSTANTS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace webview {
 
@@ -141,13 +141,13 @@ extern const int kInvalidPermissionRequestID;
 //
 // Note that these are not in an enum because using enums to declare bitmasks
 // results in the enum values being signed.
-extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_APPCACHE;
-extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_CACHE;
-extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_COOKIES;
-extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS;
-extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB;
-extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE;
-extern const uint32 WEB_VIEW_REMOVE_DATA_MASK_WEBSQL;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_APPCACHE;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_CACHE;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_COOKIES;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_FILE_SYSTEMS;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_INDEXEDDB;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_LOCAL_STORAGE;
+extern const uint32_t WEB_VIEW_REMOVE_DATA_MASK_WEBSQL;
 
 // Other.
 extern const char kWebViewContentScriptManagerKeyName[];

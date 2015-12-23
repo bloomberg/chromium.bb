@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSIONS_GUEST_VIEW_MESSAGE_FILTER_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSIONS_GUEST_VIEW_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"
@@ -67,7 +69,7 @@ class ExtensionsGuestViewMessageFilter
                                            const gfx::Size& element_size,
                                            content::WebContents* web_contents);
 
-  static const uint32 kFilteredMessageClasses[];
+  static const uint32_t kFilteredMessageClasses[];
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsGuestViewMessageFilter);
 };

@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_HOST_OBSERVER_H_
 #define EXTENSIONS_BROWSER_EXTENSION_HOST_OBSERVER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 namespace extensions {
@@ -35,11 +37,11 @@ class ExtensionHostObserver {
   // Called when the extension associated with |host| starts a new network
   // request.
   virtual void OnNetworkRequestStarted(const ExtensionHost* host,
-                                       uint64 request_id) {}
+                                       uint64_t request_id) {}
 
   // Called when the network request with |request_id| is done.
   virtual void OnNetworkRequestDone(const ExtensionHost* host,
-                                    uint64 request_id) {}
+                                    uint64_t request_id) {}
 };
 
 }  // namespace extensions

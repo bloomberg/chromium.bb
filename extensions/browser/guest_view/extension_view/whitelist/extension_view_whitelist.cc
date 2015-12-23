@@ -4,6 +4,8 @@
 
 #include "extensions/browser/guest_view/extension_view/whitelist/extension_view_whitelist.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 

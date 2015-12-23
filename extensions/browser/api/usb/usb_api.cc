@@ -1153,7 +1153,7 @@ ExtensionFunction::ResponseAction UsbIsochronousTransferFunction::Run() {
   }
 
   unsigned int packet_length = transfer.packet_length;
-  const uint64 total_length = packets * packet_length;
+  const uint64_t total_length = packets * packet_length;
   if (packets > size || total_length > size) {
     return RespondNow(Error(kErrorTransferLength));
   }

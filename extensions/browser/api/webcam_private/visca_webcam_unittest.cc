@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/webcam_private/visca_webcam.h"
 #include "testing/gtest/include/gtest/gtest.h"

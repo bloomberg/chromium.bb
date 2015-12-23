@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;

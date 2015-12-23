@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_EXTENSION_DIALOG_AUTO_CONFIRM_H_
 
 #include "base/auto_reset.h"
+#include "base/macros.h"
 
 namespace extensions {
 
