@@ -6,6 +6,7 @@
 
 #include "base/debug/leak_annotations.h"
 #include "base/i18n/rtl.h"
+#include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"

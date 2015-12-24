@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 
 class LocationBarView;

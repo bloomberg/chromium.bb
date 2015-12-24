@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/panels/panel_frame_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/views/panels/panel_view.h"

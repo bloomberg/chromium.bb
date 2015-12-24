@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>

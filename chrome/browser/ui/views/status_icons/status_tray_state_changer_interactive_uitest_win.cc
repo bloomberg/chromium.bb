@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_state_changer_win.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"

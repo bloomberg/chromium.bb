@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_APP_MODAL_EVENT_BLOCKER_X11_H_
 #define CHROME_BROWSER_UI_VIEWS_JAVASCRIPT_APP_MODAL_EVENT_BLOCKER_X11_H_
 
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 
 class BrowserView;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_x11.h"
 
+#include "base/macros.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"

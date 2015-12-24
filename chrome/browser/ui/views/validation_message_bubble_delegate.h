@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_VALIDATION_MESSAGE_BUBBLE_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_VALIDATION_MESSAGE_BUBBLE_DELEGATE_H_
 
+#include "base/macros.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 // A BubbleDelegateView implementation for form validation message bubble.

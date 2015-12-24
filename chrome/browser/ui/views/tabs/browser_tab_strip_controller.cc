@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 
 #include "base/auto_reset.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"

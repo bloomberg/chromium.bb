@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/tabs/tab.h"
 
+#include <stddef.h>
+
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/media_indicator_button.h"

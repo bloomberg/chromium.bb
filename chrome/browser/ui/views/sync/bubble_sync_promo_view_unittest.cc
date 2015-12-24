@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"

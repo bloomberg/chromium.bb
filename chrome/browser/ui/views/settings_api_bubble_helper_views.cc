@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"

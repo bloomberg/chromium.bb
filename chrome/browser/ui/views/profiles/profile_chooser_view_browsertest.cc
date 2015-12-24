@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"

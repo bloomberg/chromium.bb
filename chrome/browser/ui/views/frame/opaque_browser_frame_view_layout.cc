@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"

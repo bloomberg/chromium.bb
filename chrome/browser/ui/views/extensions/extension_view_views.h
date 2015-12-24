@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_VIEWS_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"

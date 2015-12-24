@@ -6,6 +6,7 @@
 
 #include <shobjidl.h>
 
+#include "base/macros.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/window.h"

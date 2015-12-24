@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_view_tester.h"
 
 namespace autofill {

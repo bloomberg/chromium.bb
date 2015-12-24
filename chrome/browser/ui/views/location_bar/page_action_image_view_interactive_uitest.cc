@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

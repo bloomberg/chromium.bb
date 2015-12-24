@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"

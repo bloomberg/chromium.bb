@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"

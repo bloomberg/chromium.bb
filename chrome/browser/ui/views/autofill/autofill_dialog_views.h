@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_linux.h"
 
+#include "build/build_config.h"
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_wrapper.h"
 #include "ui/views/linux_ui/linux_ui.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_CONTROLLER_DELEGATE_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_CONTROLLER_DELEGATE_WIN_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_views.h"
 
 // Windows specific configuration and behaviour for the AppList.

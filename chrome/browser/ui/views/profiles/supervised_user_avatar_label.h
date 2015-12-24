@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_SUPERVISED_USER_AVATAR_LABEL_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "ui/views/controls/button/label_button.h"
 

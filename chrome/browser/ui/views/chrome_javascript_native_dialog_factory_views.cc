@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/constrained_window/constrained_window_views.h"

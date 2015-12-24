@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTROLLER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"

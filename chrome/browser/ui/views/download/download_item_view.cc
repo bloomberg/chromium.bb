@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/download/download_item_view.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

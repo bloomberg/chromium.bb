@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

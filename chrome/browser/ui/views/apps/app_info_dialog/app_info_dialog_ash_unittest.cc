@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/test/ash_test_base.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"

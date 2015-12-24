@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 class Browser;

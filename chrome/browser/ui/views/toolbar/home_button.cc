@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

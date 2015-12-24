@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"

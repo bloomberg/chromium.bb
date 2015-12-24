@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_VIEW_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/widget/widget_delegate.h"

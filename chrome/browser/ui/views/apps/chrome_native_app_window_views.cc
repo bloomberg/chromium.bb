@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
+#include <stddef.h>
+
 #include "apps/ui/views/app_window_frame_view.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/profiles/profile.h"

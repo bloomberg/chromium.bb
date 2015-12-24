@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/view.h"
 

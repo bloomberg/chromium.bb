@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"

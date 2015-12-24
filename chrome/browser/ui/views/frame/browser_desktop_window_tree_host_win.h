@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <uxtheme.h>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "chrome/browser/ui/views/frame/minimize_button_metrics_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"

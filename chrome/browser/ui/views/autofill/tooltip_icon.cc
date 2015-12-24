@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/tooltip_icon.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/autofill/info_bubble.h"
 #include "ui/accessibility/ax_view_state.h"

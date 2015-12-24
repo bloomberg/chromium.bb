@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"

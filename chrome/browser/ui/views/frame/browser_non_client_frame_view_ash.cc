@@ -12,6 +12,7 @@
 #include "ash/frame/header_painter_util.h"
 #include "ash/shell.h"
 #include "base/profiler/scoped_tracker.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profiles_state.h"

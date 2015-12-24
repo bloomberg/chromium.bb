@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"

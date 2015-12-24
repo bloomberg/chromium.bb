@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
 
 #include <dwmapi.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sstream>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -366,7 +369,7 @@ bool AppListServiceWin::IsWarmupNeeded() {
   // Don't warm up the app list if it hasn't been used for a while. If the last
   // launch is unknown, record it as "used" on the first warmup.
   PrefService* local_state = g_browser_process->local_state();
-  int64 last_launch_time_pref =
+  int64_t last_launch_time_pref =
       local_state->GetInt64(prefs::kAppListLastLaunchTime);
   if (last_launch_time_pref == 0)
     RecordAppListLastLaunch();

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

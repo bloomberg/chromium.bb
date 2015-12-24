@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"

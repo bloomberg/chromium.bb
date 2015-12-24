@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_dialog_views.h"
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

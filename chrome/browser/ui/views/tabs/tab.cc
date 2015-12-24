@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/views/tabs/tab.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"

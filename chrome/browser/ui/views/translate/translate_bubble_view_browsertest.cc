@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/translate/cld_data_harness.h"

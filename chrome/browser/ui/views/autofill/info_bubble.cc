@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/autofill/info_bubble.h"
 
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

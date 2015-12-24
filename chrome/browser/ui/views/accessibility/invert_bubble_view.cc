@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

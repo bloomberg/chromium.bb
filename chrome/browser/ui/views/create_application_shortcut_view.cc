@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/create_application_shortcut_view.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 
@@ -12,6 +14,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

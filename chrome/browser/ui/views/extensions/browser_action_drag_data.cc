@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
@@ -99,7 +101,7 @@ bool BrowserActionDragData::ReadFromPickle(base::Pickle* pickle) {
   if (!data_iterator.ReadString(&id_))
     return false;
 
-  uint64 index;
+  uint64_t index;
   if (!data_iterator.ReadUInt64(&index))
     return false;
   index_ = static_cast<size_t>(index);

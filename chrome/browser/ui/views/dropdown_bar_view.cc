@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
 
+#include "base/macros.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_COMMAND_HANDLER_LINUX_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_COMMAND_HANDLER_LINUX_H_
 
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 
 class BrowserView;

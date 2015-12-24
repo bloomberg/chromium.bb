@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_CONTEXT_MENU_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 

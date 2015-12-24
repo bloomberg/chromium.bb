@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/download/download_item_view_md.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -13,6 +15,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"

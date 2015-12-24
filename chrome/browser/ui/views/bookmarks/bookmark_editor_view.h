@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_EDITOR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_EDITOR_VIEW_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
@@ -53,7 +56,7 @@ class BookmarkEditorView : public BookmarkEditor,
                            public bookmarks::BookmarkModelObserver {
  public:
   // Type of node in the tree. Public purely for testing.
-  typedef ui::TreeNodeWithValue<int64> EditorNode;
+  typedef ui::TreeNodeWithValue<int64_t> EditorNode;
 
   // Model for the TreeView. Trivial subclass that doesn't allow titles with
   // empty strings. Public purely for testing.
@@ -173,7 +176,7 @@ class BookmarkEditorView : public BookmarkEditor,
   void CreateNodes(const bookmarks::BookmarkNode* bb_node, EditorNode* b_node);
 
   // Returns the node with the specified id, or NULL if one can't be found.
-  EditorNode* FindNodeWithID(BookmarkEditorView::EditorNode* node, int64 id);
+  EditorNode* FindNodeWithID(BookmarkEditorView::EditorNode* node, int64_t id);
 
   // Invokes ApplyEdits with the selected node.
   void ApplyEdits();
@@ -267,7 +270,7 @@ class BookmarkEditorView : public BookmarkEditor,
   bool show_tree_;
 
   // List of deleted bookmark folders.
-  std::vector<int64> deletes_;
+  std::vector<int64_t> deletes_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditorView);
 };

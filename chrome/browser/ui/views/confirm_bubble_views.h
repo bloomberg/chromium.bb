@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_CONFIRM_BUBBLE_VIEWS_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"

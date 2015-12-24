@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/infobars/alternate_nav_infobar_view.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "ui/base/window_open_disposition.h"

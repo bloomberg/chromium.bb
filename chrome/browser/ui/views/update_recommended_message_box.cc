@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"

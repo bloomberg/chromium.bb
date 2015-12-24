@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"

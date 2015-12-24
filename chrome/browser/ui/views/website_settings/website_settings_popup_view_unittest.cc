@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 
+#include "base/macros.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/ssl_status.h"

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/accelerator_table.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"

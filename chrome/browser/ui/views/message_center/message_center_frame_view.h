@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_MESSAGE_CENTER_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_MESSAGE_CENTER_MESSAGE_CENTER_FRAME_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {

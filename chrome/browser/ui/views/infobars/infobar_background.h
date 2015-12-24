@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_BACKGROUND_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "ui/views/background.h"
 

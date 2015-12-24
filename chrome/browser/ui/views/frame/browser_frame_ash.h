@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_ASH_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_ASH_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "ui/views/widget/native_widget_aura.h"

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"

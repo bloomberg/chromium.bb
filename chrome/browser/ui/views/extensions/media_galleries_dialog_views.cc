@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
 #include "chrome/grit/generated_resources.h"

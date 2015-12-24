@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 #include "ui/base/models/simple_menu_model.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/expanding_textfield.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

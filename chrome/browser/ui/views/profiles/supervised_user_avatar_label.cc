@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"

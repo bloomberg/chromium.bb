@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #if defined(MOJO_SHELL_CLIENT)

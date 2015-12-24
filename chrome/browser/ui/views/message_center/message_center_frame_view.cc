@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/message_center/message_center_frame_view.h"
 
+#include "build/build_config.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/shadow_value.h"

@@ -6,10 +6,12 @@
 // toolkit_views is defined (i.e. for Chrome OS). It's not needed
 // on the Mac, and it's not yet implemented on Linux.
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

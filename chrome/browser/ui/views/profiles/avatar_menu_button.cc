@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PANELS_X11_PANEL_RESIZER_H_
 #define CHROME_BROWSER_UI_VIEWS_PANELS_X11_PANEL_RESIZER_H_
 
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
 

@@ -7,6 +7,7 @@
 
 #include <list>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"

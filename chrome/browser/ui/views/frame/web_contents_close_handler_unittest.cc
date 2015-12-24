@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"

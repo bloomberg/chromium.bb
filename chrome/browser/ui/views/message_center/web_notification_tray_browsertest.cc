@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "ash/root_window_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

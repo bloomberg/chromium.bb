@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 
 #include "apps/ui/views/app_window_frame_view.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"

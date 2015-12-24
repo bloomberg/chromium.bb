@@ -4,14 +4,18 @@
 
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"

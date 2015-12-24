@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTO_KEEP_ALIVE_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTO_KEEP_ALIVE_H_
 
+#include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 
 // Class to scoped decrement keep alive count.

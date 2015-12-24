@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/views/desktop_media_picker_views.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"

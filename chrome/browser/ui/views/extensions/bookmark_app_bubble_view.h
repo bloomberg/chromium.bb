@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_BOOKMARK_APP_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_BOOKMARK_APP_BUBBLE_VIEW_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/web_application_info.h"

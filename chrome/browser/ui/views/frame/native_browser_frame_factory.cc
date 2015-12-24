@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 
 namespace {

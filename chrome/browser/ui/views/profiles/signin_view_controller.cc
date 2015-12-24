@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/signin_view_controller.h"
 
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"

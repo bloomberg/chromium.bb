@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/sync/bubble_sync_promo_view.h"
 
+#include <stddef.h>
+
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"

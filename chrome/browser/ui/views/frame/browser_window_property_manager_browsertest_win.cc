@@ -7,8 +7,10 @@
 #include <shlobj.h>  // Must be before propkey.
 #include <propkey.h>
 #include <shellapi.h>
+#include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"

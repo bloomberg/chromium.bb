@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_VIEW_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"

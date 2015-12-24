@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/link_disambiguation/link_disambiguation_popup.h"
 
+#include "base/macros.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"

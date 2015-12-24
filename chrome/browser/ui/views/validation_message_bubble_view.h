@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_VALIDATION_MESSAGE_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_VALIDATION_MESSAGE_BUBBLE_VIEW_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
 #include "chrome/browser/ui/views/validation_message_bubble_delegate.h"
 

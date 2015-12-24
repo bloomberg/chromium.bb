@@ -9,6 +9,7 @@
 
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state_observer.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

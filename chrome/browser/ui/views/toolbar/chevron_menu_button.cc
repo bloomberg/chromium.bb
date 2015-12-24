@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/toolbar/chevron_menu_button.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"

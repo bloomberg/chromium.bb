@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/edit_search_engine_dialog.h"
 
+#include <stddef.h>
+
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"

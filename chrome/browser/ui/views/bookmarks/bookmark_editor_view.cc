@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -481,7 +480,7 @@ void BookmarkEditorView::ExpandAndSelect() {
   const BookmarkNode* to_select = parent_;
   if (details_.type == EditDetails::EXISTING_NODE)
     to_select = details_.existing_node->parent();
-  int64 folder_id_to_select = to_select->id();
+  int64_t folder_id_to_select = to_select->id();
   EditorNode* b_node =
       FindNodeWithID(tree_model_->GetRoot(), folder_id_to_select);
   if (!b_node)
@@ -518,7 +517,7 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
 
 BookmarkEditorView::EditorNode* BookmarkEditorView::FindNodeWithID(
     BookmarkEditorView::EditorNode* node,
-    int64 id) {
+    int64_t id) {
   if (node->value == id)
     return node;
   for (int i = 0; i < node->child_count(); ++i) {

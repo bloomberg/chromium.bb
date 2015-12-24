@@ -4,13 +4,17 @@
 
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <set>
 
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
@@ -403,10 +407,10 @@ class HoveredImageSource : public gfx::ImageSkiaSource {
     white.eraseARGB(0, 0, 0, 0);
     bitmap.lockPixels();
     for (int y = 0; y < bitmap.height(); ++y) {
-      uint32* image_row = bitmap.getAddr32(0, y);
-      uint32* dst_row = white.getAddr32(0, y);
+      uint32_t* image_row = bitmap.getAddr32(0, y);
+      uint32_t* dst_row = white.getAddr32(0, y);
       for (int x = 0; x < bitmap.width(); ++x) {
-        uint32 image_pixel = image_row[x];
+        uint32_t image_pixel = image_row[x];
         // Fill the non transparent pixels with |color_|.
         dst_row[x] = (image_pixel & 0xFF000000) == 0x0 ? 0x0 : color_;
       }
@@ -830,7 +834,7 @@ void AppMenu::Init(ui::MenuModel* model) {
                                // so we get the taller menu style.
   PopulateMenu(root_, model);
 
-  int32 types = views::MenuRunner::HAS_MNEMONICS;
+  int32_t types = views::MenuRunner::HAS_MNEMONICS;
   if (for_drop()) {
     // We add NESTED_DRAG since currently the only operation to open the app
     // menu for is an extension action drag, which is controlled by the child

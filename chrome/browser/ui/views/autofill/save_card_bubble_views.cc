@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #include "grit/components_strings.h"

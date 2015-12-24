@@ -6,6 +6,7 @@
 
 #include <dwmapi.h>
 
+#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

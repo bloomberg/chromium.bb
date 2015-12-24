@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/metrics/histogram.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"

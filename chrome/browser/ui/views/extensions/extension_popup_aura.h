@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_AURA_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_AURA_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "ui/wm/public/activation_change_observer.h"
 

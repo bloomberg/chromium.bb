@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_OPEN_PDF_IN_READER_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_OPEN_PDF_IN_READER_BUBBLE_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/login/login_prompt.h"
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/login_view.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "chrome/grit/generated_resources.h"

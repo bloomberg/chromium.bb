@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_VIEWS_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/new_credit_card_bubble_view.h"
 #include "ui/views/bubble/bubble_delegate.h"

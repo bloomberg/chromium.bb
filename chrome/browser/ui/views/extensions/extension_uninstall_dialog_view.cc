@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

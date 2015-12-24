@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_CARD_UNMASK_PROMPT_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_CARD_UNMASK_PROMPT_VIEWS_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "ui/gfx/animation/animation_delegate.h"

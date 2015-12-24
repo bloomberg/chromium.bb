@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_FRAME_VIEW_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"

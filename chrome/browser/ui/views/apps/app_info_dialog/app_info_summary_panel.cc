@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -11,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -285,7 +288,7 @@ void AppInfoSummaryPanel::StartCalculatingAppSize() {
       base::Bind(&AppInfoSummaryPanel::OnAppSizeCalculated, AsWeakPtr()));
 }
 
-void AppInfoSummaryPanel::OnAppSizeCalculated(int64 app_size_in_bytes) {
+void AppInfoSummaryPanel::OnAppSizeCalculated(int64_t app_size_in_bytes) {
   const int one_mebibyte_in_bytes = 1024 * 1024;
   if (app_size_in_bytes < one_mebibyte_in_bytes) {
     size_value_->SetText(

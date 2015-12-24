@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_CONTAINER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_CONTAINER_VIEW_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "components/infobars/core/infobar_container.h"
 #include "ui/views/accessible_pane_view.h"
 

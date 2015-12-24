@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -17,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -431,7 +435,7 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
   }
   // While animating, set opacity to cross-fade between attached and detached
   // backgrounds including their respective separators.
-  int detached_alpha = static_cast<uint8>(current_state * 255);
+  int detached_alpha = static_cast<uint8_t>(current_state * 255);
   int attached_alpha = 255 - detached_alpha;
   if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED) {
     // To animate from attached to detached state:

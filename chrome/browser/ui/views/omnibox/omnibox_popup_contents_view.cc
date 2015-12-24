@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"

@@ -7,9 +7,9 @@
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/button.h"

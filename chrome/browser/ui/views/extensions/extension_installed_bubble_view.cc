@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/profiles/profile.h"

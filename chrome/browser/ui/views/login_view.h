@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOGIN_VIEW_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/login_model.h"

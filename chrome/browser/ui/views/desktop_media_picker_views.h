@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DESKTOP_MEDIA_PICKER_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_DESKTOP_MEDIA_PICKER_VIEWS_H_
 
+#include "base/macros.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "chrome/browser/media/desktop_media_picker.h"
 #include "ui/views/window/dialog_delegate.h"

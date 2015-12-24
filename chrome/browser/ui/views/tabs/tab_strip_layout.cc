@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

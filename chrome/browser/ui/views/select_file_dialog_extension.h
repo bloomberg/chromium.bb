@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow

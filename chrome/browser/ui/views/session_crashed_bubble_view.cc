@@ -4,16 +4,20 @@
 
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"

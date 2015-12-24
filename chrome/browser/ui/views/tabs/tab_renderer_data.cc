@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 
 #include "base/process/kill.h"
+#include "build/build_config.h"
 
 TabRendererData::TabRendererData()
     : network_state(NETWORK_STATE_NONE),

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/web_contents_observer.h"

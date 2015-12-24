@@ -7,8 +7,9 @@
 
 #include <list>
 #include <map>
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/panels/native_panel_stack_window.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/focus/widget_focus_manager.h"

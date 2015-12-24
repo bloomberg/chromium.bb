@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_WEB_APP_LEFT_HEADER_VIEW_ASH_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 
 class BrowserView;

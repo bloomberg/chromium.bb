@@ -6,9 +6,11 @@
 
 #include <dlfcn.h>
 #include <glib-object.h>
+#include <stddef.h>
 
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

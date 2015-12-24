@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

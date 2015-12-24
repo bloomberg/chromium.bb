@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_HEADER_PAINTER_ASH_H_
 
 #include "ash/frame/header_painter.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"  // override
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 

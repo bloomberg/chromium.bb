@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
 
+#include <stdint.h>
+
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/mus/public/cpp/window.h"

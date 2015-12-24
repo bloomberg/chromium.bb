@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"

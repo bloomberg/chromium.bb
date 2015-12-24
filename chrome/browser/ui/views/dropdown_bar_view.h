@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DROPDOWN_BAR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DROPDOWN_BAR_VIEW_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "ui/views/accessible_pane_view.h"

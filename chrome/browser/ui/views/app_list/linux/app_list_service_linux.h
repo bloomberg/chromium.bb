@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_LINUX_APP_LIST_SERVICE_LINUX_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_LINUX_APP_LIST_SERVICE_LINUX_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_service_views.h"
 #include "ui/app_list/views/app_list_view_observer.h"
 

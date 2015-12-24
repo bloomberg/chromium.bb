@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/view_model.h"
 

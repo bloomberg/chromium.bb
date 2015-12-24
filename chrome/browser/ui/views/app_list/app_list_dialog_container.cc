@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/app_list/app_list_dialog_container.h"
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/app_list/app_list_constants.h"

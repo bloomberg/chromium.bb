@@ -6,6 +6,7 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"

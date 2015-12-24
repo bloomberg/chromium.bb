@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/theme_image_mapper.h"
 
+#include "build/build_config.h"
 #include "grit/theme_resources.h"
 
 namespace chrome {

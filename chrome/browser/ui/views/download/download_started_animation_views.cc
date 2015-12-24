@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_started_animation.h"
 
+#include "base/macros.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

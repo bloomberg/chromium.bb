@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LINK_DISAMBIGUATION_LINK_DISAMBIGUATION_POPUP_H_
 #define CHROME_BROWSER_UI_VIEWS_LINK_DISAMBIGUATION_LINK_DISAMBIGUATION_POPUP_H_
 
+#include "base/macros.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"

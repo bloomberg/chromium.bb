@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
 
+#include <stdint.h>
+
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram.h"
@@ -23,7 +25,7 @@
 #include "ui/views/controls/glow_hover_controller.h"
 
 namespace {
-const int64 kActivationDelayMS = 200;
+const int64_t kActivationDelayMS = 200;
 }
 
 // static

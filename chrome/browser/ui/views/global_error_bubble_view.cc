@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/global_error_bubble_view.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/platform_keys_certificate_selector_chromeos.h"
 
+#include <stddef.h>
+
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"

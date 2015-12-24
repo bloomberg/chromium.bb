@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MAC_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MAC_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
 class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {

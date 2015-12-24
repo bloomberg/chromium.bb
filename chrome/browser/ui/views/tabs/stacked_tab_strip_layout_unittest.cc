@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

@@ -7,8 +7,8 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 // Stub implementation of ImmersiveModeController for platforms which do not
 // support immersive mode yet.

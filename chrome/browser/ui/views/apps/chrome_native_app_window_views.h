@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
 

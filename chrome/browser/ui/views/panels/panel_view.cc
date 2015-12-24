@@ -4,10 +4,14 @@
 
 #include "chrome/browser/ui/views/panels/panel_view.h"
 
+#include <stddef.h>
+
 #include <map>
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/host_desktop.h"

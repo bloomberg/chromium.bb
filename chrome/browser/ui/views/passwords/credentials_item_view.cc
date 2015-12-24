@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/generated_resources.h"

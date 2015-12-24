@@ -9,6 +9,7 @@
 #include <atlwin.h>  // NOLINT
 #endif
 
+#include "base/macros.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 
 #include <algorithm>  // NOLINT
