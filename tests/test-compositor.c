@@ -91,17 +91,13 @@ get_socket_name(void)
 	return retval;
 }
 
-/**
- * Check client's state and terminate display when all clients exited
- */
 static void
-client_destroyed(struct wl_listener *listener, void *data)
+handle_client_destroy(void *data)
 {
+	struct client_info *ci = data;
 	struct display *d;
-	struct client_info *ci;
 	siginfo_t status;
 
-	ci = wl_container_of(listener, ci, destroy_listener);
 	d = ci->display;
 
 	assert(waitid(P_PID, ci->pid, &status, WEXITED) != -1);
@@ -132,6 +128,25 @@ client_destroyed(struct wl_listener *listener, void *data)
 	 * clients. In the case that the test would go through
 	 * the clients list manually, zero out the wl_client as a sign
 	 * that the client is not running anymore */
+}
+
+/**
+ * Check client's state and terminate display when all clients exited
+ */
+static void
+client_destroyed(struct wl_listener *listener, void *data)
+{
+	struct client_info *ci;
+	struct display *d;
+	struct wl_event_loop *loop;
+
+	/* Wait for client in an idle handler to avoid blocking the actual
+	 * client destruction (fd close etc. */
+	ci = wl_container_of(listener, ci, destroy_listener);
+	d = ci->display;
+	loop = wl_display_get_event_loop(d->wl_display);
+	wl_event_loop_add_idle(loop, handle_client_destroy, ci);
+
 	ci->wl_client = NULL;
 }
 
