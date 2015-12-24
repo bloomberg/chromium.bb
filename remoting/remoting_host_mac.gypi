@@ -178,7 +178,10 @@
         'prefpane_bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_NAME@")',
       },
       'dependencies': [
+        'remoting_base',
+        'remoting_host',
         'remoting_infoplist_strings',
+        '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
       ],
       'defines': [
         'HOST_BUNDLE_NAME="<(host_bundle_name)"',
@@ -190,21 +193,7 @@
         '../third_party/jsoncpp/source/include/',
         '../third_party/jsoncpp/source/src/lib_json/',
       ],
-
-      # These source files are included directly, instead of adding target
-      # dependencies, because the targets are not yet built for 64-bit on
-      # Mac OS X - http://crbug.com/125116.
-      #
-      # TODO(lambroslambrou): Fix this when Chrome supports building for
-      # Mac OS X 64-bit - http://crbug.com/128122.
       'sources': [
-        '../third_party/jsoncpp/overrides/src/lib_json/json_value.cpp',
-        '../third_party/jsoncpp/overrides/src/lib_json/json_reader.cpp',
-        '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
-        '../third_party/modp_b64/modp_b64.cc',
-        'host/constants_mac.cc',
-        'host/constants_mac.h',
-        'host/host_config_constants.cc',
         'host/mac/me2me_preference_pane.h',
         'host/mac/me2me_preference_pane.mm',
         'host/mac/me2me_preference_pane_confirm_pin.h',

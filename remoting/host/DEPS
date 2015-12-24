@@ -10,7 +10,6 @@ include_rules = [
   "+remoting/signaling",
   "+remoting/tools",
   "+third_party/jsoncpp",
-  "+third_party/modp_b64",
   "+third_party/skia",
   "+third_party/webrtc",
   "+ui",
