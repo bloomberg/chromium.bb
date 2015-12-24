@@ -7,6 +7,7 @@
 
 #include <caca.h>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "ui/events/platform/platform_event_source.h"

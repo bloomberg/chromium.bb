@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_MANAGER_H_
 #define UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_MANAGER_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/id_map.h"
 #include "base/macros.h"

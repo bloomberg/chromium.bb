@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <xf86drm.h>
 #include <utility>
 

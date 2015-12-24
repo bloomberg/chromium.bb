@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_COMMON_DISPLAY_MODE_PROXY_H_
 #define UI_OZONE_COMMON_DISPLAY_MODE_PROXY_H_
 
+#include "base/macros.h"
 #include "ui/display/types/display_mode.h"
 
 namespace ui {

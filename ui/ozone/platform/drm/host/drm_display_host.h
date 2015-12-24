@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_delegate.h"

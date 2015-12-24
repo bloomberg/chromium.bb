@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 #include "ui/ozone/public/surface_ozone_egl.h"

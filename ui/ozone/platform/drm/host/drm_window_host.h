@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_WINDOW_HOST_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_WINDOW_HOST_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/platform/platform_event_dispatcher.h"

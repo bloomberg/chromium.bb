@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_GPU_DISPLAY_MANAGER_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_GPU_DISPLAY_MANAGER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 

@@ -5,8 +5,12 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_DISPLAY_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_DISPLAY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"

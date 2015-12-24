@@ -7,6 +7,7 @@
 
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 
+#include <stdint.h>
 #include <xf86drmMode.h>
 
 namespace ui {

@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_DEVICE_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_DEVICE_H_
 
+#include "base/macros.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
 struct gbm_device;

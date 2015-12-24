@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_H_
 
+#include "base/macros.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 
 namespace ui {

@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_IMPL_DRM_VSYNC_PROVIDER_H_
 #define UI_OZONE_PLATFORM_IMPL_DRM_VSYNC_PROVIDER_H_
 
+#include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
 

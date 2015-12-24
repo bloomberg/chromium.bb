@@ -5,6 +5,8 @@
 // Multiply-included message file, hence no include guard here, but see below
 // for a much smaller-than-usual include guard section.
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/file_descriptor_posix.h"

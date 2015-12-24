@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_VGEM_H_
 #define UI_OZONE_PLATFORM_DRM_COMMON_CLIENT_NATIVE_PIXMAP_VGEM_H_
 
+#include <stdint.h>
+
 #include "base/file_descriptor_posix.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"

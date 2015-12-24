@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_PUBLIC_SURFACE_OZONE_EGL_H_
 #define UI_OZONE_PUBLIC_SURFACE_OZONE_EGL_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/overlay_transform.h"

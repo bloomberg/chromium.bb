@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"

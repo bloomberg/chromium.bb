@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_CAST_SURFACE_OZONE_EGL_CAST_H_
 #define UI_OZONE_PLATFORM_CAST_SURFACE_OZONE_EGL_CAST_H_
 
+#include "base/macros.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {

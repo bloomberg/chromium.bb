@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"  // nogncheck
 

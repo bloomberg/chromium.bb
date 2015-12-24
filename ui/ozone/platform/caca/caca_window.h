@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_CACA_CACA_WINDOW_H_
 
 #include <caca.h>
+#include <stdint.h>
 
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"

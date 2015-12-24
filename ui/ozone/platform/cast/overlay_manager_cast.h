@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_CAST_OVERLAY_MANAGER_CAST_H_
 #define UI_OZONE_PLATFORM_CAST_OVERLAY_MANAGER_CAST_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 

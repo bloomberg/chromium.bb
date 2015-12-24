@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_THREAD_PROXY_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_THREAD_PROXY_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"

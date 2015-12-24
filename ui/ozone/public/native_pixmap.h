@@ -6,6 +6,7 @@
 #define UI_OZONE_PUBLIC_NATIVE_PIXMAP_H_
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/gfx/native_widget_types.h"

@@ -10,7 +10,7 @@
 #include <xf86drmMode.h>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"

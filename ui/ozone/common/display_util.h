@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_COMMON_DISPLAY_UTIL_H_
 #define UI_OZONE_COMMON_DISPLAY_UTIL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"

@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_
 #define UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -29,7 +32,7 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   intptr_t GetNativeDisplay() override;
   scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
-  const int32* GetEGLSurfaceProperties(const int32* desired_list) override;
+  const int32_t* GetEGLSurfaceProperties(const int32_t* desired_list) override;
   scoped_refptr<NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
       gfx::Size size,

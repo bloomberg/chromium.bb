@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_GPU_PLATFORM_SUPPORT_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_GPU_PLATFORM_SUPPORT_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 

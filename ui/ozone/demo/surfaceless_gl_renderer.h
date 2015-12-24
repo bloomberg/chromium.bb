@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_DEMO_SURFACELESS_GL_RENDERER_H_
 #define UI_OZONE_DEMO_SURFACELESS_GL_RENDERER_H_
 
+#include "base/macros.h"
 #include "ui/ozone/demo/gl_renderer.h"
 
 namespace gl {

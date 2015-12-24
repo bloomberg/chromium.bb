@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PUBLIC_SYSTEM_INPUT_INJECTOR_H_
 #define UI_OZONE_PUBLIC_SYSTEM_INPUT_INJECTOR_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"

@@ -5,11 +5,14 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_OVERLAY_CANDIDATES_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_OVERLAY_CANDIDATES_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <vector>
 
 #include "base/containers/mru_cache.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"

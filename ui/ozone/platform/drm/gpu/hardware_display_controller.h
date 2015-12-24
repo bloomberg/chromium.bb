@@ -12,9 +12,9 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/swap_result.h"

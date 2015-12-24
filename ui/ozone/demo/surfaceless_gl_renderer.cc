@@ -4,7 +4,10 @@
 
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"

@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <xf86drmMode.h>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/gfx/swap_result.h"

@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_FAKE_PLANE_INFO_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_FAKE_PLANE_INFO_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

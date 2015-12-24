@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_CONSOLE_BUFFER_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_CONSOLE_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "skia/ext/refptr.h"

@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/ozone/ozone_base_export.h"
 #include "ui/ozone/public/surface_factory_ozone.h"

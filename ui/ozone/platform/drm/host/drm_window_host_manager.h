@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 

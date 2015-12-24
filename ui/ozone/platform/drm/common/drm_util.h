@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_
 #define UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"

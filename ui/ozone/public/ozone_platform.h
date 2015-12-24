@@ -6,6 +6,7 @@
 #define UI_OZONE_PUBLIC_OZONE_PLATFORM_H_
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
 

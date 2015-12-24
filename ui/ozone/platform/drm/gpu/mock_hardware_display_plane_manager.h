@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_MOCK_HARDWARE_DISPLAY_PLANE_MANAGER_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_MOCK_HARDWARE_DISPLAY_PLANE_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 
 namespace ui {

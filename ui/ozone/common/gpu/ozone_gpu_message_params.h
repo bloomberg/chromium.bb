@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_COMMON_GPU_OZONE_GPU_MESSAGE_PARAMS_H_
 #define UI_OZONE_COMMON_GPU_OZONE_GPU_MESSAGE_PARAMS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

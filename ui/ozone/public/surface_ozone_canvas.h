@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_PUBLIC_SURFACE_OZONE_CANVAS_H_
 #define UI_OZONE_PUBLIC_SURFACE_OZONE_CANVAS_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
 #include "ui/ozone/ozone_base_export.h"

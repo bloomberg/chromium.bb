@@ -39,8 +39,8 @@ scoped_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
   return nullptr;
 }
 
-const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(
-    const int32* desired_attributes) {
+const int32_t* SurfaceFactoryOzone::GetEGLSurfaceProperties(
+    const int32_t* desired_attributes) {
   return desired_attributes;
 }
 

@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 
+#include <stddef.h>
+
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"

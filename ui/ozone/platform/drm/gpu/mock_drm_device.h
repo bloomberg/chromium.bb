@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_MOCK_DRM_DEVICE_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_MOCK_DRM_DEVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <vector>

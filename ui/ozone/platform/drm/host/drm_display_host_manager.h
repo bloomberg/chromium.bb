@@ -5,10 +5,13 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_MANAGER_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_MANAGER_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <set>
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/types/native_display_delegate.h"

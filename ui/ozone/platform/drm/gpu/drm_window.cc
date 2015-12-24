@@ -5,7 +5,10 @@
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 
 #include <drm_fourcc.h>
+#include <stddef.h>
+#include <stdint.h>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"

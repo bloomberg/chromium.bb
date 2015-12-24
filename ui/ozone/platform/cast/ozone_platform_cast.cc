@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/cast_egl_platform_shlib.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"

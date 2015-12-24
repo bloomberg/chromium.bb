@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PUBLIC_OZONE_GPU_THREAD_HELPER_H_
 #define UI_OZONE_PUBLIC_OZONE_GPU_THREAD_HELPER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"

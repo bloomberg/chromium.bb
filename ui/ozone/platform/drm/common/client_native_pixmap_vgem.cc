@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/common/client_native_pixmap_vgem.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <sys/mman.h>
 #include <vgem_drm.h>
 #include <xf86drm.h>

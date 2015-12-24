@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_DEVICE_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_DEVICE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

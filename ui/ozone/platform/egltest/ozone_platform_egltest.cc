@@ -4,10 +4,13 @@
 
 #include "ui/ozone/platform/egltest/ozone_platform_egltest.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/threading/thread_checker.h"
 #include "library_loaders/libeglplatform_shim.h"
@@ -260,7 +263,7 @@ class SurfaceFactoryEgltest : public ui::SurfaceFactoryOzone {
   intptr_t GetNativeDisplay() override;
   scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
-  const int32* GetEGLSurfaceProperties(const int32* desired_list) override;
+  const int32_t* GetEGLSurfaceProperties(const int32_t* desired_list) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
@@ -298,10 +301,10 @@ bool SurfaceFactoryEgltest::LoadEGLGLES2Bindings(
                                     egl_soname, gles_soname);
 }
 
-const int32* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
-    const int32* desired_list) {
+const int32_t* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
+    const int32_t* desired_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  static const int32 broken_props[] = {
+  static const int32_t broken_props[] = {
       EGL_RENDERABLE_TYPE,
       EGL_OPENGL_ES2_BIT,
       EGL_SURFACE_TYPE,

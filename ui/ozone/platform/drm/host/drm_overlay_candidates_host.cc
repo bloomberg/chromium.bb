@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/host/drm_overlay_candidates_host.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "ui/gfx/geometry/rect_conversions.h"

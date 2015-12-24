@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/ozone/ozone_export.h"

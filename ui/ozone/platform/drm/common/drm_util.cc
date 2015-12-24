@@ -219,7 +219,7 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
     size_t device_index,
     const gfx::Point& origin) {
   DisplaySnapshot_Params params;
-  int64 connector_index = ConnectorIndex(device_index, info->index());
+  int64_t connector_index = ConnectorIndex(device_index, info->index());
   params.display_id = connector_index;
   params.origin = origin;
   params.physical_size =

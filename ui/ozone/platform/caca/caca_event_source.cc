@@ -7,6 +7,7 @@
 #include <caca.h>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"

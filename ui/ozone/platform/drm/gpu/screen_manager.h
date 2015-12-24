@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_SCREEN_MANAGER_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_SCREEN_MANAGER_H_
 
+#include <stdint.h>
+
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"

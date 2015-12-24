@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DEVICE_HANDLE_H_
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 
 namespace base {
 class FilePath;

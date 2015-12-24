@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_THREAD_MESSAGE_PROXY_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_THREAD_MESSAGE_PROXY_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/message_filter.h"
 #include "ui/display/types/display_constants.h"

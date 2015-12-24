@@ -5,8 +5,11 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACE_FACTORY_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 

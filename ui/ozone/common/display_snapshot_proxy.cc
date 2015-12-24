@@ -4,6 +4,8 @@
 
 #include "ui/ozone/common/display_snapshot_proxy.h"
 
+#include <stddef.h>
+
 #include "ui/ozone/common/display_mode_proxy.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 

@@ -9,7 +9,6 @@
 #include <xf86drm.h>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"

@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
+#include "base/macros.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/no/no_keyboard_layout_engine.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"

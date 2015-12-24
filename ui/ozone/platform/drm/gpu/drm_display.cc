@@ -6,6 +6,7 @@
 
 #include <xf86drmMode.h>
 
+#include "base/macros.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"

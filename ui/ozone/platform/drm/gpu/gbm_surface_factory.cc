@@ -7,6 +7,7 @@
 #include <gbm.h>
 
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
@@ -52,24 +53,24 @@ intptr_t GbmSurfaceFactory::GetNativeDisplay() {
   return EGL_DEFAULT_DISPLAY;
 }
 
-const int32* GbmSurfaceFactory::GetEGLSurfaceProperties(
-    const int32* desired_list) {
+const int32_t* GbmSurfaceFactory::GetEGLSurfaceProperties(
+    const int32_t* desired_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  static const int32 kConfigAttribs[] = {EGL_BUFFER_SIZE,
-                                         32,
-                                         EGL_ALPHA_SIZE,
-                                         8,
-                                         EGL_BLUE_SIZE,
-                                         8,
-                                         EGL_GREEN_SIZE,
-                                         8,
-                                         EGL_RED_SIZE,
-                                         8,
-                                         EGL_RENDERABLE_TYPE,
-                                         EGL_OPENGL_ES2_BIT,
-                                         EGL_SURFACE_TYPE,
-                                         EGL_WINDOW_BIT,
-                                         EGL_NONE};
+  static const int32_t kConfigAttribs[] = {EGL_BUFFER_SIZE,
+                                           32,
+                                           EGL_ALPHA_SIZE,
+                                           8,
+                                           EGL_BLUE_SIZE,
+                                           8,
+                                           EGL_GREEN_SIZE,
+                                           8,
+                                           EGL_RED_SIZE,
+                                           8,
+                                           EGL_RENDERABLE_TYPE,
+                                           EGL_OPENGL_ES2_BIT,
+                                           EGL_SURFACE_TYPE,
+                                           EGL_WINDOW_BIT,
+                                           EGL_NONE};
 
   return kConfigAttribs;
 }

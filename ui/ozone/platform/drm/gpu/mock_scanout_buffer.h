@@ -6,7 +6,9 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_MOCK_SCANOUT_BUFFER_H_
 
 #include <drm_fourcc.h>
+#include <stdint.h>
 
+#include "base/macros.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {

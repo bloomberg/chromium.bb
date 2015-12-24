@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/graphics_types.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -209,8 +210,8 @@ void SurfaceFactoryCast::ChildDestroyed() {
     DestroyWindow();
 }
 
-const int32* SurfaceFactoryCast::GetEGLSurfaceProperties(
-    const int32* desired_list) {
+const int32_t* SurfaceFactoryCast::GetEGLSurfaceProperties(
+    const int32_t* desired_list) {
   return egl_platform_->GetEGLSurfaceProperties(desired_list);
 }
 

@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_BUFFER_BASE_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_BUFFER_BASE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 struct gbm_bo;

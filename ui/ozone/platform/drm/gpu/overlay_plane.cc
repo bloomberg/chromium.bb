@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 
+#include <stddef.h>
+
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
