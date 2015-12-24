@@ -258,95 +258,94 @@ static struct tag_index read_tag_table(qcms_profile *profile, struct mem_source 
  */
 qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
 {
-        float rX, rY, rZ, gX, gY, gZ, bX, bY, bZ;
-        float target[3], tolerance[3], sum[3];
-        unsigned i;
+    float rX, rY, rZ, gX, gY, gZ, bX, bY, bZ;
+    float target[3], tolerance[3], sum[3];
+    unsigned i;
 
-        // We currently only check the bogosity of RGB profiles.
-        if (profile->color_space != RGB_SIGNATURE)
-               return false;
+    // We currently only check the bogosity of RGB profiles.
+    if (profile->color_space != RGB_SIGNATURE)
+        return false;
 
-        if (qcms_supports_iccv4 && (profile->A2B0 || profile->B2A0))
-               return false;
+    if (qcms_supports_iccv4 && (profile->A2B0 || profile->B2A0))
+        return false;
 
-        rX = s15Fixed16Number_to_float(profile->redColorant.X);
-        rY = s15Fixed16Number_to_float(profile->redColorant.Y);
-        rZ = s15Fixed16Number_to_float(profile->redColorant.Z);
+    rX = s15Fixed16Number_to_float(profile->redColorant.X);
+    rY = s15Fixed16Number_to_float(profile->redColorant.Y);
+    rZ = s15Fixed16Number_to_float(profile->redColorant.Z);
 
-        gX = s15Fixed16Number_to_float(profile->greenColorant.X);
-        gY = s15Fixed16Number_to_float(profile->greenColorant.Y);
-        gZ = s15Fixed16Number_to_float(profile->greenColorant.Z);
+    gX = s15Fixed16Number_to_float(profile->greenColorant.X);
+    gY = s15Fixed16Number_to_float(profile->greenColorant.Y);
+    gZ = s15Fixed16Number_to_float(profile->greenColorant.Z);
 
-        bX = s15Fixed16Number_to_float(profile->blueColorant.X);
-        bY = s15Fixed16Number_to_float(profile->blueColorant.Y);
-        bZ = s15Fixed16Number_to_float(profile->blueColorant.Z);
+    bX = s15Fixed16Number_to_float(profile->blueColorant.X);
+    bY = s15Fixed16Number_to_float(profile->blueColorant.Y);
+    bZ = s15Fixed16Number_to_float(profile->blueColorant.Z);
 
-        // Build our target vector: CIE D50 white. See also mozilla bug 460629,
-        // and http://www.color.org/whyd50.xalter "Why is the media white point
-        // of a display profile always D50?"
+    // Build our target vector: CIE D50 white. See also mozilla bug 460629,
+    // and http://www.color.org/whyd50.xalter "Why is the media white point
+    // of a display profile always D50?"
 
-        target[0] = (float) 0.96420;
-        target[1] = (float) 1.00000;
-        target[2] = (float) 0.82491;
+    target[0] = (float) 0.96420;
+    target[1] = (float) 1.00000;
+    target[2] = (float) 0.82491;
 
-        // Our tolerance vector - Recommended by Chris Murphy [1] based on
-        // conversion from the L*a*b space criterion of no more than 3 in any
-        // one channel. This is similar to, but slightly more tolerant than
-        // Adobe's criterion. [1] https://bugzil.la/460629#c10
+    // Our tolerance vector - Recommended by Chris Murphy [1] based on
+    // conversion from the L*a*b space criterion of no more than 3 in any
+    // one channel. This is similar to, but slightly more tolerant than
+    // Adobe's criterion. [1] https://bugzil.la/460629#c10
 
-        tolerance[0] = (float) 0.02;
-        tolerance[1] = (float) 0.02;
-        tolerance[2] = (float) 0.04;
+    tolerance[0] = (float) 0.02;
+    tolerance[1] = (float) 0.02;
+    tolerance[2] = (float) 0.04;
 
-        // Sum the XYZ values: they should add to D50 white, within tolerance.
+    // Sum the XYZ values: they should add to D50 white, within tolerance.
 
-        // FIXME: this test assumes the TRC RGB curves equal 1.0 for the white
-        // input (255,255,255) RGB test color. For user display profiles, that
-        // is the normal case. Profiles with abnormal TRC exist. A better test
-        // would transform 255,255,255 white through the profile to either XYZ
-        // or L*a*b color and compare the result to D50 in XYZ or L*a*b color.
+    // FIXME: this test assumes the TRC RGB curves equal 1.0 for the white
+    // input (255,255,255) RGB test color. For user display profiles, that
+    // is the normal case. Profiles with abnormal TRC exist. A better test
+    // would transform 255,255,255 white through the profile to either XYZ
+    // or L*a*b color and compare the result to D50 in XYZ or L*a*b color.
 
-        sum[0] = rX + gX + bX;
-        sum[1] = rY + gY + bY;
-        sum[2] = rZ + gZ + bZ;
+    sum[0] = rX + gX + bX;
+    sum[1] = rY + gY + bY;
+    sum[2] = rZ + gZ + bZ;
 
-        for (i = 0; i < 3; ++i) {
-            if (!(((sum[i] - tolerance[i]) <= target[i]) &&
-                  ((sum[i] + tolerance[i]) >= target[i]))) {
-                return true; // out of tolerance: bogus
-            }
+    for (i = 0; i < 3; ++i) {
+        if (!(((sum[i] - tolerance[i]) <= target[i]) &&
+              ((sum[i] + tolerance[i]) >= target[i]))) {
+            return true; // out of tolerance: bogus
         }
+    }
 
 #ifndef __APPLE__
+    // Check if any of the XYZ values are negative (see mozilla bug 498245)
+    // CIEXYZ tristimulus values cannot be negative according to the spec.
 
-        // Check if any of the XYZ values are negative (see mozilla bug 498245)
-        // CIEXYZ tristimulus values cannot be negative according to the spec.
+    bool negative =
+        (rX < 0) || (rY < 0) || (rZ < 0) ||
+        (gX < 0) || (gY < 0) || (gZ < 0) ||
+        (bX < 0) || (bY < 0) || (bZ < 0);
 
-        bool negative =
-            (rX < 0) || (rY < 0) || (rZ < 0) ||
-            (gX < 0) || (gY < 0) || (gZ < 0) ||
-            (bX < 0) || (bY < 0) || (bZ < 0);
-
-        if (negative)
-            return true; // bogus
+    if (negative)
+        return true; // bogus
 #else
-        // Chromatic adaption to D50 can result in negative XYZ, but the white
-        // point D50 tolerance test has passed. Accept negative values herein.
-        // See https://bugzilla.mozilla.org/show_bug.cgi?id=498245#c18 onwards
-        // for discussion about whether profile XYZ can or cannot be negative,
-        // per the spec. Also the https://bugzil.la/450923 user report.
+    // Chromatic adaption to D50 can result in negative XYZ, but the white
+    // point D50 tolerance test has passed. Accept negative values herein.
+    // See https://bugzilla.mozilla.org/show_bug.cgi?id=498245#c18 onwards
+    // for discussion about whether profile XYZ can or cannot be negative,
+    // per the spec. Also the https://bugzil.la/450923 user report.
 
-        // FIXME: allow this relaxation on all ports?
+    // FIXME: allow this relaxation on all ports?
 #endif
-        // All good.
-        return false;
+    // All good.
+    return false;
 }
 
 qcms_bool qcms_profile_has_white_point(qcms_profile *profile)
 {
-        struct XYZNumber wp = profile->mediaWhitePoint;
+    struct XYZNumber wp = profile->mediaWhitePoint;
 
-        return (wp.X != 0) && (wp.Y != 0) && (wp.Z != 0);
+    return (wp.X != 0) && (wp.Y != 0) && (wp.Z != 0);
 }
 
 #define TAG_bXYZ 0x6258595a
