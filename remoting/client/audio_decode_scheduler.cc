@@ -4,6 +4,8 @@
 
 #include "remoting/client/audio_decode_scheduler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -53,11 +55,9 @@ AudioDecodeScheduler::Core::Core(
     scoped_ptr<AudioPlayer> audio_player)
     : main_task_runner_(main_task_runner),
       audio_decode_task_runner_(audio_decode_task_runner),
-      audio_player_(audio_player.Pass()) {
-}
+      audio_player_(std::move(audio_player)) {}
 
-AudioDecodeScheduler::Core::~Core() {
-}
+AudioDecodeScheduler::Core::~Core() {}
 
 void AudioDecodeScheduler::Core::Initialize(
     const protocol::SessionConfig& config) {
@@ -83,7 +83,7 @@ void AudioDecodeScheduler::Core::DecodePacket(
     scoped_ptr<AudioPacket> packet,
     const base::Closure& done) {
   DCHECK(audio_decode_task_runner_->BelongsToCurrentThread());
-  scoped_ptr<AudioPacket> decoded_packet = decoder_->Decode(packet.Pass());
+  scoped_ptr<AudioPacket> decoded_packet = decoder_->Decode(std::move(packet));
 
   main_task_runner_->PostTask(FROM_HERE, base::Bind(
       &AudioDecodeScheduler::Core::ProcessDecodedPacket, this,
@@ -96,7 +96,7 @@ void AudioDecodeScheduler::Core::ProcessDecodedPacket(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   // Only process |packet| if it is non-null.
   if (packet.get() && audio_player_.get())
-    audio_player_->ProcessAudioPacket(packet.Pass());
+    audio_player_->ProcessAudioPacket(std::move(packet));
   done.Run();
 }
 
@@ -105,7 +105,7 @@ AudioDecodeScheduler::AudioDecodeScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
     scoped_ptr<AudioPlayer> audio_player)
     : core_(new Core(main_task_runner, audio_decode_task_runner,
-                     audio_player.Pass())) {
+                     std::move(audio_player))) {
 }
 
 AudioDecodeScheduler::~AudioDecodeScheduler() {
@@ -118,7 +118,7 @@ void AudioDecodeScheduler::Initialize(const protocol::SessionConfig& config) {
 
 void AudioDecodeScheduler::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
                                               const base::Closure& done) {
-  core_->ProcessAudioPacket(packet.Pass(), done);
+  core_->ProcessAudioPacket(std::move(packet), done);
 }
 
 }  // namespace remoting

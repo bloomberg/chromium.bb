@@ -7,6 +7,8 @@
 #include <android/log.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "jingle/glue/thread_wrapper.h"
@@ -86,7 +88,7 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
   authenticator_.reset(new protocol::NegotiatingClientAuthenticator(
       pairing_id, pairing_secret, host_id_,
       base::Bind(&ChromotingJniInstance::FetchSecret, this),
-      token_fetcher.Pass(), auth_methods));
+      std::move(token_fetcher), auth_methods));
 
   // Post a task to start connection
   jni_runtime_->network_task_runner()->PostTask(
@@ -430,10 +432,10 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          signaling_.get(), port_allocator_factory.Pass(), network_settings,
+          signaling_.get(), std::move(port_allocator_factory), network_settings,
           protocol::TransportRole::CLIENT);
 
-  client_->Start(signaling_.get(), authenticator_.Pass(), transport_context,
+  client_->Start(signaling_.get(), std::move(authenticator_), transport_context,
                  host_jid_, capabilities_);
 }
 

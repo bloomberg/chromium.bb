@@ -4,6 +4,8 @@
 
 #include "remoting/codec/video_encoder_vpx.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
@@ -222,8 +224,8 @@ void CreateImage(bool use_i444,
   image->stride[1] = uv_stride;
   image->stride[2] = uv_stride;
 
-  *out_image = image.Pass();
-  *out_image_buffer = image_buffer.Pass();
+  *out_image = std::move(image);
+  *out_image_buffer = std::move(image_buffer);
 }
 
 } // namespace
@@ -339,7 +341,7 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
     }
   }
 
-  return packet.Pass();
+  return packet;
 }
 
 VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)

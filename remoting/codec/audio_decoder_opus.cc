@@ -74,7 +74,6 @@ bool AudioDecoderOpus::ResetForPacket(AudioPacket* packet) {
   return decoder_ != nullptr;
 }
 
-
 scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
     scoped_ptr<AudioPacket> packet) {
   if (packet->encoding() != AudioPacket::ENCODING_OPUS) {
@@ -133,7 +132,7 @@ scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
 
   decoded_data->resize(buffer_pos);
 
-  return decoded_packet.Pass();
+  return decoded_packet;
 }
 
 }  // namespace remoting

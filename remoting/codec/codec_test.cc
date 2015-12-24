@@ -5,7 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+
 #include <deque>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -184,7 +186,7 @@ class VideoEncoderTester {
     ++data_available_;
     // Send the message to the VideoDecoderTester.
     if (decoder_tester_) {
-      decoder_tester_->ReceivedPacket(packet.Pass());
+      decoder_tester_->ReceivedPacket(std::move(packet));
     }
   }
 
@@ -208,7 +210,7 @@ scoped_ptr<DesktopFrame> PrepareFrame(const DesktopSize& size) {
     frame->data()[i] = rand() % 256;
   }
 
-  return frame.Pass();
+  return frame;
 }
 
 static void TestEncodingRects(VideoEncoder* encoder,
@@ -216,8 +218,7 @@ static void TestEncodingRects(VideoEncoder* encoder,
                               DesktopFrame* frame,
                               const DesktopRegion& region) {
   *frame->mutable_updated_region() = region;
-  scoped_ptr<VideoPacket> packet = encoder->Encode(*frame);
-  tester->DataAvailable(packet.Pass());
+  tester->DataAvailable(encoder->Encode(*frame));
 }
 
 void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
@@ -286,8 +287,7 @@ static void TestEncodeDecodeRects(VideoEncoder* encoder,
     }
   }
 
-  scoped_ptr<VideoPacket> packet = encoder->Encode(*frame);
-  encoder_tester->DataAvailable(packet.Pass());
+  encoder_tester->DataAvailable(encoder->Encode(*frame));
   decoder_tester->VerifyResults();
   decoder_tester->Reset();
 }
@@ -338,9 +338,7 @@ void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
   VideoDecoderTester decoder_tester(decoder, screen_size);
   decoder_tester.set_expected_frame(frame.get());
   decoder_tester.AddRegion(frame->updated_region());
-
-  scoped_ptr<VideoPacket> packet = encoder->Encode(*frame);
-  decoder_tester.ReceivedPacket(packet.Pass());
+  decoder_tester.ReceivedPacket(encoder->Encode(*frame));
 
   decoder_tester.VerifyResultsApprox(max_error_limit, mean_error_limit);
 }

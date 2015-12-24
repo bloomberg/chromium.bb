@@ -4,6 +4,8 @@
 
 #include "remoting/signaling/jingle_info_request.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -20,8 +22,7 @@ namespace remoting {
 const int kRequestTimeoutSeconds = 5;
 
 JingleInfoRequest::JingleInfoRequest(SignalStrategy* signal_strategy)
-    : iq_sender_(signal_strategy) {
-}
+    : iq_sender_(signal_strategy) {}
 
 JingleInfoRequest::~JingleInfoRequest() {}
 
@@ -30,7 +31,7 @@ void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
   scoped_ptr<buzz::XmlElement> iq_body(
       new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true));
   request_ = iq_sender_.SendIq(
-      buzz::STR_GET, buzz::STR_EMPTY, iq_body.Pass(),
+      buzz::STR_GET, buzz::STR_EMPTY, std::move(iq_body),
       base::Bind(&JingleInfoRequest::OnResponse, base::Unretained(this)));
   if (!request_) {
     // If we failed to send IqRequest it means that SignalStrategy is

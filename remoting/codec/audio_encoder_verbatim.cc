@@ -20,7 +20,7 @@ scoped_ptr<AudioPacket> AudioEncoderVerbatim::Encode(
   DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());
   DCHECK_NE(AudioPacket::BYTES_PER_SAMPLE_INVALID, packet->bytes_per_sample());
   DCHECK_NE(AudioPacket::CHANNELS_INVALID, packet->channels());
-  return packet.Pass();
+  return packet;
 }
 
 int AudioEncoderVerbatim::GetBitrate() {

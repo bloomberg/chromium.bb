@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -21,7 +22,7 @@
 namespace remoting {
 
 RsaKeyPair::RsaKeyPair(scoped_ptr<crypto::RSAPrivateKey> key)
-    : key_(key.Pass()){
+    : key_(std::move(key)){
   DCHECK(key_);
 }
 
@@ -34,7 +35,7 @@ scoped_refptr<RsaKeyPair> RsaKeyPair::Generate() {
     LOG(ERROR) << "Cannot generate private key.";
     return NULL;
   }
-  return new RsaKeyPair(key.Pass());
+  return new RsaKeyPair(std::move(key));
 }
 
 // static
@@ -54,7 +55,7 @@ scoped_refptr<RsaKeyPair> RsaKeyPair::FromString(
     return NULL;
   }
 
-  return new RsaKeyPair(key.Pass());
+  return new RsaKeyPair(std::move(key));
 }
 
 std::string RsaKeyPair::ToString() const {

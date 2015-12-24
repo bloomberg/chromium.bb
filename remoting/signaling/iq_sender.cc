@@ -4,6 +4,8 @@
 
 #include "remoting/signaling/iq_sender.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -30,7 +32,7 @@ scoped_ptr<buzz::XmlElement> IqSender::MakeIqStanza(
   if (!addressee.empty())
     stanza->AddAttr(buzz::QN_TO, addressee);
   stanza->AddElement(iq_body.release());
-  return stanza.Pass();
+  return stanza;
 }
 
 IqSender::IqSender(SignalStrategy* signal_strategy)
@@ -47,21 +49,21 @@ scoped_ptr<IqRequest> IqSender::SendIq(scoped_ptr<buzz::XmlElement> stanza,
   std::string addressee = stanza->Attr(buzz::QN_TO);
   std::string id = signal_strategy_->GetNextId();
   stanza->AddAttr(buzz::QN_ID, id);
-  if (!signal_strategy_->SendStanza(stanza.Pass())) {
+  if (!signal_strategy_->SendStanza(std::move(stanza))) {
     return nullptr;
   }
   DCHECK(requests_.find(id) == requests_.end());
   scoped_ptr<IqRequest> request(new IqRequest(this, callback, addressee));
   if (!callback.is_null())
     requests_[id] = request.get();
-  return request.Pass();
+  return request;
 }
 
 scoped_ptr<IqRequest> IqSender::SendIq(const std::string& type,
                                        const std::string& addressee,
                                        scoped_ptr<buzz::XmlElement> iq_body,
                                        const ReplyCallback& callback) {
-  return SendIq(MakeIqStanza(type, addressee, iq_body.Pass()), callback);
+  return SendIq(MakeIqStanza(type, addressee, std::move(iq_body)), callback);
 }
 
 void IqSender::RemoveRequest(IqRequest* request) {

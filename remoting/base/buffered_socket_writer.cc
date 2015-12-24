@@ -40,11 +40,10 @@ scoped_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
     const WriteFailedCallback& write_failed_callback) {
   scoped_ptr<BufferedSocketWriter> result(new BufferedSocketWriter());
   result->Init(base::Bind(&WriteNetSocket, socket), write_failed_callback);
-  return result.Pass();
+  return result;
 }
 
-BufferedSocketWriter::BufferedSocketWriter() : weak_factory_(this) {
-}
+BufferedSocketWriter::BufferedSocketWriter() : weak_factory_(this) {}
 
 BufferedSocketWriter::~BufferedSocketWriter() {
   STLDeleteElements(&queue_);

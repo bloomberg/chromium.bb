@@ -235,7 +235,7 @@ scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
   if (encoded_packet->data_size() == 0)
     return nullptr;
 
-  return encoded_packet.Pass();
+  return encoded_packet;
 }
 
 }  // namespace remoting

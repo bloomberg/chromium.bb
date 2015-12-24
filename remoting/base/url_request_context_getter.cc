@@ -4,6 +4,8 @@
 
 #include "remoting/base/url_request_context_getter.h"
 
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/url_request/url_request_context.h"
@@ -28,8 +30,8 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
     net_log_.reset(new VlogNetLog());
     builder.set_net_log(net_log_.get());
     builder.DisableHttpCache();
-    builder.set_proxy_config_service(proxy_config_service_.Pass());
-    url_request_context_ = builder.Build().Pass();
+    builder.set_proxy_config_service(std::move(proxy_config_service_));
+    url_request_context_ = builder.Build();
   }
   return url_request_context_.get();
 }

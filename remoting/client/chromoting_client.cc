@@ -4,6 +4,8 @@
 
 #include "remoting/client/chromoting_client.h"
 
+#include <utility>
+
 #include "remoting/base/capabilities.h"
 #include "remoting/client/audio_decode_scheduler.h"
 #include "remoting/client/audio_player.h"
@@ -32,7 +34,7 @@ ChromotingClient::ChromotingClient(ClientContext* client_context,
   if (audio_player) {
     audio_decode_scheduler_.reset(new AudioDecodeScheduler(
         client_context->main_task_runner(),
-        client_context->audio_decode_task_runner(), audio_player.Pass()));
+        client_context->audio_decode_task_runner(), std::move(audio_player)));
   }
 }
 
@@ -41,9 +43,14 @@ ChromotingClient::~ChromotingClient() {
       signal_strategy_->RemoveListener(this);
 }
 
+void ChromotingClient::set_protocol_config(
+    scoped_ptr<protocol::CandidateSessionConfig> config) {
+  protocol_config_ = std::move(config);
+}
+
 void ChromotingClient::SetConnectionToHostForTests(
     scoped_ptr<protocol::ConnectionToHost> connection_to_host) {
-  connection_ = connection_to_host.Pass();
+  connection_ = std::move(connection_to_host);
 }
 
 void ChromotingClient::Start(
@@ -71,9 +78,9 @@ void ChromotingClient::Start(
     protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
   if (!audio_decode_scheduler_)
     protocol_config_->DisableAudioChannel();
-  session_manager_->set_protocol_config(protocol_config_.Pass());
+  session_manager_->set_protocol_config(std::move(protocol_config_));
 
-  authenticator_ = authenticator.Pass();
+  authenticator_ = std::move(authenticator);
 
   signal_strategy_ = signal_strategy;
   signal_strategy_->AddListener(this);
@@ -195,7 +202,7 @@ bool ChromotingClient::OnSignalStrategyIncomingStanza(
 void ChromotingClient::StartConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   connection_->Connect(
-      session_manager_->Connect(host_jid_, authenticator_.Pass()), this);
+      session_manager_->Connect(host_jid_, std::move(authenticator_)), this);
 }
 
 void ChromotingClient::OnAuthenticated() {

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -209,13 +211,9 @@ void PepperPortAllocatorSession::OnResponseBodyRead(int32_t result) {
 // static
 scoped_ptr<PepperPortAllocator> PepperPortAllocator::Create(
     const pp::InstanceHandle& instance) {
-  scoped_ptr<rtc::NetworkManager> network_manager(
-      new PepperNetworkManager(instance));
-  scoped_ptr<rtc::PacketSocketFactory> socket_factory(
-      new PepperPacketSocketFactory(instance));
-  scoped_ptr<PepperPortAllocator> result(new PepperPortAllocator(
-      instance, network_manager.Pass(), socket_factory.Pass()));
-  return result.Pass();
+  return make_scoped_ptr(new PepperPortAllocator(
+      instance, make_scoped_ptr(new PepperNetworkManager(instance)),
+      make_scoped_ptr(new PepperPacketSocketFactory(instance))));
 }
 
 PepperPortAllocator::PepperPortAllocator(
@@ -226,9 +224,8 @@ PepperPortAllocator::PepperPortAllocator(
                             socket_factory.get(),
                             std::string()),
       instance_(instance),
-      network_manager_(network_manager.Pass()),
-      socket_factory_(socket_factory.Pass()) {
-}
+      network_manager_(std::move(network_manager)),
+      socket_factory_(std::move(socket_factory)) {}
 
 PepperPortAllocator::~PepperPortAllocator() {}
 

@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "ppapi/c/pp_codecs.h"
@@ -33,9 +35,7 @@ const uint32_t kMinimumPictureCount = 0;  // 3
 class PepperVideoRenderer3D::PendingPacket {
  public:
   PendingPacket(scoped_ptr<VideoPacket> packet, const base::Closure& done)
-      : packet_(packet.Pass()),
-        done_runner_(done) {
-  }
+      : packet_(std::move(packet)), done_runner_(done) {}
 
   ~PendingPacket() {}
 
@@ -224,7 +224,7 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
             remoting_rect.height()));
       }
       if (!frame_shape_ || !frame_shape_->Equals(*shape)) {
-        frame_shape_ = shape.Pass();
+        frame_shape_ = std::move(shape);
         event_handler_->OnVideoShape(frame_shape_.get());
       }
     } else if (frame_shape_) {
@@ -246,7 +246,7 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
   }
 
   pending_packets_.push_back(
-      new PendingPacket(packet.Pass(), done_runner.Release()));
+      new PendingPacket(std::move(packet), done_runner.Release()));
   DecodeNextPacket();
 }
 
@@ -340,7 +340,7 @@ void PepperVideoRenderer3D::PaintIfNeeded() {
     return;
 
   if (next_picture_)
-    current_picture_ = next_picture_.Pass();
+    current_picture_ = std::move(next_picture_);
 
   force_repaint_ = false;
 

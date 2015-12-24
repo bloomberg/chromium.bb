@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
@@ -201,7 +203,7 @@ void PepperVideoRenderer2D::Flush() {
   // |flushing_frames_done_callbacks_| so the callbacks are called when flush is
   // finished.
   DCHECK(flushing_frames_done_callbacks_.empty());
-  flushing_frames_done_callbacks_ = pending_frames_done_callbacks_.Pass();
+  flushing_frames_done_callbacks_ = std::move(pending_frames_done_callbacks_);
 
   // Flush the updated areas to the screen.
   int error = graphics2d_.Flush(

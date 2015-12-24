@@ -9,11 +9,8 @@
 
 namespace remoting {
 
-AudioDecoderVerbatim::AudioDecoderVerbatim() {
-}
-
-AudioDecoderVerbatim::~AudioDecoderVerbatim() {
-}
+AudioDecoderVerbatim::AudioDecoderVerbatim() {}
+AudioDecoderVerbatim::~AudioDecoderVerbatim() {}
 
 scoped_ptr<AudioPacket> AudioDecoderVerbatim::Decode(
     scoped_ptr<AudioPacket> packet) {
@@ -28,7 +25,7 @@ scoped_ptr<AudioPacket> AudioDecoderVerbatim::Decode(
     LOG(WARNING) << "Verbatim decoder received an invalid packet.";
     return nullptr;
   }
-  return packet.Pass();
+  return packet;
 }
 
 }  // namespace remoting

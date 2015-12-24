@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -132,7 +134,7 @@ class ProtocolPerfTest
       return;
     }
 
-    last_video_packet_ = video_packet.Pass();
+    last_video_packet_ = std::move(video_packet);
 
     if (!on_frame_task_.is_null())
       on_frame_task_.Run();
@@ -236,7 +238,7 @@ class ProtocolPerfTest
         GetParam().out_of_order_rate);
     scoped_refptr<protocol::TransportContext> transport_context(
         new protocol::TransportContext(
-            host_signaling_.get(), port_allocator_factory.Pass(),
+            host_signaling_.get(), std::move(port_allocator_factory),
             network_settings, protocol::TransportRole::SERVER));
 
     scoped_ptr<protocol::SessionManager> session_manager(
@@ -248,14 +250,11 @@ class ProtocolPerfTest
 
     // Encoder runs on a separate thread, main thread is used for everything
     // else.
-    host_.reset(new ChromotingHost(&desktop_environment_factory_,
-                                   session_manager.Pass(),
-                                   host_thread_.task_runner(),
-                                   host_thread_.task_runner(),
-                                   capture_thread_.task_runner(),
-                                   encode_thread_.task_runner(),
-                                   host_thread_.task_runner(),
-                                   host_thread_.task_runner()));
+    host_.reset(new ChromotingHost(
+        &desktop_environment_factory_, std::move(session_manager),
+        host_thread_.task_runner(), host_thread_.task_runner(),
+        capture_thread_.task_runner(), encode_thread_.task_runner(),
+        host_thread_.task_runner(), host_thread_.task_runner()));
 
     base::FilePath certs_dir(net::GetTestCertsDirectory());
 
@@ -277,7 +276,7 @@ class ProtocolPerfTest
     scoped_ptr<protocol::AuthenticatorFactory> auth_factory =
         protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
             true, kHostOwner, host_cert, key_pair, host_secret, nullptr);
-    host_->SetAuthenticatorFactory(auth_factory.Pass());
+    host_->SetAuthenticatorFactory(std::move(auth_factory));
 
     host_->AddStatusObserver(this);
     host_->Start(kHostOwner);
@@ -307,7 +306,7 @@ class ProtocolPerfTest
         GetParam().out_of_order_rate);
     scoped_refptr<protocol::TransportContext> transport_context(
         new protocol::TransportContext(
-            host_signaling_.get(), port_allocator_factory.Pass(),
+            host_signaling_.get(), std::move(port_allocator_factory),
             network_settings, protocol::TransportRole::SERVER));
 
     std::vector<protocol::AuthenticationMethod> auth_methods;
@@ -319,12 +318,11 @@ class ProtocolPerfTest
             std::string(),  // client_pairing_secret
             std::string(),  // authentication_tag
             base::Bind(&ProtocolPerfTest::FetchPin, base::Unretained(this)),
-            nullptr,
-            auth_methods));
+            nullptr, auth_methods));
     client_.reset(
         new ChromotingClient(client_context_.get(), this, this, nullptr));
     client_->set_protocol_config(protocol_config_->Clone());
-    client_->Start(client_signaling_.get(), client_authenticator.Pass(),
+    client_->Start(client_signaling_.get(), std::move(client_authenticator),
                    transport_context, kHostJid, std::string());
   }
 
@@ -448,7 +446,7 @@ class IntermittentChangeFrameGenerator
       result->mutable_updated_region()->AddRect(
           webrtc::DesktopRect::MakeXYWH(0, 0, kWidth, kHeight));
     }
-    return result.Pass();
+    return result;
   }
 
  private:

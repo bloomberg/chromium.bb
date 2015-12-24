@@ -4,11 +4,14 @@
 
 // MSVC++ requires this to get M_PI.
 #define _USE_MATH_DEFINES
+
+#include "remoting/codec/audio_encoder_opus.h"
+
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "remoting/codec/audio_encoder_opus.h"
+#include <utility>
 
 #include "base/logging.h"
 #include "remoting/codec/audio_decoder_opus.h"
@@ -82,7 +85,7 @@ class OpusAudioEncoderTest : public testing::Test {
     packet->set_sampling_rate(rate);
     packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
     packet->set_channels(AudioPacket::CHANNELS_STEREO);
-    return packet.Pass();
+    return packet;
   }
 
   // Decoded data is normally shifted in phase relative to the original signal.
@@ -139,9 +142,10 @@ class OpusAudioEncoderTest : public testing::Test {
         scoped_ptr<AudioPacket> source_packet =
             CreatePacket(packet_size, rate, frequency_hz, pos);
         scoped_ptr<AudioPacket> encoded =
-            encoder_->Encode(source_packet.Pass());
+            encoder_->Encode(std::move(source_packet));
         if (encoded.get()) {
-          scoped_ptr<AudioPacket> decoded = decoder_->Decode(encoded.Pass());
+          scoped_ptr<AudioPacket> decoded =
+              decoder_->Decode(std::move(encoded));
           EXPECT_EQ(kDefaultSamplingRate, decoded->sampling_rate());
           for (int i = 0; i < decoded->data_size(); ++i) {
             const int16_t* data =

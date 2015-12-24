@@ -105,7 +105,7 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForSessionStateChange(
     entry->Set(kKeyConnectionError, GetValueError(error));
   }
 
-  return entry.Pass();
+  return entry;
 }
 
 scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
@@ -127,7 +127,7 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
   entry->Set("roundtrip-latency",
              StringPrintf("%.2f", perf_tracker->round_trip_ms()));
 
-  return entry.Pass();
+  return entry;
 }
 
 scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdOld(
@@ -136,7 +136,7 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdOld(
   entry->AddRoleField(kValueRoleClient);
   entry->AddEventNameField(kValueEventNameSessionIdOld);
   AddSessionIdToLogEntry(entry.get(), session_id);
-  return entry.Pass();
+  return entry;
 }
 
 scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdNew(
@@ -145,7 +145,7 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForSessionIdNew(
   entry->AddRoleField(kValueRoleClient);
   entry->AddEventNameField(kValueEventNameSessionIdNew);
   AddSessionIdToLogEntry(entry.get(), session_id);
-  return entry.Pass();
+  return entry;
 }
 
 void AddClientFieldsToLogEntry(ServerLogEntry* entry) {

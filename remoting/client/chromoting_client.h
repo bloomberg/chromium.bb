@@ -55,10 +55,7 @@ class ChromotingClient : public SignalStrategy::Listener,
 
   ~ChromotingClient() override;
 
-  void set_protocol_config(
-      scoped_ptr<protocol::CandidateSessionConfig> config) {
-    protocol_config_ = config.Pass();
-  }
+  void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
 
   // Used to set fake/mock objects for tests which use the ChromotingClient.
   void SetConnectionToHostForTests(

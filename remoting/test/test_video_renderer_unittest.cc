@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -150,7 +151,7 @@ void TestVideoRendererTest::TestVideoPacketProcessing(int screen_width,
                 run_loop_->QuitClosure());
 
   // Wait for the video packet to be processed and rendered to buffer.
-  test_video_renderer_->ProcessVideoPacket(packet.Pass(),
+  test_video_renderer_->ProcessVideoPacket(std::move(packet),
                                            run_loop_->QuitClosure());
 
   run_loop_->Run();
@@ -190,7 +191,7 @@ bool TestVideoRendererTest::SendPacketAndWaitForMatch(
   scoped_ptr<VideoPacket> packet_copy(new VideoPacket(*packet.get()));
 
   // Post first test packet: |packet|.
-  test_video_renderer_->ProcessVideoPacket(packet.Pass(),
+  test_video_renderer_->ProcessVideoPacket(std::move(packet),
                                            base::Bind(&base::DoNothing));
 
   // Second packet: |packet_copy| is posted, and |second_packet_done_callback|
@@ -201,7 +202,7 @@ bool TestVideoRendererTest::SendPacketAndWaitForMatch(
       base::Bind(&ProcessPacketDoneHandler, run_loop_->QuitClosure(),
                  &second_packet_done_is_called);
 
-  test_video_renderer_->ProcessVideoPacket(packet_copy.Pass(),
+  test_video_renderer_->ProcessVideoPacket(std::move(packet_copy),
                                            second_packet_done_callback);
 
   run_loop_->Run();
@@ -232,7 +233,7 @@ void TestVideoRendererTest::TestImagePatternMatch(
   scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame.get());
 
   if (expect_to_match) {
-    EXPECT_TRUE(SendPacketAndWaitForMatch(packet.Pass(), expected_rect,
+    EXPECT_TRUE(SendPacketAndWaitForMatch(std::move(packet), expected_rect,
                                           expected_average_color));
   } else {
     // Shift each channel by 128.
@@ -246,7 +247,7 @@ void TestVideoRendererTest::TestImagePatternMatch(
     RGBValue expected_average_color_shift =
         RGBValue(red_shift, green_shift, blue_shift);
 
-    EXPECT_FALSE(SendPacketAndWaitForMatch(packet.Pass(), expected_rect,
+    EXPECT_FALSE(SendPacketAndWaitForMatch(std::move(packet), expected_rect,
                                            expected_average_color_shift));
   }
 }
@@ -340,7 +341,7 @@ scoped_ptr<webrtc::DesktopFrame>
   frame->mutable_updated_region()->SetRect(
       webrtc::DesktopRect::MakeSize(screen_size));
   FillFrameWithGradient(frame.get());
-  return frame.Pass();
+  return frame;
 }
 
 void TestVideoRendererTest::FillFrameWithGradient(
@@ -450,8 +451,7 @@ TEST_F(TestVideoRendererTest, VerifySetExpectedImagePattern) {
       kDefaultExpectedRect, black_color, base::Bind(&base::DoNothing));
 
   // Post test video packet.
-  scoped_ptr<VideoPacket> packet = encoder_->Encode(*frame.get());
-  test_video_renderer_->ProcessVideoPacket(packet.Pass(),
+  test_video_renderer_->ProcessVideoPacket(encoder_->Encode(*frame.get()),
                                            base::Bind(&base::DoNothing));
 }
 

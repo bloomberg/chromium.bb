@@ -31,7 +31,7 @@ scoped_ptr<base::win::ScopedCOMInitializer> CreateComInitializer(
   } else if (type == AutoThread::COM_INIT_STA) {
     initializer.reset(new base::win::ScopedCOMInitializer());
   }
-  return initializer.Pass();
+  return initializer;
 }
 #endif
 

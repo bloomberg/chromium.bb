@@ -4,6 +4,8 @@
 
 #include "remoting/signaling/xmpp_login_handler.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -182,7 +184,7 @@ void XmppLoginHandler::OnStanza(scoped_ptr<buzz::XmlElement> stanza) {
         return;
       }
       state_ = State::DONE;
-      delegate_->OnHandshakeDone(jid_, stream_parser_.Pass());
+      delegate_->OnHandshakeDone(jid_, std::move(stream_parser_));
       break;
 
     default:

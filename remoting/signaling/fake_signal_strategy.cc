@@ -4,6 +4,8 @@
 
 #include "remoting/signaling/fake_signal_strategy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -107,7 +109,7 @@ bool FakeSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
           FROM_HERE, base::Bind(peer_callback_, base::Passed(&stanza)),
           send_delay_);
     } else {
-      peer_callback_.Run(stanza.Pass());
+      peer_callback_.Run(std::move(stanza));
     }
     return true;
   } else {

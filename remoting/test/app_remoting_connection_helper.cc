@@ -4,6 +4,8 @@
 
 #include "remoting/test/app_remoting_connection_helper.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -46,7 +48,7 @@ AppRemotingConnectionHelper::~AppRemotingConnectionHelper() {
 
 void AppRemotingConnectionHelper::Initialize(
     scoped_ptr<TestChromotingClient> test_chromoting_client) {
-  client_ = test_chromoting_client.Pass();
+  client_ = std::move(test_chromoting_client);
   client_->AddRemoteConnectionObserver(this);
 }
 

@@ -4,11 +4,12 @@
 
 #include "remoting/client/plugin/chromoting_instance.h"
 
-#include <string>
-#include <vector>
-
 #include <nacl_io/nacl_io.h>
 #include <sys/mount.h>
+
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -187,8 +188,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   rtc::InitRandom(random_seed, sizeof(random_seed));
 
   // Send hello message.
-  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  PostLegacyJsonMessage("hello", data.Pass());
+  PostLegacyJsonMessage("hello", make_scoped_ptr(new base::DictionaryValue()));
 }
 
 ChromotingInstance::~ChromotingInstance() {
@@ -336,8 +336,8 @@ void ChromotingInstance::OnVideoDecodeError() {
 }
 
 void ChromotingInstance::OnVideoFirstFrameReceived() {
-  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  PostLegacyJsonMessage("onFirstFrameReceived", data.Pass());
+  PostLegacyJsonMessage("onFirstFrameReceived",
+                        make_scoped_ptr(new base::DictionaryValue()));
 }
 
 void ChromotingInstance::OnVideoSize(const webrtc::DesktopSize& size,
@@ -352,7 +352,7 @@ void ChromotingInstance::OnVideoSize(const webrtc::DesktopSize& size,
     data->SetInteger("x_dpi", dpi.x());
   if (dpi.y())
     data->SetInteger("y_dpi", dpi.y());
-  PostLegacyJsonMessage("onDesktopSize", data.Pass());
+  PostLegacyJsonMessage("onDesktopSize", std::move(data));
 }
 
 void ChromotingInstance::OnVideoShape(const webrtc::DesktopRegion* shape) {
@@ -377,7 +377,7 @@ void ChromotingInstance::OnVideoShape(const webrtc::DesktopRegion* shape) {
     shape_message->Set("rects", rects_value.release());
   }
 
-  PostLegacyJsonMessage("onDesktopShape", shape_message.Pass());
+  PostLegacyJsonMessage("onDesktopShape", std::move(shape_message));
 }
 
 void ChromotingInstance::OnVideoFrameDirtyRegion(
@@ -396,7 +396,7 @@ void ChromotingInstance::OnVideoFrameDirtyRegion(
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->Set("rects", rects_value.release());
-  PostLegacyJsonMessage("onDebugRegion", data.Pass());
+  PostLegacyJsonMessage("onDebugRegion", std::move(data));
 }
 
 void ChromotingInstance::OnConnectionState(
@@ -456,7 +456,7 @@ void ChromotingInstance::OnConnectionState(
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("state", protocol::ConnectionToHost::StateToString(state));
   data->SetString("error", ConnectionErrorToString(error));
-  PostLegacyJsonMessage("onConnectionStatus", data.Pass());
+  PostLegacyJsonMessage("onConnectionStatus", std::move(data));
 }
 
 void ChromotingInstance::FetchThirdPartyToken(
@@ -473,13 +473,13 @@ void ChromotingInstance::FetchThirdPartyToken(
   data->SetString("tokenUrl", token_url.spec());
   data->SetString("hostPublicKey", host_public_key);
   data->SetString("scope", scope);
-  PostLegacyJsonMessage("fetchThirdPartyToken", data.Pass());
+  PostLegacyJsonMessage("fetchThirdPartyToken", std::move(data));
 }
 
 void ChromotingInstance::OnConnectionReady(bool ready) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetBoolean("ready", ready);
-  PostLegacyJsonMessage("onConnectionReady", data.Pass());
+  PostLegacyJsonMessage("onConnectionReady", std::move(data));
 }
 
 void ChromotingInstance::OnRouteChanged(const std::string& channel_name,
@@ -488,13 +488,13 @@ void ChromotingInstance::OnRouteChanged(const std::string& channel_name,
   data->SetString("channel", channel_name);
   data->SetString("connectionType",
                   protocol::TransportRoute::GetTypeString(route.type));
-  PostLegacyJsonMessage("onRouteChanged", data.Pass());
+  PostLegacyJsonMessage("onRouteChanged", std::move(data));
 }
 
 void ChromotingInstance::SetCapabilities(const std::string& capabilities) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("capabilities", capabilities);
-  PostLegacyJsonMessage("setCapabilities", data.Pass());
+  PostLegacyJsonMessage("setCapabilities", std::move(data));
 }
 
 void ChromotingInstance::SetPairingResponse(
@@ -502,7 +502,7 @@ void ChromotingInstance::SetPairingResponse(
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("clientId", pairing_response.client_id());
   data->SetString("sharedSecret", pairing_response.shared_secret());
-  PostLegacyJsonMessage("pairingResponse", data.Pass());
+  PostLegacyJsonMessage("pairingResponse", std::move(data));
 }
 
 void ChromotingInstance::DeliverHostMessage(
@@ -510,7 +510,7 @@ void ChromotingInstance::DeliverHostMessage(
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("type", message.type());
   data->SetString("data", message.data());
-  PostLegacyJsonMessage("extensionMessage", data.Pass());
+  PostLegacyJsonMessage("extensionMessage", std::move(data));
 }
 
 void ChromotingInstance::FetchSecretFromDialog(
@@ -523,7 +523,7 @@ void ChromotingInstance::FetchSecretFromDialog(
   secret_fetched_callback_ = secret_fetched_callback;
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetBoolean("pairingSupported", pairing_supported);
-  PostLegacyJsonMessage("fetchPin", data.Pass());
+  PostLegacyJsonMessage("fetchPin", std::move(data));
 }
 
 void ChromotingInstance::FetchSecretFromString(
@@ -548,7 +548,7 @@ void ChromotingInstance::InjectClipboardEvent(
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("mimeType", event.mime_type());
   data->SetString("item", event.data());
-  PostLegacyJsonMessage("injectClipboardItem", data.Pass());
+  PostLegacyJsonMessage("injectClipboardItem", std::move(data));
 }
 
 void ChromotingInstance::SetCursorShape(
@@ -676,9 +676,9 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   if (!plugin_view_.is_null())
     video_renderer_->OnViewChanged(plugin_view_);
 
-  scoped_ptr<AudioPlayer> audio_player(new PepperAudioPlayer(this));
-  client_.reset(new ChromotingClient(&context_, this, video_renderer_.get(),
-                                     audio_player.Pass()));
+  client_.reset(
+      new ChromotingClient(&context_, this, video_renderer_.get(),
+                           make_scoped_ptr(new PepperAudioPlayer(this))));
 
   // Connect the input pipeline to the protocol stub & initialize components.
   mouse_input_filter_.set_input_stub(client_->input_stub());
@@ -721,7 +721,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   scoped_ptr<protocol::Authenticator> authenticator(
       new protocol::NegotiatingClientAuthenticator(
           client_pairing_id, client_paired_secret, authentication_tag,
-          fetch_secret_callback, token_fetcher.Pass(), auth_methods));
+          fetch_secret_callback, std::move(token_fetcher), auth_methods));
 
   scoped_ptr<protocol::CandidateSessionConfig> config =
       protocol::CandidateSessionConfig::CreateDefault();
@@ -729,10 +729,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       experiments_list.end()) {
     config->set_vp9_experiment_enabled(true);
   }
-  client_->set_protocol_config(config.Pass());
+  client_->set_protocol_config(std::move(config));
 
   // Kick off the connection.
-  client_->Start(signal_strategy_.get(), authenticator.Pass(),
+  client_->Start(signal_strategy_.get(), std::move(authenticator),
                  transport_context, host_jid, capabilities);
 
   // Start timer that periodically sends perf stats.
@@ -1036,13 +1036,13 @@ void ChromotingInstance::SendTrappedKey(uint32_t usb_keycode, bool pressed) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetInteger("usbKeycode", usb_keycode);
   data->SetBoolean("pressed", pressed);
-  PostLegacyJsonMessage("trappedKeyEvent", data.Pass());
+  PostLegacyJsonMessage("trappedKeyEvent", std::move(data));
 }
 
 void ChromotingInstance::SendOutgoingIq(const std::string& iq) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("iq", iq);
-  PostLegacyJsonMessage("sendOutgoingIq", data.Pass());
+  PostLegacyJsonMessage("sendOutgoingIq", std::move(data));
 }
 
 void ChromotingInstance::UpdatePerfStatsInUI() {
@@ -1056,7 +1056,7 @@ void ChromotingInstance::UpdatePerfStatsInUI() {
   data->SetDouble("decodeLatency", perf_tracker_.video_decode_ms());
   data->SetDouble("renderLatency", perf_tracker_.video_paint_ms());
   data->SetDouble("roundtripLatency", perf_tracker_.round_trip_ms());
-  PostLegacyJsonMessage("onPerfStats", data.Pass());
+  PostLegacyJsonMessage("onPerfStats", std::move(data));
 }
 
 // static

@@ -4,6 +4,8 @@
 
 #include "remoting/client/software_video_renderer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -35,8 +37,7 @@ namespace {
 class RgbToBgrVideoDecoderFilter : public VideoDecoder {
  public:
   RgbToBgrVideoDecoderFilter(scoped_ptr<VideoDecoder> parent)
-      : parent_(parent.Pass()) {
-  }
+      : parent_(std::move(parent)) {}
 
   bool DecodePacket(const VideoPacket& packet,
                     webrtc::DesktopFrame* frame) override {
@@ -64,7 +65,7 @@ scoped_ptr<webrtc::DesktopFrame> DoDecodeFrame(
     scoped_ptr<webrtc::DesktopFrame> frame) {
   if (!decoder->DecodePacket(*packet, frame.get()))
     frame.reset();
-  return frame.Pass();
+  return frame;
 }
 
 }  // namespace
@@ -100,9 +101,8 @@ void SoftwareVideoRenderer::OnSessionConfig(
   }
 
   if (consumer_->GetPixelFormat() == FrameConsumer::FORMAT_RGBA) {
-    scoped_ptr<VideoDecoder> wrapper(
-        new RgbToBgrVideoDecoderFilter(decoder_.Pass()));
-    decoder_ = wrapper.Pass();
+    decoder_ =
+        make_scoped_ptr(new RgbToBgrVideoDecoderFilter(std::move(decoder_)));
   }
 }
 
@@ -173,7 +173,7 @@ void SoftwareVideoRenderer::RenderFrame(
     return;
   }
 
-  consumer_->DrawFrame(frame.Pass(),
+  consumer_->DrawFrame(std::move(frame),
                        base::Bind(&SoftwareVideoRenderer::OnFrameRendered,
                                   weak_factory_.GetWeakPtr(), frame_id, done));
 }

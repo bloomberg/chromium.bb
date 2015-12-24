@@ -4,6 +4,8 @@
 
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -94,7 +96,7 @@ class MockClientSocketFactory : public net::MockClientSocketFactory {
       const net::SSLClientSocketContext& context) override {
     ssl_socket_created_ = true;
     return net::MockClientSocketFactory::CreateSSLClientSocket(
-        transport_socket.Pass(), host_and_port, ssl_config, context);
+        std::move(transport_socket), host_and_port, ssl_config, context);
   }
 
   bool ssl_socket_created() const { return ssl_socket_created_; }
@@ -115,10 +117,9 @@ class XmppSignalStrategyTest : public testing::Test,
   XmppSignalStrategyTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
 
   void SetUp() override {
-    scoped_ptr<net::TestURLRequestContext> context(
-        new net::TestURLRequestContext());
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_.task_runner(), context.Pass());
+        message_loop_.task_runner(),
+        make_scoped_ptr(new net::TestURLRequestContext()));
   }
 
   void CreateSignalStrategy(int port) {

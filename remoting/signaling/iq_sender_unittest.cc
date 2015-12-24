@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/signaling/iq_sender.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,7 +67,7 @@ class IqSenderTest : public testing::Test {
         .WillOnce(Return(kStanzaId));
     EXPECT_CALL(signal_strategy_, SendStanzaPtr(_))
         .WillOnce(DoAll(SaveArg<0>(&sent_stanza), Return(true)));
-    request_ = sender_->SendIq(kType, kTo, iq_body.Pass(), base::Bind(
+    request_ = sender_->SendIq(kType, kTo, std::move(iq_body), base::Bind(
         &MockCallback::OnReply, base::Unretained(&callback_)));
 
     std::string expected_xml_string =
@@ -93,7 +96,7 @@ class IqSenderTest : public testing::Test {
     bool result = sender_->OnSignalStrategyIncomingStanza(response.get());
 
     if (response_out)
-      *response_out = response.Pass();
+      *response_out = std::move(response);
 
     return result;
   }

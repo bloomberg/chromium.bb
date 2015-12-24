@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "remoting/base/typed_buffer.h"
+
+#include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -57,7 +60,7 @@ TEST(TypedBufferTest, Pass) {
   EXPECT_EQ(right.length(), sizeof(int));
 
   Data* raw_ptr = right.get();
-  left = right.Pass();
+  left = std::move(right);
 
   // Verify that passing ownership transfers both the buffer pointer and its
   // length.

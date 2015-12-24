@@ -4,6 +4,8 @@
 
 #include "remoting/signaling/xmpp_login_handler.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -51,7 +53,7 @@ class XmppLoginHandlerTest : public testing::Test,
   void OnHandshakeDone(const std::string& jid,
                        scoped_ptr<XmppStreamParser> parser) override {
     jid_ = jid;
-    parser_ = parser.Pass();
+    parser_ = std::move(parser);
     if (delete_login_handler_from_delegate_)
       login_handler_.reset();
   }

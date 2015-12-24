@@ -99,7 +99,7 @@ scoped_ptr<AudioPacket> CreatePacketWithSamplingRate(
   data.resize(samples * kAudioSampleBytes, kDummyAudioData);
   packet->add_data(data);
 
-  return packet.Pass();
+  return packet;
 }
 
 scoped_ptr<AudioPacket> CreatePacket44100Hz(int samples) {

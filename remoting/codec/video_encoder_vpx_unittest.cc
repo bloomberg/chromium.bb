@@ -38,7 +38,7 @@ static scoped_ptr<webrtc::DesktopFrame> CreateTestFrame(
   }
   frame->mutable_updated_region()->SetRect(
       webrtc::DesktopRect::MakeSize(frame_size));
-  return frame.Pass();
+  return frame;
 }
 
 TEST(VideoEncoderVpxTest, Vp8) {

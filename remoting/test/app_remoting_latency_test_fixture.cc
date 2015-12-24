@@ -4,6 +4,8 @@
 
 #include "remoting/test/app_remoting_latency_test_fixture.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -24,21 +26,20 @@ AppRemotingLatencyTestFixture::AppRemotingLatencyTestFixture()
   // NOTE: Derived fixture must initialize application details in constructor.
 }
 
-AppRemotingLatencyTestFixture::~AppRemotingLatencyTestFixture() {
-}
+AppRemotingLatencyTestFixture::~AppRemotingLatencyTestFixture() {}
 
 void AppRemotingLatencyTestFixture::SetUp() {
   scoped_ptr<TestVideoRenderer> test_video_renderer(new TestVideoRenderer());
   test_video_renderer_ = test_video_renderer->GetWeakPtr();
 
   scoped_ptr<TestChromotingClient> test_chromoting_client(
-      new TestChromotingClient(test_video_renderer.Pass()));
+      new TestChromotingClient(std::move(test_video_renderer)));
 
   test_chromoting_client->AddRemoteConnectionObserver(this);
 
   connection_helper_.reset(
       new AppRemotingConnectionHelper(GetApplicationDetails()));
-  connection_helper_->Initialize(test_chromoting_client.Pass());
+  connection_helper_->Initialize(std::move(test_chromoting_client));
 
   if (!connection_helper_->StartConnection()) {
     LOG(ERROR) << "Remote host connection could not be established.";

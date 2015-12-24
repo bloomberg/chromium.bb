@@ -64,7 +64,7 @@ scoped_ptr<VideoPacket> VideoEncoderVerbatim::Encode(
     }
   }
 
-  return packet.Pass();
+  return packet;
 }
 
 }  // namespace remoting

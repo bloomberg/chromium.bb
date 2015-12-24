@@ -4,6 +4,8 @@
 
 #include "remoting/test/app_remoting_connected_client_fixture.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -39,11 +41,9 @@ namespace test {
 AppRemotingConnectedClientFixture::AppRemotingConnectedClientFixture()
     : application_details_(
           AppRemotingSharedData->GetDetailsFromAppName(GetParam())),
-      timer_(new base::Timer(true, false)) {
-}
+      timer_(new base::Timer(true, false)) {}
 
-AppRemotingConnectedClientFixture::~AppRemotingConnectedClientFixture() {
-}
+AppRemotingConnectedClientFixture::~AppRemotingConnectedClientFixture() {}
 
 void AppRemotingConnectedClientFixture::SetUp() {
   connection_helper_.reset(
@@ -53,7 +53,7 @@ void AppRemotingConnectedClientFixture::SetUp() {
 
   test_chromoting_client->AddRemoteConnectionObserver(this);
 
-  connection_helper_->Initialize(test_chromoting_client.Pass());
+  connection_helper_->Initialize(std::move(test_chromoting_client));
   if (!connection_helper_->StartConnection()) {
     LOG(ERROR) << "Remote host connection could not be established.";
     FAIL();

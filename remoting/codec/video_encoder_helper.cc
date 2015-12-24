@@ -63,7 +63,7 @@ VideoEncoderHelper::CreateVideoPacketWithUpdatedRegion(
     packet->mutable_format()->set_y_dpi(frame.dpi().y());
   }
 
-  return packet.Pass();
+  return packet;
 }
 
 }  // namespace remoting

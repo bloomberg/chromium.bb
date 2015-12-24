@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -83,7 +84,7 @@ void AppRemotingTestDriverEnvironmentTest::Initialize(
       new FakeAccessTokenFetcher());
   fake_access_token_fetcher_ = fake_access_token_fetcher.get();
   mock_access_token_fetcher_.SetAccessTokenFetcher(
-      fake_access_token_fetcher.Pass());
+      std::move(fake_access_token_fetcher));
 
   environment_object_->SetAccessTokenFetcherForTest(
       &mock_access_token_fetcher_);

@@ -4,6 +4,8 @@
 
 #include "remoting/signaling/xmpp_stream_parser.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -30,7 +32,7 @@ class XmppStreamParserTest : public testing::Test {
   }
 
   void OnStanza(scoped_ptr<buzz::XmlElement> stanza) {
-    received_stanzas_.push_back(stanza.Pass());
+    received_stanzas_.push_back(std::move(stanza));
   }
 
   void OnError() {

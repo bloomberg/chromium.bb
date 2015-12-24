@@ -5,6 +5,7 @@
 #include "remoting/test/test_chromoting_client.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -72,7 +73,7 @@ TestChromotingClient::TestChromotingClient(
     scoped_ptr<VideoRenderer> video_renderer)
     : connection_to_host_state_(protocol::ConnectionToHost::INITIALIZING),
       connection_error_code_(protocol::OK),
-      video_renderer_(video_renderer.Pass()) {}
+      video_renderer_(std::move(video_renderer)) {}
 
 TestChromotingClient::~TestChromotingClient() {
   // Ensure any connections are closed and the members are destroyed in the
@@ -104,7 +105,7 @@ void TestChromotingClient::StartConnection(
 
   if (test_connection_to_host_) {
     chromoting_client_->SetConnectionToHostForTests(
-        test_connection_to_host_.Pass());
+        std::move(test_connection_to_host_));
   }
 
   if (!signal_strategy_) {
@@ -129,7 +130,7 @@ void TestChromotingClient::StartConnection(
 
   scoped_refptr<protocol::TransportContext> transport_context(
       new protocol::TransportContext(
-          signal_strategy_.get(), port_allocator_factory.Pass(),
+          signal_strategy_.get(), std::move(port_allocator_factory),
           network_settings, protocol::TransportRole::CLIENT));
 
   scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
@@ -146,15 +147,12 @@ void TestChromotingClient::StartConnection(
 
   scoped_ptr<protocol::Authenticator> authenticator(
       new protocol::NegotiatingClientAuthenticator(
-          connection_setup_info.pairing_id,
-          connection_setup_info.shared_secret,
-          connection_setup_info.host_id,
-          fetch_secret_callback,
-          token_fetcher.Pass(),
-          connection_setup_info.auth_methods));
+          connection_setup_info.pairing_id, connection_setup_info.shared_secret,
+          connection_setup_info.host_id, fetch_secret_callback,
+          std::move(token_fetcher), connection_setup_info.auth_methods));
 
   chromoting_client_->Start(
-      signal_strategy_.get(), authenticator.Pass(), transport_context,
+      signal_strategy_.get(), std::move(authenticator), transport_context,
       connection_setup_info.host_jid, connection_setup_info.capabilities);
 }
 
@@ -191,12 +189,12 @@ void TestChromotingClient::RemoveRemoteConnectionObserver(
 
 void TestChromotingClient::SetSignalStrategyForTests(
     scoped_ptr<SignalStrategy> signal_strategy) {
-  signal_strategy_ = signal_strategy.Pass();
+  signal_strategy_ = std::move(signal_strategy);
 }
 
 void TestChromotingClient::SetConnectionToHostForTests(
     scoped_ptr<protocol::ConnectionToHost> connection_to_host) {
-  test_connection_to_host_ = connection_to_host.Pass();
+  test_connection_to_host_ = std::move(connection_to_host);
 }
 
 void TestChromotingClient::OnConnectionState(

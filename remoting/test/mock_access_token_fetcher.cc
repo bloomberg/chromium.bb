@@ -4,21 +4,20 @@
 
 #include "remoting/test/mock_access_token_fetcher.h"
 
+#include <utility>
+
 namespace remoting {
 namespace test {
 
 using ::testing::_;
 using ::testing::Invoke;
 
-MockAccessTokenFetcher::MockAccessTokenFetcher() {
-}
-
-MockAccessTokenFetcher::~MockAccessTokenFetcher() {
-}
+MockAccessTokenFetcher::MockAccessTokenFetcher() {}
+MockAccessTokenFetcher::~MockAccessTokenFetcher() {}
 
 void MockAccessTokenFetcher::SetAccessTokenFetcher(
     scoped_ptr<AccessTokenFetcher> fetcher) {
-  internal_access_token_fetcher_ = fetcher.Pass();
+  internal_access_token_fetcher_ = std::move(fetcher);
 
   ON_CALL(*this, GetAccessTokenFromAuthCode(_, _))
       .WillByDefault(Invoke(internal_access_token_fetcher_.get(),
