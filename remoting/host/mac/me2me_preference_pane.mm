@@ -21,11 +21,11 @@
 #include "base/posix/eintr_wrapper.h"
 #include "remoting/host/constants_mac.h"
 #include "remoting/host/host_config.h"
-#include "remoting/host/pin_hash.h"
 #import "remoting/host/mac/me2me_preference_pane_confirm_pin.h"
 #import "remoting/host/mac/me2me_preference_pane_disable.h"
 #include "third_party/jsoncpp/source/include/json/reader.h"
 #include "third_party/jsoncpp/source/include/json/writer.h"
+#include "third_party/modp_b64/modp_b64.h"
 
 namespace {
 
@@ -44,6 +44,51 @@ bool IsConfigValid(const remoting::JsonHostConfig* config) {
   return (config->GetString(remoting::kHostIdConfigPath, &value) &&
           config->GetString(remoting::kHostSecretHashConfigPath, &value) &&
           config->GetString(remoting::kXmppLoginConfigPath, &value));
+}
+
+bool IsPinValid(const std::string& pin, const std::string& host_id,
+                const std::string& host_secret_hash) {
+  // TODO(lambroslambrou): Once the "base" target supports building for 64-bit
+  // on Mac OS X, remove this code and replace it with |VerifyHostPinHash()|
+  // from host/pin_hash.h.
+  size_t separator = host_secret_hash.find(':');
+  if (separator == std::string::npos)
+    return false;
+
+  std::string method = host_secret_hash.substr(0, separator);
+  if (method != "hmac") {
+    NSLog(@"Authentication method '%s' not supported", method.c_str());
+    return false;
+  }
+
+  std::string hash_base64 = host_secret_hash.substr(separator + 1);
+
+  // Convert |hash_base64| to |hash|, based on code from base/base64.cc.
+  int hash_base64_size = static_cast<int>(hash_base64.size());
+  std::string hash;
+  hash.resize(modp_b64_decode_len(hash_base64_size));
+
+  // modp_b64_decode_len() returns at least 1, so hash[0] is safe here.
+  int hash_size = modp_b64_decode(&(hash[0]), hash_base64.data(),
+                                  hash_base64_size);
+  if (hash_size < 0) {
+    NSLog(@"Failed to parse host_secret_hash");
+    return false;
+  }
+  hash.resize(hash_size);
+
+  std::string computed_hash;
+  computed_hash.resize(CC_SHA256_DIGEST_LENGTH);
+
+  CCHmac(kCCHmacAlgSHA256,
+         host_id.data(), host_id.size(),
+         pin.data(), pin.size(),
+         &(computed_hash[0]));
+
+  // Normally, a constant-time comparison function would be used, but it is
+  // unnecessary here as the "secret" is already readable by the user
+  // supplying input to this routine.
+  return computed_hash == hash;
 }
 
 }  // namespace
@@ -296,7 +341,7 @@ std::string JsonHostConfig::GetSerializedData() const {
     [self showError];
     return;
   }
-  if (!remoting::VerifyHostPinHash(pin_utf8, host_id, host_secret_hash)) {
+  if (!IsPinValid(pin_utf8, host_id, host_secret_hash)) {
     [self showIncorrectPinMessage];
     return;
   }
