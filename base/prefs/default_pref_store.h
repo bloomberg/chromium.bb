@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_store.h"

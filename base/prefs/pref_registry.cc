@@ -17,7 +17,8 @@ PrefRegistry::PrefRegistry()
 PrefRegistry::~PrefRegistry() {
 }
 
-uint32 PrefRegistry::GetRegistrationFlags(const std::string& pref_name) const {
+uint32_t PrefRegistry::GetRegistrationFlags(
+    const std::string& pref_name) const {
   const auto& it = registration_flags_.find(pref_name);
   if (it == registration_flags_.end())
     return NO_REGISTRATION_FLAGS;
@@ -50,7 +51,7 @@ void PrefRegistry::SetDefaultPrefValue(const std::string& pref_name,
 
 void PrefRegistry::RegisterPreference(const std::string& path,
                                       base::Value* default_value,
-                                      uint32 flags) {
+                                      uint32_t flags) {
   base::Value::Type orig_type = default_value->GetType();
   DCHECK(orig_type != base::Value::TYPE_NULL &&
          orig_type != base::Value::TYPE_BINARY) <<

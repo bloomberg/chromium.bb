@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_observer.h"
 

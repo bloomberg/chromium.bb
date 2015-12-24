@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_store.h"

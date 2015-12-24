@@ -5,15 +5,17 @@
 #ifndef BASE_PREFS_JSON_PREF_STORE_H_
 #define BASE_PREFS_JSON_PREF_STORE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -84,11 +86,11 @@ class BASE_PREFS_EXPORT JsonPrefStore
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void SetValue(const std::string& key,
                 scoped_ptr<base::Value> value,
-                uint32 flags) override;
+                uint32_t flags) override;
   void SetValueSilently(const std::string& key,
                         scoped_ptr<base::Value> value,
-                        uint32 flags) override;
-  void RemoveValue(const std::string& key, uint32 flags) override;
+                        uint32_t flags) override;
+  void RemoveValue(const std::string& key, uint32_t flags) override;
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
   // Note this method may be asynchronous if this instance has a |pref_filter_|
@@ -98,11 +100,11 @@ class BASE_PREFS_EXPORT JsonPrefStore
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
   void CommitPendingWrite() override;
   void SchedulePendingLossyWrites() override;
-  void ReportValueChanged(const std::string& key, uint32 flags) override;
+  void ReportValueChanged(const std::string& key, uint32_t flags) override;
 
   // Just like RemoveValue(), but doesn't notify observers. Used when doing some
   // cleanup that shouldn't otherwise alert observers.
-  void RemoveValueSilently(const std::string& key, uint32 flags);
+  void RemoveValueSilently(const std::string& key, uint32_t flags);
 
   // Registers |on_next_successful_write| to be called once, on the next
   // successful write event of |writer_|.
@@ -194,7 +196,7 @@ class BASE_PREFS_EXPORT JsonPrefStore
 
   // Schedule a write with the file writer as long as |flags| doesn't contain
   // WriteablePrefStore::LOSSY_PREF_WRITE_FLAG.
-  void ScheduleWrite(uint32 flags);
+  void ScheduleWrite(uint32_t flags);
 
   const base::FilePath path_;
   const base::FilePath alternate_path_;

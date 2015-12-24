@@ -4,12 +4,15 @@
 
 #include "base/prefs/json_pref_store.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -230,7 +233,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kLongIntPref, &actual));
   EXPECT_TRUE(actual->GetAsString(&string_value));
-  int64 value;
+  int64_t value;
   base::StringToInt64(string_value, &value);
   EXPECT_EQ(214748364842LL, value);
 
@@ -677,7 +680,7 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestBasic) {
       base::TimeDelta::FromSeconds(10),
       base::FilePath(FILE_PATH_LITERAL("/tmp/Local State")),
       scoped_ptr<base::Clock>(test_clock));
-  int32 report_interval =
+  int32_t report_interval =
       JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins;
 
   histogram.RecordWriteOccured();
@@ -701,7 +704,7 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestSinglePeriod) {
       base::TimeDelta::FromSeconds(10),
       base::FilePath(FILE_PATH_LITERAL("/tmp/Local State")),
       scoped_ptr<base::Clock>(test_clock));
-  int32 report_interval =
+  int32_t report_interval =
       JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins;
 
   histogram.RecordWriteOccured();
@@ -740,7 +743,7 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestMultiplePeriods) {
       base::TimeDelta::FromSeconds(10),
       base::FilePath(FILE_PATH_LITERAL("/tmp/Local State")),
       scoped_ptr<base::Clock>(test_clock));
-  int32 report_interval =
+  int32_t report_interval =
       JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins;
 
   histogram.RecordWriteOccured();
@@ -779,7 +782,7 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps) {
       base::TimeDelta::FromSeconds(10),
       base::FilePath(FILE_PATH_LITERAL("/tmp/Local State")),
       scoped_ptr<base::Clock>(test_clock));
-  int32 report_interval =
+  int32_t report_interval =
       JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins;
 
   // 1 write in the first period.

@@ -66,7 +66,7 @@ bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
 
 void OverlayUserPrefStore::SetValue(const std::string& key,
                                     scoped_ptr<base::Value> value,
-                                    uint32 flags) {
+                                    uint32_t flags) {
   if (!ShallBeStoredInOverlay(key)) {
     underlay_->SetValue(GetUnderlayKey(key), std::move(value), flags);
     return;
@@ -78,7 +78,7 @@ void OverlayUserPrefStore::SetValue(const std::string& key,
 
 void OverlayUserPrefStore::SetValueSilently(const std::string& key,
                                             scoped_ptr<base::Value> value,
-                                            uint32 flags) {
+                                            uint32_t flags) {
   if (!ShallBeStoredInOverlay(key)) {
     underlay_->SetValueSilently(GetUnderlayKey(key), std::move(value), flags);
     return;
@@ -87,7 +87,7 @@ void OverlayUserPrefStore::SetValueSilently(const std::string& key,
   overlay_.SetValue(key, std::move(value));
 }
 
-void OverlayUserPrefStore::RemoveValue(const std::string& key, uint32 flags) {
+void OverlayUserPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
   if (!ShallBeStoredInOverlay(key)) {
     underlay_->RemoveValue(GetUnderlayKey(key), flags);
     return;
@@ -128,7 +128,7 @@ void OverlayUserPrefStore::SchedulePendingLossyWrites() {
 }
 
 void OverlayUserPrefStore::ReportValueChanged(const std::string& key,
-                                              uint32 flags) {
+                                              uint32_t flags) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
 }
 

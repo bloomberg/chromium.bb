@@ -5,6 +5,7 @@
 #ifndef BASE_PREFS_TESTING_PREF_SERVICE_H_
 #define BASE_PREFS_TESTING_PREF_SERVICE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry.h"

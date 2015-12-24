@@ -5,9 +5,11 @@
 #ifndef BASE_PREFS_WRITEABLE_PREF_STORE_H_
 #define BASE_PREFS_WRITEABLE_PREF_STORE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_store.h"
 
@@ -20,7 +22,7 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
  public:
   // PrefWriteFlags can be used to change the way a pref will be written to
   // storage.
-  enum PrefWriteFlags : uint32 {
+  enum PrefWriteFlags : uint32_t {
     // No flags are specified.
     DEFAULT_PREF_WRITE_FLAGS = 0,
 
@@ -35,10 +37,10 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
   // a bitmask of PrefWriteFlags.
   virtual void SetValue(const std::string& key,
                         scoped_ptr<base::Value> value,
-                        uint32 flags) = 0;
+                        uint32_t flags) = 0;
 
   // Removes the value for |key|.
-  virtual void RemoveValue(const std::string& key, uint32 flags) = 0;
+  virtual void RemoveValue(const std::string& key, uint32_t flags) = 0;
 
   // Equivalent to PrefStore::GetValue but returns a mutable value.
   virtual bool GetMutableValue(const std::string& key,
@@ -49,7 +51,7 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
   // value. SetValue takes care of notifications itself. Note that
   // ReportValueChanged will trigger notifications even if nothing has changed.
   // |flags| is a bitmask of PrefWriteFlags.
-  virtual void ReportValueChanged(const std::string& key, uint32 flags) = 0;
+  virtual void ReportValueChanged(const std::string& key, uint32_t flags) = 0;
 
   // Same as SetValue, but doesn't generate notifications. This is used by
   // PrefService::GetMutableUserPref() in order to put empty entries
@@ -58,7 +60,7 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
   // of PrefWriteFlags.
   virtual void SetValueSilently(const std::string& key,
                                 scoped_ptr<base::Value> value,
-                                uint32 flags) = 0;
+                                uint32_t flags) = 0;
 
  protected:
   ~WriteablePrefStore() override {}

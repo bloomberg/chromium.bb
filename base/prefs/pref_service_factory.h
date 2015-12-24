@@ -5,8 +5,8 @@
 #ifndef BASE_PREFS_PREF_SERVICE_FACTORY_H_
 #define BASE_PREFS_PREF_SERVICE_FACTORY_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/persistent_pref_store.h"

@@ -5,10 +5,12 @@
 #ifndef BASE_PREFS_OVERLAY_USER_PREF_STORE_H_
 #define BASE_PREFS_OVERLAY_USER_PREF_STORE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/prefs/base_prefs_export.h"
@@ -41,18 +43,18 @@ class BASE_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void SetValue(const std::string& key,
                 scoped_ptr<base::Value> value,
-                uint32 flags) override;
+                uint32_t flags) override;
   void SetValueSilently(const std::string& key,
                         scoped_ptr<base::Value> value,
-                        uint32 flags) override;
-  void RemoveValue(const std::string& key, uint32 flags) override;
+                        uint32_t flags) override;
+  void RemoveValue(const std::string& key, uint32_t flags) override;
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
   PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* delegate) override;
   void CommitPendingWrite() override;
   void SchedulePendingLossyWrites() override;
-  void ReportValueChanged(const std::string& key, uint32 flags) override;
+  void ReportValueChanged(const std::string& key, uint32_t flags) override;
 
   // Methods of PrefStore::Observer.
   void OnPrefValueChanged(const std::string& key) override;

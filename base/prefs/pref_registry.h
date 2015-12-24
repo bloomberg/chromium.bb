@@ -5,7 +5,10 @@
 #ifndef BASE_PREFS_PREF_REGISTRY_H_
 #define BASE_PREFS_PREF_REGISTRY_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_value_map.h"
@@ -32,7 +35,7 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
   // behave or be stored. This will be passed in a bitmask when the pref is
   // registered. Subclasses of PrefRegistry can specify their own flags. Care
   // must be taken to ensure none of these overlap with the flags below.
-  enum PrefRegistrationFlags : uint32 {
+  enum PrefRegistrationFlags : uint32_t {
     // No flags are specified.
     NO_REGISTRATION_FLAGS = 0,
 
@@ -44,13 +47,13 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
   };
 
   typedef PrefValueMap::const_iterator const_iterator;
-  typedef base::hash_map<std::string, uint32> PrefRegistrationFlagsMap;
+  typedef base::hash_map<std::string, uint32_t> PrefRegistrationFlagsMap;
 
   PrefRegistry();
 
   // Retrieve the set of registration flags for the given preference. The return
   // value is a bitmask of PrefRegistrationFlags.
-  uint32 GetRegistrationFlags(const std::string& pref_name) const;
+  uint32_t GetRegistrationFlags(const std::string& pref_name) const;
 
   // Gets the registered defaults.
   scoped_refptr<PrefStore> defaults();
@@ -72,7 +75,7 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
   // a preference. |flags| is a bitmask of |PrefRegistrationFlags|.
   void RegisterPreference(const std::string& path,
                           base::Value* default_value,
-                          uint32 flags);
+                          uint32_t flags);
 
   scoped_refptr<DefaultPrefStore> defaults_;
 

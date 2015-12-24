@@ -41,8 +41,8 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
 
 // Returns the WriteablePrefStore::PrefWriteFlags for the pref with the given
 // |path|.
-uint32 GetWriteFlags(const PrefService::Preference* pref) {
-  uint32 write_flags = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
+uint32_t GetWriteFlags(const PrefService::Preference* pref) {
+  uint32_t write_flags = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
 
   if (!pref)
     return write_flags;
@@ -403,11 +403,11 @@ void PrefService::SetFilePath(const std::string& path,
   SetUserPrefValue(path, base::CreateFilePathValue(value));
 }
 
-void PrefService::SetInt64(const std::string& path, int64 value) {
+void PrefService::SetInt64(const std::string& path, int64_t value) {
   SetUserPrefValue(path, new base::StringValue(base::Int64ToString(value)));
 }
 
-int64 PrefService::GetInt64(const std::string& path) const {
+int64_t PrefService::GetInt64(const std::string& path) const {
   DCHECK(CalledOnValidThread());
 
   const base::Value* value = GetPreferenceValue(path);
@@ -419,16 +419,16 @@ int64 PrefService::GetInt64(const std::string& path) const {
   bool rv = value->GetAsString(&result);
   DCHECK(rv);
 
-  int64 val;
+  int64_t val;
   base::StringToInt64(result, &val);
   return val;
 }
 
-void PrefService::SetUint64(const std::string& path, uint64 value) {
+void PrefService::SetUint64(const std::string& path, uint64_t value) {
   SetUserPrefValue(path, new base::StringValue(base::Uint64ToString(value)));
 }
 
-uint64 PrefService::GetUint64(const std::string& path) const {
+uint64_t PrefService::GetUint64(const std::string& path) const {
   DCHECK(CalledOnValidThread());
 
   const base::Value* value = GetPreferenceValue(path);
@@ -440,7 +440,7 @@ uint64 PrefService::GetUint64(const std::string& path) const {
   bool rv = value->GetAsString(&result);
   DCHECK(rv);
 
-  uint64 val;
+  uint64_t val;
   base::StringToUint64(result, &val);
   return val;
 }

@@ -4,6 +4,8 @@
 
 #include "base/prefs/pref_value_store.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_observer.h"

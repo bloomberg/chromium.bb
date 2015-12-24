@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/mock_pref_change_callback.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -234,29 +238,29 @@ class WriteFlagChecker : public TestingPrefStore {
  public:
   WriteFlagChecker() {}
 
-  void ReportValueChanged(const std::string& key, uint32 flags) override {
+  void ReportValueChanged(const std::string& key, uint32_t flags) override {
     SetLastWriteFlags(flags);
   }
 
   void SetValue(const std::string& key,
                 scoped_ptr<base::Value> value,
-                uint32 flags) override {
+                uint32_t flags) override {
     SetLastWriteFlags(flags);
   }
 
   void SetValueSilently(const std::string& key,
                         scoped_ptr<base::Value> value,
-                        uint32 flags) override {
+                        uint32_t flags) override {
     SetLastWriteFlags(flags);
   }
 
-  void RemoveValue(const std::string& key, uint32 flags) override {
+  void RemoveValue(const std::string& key, uint32_t flags) override {
     SetLastWriteFlags(flags);
   }
 
-  uint32 GetLastFlagsAndClear() {
+  uint32_t GetLastFlagsAndClear() {
     CHECK(last_write_flags_set_);
-    uint32 result = last_write_flags_;
+    uint32_t result = last_write_flags_;
     last_write_flags_set_ = false;
     last_write_flags_ = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
     return result;
@@ -267,14 +271,14 @@ class WriteFlagChecker : public TestingPrefStore {
  private:
   ~WriteFlagChecker() override {}
 
-  void SetLastWriteFlags(uint32 flags) {
+  void SetLastWriteFlags(uint32_t flags) {
     CHECK(!last_write_flags_set_);
     last_write_flags_set_ = true;
     last_write_flags_ = flags;
   }
 
   bool last_write_flags_set_ = false;
-  uint32 last_write_flags_ = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
+  uint32_t last_write_flags_ = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
 };
 
 TEST(PrefServiceTest, WriteablePrefStoreFlags) {
@@ -286,14 +290,14 @@ TEST(PrefServiceTest, WriteablePrefStoreFlags) {
 
   // The first 8 bits of write flags are reserved for subclasses. Create a
   // custom flag in this range
-  uint32 kCustomRegistrationFlag = 1 << 2;
+  uint32_t kCustomRegistrationFlag = 1 << 2;
 
   // A map of the registration flags that will be tested and the write flags
   // they are expected to convert to.
   struct RegistrationToWriteFlags {
     const char* pref_name;
-    uint32 registration_flags;
-    uint32 write_flags;
+    uint32_t registration_flags;
+    uint32_t write_flags;
   };
   const RegistrationToWriteFlags kRegistrationToWriteFlags[] = {
       {"none",

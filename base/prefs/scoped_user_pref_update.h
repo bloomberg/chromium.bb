@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_service.h"
 #include "base/threading/non_thread_safe.h"

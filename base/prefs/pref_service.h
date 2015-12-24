@@ -11,12 +11,15 @@
 #ifndef BASE_PREFS_PREF_SERVICE_H_
 #define BASE_PREFS_PREF_SERVICE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -130,7 +133,7 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
 
     // Return the registration flags for this pref as a bitmask of
     // PrefRegistry::PrefRegistrationFlags.
-    uint32 registration_flags() const { return registration_flags_; }
+    uint32_t registration_flags() const { return registration_flags_; }
 
    private:
     friend class PrefService;
@@ -143,7 +146,7 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
 
     const base::Value::Type type_;
 
-    uint32 registration_flags_;
+    uint32_t registration_flags_;
 
     // Reference to the PrefService in which this pref was created.
     const PrefService* pref_service_;
@@ -220,12 +223,12 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // Int64 helper methods that actually store the given value as a string.
   // Note that if obtaining the named value via GetDictionary or GetList, the
   // Value type will be TYPE_STRING.
-  void SetInt64(const std::string& path, int64 value);
-  int64 GetInt64(const std::string& path) const;
+  void SetInt64(const std::string& path, int64_t value);
+  int64_t GetInt64(const std::string& path) const;
 
   // As above, but for unsigned values.
-  void SetUint64(const std::string& path, uint64 value);
-  uint64 GetUint64(const std::string& path) const;
+  void SetUint64(const std::string& path, uint64_t value);
+  uint64_t GetUint64(const std::string& path) const;
 
   // Returns the value of the given preference, from the user pref store. If
   // the preference is not set in the user pref store, returns NULL.

@@ -4,6 +4,8 @@
 
 #include "base/prefs/json_pref_store.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -13,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_filter.h"
@@ -218,7 +221,7 @@ bool JsonPrefStore::GetMutableValue(const std::string& key,
 
 void JsonPrefStore::SetValue(const std::string& key,
                              scoped_ptr<base::Value> value,
-                             uint32 flags) {
+                             uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(value);
@@ -232,7 +235,7 @@ void JsonPrefStore::SetValue(const std::string& key,
 
 void JsonPrefStore::SetValueSilently(const std::string& key,
                                      scoped_ptr<base::Value> value,
-                                     uint32 flags) {
+                                     uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(value);
@@ -244,14 +247,15 @@ void JsonPrefStore::SetValueSilently(const std::string& key,
   }
 }
 
-void JsonPrefStore::RemoveValue(const std::string& key, uint32 flags) {
+void JsonPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
   if (prefs_->RemovePath(key, nullptr))
     ReportValueChanged(key, flags);
 }
 
-void JsonPrefStore::RemoveValueSilently(const std::string& key, uint32 flags) {
+void JsonPrefStore::RemoveValueSilently(const std::string& key,
+                                        uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
   prefs_->RemovePath(key, nullptr);
@@ -308,7 +312,7 @@ void JsonPrefStore::SchedulePendingLossyWrites() {
     writer_.ScheduleWrite(this);
 }
 
-void JsonPrefStore::ReportValueChanged(const std::string& key, uint32 flags) {
+void JsonPrefStore::ReportValueChanged(const std::string& key, uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
   if (pref_filter_)
@@ -434,7 +438,7 @@ void JsonPrefStore::FinalizeFileRead(bool initialization_successful,
   return;
 }
 
-void JsonPrefStore::ScheduleWrite(uint32 flags) {
+void JsonPrefStore::ScheduleWrite(uint32_t flags) {
   if (read_only_)
     return;
 
@@ -495,9 +499,9 @@ void JsonPrefStore::WriteCountHistogram::ReportOutstandingWrites() {
 
   // There may be several report intervals that elapsed that don't have any
   // writes in them. Report these too.
-  int64 total_num_intervals_elapsed =
+  int64_t total_num_intervals_elapsed =
       (time_since_last_report / report_interval_);
-  for (int64 i = 0; i < total_num_intervals_elapsed - 1; ++i)
+  for (int64_t i = 0; i < total_num_intervals_elapsed - 1; ++i)
     histogram->Add(0);
 
   writes_since_last_report_ = 0;

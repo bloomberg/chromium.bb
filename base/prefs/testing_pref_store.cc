@@ -46,7 +46,7 @@ bool TestingPrefStore::IsInitializationComplete() const {
 
 void TestingPrefStore::SetValue(const std::string& key,
                                 scoped_ptr<base::Value> value,
-                                uint32 flags) {
+                                uint32_t flags) {
   if (prefs_.SetValue(key, std::move(value))) {
     committed_ = false;
     NotifyPrefValueChanged(key);
@@ -55,12 +55,12 @@ void TestingPrefStore::SetValue(const std::string& key,
 
 void TestingPrefStore::SetValueSilently(const std::string& key,
                                         scoped_ptr<base::Value> value,
-                                        uint32 flags) {
+                                        uint32_t flags) {
   if (prefs_.SetValue(key, std::move(value)))
     committed_ = false;
 }
 
-void TestingPrefStore::RemoveValue(const std::string& key, uint32 flags) {
+void TestingPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
   if (prefs_.RemoveValue(key)) {
     committed_ = false;
     NotifyPrefValueChanged(key);
@@ -111,7 +111,7 @@ void TestingPrefStore::NotifyInitializationCompleted() {
 }
 
 void TestingPrefStore::ReportValueChanged(const std::string& key,
-                                          uint32 flags) {
+                                          uint32_t flags) {
   FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
 }
 

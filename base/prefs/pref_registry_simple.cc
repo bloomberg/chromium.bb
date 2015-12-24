@@ -66,14 +66,14 @@ void PrefRegistrySimple::RegisterDictionaryPref(
 }
 
 void PrefRegistrySimple::RegisterInt64Pref(const std::string& path,
-                                           int64 default_value) {
+                                           int64_t default_value) {
   RegisterPrefAndNotify(
       path, new base::StringValue(base::Int64ToString(default_value)),
       NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
-                                            uint64 default_value) {
+                                            uint64_t default_value) {
   RegisterPrefAndNotify(
       path, new base::StringValue(base::Uint64ToString(default_value)),
       NO_REGISTRATION_FLAGS);
@@ -81,81 +81,80 @@ void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
 
 void PrefRegistrySimple::RegisterBooleanPref(const std::string& path,
                                              bool default_value,
-                                             uint32 flags) {
+                                             uint32_t flags) {
   RegisterPrefAndNotify(path, new base::FundamentalValue(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterIntegerPref(const std::string& path,
                                              int default_value,
-                                             uint32 flags) {
+                                             uint32_t flags) {
   RegisterPrefAndNotify(path, new base::FundamentalValue(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterDoublePref(const std::string& path,
                                             double default_value,
-                                            uint32 flags) {
+                                            uint32_t flags) {
   RegisterPrefAndNotify(path, new base::FundamentalValue(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterStringPref(const std::string& path,
                                             const std::string& default_value,
-                                            uint32 flags) {
+                                            uint32_t flags) {
   RegisterPrefAndNotify(path, new base::StringValue(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterFilePathPref(
     const std::string& path,
     const base::FilePath& default_value,
-    uint32 flags) {
+    uint32_t flags) {
   RegisterPrefAndNotify(path, new base::StringValue(default_value.value()),
                         flags);
 }
 
 void PrefRegistrySimple::RegisterListPref(const std::string& path,
-                                          uint32 flags) {
+                                          uint32_t flags) {
   RegisterPrefAndNotify(path, new base::ListValue(), flags);
 }
 
 void PrefRegistrySimple::RegisterListPref(const std::string& path,
                                           base::ListValue* default_value,
-                                          uint32 flags) {
+                                          uint32_t flags) {
   RegisterPrefAndNotify(path, default_value, flags);
 }
 
 void PrefRegistrySimple::RegisterDictionaryPref(const std::string& path,
-                                                uint32 flags) {
+                                                uint32_t flags) {
   RegisterPrefAndNotify(path, new base::DictionaryValue(), flags);
 }
 
 void PrefRegistrySimple::RegisterDictionaryPref(
     const std::string& path,
     base::DictionaryValue* default_value,
-    uint32 flags) {
+    uint32_t flags) {
   RegisterPrefAndNotify(path, default_value, flags);
 }
 
 void PrefRegistrySimple::RegisterInt64Pref(const std::string& path,
-                                           int64 default_value,
-                                           uint32 flags) {
+                                           int64_t default_value,
+                                           uint32_t flags) {
   RegisterPrefAndNotify(
       path, new base::StringValue(base::Int64ToString(default_value)), flags);
 }
 
 void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
-                                            uint64 default_value,
-                                            uint32 flags) {
+                                            uint64_t default_value,
+                                            uint32_t flags) {
   RegisterPrefAndNotify(
       path, new base::StringValue(base::Uint64ToString(default_value)), flags);
 }
 
 void PrefRegistrySimple::OnPrefRegistered(const std::string& path,
                                           base::Value* default_value,
-                                          uint32 flags) {
-}
+                                          uint32_t flags) {}
 
 void PrefRegistrySimple::RegisterPrefAndNotify(const std::string& path,
                                                base::Value* default_value,
-                                               uint32 flags) {
+                                               uint32_t flags) {
   RegisterPreference(path, default_value, flags);
   OnPrefRegistered(path, default_value, flags);
 }
