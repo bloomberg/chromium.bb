@@ -4,12 +4,14 @@
 
 #include "base/process/kill.h"
 
-#include <io.h>
 #include <windows.h>
+#include <io.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_iterator.h"
 #include "base/win/object_watcher.h"
@@ -156,9 +158,9 @@ bool WaitForProcessesToExit(const FilePath::StringType& executable_name,
   NamedProcessIterator iter(executable_name, filter);
   for (const ProcessEntry* entry = iter.NextProcessEntry(); entry;
        entry = iter.NextProcessEntry()) {
-    DWORD remaining_wait = static_cast<DWORD>(std::max(
-        static_cast<int64>(0),
-        wait.InMilliseconds() - (GetTickCount() - start_time)));
+    DWORD remaining_wait = static_cast<DWORD>(
+        std::max(static_cast<int64_t>(0),
+                 wait.InMilliseconds() - (GetTickCount() - start_time)));
     HANDLE process = OpenProcess(SYNCHRONIZE,
                                  FALSE,
                                  entry->th32ProcessID);

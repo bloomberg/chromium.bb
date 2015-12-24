@@ -10,6 +10,7 @@
 #include <mach/mach_vm.h>
 #include <malloc/malloc.h>
 #import <objc/runtime.h>
+#include <stddef.h>
 
 #include <new>
 
@@ -18,6 +19,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/scoped_clear_errno.h"
+#include "build/build_config.h"
 #include "third_party/apple_apsl/CFBase.h"
 #include "third_party/apple_apsl/malloc.h"
 

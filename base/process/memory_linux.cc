@@ -4,6 +4,8 @@
 
 #include "base/process/memory.h"
 
+#include <stddef.h>
+
 #include <new>
 
 #include "base/files/file_path.h"
@@ -11,6 +13,7 @@
 #include "base/logging.h"
 #include "base/process/internal_linux.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 
 #if defined(USE_TCMALLOC)
 // Used by UncheckedMalloc. If tcmalloc is linked to the executable

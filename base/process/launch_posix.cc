@@ -10,6 +10,8 @@
 #include <sched.h>
 #include <setjmp.h>
 #include <signal.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>

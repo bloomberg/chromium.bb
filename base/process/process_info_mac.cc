@@ -4,11 +4,12 @@
 
 #include "base/process/process_info.h"
 
+#include <stddef.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 

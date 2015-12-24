@@ -5,9 +5,11 @@
 #include "base/process/process_iterator.h"
 
 #include <errno.h>
+#include <stddef.h>
 #include <sys/sysctl.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/process/process_metrics.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
 
@@ -115,7 +118,7 @@ double ProcessMetrics::GetCPUUsage() {
     return 0;
   }
 
-  int64 time_delta = (time - last_cpu_time_).InMicroseconds();
+  int64_t time_delta = (time - last_cpu_time_).InMicroseconds();
   DCHECK_NE(time_delta, 0);
 
   if (time_delta == 0)

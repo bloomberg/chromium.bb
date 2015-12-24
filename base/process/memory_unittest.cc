@@ -6,11 +6,14 @@
 
 #include "base/process/memory.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

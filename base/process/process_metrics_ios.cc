@@ -5,6 +5,7 @@
 #include "base/process/process_metrics.h"
 
 #include <mach/task.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 

@@ -5,6 +5,7 @@
 #include "base/process/process_handle.h"
 
 #include <libproc.h>
+#include <stddef.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
 

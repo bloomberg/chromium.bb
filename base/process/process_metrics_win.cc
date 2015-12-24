@@ -6,6 +6,8 @@
 
 #include <windows.h>
 #include <psapi.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <winternl.h>
 
 #include <algorithm>
@@ -206,7 +208,7 @@ bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
   return true;
 }
 
-static uint64 FileTimeToUTC(const FILETIME& ftime) {
+static uint64_t FileTimeToUTC(const FILETIME& ftime) {
   LARGE_INTEGER li;
   li.LowPart = ftime.dwLowDateTime;
   li.HighPart = ftime.dwHighDateTime;
@@ -226,8 +228,9 @@ double ProcessMetrics::GetCPUUsage() {
     // not yet received the notification.
     return 0;
   }
-  int64 system_time = (FileTimeToUTC(kernel_time) + FileTimeToUTC(user_time)) /
-                        processor_count_;
+  int64_t system_time =
+      (FileTimeToUTC(kernel_time) + FileTimeToUTC(user_time)) /
+      processor_count_;
   TimeTicks time = TimeTicks::Now();
 
   if (last_system_time_ == 0) {
@@ -237,9 +240,9 @@ double ProcessMetrics::GetCPUUsage() {
     return 0;
   }
 
-  int64 system_time_delta = system_time - last_system_time_;
+  int64_t system_time_delta = system_time - last_system_time_;
   // FILETIME is in 100-nanosecond units, so this needs microseconds times 10.
-  int64 time_delta = (time - last_cpu_time_).InMicroseconds() * 10;
+  int64_t time_delta = (time - last_cpu_time_).InMicroseconds() * 10;
   DCHECK_NE(0U, time_delta);
   if (time_delta == 0)
     return 0;

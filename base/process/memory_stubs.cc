@@ -4,6 +4,7 @@
 
 #include "base/process/memory.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 namespace base {

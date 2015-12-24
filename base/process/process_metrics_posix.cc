@@ -4,16 +4,19 @@
 
 #include "base/process/process_metrics.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace base {
 
-int64 TimeValToMicroseconds(const struct timeval& tv) {
-  int64 ret = tv.tv_sec;  // Avoid (int * int) integer overflow.
+int64_t TimeValToMicroseconds(const struct timeval& tv) {
+  int64_t ret = tv.tv_sec;  // Avoid (int * int) integer overflow.
   ret *= Time::kMicrosecondsPerSecond;
   ret += tv.tv_usec;
   return ret;

@@ -6,6 +6,7 @@
 
 #include <new.h>
 #include <psapi.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

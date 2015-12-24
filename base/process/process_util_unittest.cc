@@ -4,6 +4,9 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/command_line.h"
@@ -13,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
@@ -423,7 +427,7 @@ MULTIPROCESS_TEST_MAIN(TriggerEventChildProcess) {
           kEventToTriggerHandleSwitch);
   CHECK(!handle_value_string.empty());
 
-  uint64 handle_value_uint64;
+  uint64_t handle_value_uint64;
   CHECK(base::StringToUint64(handle_value_string, &handle_value_uint64));
   // Give ownership of the handle to |event|.
   base::WaitableEvent event(base::win::ScopedHandle(
@@ -450,8 +454,9 @@ TEST_F(ProcessUtilTest, InheritSpecifiedHandles) {
   options.handles_to_inherit = &handles_to_inherit;
 
   base::CommandLine cmd_line = MakeCmdLine("TriggerEventChildProcess");
-  cmd_line.AppendSwitchASCII(kEventToTriggerHandleSwitch,
-      base::Uint64ToString(reinterpret_cast<uint64>(event.handle())));
+  cmd_line.AppendSwitchASCII(
+      kEventToTriggerHandleSwitch,
+      base::Uint64ToString(reinterpret_cast<uint64_t>(event.handle())));
 
   // This functionality actually requires Vista or later. Make sure that it
   // fails properly on XP.
@@ -478,9 +483,9 @@ int GetMaxFilesOpenInProcess() {
     return 0;
   }
 
-  // rlim_t is a uint64 - clip to maxint. We do this since FD #s are ints
+  // rlim_t is a uint64_t - clip to maxint. We do this since FD #s are ints
   // which are all 32 bits on the supported platforms.
-  rlim_t max_int = static_cast<rlim_t>(std::numeric_limits<int32>::max());
+  rlim_t max_int = static_cast<rlim_t>(std::numeric_limits<int32_t>::max());
   if (rlim.rlim_cur > max_int) {
     return max_int;
   }

@@ -7,13 +7,15 @@
 #ifndef BASE_PROCESS_PROCESS_ITERATOR_H_
 #define BASE_PROCESS_PROCESS_ITERATOR_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 

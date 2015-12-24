@@ -4,7 +4,8 @@
 
 #include "base/process/process_info.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/process/internal_linux.h"
 #include "base/process/process_handle.h"
@@ -15,7 +16,7 @@ namespace base {
 // static
 const Time CurrentProcessInfo::CreationTime() {
   ProcessHandle pid = GetCurrentProcessHandle();
-  int64 start_ticks =
+  int64_t start_ticks =
       internal::ReadProcStatsAndGetFieldAsInt64(pid, internal::VM_STARTTIME);
   DCHECK(start_ticks);
   TimeDelta start_offset = internal::ClockTicksToTimeDelta(start_ticks);

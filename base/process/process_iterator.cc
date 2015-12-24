@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/process/process_iterator.h"
+#include "build/build_config.h"
 
 namespace base {
 

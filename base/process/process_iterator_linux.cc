@@ -4,6 +4,8 @@
 
 #include "base/process/process_iterator.h"
 
+#include <stddef.h>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/internal_linux.h"

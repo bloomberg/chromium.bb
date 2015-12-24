@@ -5,6 +5,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/process/memory.h"
+#include "build/build_config.h"
 
 namespace base {
 
