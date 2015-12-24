@@ -158,7 +158,7 @@ void URLRequestFtpJob::StartFtpTransaction() {
   DCHECK(!ftp_transaction_);
 
   ftp_request_info_.url = request_->url();
-  ftp_transaction_.reset(ftp_transaction_factory_->CreateTransaction());
+  ftp_transaction_ = ftp_transaction_factory_->CreateTransaction();
 
   // No matter what, we want to report our status as IO pending since we will
   // be notifying our consumer asynchronously via OnStartCompleted.

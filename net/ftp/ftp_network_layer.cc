@@ -18,12 +18,12 @@ FtpNetworkLayer::FtpNetworkLayer(HostResolver* host_resolver)
 FtpNetworkLayer::~FtpNetworkLayer() {
 }
 
-FtpTransaction* FtpNetworkLayer::CreateTransaction() {
+scoped_ptr<FtpTransaction> FtpNetworkLayer::CreateTransaction() {
   if (suspended_)
-    return NULL;
+    return scoped_ptr<FtpTransaction>();
 
-  return new FtpNetworkTransaction(session_->host_resolver(),
-                                   ClientSocketFactory::GetDefaultFactory());
+  return make_scoped_ptr(new FtpNetworkTransaction(
+      session_->host_resolver(), ClientSocketFactory::GetDefaultFactory()));
 }
 
 void FtpNetworkLayer::Suspend(bool suspend) {

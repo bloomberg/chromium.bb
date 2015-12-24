@@ -22,7 +22,7 @@ class NET_EXPORT FtpNetworkLayer : public FtpTransactionFactory {
   ~FtpNetworkLayer() override;
 
   // FtpTransactionFactory methods:
-  FtpTransaction* CreateTransaction() override;
+  scoped_ptr<FtpTransaction> CreateTransaction() override;
   void Suspend(bool suspend) override;
 
  private:

@@ -141,7 +141,9 @@ class TestURLRequestFtpJob : public URLRequestFtpJob {
 
 class MockFtpTransactionFactory : public FtpTransactionFactory {
  public:
-  FtpTransaction* CreateTransaction() override { return NULL; }
+  scoped_ptr<FtpTransaction> CreateTransaction() override {
+    return scoped_ptr<FtpTransaction>();
+  }
 
   void Suspend(bool suspend) override {}
 };
