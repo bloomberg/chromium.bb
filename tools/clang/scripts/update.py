@@ -652,6 +652,15 @@ def UpdateClang(args):
         os.path.join(LLVM_BUILD_DIR, 'lib/clang', VERSION, 'include/sanitizer'))
   # Static and dynamic libraries:
   CopyDirectoryContents(asan_rt_lib_src_dir, asan_rt_lib_dst_dir)
+  if sys.platform == 'darwin':
+    for dylib in glob.glob(os.path.join(asan_rt_lib_dst_dir, '*.dylib')):
+      # Fix LC_ID_DYLIB for the ASan dynamic libraries to be relative to
+      # @executable_path.
+      # TODO(glider): this is transitional. We'll need to fix the dylib
+      # name either in our build system, or in Clang. See also
+      # http://crbug.com/344836.
+      subprocess.call(['install_name_tool', '-id',
+                       '@executable_path/' + os.path.basename(dylib), dylib])
 
 
   if sys.platform == 'win32':
