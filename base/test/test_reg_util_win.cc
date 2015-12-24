@@ -4,6 +4,8 @@
 
 #include "base/test/test_reg_util_win.h"
 
+#include <stdint.h>
+
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -38,7 +40,7 @@ void DeleteStaleTestKeys(const base::Time& now,
         base::SPLIT_WANT_NONEMPTY);
     if (tokens.empty())
       continue;
-    int64 key_name_as_number = 0;
+    int64_t key_name_as_number = 0;
 
     if (!base::StringToInt64(tokens[0], &key_name_as_number)) {
       test_root_key.DeleteKey(key_name.c_str());

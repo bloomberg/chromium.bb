@@ -5,8 +5,8 @@
 #ifndef BASE_TEST_SCOPED_PATH_OVERRIDE_H_
 #define BASE_TEST_SCOPED_PATH_OVERRIDE_H_
 
-#include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 
 namespace base {
 

@@ -5,7 +5,7 @@
 #ifndef BASE_TEST_MALLOC_WRAPPER_H_
 #define BASE_TEST_MALLOC_WRAPPER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
 
 // BASE_EXPORT depends on COMPONENT_BUILD.
 // This will always be a separate shared library, so don't use BASE_EXPORT here.

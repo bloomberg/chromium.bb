@@ -5,9 +5,13 @@
 #ifndef BASE_TEST_LAUNCHER_UNIT_TEST_LAUNCHER_H_
 #define BASE_TEST_LAUNCHER_UNIT_TEST_LAUNCHER_H_
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/test/launcher/test_launcher.h"
+#include "build/build_config.h"
 
 namespace base {
 

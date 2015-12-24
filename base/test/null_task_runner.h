@@ -5,8 +5,8 @@
 #ifndef BASE_TEST_NULL_TASK_RUNNER_H_
 #define BASE_TEST_NULL_TASK_RUNNER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 
 namespace base {

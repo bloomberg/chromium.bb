@@ -8,7 +8,7 @@
 // Registry utility functions used only by tests.
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"

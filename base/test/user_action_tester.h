@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 
 namespace base {

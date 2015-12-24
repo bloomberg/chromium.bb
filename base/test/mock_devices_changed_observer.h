@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/system_monitor/system_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

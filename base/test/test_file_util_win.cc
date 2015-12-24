@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <aclapi.h>
 #include <shlwapi.h>
+#include <stddef.h>
 
 #include <vector>
 

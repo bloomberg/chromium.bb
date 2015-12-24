@@ -4,6 +4,8 @@
 
 #include "base/test/gtest_xml_util.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -118,8 +120,8 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
           if (!xml_reader.NodeAttribute("time", &test_time_str))
             return false;
           result.elapsed_time = TimeDelta::FromMicroseconds(
-              static_cast<int64>(strtod(test_time_str.c_str(), NULL) *
-                  Time::kMicrosecondsPerSecond));
+              static_cast<int64_t>(strtod(test_time_str.c_str(), NULL) *
+                                   Time::kMicrosecondsPerSecond));
 
           result.status = TestResult::TEST_SUCCESS;
 

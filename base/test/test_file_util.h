@@ -7,14 +7,17 @@
 
 // File utility functions used only by tests.
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 
 #if defined(OS_ANDROID)
 #include <jni.h>
-#include "base/basictypes.h"
 #endif
 
 namespace base {

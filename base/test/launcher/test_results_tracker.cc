@@ -4,6 +4,8 @@
 
 #include "base/test/launcher/test_results_tracker.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/base64.h"

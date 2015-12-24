@@ -5,6 +5,8 @@
 #ifndef BASE_TEST_TEST_MOCK_TIME_TASK_RUNNER_H_
 #define BASE_TEST_TEST_MOCK_TIME_TASK_RUNNER_H_
 
+#include <stddef.h>
+
 #include <queue>
 #include <vector>
 

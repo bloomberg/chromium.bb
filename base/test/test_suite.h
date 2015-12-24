@@ -12,8 +12,10 @@
 #include <string>
 
 #include "base/at_exit.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/trace_to_file.h"
+#include "build/build_config.h"
 
 namespace testing {
 class TestInfo;

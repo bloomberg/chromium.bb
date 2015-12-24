@@ -6,6 +6,7 @@
 
 #include <sys/mman.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
@@ -19,7 +20,7 @@ bool EvictFileFromSystemCache(const FilePath& file) {
   // default) + MAP_SHARED, then do an msync to invalidate the memory.  The next
   // open should then have to load the file from disk.
 
-  int64 length;
+  int64_t length;
   if (!GetFileSize(file, &length)) {
     DLOG(ERROR) << "failed to get size of " << file.value();
     return false;
@@ -38,7 +39,7 @@ bool EvictFileFromSystemCache(const FilePath& file) {
     return false;
   }
 
-  if (msync(const_cast<uint8*>(mapped_file.data()), mapped_file.length(),
+  if (msync(const_cast<uint8_t*>(mapped_file.data()), mapped_file.length(),
             MS_INVALIDATE) != 0) {
     DLOG(WARNING) << "failed to invalidate memory map of " << file.value()
                   << ", errno: " << errno;

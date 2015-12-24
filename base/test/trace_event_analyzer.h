@@ -76,8 +76,12 @@
 #ifndef BASE_TEST_TRACE_EVENT_ANALYZER_H_
 #define BASE_TEST_TRACE_EVENT_ANALYZER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 
@@ -183,8 +187,8 @@ class Query {
 
   // Compare with the given number.
   static Query Double(double num);
-  static Query Int(int32 num);
-  static Query Uint(uint32 num);
+  static Query Int(int32_t num);
+  static Query Uint(uint32_t num);
 
   // Compare with the given bool.
   static Query Bool(bool boolean);
@@ -406,7 +410,7 @@ class Query {
   Query operator*(const Query& rhs) const;
   Query operator/(const Query& rhs) const;
   Query operator-() const;
-  // Mod operates on int64 args (doubles are casted to int64 beforehand):
+  // Mod operates on int64_t args (doubles are casted to int64_t beforehand):
   Query operator%(const Query& rhs) const;
 
   // Return true if the given event matches this query tree.

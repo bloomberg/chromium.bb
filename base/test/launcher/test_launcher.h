@@ -5,12 +5,15 @@
 #ifndef BASE_TEST_LAUNCHER_TEST_LAUNCHER_H_
 #define BASE_TEST_LAUNCHER_TEST_LAUNCHER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_result.h"
 #include "base/test/launcher/test_results_tracker.h"
@@ -151,8 +154,8 @@ class TestLauncher {
   TestLauncherDelegate* launcher_delegate_;
 
   // Support for outer sharding, just like gtest does.
-  int32 total_shards_;  // Total number of outer shards, at least one.
-  int32 shard_index_;   // Index of shard the launcher is to run.
+  int32_t total_shards_;  // Total number of outer shards, at least one.
+  int32_t shard_index_;   // Index of shard the launcher is to run.
 
   int cycles_;  // Number of remaining test itreations, or -1 for infinite.
 

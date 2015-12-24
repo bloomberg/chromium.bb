@@ -4,10 +4,6 @@
 
 #include "base/test/launcher/test_launcher.h"
 
-#if defined(OS_POSIX)
-#include <fcntl.h>
-#endif
-
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -20,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
@@ -40,7 +37,12 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_POSIX)
+#include <fcntl.h>
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -167,7 +169,7 @@ class SignalFDWatcher : public MessageLoopForIO::Watcher {
 // Parses the environment variable var as an Int32.  If it is unset, returns
 // true.  If it is set, unsets it then converts it to Int32 before
 // returning it in |result|.  Returns true on success.
-bool TakeInt32FromEnvironment(const char* const var, int32* result) {
+bool TakeInt32FromEnvironment(const char* const var, int32_t* result) {
   scoped_ptr<Environment> env(Environment::Create());
   std::string str_val;
 
@@ -951,7 +953,7 @@ void TestLauncher::RunTests() {
     if (excluded)
       continue;
 
-    if (Hash(test_name) % total_shards_ != static_cast<uint32>(shard_index_))
+    if (Hash(test_name) % total_shards_ != static_cast<uint32_t>(shard_index_))
       continue;
 
     test_names.push_back(test_name);

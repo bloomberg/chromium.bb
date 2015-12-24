@@ -9,7 +9,8 @@ namespace base {
 MockEntropyProvider::~MockEntropyProvider() {}
 
 double MockEntropyProvider::GetEntropyForTrial(
-    const std::string& trial_name, uint32 randomization_seed) const {
+    const std::string& trial_name,
+    uint32_t randomization_seed) const {
   return 0.5;
 }
 

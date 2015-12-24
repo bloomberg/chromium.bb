@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -27,6 +28,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

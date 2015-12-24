@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/trace_event_analyzer.h"
@@ -399,7 +402,7 @@ TEST_F(TraceEventAnalyzerTest, BeginEndDuration) {
   const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(200);
   // We will search for events that have a duration of greater than 90% of the
   // sleep time, so that there is no flakiness.
-  int64 duration_cutoff_us = (kSleepTime.InMicroseconds() * 9) / 10;
+  int64_t duration_cutoff_us = (kSleepTime.InMicroseconds() * 9) / 10;
 
   BeginTracing();
   {
@@ -445,7 +448,7 @@ TEST_F(TraceEventAnalyzerTest, CompleteDuration) {
   const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(200);
   // We will search for events that have a duration of greater than 90% of the
   // sleep time, so that there is no flakiness.
-  int64 duration_cutoff_us = (kSleepTime.InMicroseconds() * 9) / 10;
+  int64_t duration_cutoff_us = (kSleepTime.InMicroseconds() * 9) / 10;
 
   BeginTracing();
   {

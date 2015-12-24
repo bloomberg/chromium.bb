@@ -4,8 +4,9 @@
 
 #include "base/test/trace_event_analyzer.h"
 
-#include <algorithm>
 #include <math.h>
+
+#include <algorithm>
 #include <set>
 
 #include "base/json/json_reader.h"
@@ -219,11 +220,11 @@ Query Query::Double(double num) {
   return Query(num);
 }
 
-Query Query::Int(int32 num) {
+Query Query::Int(int32_t num) {
   return Query(static_cast<double>(num));
 }
 
-Query Query::Uint(uint32 num) {
+Query Query::Uint(uint32_t num) {
   return Query(static_cast<double>(num));
 }
 
@@ -380,8 +381,8 @@ bool Query::EvaluateArithmeticOperator(const TraceEvent& event,
       *num = lhs / rhs;
       return true;
     case OP_MOD:
-      *num = static_cast<double>(static_cast<int64>(lhs) %
-                                 static_cast<int64>(rhs));
+      *num = static_cast<double>(static_cast<int64_t>(lhs) %
+                                 static_cast<int64_t>(rhs));
       return true;
     case OP_NEGATE:
       *num = -lhs;

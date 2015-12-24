@@ -5,6 +5,8 @@
 #ifndef BASE_TEST_MOCK_LOG_H_
 #define BASE_TEST_MOCK_LOG_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/logging.h"

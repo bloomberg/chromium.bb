@@ -5,6 +5,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"

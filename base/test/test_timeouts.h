@@ -5,8 +5,8 @@
 #ifndef BASE_TEST_TEST_TIMEOUTS_H_
 #define BASE_TEST_TEST_TIMEOUTS_H_
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 // Returns common timeouts to use in tests. Makes it possible to adjust
