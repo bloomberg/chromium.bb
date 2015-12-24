@@ -732,7 +732,6 @@ config("default_warnings") {
       "/wd4100",  # Unreferenced formal function parameter.
       "/wd4121",  # Alignment of a member was sensitive to packing.
       "/wd4244",  # Conversion: possible loss of data.
-      "/wd4481",  # Nonstandard extension: override specifier.
       "/wd4505",  # Unreferenced local function has been removed.
       "/wd4510",  # Default constructor could not be generated.
       "/wd4512",  # Assignment operator could not be generated.
