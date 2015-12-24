@@ -5,7 +5,6 @@
 #ifndef UI_AURA_CLIENT_WINDOW_STACKING_CLIENT_H_
 #define UI_AURA_CLIENT_WINDOW_STACKING_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"

@@ -4,6 +4,8 @@
 
 #include "ui/aura/test/test_windows.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"

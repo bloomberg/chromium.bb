@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/timer.h"
@@ -377,7 +380,7 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
     DCHECK(!sent_events_ids_.empty());
     if (sent_events_ids_.empty())
       return;
-    uint32 sent_event_id = sent_events_ids_.front();
+    uint32_t sent_event_id = sent_events_ids_.front();
     sent_events_ids_.pop_front();
     dispatcher_->ProcessedTouchEvent(
         sent_event_id, window_,
@@ -387,7 +390,7 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   Window* window_;
   WindowEventDispatcher* dispatcher_;
   AckState synchronous_ack_for_next_event_;
-  std::list<uint32> sent_events_ids_;
+  std::list<uint32_t> sent_events_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(QueueTouchEventDelegate);
 };

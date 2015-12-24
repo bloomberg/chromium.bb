@@ -6,6 +6,7 @@
 #define UI_AURA_TEST_TEST_SCREEN_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"

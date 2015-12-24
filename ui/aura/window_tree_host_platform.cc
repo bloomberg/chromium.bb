@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/compositor.h"
 #include "ui/events/event.h"

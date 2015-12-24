@@ -5,8 +5,8 @@
 #ifndef UI_AURA_TEST_TEST_FOCUS_CLIENT_H_
 #define UI_AURA_TEST_TEST_FOCUS_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_observer.h"

@@ -5,7 +5,7 @@
 #ifndef UI_AURA_TEST_AURA_TEST_HELPER_H_
 #define UI_AURA_TEST_AURA_TEST_HELPER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"

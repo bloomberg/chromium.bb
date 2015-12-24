@@ -4,6 +4,8 @@
 
 #include "ui/aura/test/test_screen.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -168,7 +170,7 @@ void TestScreen::RemoveObserver(gfx::DisplayObserver* observer) {
 TestScreen::TestScreen(const gfx::Rect& screen_bounds)
     : host_(NULL),
       ui_scale_(1.0f) {
-  static int64 synthesized_display_id = 2000;
+  static int64_t synthesized_display_id = 2000;
   display_.set_id(synthesized_display_id++);
   display_.SetScaleAndBounds(1.0f, screen_bounds);
 }

@@ -5,7 +5,6 @@
 #ifndef UI_AURA_LAYOUT_MANAGER_H_
 #define UI_AURA_LAYOUT_MANAGER_H_
 
-#include "base/basictypes.h"
 #include "ui/aura/aura_export.h"
 
 namespace gfx {

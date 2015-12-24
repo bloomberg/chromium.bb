@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 

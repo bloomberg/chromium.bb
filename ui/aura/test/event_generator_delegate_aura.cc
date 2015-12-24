@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/event_generator_delegate_aura.h"
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"

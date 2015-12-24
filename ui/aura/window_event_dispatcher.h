@@ -5,10 +5,12 @@
 #ifndef UI_AURA_WINDOW_EVENT_DISPATCHER_H_
 #define UI_AURA_WINDOW_EVENT_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -94,7 +96,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // event processing, so that gesture events can be properly created and
   // dispatched. |event|'s location should be in the dispatcher's coordinate
   // space, in DIPs.
-  virtual void ProcessedTouchEvent(uint32 unique_event_id,
+  virtual void ProcessedTouchEvent(uint32_t unique_event_id,
                                    Window* window,
                                    ui::EventResult result);
 
@@ -246,7 +248,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   WindowTreeHost* host_;
 
   // Touch ids that are currently down.
-  uint32 touch_ids_down_;
+  uint32_t touch_ids_down_;
 
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;

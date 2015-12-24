@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 

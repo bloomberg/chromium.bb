@@ -4,12 +4,16 @@
 
 #include "ui/aura/window_event_dispatcher.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"

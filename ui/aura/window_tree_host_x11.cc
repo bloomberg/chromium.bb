@@ -16,8 +16,8 @@
 #include <limits>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

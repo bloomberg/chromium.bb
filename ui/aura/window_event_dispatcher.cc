@@ -4,10 +4,13 @@
 
 #include "ui/aura/window_event_dispatcher.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"
@@ -161,7 +164,7 @@ DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
   return DispatchMouseEnterOrExit(window, event, ui::ET_MOUSE_EXITED);
 }
 
-void WindowEventDispatcher::ProcessedTouchEvent(uint32 unique_event_id,
+void WindowEventDispatcher::ProcessedTouchEvent(uint32_t unique_event_id,
                                                 Window* window,
                                                 ui::EventResult result) {
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures(

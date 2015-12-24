@@ -4,6 +4,8 @@
 
 #include "ui/aura/window.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -11,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -597,8 +600,7 @@ void Window::SuppressPaint() {
 // {Set,Get,Clear}Property are implemented in window_property.h.
 
 void Window::SetNativeWindowProperty(const char* key, void* value) {
-  SetPropertyInternal(
-      key, key, NULL, reinterpret_cast<int64>(value), 0);
+  SetPropertyInternal(key, key, NULL, reinterpret_cast<int64_t>(value), 0);
 }
 
 void* Window::GetNativeWindowProperty(const char* key) const {
@@ -655,12 +657,12 @@ void Window::RemoveOrDestroyChildren() {
 ///////////////////////////////////////////////////////////////////////////////
 // Window, private:
 
-int64 Window::SetPropertyInternal(const void* key,
-                                  const char* name,
-                                  PropertyDeallocator deallocator,
-                                  int64 value,
-                                  int64 default_value) {
-  int64 old = GetPropertyInternal(key, default_value);
+int64_t Window::SetPropertyInternal(const void* key,
+                                    const char* name,
+                                    PropertyDeallocator deallocator,
+                                    int64_t value,
+                                    int64_t default_value) {
+  int64_t old = GetPropertyInternal(key, default_value);
   if (value == default_value) {
     prop_map_.erase(key);
   } else {
@@ -675,8 +677,8 @@ int64 Window::SetPropertyInternal(const void* key,
   return old;
 }
 
-int64 Window::GetPropertyInternal(const void* key,
-                                  int64 default_value) const {
+int64_t Window::GetPropertyInternal(const void* key,
+                                    int64_t default_value) const {
   std::map<const void*, Value>::const_iterator iter = prop_map_.find(key);
   if (iter == prop_map_.end())
     return default_value;

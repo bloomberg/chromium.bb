@@ -5,8 +5,8 @@
 #ifndef UI_AURA_TEST_AURA_TEST_BASE_H_
 #define UI_AURA_TEST_AURA_TEST_BASE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_helper.h"

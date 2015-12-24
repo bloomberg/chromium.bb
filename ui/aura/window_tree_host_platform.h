@@ -6,6 +6,7 @@
 #define UI_AURA_WINDOW_TREE_HOST_PLATFORM_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"

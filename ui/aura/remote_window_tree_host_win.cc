@@ -5,6 +5,7 @@
 #include "ui/aura/remote_window_tree_host_win.h"
 
 #include <windows.h>
+#include <stddef.h>
 
 #include <algorithm>
 
@@ -33,7 +34,9 @@ namespace {
 const char* kWindowTreeHostWinKey = "__AURA_REMOTE_WINDOW_TREE_HOST_WIN__";
 
 // Sets the keystate for the virtual key passed in to down or up.
-void SetKeyState(uint8* key_states, bool key_down, uint32 virtual_key_code) {
+void SetKeyState(uint8_t* key_states,
+                 bool key_down,
+                 uint32_t virtual_key_code) {
   DCHECK(key_states);
 
   if (key_down)
@@ -43,8 +46,8 @@ void SetKeyState(uint8* key_states, bool key_down, uint32 virtual_key_code) {
 }
 
 // Sets the keyboard states for the Shift/Control/Alt/Caps lock keys.
-void SetVirtualKeyStates(uint32 flags) {
-  uint8 keyboard_state[256] = {0};
+void SetVirtualKeyStates(uint32_t flags) {
+  uint8_t keyboard_state[256] = {0};
   ::GetKeyboardState(keyboard_state);
 
   SetKeyState(keyboard_state, !!(flags & ui::EF_SHIFT_DOWN), VK_SHIFT);
@@ -62,8 +65,8 @@ void SetVirtualKeyStates(uint32 flags) {
 
 void FillCompositionText(
     const base::string16& text,
-    int32 selection_start,
-    int32 selection_end,
+    int32_t selection_start,
+    int32_t selection_end,
     const std::vector<metro_viewer::UnderlineInfo>& underlines,
     ui::CompositionText* composition_text) {
   composition_text->Clear();
@@ -183,8 +186,8 @@ void RemoteWindowTreeHostWin::HandleOpenURLOnDesktop(
   host_->Send(new MetroViewerHostMsg_OpenURLOnDesktop(shortcut, url));
 }
 
-void RemoteWindowTreeHostWin::HandleWindowSizeChanged(uint32 width,
-                                                      uint32 height) {
+void RemoteWindowTreeHostWin::HandleWindowSizeChanged(uint32_t width,
+                                                      uint32_t height) {
   SetBounds(gfx::Rect(0, 0, width, height));
 }
 
@@ -241,7 +244,7 @@ void RemoteWindowTreeHostWin::SetCursorNative(gfx::NativeCursor native_cursor) {
   if (!host_)
     return;
   host_->Send(
-      new MetroViewerHostMsg_SetCursor(uint64(native_cursor.platform())));
+      new MetroViewerHostMsg_SetCursor(uint64_t(native_cursor.platform())));
 }
 
 void RemoteWindowTreeHostWin::MoveCursorToNative(const gfx::Point& location) {
@@ -280,7 +283,7 @@ void RemoteWindowTreeHostWin::CancelComposition() {
 }
 
 void RemoteWindowTreeHostWin::OnTextInputClientUpdated(
-    const std::vector<int32>& input_scopes,
+    const std::vector<int32_t>& input_scopes,
     const std::vector<gfx::Rect>& composition_character_bounds) {
   if (!host_)
     return;
@@ -298,13 +301,15 @@ void RemoteWindowTreeHostWin::OnTextInputClientUpdated(
       input_scopes, character_bounds));
 }
 
-gfx::Point PointFromNativeEvent(int32 x, int32 y) {
+gfx::Point PointFromNativeEvent(int32_t x, int32_t y) {
   static float scale_factor = gfx::GetDPIScale();
   gfx::Point result( x * scale_factor, y * scale_factor);
   return result;
 }
 
-void RemoteWindowTreeHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
+void RemoteWindowTreeHostWin::OnMouseMoved(int32_t x,
+                                           int32_t y,
+                                           int32_t flags) {
   if (ignore_mouse_moves_until_set_cursor_ack_)
     return;
 
@@ -348,26 +353,26 @@ void RemoteWindowTreeHostWin::OnMouseButton(
   }
 }
 
-void RemoteWindowTreeHostWin::OnKeyDown(uint32 vkey,
-                                        uint32 repeat_count,
-                                        uint32 scan_code,
-                                        uint32 flags) {
+void RemoteWindowTreeHostWin::OnKeyDown(uint32_t vkey,
+                                        uint32_t repeat_count,
+                                        uint32_t scan_code,
+                                        uint32_t flags) {
   DispatchKeyboardMessage(ui::ET_KEY_PRESSED, vkey, repeat_count, scan_code,
                           flags, false);
 }
 
-void RemoteWindowTreeHostWin::OnKeyUp(uint32 vkey,
-                                      uint32 repeat_count,
-                                      uint32 scan_code,
-                                      uint32 flags) {
+void RemoteWindowTreeHostWin::OnKeyUp(uint32_t vkey,
+                                      uint32_t repeat_count,
+                                      uint32_t scan_code,
+                                      uint32_t flags) {
   DispatchKeyboardMessage(ui::ET_KEY_RELEASED, vkey, repeat_count, scan_code,
                           flags, false);
 }
 
-void RemoteWindowTreeHostWin::OnChar(uint32 key_code,
-                                     uint32 repeat_count,
-                                     uint32 scan_code,
-                                     uint32 flags) {
+void RemoteWindowTreeHostWin::OnChar(uint32_t key_code,
+                                     uint32_t repeat_count,
+                                     uint32_t scan_code,
+                                     uint32_t flags) {
   DispatchKeyboardMessage(ui::ET_KEY_PRESSED, key_code, repeat_count,
                           scan_code, flags, true);
 }
@@ -388,10 +393,10 @@ void RemoteWindowTreeHostWin::OnEdgeGesture() {
   SendEventToProcessor(&event);
 }
 
-void RemoteWindowTreeHostWin::OnTouchDown(int32 x,
-                                          int32 y,
-                                          uint64 timestamp,
-                                          uint32 pointer_id) {
+void RemoteWindowTreeHostWin::OnTouchDown(int32_t x,
+                                          int32_t y,
+                                          uint64_t timestamp,
+                                          uint32_t pointer_id) {
   gfx::Point location = PointFromNativeEvent(x, y);
   ui::TouchEvent event(ui::ET_TOUCH_PRESSED,
                        location,
@@ -400,10 +405,10 @@ void RemoteWindowTreeHostWin::OnTouchDown(int32 x,
   SendEventToProcessor(&event);
 }
 
-void RemoteWindowTreeHostWin::OnTouchUp(int32 x,
-                                        int32 y,
-                                        uint64 timestamp,
-                                        uint32 pointer_id) {
+void RemoteWindowTreeHostWin::OnTouchUp(int32_t x,
+                                        int32_t y,
+                                        uint64_t timestamp,
+                                        uint32_t pointer_id) {
   gfx::Point location = PointFromNativeEvent(x, y);
   ui::TouchEvent event(ui::ET_TOUCH_RELEASED,
                        location,
@@ -412,10 +417,10 @@ void RemoteWindowTreeHostWin::OnTouchUp(int32 x,
   SendEventToProcessor(&event);
 }
 
-void RemoteWindowTreeHostWin::OnTouchMoved(int32 x,
-                                           int32 y,
-                                           uint64 timestamp,
-                                           uint32 pointer_id) {
+void RemoteWindowTreeHostWin::OnTouchMoved(int32_t x,
+                                           int32_t y,
+                                           uint64_t timestamp,
+                                           uint32_t pointer_id) {
   gfx::Point location = PointFromNativeEvent(x, y);
   ui::TouchEvent event(ui::ET_TOUCH_MOVED,
                        location,
@@ -444,8 +449,8 @@ void RemoteWindowTreeHostWin::OnImeCandidatePopupChanged(bool visible) {
 
 void RemoteWindowTreeHostWin::OnImeCompositionChanged(
     const base::string16& text,
-    int32 selection_start,
-    int32 selection_end,
+    int32_t selection_start,
+    int32_t selection_end,
     const std::vector<metro_viewer::UnderlineInfo>& underlines) {
   ui::RemoteInputMethodPrivateWin* remote_input_method_private =
       GetRemoteInputMethodPrivate();
@@ -465,7 +470,7 @@ void RemoteWindowTreeHostWin::OnImeTextCommitted(const base::string16& text) {
   remote_input_method_private->OnTextCommitted(text);
 }
 
-void RemoteWindowTreeHostWin::OnImeInputSourceChanged(uint16 language_id,
+void RemoteWindowTreeHostWin::OnImeInputSourceChanged(uint16_t language_id,
                                                       bool is_ime) {
   ui::RemoteInputMethodPrivateWin* remote_input_method_private =
       GetRemoteInputMethodPrivate();
@@ -475,10 +480,10 @@ void RemoteWindowTreeHostWin::OnImeInputSourceChanged(uint16 language_id,
 }
 
 void RemoteWindowTreeHostWin::DispatchKeyboardMessage(ui::EventType type,
-                                                      uint32 vkey,
-                                                      uint32 repeat_count,
-                                                      uint32 scan_code,
-                                                      uint32 flags,
+                                                      uint32_t vkey,
+                                                      uint32_t repeat_count,
+                                                      uint32_t scan_code,
+                                                      uint32_t flags,
                                                       bool is_character) {
   SetEventFlags(flags | mouse_event_flags());
   if (base::MessageLoop::current()->IsNested()) {
@@ -486,10 +491,10 @@ void RemoteWindowTreeHostWin::DispatchKeyboardMessage(ui::EventType type,
     const int char_message[] = {WM_CHAR, WM_SYSCHAR};
     const int keydown_message[] = {WM_KEYDOWN, WM_SYSKEYDOWN};
     const int keyup_message[] = {WM_KEYUP, WM_SYSKEYUP};
-    uint32 message = is_character
-                         ? char_message[index]
-                         : (type == ui::ET_KEY_PRESSED ? keydown_message[index]
-                                                       : keyup_message[index]);
+    uint32_t message =
+        is_character ? char_message[index]
+                     : (type == ui::ET_KEY_PRESSED ? keydown_message[index]
+                                                   : keyup_message[index]);
     ::PostThreadMessage(::GetCurrentThreadId(),
                         message,
                         vkey,
@@ -507,7 +512,7 @@ void RemoteWindowTreeHostWin::DispatchKeyboardMessage(ui::EventType type,
   }
 }
 
-void RemoteWindowTreeHostWin::SetEventFlags(uint32 flags) {
+void RemoteWindowTreeHostWin::SetEventFlags(uint32_t flags) {
   if (flags == event_flags_)
     return;
   event_flags_ = flags;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/insets.h"

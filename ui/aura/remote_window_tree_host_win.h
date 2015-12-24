@@ -5,9 +5,12 @@
 #ifndef UI_AURA_REMOTE_WINDOW_TREE_HOST_WIN_H_
 #define UI_AURA_REMOTE_WINDOW_TREE_HOST_WIN_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/remote_input_method_delegate_win.h"
@@ -67,7 +70,7 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   void HandleOpenURLOnDesktop(const base::FilePath& shortcut,
                               const base::string16& url);
 
-  void HandleWindowSizeChanged(uint32 width, uint32 height);
+  void HandleWindowSizeChanged(uint32_t width, uint32_t height);
 
   // Returns the active ASH root window.
   Window* GetAshWindow();
@@ -82,25 +85,31 @@ class AURA_EXPORT RemoteWindowTreeHostWin
 
  private:
   // IPC message handing methods:
-  void OnMouseMoved(int32 x, int32 y, int32 flags);
+  void OnMouseMoved(int32_t x, int32_t y, int32_t flags);
   void OnMouseButton(const MetroViewerHostMsg_MouseButtonParams& params);
-  void OnKeyDown(uint32 vkey,
-                 uint32 repeat_count,
-                 uint32 scan_code,
-                 uint32 flags);
-  void OnKeyUp(uint32 vkey,
-               uint32 repeat_count,
-               uint32 scan_code,
-               uint32 flags);
-  void OnChar(uint32 key_code,
-              uint32 repeat_count,
-              uint32 scan_code,
-              uint32 flags);
+  void OnKeyDown(uint32_t vkey,
+                 uint32_t repeat_count,
+                 uint32_t scan_code,
+                 uint32_t flags);
+  void OnKeyUp(uint32_t vkey,
+               uint32_t repeat_count,
+               uint32_t scan_code,
+               uint32_t flags);
+  void OnChar(uint32_t key_code,
+              uint32_t repeat_count,
+              uint32_t scan_code,
+              uint32_t flags);
   void OnWindowActivated(bool repaint);
   void OnEdgeGesture();
-  void OnTouchDown(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
-  void OnTouchUp(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
-  void OnTouchMoved(int32 x, int32 y, uint64 timestamp, uint32 pointer_id);
+  void OnTouchDown(int32_t x,
+                   int32_t y,
+                   uint64_t timestamp,
+                   uint32_t pointer_id);
+  void OnTouchUp(int32_t x, int32_t y, uint64_t timestamp, uint32_t pointer_id);
+  void OnTouchMoved(int32_t x,
+                    int32_t y,
+                    uint64_t timestamp,
+                    uint32_t pointer_id);
   void OnSetCursorPosAck();
 
   // For Input Method support:
@@ -108,11 +117,11 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   void OnImeCandidatePopupChanged(bool visible);
   void OnImeCompositionChanged(
       const base::string16& text,
-      int32 selection_start,
-      int32 selection_end,
+      int32_t selection_start,
+      int32_t selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines);
   void OnImeTextCommitted(const base::string16& text);
-  void OnImeInputSourceChanged(uint16 language_id, bool is_ime);
+  void OnImeInputSourceChanged(uint16_t language_id, bool is_ime);
 
   // WindowTreeHost overrides:
   ui::EventSource* GetEventSource() override;
@@ -131,7 +140,7 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   // ui::internal::RemoteInputMethodDelegateWin overrides:
   void CancelComposition() override;
   void OnTextInputClientUpdated(
-      const std::vector<int32>& input_scopes,
+      const std::vector<int32_t>& input_scopes,
       const std::vector<gfx::Rect>& composition_character_bounds) override;
 
   // Helper function to dispatch a keyboard message to the desired target.
@@ -140,24 +149,24 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   // loop. The dispatcher for the nested loop would then decide how this
   // message is routed.
   void DispatchKeyboardMessage(ui::EventType type,
-                               uint32 vkey,
-                               uint32 repeat_count,
-                               uint32 scan_code,
-                               uint32 flags,
+                               uint32_t vkey,
+                               uint32_t repeat_count,
+                               uint32_t scan_code,
+                               uint32_t flags,
                                bool is_character);
 
   // Sets the event flags. |flags| is a bitmask of EventFlags. If there is a
   // change the system virtual key state is updated as well. This way if chrome
   // queries for key state it matches that of event being dispatched.
-  void SetEventFlags(uint32 flags);
+  void SetEventFlags(uint32_t flags);
 
-  uint32 mouse_event_flags() const {
+  uint32_t mouse_event_flags() const {
     return event_flags_ & (ui::EF_LEFT_MOUSE_BUTTON |
                            ui::EF_MIDDLE_MOUSE_BUTTON |
                            ui::EF_RIGHT_MOUSE_BUTTON);
   }
 
-  uint32 key_event_flags() const {
+  uint32_t key_event_flags() const {
     return event_flags_ & (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
                            ui::EF_ALT_DOWN | ui::EF_CAPS_LOCK_DOWN);
   }
@@ -175,7 +184,7 @@ class AURA_EXPORT RemoteWindowTreeHostWin
 
   // State of the keyboard/mouse at the time of the last input event. See
   // description of SetEventFlags().
-  uint32 event_flags_;
+  uint32_t event_flags_;
 
   // Current size of this root window.
   gfx::Size window_size_;
