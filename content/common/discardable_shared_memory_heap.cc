@@ -392,7 +392,12 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
       base::StringPrintf("discardable/segment_%d", segment_id);
   base::trace_event::MemoryAllocatorDump* segment_dump =
       pmd->CreateAllocatorDump(segment_dump_name);
+  // The size is added here so that telemetry picks up the size. Usually it is
+  // just enough to add it to the global dump.
   segment_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          allocated_objects_size_in_bytes);
+  segment_dump->AddScalar("virtual_size",
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                           size);
 
@@ -418,6 +423,13 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
   base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
       GetSegmentGUIDForTracing(tracing_process_id, segment_id);
   pmd->CreateSharedGlobalAllocatorDump(shared_segment_guid);
+
+  // The size is added to the global dump so that it gets propagated to both the
+  // dumps associated.
+  pmd->GetSharedGlobalAllocatorDump(shared_segment_guid)
+      ->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  allocated_objects_size_in_bytes);
 
   // By creating an edge with a higher |importance| (w.r.t. browser-side dumps)
   // the tracing UI will account the effective size of the segment to the child.

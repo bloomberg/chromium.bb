@@ -184,12 +184,13 @@ bool HostDiscardableSharedMemoryManager::OnMemoryDump(
       if (!segment->memory()->mapped_size())
         continue;
 
+      // The "size" will be inherited form the shared global dump.
       std::string dump_name = base::StringPrintf(
           "discardable/process_%x/segment_%d", child_process_id, segment_id);
       base::trace_event::MemoryAllocatorDump* dump =
           pmd->CreateAllocatorDump(dump_name);
 
-      dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+      dump->AddScalar("virtual_size",
                       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                       segment->memory()->mapped_size());
 
