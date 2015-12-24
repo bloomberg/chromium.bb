@@ -6,6 +6,8 @@
 #ifndef BASE_TRACE_EVENT_TRACE_EVENT_IMPL_H_
 #define BASE_TRACE_EVENT_TRACE_EVENT_IMPL_H_
 
+#include <stdint.h>
+
 #include <stack>
 #include <string>
 #include <vector>
@@ -14,6 +16,7 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
@@ -23,6 +26,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -67,7 +71,7 @@ class BASE_EXPORT ConvertableToTraceFormat
 const int kTraceMaxNumArgs = 2;
 
 struct TraceEventHandle {
-  uint32 chunk_seq;
+  uint32_t chunk_seq;
   // These numbers of bits must be kept consistent with
   // TraceBufferChunk::kMaxTrunkIndex and
   // TraceBufferChunk::kTraceBufferChunkSize (in trace_buffer.h).

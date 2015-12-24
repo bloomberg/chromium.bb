@@ -4,6 +4,8 @@
 
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 

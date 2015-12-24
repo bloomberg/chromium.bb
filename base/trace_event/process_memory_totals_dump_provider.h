@@ -5,7 +5,10 @@
 #ifndef BASE_TRACE_EVENT_PROCESS_MEMORY_TOTALS_DUMP_PROVIDER_H_
 #define BASE_TRACE_EVENT_PROCESS_MEMORY_TOTALS_DUMP_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -29,7 +32,7 @@ class BASE_EXPORT ProcessMemoryTotalsDumpProvider : public MemoryDumpProvider {
   friend struct DefaultSingletonTraits<ProcessMemoryTotalsDumpProvider>;
   FRIEND_TEST_ALL_PREFIXES(ProcessMemoryTotalsDumpProviderTest, DumpRSS);
 
-  static uint64 rss_bytes_for_testing;
+  static uint64_t rss_bytes_for_testing;
 
   ProcessMemoryTotalsDumpProvider();
   ~ProcessMemoryTotalsDumpProvider() override;

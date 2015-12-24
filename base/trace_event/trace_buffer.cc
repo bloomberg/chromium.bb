@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event_impl.h"
 
@@ -191,7 +192,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
   size_t queue_tail_;
 
   size_t current_iteration_index_;
-  uint32 current_chunk_seq_;
+  uint32_t current_chunk_seq_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceBufferRingBuffer);
 };
@@ -215,7 +216,7 @@ class TraceBufferVector : public TraceBuffer {
     ++in_flight_chunk_count_;
     // + 1 because zero chunk_seq is not allowed.
     return scoped_ptr<TraceBufferChunk>(
-        new TraceBufferChunk(static_cast<uint32>(*index) + 1));
+        new TraceBufferChunk(static_cast<uint32_t>(*index) + 1));
   }
 
   void ReturnChunk(size_t index, scoped_ptr<TraceBufferChunk> chunk) override {
@@ -289,11 +290,11 @@ class TraceBufferVector : public TraceBuffer {
 
 }  // namespace
 
-TraceBufferChunk::TraceBufferChunk(uint32 seq) : next_free_(0), seq_(seq) {}
+TraceBufferChunk::TraceBufferChunk(uint32_t seq) : next_free_(0), seq_(seq) {}
 
 TraceBufferChunk::~TraceBufferChunk() {}
 
-void TraceBufferChunk::Reset(uint32 new_seq) {
+void TraceBufferChunk::Reset(uint32_t new_seq) {
   for (size_t i = 0; i < next_free_; ++i)
     chunk_[i].Reset();
   next_free_ = 0;

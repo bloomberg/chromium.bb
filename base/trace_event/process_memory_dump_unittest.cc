@@ -4,6 +4,8 @@
 
 #include "base/trace_event/process_memory_dump.h"
 
+#include <stddef.h>
+
 #include "base/memory/aligned_memory.h"
 #include "base/process/process_metrics.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"

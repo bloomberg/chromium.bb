@@ -5,11 +5,13 @@
 #ifndef BASE_TRACE_EVENT_PROCESS_MEMORY_MAPS_H_
 #define BASE_TRACE_EVENT_PROCESS_MEMORY_MAPS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 namespace trace_event {
@@ -20,28 +22,28 @@ class TracedValue;
 class BASE_EXPORT ProcessMemoryMaps {
  public:
   struct BASE_EXPORT VMRegion {
-    static const uint32 kProtectionFlagsRead;
-    static const uint32 kProtectionFlagsWrite;
-    static const uint32 kProtectionFlagsExec;
+    static const uint32_t kProtectionFlagsRead;
+    static const uint32_t kProtectionFlagsWrite;
+    static const uint32_t kProtectionFlagsExec;
 
     VMRegion();
 
-    uint64 start_address;
-    uint64 size_in_bytes;
-    uint32 protection_flags;
+    uint64_t start_address;
+    uint64_t size_in_bytes;
+    uint32_t protection_flags;
     std::string mapped_file;
 
     // private_dirty_resident + private_clean_resident + shared_dirty_resident +
     // shared_clean_resident = resident set size.
-    uint64 byte_stats_private_dirty_resident;
-    uint64 byte_stats_private_clean_resident;
-    uint64 byte_stats_shared_dirty_resident;
-    uint64 byte_stats_shared_clean_resident;
+    uint64_t byte_stats_private_dirty_resident;
+    uint64_t byte_stats_private_clean_resident;
+    uint64_t byte_stats_shared_dirty_resident;
+    uint64_t byte_stats_shared_clean_resident;
 
-    uint64 byte_stats_swapped;
+    uint64_t byte_stats_swapped;
 
     // For multiprocess accounting.
-    uint64 byte_stats_proportional_resident;
+    uint64_t byte_stats_proportional_resident;
   };
 
   ProcessMemoryMaps();

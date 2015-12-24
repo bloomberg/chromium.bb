@@ -5,6 +5,8 @@
 #ifndef BASE_TRACE_EVENT_TRACE_CONFIG_H_
 #define BASE_TRACE_EVENT_TRACE_CONFIG_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -41,7 +43,7 @@ class BASE_EXPORT TraceConfig {
   // Specifies the memory dump config for tracing. Used only when
   // "memory-infra" category is enabled.
   struct MemoryDumpTriggerConfig {
-    uint32 periodic_interval_ms;
+    uint32_t periodic_interval_ms;
     MemoryDumpLevelOfDetail level_of_detail;
   };
 

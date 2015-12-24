@@ -5,6 +5,7 @@
 #ifndef BASE_TRACE_EVENT_HEAP_PROFILER_ALLOCATION_REGISTER_H_
 #define BASE_TRACE_EVENT_HEAP_PROFILER_ALLOCATION_REGISTER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/logging.h"

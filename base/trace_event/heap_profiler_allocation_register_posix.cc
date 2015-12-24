@@ -4,10 +4,10 @@
 
 #include "base/trace_event/heap_profiler_allocation_register.h"
 
+#include <stddef.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/bits.h"
 #include "base/logging.h"
 #include "base/process/process_metrics.h"

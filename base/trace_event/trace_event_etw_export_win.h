@@ -6,9 +6,12 @@
 #ifndef BASE_TRACE_EVENT_TRACE_EVENT_ETW_EXPORT_WIN_H_
 #define BASE_TRACE_EVENT_TRACE_EVENT_ETW_EXPORT_WIN_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/trace_event/trace_event_impl.h"
 
@@ -80,7 +83,7 @@ class BASE_EXPORT TraceEventETWExport {
   std::map<StringPiece, bool> categories_status_;
 
   // Local copy of the ETW keyword.
-  uint64 etw_match_any_keyword_;
+  uint64_t etw_match_any_keyword_;
 
   // Background thread that monitors changes to the ETW keyword and updates
   // the enabled categories when a change occurs.

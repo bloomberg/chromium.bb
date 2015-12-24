@@ -4,6 +4,8 @@
 
 #include "base/trace_event/trace_event_argument.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bits.h"
@@ -41,7 +43,7 @@ const bool kStackTypeArray = true;
 
 inline void WriteKeyNameAsRawPtr(Pickle& pickle, const char* ptr) {
   pickle.WriteBytes(&kTypeCStr, 1);
-  pickle.WriteUInt64(static_cast<uint64>(reinterpret_cast<uintptr_t>(ptr)));
+  pickle.WriteUInt64(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(ptr)));
 }
 
 inline void WriteKeyNameWithCopy(Pickle& pickle, base::StringPiece str) {
@@ -54,7 +56,7 @@ std::string ReadKeyName(PickleIterator& pickle_iterator) {
   bool res = pickle_iterator.ReadBytes(&type, 1);
   std::string key_name;
   if (res && *type == kTypeCStr) {
-    uint64 ptr_value = 0;
+    uint64_t ptr_value = 0;
     res = pickle_iterator.ReadUInt64(&ptr_value);
     key_name = reinterpret_cast<const char*>(static_cast<uintptr_t>(ptr_value));
   } else if (res && *type == kTypeString) {

@@ -5,9 +5,12 @@
 #ifndef BASE_TRACE_EVENT_TRACE_EVENT_ARGUMENT_H_
 #define BASE_TRACE_EVENT_TRACE_EVENT_ARGUMENT_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/string_piece.h"

@@ -33,6 +33,7 @@
 #define BASE_TRACE_EVENT_TRACE_EVENT_SYNTHETIC_DELAY_H_
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"

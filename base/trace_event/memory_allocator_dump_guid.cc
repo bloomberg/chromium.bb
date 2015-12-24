@@ -12,16 +12,15 @@ namespace base {
 namespace trace_event {
 
 namespace {
-uint64 HashString(const std::string& str) {
-  uint64 hash[(kSHA1Length + sizeof(uint64) - 1) / sizeof(uint64)] = { 0 };
+uint64_t HashString(const std::string& str) {
+  uint64_t hash[(kSHA1Length + sizeof(uint64_t) - 1) / sizeof(uint64_t)] = {0};
   SHA1HashBytes(reinterpret_cast<const unsigned char*>(str.data()), str.size(),
                 reinterpret_cast<unsigned char*>(hash));
   return hash[0];
 }
 }  // namespace
 
-MemoryAllocatorDumpGuid::MemoryAllocatorDumpGuid(uint64 guid) : guid_(guid) {
-}
+MemoryAllocatorDumpGuid::MemoryAllocatorDumpGuid(uint64_t guid) : guid_(guid) {}
 
 MemoryAllocatorDumpGuid::MemoryAllocatorDumpGuid()
     : MemoryAllocatorDumpGuid(0u) {

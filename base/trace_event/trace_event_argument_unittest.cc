@@ -4,6 +4,8 @@
 
 #include "base/trace_event/trace_event_argument.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/values.h"

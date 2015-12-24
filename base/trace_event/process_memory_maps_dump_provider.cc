@@ -4,6 +4,8 @@
 
 #include "base/trace_event/process_memory_maps_dump_provider.h"
 
+#include <stdint.h>
+
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -19,13 +21,13 @@ FILE* ProcessMemoryMapsDumpProvider::proc_smaps_for_testing = nullptr;
 
 namespace {
 
-const uint32 kMaxLineSize = 4096;
+const uint32_t kMaxLineSize = 4096;
 
 bool ParseSmapsHeader(const char* header_line,
                       ProcessMemoryMaps::VMRegion* region) {
   // e.g., "00400000-00421000 r-xp 00000000 fc:01 1234  /foo.so\n"
   bool res = true;  // Whether this region should be appended or skipped.
-  uint64 end_addr = 0;
+  uint64_t end_addr = 0;
   char protection_flags[5] = {0};
   char mapped_file[kMaxLineSize];
 
@@ -62,17 +64,17 @@ bool ParseSmapsHeader(const char* header_line,
   return res;
 }
 
-uint64 ReadCounterBytes(char* counter_line) {
-  uint64 counter_value = 0;
+uint64_t ReadCounterBytes(char* counter_line) {
+  uint64_t counter_value = 0;
   int res = sscanf(counter_line, "%*s %" SCNu64 " kB", &counter_value);
   DCHECK_EQ(1, res);
   return counter_value * 1024;
 }
 
-uint32 ParseSmapsCounter(char* counter_line,
-                         ProcessMemoryMaps::VMRegion* region) {
+uint32_t ParseSmapsCounter(char* counter_line,
+                           ProcessMemoryMaps::VMRegion* region) {
   // A smaps counter lines looks as follows: "RSS:  0 Kb\n"
-  uint32 res = 1;
+  uint32_t res = 1;
   char counter_name[20];
   int did_read = sscanf(counter_line, "%19[^\n ]", counter_name);
   DCHECK_EQ(1, did_read);
@@ -96,16 +98,16 @@ uint32 ParseSmapsCounter(char* counter_line,
   return res;
 }
 
-uint32 ReadLinuxProcSmapsFile(FILE* smaps_file, ProcessMemoryMaps* pmm) {
+uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file, ProcessMemoryMaps* pmm) {
   if (!smaps_file)
     return 0;
 
   fseek(smaps_file, 0, SEEK_SET);
 
   char line[kMaxLineSize];
-  const uint32 kNumExpectedCountersPerRegion = 6;
-  uint32 counters_parsed_for_current_region = 0;
-  uint32 num_valid_regions = 0;
+  const uint32_t kNumExpectedCountersPerRegion = 6;
+  uint32_t counters_parsed_for_current_region = 0;
+  uint32_t num_valid_regions = 0;
   ProcessMemoryMaps::VMRegion region;
   bool should_add_current_region = false;
   for (;;) {
@@ -155,7 +157,7 @@ bool ProcessMemoryMapsDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   if (args.level_of_detail == MemoryDumpLevelOfDetail::LIGHT)
     return true;
 
-  uint32 res = 0;
+  uint32_t res = 0;
   if (UNLIKELY(proc_smaps_for_testing)) {
     res = ReadLinuxProcSmapsFile(proc_smaps_for_testing, pmd->process_mmaps());
   } else {

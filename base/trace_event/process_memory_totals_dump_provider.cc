@@ -4,9 +4,12 @@
 
 #include "base/trace_event/process_memory_totals_dump_provider.h"
 
+#include <stddef.h>
+
 #include "base/process/process_metrics.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/process_memory_totals.h"
+#include "build/build_config.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <fcntl.h>
@@ -23,7 +26,7 @@ namespace base {
 namespace trace_event {
 
 // static
-uint64 ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing = 0;
+uint64_t ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing = 0;
 
 // static
 ProcessMemoryTotalsDumpProvider*
@@ -43,11 +46,11 @@ ProcessMemoryTotalsDumpProvider::~ProcessMemoryTotalsDumpProvider() {
 // the current process.
 bool ProcessMemoryTotalsDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
                                                    ProcessMemoryDump* pmd) {
-  const uint64 rss_bytes = rss_bytes_for_testing
-                               ? rss_bytes_for_testing
-                               : process_metrics_->GetWorkingSetSize();
+  const uint64_t rss_bytes = rss_bytes_for_testing
+                                 ? rss_bytes_for_testing
+                                 : process_metrics_->GetWorkingSetSize();
 
-  uint64 peak_rss_bytes = 0;
+  uint64_t peak_rss_bytes = 0;
 
 #if !defined(OS_IOS)
   peak_rss_bytes = process_metrics_->GetPeakWorkingSetSize();

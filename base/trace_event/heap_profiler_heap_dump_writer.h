@@ -5,6 +5,8 @@
 #ifndef BASE_TRACE_EVENT_HEAP_PROFILER_HEAP_DUMP_WRITER_H_
 #define BASE_TRACE_EVENT_HEAP_PROFILER_HEAP_DUMP_WRITER_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/base_export.h"

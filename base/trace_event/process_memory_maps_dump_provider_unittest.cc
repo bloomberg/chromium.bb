@@ -4,6 +4,8 @@
 
 #include "base/trace_event/process_memory_maps_dump_provider.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/process_memory_maps.h"
@@ -116,9 +118,9 @@ void CreateAndSetSmapsFileForTesting(const char* smaps_string,
 }  // namespace
 
 TEST(ProcessMemoryMapsDumpProviderTest, ParseProcSmaps) {
-  const uint32 kProtR = ProcessMemoryMaps::VMRegion::kProtectionFlagsRead;
-  const uint32 kProtW = ProcessMemoryMaps::VMRegion::kProtectionFlagsWrite;
-  const uint32 kProtX = ProcessMemoryMaps::VMRegion::kProtectionFlagsExec;
+  const uint32_t kProtR = ProcessMemoryMaps::VMRegion::kProtectionFlagsRead;
+  const uint32_t kProtW = ProcessMemoryMaps::VMRegion::kProtectionFlagsWrite;
+  const uint32_t kProtX = ProcessMemoryMaps::VMRegion::kProtectionFlagsExec;
   const MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
 
   auto pmmdp = ProcessMemoryMapsDumpProvider::GetInstance();

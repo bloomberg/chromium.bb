@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_config_memory_test_util.h"

@@ -5,8 +5,11 @@
 #ifndef BASE_TRACE_EVENT_WINHEAP_DUMP_PROVIDER_WIN_H_
 #define BASE_TRACE_EVENT_WINHEAP_DUMP_PROVIDER_WIN_H_
 
+#include <stddef.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/trace_event/memory_dump_provider.h"
 

@@ -5,10 +5,12 @@
 #ifndef BASE_TRACE_EVENT_PROCESS_MEMORY_TOTALS_H_
 #define BASE_TRACE_EVENT_PROCESS_MEMORY_TOTALS_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 namespace trace_event {

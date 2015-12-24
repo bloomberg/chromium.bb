@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cstdlib>
 
 #include "base/bind.h"
@@ -10,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -2625,7 +2629,7 @@ TEST_F(TraceEventTestFixture, TraceBufferRingBufferGetReturnChunk) {
   TraceBuffer* buffer = TraceLog::GetInstance()->trace_buffer();
   size_t capacity = buffer->Capacity();
   size_t num_chunks = capacity / TraceBufferChunk::kTraceBufferChunkSize;
-  uint32 last_seq = 0;
+  uint32_t last_seq = 0;
   size_t chunk_index;
   EXPECT_EQ(0u, buffer->Size());
 

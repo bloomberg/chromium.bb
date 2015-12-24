@@ -4,6 +4,8 @@
 
 #include "base/trace_event/memory_dump_manager.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -83,7 +85,7 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
                void(const MemoryDumpRequestArgs& args,
                     const MemoryDumpCallback& callback));
 
-  uint64 GetTracingProcessId() const override {
+  uint64_t GetTracingProcessId() const override {
     NOTREACHED();
     return MemoryDumpManager::kInvalidTracingProcessId;
   }
@@ -120,7 +122,7 @@ class MemoryDumpManagerTest : public testing::Test {
   // result and taking care of posting the closure on the correct task runner.
   void DumpCallbackAdapter(scoped_refptr<SingleThreadTaskRunner> task_runner,
                            Closure closure,
-                           uint64 dump_guid,
+                           uint64_t dump_guid,
                            bool success) {
     last_callback_success_ = success;
     task_runner->PostTask(FROM_HERE, closure);
@@ -373,7 +375,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
 // iteration, one thread is removed, to check the live unregistration logic.
 TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
-  const uint32 kNumInitialThreads = 8;
+  const uint32_t kNumInitialThreads = 8;
 
   std::vector<scoped_ptr<Thread>> threads;
   std::vector<scoped_ptr<MockMemoryDumpProvider>> mdps;
@@ -381,7 +383,7 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
   // Create the threads and setup the expectations. Given that at each iteration
   // we will pop out one thread/MemoryDumpProvider, each MDP is supposed to be
   // invoked a number of times equal to its index.
-  for (uint32 i = kNumInitialThreads; i > 0; --i) {
+  for (uint32_t i = kNumInitialThreads; i > 0; --i) {
     threads.push_back(make_scoped_ptr(new Thread("test thread")));
     auto thread = threads.back().get();
     thread->Start();

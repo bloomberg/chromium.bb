@@ -5,6 +5,8 @@
 #include "base/trace_event/trace_event_impl.h"
 
 #include <fcntl.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -48,7 +50,7 @@ void WriteEvent(
     unsigned int flags) {
   std::string out = StringPrintf("%c|%d|%s", phase, getpid(), name);
   if (flags & TRACE_EVENT_FLAG_HAS_ID)
-    StringAppendF(&out, "-%" PRIx64, static_cast<uint64>(id));
+    StringAppendF(&out, "-%" PRIx64, static_cast<uint64_t>(id));
   out += '|';
 
   for (int i = 0; i < kTraceMaxNumArgs && arg_names[i];
@@ -177,7 +179,7 @@ void TraceEvent::SendToATrace() {
         std::string out = base::StringPrintf(
             "C|%d|%s-%s", getpid(), name_, arg_names_[i]);
         if (flags_ & TRACE_EVENT_FLAG_HAS_ID)
-          StringAppendF(&out, "-%" PRIx64, static_cast<uint64>(id_));
+          StringAppendF(&out, "-%" PRIx64, static_cast<uint64_t>(id_));
         StringAppendF(&out, "|%d|%s",
                       static_cast<int>(arg_values_[i].as_int), category_group);
         WriteToATrace(g_atrace_fd, out.c_str(), out.size());

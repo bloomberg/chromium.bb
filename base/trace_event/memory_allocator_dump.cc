@@ -57,7 +57,7 @@ MemoryAllocatorDump::~MemoryAllocatorDump() {
 
 void MemoryAllocatorDump::AddScalar(const char* name,
                                     const char* units,
-                                    uint64 value) {
+                                    uint64_t value) {
   SStringPrintf(&string_conversion_buffer_, "%" PRIx64, value);
   attributes_->BeginDictionary(name);
   attributes_->SetString("type", kTypeScalar);

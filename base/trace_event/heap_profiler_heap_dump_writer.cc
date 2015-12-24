@@ -4,6 +4,8 @@
 
 #include "base/trace_event/heap_profiler_heap_dump_writer.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <iterator>
 #include <tuple>
@@ -12,6 +14,7 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
 #include "base/trace_event/heap_profiler_type_name_deduplicator.h"

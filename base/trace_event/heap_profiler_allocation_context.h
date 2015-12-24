@@ -5,6 +5,7 @@
 #ifndef BASE_TRACE_EVENT_HEAP_PROFILER_ALLOCATION_CONTEXT_H_
 #define BASE_TRACE_EVENT_HEAP_PROFILER_ALLOCATION_CONTEXT_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/base_export.h"

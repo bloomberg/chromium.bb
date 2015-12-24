@@ -4,6 +4,8 @@
 
 #include "base/trace_event/trace_event_etw_export_win.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -90,8 +92,8 @@ const char* const kFilteredEventGroupNames[] = {
 const char kOtherEventsGroupName[] = "__OTHER_EVENTS";  // 0x2000000000000000
 const char kDisabledOtherEventsGroupName[] =
     "__DISABLED_OTHER_EVENTS";  // 0x4000000000000000
-const uint64 kOtherEventsKeywordBit = 1ULL << 61;
-const uint64 kDisabledOtherEventsKeywordBit = 1ULL << 62;
+const uint64_t kOtherEventsKeywordBit = 1ULL << 61;
+const uint64_t kDisabledOtherEventsKeywordBit = 1ULL << 62;
 const size_t kNumberOfCategories = ARRAYSIZE(kFilteredEventGroupNames) + 2U;
 
 }  // namespace

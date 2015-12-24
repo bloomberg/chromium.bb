@@ -4,6 +4,9 @@
 
 #include "base/trace_event/trace_event_synthetic_delay.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -39,19 +42,19 @@ class TraceEventSyntheticDelayTest : public testing::Test,
 
   void AdvanceTime(base::TimeDelta delta) { now_ += delta; }
 
-  int64 TestFunction() {
+  int64_t TestFunction() {
     base::TimeTicks start = Now();
     { TRACE_EVENT_SYNTHETIC_DELAY("test.Delay"); }
     return (Now() - start).InMilliseconds();
   }
 
-  int64 AsyncTestFunctionBegin() {
+  int64_t AsyncTestFunctionBegin() {
     base::TimeTicks start = Now();
     { TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("test.AsyncDelay"); }
     return (Now() - start).InMilliseconds();
   }
 
-  int64 AsyncTestFunctionEnd() {
+  int64_t AsyncTestFunctionEnd() {
     base::TimeTicks start = Now();
     { TRACE_EVENT_SYNTHETIC_DELAY_END("test.AsyncDelay"); }
     return (Now() - start).InMilliseconds();

@@ -4,6 +4,9 @@
 
 #include "base/trace_event/heap_profiler_allocation_register.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/process/process_metrics.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "testing/gtest/include/gtest/gtest.h"

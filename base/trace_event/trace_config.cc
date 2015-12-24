@@ -4,6 +4,8 @@
 
 #include "base/trace_event/trace_config.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -497,7 +499,7 @@ void TraceConfig::SetMemoryDumpConfig(
       continue;
     }
     DCHECK_GT(interval, 0);
-    dump_config.periodic_interval_ms = static_cast<uint32>(interval);
+    dump_config.periodic_interval_ms = static_cast<uint32_t>(interval);
     std::string level_of_detail_str;
     trigger->GetString(kModeParam, &level_of_detail_str);
     dump_config.level_of_detail =

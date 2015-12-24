@@ -5,9 +5,12 @@
 #ifndef BASE_TRACE_EVENT_TRACE_EVENT_MEMORY_OVERHEAD_H_
 #define BASE_TRACE_EVENT_TRACE_EVENT_MEMORY_OVERHEAD_H_
 
+#include <stddef.h>
+
 #include "base/base_export.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/small_map.h"
+#include "base/macros.h"
 
 namespace base {
 

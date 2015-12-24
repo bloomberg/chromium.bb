@@ -4,6 +4,9 @@
 
 #include "base/trace_event/process_memory_totals_dump_provider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/process_memory_totals.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,8 +34,9 @@ TEST(ProcessMemoryTotalsDumpProviderTest, DumpRSS) {
   ASSERT_TRUE(pmd_before->has_process_totals());
   ASSERT_TRUE(pmd_after->has_process_totals());
 
-  const uint64 rss_before = pmd_before->process_totals()->resident_set_bytes();
-  const uint64 rss_after = pmd_after->process_totals()->resident_set_bytes();
+  const uint64_t rss_before =
+      pmd_before->process_totals()->resident_set_bytes();
+  const uint64_t rss_after = pmd_after->process_totals()->resident_set_bytes();
 
   EXPECT_NE(0U, rss_before);
   EXPECT_NE(0U, rss_after);

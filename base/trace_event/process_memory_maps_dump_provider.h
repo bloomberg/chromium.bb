@@ -6,8 +6,10 @@
 #define BASE_TRACE_EVENT_PROCESS_MEMORY_MAPS_DUMP_PROVIDER_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace trace_event {

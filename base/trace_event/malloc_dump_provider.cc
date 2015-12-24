@@ -4,14 +4,17 @@
 
 #include "base/trace_event/malloc_dump_provider.h"
 
+#include <stddef.h>
+
+#include "base/allocator/allocator_extension.h"
+#include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
+
 #if defined(OS_MACOSX)
 #include <malloc/malloc.h>
 #else
 #include <malloc.h>
 #endif
-
-#include "base/allocator/allocator_extension.h"
-#include "base/trace_event/process_memory_dump.h"
 
 namespace base {
 namespace trace_event {

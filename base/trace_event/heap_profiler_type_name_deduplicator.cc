@@ -4,6 +4,7 @@
 
 #include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string>
 #include <utility>

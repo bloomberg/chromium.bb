@@ -5,6 +5,7 @@
 #include "base/trace_event/heap_profiler_allocation_register.h"
 
 #include <windows.h>
+#include <stddef.h>
 
 #include "base/bits.h"
 #include "base/logging.h"

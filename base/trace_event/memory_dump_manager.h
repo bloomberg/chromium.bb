@@ -5,6 +5,8 @@
 #ifndef BASE_TRACE_EVENT_MEMORY_DUMP_MANAGER_H_
 #define BASE_TRACE_EVENT_MEMORY_DUMP_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 #include <set>
@@ -12,6 +14,7 @@
 
 #include "base/atomicops.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"

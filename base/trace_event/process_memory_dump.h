@@ -5,11 +5,14 @@
 #ifndef BASE_TRACE_EVENT_PROCESS_MEMORY_DUMP_H_
 #define BASE_TRACE_EVENT_PROCESS_MEMORY_DUMP_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/small_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -17,6 +20,7 @@
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/process_memory_maps.h"
 #include "base/trace_event/process_memory_totals.h"
+#include "build/build_config.h"
 
 // Define COUNT_RESIDENT_BYTES_SUPPORTED if platform supports counting of the
 // resident memory.

@@ -9,9 +9,13 @@
 // trace_event_common.h collect and store trace events. Anything not
 // implementation-specific should go in trace_macros_common.h instead of here.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event_system_stats_monitor.h"
@@ -23,8 +27,8 @@
 #define TRACE_STR_COPY(str) \
     trace_event_internal::TraceStringWithCopy(str)
 
-// By default, uint64 ID argument values are not mangled with the Process ID in
-// TRACE_EVENT_ASYNC macros. Use this macro to force Process ID mangling.
+// By default, uint64_t ID argument values are not mangled with the Process ID
+// in TRACE_EVENT_ASYNC macros. Use this macro to force Process ID mangling.
 #define TRACE_ID_MANGLE(id) \
     trace_event_internal::TraceID::ForceMangle(id)
 

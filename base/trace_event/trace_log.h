@@ -5,17 +5,22 @@
 #ifndef BASE_TRACE_EVENT_TRACE_LOG_H_
 #define BASE_TRACE_EVENT_TRACE_LOG_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/atomicops.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event_impl.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -267,7 +272,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
 
   int process_id() const { return process_id_; }
 
-  uint64 MangleEventId(uint64 id);
+  uint64_t MangleEventId(uint64_t id);
 
   // Exposed for unittesting:
 
