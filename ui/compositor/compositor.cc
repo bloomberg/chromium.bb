@@ -4,6 +4,8 @@
 
 #include "ui/compositor/compositor.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <deque>
 #include <utility>
@@ -15,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"

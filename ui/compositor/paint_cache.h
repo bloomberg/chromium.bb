@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_PAINT_CACHE_H_
 #define UI_COMPOSITOR_PAINT_CACHE_H_
 
+#include "base/macros.h"
 #include "cc/playback/drawing_display_item.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"

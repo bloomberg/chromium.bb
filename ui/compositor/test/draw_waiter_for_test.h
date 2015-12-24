@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_TEST_DRAW_WAITER_H_
 #define UI_COMPOSITOR_TEST_DRAW_WAITER_H_
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "ui/compositor/compositor_observer.h"
 

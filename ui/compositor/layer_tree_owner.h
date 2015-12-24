@@ -5,8 +5,8 @@
 #ifndef UI_COMPOSITOR_LAYER_TREE_OWNER_H_
 #define UI_COMPOSITOR_LAYER_TREE_OWNER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace ui {

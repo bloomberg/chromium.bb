@@ -4,6 +4,8 @@
 
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
+#include <stddef.h>
+
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"

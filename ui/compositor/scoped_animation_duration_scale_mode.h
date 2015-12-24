@@ -5,7 +5,7 @@
 #ifndef UI_COMPOSITOR_SCOPED_ANIMATION_DURATION_SCALE_MODE_H_
 #define UI_COMPOSITOR_SCOPED_ANIMATION_DURATION_SCALE_MODE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace ui {

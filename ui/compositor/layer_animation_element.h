@@ -5,8 +5,11 @@
 #ifndef UI_COMPOSITOR_LAYER_ANIMATION_ELEMENT_H_
 #define UI_COMPOSITOR_LAYER_ANIMATION_ELEMENT_H_
 
+#include <stdint.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
@@ -59,7 +62,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     SkColor color;
   };
 
-  typedef uint32 AnimatableProperties;
+  typedef uint32_t AnimatableProperties;
 
   LayerAnimationElement(AnimatableProperties properties,
                         base::TimeDelta duration);

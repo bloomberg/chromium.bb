@@ -6,6 +6,7 @@
 #define UI_COMPOSITOR_LAYER_OWNER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer.h"

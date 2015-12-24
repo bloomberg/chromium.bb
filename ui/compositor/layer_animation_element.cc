@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_id_provider.h"
 #include "ui/compositor/float_animation_curve_adapter.h"

@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_COMPOSITOR_VSYNC_MANAGER_H_
 #define UI_COMPOSITOR_COMPOSITOR_VSYNC_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"

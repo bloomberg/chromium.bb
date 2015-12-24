@@ -6,6 +6,7 @@
 #define UI_COMPOSITOR_PAINT_CONTEXT_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"

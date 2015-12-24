@@ -5,8 +5,8 @@
 #ifndef UI_COMPOSITOR_TEST_TEST_SUITE_H_
 #define UI_COMPOSITOR_TEST_TEST_SUITE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
 

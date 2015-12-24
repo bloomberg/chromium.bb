@@ -4,6 +4,7 @@
 
 #include "ui/compositor/layer_owner.h"
 
+#include "base/macros.h"
 #include "base/test/null_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"

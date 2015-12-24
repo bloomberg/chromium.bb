@@ -5,6 +5,8 @@
 #ifndef UI_COMPOSITOR_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
 #define UI_COMPOSITOR_TEST_IN_PROCESS_CONTEXT_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

@@ -6,6 +6,8 @@
 
 #include "ui/compositor/debug_utils.h"
 
+#include <stddef.h>
+
 #include <cmath>
 #include <iomanip>
 #include <ostream>

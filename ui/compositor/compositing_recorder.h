@@ -5,7 +5,8 @@
 #ifndef UI_COMPOSITOR_COMPOSITING_RECORDER_H_
 #define UI_COMPOSITOR_COMPOSITING_RECORDER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"

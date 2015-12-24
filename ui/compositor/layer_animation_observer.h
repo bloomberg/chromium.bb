@@ -8,7 +8,6 @@
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animation_element.h"

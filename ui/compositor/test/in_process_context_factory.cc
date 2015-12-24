@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/threading/thread.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
@@ -210,8 +211,9 @@ bool InProcessContextFactory::DoesCreateTestContexts() {
   return context_factory_for_test_;
 }
 
-uint32 InProcessContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
-                                                      gfx::BufferUsage usage) {
+uint32_t InProcessContextFactory::GetImageTextureTarget(
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   return GL_TEXTURE_2D;
 }
 

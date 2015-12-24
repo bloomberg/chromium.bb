@@ -5,7 +5,6 @@
 #ifndef UI_COMPOSITOR_DIP_UTIL_H_
 #define UI_COMPOSITOR_DIP_UTIL_H_
 
-#include "base/basictypes.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/point_f.h"
 
