@@ -7,7 +7,6 @@
 #include <copyfile.h>
 #import <Foundation/Foundation.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_util.h"

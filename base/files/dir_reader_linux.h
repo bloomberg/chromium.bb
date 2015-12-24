@@ -7,11 +7,13 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 
 // See the comments in dir_reader_posix.h about this.

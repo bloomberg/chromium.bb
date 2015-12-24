@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 
 namespace base {
 

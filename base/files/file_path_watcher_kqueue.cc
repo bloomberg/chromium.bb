@@ -5,6 +5,7 @@
 #include "base/files/file_path_watcher_kqueue.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <sys/param.h>
 
 #include "base/bind.h"

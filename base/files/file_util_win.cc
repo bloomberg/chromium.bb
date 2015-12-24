@@ -9,6 +9,7 @@
 #include <psapi.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <time.h>
 #include <winsock2.h>
@@ -20,6 +21,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"

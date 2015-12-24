@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_TRACING_FILE_TRACING_PROVIDER_IMPL_H_
 #define CONTENT_BROWSER_TRACING_FILE_TRACING_PROVIDER_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/files/file_tracing.h"
 #include "base/macros.h"
 
@@ -22,7 +24,7 @@ class FileTracingProviderImpl : public base::FileTracing::Provider {
   void FileTracingEnable(void* id) override;
   void FileTracingDisable(void* id) override;
   void FileTracingEventBegin(const char* name, void* id,
-                             const base::FilePath& path, int64 size) override;
+                             const base::FilePath& path, int64_t size) override;
   void FileTracingEventEnd(const char* name, void* id) override;
 
  private:

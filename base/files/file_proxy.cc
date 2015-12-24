@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 
@@ -67,7 +68,7 @@ class GenericFileHelper : public FileHelper {
     error_ = rv ? File::FILE_OK : File::FILE_ERROR_FAILED;
   }
 
-  void SetLength(int64 length) {
+  void SetLength(int64_t length) {
     if (file_.SetLength(length))
       error_ = File::FILE_OK;
   }
@@ -114,7 +115,7 @@ class CreateTemporaryHelper : public FileHelper {
       : FileHelper(proxy, std::move(file)) {
   }
 
-  void RunWork(uint32 additional_file_flags) {
+  void RunWork(uint32_t additional_file_flags) {
     // TODO(darin): file_util should have a variant of CreateTemporaryFile
     // that returns a FilePath and a File.
     if (!CreateTemporaryFile(&file_path_)) {
@@ -124,10 +125,8 @@ class CreateTemporaryHelper : public FileHelper {
       return;
     }
 
-    uint32 file_flags = File::FLAG_WRITE |
-                        File::FLAG_TEMPORARY |
-                        File::FLAG_CREATE_ALWAYS |
-                        additional_file_flags;
+    uint32_t file_flags = File::FLAG_WRITE | File::FLAG_TEMPORARY |
+                          File::FLAG_CREATE_ALWAYS | additional_file_flags;
 
     file_.Initialize(file_path_, file_flags);
     if (file_.IsValid()) {
@@ -181,7 +180,7 @@ class ReadHelper : public FileHelper {
         bytes_read_(0) {
   }
 
-  void RunWork(int64 offset) {
+  void RunWork(int64_t offset) {
     bytes_read_ = file_.Read(offset, buffer_.get(), bytes_to_read_);
     error_ = (bytes_read_ < 0) ? File::FILE_ERROR_FAILED : File::FILE_OK;
   }
@@ -211,7 +210,7 @@ class WriteHelper : public FileHelper {
     memcpy(buffer_.get(), buffer, bytes_to_write);
   }
 
-  void RunWork(int64 offset) {
+  void RunWork(int64_t offset) {
     bytes_written_ = file_.Write(offset, buffer_.get(), bytes_to_write_);
     error_ = (bytes_written_ < 0) ? File::FILE_ERROR_FAILED : File::FILE_OK;
   }
@@ -240,7 +239,7 @@ FileProxy::~FileProxy() {
 }
 
 bool FileProxy::CreateOrOpen(const FilePath& file_path,
-                             uint32 file_flags,
+                             uint32_t file_flags,
                              const StatusCallback& callback) {
   DCHECK(!file_.IsValid());
   CreateOrOpenHelper* helper = new CreateOrOpenHelper(this, File());
@@ -251,7 +250,7 @@ bool FileProxy::CreateOrOpen(const FilePath& file_path,
       Bind(&CreateOrOpenHelper::Reply, Owned(helper), callback));
 }
 
-bool FileProxy::CreateTemporary(uint32 additional_file_flags,
+bool FileProxy::CreateTemporary(uint32_t additional_file_flags,
                                 const CreateTemporaryCallback& callback) {
   DCHECK(!file_.IsValid());
   CreateTemporaryHelper* helper = new CreateTemporaryHelper(this, File());
@@ -297,7 +296,7 @@ bool FileProxy::GetInfo(const GetFileInfoCallback& callback) {
       Bind(&GetInfoHelper::Reply, Owned(helper), callback));
 }
 
-bool FileProxy::Read(int64 offset,
+bool FileProxy::Read(int64_t offset,
                      int bytes_to_read,
                      const ReadCallback& callback) {
   DCHECK(file_.IsValid());
@@ -311,7 +310,7 @@ bool FileProxy::Read(int64 offset,
       Bind(&ReadHelper::Reply, Owned(helper), callback));
 }
 
-bool FileProxy::Write(int64 offset,
+bool FileProxy::Write(int64_t offset,
                       const char* buffer,
                       int bytes_to_write,
                       const WriteCallback& callback) {
@@ -339,7 +338,7 @@ bool FileProxy::SetTimes(Time last_access_time,
       Bind(&GenericFileHelper::Reply, Owned(helper), callback));
 }
 
-bool FileProxy::SetLength(int64 length, const StatusCallback& callback) {
+bool FileProxy::SetLength(int64_t length, const StatusCallback& callback) {
   DCHECK(file_.IsValid());
   GenericFileHelper* helper = new GenericFileHelper(this, std::move(file_));
   return task_runner_->PostTaskAndReply(

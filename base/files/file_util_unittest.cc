@@ -2,21 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#include <shellapi.h>
-#include <shlobj.h>
-#include <tchar.h>
-#include <winioctl.h>
-#endif
-
-#if defined(OS_POSIX)
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#endif
+#include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <fstream>
@@ -30,17 +17,30 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
+#include <shellapi.h>
+#include <shlobj.h>
+#include <tchar.h>
+#include <winioctl.h>
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#endif
+
+#if defined(OS_POSIX)
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 #endif
 
 #if defined(OS_ANDROID)
@@ -250,7 +250,7 @@ TEST_F(FileUtilTest, FileAndDirectorySize) {
   // should return 53 bytes.
   FilePath file_01 = temp_dir_.path().Append(FPL("The file 01.txt"));
   CreateTextFile(file_01, L"12345678901234567890");
-  int64 size_f1 = 0;
+  int64_t size_f1 = 0;
   ASSERT_TRUE(GetFileSize(file_01, &size_f1));
   EXPECT_EQ(20ll, size_f1);
 
@@ -259,7 +259,7 @@ TEST_F(FileUtilTest, FileAndDirectorySize) {
 
   FilePath file_02 = subdir_path.Append(FPL("The file 02.txt"));
   CreateTextFile(file_02, L"123456789012345678901234567890");
-  int64 size_f2 = 0;
+  int64_t size_f2 = 0;
   ASSERT_TRUE(GetFileSize(file_02, &size_f2));
   EXPECT_EQ(30ll, size_f2);
 
@@ -269,7 +269,7 @@ TEST_F(FileUtilTest, FileAndDirectorySize) {
   FilePath file_03 = subsubdir_path.Append(FPL("The file 03.txt"));
   CreateTextFile(file_03, L"123");
 
-  int64 computed_size = ComputeDirectorySize(temp_dir_.path());
+  int64_t computed_size = ComputeDirectorySize(temp_dir_.path());
   EXPECT_EQ(size_f1 + size_f2 + 3, computed_size);
 }
 
@@ -722,7 +722,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndRead) {
   EXPECT_TRUE(PathExists(file_name));
 
   // Make sure the file is readable.
-  int32 mode = 0;
+  int32_t mode = 0;
   EXPECT_TRUE(GetPosixFilePermissions(file_name, &mode));
   EXPECT_TRUE(mode & FILE_PERMISSION_READ_BY_USER);
 
@@ -2448,7 +2448,7 @@ TEST_F(FileUtilTest, ValidContentUriTest) {
   data_dir = data_dir.AppendASCII("file_util");
   ASSERT_TRUE(PathExists(data_dir));
   FilePath image_file = data_dir.Append(FILE_PATH_LITERAL("red.png"));
-  int64 image_size;
+  int64_t image_size;
   GetFileSize(image_file, &image_size);
   EXPECT_LT(0, image_size);
 
@@ -2459,7 +2459,7 @@ TEST_F(FileUtilTest, ValidContentUriTest) {
   EXPECT_TRUE(PathExists(path));
   // The file size may not equal to the input image as MediaStore may convert
   // the image.
-  int64 content_uri_size;
+  int64_t content_uri_size;
   GetFileSize(path, &content_uri_size);
   EXPECT_EQ(image_size, content_uri_size);
 
@@ -2476,7 +2476,7 @@ TEST_F(FileUtilTest, NonExistentContentUriTest) {
   EXPECT_TRUE(path.IsContentUri());
   EXPECT_FALSE(PathExists(path));
   // Size should be smaller than 0.
-  int64 size;
+  int64_t size;
   EXPECT_FALSE(GetFileSize(path, &size));
 
   // We should not be able to read the file.

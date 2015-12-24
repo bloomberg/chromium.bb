@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -14,6 +15,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 #if defined(OS_ANDROID)
 #include "base/os_compat_android.h"
@@ -47,7 +49,7 @@ bool IsOpenAppend(PlatformFile file) {
   return (fcntl(file, F_GETFL) & O_APPEND) != 0;
 }
 
-int CallFtruncate(PlatformFile file, int64 length) {
+int CallFtruncate(PlatformFile file, int64_t length) {
   return HANDLE_EINTR(ftruncate(file, length));
 }
 
@@ -87,7 +89,7 @@ bool IsOpenAppend(PlatformFile file) {
   return false;
 }
 
-int CallFtruncate(PlatformFile file, int64 length) {
+int CallFtruncate(PlatformFile file, int64_t length) {
   NOTIMPLEMENTED();  // NaCl doesn't implement ftruncate.
   return 0;
 }
@@ -112,32 +114,32 @@ void File::Info::FromStat(const stat_wrapper_t& stat_info) {
 
 #if defined(OS_LINUX)
   time_t last_modified_sec = stat_info.st_mtim.tv_sec;
-  int64 last_modified_nsec = stat_info.st_mtim.tv_nsec;
+  int64_t last_modified_nsec = stat_info.st_mtim.tv_nsec;
   time_t last_accessed_sec = stat_info.st_atim.tv_sec;
-  int64 last_accessed_nsec = stat_info.st_atim.tv_nsec;
+  int64_t last_accessed_nsec = stat_info.st_atim.tv_nsec;
   time_t creation_time_sec = stat_info.st_ctim.tv_sec;
-  int64 creation_time_nsec = stat_info.st_ctim.tv_nsec;
+  int64_t creation_time_nsec = stat_info.st_ctim.tv_nsec;
 #elif defined(OS_ANDROID)
   time_t last_modified_sec = stat_info.st_mtime;
-  int64 last_modified_nsec = stat_info.st_mtime_nsec;
+  int64_t last_modified_nsec = stat_info.st_mtime_nsec;
   time_t last_accessed_sec = stat_info.st_atime;
-  int64 last_accessed_nsec = stat_info.st_atime_nsec;
+  int64_t last_accessed_nsec = stat_info.st_atime_nsec;
   time_t creation_time_sec = stat_info.st_ctime;
-  int64 creation_time_nsec = stat_info.st_ctime_nsec;
+  int64_t creation_time_nsec = stat_info.st_ctime_nsec;
 #elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
   time_t last_modified_sec = stat_info.st_mtimespec.tv_sec;
-  int64 last_modified_nsec = stat_info.st_mtimespec.tv_nsec;
+  int64_t last_modified_nsec = stat_info.st_mtimespec.tv_nsec;
   time_t last_accessed_sec = stat_info.st_atimespec.tv_sec;
-  int64 last_accessed_nsec = stat_info.st_atimespec.tv_nsec;
+  int64_t last_accessed_nsec = stat_info.st_atimespec.tv_nsec;
   time_t creation_time_sec = stat_info.st_ctimespec.tv_sec;
-  int64 creation_time_nsec = stat_info.st_ctimespec.tv_nsec;
+  int64_t creation_time_nsec = stat_info.st_ctimespec.tv_nsec;
 #else
   time_t last_modified_sec = stat_info.st_mtime;
-  int64 last_modified_nsec = 0;
+  int64_t last_modified_nsec = 0;
   time_t last_accessed_sec = stat_info.st_atime;
-  int64 last_accessed_nsec = 0;
+  int64_t last_accessed_nsec = 0;
   time_t creation_time_sec = stat_info.st_ctime;
-  int64 creation_time_nsec = 0;
+  int64_t creation_time_nsec = 0;
 #endif
 
   last_modified =
@@ -177,24 +179,24 @@ void File::Close() {
   file_.reset();
 }
 
-int64 File::Seek(Whence whence, int64 offset) {
+int64_t File::Seek(Whence whence, int64_t offset) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE_WITH_SIZE("Seek", offset);
 
 #if defined(OS_ANDROID)
-  static_assert(sizeof(int64) == sizeof(off64_t), "off64_t must be 64 bits");
+  static_assert(sizeof(int64_t) == sizeof(off64_t), "off64_t must be 64 bits");
   return lseek64(file_.get(), static_cast<off64_t>(offset),
                  static_cast<int>(whence));
 #else
-  static_assert(sizeof(int64) == sizeof(off_t), "off_t must be 64 bits");
+  static_assert(sizeof(int64_t) == sizeof(off_t), "off_t must be 64 bits");
   return lseek(file_.get(), static_cast<off_t>(offset),
                static_cast<int>(whence));
 #endif
 }
 
-int File::Read(int64 offset, char* data, int size) {
+int File::Read(int64_t offset, char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   if (size < 0)
@@ -237,7 +239,7 @@ int File::ReadAtCurrentPos(char* data, int size) {
   return bytes_read ? bytes_read : rv;
 }
 
-int File::ReadNoBestEffort(int64 offset, char* data, int size) {
+int File::ReadNoBestEffort(int64_t offset, char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   SCOPED_FILE_TRACE_WITH_SIZE("ReadNoBestEffort", size);
@@ -254,7 +256,7 @@ int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
   return HANDLE_EINTR(read(file_.get(), data, size));
 }
 
-int File::Write(int64 offset, const char* data, int size) {
+int File::Write(int64_t offset, const char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
 
   if (IsOpenAppend(file_.get()))
@@ -312,7 +314,7 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
   return HANDLE_EINTR(write(file_.get(), data, size));
 }
 
-int64 File::GetLength() {
+int64_t File::GetLength() {
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE("GetLength");
@@ -324,7 +326,7 @@ int64 File::GetLength() {
   return file_info.st_size;
 }
 
-bool File::SetLength(int64 length) {
+bool File::SetLength(int64_t length) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
@@ -423,7 +425,7 @@ File::Error File::OSErrorToFileError(int saved_errno) {
 // NaCl doesn't implement system calls to open files directly.
 #if !defined(OS_NACL)
 // TODO(erikkay): does it make sense to support FLAG_EXCLUSIVE_* here?
-void File::DoInitialize(const FilePath& path, uint32 flags) {
+void File::DoInitialize(const FilePath& path, uint32_t flags) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsValid());
 

@@ -7,6 +7,7 @@
 #include "base/files/file_tracing.h"
 #include "base/metrics/histogram.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -26,10 +27,8 @@ File::File()
 }
 
 #if !defined(OS_NACL)
-File::File(const FilePath& path, uint32 flags)
-    : error_details_(FILE_OK),
-      created_(false),
-      async_(false) {
+File::File(const FilePath& path, uint32_t flags)
+    : error_details_(FILE_OK), created_(false), async_(false) {
   Initialize(path, flags);
 }
 #endif
@@ -83,7 +82,7 @@ File& File::operator=(File&& other) {
 }
 
 #if !defined(OS_NACL)
-void File::Initialize(const FilePath& path, uint32 flags) {
+void File::Initialize(const FilePath& path, uint32_t flags) {
   if (path.ReferencesParent()) {
     error_details_ = FILE_ERROR_ACCESS_DENIED;
     return;

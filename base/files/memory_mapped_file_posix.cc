@@ -4,12 +4,15 @@
 
 #include "base/files/memory_mapped_file.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 namespace base {
 

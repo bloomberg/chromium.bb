@@ -4,6 +4,7 @@
 
 #include "base/files/file_enumerator.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "base/logging.h"
@@ -26,13 +27,13 @@ FilePath FileEnumerator::FileInfo::GetName() const {
   return FilePath(find_data_.cFileName);
 }
 
-int64 FileEnumerator::FileInfo::GetSize() const {
+int64_t FileEnumerator::FileInfo::GetSize() const {
   ULARGE_INTEGER size;
   size.HighPart = find_data_.nFileSizeHigh;
   size.LowPart = find_data_.nFileSizeLow;
   DCHECK_LE(size.QuadPart,
-            static_cast<ULONGLONG>(std::numeric_limits<int64>::max()));
-  return static_cast<int64>(size.QuadPart);
+            static_cast<ULONGLONG>(std::numeric_limits<int64_t>::max()));
+  return static_cast<int64_t>(size.QuadPart);
 }
 
 base::Time FileEnumerator::FileInfo::GetLastModifiedTime() const {

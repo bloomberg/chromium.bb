@@ -7,9 +7,11 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fnmatch.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -27,7 +29,7 @@ FilePath FileEnumerator::FileInfo::GetName() const {
   return filename_;
 }
 
-int64 FileEnumerator::FileInfo::GetSize() const {
+int64_t FileEnumerator::FileInfo::GetSize() const {
   return stat_.st_size;
 }
 

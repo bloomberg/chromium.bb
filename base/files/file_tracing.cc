@@ -39,8 +39,9 @@ FileTracing::ScopedTrace::~ScopedTrace() {
     g_provider->FileTracingEventEnd(name_, id_);
 }
 
-void FileTracing::ScopedTrace::Initialize(
-    const char* name, File* file, int64 size) {
+void FileTracing::ScopedTrace::Initialize(const char* name,
+                                          File* file,
+                                          int64_t size) {
   id_ = &file->trace_enabler_;
   name_ = name;
   g_provider->FileTracingEventBegin(name_, id_, file->tracing_path_, size);

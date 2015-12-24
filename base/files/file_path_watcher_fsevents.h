@@ -6,11 +6,13 @@
 #define BASE_FILES_FILE_PATH_WATCHER_FSEVENTS_H_
 
 #include <CoreServices/CoreServices.h>
+#include <stddef.h>
 
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/macros.h"
 
 namespace base {
 

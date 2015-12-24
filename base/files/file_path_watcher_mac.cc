@@ -4,6 +4,7 @@
 
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_path_watcher_kqueue.h"
+#include "build/build_config.h"
 
 #if !defined(OS_IOS)
 #include "base/files/file_path_watcher_fsevents.h"

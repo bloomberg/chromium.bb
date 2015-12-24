@@ -4,6 +4,9 @@
 
 #include "base/files/memory_mapped_file.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/files/file_path.h"

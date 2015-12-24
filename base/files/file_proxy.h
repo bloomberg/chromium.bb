@@ -5,10 +5,13 @@
 #ifndef BASE_FILES_FILE_PROXY_H_
 #define BASE_FILES_FILE_PROXY_H_
 
+#include <stdint.h>
+
 #include "base/base_export.h"
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
@@ -64,7 +67,7 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
   //
   // This returns false if task posting to |task_runner| has failed.
   bool CreateOrOpen(const FilePath& file_path,
-                    uint32 file_flags,
+                    uint32_t file_flags,
                     const StatusCallback& callback);
 
   // Creates a temporary file for writing. The path and an open file are
@@ -75,7 +78,7 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
   //   File::FLAG_TEMPORARY.
   //
   // This returns false if task posting to |task_runner| has failed.
-  bool CreateTemporary(uint32 additional_file_flags,
+  bool CreateTemporary(uint32_t additional_file_flags,
                        const CreateTemporaryCallback& callback);
 
   // Returns true if the underlying |file_| is valid.
@@ -104,12 +107,12 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
   // Proxies File::Read. The callback can't be null.
   // This returns false if |bytes_to_read| is less than zero, or
   // if task posting to |task_runner| has failed.
-  bool Read(int64 offset, int bytes_to_read, const ReadCallback& callback);
+  bool Read(int64_t offset, int bytes_to_read, const ReadCallback& callback);
 
   // Proxies File::Write. The callback can be null.
   // This returns false if |bytes_to_write| is less than or equal to zero,
   // if |buffer| is NULL, or if task posting to |task_runner| has failed.
-  bool Write(int64 offset,
+  bool Write(int64_t offset,
              const char* buffer,
              int bytes_to_write,
              const WriteCallback& callback);
@@ -122,7 +125,7 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
 
   // Proxies File::SetLength. The callback can be null.
   // This returns false if task posting to |task_runner| has failed.
-  bool SetLength(int64 length, const StatusCallback& callback);
+  bool SetLength(int64_t length, const StatusCallback& callback);
 
   // Proxies File::Flush. The callback can be null.
   // This returns false if task posting to |task_runner| has failed.
