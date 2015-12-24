@@ -29,7 +29,7 @@
 #include "base/android/sys_utils.h"
 #include "base/android/thread_utils.h"
 #include "base/android/trace_event_binding.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/message_loop/message_pump_android.h"
 #include "base/power_monitor/power_monitor_device_source_android.h"
 #include "base/trace_event/trace_event.h"

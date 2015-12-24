@@ -4,11 +4,14 @@
 
 #include "base/android/record_histogram.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
@@ -69,8 +72,8 @@ class HistogramCache {
                                       jint j_num_buckets) {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
-    int64 min = static_cast<int64>(j_min);
-    int64 max = static_cast<int64>(j_max);
+    int64_t min = static_cast<int64_t>(j_min);
+    int64_t max = static_cast<int64_t>(j_max);
     int num_buckets = static_cast<int>(j_num_buckets);
     HistogramBase* histogram = FindLocked(j_histogram_key);
     if (histogram) {
@@ -93,8 +96,8 @@ class HistogramCache {
                                       jint j_num_buckets) {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
-    int64 min = static_cast<int64>(j_min);
-    int64 max = static_cast<int64>(j_max);
+    int64_t min = static_cast<int64_t>(j_min);
+    int64_t max = static_cast<int64_t>(j_max);
     int num_buckets = static_cast<int>(j_num_buckets);
     HistogramBase* histogram = FindLocked(j_histogram_key);
     if (histogram) {
@@ -133,8 +136,8 @@ class HistogramCache {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
     HistogramBase* histogram = FindLocked(j_histogram_key);
-    int64 min = static_cast<int64>(j_min);
-    int64 max = static_cast<int64>(j_max);
+    int64_t min = static_cast<int64_t>(j_min);
+    int64_t max = static_cast<int64_t>(j_max);
     int bucket_count = static_cast<int>(j_bucket_count);
     if (histogram) {
       DCHECK(histogram->HasConstructionArguments(min, max, bucket_count));
@@ -252,7 +255,7 @@ void RecordCustomTimesHistogramMilliseconds(
   g_histograms.Get()
       .CustomTimesHistogram(env, j_histogram_name, j_histogram_key, j_min,
                             j_max, j_num_buckets)
-      ->AddTime(TimeDelta::FromMilliseconds(static_cast<int64>(j_duration)));
+      ->AddTime(TimeDelta::FromMilliseconds(static_cast<int64_t>(j_duration)));
 }
 
 void Initialize(JNIEnv* env, const JavaParamRef<jclass>&) {

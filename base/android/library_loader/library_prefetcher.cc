@@ -4,6 +4,7 @@
 
 #include "base/android/library_loader/library_prefetcher.h"
 
+#include <stddef.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <sys/wait.h>

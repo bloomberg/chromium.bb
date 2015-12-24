@@ -6,6 +6,7 @@
 #define BASE_ANDROID_JNI_ARRAY_H_
 
 #include <jni.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -32,7 +33,7 @@ BASE_EXPORT ScopedJavaLocalRef<jintArray> ToJavaIntArray(
 BASE_EXPORT ScopedJavaLocalRef<jintArray> ToJavaIntArray(
     JNIEnv* env, const std::vector<int>& ints);
 
-// Returns a new Java long array converted from the given int64 array.
+// Returns a new Java long array converted from the given int64_t array.
 BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(JNIEnv* env,
                                                            const int64_t* longs,
                                                            size_t len);

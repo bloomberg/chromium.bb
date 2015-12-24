@@ -4,6 +4,8 @@
 
 #include "base/android/jni_android.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/android/build_info.h"

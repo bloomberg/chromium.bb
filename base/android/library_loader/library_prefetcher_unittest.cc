@@ -4,6 +4,8 @@
 
 #include "base/android/library_loader/library_prefetcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <string>
 #include <vector>
@@ -15,11 +17,11 @@ namespace base {
 namespace android {
 
 namespace {
-const uint8 kRead = base::debug::MappedMemoryRegion::READ;
-const uint8 kReadPrivate = base::debug::MappedMemoryRegion::READ |
-                           base::debug::MappedMemoryRegion::PRIVATE;
-const uint8 kExecutePrivate = base::debug::MappedMemoryRegion::EXECUTE |
-                              base::debug::MappedMemoryRegion::PRIVATE;
+const uint8_t kRead = base::debug::MappedMemoryRegion::READ;
+const uint8_t kReadPrivate = base::debug::MappedMemoryRegion::READ |
+                             base::debug::MappedMemoryRegion::PRIVATE;
+const uint8_t kExecutePrivate = base::debug::MappedMemoryRegion::EXECUTE |
+                                base::debug::MappedMemoryRegion::PRIVATE;
 const size_t kPageSize = 4096;
 }  // namespace
 

@@ -18,6 +18,7 @@
 
 #include <android/log.h>
 #include <jni.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 // Set this to 1 to enable debug traces to the Android log.

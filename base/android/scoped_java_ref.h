@@ -9,8 +9,8 @@
 #include <stddef.h>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/template_util.h"
 
 namespace base {

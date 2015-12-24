@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/android/jni_android.h"
-#include "base/basictypes.h"
 
 namespace base {
 namespace android {

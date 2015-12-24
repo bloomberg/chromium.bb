@@ -8,7 +8,6 @@
 #include <jni.h>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 

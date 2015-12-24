@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #include <unistd.h>
 
 // LLVM's demangler is large, and we have no need of it.  Overriding it with

@@ -169,7 +169,7 @@ void AppendJavaByteArrayToByteVector(JNIEnv* env,
   size_t back = out->size();
   out->resize(back + len);
   env->GetByteArrayRegion(byte_array, 0, len,
-                          reinterpret_cast<int8*>(&(*out)[back]));
+                          reinterpret_cast<int8_t*>(&(*out)[back]));
 }
 
 void JavaByteArrayToByteVector(JNIEnv* env,

@@ -19,6 +19,7 @@
 #include <jni.h>
 #include <limits.h>
 #include <link.h>
+#include <stddef.h>
 #include <string.h>
 
 #include "android_dlext.h"
