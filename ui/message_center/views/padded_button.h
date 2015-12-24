@@ -5,8 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_PADDED_BUTTON_H_
 #define UI_MESSAGE_CENTER_VIEWS_PADDED_BUTTON_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace message_center {

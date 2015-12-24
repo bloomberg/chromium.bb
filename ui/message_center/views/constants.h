@@ -5,7 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_CONSTANTS_H_
 #define UI_MESSAGE_CENTER_VIEWS_CONSTANTS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center_style.h"

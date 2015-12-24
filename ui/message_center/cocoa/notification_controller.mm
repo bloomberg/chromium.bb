@@ -4,6 +4,8 @@
 
 #import "ui/message_center/cocoa/notification_controller.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/mac/foundation_util.h"

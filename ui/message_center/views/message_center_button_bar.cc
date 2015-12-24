@@ -4,6 +4,8 @@
 
 #include "ui/message_center/views/message_center_button_bar.h"
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

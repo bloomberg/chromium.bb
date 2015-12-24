@@ -5,11 +5,14 @@
 #ifndef UI_MESSAGE_CENTER_NOTIFICATION_LIST_H_
 #define UI_MESSAGE_CENTER_NOTIFICATION_LIST_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"

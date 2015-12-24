@@ -5,6 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_NOTIFICATION_H_
 #define UI_MESSAGE_CENTER_NOTIFICATION_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

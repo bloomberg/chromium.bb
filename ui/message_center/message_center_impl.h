@@ -5,9 +5,12 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_IMPL_H_
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_IMPL_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"

@@ -5,8 +5,11 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_H_
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_types.h"

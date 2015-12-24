@@ -4,12 +4,15 @@
 
 #include "ui/message_center/views/message_popup_collection.h"
 
+#include <stddef.h>
+
 #include <list>
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"

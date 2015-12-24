@@ -8,6 +8,7 @@
 #include <list>
 #include <set>
 
+#include "base/macros.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

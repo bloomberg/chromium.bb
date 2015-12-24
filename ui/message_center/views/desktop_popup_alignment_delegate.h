@@ -5,6 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_DESKTOP_POPUP_ALIGNMENT_DELEGATE_H_
 #define UI_MESSAGE_CENTER_VIEWS_DESKTOP_POPUP_ALIGNMENT_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/geometry/rect.h"

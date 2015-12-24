@@ -5,6 +5,9 @@
 #ifndef UI_MESSAGE_CENTER_FAKE_MESSAGE_CENTER_H_
 #define UI_MESSAGE_CENTER_FAKE_MESSAGE_CENTER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 

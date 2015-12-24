@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/message_center_bubble.h"
 
+#include "base/macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_view.h"

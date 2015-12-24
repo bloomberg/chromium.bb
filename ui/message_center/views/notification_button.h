@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_BUTTON_H_
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_BUTTON_H_
 
+#include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/painter.h"

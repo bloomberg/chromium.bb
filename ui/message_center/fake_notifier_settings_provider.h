@@ -5,6 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_FAKE_NOTIFIER_SETTINGS_PROVIDER_H_
 #define UI_MESSAGE_CENTER_FAKE_NOTIFIER_SETTINGS_PROVIDER_H_
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "ui/message_center/notifier_settings.h"
 

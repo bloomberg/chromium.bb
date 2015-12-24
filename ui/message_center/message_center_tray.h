@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_H_
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_H_
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/message_center/message_center_export.h"

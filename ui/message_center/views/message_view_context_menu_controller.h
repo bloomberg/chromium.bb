@@ -5,8 +5,8 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_CONTEXT_MENU_CONTROLLER_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_CONTEXT_MENU_CONTROLLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/context_menu_controller.h"
 
 namespace message_center {

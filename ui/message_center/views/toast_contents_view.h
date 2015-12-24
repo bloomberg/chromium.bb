@@ -6,6 +6,7 @@
 #define UI_MESSAGE_CENTER_VIEWS_TOAST_CONTENTS_VIEW_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/point.h"
