@@ -116,7 +116,7 @@ String CSSSelectorList::selectorsText() const
 }
 
 template <typename Functor>
-static bool forEachTagSelector(Functor& functor, const CSSSelector& selector)
+static bool forEachTagSelector(const Functor& functor, const CSSSelector& selector)
 {
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (functor(*current))
@@ -133,7 +133,7 @@ static bool forEachTagSelector(Functor& functor, const CSSSelector& selector)
 }
 
 template <typename Functor>
-static bool forEachSelector(Functor& functor, const CSSSelectorList* selectorList)
+static bool forEachSelector(const Functor& functor, const CSSSelectorList* selectorList)
 {
     for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
         if (forEachTagSelector(functor, *selector))
@@ -143,63 +143,35 @@ static bool forEachSelector(Functor& functor, const CSSSelectorList* selectorLis
     return false;
 }
 
-class SelectorNeedsNamespaceResolutionFunctor {
-public:
-    bool operator()(const CSSSelector& selector)
-    {
+bool CSSSelectorList::selectorsNeedNamespaceResolution()
+{
+    return forEachSelector([](const CSSSelector& selector) -> bool {
         if (selector.match() != CSSSelector::Tag && !selector.isAttributeSelector())
             return false;
         const AtomicString& prefix = selector.isAttributeSelector() ? selector.attribute().prefix() : selector.tagQName().prefix();
         return prefix != nullAtom && prefix != emptyAtom && prefix != starAtom;
-    }
-};
-
-bool CSSSelectorList::selectorsNeedNamespaceResolution()
-{
-    SelectorNeedsNamespaceResolutionFunctor functor;
-    return forEachSelector(functor, this);
+    }, this);
 }
-
-class SelectorHasShadowDistributed {
-public:
-    bool operator()(const CSSSelector& selector)
-    {
-        return selector.relationIsAffectedByPseudoContent();
-    }
-};
 
 bool CSSSelectorList::selectorHasShadowDistributed(size_t index) const
 {
-    SelectorHasShadowDistributed functor;
-    return forEachTagSelector(functor, selectorAt(index));
+    return forEachTagSelector([](const CSSSelector& selector) -> bool {
+        return selector.relationIsAffectedByPseudoContent();
+    }, selectorAt(index));
 }
-
-class SelectorUsesDeepCombinatorOrShadowPseudo {
-public:
-    bool operator()(const CSSSelector& selector)
-    {
-        return selector.relation() == CSSSelector::ShadowDeep || selector.pseudoType() == CSSSelector::PseudoShadow;
-    }
-};
 
 bool CSSSelectorList::selectorUsesDeepCombinatorOrShadowPseudo(size_t index) const
 {
-    SelectorUsesDeepCombinatorOrShadowPseudo functor;
-    return forEachTagSelector(functor, selectorAt(index));
+    return forEachTagSelector([](const CSSSelector& selector) -> bool {
+        return selector.relation() == CSSSelector::ShadowDeep || selector.pseudoType() == CSSSelector::PseudoShadow;
+    }, selectorAt(index));
 }
-
-class SelectorNeedsUpdatedDistribution {
-public:
-    bool operator()(const CSSSelector& selector)
-    {
-        return selector.relationIsAffectedByPseudoContent() || selector.pseudoType() == CSSSelector::PseudoHostContext;
-    }
-};
 
 bool CSSSelectorList::selectorNeedsUpdatedDistribution(size_t index) const
 {
-    SelectorNeedsUpdatedDistribution functor;
-    return forEachTagSelector(functor, selectorAt(index));
+    return forEachTagSelector([](const CSSSelector& selector) -> bool {
+        return selector.relationIsAffectedByPseudoContent() || selector.pseudoType() == CSSSelector::PseudoHostContext;
+    }, selectorAt(index));
 }
 
 } // namespace blink
