@@ -184,6 +184,12 @@ enum InternalErrorLoadEvent {
   // occur if the browser filters loads less aggressively than the renderer.
   ERR_NO_IPCS_RECEIVED,
 
+  // Tracks frequency with which we record an abort time that occurred before
+  // navigation start. This is expected to happen in some cases (see comments in
+  // cc file for details). We use this error counter to understand how often it
+  // happens.
+  ERR_ABORT_BEFORE_NAVIGATION_START,
+
   // Add values before this final count.
   ERR_LAST_ENTRY
 };
@@ -234,8 +240,8 @@ class PageLoadTracker {
   // If the user performs some abort-like action while we are tracking this page
   // load, notify the tracker. Note that we may not classify this as an abort if
   // we've already performed a first paint.
-  void NotifyAbort(UserAbortType abort_type, base::TimeTicks timestamp);
-  void UpdateAbort(UserAbortType abort_type, base::TimeTicks timestamp);
+  void NotifyAbort(UserAbortType abort_type, const base::TimeTicks& timestamp);
+  void UpdateAbort(UserAbortType abort_type, const base::TimeTicks& timestamp);
 
  private:
   PageLoadExtraInfo GetPageLoadMetricsInfo();
@@ -244,6 +250,8 @@ class PageLoadTracker {
 
   void RecordTimingHistograms(const PageLoadExtraInfo& info);
   void RecordRappor(const PageLoadExtraInfo& info);
+  void UpdateAbortInternal(UserAbortType abort_type,
+                           const base::TimeTicks& timestamp);
 
   // Whether the renderer should be sending timing IPCs to this page load.
   bool renderer_tracked_;

@@ -67684,6 +67684,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="IPC received from a frame we navigated away from"/>
   <int value="3" label="IPC received from a bad URL scheme"/>
   <int value="4" label="No IPCs received for this navigation"/>
+  <int value="5" label="Abort reported before navigation start"/>
 </enum>
 
 <enum name="InterruptReason" type="int">

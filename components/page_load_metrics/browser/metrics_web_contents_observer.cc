@@ -213,7 +213,7 @@ PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   if (!foreground_time_.is_null() && !started_in_foreground_)
     first_foreground_time = foreground_time_ - navigation_start_;
   if (abort_type_ != ABORT_NONE) {
-    DCHECK(!abort_time_.is_null());
+    DCHECK_GT(abort_time_, navigation_start_);
     time_to_abort = abort_time_ - navigation_start_;
   }
   return PageLoadExtraInfo(first_background_time, first_foreground_time,
@@ -227,27 +227,46 @@ const GURL& PageLoadTracker::committed_url() {
 }
 
 void PageLoadTracker::NotifyAbort(UserAbortType abort_type,
-                                  base::TimeTicks timestamp) {
+                                  const base::TimeTicks& timestamp) {
   DCHECK_NE(abort_type, ABORT_NONE);
   // Use UpdateAbort to update an already notified PageLoadTracker.
   if (abort_type_ != ABORT_NONE)
     return;
 
-  abort_type_ = abort_type;
-  abort_time_ = timestamp;
+  UpdateAbortInternal(abort_type, timestamp);
 }
 
 void PageLoadTracker::UpdateAbort(UserAbortType abort_type,
-                                  base::TimeTicks timestamp) {
+                                  const base::TimeTicks& timestamp) {
   DCHECK_NE(abort_type, ABORT_NONE);
   DCHECK_NE(abort_type, ABORT_OTHER);
   DCHECK_EQ(abort_type_, ABORT_OTHER);
 
-  abort_type_ = abort_type;
   // For some aborts (e.g. navigations), the initiated timestamp can be earlier
   // than the timestamp that aborted the load. Taking the minimum gives the
   // closest user initiated time known.
-  abort_time_ = std::min(abort_time_, timestamp);
+  UpdateAbortInternal(abort_type, std::min(abort_time_, timestamp));
+}
+
+void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
+                                          const base::TimeTicks& timestamp) {
+  // When a provisional navigation commits, that navigation's start time is
+  // interpreted as the abort time for other provisional loads in the tab.
+  // However, this only makes sense if the committed load started after the
+  // aborted provisional loads started. Thus we ignore cases where the committed
+  // load started before the aborted provisional load, as this would result in
+  // recording a negative time-to-abort. The real issue here is that we have to
+  // infer the cause of aborts. It would be better if the navigation code could
+  // instead report the actual cause of an aborted navigation. See crbug/571647
+  // for details.
+  if (timestamp <= navigation_start_) {
+    RecordInternalError(ERR_ABORT_BEFORE_NAVIGATION_START);
+    abort_type_ = ABORT_NONE;
+    abort_time_ = base::TimeTicks();
+    return;
+  }
+  abort_type_ = abort_type;
+  abort_time_ = timestamp;
 }
 
 void PageLoadTracker::RecordTimingHistograms(const PageLoadExtraInfo& info) {
