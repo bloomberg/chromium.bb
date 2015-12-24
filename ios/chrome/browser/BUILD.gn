@@ -309,6 +309,8 @@ source_set("browser") {
     "signin/account_reconcilor_factory.h",
     "signin/account_tracker_service_factory.cc",
     "signin/account_tracker_service_factory.h",
+    "signin/browser_state_data_remover.h",
+    "signin/browser_state_data_remover.mm",
     "signin/chrome_identity_service_observer_bridge.h",
     "signin/chrome_identity_service_observer_bridge.mm",
     "signin/constants.h",

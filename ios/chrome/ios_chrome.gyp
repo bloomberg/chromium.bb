@@ -461,6 +461,8 @@
         'browser/signin/account_reconcilor_factory.h',
         'browser/signin/account_tracker_service_factory.cc',
         'browser/signin/account_tracker_service_factory.h',
+        'browser/signin/browser_state_data_remover.h',
+        'browser/signin/browser_state_data_remover.mm',
         'browser/signin/chrome_identity_service_observer_bridge.h',
         'browser/signin/chrome_identity_service_observer_bridge.mm',
         'browser/signin/constants.h',
