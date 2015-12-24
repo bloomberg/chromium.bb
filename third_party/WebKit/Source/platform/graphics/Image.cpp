@@ -275,7 +275,8 @@ PassRefPtr<Image> Image::imageForDefaultFrame()
 
 bool Image::isTextureBacked()
 {
-    return imageForCurrentFrame()->isTextureBacked();
+    RefPtr<SkImage> image = imageForCurrentFrame();
+    return image ? image->isTextureBacked() : false;
 }
 
 } // namespace blink
