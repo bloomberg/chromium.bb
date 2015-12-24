@@ -5,8 +5,11 @@
 #ifndef UI_GL_SYNC_CONTROL_VSYNC_PROVIDER_H_
 #define UI_GL_SYNC_CONTROL_VSYNC_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <queue>
 
+#include "base/macros.h"
 #include "ui/gfx/vsync_provider.h"
 
 namespace gfx {
@@ -21,15 +24,15 @@ class SyncControlVSyncProvider : public VSyncProvider {
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
  protected:
-  virtual bool GetSyncValues(int64* system_time,
-                             int64* media_stream_counter,
-                             int64* swap_buffer_counter) = 0;
+  virtual bool GetSyncValues(int64_t* system_time,
+                             int64_t* media_stream_counter,
+                             int64_t* swap_buffer_counter) = 0;
 
-  virtual bool GetMscRate(int32* numerator, int32* denominator) = 0;
+  virtual bool GetMscRate(int32_t* numerator, int32_t* denominator) = 0;
 
  private:
   base::TimeTicks last_timebase_;
-  uint64 last_media_stream_counter_;
+  uint64_t last_media_stream_counter_;
   base::TimeDelta last_good_interval_;
   bool invalid_msc_;
 

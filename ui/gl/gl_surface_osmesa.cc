@@ -54,7 +54,7 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size,
   }
 
   // Preserve the old buffer.
-  scoped_ptr<int32[]> old_buffer(buffer_.release());
+  scoped_ptr<int32_t[]> old_buffer(buffer_.release());
 
   base::CheckedNumeric<int> checked_size = sizeof(buffer_[0]);
   checked_size *= new_size.width();
@@ -63,7 +63,7 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size,
     return false;
 
   // Allocate a new one.
-  buffer_.reset(new int32[new_size.GetArea()]);
+  buffer_.reset(new int32_t[new_size.GetArea()]);
   if (!buffer_.get())
     return false;
 

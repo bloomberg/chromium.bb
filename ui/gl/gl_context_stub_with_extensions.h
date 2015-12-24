@@ -5,6 +5,7 @@
 #ifndef UI_GL_GL_CONTEXT_STUB_WITH_EXTENSIONS_H_
 #define UI_GL_GL_CONTEXT_STUB_WITH_EXTENSIONS_H_
 
+#include "base/macros.h"
 #include "ui/gl/gl_context_stub.h"
 
 namespace gfx {

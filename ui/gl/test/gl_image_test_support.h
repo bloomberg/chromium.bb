@@ -5,6 +5,8 @@
 #ifndef UI_GL_TEST_GL_IMAGE_TEST_SUPPORT_H_
 #define UI_GL_TEST_GL_IMAGE_TEST_SUPPORT_H_
 
+#include <stdint.h>
+
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_bindings.h"
 

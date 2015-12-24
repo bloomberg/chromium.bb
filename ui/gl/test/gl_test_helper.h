@@ -5,7 +5,8 @@
 #ifndef UI_GL_TEST_GL_TEST_HELPER_H_
 #define UI_GL_TEST_GL_TEST_HELPER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "ui/gl/gl_bindings.h"
 
 namespace gl {

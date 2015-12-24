@@ -5,7 +5,7 @@
 #ifndef UI_GL_GL_FENCE_H_
 #define UI_GL_GL_FENCE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/gl/gl_export.h"
 
 namespace gfx {

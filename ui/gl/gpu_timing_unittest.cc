@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -125,7 +127,7 @@ TEST_F(GPUTimingTest, QueryTimeStampTest) {
 
   EXPECT_EQ(0, gpu_timer->GetDeltaElapsed());
 
-  int64 start, end;
+  int64_t start, end;
   gpu_timer->GetStartEndTimestamps(&start, &end);
   EXPECT_EQ(begin_cpu_time, start);
   EXPECT_EQ(begin_cpu_time, end);
@@ -155,7 +157,7 @@ TEST_F(GPUTimingTest, QueryTimeStampUsingElapsedTest) {
   EXPECT_TRUE(gpu_timer->IsAvailable());
   EXPECT_EQ(0, gpu_timer->GetDeltaElapsed());
 
-  int64 start, end;
+  int64_t start, end;
   gpu_timer->GetStartEndTimestamps(&start, &end);
   EXPECT_EQ(begin_cpu_time, start);
   EXPECT_EQ(begin_cpu_time, end);

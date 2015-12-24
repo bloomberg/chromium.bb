@@ -5,6 +5,8 @@
 #ifndef UI_GL_GL_IMAGE_STUB_H_
 #define UI_GL_GL_IMAGE_STUB_H_
 
+#include <stdint.h>
+
 #include "ui/gl/gl_image.h"
 
 namespace gl {

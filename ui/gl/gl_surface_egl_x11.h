@@ -5,6 +5,8 @@
 #ifndef UI_GL_GL_SURFACE_EGL_X11_H_
 #define UI_GL_GL_SURFACE_EGL_X11_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

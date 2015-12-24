@@ -5,7 +5,8 @@
 #ifndef UI_GL_EGL_UTIL_H_
 #define UI_GL_EGL_UTIL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "ui/gl/gl_export.h"
 
 namespace ui {

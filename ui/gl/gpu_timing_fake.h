@@ -5,6 +5,8 @@
 #ifndef UI_GL_GPU_TIMING_FAKE_H_
 #define UI_GL_GPU_TIMING_FAKE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 

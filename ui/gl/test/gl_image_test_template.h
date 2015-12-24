@@ -8,7 +8,8 @@
 #ifndef UI_GL_TEST_GL_IMAGE_TEST_TEMPLATE_H_
 #define UI_GL_TEST_GL_IMAGE_TEST_TEMPLATE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"

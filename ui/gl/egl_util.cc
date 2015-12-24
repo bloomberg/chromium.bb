@@ -4,6 +4,8 @@
 
 #include "ui/gl/egl_util.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_ANDROID)
 #include <EGL/egl.h>
 #else

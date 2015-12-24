@@ -5,6 +5,10 @@
 #ifndef UI_GL_GL_IMAGE_SHARED_MEMORY_H_
 #define UI_GL_GL_IMAGE_SHARED_MEMORY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 #include "ui/gfx/generic_shared_memory_id.h"

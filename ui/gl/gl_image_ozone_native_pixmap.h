@@ -5,6 +5,8 @@
 #ifndef UI_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
 #define UI_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_
 
+#include <stdint.h>
+
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_image_egl.h"
 #include "ui/ozone/public/native_pixmap.h"

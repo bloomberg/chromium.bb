@@ -5,6 +5,8 @@
 #ifndef UI_GL_GL_BINDINGS_H_
 #define UI_GL_GL_BINDINGS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 // Includes the platform independent and platform dependent GL headers.
@@ -369,7 +371,7 @@ typedef struct osmesa_context *OSMesaContext;
 typedef void (*OSMESAproc)();
 
 // Forward declare EGL types.
-typedef uint64 EGLuint64CHROMIUM;
+typedef uint64_t EGLuint64CHROMIUM;
 
 #include "gl_bindings_autogen_gl.h"
 #include "gl_bindings_autogen_osmesa.h"

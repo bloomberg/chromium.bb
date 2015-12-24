@@ -4,7 +4,10 @@
 
 #include "ui/gl/gl_surface.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
@@ -200,13 +203,9 @@ gfx::SwapResult NativeViewGLSurfaceOSMesa::SwapBuffers() {
   }
 
   // Copy the frame into the pixmap.
-  gfx::PutARGBImage(xdisplay_,
-                    attributes.visual,
-                    attributes.depth,
-                    pixmap_,
+  gfx::PutARGBImage(xdisplay_, attributes.visual, attributes.depth, pixmap_,
                     pixmap_graphics_context_,
-                    static_cast<const uint8*>(GetHandle()),
-                    size.width(),
+                    static_cast<const uint8_t*>(GetHandle()), size.width(),
                     size.height());
 
   // Copy the pixmap to the window.
@@ -244,20 +243,10 @@ gfx::SwapResult NativeViewGLSurfaceOSMesa::PostSubBuffer(int x,
   }
 
   // Copy the frame into the pixmap.
-  gfx::PutARGBImage(xdisplay_,
-                    attributes.visual,
-                    attributes.depth,
-                    pixmap_,
+  gfx::PutARGBImage(xdisplay_, attributes.visual, attributes.depth, pixmap_,
                     pixmap_graphics_context_,
-                    static_cast<const uint8*>(GetHandle()),
-                    size.width(),
-                    size.height(),
-                    x,
-                    y,
-                    x,
-                    y,
-                    width,
-                    height);
+                    static_cast<const uint8_t*>(GetHandle()), size.width(),
+                    size.height(), x, y, x, y, width, height);
 
   // Copy the pixmap to the window.
   XCopyArea(xdisplay_,

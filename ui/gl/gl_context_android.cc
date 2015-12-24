@@ -5,6 +5,7 @@
 #include "ui/gl/gl_context.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sys_info.h"
 #include "ui/gl/gl_bindings.h"

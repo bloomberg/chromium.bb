@@ -4,12 +4,12 @@
 
 #include "ui/gl/gl_surface_egl.h"
 
-#if defined(OS_ANDROID)
-#include <android/native_window_jni.h>
-#endif
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,6 +25,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/scoped_make_current.h"
 #include "ui/gl/sync_control_vsync_provider.h"
+
+#if defined(OS_ANDROID)
+#include <android/native_window_jni.h>
+#endif
 
 #if defined (USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -115,22 +119,22 @@ class EGLSyncControlVSyncProvider
   ~EGLSyncControlVSyncProvider() override {}
 
  protected:
-  bool GetSyncValues(int64* system_time,
-                     int64* media_stream_counter,
-                     int64* swap_buffer_counter) override {
-    uint64 u_system_time, u_media_stream_counter, u_swap_buffer_counter;
+  bool GetSyncValues(int64_t* system_time,
+                     int64_t* media_stream_counter,
+                     int64_t* swap_buffer_counter) override {
+    uint64_t u_system_time, u_media_stream_counter, u_swap_buffer_counter;
     bool result = eglGetSyncValuesCHROMIUM(
         g_display, surface_, &u_system_time,
         &u_media_stream_counter, &u_swap_buffer_counter) == EGL_TRUE;
     if (result) {
-      *system_time = static_cast<int64>(u_system_time);
-      *media_stream_counter = static_cast<int64>(u_media_stream_counter);
-      *swap_buffer_counter = static_cast<int64>(u_swap_buffer_counter);
+      *system_time = static_cast<int64_t>(u_system_time);
+      *media_stream_counter = static_cast<int64_t>(u_media_stream_counter);
+      *swap_buffer_counter = static_cast<int64_t>(u_swap_buffer_counter);
     }
     return result;
   }
 
-  bool GetMscRate(int32* numerator, int32* denominator) override {
+  bool GetMscRate(int32_t* numerator, int32_t* denominator) override {
     return false;
   }
 

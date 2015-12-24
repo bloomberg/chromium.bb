@@ -82,16 +82,16 @@ GLXFBConfig* glXGetFBConfigsFn(Display* dpy,
                                int* nelements) override;
 bool glXGetMscRateOMLFn(Display* dpy,
                         GLXDrawable drawable,
-                        int32* numerator,
-                        int32* denominator) override;
+                        int32_t* numerator,
+                        int32_t* denominator) override;
 void glXGetSelectedEventFn(Display* dpy,
                            GLXDrawable drawable,
                            unsigned long* mask) override;
 bool glXGetSyncValuesOMLFn(Display* dpy,
                            GLXDrawable drawable,
-                           int64* ust,
-                           int64* msc,
-                           int64* sbc) override;
+                           int64_t* ust,
+                           int64_t* msc,
+                           int64_t* sbc) override;
 XVisualInfo* glXGetVisualFromFBConfigFn(Display* dpy,
                                         GLXFBConfig config) override;
 int glXIsDirectFn(Display* dpy, GLXContext ctx) override;

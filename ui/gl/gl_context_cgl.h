@@ -7,6 +7,7 @@
 
 #include <OpenGL/CGLTypes.h>
 
+#include "base/macros.h"
 #include "ui/gl/gl_context.h"
 
 namespace gfx {

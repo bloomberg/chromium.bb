@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_MACOSX)
@@ -105,7 +106,7 @@ bool GpuSwitchingManager::SupportsDualGpus() {
         // vendor's GPU. Otherwise we don't understand the
         // configuration and don't deal well with it (an example being
         // the dual AMD GPUs in recent Mac Pros).
-        const uint32 intel = 0x8086;
+        const uint32_t intel = 0x8086;
         flag = ((vendor_ids_[0] == intel && vendor_ids_[1] != intel) ||
                 (vendor_ids_[0] != intel && vendor_ids_[1] == intel));
       }
@@ -118,7 +119,7 @@ bool GpuSwitchingManager::SupportsDualGpus() {
 }
 
 void GpuSwitchingManager::SetGpuVendorIds(
-    const std::vector<uint32>& vendor_ids) {
+    const std::vector<uint32_t>& vendor_ids) {
   vendor_ids_ = vendor_ids;
 }
 

@@ -4,6 +4,8 @@
 
 #include "ui/gl/gl_image_memory.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"

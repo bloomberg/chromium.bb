@@ -4,6 +4,8 @@
 
 #include "ui/gl/gl_image_ref_counted_memory.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/trace_event/memory_allocator_dump.h"

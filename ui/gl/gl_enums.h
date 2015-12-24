@@ -5,9 +5,11 @@
 #ifndef UI_GL_GL_ENUMS_H_
 #define UI_GL_GL_ENUMS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "ui/gl/gl_export.h"
 
 namespace gfx {

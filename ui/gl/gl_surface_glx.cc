@@ -8,9 +8,9 @@ extern "C" {
 
 #include "ui/gl/gl_surface_glx.h"
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -22,6 +22,7 @@ extern "C" {
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
@@ -125,14 +126,14 @@ class OMLSyncControlVSyncProvider
   ~OMLSyncControlVSyncProvider() override {}
 
  protected:
-  bool GetSyncValues(int64* system_time,
-                     int64* media_stream_counter,
-                     int64* swap_buffer_counter) override {
+  bool GetSyncValues(int64_t* system_time,
+                     int64_t* media_stream_counter,
+                     int64_t* swap_buffer_counter) override {
     return glXGetSyncValuesOML(g_display, glx_window_, system_time,
                                media_stream_counter, swap_buffer_counter);
   }
 
-  bool GetMscRate(int32* numerator, int32* denominator) override {
+  bool GetMscRate(int32_t* numerator, int32_t* denominator) override {
     if (!g_glx_get_msc_rate_oml_supported)
       return false;
 

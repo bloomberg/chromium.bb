@@ -4,14 +4,18 @@
 
 #include "ui/gl/gl_implementation.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"

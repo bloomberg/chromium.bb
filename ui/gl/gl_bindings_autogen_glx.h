@@ -100,16 +100,16 @@ typedef GLXFBConfig*(GL_BINDING_CALL* glXGetFBConfigsProc)(Display* dpy,
                                                            int* nelements);
 typedef bool(GL_BINDING_CALL* glXGetMscRateOMLProc)(Display* dpy,
                                                     GLXDrawable drawable,
-                                                    int32* numerator,
-                                                    int32* denominator);
+                                                    int32_t* numerator,
+                                                    int32_t* denominator);
 typedef void(GL_BINDING_CALL* glXGetSelectedEventProc)(Display* dpy,
                                                        GLXDrawable drawable,
                                                        unsigned long* mask);
 typedef bool(GL_BINDING_CALL* glXGetSyncValuesOMLProc)(Display* dpy,
                                                        GLXDrawable drawable,
-                                                       int64* ust,
-                                                       int64* msc,
-                                                       int64* sbc);
+                                                       int64_t* ust,
+                                                       int64_t* msc,
+                                                       int64_t* sbc);
 typedef XVisualInfo*(GL_BINDING_CALL* glXGetVisualFromFBConfigProc)(
     Display* dpy,
     GLXFBConfig config);
@@ -304,16 +304,16 @@ class GL_EXPORT GLXApi {
                                          int* nelements) = 0;
   virtual bool glXGetMscRateOMLFn(Display* dpy,
                                   GLXDrawable drawable,
-                                  int32* numerator,
-                                  int32* denominator) = 0;
+                                  int32_t* numerator,
+                                  int32_t* denominator) = 0;
   virtual void glXGetSelectedEventFn(Display* dpy,
                                      GLXDrawable drawable,
                                      unsigned long* mask) = 0;
   virtual bool glXGetSyncValuesOMLFn(Display* dpy,
                                      GLXDrawable drawable,
-                                     int64* ust,
-                                     int64* msc,
-                                     int64* sbc) = 0;
+                                     int64_t* ust,
+                                     int64_t* msc,
+                                     int64_t* sbc) = 0;
   virtual XVisualInfo* glXGetVisualFromFBConfigFn(Display* dpy,
                                                   GLXFBConfig config) = 0;
   virtual int glXIsDirectFn(Display* dpy, GLXContext ctx) = 0;

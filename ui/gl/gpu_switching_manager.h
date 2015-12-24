@@ -5,10 +5,14 @@
 #ifndef UI_GL_GPU_SWITCHING_MANAGER_H_
 #define UI_GL_GPU_SWITCHING_MANAGER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_switching_observer.h"
@@ -38,7 +42,7 @@ class GL_EXPORT GpuSwitchingManager {
 
   // Sets the vendor IDs of the GPUs on the system. The length of this
   // vector defines the count of GPUs.
-  void SetGpuVendorIds(const std::vector<uint32>& vendor_ids);
+  void SetGpuVendorIds(const std::vector<uint32_t>& vendor_ids);
 
   void AddObserver(GpuSwitchingObserver* observer);
   void RemoveObserver(GpuSwitchingObserver* observer);
@@ -63,7 +67,7 @@ class GL_EXPORT GpuSwitchingManager {
   gfx::GpuPreference gpu_switching_option_;
   bool gpu_switching_option_set_;
 
-  std::vector<uint32> vendor_ids_;
+  std::vector<uint32_t> vendor_ids_;
 
   bool supports_dual_gpus_;
   bool supports_dual_gpus_set_;

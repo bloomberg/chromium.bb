@@ -5,6 +5,8 @@
 #ifndef UI_GL_TRACE_UTIL_H_
 #define UI_GL_TRACE_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/trace_event/memory_allocator_dump.h"
 #include "ui/gl/gl_export.h"
 

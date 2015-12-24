@@ -9,7 +9,7 @@
 
 namespace gfx {
 
-std::string GLEnums::GetStringEnum(uint32 value) {
+std::string GLEnums::GetStringEnum(uint32_t value) {
   const EnumToString* entry = enum_to_string_table_;
   const EnumToString* end = entry + enum_to_string_table_len_;
   for (;entry < end; ++entry) {
@@ -24,13 +24,13 @@ std::string GLEnums::GetStringEnum(uint32 value) {
   return "0x" + ss.str();
 }
 
-std::string GLEnums::GetStringError(uint32 value) {
+std::string GLEnums::GetStringError(uint32_t value) {
   if (value == GL_NONE)
     return "GL_NONE";
   return GetStringEnum(value);
 }
 
-std::string GLEnums::GetStringBool(uint32 value) {
+std::string GLEnums::GetStringBool(uint32_t value) {
   return value ? "GL_TRUE" : "GL_FALSE";
 }
 

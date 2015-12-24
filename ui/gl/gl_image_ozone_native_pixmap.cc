@@ -4,9 +4,9 @@
 
 #include "ui/gl/gl_image_ozone_native_pixmap.h"
 
-#define FOURCC(a, b, c, d)                                    \
-  ((static_cast<uint32>(a)) | (static_cast<uint32>(b) << 8) | \
-   (static_cast<uint32>(c) << 16) | (static_cast<uint32>(d) << 24))
+#define FOURCC(a, b, c, d)                                        \
+  ((static_cast<uint32_t>(a)) | (static_cast<uint32_t>(b) << 8) | \
+   (static_cast<uint32_t>(c) << 16) | (static_cast<uint32_t>(d) << 24))
 
 #define DRM_FORMAT_ARGB8888 FOURCC('A', 'R', '2', '4')
 #define DRM_FORMAT_ABGR8888 FOURCC('A', 'B', '2', '4')

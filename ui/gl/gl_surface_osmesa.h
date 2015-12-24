@@ -5,6 +5,9 @@
 #ifndef UI_GL_GL_SURFACE_OSMESA_H_
 #define UI_GL_GL_SURFACE_OSMESA_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
@@ -38,7 +41,7 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
  private:
   unsigned format_;
   gfx::Size size_;
-  scoped_ptr<int32[]> buffer_;
+  scoped_ptr<int32_t[]> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesa);
 };

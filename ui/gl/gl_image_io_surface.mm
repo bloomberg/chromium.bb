@@ -20,6 +20,7 @@
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
 #include <Quartz/Quartz.h>
+#include <stddef.h>
 
 using gfx::BufferFormat;
 

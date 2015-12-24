@@ -6,8 +6,10 @@
 #define UI_GL_GL_IMAGE_IO_SURFACE_H_
 
 #include <IOSurface/IOSurface.h>
+#include <stdint.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/generic_shared_memory_id.h"
