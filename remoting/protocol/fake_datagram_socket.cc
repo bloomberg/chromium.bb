@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/fake_datagram_socket.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"

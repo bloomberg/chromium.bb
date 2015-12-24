@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/ssl_hmac_channel_authenticator.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"

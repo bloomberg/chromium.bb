@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/rand_util.h"

@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/webrtc_connection_to_host.h"
 
+#include <utility>
+
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"

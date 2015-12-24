@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/authenticator_test_base.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

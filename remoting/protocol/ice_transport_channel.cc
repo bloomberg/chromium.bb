@@ -5,6 +5,7 @@
 #include "remoting/protocol/ice_transport_channel.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"

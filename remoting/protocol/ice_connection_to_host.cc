@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/ice_connection_to_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"

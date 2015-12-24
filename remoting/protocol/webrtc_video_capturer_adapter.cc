@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/webrtc_video_capturer_adapter.h"
 
+#include <utility>
+
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {

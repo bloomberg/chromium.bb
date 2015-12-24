@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/fake_authenticator.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"

@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/webrtc_connection_to_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "net/base/io_buffer.h"

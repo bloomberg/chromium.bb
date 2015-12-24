@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/guid.h"

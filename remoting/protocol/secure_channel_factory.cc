@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/secure_channel_factory.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"

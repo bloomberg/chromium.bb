@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/host_video_dispatcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"

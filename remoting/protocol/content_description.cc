@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/content_description.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"

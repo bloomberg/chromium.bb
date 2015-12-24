@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/monitored_video_stub.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "remoting/proto/video.pb.h"

@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/strings/string_util.h"
 #include "remoting/base/rsa_key_pair.h"

@@ -5,6 +5,7 @@
 #include "remoting/protocol/capture_scheduler.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/sys_info.h"

@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/video_frame_pump.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"

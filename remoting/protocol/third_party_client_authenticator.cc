@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/third_party_client_authenticator.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"

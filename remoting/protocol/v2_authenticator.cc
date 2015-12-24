@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/v2_authenticator.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/logging.h"
 #include "remoting/base/constants.h"

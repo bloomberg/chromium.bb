@@ -5,6 +5,7 @@
 #include "remoting/protocol/content_description.h"
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "remoting/protocol/authenticator.h"

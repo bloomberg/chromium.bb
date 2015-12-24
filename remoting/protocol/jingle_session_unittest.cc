@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/jingle_session.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

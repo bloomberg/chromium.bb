@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/pseudotcp_channel_factory.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/constants.h"

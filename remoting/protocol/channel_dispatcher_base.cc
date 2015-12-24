@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/channel_dispatcher_base.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"

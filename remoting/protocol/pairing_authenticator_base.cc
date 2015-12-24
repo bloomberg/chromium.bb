@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/pairing_authenticator_base.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/channel_authenticator.h"

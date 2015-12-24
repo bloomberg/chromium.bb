@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/channel_multiplexer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

@@ -5,6 +5,7 @@
 #include "remoting/protocol/video_frame_pump.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"

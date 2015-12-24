@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/chromium_port_allocator.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"

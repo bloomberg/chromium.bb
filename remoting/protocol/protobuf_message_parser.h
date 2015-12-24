@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_PROTOBUF_MESSAGE_PARSER_H_
 #define REMOTING_PROTOCOL_PROTOBUF_MESSAGE_PARSER_H_
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"

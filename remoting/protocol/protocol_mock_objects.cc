@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/protocol_mock_objects.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/protocol/video_stream.h"

@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/message_reader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"

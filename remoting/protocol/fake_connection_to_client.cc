@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/fake_connection_to_client.h"
 
+#include <utility>
+
 #include "remoting/protocol/session.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 

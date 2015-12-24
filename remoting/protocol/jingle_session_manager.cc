@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/jingle_session_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/content_description.h"
