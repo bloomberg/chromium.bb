@@ -4,6 +4,8 @@
 
 #include "base/mac/libdispatch_task_runner.h"
 
+#include <stdint.h>
+
 #include "base/callback.h"
 
 namespace base {
@@ -31,7 +33,7 @@ bool LibDispatchTaskRunner::PostDelayedTask(
       task_copy.Run();
   };
 
-  int64 delay_nano =
+  int64_t delay_nano =
       delay.InMicroseconds() * base::Time::kNanosecondsPerMicrosecond;
   if (delay_nano > 0) {
     dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, delay_nano);

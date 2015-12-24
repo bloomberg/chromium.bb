@@ -7,7 +7,6 @@
 
 #include <Block.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_policy.h"
 
@@ -21,7 +20,7 @@ template<typename B>
 class ScopedBlock {
  public:
   explicit ScopedBlock(
-      B block = NULL,
+      B block = nullptr,
       base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
       : block_(block) {
     if (block_ && policy == base::scoped_policy::RETAIN)
@@ -44,7 +43,7 @@ class ScopedBlock {
     return *this;
   }
 
-  void reset(B block = NULL,
+  void reset(B block = nullptr,
              base::scoped_policy::OwnershipPolicy policy =
                  base::scoped_policy::ASSUME) {
     if (block && policy == base::scoped_policy::RETAIN)
@@ -78,7 +77,7 @@ class ScopedBlock {
 
   B release() WARN_UNUSED_RESULT {
     B temp = block_;
-    block_ = NULL;
+    block_ = nullptr;
     return temp;
   }
 

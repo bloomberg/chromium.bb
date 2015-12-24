@@ -10,8 +10,8 @@
 // singled out because it is most typically included from other header files.
 #import <Foundation/NSObject.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 @class NSAutoreleasePool;
 

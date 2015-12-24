@@ -5,7 +5,6 @@
 #ifndef BASE_MAC_SCOPED_TYPEREF_H_
 #define BASE_MAC_SCOPED_TYPEREF_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_policy.h"

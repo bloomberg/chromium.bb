@@ -5,10 +5,11 @@
 #include "base/mac/os_crash_dumps.h"
 
 #include <signal.h>
+#include <stddef.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace base {
 namespace mac {

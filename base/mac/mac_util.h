@@ -7,6 +7,7 @@
 
 #include <AvailabilityMacros.h>
 #include <Carbon/Carbon.h>
+#include <stdint.h>
 #include <string>
 
 #include "base/base_export.h"
@@ -240,8 +241,8 @@ BASE_EXPORT std::string GetModelIdentifier();
 // If any error occurs, none of the input pointers are touched.
 BASE_EXPORT bool ParseModelIdentifier(const std::string& ident,
                                       std::string* type,
-                                      int32* major,
-                                      int32* minor);
+                                      int32_t* major,
+                                      int32_t* minor);
 
 }  // namespace mac
 }  // namespace base

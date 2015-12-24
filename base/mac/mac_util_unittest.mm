@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/mac/mac_util.h"
 
@@ -12,6 +14,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -138,7 +141,7 @@ TEST_F(MacUtilTest, NSObjectRetainRelease) {
 }
 
 TEST_F(MacUtilTest, IsOSEllipsis) {
-  int32 major, minor, bugfix;
+  int32_t major, minor, bugfix;
   base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
 
   if (major == 10) {
@@ -256,7 +259,7 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
 
 TEST_F(MacUtilTest, ParseModelIdentifier) {
   std::string model;
-  int32 major = 1, minor = 2;
+  int32_t major = 1, minor = 2;
 
   EXPECT_FALSE(ParseModelIdentifier("", &model, &major, &minor));
   EXPECT_EQ(0U, model.length());

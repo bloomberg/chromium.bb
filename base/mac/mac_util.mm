@@ -6,8 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 #import <IOKit/IOKitLib.h>
-
 #include <errno.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/utsname.h>
 #include <sys/xattr.h>
@@ -582,15 +582,15 @@ std::string GetModelIdentifier() {
 
 bool ParseModelIdentifier(const std::string& ident,
                           std::string* type,
-                          int32* major,
-                          int32* minor) {
+                          int32_t* major,
+                          int32_t* minor) {
   size_t number_loc = ident.find_first_of("0123456789");
   if (number_loc == std::string::npos)
     return false;
   size_t comma_loc = ident.find(',', number_loc);
   if (comma_loc == std::string::npos)
     return false;
-  int32 major_tmp, minor_tmp;
+  int32_t major_tmp, minor_tmp;
   std::string::const_iterator begin = ident.begin();
   if (!StringToInt(
           StringPiece(begin + number_loc, begin + comma_loc), &major_tmp) ||

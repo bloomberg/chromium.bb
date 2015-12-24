@@ -4,8 +4,11 @@
 
 #include "base/mac/libdispatch_task_runner.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/mac/bind_objc_block.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"

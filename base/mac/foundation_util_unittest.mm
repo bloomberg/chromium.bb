@@ -4,13 +4,16 @@
 
 #include "base/mac/foundation_util.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 

@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"

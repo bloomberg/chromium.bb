@@ -15,6 +15,7 @@
 #import <CoreWLAN/CoreWLAN.h>
 #import <ImageCaptureCore/ImageCaptureCore.h>
 #import <IOBluetooth/IOBluetooth.h>
+#include <stdint.h>
 
 #include "base/base_export.h"
 

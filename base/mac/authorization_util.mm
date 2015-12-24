@@ -5,16 +5,17 @@
 #include "base/mac/authorization_util.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 #include <sys/wait.h>
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_authorizationref.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

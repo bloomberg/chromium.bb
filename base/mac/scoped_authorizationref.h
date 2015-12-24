@@ -7,8 +7,8 @@
 
 #include <Security/Authorization.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 // ScopedAuthorizationRef maintains ownership of an AuthorizationRef.  It is
 // patterned after the scoped_ptr interface.
