@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/debug/proc_maps_linux.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -142,7 +147,7 @@ TEST(ProcMapsTest, Multiple) {
 TEST(ProcMapsTest, Permissions) {
   static struct {
     const char* input;
-    uint8 permissions;
+    uint8_t permissions;
   } kTestCases[] = {
     {"00400000-0040b000 ---s 00000000 fc:00 794418 /bin/cat\n", 0},
     {"00400000-0040b000 ---S 00000000 fc:00 794418 /bin/cat\n", 0},

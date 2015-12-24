@@ -6,11 +6,12 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <stddef.h>
 
 #include <iostream>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"

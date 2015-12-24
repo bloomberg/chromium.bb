@@ -4,10 +4,13 @@
 
 #include "base/debug/crash_logging.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -10,6 +10,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include "base/win/pe_image.h"

@@ -5,11 +5,12 @@
 #ifndef BASE_DEBUG_PROC_MAPS_LINUX_H_
 #define BASE_DEBUG_PROC_MAPS_LINUX_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 
 namespace base {
 namespace debug {
@@ -31,7 +32,7 @@ struct MappedMemoryRegion {
   unsigned long long offset;
 
   // Bitmask of read/write/execute/private/shared permissions.
-  uint8 permissions;
+  uint8_t permissions;
 
   // Name of the file mapped into memory.
   //

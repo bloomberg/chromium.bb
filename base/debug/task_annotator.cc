@@ -55,9 +55,10 @@ void TaskAnnotator::RunTask(const char* queue_function,
       pending_task, stopwatch);
 }
 
-uint64 TaskAnnotator::GetTaskTraceID(const PendingTask& task) const {
-  return (static_cast<uint64>(task.sequence_num) << 32) |
-         ((static_cast<uint64>(reinterpret_cast<intptr_t>(this)) << 32) >> 32);
+uint64_t TaskAnnotator::GetTaskTraceID(const PendingTask& task) const {
+  return (static_cast<uint64_t>(task.sequence_num) << 32) |
+         ((static_cast<uint64_t>(reinterpret_cast<intptr_t>(this)) << 32) >>
+          32);
 }
 
 }  // namespace debug

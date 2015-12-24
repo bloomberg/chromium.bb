@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/param.h>
@@ -30,10 +32,10 @@
 #include <AvailabilityMacros.h>
 #endif
 
-#include "base/basictypes.h"
 #include "base/debug/debugger.h"
 #include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/numerics/safe_conversions.h"

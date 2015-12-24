@@ -5,8 +5,10 @@
 #ifndef BASE_DEBUG_TASK_ANNOTATOR_H_
 #define BASE_DEBUG_TASK_ANNOTATOR_H_
 
+#include <stdint.h>
+
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 struct PendingTask;
@@ -32,7 +34,7 @@ class BASE_EXPORT TaskAnnotator {
   // Creates a process-wide unique ID to represent this task in trace events.
   // This will be mangled with a Process ID hash to reduce the likelyhood of
   // colliding with TaskAnnotator pointers on other processes.
-  uint64 GetTaskTraceID(const PendingTask& task) const;
+  uint64_t GetTaskTraceID(const PendingTask& task) const;
 
   DISALLOW_COPY_AND_ASSIGN(TaskAnnotator);
 };

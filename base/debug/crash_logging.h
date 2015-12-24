@@ -5,11 +5,13 @@
 #ifndef BASE_DEBUG_CRASH_LOGGING_H_
 #define BASE_DEBUG_CRASH_LOGGING_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 
 // These functions add metadata to the upload payload when sending crash reports

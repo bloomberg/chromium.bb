@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include <psapi.h>
+#include <stddef.h>
 #include <TlHelp32.h>
 
 #include "base/debug/alias.h"

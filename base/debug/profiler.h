@@ -5,10 +5,11 @@
 #ifndef BASE_DEBUG_PROFILER_H_
 #define BASE_DEBUG_PROFILER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 
 // The Profiler functions allow usage of the underlying sampling based
 // profiler. If the application has not been built with the necessary

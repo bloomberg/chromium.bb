@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/debug/debugger.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/param.h>
@@ -34,7 +36,6 @@
 
 #include <ostream>
 
-#include "base/basictypes.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

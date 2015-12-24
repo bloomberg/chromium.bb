@@ -4,12 +4,12 @@
 
 #include "base/debug/stack_trace.h"
 
-#include "base/basictypes.h"
-
 #include <string.h>
 
 #include <algorithm>
 #include <sstream>
+
+#include "base/macros.h"
 
 namespace base {
 namespace debug {

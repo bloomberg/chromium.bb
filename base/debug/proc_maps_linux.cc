@@ -5,14 +5,16 @@
 #include "base/debug/proc_maps_linux.h"
 
 #include <fcntl.h>
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#include <inttypes.h>
-#endif
+#include <stddef.h>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include <inttypes.h>
+#endif
 
 #if defined(OS_ANDROID) && !defined(__LP64__)
 // In 32-bit mode, Bionic's inttypes.h defines PRI/SCNxPTR as an
@@ -112,8 +114,8 @@ bool ParseProcMaps(const std::string& input,
     MappedMemoryRegion region;
     const char* line = lines[i].c_str();
     char permissions[5] = {'\0'};  // Ensure NUL-terminated string.
-    uint8 dev_major = 0;
-    uint8 dev_minor = 0;
+    uint8_t dev_major = 0;
+    uint8_t dev_minor = 0;
     long inode = 0;
     int path_index = 0;
 

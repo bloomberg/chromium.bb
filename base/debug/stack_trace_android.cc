@@ -5,6 +5,7 @@
 #include "base/debug/stack_trace.h"
 
 #include <android/log.h>
+#include <stddef.h>
 #include <unwind.h>
 #include <ostream>
 

@@ -5,6 +5,7 @@
 #include "base/debug/debugger.h"
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace debug {
