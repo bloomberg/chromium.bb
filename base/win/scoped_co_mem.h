@@ -7,8 +7,8 @@
 
 #include <objbase.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace base {
 namespace win {

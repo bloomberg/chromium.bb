@@ -23,10 +23,11 @@
 #include <windows.h>
 #include <wmistr.h>
 #include <evntrace.h>
+#include <stddef.h>
 #include <string>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 namespace win {

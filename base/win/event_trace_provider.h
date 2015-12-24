@@ -10,6 +10,7 @@
 #include <windows.h>
 #include <wmistr.h>
 #include <evntrace.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>

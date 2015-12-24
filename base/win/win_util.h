@@ -23,6 +23,7 @@
 #define BASE_WIN_WIN_UTIL_H_
 
 #include <windows.h>
+#include <stdint.h>
 
 #include <string>
 

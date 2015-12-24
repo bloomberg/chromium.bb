@@ -7,8 +7,8 @@
 
 #include <objbase.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 
 namespace base {

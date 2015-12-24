@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 
 namespace base {
 namespace win {

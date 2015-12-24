@@ -8,9 +8,9 @@
 #include <windows.h>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/move.h"
 
 // TODO(rvargas): remove this with the rest of the verifier.

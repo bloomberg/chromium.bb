@@ -4,11 +4,14 @@
 
 #include "base/win/shortcut.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/scoped_com_initializer.h"
@@ -80,7 +83,7 @@ class ShortcutTest : public testing::Test {
 }  // namespace
 
 TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
-  uint32 valid_properties = ShortcutProperties::PROPERTIES_BASIC;
+  uint32_t valid_properties = ShortcutProperties::PROPERTIES_BASIC;
   if (GetVersion() >= VERSION_WIN7)
     valid_properties |= ShortcutProperties::PROPERTIES_WIN7;
 

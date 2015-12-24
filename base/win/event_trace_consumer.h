@@ -9,8 +9,10 @@
 #include <windows.h>
 #include <wmistr.h>
 #include <evntrace.h>
+#include <stddef.h>
 #include <vector>
-#include "base/basictypes.h"
+
+#include "base/macros.h"
 
 namespace base {
 namespace win {

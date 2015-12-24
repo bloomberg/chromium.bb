@@ -6,8 +6,9 @@
 #define BASE_WIN_SCOPED_HGLOBAL_H_
 
 #include <windows.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 namespace win {

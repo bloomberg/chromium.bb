@@ -8,9 +8,9 @@
 #include <windows.h>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 

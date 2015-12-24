@@ -6,9 +6,10 @@
 #define BASE_WIN_STARTUP_INFORMATION_H_
 
 #include <windows.h>
+#include <stddef.h>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 namespace win {

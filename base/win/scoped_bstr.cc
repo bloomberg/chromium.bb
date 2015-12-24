@@ -4,6 +4,8 @@
 
 #include "base/win/scoped_bstr.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 
 namespace base {
@@ -55,8 +57,8 @@ BSTR ScopedBstr::AllocateBytes(size_t bytes) {
 
 void ScopedBstr::SetByteLen(size_t bytes) {
   DCHECK(bstr_ != NULL) << "attempting to modify a NULL bstr";
-  uint32* data = reinterpret_cast<uint32*>(bstr_);
-  data[-1] = static_cast<uint32>(bytes);
+  uint32_t* data = reinterpret_cast<uint32_t*>(bstr_);
+  data[-1] = static_cast<uint32_t>(bytes);
 }
 
 size_t ScopedBstr::Length() const {

@@ -4,6 +4,8 @@
 
 #include "base/win/metro.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 

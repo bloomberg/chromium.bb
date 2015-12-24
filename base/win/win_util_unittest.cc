@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"

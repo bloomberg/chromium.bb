@@ -5,6 +5,8 @@
 // This file implements PEImage, a generic class to manipulate PE files.
 // This file was adapted from GreenBorder's Code.
 
+#include <stddef.h>
+
 #include "base/win/pe_image.h"
 
 namespace base {

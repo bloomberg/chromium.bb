@@ -4,12 +4,15 @@
 
 #include "base/win/scoped_handle.h"
 
+#include <stddef.h>
+
 #include <unordered_map>
 
 #include "base/debug/alias.h"
 #include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/synchronization/lock_impl.h"
 
 extern "C" {

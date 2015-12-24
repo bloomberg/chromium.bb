@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,7 +128,7 @@ TEST(ScopedVariantTest, ScopedVariant) {
   // need to be freed explicitly).
 
   // We need static cast here since char defaults to int (!?).
-  var.Set(static_cast<int8>('v'));
+  var.Set(static_cast<int8_t>('v'));
   EXPECT_EQ(VT_I1, var.type());
   EXPECT_EQ('v', V_I1(var.ptr()));
 
@@ -134,15 +136,15 @@ TEST(ScopedVariantTest, ScopedVariant) {
   EXPECT_EQ(VT_I2, var.type());
   EXPECT_EQ(123, V_I2(var.ptr()));
 
-  var.Set(static_cast<int32>(123));
+  var.Set(static_cast<int32_t>(123));
   EXPECT_EQ(VT_I4, var.type());
   EXPECT_EQ(123, V_I4(var.ptr()));
 
-  var.Set(static_cast<int64>(123));
+  var.Set(static_cast<int64_t>(123));
   EXPECT_EQ(VT_I8, var.type());
   EXPECT_EQ(123, V_I8(var.ptr()));
 
-  var.Set(static_cast<uint8>(123));
+  var.Set(static_cast<uint8_t>(123));
   EXPECT_EQ(VT_UI1, var.type());
   EXPECT_EQ(123u, V_UI1(var.ptr()));
 
@@ -150,11 +152,11 @@ TEST(ScopedVariantTest, ScopedVariant) {
   EXPECT_EQ(VT_UI2, var.type());
   EXPECT_EQ(123u, V_UI2(var.ptr()));
 
-  var.Set(static_cast<uint32>(123));
+  var.Set(static_cast<uint32_t>(123));
   EXPECT_EQ(VT_UI4, var.type());
   EXPECT_EQ(123u, V_UI4(var.ptr()));
 
-  var.Set(static_cast<uint64>(123));
+  var.Set(static_cast<uint64_t>(123));
   EXPECT_EQ(VT_UI8, var.type());
   EXPECT_EQ(123u, V_UI8(var.ptr()));
 

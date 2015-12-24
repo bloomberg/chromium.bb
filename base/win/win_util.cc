@@ -17,12 +17,14 @@
 #include <sddl.h>
 #include <setupapi.h>
 #include <signal.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

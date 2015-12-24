@@ -4,11 +4,14 @@
 
 #include "base/win/registry.h"
 
+#include <stdint.h>
+
 #include <cstring>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -86,7 +89,7 @@ TEST_F(RegistryTest, ValueTest) {
     const wchar_t kInt64ValueName[] = L"Int64Value";
     const wchar_t kStringData[] = L"string data";
     const DWORD kDWORDData = 0xdeadbabe;
-    const int64 kInt64Data = 0xdeadbabedeadbabeLL;
+    const int64_t kInt64Data = 0xdeadbabedeadbabeLL;
 
     // Test value creation
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kStringValueName, kStringData));
@@ -101,7 +104,7 @@ TEST_F(RegistryTest, ValueTest) {
     // Test Read
     std::wstring string_value;
     DWORD dword_value = 0;
-    int64 int64_value = 0;
+    int64_t int64_value = 0;
     ASSERT_EQ(ERROR_SUCCESS, key.ReadValue(kStringValueName, &string_value));
     ASSERT_EQ(ERROR_SUCCESS, key.ReadValueDW(kDWORDValueName, &dword_value));
     ASSERT_EQ(ERROR_SUCCESS, key.ReadInt64(kInt64ValueName, &int64_value));
@@ -166,7 +169,7 @@ TEST_F(RegistryTest, TruncatedCharTest) {
 
   const wchar_t kName[] = L"name";
   // kData size is not a multiple of sizeof(wchar_t).
-  const uint8 kData[] = { 1, 2, 3, 4, 5 };
+  const uint8_t kData[] = {1, 2, 3, 4, 5};
   EXPECT_EQ(5u, arraysize(kData));
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kName, kData,
                                           arraysize(kData), REG_BINARY));

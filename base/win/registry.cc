@@ -5,9 +5,11 @@
 #include "base/win/registry.h"
 
 #include <shlwapi.h>
+#include <stddef.h>
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
@@ -301,10 +303,10 @@ LONG RegKey::ReadValueDW(const wchar_t* name, DWORD* out_value) const {
   return result;
 }
 
-LONG RegKey::ReadInt64(const wchar_t* name, int64* out_value) const {
+LONG RegKey::ReadInt64(const wchar_t* name, int64_t* out_value) const {
   DCHECK(out_value);
   DWORD type = REG_QWORD;
-  int64 local_value = 0;
+  int64_t local_value = 0;
   DWORD size = sizeof(local_value);
   LONG result = ReadValue(name, &local_value, &size, &type);
   if (result == ERROR_SUCCESS) {

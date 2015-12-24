@@ -6,6 +6,7 @@
 #define BASE_WIN_SHORTCUT_H_
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "base/base_export.h"
 #include "base/files/file_path.h"
@@ -113,7 +114,7 @@ struct BASE_EXPORT ShortcutProperties {
   bool dual_mode;
   // Bitfield made of IndividualProperties. Properties set in |options| will be
   // set on the shortcut, others will be ignored.
-  uint32 options;
+  uint32_t options;
 };
 
 // This method creates (or updates) a shortcut link at |shortcut_path| using the
@@ -138,7 +139,7 @@ BASE_EXPORT bool CreateOrUpdateShortcutLink(
 // properties are successfully read. Otherwise some reads have failed and
 // intermediate values written to |properties| should be ignored.
 BASE_EXPORT bool ResolveShortcutProperties(const FilePath& shortcut_path,
-                                           uint32 options,
+                                           uint32_t options,
                                            ShortcutProperties* properties);
 
 // Resolves Windows shortcut (.LNK file).
