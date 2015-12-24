@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -298,7 +300,7 @@ TEST_F(HeartbeatSchedulerTest, CheckMessageContents) {
 
   // Check the values in the message payload.
   EXPECT_EQ("hb", message.data["type"]);
-  int64 timestamp;
+  int64_t timestamp;
   EXPECT_TRUE(base::StringToInt64(message.data["timestamp"], &timestamp));
   EXPECT_EQ(kFakeEnrollmentDomain, message.data["domain_name"]);
   EXPECT_EQ(kFakeDeviceId, message.data["device_id"]);

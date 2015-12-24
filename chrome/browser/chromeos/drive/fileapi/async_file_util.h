@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_ASYNC_FILE_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_ASYNC_FILE_UTIL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
 namespace drive {
@@ -48,7 +50,7 @@ class AsyncFileUtil : public storage::AsyncFileUtil {
              const StatusCallback& callback) override;
   void Truncate(scoped_ptr<storage::FileSystemOperationContext> context,
                 const storage::FileSystemURL& url,
-                int64 length,
+                int64_t length,
                 const StatusCallback& callback) override;
   void CopyFileLocal(scoped_ptr<storage::FileSystemOperationContext> context,
                      const storage::FileSystemURL& src_url,

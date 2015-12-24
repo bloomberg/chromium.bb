@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/fileapi/external_file_url_request_job.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"

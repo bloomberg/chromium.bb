@@ -4,9 +4,12 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -61,7 +64,7 @@ namespace file_manager {
 namespace {
 
 // Frequency of sending onFileTransferUpdated.
-const int64 kProgressEventFrequencyInMilliseconds = 1000;
+const int64_t kProgressEventFrequencyInMilliseconds = 1000;
 
 // Maximim size of detailed change info on directory change event. If the size
 // exceeds the maximum size, the detailed info is omitted and the force refresh
@@ -69,7 +72,7 @@ const int64 kProgressEventFrequencyInMilliseconds = 1000;
 const size_t kDirectoryChangeEventMaxDetailInfoSize = 1000;
 
 // This time(millisecond) is used for confirm following event exists.
-const int64 kFileTransferEventDelayTimeInMilliseconds = 300;
+const int64_t kFileTransferEventDelayTimeInMilliseconds = 300;
 
 // Checks if the Recovery Tool is running. This is a temporary solution.
 // TODO(mtomasz): Replace with crbug.com/341902 solution.
@@ -237,7 +240,7 @@ std::string FileErrorToErrorName(base::File::Error error_code) {
 // |last_time|.
 bool ShouldSendProgressEvent(bool always, base::Time* last_time) {
   const base::Time now = base::Time::Now();
-  const int64 delta = (now - *last_time).InMilliseconds();
+  const int64_t delta = (now - *last_time).InMilliseconds();
   // delta < 0 may rarely happen if system clock is synced and rewinded.
   // To be conservative, we don't skip in that case.
   if (!always && 0 <= delta && delta < kProgressEventFrequencyInMilliseconds) {
@@ -570,7 +573,7 @@ void EventRouter::OnCopyProgress(
     storage::FileSystemOperation::CopyProgressType type,
     const GURL& source_url,
     const GURL& destination_url,
-    int64 size) {
+    int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager_private::CopyProgressStatus status;

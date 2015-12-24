@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PROXY_CROS_SETTINGS_PARSER_H_
 #define CHROME_BROWSER_CHROMEOS_PROXY_CROS_SETTINGS_PARSER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 namespace base {

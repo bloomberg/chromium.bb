@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "google_apis/gaia/gaia_constants.h"

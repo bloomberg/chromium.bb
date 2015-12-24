@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_ACCESSIBILITY_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_ACCESSIBILITY_H_
 
+#include "base/macros.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {

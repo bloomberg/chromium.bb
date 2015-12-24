@@ -7,8 +7,8 @@
 
 #include <deque>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/cpu_data_collector.h"
 #include "chromeos/chromeos_export.h"

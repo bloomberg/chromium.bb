@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_SCREEN_CAPTURE_NOTIFICATION_UI_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_UI_SCREEN_CAPTURE_NOTIFICATION_UI_CHROMEOS_H_
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 

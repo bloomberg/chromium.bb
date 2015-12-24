@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_EXTENSION_EVENT_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_EXTENSION_EVENT_OBSERVER_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
@@ -88,9 +90,9 @@ class ExtensionEventObserver : public content::NotificationObserver,
   void OnBackgroundEventAcked(const extensions::ExtensionHost* host,
                               int event_id) override;
   void OnNetworkRequestStarted(const extensions::ExtensionHost* host,
-                               uint64 request_id) override;
+                               uint64_t request_id) override;
   void OnNetworkRequestDone(const extensions::ExtensionHost* host,
-                            uint64 request_id) override;
+                            uint64_t request_id) override;
 
   // PowerManagerClient::Observer overrides.
   void SuspendImminent() override;

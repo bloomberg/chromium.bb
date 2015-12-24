@@ -4,12 +4,16 @@
 
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
@@ -61,7 +65,7 @@ namespace em = enterprise_management;
 
 namespace {
 
-const int64 kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
+const int64_t kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
 const char kKioskAccountId[] = "kiosk_user@localhost";
 const char kKioskAppId[] = "kiosk_app_id";
 const char kExternalMountPoint[] = "/a/b/c";
@@ -178,8 +182,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
 
 // Return the total number of active milliseconds contained in a device
 // status report.
-int64 GetActiveMilliseconds(em::DeviceStatusReportRequest& status) {
-  int64 active_milliseconds = 0;
+int64_t GetActiveMilliseconds(em::DeviceStatusReportRequest& status) {
+  int64_t active_milliseconds = 0;
   for (int i = 0; i < status.active_period_size(); i++) {
     active_milliseconds += status.active_period(i).active_duration();
   }
@@ -386,7 +390,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
  protected:
   // Convenience method.
-  int64 ActivePeriodMilliseconds() {
+  int64_t ActivePeriodMilliseconds() {
     return policy::DeviceStatusCollector::kIdlePollIntervalSeconds * 1000;
   }
 

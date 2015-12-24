@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_PROTOCOL_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_PROTOCOL_HANDLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace base {

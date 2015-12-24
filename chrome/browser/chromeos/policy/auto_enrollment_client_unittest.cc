@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
@@ -90,7 +91,7 @@ class AutoEnrollmentClientTest : public testing::Test {
         .WillOnce(service_->FailJob(error));
   }
 
-  void ServerWillReply(int64 modulus, bool with_hashes, bool with_id_hash) {
+  void ServerWillReply(int64_t modulus, bool with_hashes, bool with_id_hash) {
     em::DeviceManagementResponse response;
     em::DeviceAutoEnrollmentResponse* enrollment_response =
         response.mutable_auto_enrollment_response();
@@ -387,7 +388,7 @@ TEST_F(AutoEnrollmentClientTest, NoBitsUploaded) {
 }
 
 TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
-  int64 bottom62 = INT64_C(0x386e7244d097c3e6);
+  int64_t bottom62 = INT64_C(0x386e7244d097c3e6);
   for (int i = 0; i <= 62; ++i) {
     CreateClient(kStateKey, i, i);
     ServerWillReply(-1, false, false);

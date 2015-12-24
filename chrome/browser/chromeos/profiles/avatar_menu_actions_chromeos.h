@@ -7,7 +7,11 @@
 
 #include "chrome/browser/profiles/avatar_menu_actions.h"
 
+#include <stddef.h>
+
 #include <string>
+
+#include "base/macros.h"
 
 class Browser;
 

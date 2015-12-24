@@ -4,13 +4,15 @@
 
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -72,7 +74,7 @@ const char kCryptohomeGAIAKeyLabel[] = "gaia";
 const char kSalt[] = "SALT $$";
 
 // An owner key in PKCS#8 PrivateKeyInfo for testing owner checks.
-const uint8 kOwnerPrivateKey[] = {
+const uint8_t kOwnerPrivateKey[] = {
     0x30, 0x82, 0x01, 0x53, 0x02, 0x01, 0x00, 0x30, 0x0d, 0x06, 0x09, 0x2a,
     0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x04, 0x82,
     0x01, 0x3d, 0x30, 0x82, 0x01, 0x39, 0x02, 0x01, 0x00, 0x02, 0x41, 0x00,
@@ -104,7 +106,7 @@ const uint8 kOwnerPrivateKey[] = {
     0x7e, 0x68, 0x37, 0x26, 0xda, 0xb9, 0x87};
 
 // The public key alone matcing kOwnerPrivateKey.
-const uint8 kOwnerPublicKey[] = {
+const uint8_t kOwnerPublicKey[] = {
     0x30, 0x5c, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d,
     0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x4b, 0x00, 0x30, 0x48, 0x02, 0x41,
     0x00, 0xb4, 0xf5, 0xab, 0xfe, 0xd8, 0xf1, 0xcb, 0x5f, 0x8f, 0x48, 0x3e,
@@ -114,14 +116,14 @@ const uint8 kOwnerPublicKey[] = {
     0x15, 0xc5, 0x65, 0x50, 0x7d, 0xbd, 0x4e, 0x81, 0xb2, 0x28, 0x38, 0xf9,
     0x3d, 0x3e, 0x2a, 0x68, 0xf7, 0x02, 0x03, 0x01, 0x00, 0x01};
 
-std::vector<uint8> GetOwnerPublicKey() {
-  return std::vector<uint8>(kOwnerPublicKey,
-                            kOwnerPublicKey + arraysize(kOwnerPublicKey));
+std::vector<uint8_t> GetOwnerPublicKey() {
+  return std::vector<uint8_t>(kOwnerPublicKey,
+                              kOwnerPublicKey + arraysize(kOwnerPublicKey));
 }
 
 bool CreateOwnerKeyInSlot(PK11SlotInfo* slot) {
-  const std::vector<uint8> key(kOwnerPrivateKey,
-                               kOwnerPrivateKey + arraysize(kOwnerPrivateKey));
+  const std::vector<uint8_t> key(
+      kOwnerPrivateKey, kOwnerPrivateKey + arraysize(kOwnerPrivateKey));
   return crypto::ImportNSSKeyFromPrivateKeyInfo(slot, key,
                                                 true /* permanent */);
 }
@@ -245,7 +247,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
-  void ExpectGetKeyDataExCall(scoped_ptr<int64> key_type,
+  void ExpectGetKeyDataExCall(scoped_ptr<int64_t> key_type,
                               scoped_ptr<std::string> salt) {
     key_definitions_.clear();
     key_definitions_.push_back(cryptohome::KeyDefinition(
@@ -567,7 +569,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome create
   // attempt.
-  ExpectGetKeyDataExCall(scoped_ptr<int64>(), scoped_ptr<std::string>());
+  ExpectGetKeyDataExCall(scoped_ptr<int64_t>(), scoped_ptr<std::string>());
   ExpectMountExCall(true /* expect_create_attempt */);
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
@@ -622,7 +624,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataRecover) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome mount
   // attempt.
-  ExpectGetKeyDataExCall(scoped_ptr<int64>(), scoped_ptr<std::string>());
+  ExpectGetKeyDataExCall(scoped_ptr<int64_t>(), scoped_ptr<std::string>());
   ExpectMountExCall(false /* expect_create_attempt */);
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
@@ -684,7 +686,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveCreateForNewUser) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome create
   // attempt.
-  ExpectGetKeyDataExCall(scoped_ptr<int64>(), scoped_ptr<std::string>());
+  ExpectGetKeyDataExCall(scoped_ptr<int64_t>(), scoped_ptr<std::string>());
   ExpectMountExCall(true /* expect_create_attempt */);
 
   // Set up state as though a cryptohome mount attempt has occurred
@@ -753,7 +755,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveLoginWithPreHashedPassword) {
   // mount when this pre-hashed key is used.
 
   ExpectGetKeyDataExCall(
-      make_scoped_ptr(new int64(Key::KEY_TYPE_SALTED_SHA256)),
+      make_scoped_ptr(new int64_t(Key::KEY_TYPE_SALTED_SHA256)),
       make_scoped_ptr(new std::string(kSalt)));
   ExpectMountExCall(false /* expect_create_attempt */);
 
@@ -771,7 +773,7 @@ TEST_F(CryptohomeAuthenticatorTest, FailLoginWithMissingSalt) {
   // pre-hashed key was used to create the cryptohome but without the required
   // salt.
   ExpectGetKeyDataExCall(
-      make_scoped_ptr(new int64(Key::KEY_TYPE_SALTED_SHA256)),
+      make_scoped_ptr(new int64_t(Key::KEY_TYPE_SALTED_SHA256)),
       scoped_ptr<std::string>());
 
   auth_->AuthenticateToLogin(NULL, user_context_);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -66,12 +68,11 @@ class TestFileSystemForOpenFile : public DummyFileSystem {
 
 // Helper function of testing OpenFile() for write access. It checks that the
 // file handle correctly writes to the expected file.
-void VerifyWrite(
-    int64 expected_size,
-    const base::FilePath& expected_written_path,
-    const std::string& write_data,
-    base::File file,
-    const base::Closure& close_callback) {
+void VerifyWrite(int64_t expected_size,
+                 const base::FilePath& expected_written_path,
+                 const std::string& write_data,
+                 base::File file,
+                 const base::Closure& close_callback) {
   // Check that the file was properly opened.
   EXPECT_TRUE(file.IsValid());
   EXPECT_FALSE(close_callback.is_null());
@@ -167,7 +168,7 @@ TEST_F(FileApiWorkerTest, OpenFileForCreateWrite) {
 
   // CREATE => CREATE (fails if file exists.)
   TestFileSystemForOpenFile file_system(temp_path, CREATE_FILE);
-  const int64 kExpectedSize = 0;
+  const int64_t kExpectedSize = 0;
 
   OpenFile(kDummyPath,
            base::File::FLAG_CREATE | base::File::FLAG_WRITE,
@@ -189,7 +190,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenAlwaysWrite) {
   // OPEN_ALWAYS => OPEN_OR_CREATE (success whether file exists or not.)
   // No truncation should take place.
   TestFileSystemForOpenFile file_system(temp_path, OPEN_OR_CREATE_FILE);
-  const int64 kExpectedSize = static_cast<int64>(kInitialData.size());
+  const int64_t kExpectedSize = static_cast<int64_t>(kInitialData.size());
 
   OpenFile(kDummyPath,
            base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE,
@@ -211,7 +212,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenTruncatedWrite) {
   // OPEN_TRUNCATED => OPEN (failure when the file did not exist.)
   // It should truncate the file before passing to the callback.
   TestFileSystemForOpenFile file_system(temp_path, OPEN_FILE);
-  const int64 kExpectedSize = 0;
+  const int64_t kExpectedSize = 0;
 
   OpenFile(kDummyPath,
            base::File::FLAG_OPEN_TRUNCATED | base::File::FLAG_WRITE,
@@ -233,7 +234,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenCreateAlwaysWrite) {
   // CREATE_ALWAYS => OPEN_OR_CREATE (success whether file exists or not.)
   // It should truncate the file before passing to the callback.
   TestFileSystemForOpenFile file_system(temp_path, OPEN_OR_CREATE_FILE);
-  const int64 kExpectedSize = 0;
+  const int64_t kExpectedSize = 0;
 
   OpenFile(kDummyPath,
            base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,

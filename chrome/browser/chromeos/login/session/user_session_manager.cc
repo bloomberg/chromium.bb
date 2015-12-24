@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/base_paths.h"

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chromeos/cert_loader.h"
 #include "net/cert/x509_certificate.h"

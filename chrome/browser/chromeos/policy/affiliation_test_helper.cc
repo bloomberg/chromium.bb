@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -49,7 +51,7 @@ void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
       chromeos::CryptohomeClient::GetStubSanitizedUsername(username);
   const base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username).AppendASCII("policy.pub");
-  std::vector<uint8> user_key_bits;
+  std::vector<uint8_t> user_key_bits;
   ASSERT_TRUE(user_policy->GetSigningKey()->ExportPublicKey(&user_key_bits));
   ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
   ASSERT_EQ(base::WriteFile(user_key_file,

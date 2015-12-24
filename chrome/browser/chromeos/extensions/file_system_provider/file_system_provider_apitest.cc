@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/thread_task_runner_handle.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

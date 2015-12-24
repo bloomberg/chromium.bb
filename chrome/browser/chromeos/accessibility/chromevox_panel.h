@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_CHROMEVOX_PANEL_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_CHROMEVOX_PANEL_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/views/widget/widget_delegate.h"

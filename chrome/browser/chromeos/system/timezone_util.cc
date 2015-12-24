@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/system/timezone_util.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/i18n/rtl.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/task_runner_util.h"
@@ -293,7 +295,7 @@ void CreateFile(const base::FilePath& file_path,
 }
 
 void Truncate(const base::FilePath& file_path,
-              int64 length,
+              int64_t length,
               const StatusCallback& callback,
               FileSystemInterface* file_system) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

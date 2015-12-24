@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_PREFERENCES_H_
 #define CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_PREFERENCES_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 class PrefRegistrySimple;
@@ -42,8 +43,8 @@ void SetCurrentDisplayLayout(const ash::DisplayLayout& layout);
 void LoadDisplayPreferences(bool first_run_after_boot);
 
 // Stores the display layout for given display pairs for tests.
-void StoreDisplayLayoutPrefForTest(int64 id1,
-                                   int64 id2,
+void StoreDisplayLayoutPrefForTest(int64_t id1,
+                                   int64_t id2,
                                    const ash::DisplayLayout& layout);
 
 // Stores the given |power_state| for tests.

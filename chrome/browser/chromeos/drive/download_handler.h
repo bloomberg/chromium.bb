@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DOWNLOAD_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DOWNLOAD_HANDLER_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "components/drive/file_errors.h"
@@ -74,7 +77,7 @@ class DownloadHandler : public AllDownloadItemNotifier::Observer {
       const content::CheckForFileExistenceCallback& callback);
 
   // Calculates request space for |downloads|.
-  int64 CalculateRequestSpace(
+  int64_t CalculateRequestSpace(
       const content::DownloadManager::DownloadVector& downloads);
 
   // Checks available storage space and free disk space if necessary. Actual

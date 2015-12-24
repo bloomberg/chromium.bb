@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_PROXY_SETTINGS_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_PROXY_SETTINGS_DIALOG_H_
 
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 

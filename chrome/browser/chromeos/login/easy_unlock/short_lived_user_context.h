@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_SHORT_LIVED_USER_CONTEXT_H_
 
 #include "apps/app_lifetime_monitor.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 

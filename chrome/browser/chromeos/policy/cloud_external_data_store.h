@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_STORE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_CLOUD_EXTERNAL_DATA_STORE_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 

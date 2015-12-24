@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_POWER_SESSION_STATE_CONTROLLER_DELEGATE_CHROMEOS_H_
 
 #include "ash/wm/lock_state_controller.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 namespace chromeos {

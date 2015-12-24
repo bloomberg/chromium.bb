@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/screenshot_testing/screenshot_tester.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -228,7 +231,7 @@ ScreenshotTester::PNGFile ScreenshotTester::LoadGoldenScreenshot(
     return 0;
   }
 
-  int64 golden_screenshot_size;
+  int64_t golden_screenshot_size;
   base::GetFileSize(image_path, &golden_screenshot_size);
 
   if (golden_screenshot_size == -1) {

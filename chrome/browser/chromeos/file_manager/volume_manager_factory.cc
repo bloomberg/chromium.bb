@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"

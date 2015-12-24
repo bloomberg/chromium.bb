@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -79,7 +82,7 @@ class EventLogger {
     result_.reset(new base::File::Error(error));
   }
 
-  void OnCopyFileProgress(int64 size) {}
+  void OnCopyFileProgress(int64_t size) {}
 
   base::File::Error* result() { return result_.get(); }
 

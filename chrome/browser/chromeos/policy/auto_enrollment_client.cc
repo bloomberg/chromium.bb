@@ -43,12 +43,12 @@ const char kUMANetworkErrorCode[] =
     "Enterprise.AutoEnrollmentRequestNetworkErrorCode";
 
 // Returns the power of the next power-of-2 starting at |value|.
-int NextPowerOf2(int64 value) {
+int NextPowerOf2(int64_t value) {
   for (int i = 0; i <= AutoEnrollmentClient::kMaximumPower; ++i) {
     if ((INT64_C(1) << i) >= value)
       return i;
   }
-  // No other value can be represented in an int64.
+  // No other value can be represented in an int64_t.
   return AutoEnrollmentClient::kMaximumPower + 1;
 }
 
@@ -236,9 +236,9 @@ void AutoEnrollmentClient::NextStep() {
 void AutoEnrollmentClient::SendBucketDownloadRequest() {
   // Only power-of-2 moduli are supported for now. These are computed by taking
   // the lower |current_power_| bits of the hash.
-  uint64 remainder = 0;
+  uint64_t remainder = 0;
   for (int i = 0; 8 * i < current_power_; ++i) {
-    uint64 byte = server_backed_state_key_hash_[31 - i] & 0xff;
+    uint64_t byte = server_backed_state_key_hash_[31 - i] & 0xff;
     remainder = remainder | (byte << (8 * i));
   }
   remainder = remainder & ((UINT64_C(1) << current_power_) - 1);
@@ -321,7 +321,7 @@ bool AutoEnrollmentClient::OnBucketDownloadRequestCompletion(
     // Server is asking us to retry with a different modulus.
     modulus_updates_received_++;
 
-    int64 modulus = enrollment_response.expected_modulus();
+    int64_t modulus = enrollment_response.expected_modulus();
     int power = NextPowerOf2(modulus);
     if ((INT64_C(1) << power) != modulus) {
       LOG(ERROR) << "Auto enrollment: the server didn't ask for a power-of-2 "

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_CONTROLLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 #include "ui/views/focus/focus_manager.h"

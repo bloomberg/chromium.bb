@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_MANAGER_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_USER_MANAGER_INTERFACE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
 

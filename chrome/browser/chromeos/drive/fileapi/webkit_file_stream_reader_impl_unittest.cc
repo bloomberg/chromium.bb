@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_reader_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -80,7 +83,7 @@ TEST_F(WebkitFileStreamReaderImplTest, ReadThenGetLength) {
   ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &content));
 
   net::TestInt64CompletionCallback callback;
-  int64 length = reader->GetLength(callback.callback());
+  int64_t length = reader->GetLength(callback.callback());
   length = callback.GetResult(length);
   EXPECT_EQ(content.size(), static_cast<size_t>(length));
 }
@@ -95,7 +98,7 @@ TEST_F(WebkitFileStreamReaderImplTest, GetLengthThenRead) {
       base::Time()));  // expected modification time
 
   net::TestInt64CompletionCallback callback;
-  int64 length = reader->GetLength(callback.callback());
+  int64_t length = reader->GetLength(callback.callback());
   length = callback.GetResult(length);
 
   std::string content;
@@ -117,7 +120,7 @@ TEST_F(WebkitFileStreamReaderImplTest, ReadWithOffset) {
   ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &content));
 
   net::TestInt64CompletionCallback callback;
-  int64 length = reader->GetLength(callback.callback());
+  int64_t length = reader->GetLength(callback.callback());
   length = callback.GetResult(length);
   EXPECT_EQ(content.size() + kOffset, static_cast<size_t>(length));
 }
@@ -149,7 +152,7 @@ TEST_F(WebkitFileStreamReaderImplTest, GetLengthError) {
       base::Time()));  // expected modification time
 
   net::TestInt64CompletionCallback callback;
-  int64 result = reader->GetLength(callback.callback());
+  int64_t result = reader->GetLength(callback.callback());
   result = callback.GetResult(result);
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, result);
 }
@@ -189,7 +192,7 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
       expected_modification_time));
 
   net::TestInt64CompletionCallback callback;
-  int64 result = reader->GetLength(callback.callback());
+  int64_t result = reader->GetLength(callback.callback());
   result = callback.GetResult(result);
 
   std::string content;
@@ -208,7 +211,7 @@ TEST_F(WebkitFileStreamReaderImplTest, DISABLED_LastModificationError) {
       base::Time::FromInternalValue(1)));
 
   net::TestInt64CompletionCallback callback;
-  int64 result = reader->GetLength(callback.callback());
+  int64_t result = reader->GetLength(callback.callback());
   result = callback.GetResult(result);
   EXPECT_EQ(net::ERR_UPLOAD_FILE_CHANGED, result);
 }

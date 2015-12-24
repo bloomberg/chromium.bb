@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

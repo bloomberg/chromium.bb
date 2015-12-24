@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/status/network_menu.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "ash/shell.h"
@@ -11,6 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/mobile_config.h"

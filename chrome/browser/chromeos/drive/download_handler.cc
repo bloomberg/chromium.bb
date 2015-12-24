@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/drive/download_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
 #include "base/thread_task_runner_handle.h"
@@ -251,15 +254,15 @@ void DownloadHandler::SetFreeDiskSpaceDelayForTesting(
   free_disk_space_delay_ = delay;
 }
 
-int64 DownloadHandler::CalculateRequestSpace(
+int64_t DownloadHandler::CalculateRequestSpace(
     const DownloadManager::DownloadVector& downloads) {
-  int64 request_space = 0;
+  int64_t request_space = 0;
 
   for (const auto* download : downloads) {
     if (download->IsDone())
       continue;
 
-    const int64 total_bytes = download->GetTotalBytes();
+    const int64_t total_bytes = download->GetTotalBytes();
     // Skip unknown size download. Since drive cache tries to keep
     // drive::internal::kMinFreeSpaceInBytes, we can continue download with
     // using the space temporally.

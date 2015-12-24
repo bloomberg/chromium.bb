@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"

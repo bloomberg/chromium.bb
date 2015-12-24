@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/read_directory.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/memory/linked_ptr.h"

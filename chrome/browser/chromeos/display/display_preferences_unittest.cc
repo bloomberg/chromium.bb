@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -18,6 +20,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
@@ -102,7 +105,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   void StoreDisplayLayoutPrefForPair(const ash::DisplayIdPair& pair,
                                      ash::DisplayLayout::Position layout,
                                      int offset,
-                                     int64 primary_id) {
+                                     int64_t primary_id) {
     std::string name = ToPairString(pair);
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     ash::DisplayLayout display_layout(layout, offset);
@@ -156,7 +159,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     StoreDisplayLayoutPrefForPair(pair, layout, offset, pair.first);
   }
 
-  void StoreDisplayOverscan(int64 id, const gfx::Insets& insets) {
+  void StoreDisplayOverscan(int64_t id, const gfx::Insets& insets) {
     DictionaryPrefUpdate update(&local_state_, prefs::kDisplayProperties);
     const std::string name = base::Int64ToString(id);
 
@@ -169,7 +172,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     pref_data->Set(name, insets_value);
   }
 
-  void StoreColorProfile(int64 id, const std::string& profile) {
+  void StoreColorProfile(int64_t id, const std::string& profile) {
     DictionaryPrefUpdate update(&local_state_, prefs::kDisplayProperties);
     const std::string name = base::Int64ToString(id);
 
@@ -244,10 +247,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
       ash::Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200*2, 400x300#400x400|300x200*1.25");
-  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64_t id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
   ash::test::ScopedSetInternalDisplayId set_internal(id1);
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  int64 dummy_id = id2 + 1;
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
   std::vector<ui::ColorCalibrationProfile> profiles;
   profiles.push_back(ui::COLOR_PROFILE_STANDARD);
@@ -471,7 +474,7 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   ResolutionNotificationController::SuppressTimerForTest();
   LoggedInAsUser();
   UpdateDisplay("400x300#500x400|400x300|300x200");
-  int64 id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   // Set display's resolution in single display. It creates the notification and
   // display preferences should not stored meanwhile.
   ash::Shell* shell = ash::Shell::GetInstance();
@@ -517,8 +520,8 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
 
 TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
   UpdateDisplay("100x100,200x200");
-  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
 
   ash::WindowTreeHostManager* window_tree_host_manager =
       ash::Shell::GetInstance()->window_tree_host_manager();
@@ -554,7 +557,7 @@ TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
-  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64_t id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
 
   StoreColorProfile(id1, "dynamic");
 
@@ -586,16 +589,16 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   UpdateDisplay("200x200*2,200x200");
 
   LoggedInAsGuest();
-  int64 id1 = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t id1 = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   ash::test::ScopedSetInternalDisplayId set_internal(id1);
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
+  int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
   SetCurrentDisplayLayout(layout);
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ash::SetDisplayUIScale(id1, 1.25f);
   window_tree_host_manager->SetPrimaryDisplayId(id2);
-  int64 new_primary = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
+  int64_t new_primary = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   window_tree_host_manager->SetOverscanInsets(new_primary,
                                               gfx::Insets(10, 11, 12, 13));
   display_manager->SetDisplayRotation(new_primary, gfx::Display::ROTATE_90,
@@ -901,7 +904,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
 
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kDisplayProperties);
-  int64 unified_id = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64_t unified_id = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
   EXPECT_FALSE(
       displays->GetDictionary(base::Int64ToString(unified_id), &new_value));
 
@@ -939,7 +942,7 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
 }
 
 TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
-  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64_t id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
   ash::DisplayIdPair pair = std::make_pair(id1, id1 + 1);
   StoreDisplayBoolPropertyForPair(pair, "default_unified", true);
   StoreDisplayPropertyForPair(

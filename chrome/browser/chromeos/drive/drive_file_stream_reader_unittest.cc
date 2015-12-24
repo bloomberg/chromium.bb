@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -390,8 +393,8 @@ TEST_F(DriveFileStreamReaderTest, Read) {
 
 TEST_F(DriveFileStreamReaderTest, ReadRange) {
   // In this test case, we just confirm that the part of file is read.
-  const int64 kRangeOffset = 3;
-  const int64 kRangeLength = 4;
+  const int64_t kRangeOffset = 3;
+  const int64_t kRangeLength = 4;
 
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
@@ -426,7 +429,7 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
   ASSERT_EQ(net::OK, test_util::ReadAllData(reader.get(), &first_content));
 
   // The length should be equal to range length.
-  EXPECT_EQ(kRangeLength, static_cast<int64>(first_content.size()));
+  EXPECT_EQ(kRangeLength, static_cast<int64_t>(first_content.size()));
 
   // Create second instance and initialize it.
   // In this case, the file should be cached one.
@@ -459,8 +462,8 @@ TEST_F(DriveFileStreamReaderTest, ReadRange) {
 }
 
 TEST_F(DriveFileStreamReaderTest, OutOfRangeError) {
-  const int64 kRangeOffset = 1000000;  // Out of range.
-  const int64 kRangeLength = 4;
+  const int64_t kRangeOffset = 1000000;  // Out of range.
+  const int64_t kRangeLength = 4;
 
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_writer.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -56,7 +57,7 @@ class FileStreamWriter::OperationRunner
   // |callback| is executed. Must be called on UI thread.
   void WriteFileOnUIThread(
       scoped_refptr<net::IOBuffer> buffer,
-      int64 offset,
+      int64_t offset,
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -138,13 +139,12 @@ class FileStreamWriter::OperationRunner
 };
 
 FileStreamWriter::FileStreamWriter(const storage::FileSystemURL& url,
-                                   int64 initial_offset)
+                                   int64_t initial_offset)
     : url_(url),
       current_offset_(initial_offset),
       runner_(new OperationRunner),
       state_(NOT_INITIALIZED),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 FileStreamWriter::~FileStreamWriter() {
   // Close the runner explicitly if the file streamer is

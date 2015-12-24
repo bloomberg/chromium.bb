@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_JOB_EVENT_ROUTER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_JOB_EVENT_ROUTER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -70,9 +73,9 @@ class JobEventRouter : public drive::JobListObserver {
       const std::string& extension_id,
       const drive::JobInfo& job_info,
       const extensions::api::file_manager_private::TransferState& state,
-      const int64 num_total_jobs,
-      const int64 num_completed_bytes,
-      const int64 num_total_bytes);
+      const int64_t num_total_jobs,
+      const int64_t num_completed_bytes,
+      const int64_t num_total_bytes);
 
   // Delay time before sending progress events.
   base::TimeDelta event_delay_;
@@ -89,11 +92,11 @@ class JobEventRouter : public drive::JobListObserver {
 
   // Computed bytes of tasks that have been processed. Once it completes all
   // tasks, it clears the variable.
-  int64 num_completed_bytes_;
+  int64_t num_completed_bytes_;
 
   // Total bytes of tasks that have been processed. Once it completes all tasks,
   // it clears the variable.
-  int64 num_total_bytes_;
+  int64_t num_total_bytes_;
 
   // Thread checker.
   base::ThreadChecker thread_checker_;

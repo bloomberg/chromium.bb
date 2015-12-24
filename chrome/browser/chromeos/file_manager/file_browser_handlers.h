@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 

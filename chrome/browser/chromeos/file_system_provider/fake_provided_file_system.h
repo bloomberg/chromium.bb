@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FAKE_PROVIDED_FILE_SYSTEM_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FAKE_PROVIDED_FILE_SYSTEM_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -68,7 +71,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   void AddEntry(const base::FilePath& entry_path,
                 bool is_directory,
                 const std::string& name,
-                int64 size,
+                int64_t size,
                 base::Time modification_time,
                 std::string mime_type,
                 std::string contents);
@@ -103,7 +106,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   AbortCallback ReadFile(int file_handle,
                          net::IOBuffer* buffer,
-                         int64 offset,
+                         int64_t offset,
                          int length,
                          const ReadChunkReceivedCallback& callback) override;
   AbortCallback CreateDirectory(
@@ -127,12 +130,12 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   AbortCallback Truncate(
       const base::FilePath& file_path,
-      int64 length,
+      int64_t length,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   AbortCallback WriteFile(
       int file_handle,
       net::IOBuffer* buffer,
-      int64 offset,
+      int64_t offset,
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   AbortCallback AddWatcher(

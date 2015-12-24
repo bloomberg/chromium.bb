@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -123,7 +126,7 @@ TEST(AffiliatedCloudPolicyInvalidatorTest, CreateUseDestroy) {
   // Trigger an invalidation. The invalidation version is interpreted as a
   // timestamp in microseconds. The policy blob contains a timestamp in
   // milliseconds. Convert from one to the other by multiplying by 1000.
-  const int64 invalidation_version = policy.policy_data().timestamp() * 1000;
+  const int64_t invalidation_version = policy.policy_data().timestamp() * 1000;
   syncer::Invalidation invalidation = syncer::Invalidation::Init(
       invalidation::ObjectId(kInvalidationSource, kInvalidationName),
       invalidation_version,

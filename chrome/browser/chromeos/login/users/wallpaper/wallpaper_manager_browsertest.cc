@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 
+#include <stddef.h>
+
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/desktop_background/desktop_background_controller_test_api.h"

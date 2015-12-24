@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEFAULT_APP_ORDER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEFAULT_APP_ORDER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 
 namespace chromeos {

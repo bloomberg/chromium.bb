@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_util.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/device/input_service_proxy.h"
 
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_thread.h"
 

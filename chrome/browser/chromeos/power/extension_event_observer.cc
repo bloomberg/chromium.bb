@@ -55,7 +55,7 @@ bool ExtensionEventObserver::TestApi::WillDelaySuspendForExtensionHost(
 
 struct ExtensionEventObserver::KeepaliveSources {
   std::set<int> unacked_push_messages;
-  std::set<uint64> pending_network_requests;
+  std::set<uint64_t> pending_network_requests;
 };
 
 ExtensionEventObserver::ExtensionEventObserver()
@@ -174,7 +174,7 @@ void ExtensionEventObserver::OnBackgroundEventAcked(
 
 void ExtensionEventObserver::OnNetworkRequestStarted(
     const extensions::ExtensionHost* host,
-    uint64 request_id) {
+    uint64_t request_id) {
   DCHECK(keepalive_sources_.contains(host));
 
   KeepaliveSources* sources = keepalive_sources_.get(host);
@@ -191,7 +191,7 @@ void ExtensionEventObserver::OnNetworkRequestStarted(
 
 void ExtensionEventObserver::OnNetworkRequestDone(
     const extensions::ExtensionHost* host,
-    uint64 request_id) {
+    uint64_t request_id) {
   DCHECK(keepalive_sources_.contains(host));
 
   if (keepalive_sources_.get(host)->pending_network_requests.erase(request_id) >

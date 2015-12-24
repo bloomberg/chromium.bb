@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_EVENT_ROUTER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_EVENT_ROUTER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
@@ -102,7 +104,7 @@ class EventRouter : public KeyedService,
                       storage::FileSystemOperation::CopyProgressType type,
                       const GURL& source_url,
                       const GURL& destination_url,
-                      int64 size);
+                      int64_t size);
 
   // Called when a notification from a watcher manager arrives.
   void OnWatcherManagerNotification(

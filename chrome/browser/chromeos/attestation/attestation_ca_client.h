@@ -8,8 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
-
+#include "base/macros.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "net/url_request/url_fetcher_delegate.h"
 

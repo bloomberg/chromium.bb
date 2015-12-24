@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/recommendation_restorer.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/testing_pref_store.h"

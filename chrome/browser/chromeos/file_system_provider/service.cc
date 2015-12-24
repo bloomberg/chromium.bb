@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"

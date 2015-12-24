@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/auth/auth_prewarmer.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

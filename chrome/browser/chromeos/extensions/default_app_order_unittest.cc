@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/extensions/extension_constants.h"

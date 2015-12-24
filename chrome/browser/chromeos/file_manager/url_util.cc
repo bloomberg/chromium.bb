@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 
+#include <stddef.h>
+
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_SIMPLE_WEB_VIEW_DIALOG_H_
 
 #include <string>
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/ssl/security_state_model.h"

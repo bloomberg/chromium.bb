@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_RESOURCE_REPORTER_RESOURCE_REPORTER_H_
 #define CHROME_BROWSER_CHROMEOS_RESOURCE_REPORTER_RESOURCE_REPORTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>

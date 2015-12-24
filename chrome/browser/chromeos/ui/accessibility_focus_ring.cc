@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 
 namespace chromeos {

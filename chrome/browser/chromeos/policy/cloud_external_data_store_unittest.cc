@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/policy/core/common/cloud/resource_cache.h"

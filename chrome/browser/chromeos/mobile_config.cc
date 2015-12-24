@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/mobile_config.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

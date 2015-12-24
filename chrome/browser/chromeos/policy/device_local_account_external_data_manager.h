@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base.h"
 #include "components/policy/core/common/policy_details.h"

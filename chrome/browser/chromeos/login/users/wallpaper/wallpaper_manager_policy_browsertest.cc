@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -89,7 +91,7 @@ SkColor ComputeAverageColor(const SkBitmap& bitmap) {
     ADD_FAILURE() << "Bitmap has not been configured.";
     return SkColorSetARGB(0, 0, 0, 0);
   }
-  uint64 a = 0, r = 0, g = 0, b = 0;
+  uint64_t a = 0, r = 0, g = 0, b = 0;
   bitmap.lockPixels();
   for (int x = 0; x < bitmap.width(); ++x) {
     for (int y = 0; y < bitmap.height(); ++y) {
@@ -101,7 +103,7 @@ SkColor ComputeAverageColor(const SkBitmap& bitmap) {
     }
   }
   bitmap.unlockPixels();
-  uint64 pixel_number = bitmap.width() * bitmap.height();
+  uint64_t pixel_number = bitmap.width() * bitmap.height();
   return SkColorSetARGB((a + pixel_number / 2) / pixel_number,
                         (r + pixel_number / 2) / pixel_number,
                         (g + pixel_number / 2) / pixel_number,
@@ -151,7 +153,7 @@ class WallpaperManagerPolicyTest
     const base::FilePath user_key_file =
         user_keys_dir.AppendASCII(sanitized_user_id)
                      .AppendASCII("policy.pub");
-    std::vector<uint8> user_key_bits;
+    std::vector<uint8_t> user_key_bits;
     EXPECT_TRUE(user_policy_builder->GetSigningKey()->
                 ExportPublicKey(&user_key_bits));
     EXPECT_TRUE(base::CreateDirectory(user_key_file.DirName()));

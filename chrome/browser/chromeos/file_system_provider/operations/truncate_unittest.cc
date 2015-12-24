@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/truncate.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -29,7 +31,7 @@ const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
 const base::FilePath::CharType kFilePath[] =
     FILE_PATH_LITERAL("/kitty/and/puppy/happy");
-const int64 kTruncateLength = 64;
+const int64_t kTruncateLength = 64;
 
 }  // namespace
 

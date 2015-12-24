@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"

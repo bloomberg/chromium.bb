@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -166,12 +167,13 @@ std::string GetUploadUrl() {
 namespace policy {
 
 // Determines the time between log uploads.
-const int64 SystemLogUploader::kDefaultUploadDelayMs =
+const int64_t SystemLogUploader::kDefaultUploadDelayMs =
     12 * 60 * 60 * 1000;  // 12 hours
 
 // Determines the time, measured from the time of last failed upload,
 // after which the log upload is retried.
-const int64 SystemLogUploader::kErrorUploadDelayMs = 120 * 1000;  // 120 seconds
+const int64_t SystemLogUploader::kErrorUploadDelayMs =
+    120 * 1000;  // 120 seconds
 
 // String constant identifying the header field which stores the file type.
 const char* const SystemLogUploader::kFileTypeHeaderName = "File-Type";

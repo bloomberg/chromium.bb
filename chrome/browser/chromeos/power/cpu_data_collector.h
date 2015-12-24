@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_CPU_DATA_COLLECTOR_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_CPU_DATA_COLLECTOR_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -40,7 +42,7 @@ class CpuDataCollector {
     // is the name at index i in the vector returned by cpu_idle_state_names().
     // Similarly, for freq state occupancy, similar information is in the vector
     // returned by cpu_freq_state_names().
-    std::vector<int64> time_in_state;
+    std::vector<int64_t> time_in_state;
   };
 
   typedef std::deque<StateOccupancySample> StateOccupancySampleDeque;

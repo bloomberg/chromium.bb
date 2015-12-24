@@ -19,9 +19,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_FILEAPI_WORKER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_FILEAPI_WORKER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "components/drive/file_errors.h"
@@ -143,7 +144,7 @@ void CreateFile(const base::FilePath& file_path,
 // Truncates the file at |file_path| to |length| bytes.
 // Called from FileSystemProxy::Truncate().
 void Truncate(const base::FilePath& file_path,
-              int64 length,
+              int64_t length,
               const StatusCallback& callback,
               FileSystemInterface* file_system);
 

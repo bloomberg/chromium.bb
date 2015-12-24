@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/chromeos/ui/echo_dialog_listener.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

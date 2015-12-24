@@ -4,9 +4,12 @@
 
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 
+#include <stdint.h>
+
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"

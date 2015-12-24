@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -154,7 +156,7 @@ bool ExternalDataPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     return false;
   }
 
-  std::vector<uint8> hash;
+  std::vector<uint8_t> hash;
   if (!base::HexStringToBytes(hash_string, &hash) ||
       hash.size() != crypto::kSHA256Length) {
     errors->AddError(policy, kSubkeyHash, IDS_POLICY_VALUE_FORMAT_ERROR);

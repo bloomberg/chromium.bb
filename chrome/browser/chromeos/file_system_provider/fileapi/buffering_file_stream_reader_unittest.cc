@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -63,7 +66,7 @@ class FakeFileStreamReader : public storage::FileStreamReader {
     return net::ERR_IO_PENDING;
   }
 
-  int64 GetLength(const net::Int64CompletionCallback& callback) override {
+  int64_t GetLength(const net::Int64CompletionCallback& callback) override {
     DCHECK_EQ(net::OK, return_error_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, kFileSize));
@@ -345,9 +348,9 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, GetLength) {
                                    kPreloadingBufferLength,
                                    kFileSize);
 
-  std::vector<int64> get_length_log;
-  const int64 result =
-      reader.GetLength(base::Bind(&LogValue<int64>, &get_length_log));
+  std::vector<int64_t> get_length_log;
+  const int64_t result =
+      reader.GetLength(base::Bind(&LogValue<int64_t>, &get_length_log));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(net::ERR_IO_PENDING, result);

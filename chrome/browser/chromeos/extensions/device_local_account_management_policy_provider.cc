@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
 
+#include <stddef.h>
+
 #include <cstddef>
 #include <string>
 

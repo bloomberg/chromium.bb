@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_UPLOAD_JOB_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_UPLOAD_JOB_IMPL_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

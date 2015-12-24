@@ -17,7 +17,7 @@ WriteFile::WriteFile(extensions::EventRouter* event_router,
                      const ProvidedFileSystemInfo& file_system_info,
                      int file_handle,
                      scoped_refptr<net::IOBuffer> buffer,
-                     int64 offset,
+                     int64_t offset,
                      int length,
                      const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
@@ -25,8 +25,7 @@ WriteFile::WriteFile(extensions::EventRouter* event_router,
       buffer_(buffer),
       offset_(offset),
       length_(length),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 WriteFile::~WriteFile() {
 }

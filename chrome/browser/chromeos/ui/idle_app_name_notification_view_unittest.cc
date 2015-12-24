@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/ui/idle_app_name_notification_view.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"

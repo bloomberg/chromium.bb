@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"
@@ -97,7 +100,7 @@ std::string CryptohomeTokenEncryptor::DecryptTokenWithKey(
     crypto::SymmetricKey* key,
     const std::string& salt,
     const std::string& encrypted_token_hex) {
-  std::vector<uint8> encrypted_token_bytes;
+  std::vector<uint8_t> encrypted_token_bytes;
   if (!base::HexStringToBytes(encrypted_token_hex, &encrypted_token_bytes)) {
     LOG(WARNING) << "Corrupt encrypted token found.";
     return std::string();

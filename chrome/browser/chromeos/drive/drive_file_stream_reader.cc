@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/drive_file_stream_reader.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cstring>
 
@@ -37,8 +39,10 @@ int FileErrorToNetError(FileError error) {
 // file. This is for convenience in unifying implementation with the seek
 // operation of stream reader. HTTP doesn't allow such ranges but we want to
 // treat such seeking as valid.
-bool ComputeConcretePosition(net::HttpByteRange range, int64 total,
-                             int64* start, int64* length) {
+bool ComputeConcretePosition(net::HttpByteRange range,
+                             int64_t total,
+                             int64_t* start,
+                             int64_t* length) {
   // The special case when empty range in the end of the file is selected.
   if (range.HasFirstBytePosition() && range.first_byte_position() == total) {
     *start = range.first_byte_position();
@@ -92,7 +96,8 @@ int ReadInternal(ScopedVector<std::string>* pending_data,
 }  // namespace
 
 LocalReaderProxy::LocalReaderProxy(
-    scoped_ptr<util::LocalFileReader> file_reader, int64 length)
+    scoped_ptr<util::LocalFileReader> file_reader,
+    int64_t length)
     : file_reader_(file_reader.Pass()),
       remaining_length_(length),
       weak_ptr_factory_(this) {
@@ -148,18 +153,16 @@ void LocalReaderProxy::OnReadCompleted(const net::CompletionCallback& callback,
   callback.Run(read_result);
 }
 
-NetworkReaderProxy::NetworkReaderProxy(
-    int64 offset,
-    int64 content_length,
-    int64 full_content_length,
-    const base::Closure& job_canceller)
+NetworkReaderProxy::NetworkReaderProxy(int64_t offset,
+                                       int64_t content_length,
+                                       int64_t full_content_length,
+                                       const base::Closure& job_canceller)
     : remaining_offset_(offset),
       remaining_content_length_(content_length),
       is_full_download_(offset + content_length == full_content_length),
       error_code_(net::OK),
       buffer_length_(0),
-      job_canceller_(job_canceller) {
-}
+      job_canceller_(job_canceller) {}
 
 NetworkReaderProxy::~NetworkReaderProxy() {
   if (!job_canceller_.is_null()) {
@@ -219,7 +222,7 @@ void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data && !data->empty());
 
-  if (remaining_offset_ >= static_cast<int64>(data->length())) {
+  if (remaining_offset_ >= static_cast<int64_t>(data->length())) {
     // Skip unneeded leading data.
     remaining_offset_ -= data->length();
     return;
@@ -396,7 +399,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
   }
   DCHECK(entry);
 
-  int64 range_start = 0, range_length = 0;
+  int64_t range_start = 0, range_length = 0;
   if (!ComputeConcretePosition(byte_range, entry->file_info().size(),
                                &range_start, &range_length)) {
     // If |byte_range| is invalid (e.g. out of bounds), return with an error.
@@ -437,7 +440,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
 }
 
 void DriveFileStreamReader::InitializeAfterLocalFileOpen(
-    int64 length,
+    int64_t length,
     const InitializeCompletionCallback& callback,
     scoped_ptr<ResourceEntry> entry,
     scoped_ptr<util::LocalFileReader> file_reader,

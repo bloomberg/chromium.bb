@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
@@ -39,7 +43,7 @@ struct TestDiskInfo {
   const char* fs_uuid;
   const char* system_path_prefix;
   chromeos::DeviceType device_type;
-  uint64 size_in_bytes;
+  uint64_t size_in_bytes;
   bool is_parent;
   bool is_read_only;
   bool has_media;

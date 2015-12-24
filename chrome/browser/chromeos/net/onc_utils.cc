@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"

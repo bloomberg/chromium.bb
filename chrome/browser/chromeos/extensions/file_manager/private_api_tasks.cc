@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_tasks.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>

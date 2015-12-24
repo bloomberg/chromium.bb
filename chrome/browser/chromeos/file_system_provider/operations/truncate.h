@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_TRUNCATE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_TRUNCATE_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/operation.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -32,7 +35,7 @@ class Truncate : public Operation {
   Truncate(extensions::EventRouter* event_router,
            const ProvidedFileSystemInfo& file_system_info,
            const base::FilePath& file_path,
-           int64 length,
+           int64_t length,
            const storage::AsyncFileUtil::StatusCallback& callback);
   ~Truncate() override;
 
@@ -47,7 +50,7 @@ class Truncate : public Operation {
 
  private:
   base::FilePath file_path_;
-  int64 length_;
+  int64_t length_;
   const storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Truncate);

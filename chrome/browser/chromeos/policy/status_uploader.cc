@@ -27,7 +27,7 @@ const int kMinUploadDelayMs = 60 * 1000;  // 60 seconds
 
 namespace policy {
 
-const int64 StatusUploader::kDefaultUploadDelayMs =
+const int64_t StatusUploader::kDefaultUploadDelayMs =
     3 * 60 * 60 * 1000;  // 3 hours
 
 StatusUploader::StatusUploader(

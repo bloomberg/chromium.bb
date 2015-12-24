@@ -18,13 +18,13 @@
 namespace file_manager {
 namespace {
 
-typedef base::Callback<void(int64)> GetNecessaryFreeSpaceCallback;
+typedef base::Callback<void(int64_t)> GetNecessaryFreeSpaceCallback;
 
 // Part of ComputeSpaceNeedToBeFreed.
-int64 ComputeSpaceNeedToBeFreedAfterGetMetadataOnBlockingPool(
+int64_t ComputeSpaceNeedToBeFreedAfterGetMetadataOnBlockingPool(
     const base::FilePath& path,
-    int64 snapshot_size) {
-  int64 free_size = base::SysInfo::AmountOfFreeDiskSpace(path);
+    int64_t snapshot_size) {
+  int64_t free_size = base::SysInfo::AmountOfFreeDiskSpace(path);
   if (free_size < 0)
     return -1;
 
@@ -102,9 +102,8 @@ void FreeReferenceOnIOThread(
 
 SnapshotManager::FileReferenceWithSizeInfo::FileReferenceWithSizeInfo(
     scoped_refptr<storage::ShareableFileReference> ref,
-    int64 size)
-    : file_ref(ref), file_size(size) {
-}
+    int64_t size)
+    : file_ref(ref), file_size(size) {}
 
 SnapshotManager::FileReferenceWithSizeInfo::~FileReferenceWithSizeInfo() {
 }
@@ -148,7 +147,7 @@ void SnapshotManager::CreateManagedSnapshot(
 void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
     const storage::FileSystemURL& filesystem_url,
     const LocalPathCallback& callback,
-    int64 needed_space) {
+    int64_t needed_space) {
   scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
   DCHECK(context.get());

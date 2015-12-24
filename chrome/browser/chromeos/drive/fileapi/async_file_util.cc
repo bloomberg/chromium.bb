@@ -264,7 +264,7 @@ void AsyncFileUtil::Touch(
 void AsyncFileUtil::Truncate(
     scoped_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    int64 length,
+    int64_t length,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

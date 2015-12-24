@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -39,8 +41,8 @@
 namespace file_manager {
 namespace {
 
-const uint32 kAccessCapabilityReadWrite = 0;
-const uint32 kFilesystemTypeGenericHierarchical = 2;
+const uint32_t kAccessCapabilityReadWrite = 0;
+const uint32_t kFilesystemTypeGenericHierarchical = 2;
 const char kFileManagerMTPMountNamePrefix[] = "fileman-mtp-";
 const char kMtpVolumeIdPrefix [] = "mtp:";
 const char kRootPath[] = "/";

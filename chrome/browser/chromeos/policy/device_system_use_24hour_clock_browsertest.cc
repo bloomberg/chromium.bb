@@ -7,6 +7,7 @@
 #include "ash/system/date/date_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"

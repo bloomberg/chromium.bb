@@ -46,13 +46,12 @@ WebkitFileStreamWriterImpl::WebkitFileStreamWriterImpl(
     const FileSystemGetter& file_system_getter,
     base::TaskRunner* file_task_runner,
     const base::FilePath& file_path,
-    int64 offset)
+    int64_t offset)
     : file_system_getter_(file_system_getter),
       file_task_runner_(file_task_runner),
       file_path_(file_path),
       offset_(offset),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 WebkitFileStreamWriterImpl::~WebkitFileStreamWriterImpl() {
   if (local_file_writer_) {

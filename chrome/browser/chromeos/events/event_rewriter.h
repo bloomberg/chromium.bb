@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FIRST_RUN_GOODIES_DISPLAYER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 
 namespace chromeos {

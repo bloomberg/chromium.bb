@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_STATUS_COLLECTOR_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_STATUS_COLLECTOR_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -148,9 +150,9 @@ class DeviceStatusCollector {
   // Trims the store activity periods to only retain data within the
   // [|min_day_key|, |max_day_key|). The record for |min_day_key| will be
   // adjusted by subtracting |min_day_trim_duration|.
-  void TrimStoredActivityPeriods(int64 min_day_key,
+  void TrimStoredActivityPeriods(int64_t min_day_key,
                                  int min_day_trim_duration,
-                                 int64 max_day_key);
+                                 int64_t max_day_key);
 
   void AddActivePeriod(base::Time start, base::Time end);
 
@@ -209,7 +211,7 @@ class DeviceStatusCollector {
   // GetDeviceStatus(), and the duration for it. This is used to trim the
   // stored data in OnSubmittedSuccessfully(). Trimming is delayed so
   // unsuccessful uploads don't result in dropped data.
-  int64 last_reported_day_;
+  int64_t last_reported_day_;
   int duration_for_last_reported_day_;
 
   // Whether a geolocation update is currently in progress.
@@ -236,7 +238,7 @@ class DeviceStatusCollector {
 
     // Amount of free RAM (measures raw memory used by processes, not internal
     // memory waiting to be reclaimed by GC).
-    int64 bytes_of_ram_free;
+    int64_t bytes_of_ram_free;
   };
 
   // Samples of resource usage (contains multiple samples taken
@@ -257,8 +259,8 @@ class DeviceStatusCollector {
   chromeos::CrosSettings* cros_settings_;
 
   // The most recent CPU readings.
-  uint64 last_cpu_active_;
-  uint64 last_cpu_idle_;
+  uint64_t last_cpu_active_;
+  uint64_t last_cpu_idle_;
 
   // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
   // way to mock geolocation exists.

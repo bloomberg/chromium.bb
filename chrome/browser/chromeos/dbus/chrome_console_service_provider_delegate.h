@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DBUS_CHROME_CONSOLE_SERVICE_PROVIDER_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_DBUS_CHROME_CONSOLE_SERVICE_PROVIDER_DELEGATE_H_
 
+#include "base/macros.h"
 #include "chromeos/dbus/services/console_service_provider.h"
 
 namespace chromeos {

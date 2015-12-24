@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 
 namespace views {
 class Widget;

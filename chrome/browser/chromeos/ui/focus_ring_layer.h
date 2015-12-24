@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_LAYER_H_
 #define CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_LAYER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/gfx/geometry/rect.h"

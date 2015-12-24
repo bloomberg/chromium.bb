@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_manager.h"
 
+#include <stddef.h>
+
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"

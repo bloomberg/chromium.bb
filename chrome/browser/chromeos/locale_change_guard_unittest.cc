@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/locale_change_guard.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/macros.h"

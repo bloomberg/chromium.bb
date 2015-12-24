@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_KEYBOARD_DRIVEN_OOBE_KEY_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_KEYBOARD_DRIVEN_OOBE_KEY_HANDLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/events/event_handler.h"
 
 namespace chromeos {

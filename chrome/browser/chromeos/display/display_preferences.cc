@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
+#include <stddef.h>
+
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
@@ -124,8 +126,8 @@ void LoadDisplayLayouts() {
     if (it.key().find(",") != std::string::npos) {
       std::vector<std::string> ids = base::SplitString(
           it.key(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      int64 id1 = gfx::Display::kInvalidDisplayID;
-      int64 id2 = gfx::Display::kInvalidDisplayID;
+      int64_t id1 = gfx::Display::kInvalidDisplayID;
+      int64_t id2 = gfx::Display::kInvalidDisplayID;
       if (!base::StringToInt64(ids[0], &id1) ||
           !base::StringToInt64(ids[1], &id2) ||
           id1 == gfx::Display::kInvalidDisplayID ||
@@ -146,7 +148,7 @@ void LoadDisplayProperties() {
     const base::DictionaryValue* dict_value = NULL;
     if (!it.value().GetAsDictionary(&dict_value) || dict_value == NULL)
       continue;
-    int64 id = gfx::Display::kInvalidDisplayID;
+    int64_t id = gfx::Display::kInvalidDisplayID;
     if (!base::StringToInt64(it.key(), &id) ||
         id == gfx::Display::kInvalidDisplayID) {
       continue;
@@ -249,7 +251,7 @@ void StoreCurrentDisplayProperties() {
   size_t num = display_manager->GetNumDisplays();
   for (size_t i = 0; i < num; ++i) {
     const gfx::Display& display = display_manager->GetDisplayAt(i);
-    int64 id = display.id();
+    int64_t id = display.id();
     ash::DisplayInfo info = display_manager->GetDisplayInfo(id);
 
     scoped_ptr<base::DictionaryValue> property_value(
@@ -392,8 +394,8 @@ void LoadDisplayPreferences(bool first_run_after_boot) {
 }
 
 // Stores the display layout for given display pairs.
-void StoreDisplayLayoutPrefForTest(int64 id1,
-                                   int64 id2,
+void StoreDisplayLayoutPrefForTest(int64_t id1,
+                                   int64_t id2,
                                    const ash::DisplayLayout& layout) {
   StoreDisplayLayoutPref(ash::CreateDisplayIdPair(id1, id2), layout);
 }

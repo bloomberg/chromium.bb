@@ -7,7 +7,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_H_
 
-#include "base/basictypes.h"
 
 namespace chromeos {
 namespace input_method {

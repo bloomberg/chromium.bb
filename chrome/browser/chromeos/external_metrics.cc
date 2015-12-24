@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/external_metrics.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 

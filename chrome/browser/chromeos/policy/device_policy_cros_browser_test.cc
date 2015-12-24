@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -56,7 +58,7 @@ void DevicePolicyCrosTestHelper::InstallOwnerKey() {
 
   base::FilePath owner_key_file;
   ASSERT_TRUE(PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_file));
-  std::vector<uint8> owner_key_bits;
+  std::vector<uint8_t> owner_key_bits;
   ASSERT_TRUE(
       device_policy()->GetSigningKey()->ExportPublicKey(&owner_key_bits));
   ASSERT_EQ(base::WriteFile(owner_key_file, reinterpret_cast<const char*>(

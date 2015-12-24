@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_SYSTEM_LOG_UPLOADER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_SYSTEM_LOG_UPLOADER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
@@ -30,8 +32,8 @@ class SystemLogUploader : public UploadJob::Delegate {
   typedef std::vector<std::pair<std::string, std::string>> SystemLogs;
 
   // Refresh constants.
-  static const int64 kDefaultUploadDelayMs;
-  static const int64 kErrorUploadDelayMs;
+  static const int64_t kDefaultUploadDelayMs;
+  static const int64_t kErrorUploadDelayMs;
 
   // Http header constants to upload.
   static const char* const kNameFieldTemplate;

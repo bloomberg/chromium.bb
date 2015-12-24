@@ -7,6 +7,8 @@
 // can make no sense.
 // TODO(elizavetai): remove this file and reuse the original one in Skia
 
+#include <stdint.h>
+
 #include "chrome/browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

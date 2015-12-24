@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 
+#include <stddef.h>
+
 #include "apps/launcher.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_split.h"

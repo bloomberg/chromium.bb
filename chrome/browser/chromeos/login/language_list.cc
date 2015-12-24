@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/language_list.h"
 
+#include <stddef.h>
+
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"

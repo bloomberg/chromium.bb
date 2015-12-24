@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/signin/merge_session_load_page.h"
@@ -26,7 +29,7 @@ namespace {
 const char kURL1[] = "http://www.google.com/";
 const char kURL2[] = "http://mail.google.com/";
 
-const int64 kSessionMergeTimeout = 60;
+const int64_t kSessionMergeTimeout = 60;
 
 }  // namespace
 

@@ -19,12 +19,12 @@ using content::BrowserThread;
 
 namespace {
 
-int64 GetFileSizeOnBlockingPool(const base::FilePath& file) {
+int64_t GetFileSizeOnBlockingPool(const base::FilePath& file) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   // Get file size. In case of error, sets 0 as file size to let the installer
   // run and fail.
-  int64 size;
+  int64_t size;
   return base::GetFileSize(file, &size) ? size : 0;
 }
 
@@ -77,11 +77,10 @@ void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
       base::Bind(&InstallLimiter::AddWithSize, AsWeakPtr(), installer, path));
 }
 
-void InstallLimiter::AddWithSize(
-    const scoped_refptr<CrxInstaller>& installer,
-    const base::FilePath& path,
-    int64 size) {
-  const int64 kBigAppSizeThreshold = 1048576;  // 1MB
+void InstallLimiter::AddWithSize(const scoped_refptr<CrxInstaller>& installer,
+                                 const base::FilePath& path,
+                                 int64_t size) {
+  const int64_t kBigAppSizeThreshold = 1048576;  // 1MB
 
   if (size <= kBigAppSizeThreshold) {
     RunInstall(installer, path);

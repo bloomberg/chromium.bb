@@ -11,6 +11,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chromeos/login_event_recorder.h"

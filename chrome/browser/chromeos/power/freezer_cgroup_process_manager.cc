@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"

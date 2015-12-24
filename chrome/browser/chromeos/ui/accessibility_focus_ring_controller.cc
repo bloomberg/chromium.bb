@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 
+#include <stddef.h>
+
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/logging.h"

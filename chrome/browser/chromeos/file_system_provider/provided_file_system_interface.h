@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -12,6 +14,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -45,7 +48,7 @@ struct EntryMetadata {
   // non-empty.
   scoped_ptr<bool> is_directory;
   scoped_ptr<std::string> name;
-  scoped_ptr<int64> size;
+  scoped_ptr<int64_t> size;
   scoped_ptr<base::Time> modification_time;
   scoped_ptr<std::string> mime_type;
   scoped_ptr<std::string> thumbnail;
@@ -165,7 +168,7 @@ class ProvidedFileSystemInterface {
   // return less only in case EOF is encountered.
   virtual AbortCallback ReadFile(int file_handle,
                                  net::IOBuffer* buffer,
-                                 int64 offset,
+                                 int64_t offset,
                                  int length,
                                  const ReadChunkReceivedCallback& callback) = 0;
 
@@ -207,14 +210,14 @@ class ProvidedFileSystemInterface {
   // Requests truncating a file to the desired length.
   virtual AbortCallback Truncate(
       const base::FilePath& file_path,
-      int64 length,
+      int64_t length,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests writing to a file previously opened with |file_handle|.
   virtual AbortCallback WriteFile(
       int file_handle,
       net::IOBuffer* buffer,
-      int64 offset,
+      int64_t offset,
       int length,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 

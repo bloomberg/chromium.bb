@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/power/cpu_data_collector.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -146,7 +148,7 @@ void SampleCpuIdleData(
         DCHECK(base::PathExists(base::FilePath(time_file_path)));
 
         std::string state_name, occupancy_time_string;
-        int64 occupancy_time_usec;
+        int64_t occupancy_time_usec;
         if (!base::ReadFileToString(base::FilePath(name_file_path),
                                     &state_name) ||
             !base::ReadFileToString(base::FilePath(time_file_path),
@@ -165,7 +167,7 @@ void SampleCpuIdleData(
                                   &occupancy_time_string);
         if (base::StringToInt64(occupancy_time_string, &occupancy_time_usec)) {
           // idle state occupancy time in sysfs is recorded in microseconds.
-          int64 time_in_state_ms = occupancy_time_usec / 1000;
+          int64_t time_in_state_ms = occupancy_time_usec / 1000;
           size_t index = IndexInVector(state_name, cpu_idle_state_names);
           if (index >= idle_sample.time_in_state.size())
             idle_sample.time_in_state.resize(index + 1);
@@ -184,7 +186,7 @@ void SampleCpuIdleData(
 
   // If there was an interruption in sampling (like system suspended),
   // discard the samples!
-  int64 delay =
+  int64_t delay =
       base::TimeDelta(base::Time::Now() - start_time).InMilliseconds();
   if (delay > kSamplingDurationLimitMs) {
     idle_samples->clear();
@@ -216,7 +218,7 @@ bool ReadCpuFreqFromOldFile(
     state_count -= 1;
   for (size_t state = 0; state < state_count; ++state) {
     int freq_in_khz;
-    int64 occupancy_time_centisecond;
+    int64_t occupancy_time_centisecond;
 
     // Occupancy of each state is in the format "<state> <time>"
     std::vector<base::StringPiece> pair = base::SplitStringPiece(
@@ -286,7 +288,7 @@ void SampleCpuFreqData(
 
   // If there was an interruption in sampling (like system suspended),
   // discard the samples!
-  int64 delay =
+  int64_t delay =
       base::TimeDelta(base::Time::Now() - start_time).InMilliseconds();
   if (delay > kSamplingDurationLimitMs) {
     freq_samples->clear();

@@ -8,6 +8,8 @@
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <secder.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -444,9 +446,9 @@ void GenerateRSAKeyWithDB(scoped_ptr<GenerateRSAKeyState> state,
 
 // Does the actual signing on a worker thread. Used by SignRSAWithDB().
 void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
-  const uint8* public_key_uint8 =
-      reinterpret_cast<const uint8*>(state->public_key_.data());
-  std::vector<uint8> public_key_vector(
+  const uint8_t* public_key_uint8 =
+      reinterpret_cast<const uint8_t*>(state->public_key_.data());
+  std::vector<uint8_t> public_key_vector(
       public_key_uint8, public_key_uint8 + state->public_key_.size());
 
   crypto::ScopedSECKEYPrivateKey rsa_key;

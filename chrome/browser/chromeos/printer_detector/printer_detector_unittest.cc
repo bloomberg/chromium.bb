@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 
+#include <stdint.h>
+
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -37,7 +40,7 @@ namespace chromeos {
 
 namespace {
 
-const uint8 kPrinterInterfaceClass = 7;
+const uint8_t kPrinterInterfaceClass = 7;
 
 const char kTestUserId[] = "test_user";
 
@@ -115,9 +118,9 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
         ->SetNotificationUIManagerForTesting(&notification_ui_manager_);
   }
 
-  void InvokeUsbAdded(uint16 vendor_id,
-                      uint16 product_id,
-                      uint8 interface_class) {
+  void InvokeUsbAdded(uint16_t vendor_id,
+                      uint16_t product_id,
+                      uint8_t interface_class) {
     device::UsbInterfaceDescriptor interface;
     interface.interface_number = 1;
     interface.interface_class = interface_class;

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_TEXTINPUT_TEST_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_TEXTINPUT_TEST_HELPER_H_
 
+#include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ime/text_input_client.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"

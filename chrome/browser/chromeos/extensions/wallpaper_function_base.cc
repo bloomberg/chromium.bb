@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/image_decoder.h"

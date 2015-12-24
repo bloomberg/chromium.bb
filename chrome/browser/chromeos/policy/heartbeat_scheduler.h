@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_HEARTBEAT_SCHEDULER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_HEARTBEAT_SCHEDULER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -38,7 +39,7 @@ class HeartbeatScheduler : public gcm::GCMAppHandler,
                            gcm::GCMConnectionObserver {
  public:
   // Default interval for how often we send up a heartbeat.
-  static const int64 kDefaultHeartbeatIntervalMs;
+  static const int64_t kDefaultHeartbeatIntervalMs;
 
   // Constructor. |cloud_policy_client| will be used to send registered GCM id
   // to DM server, and can be null. |driver| can be null for tests.

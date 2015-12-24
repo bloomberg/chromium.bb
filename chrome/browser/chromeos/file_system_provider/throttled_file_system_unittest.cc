@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/files/file.h"

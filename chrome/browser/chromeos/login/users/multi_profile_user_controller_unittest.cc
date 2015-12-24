@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"

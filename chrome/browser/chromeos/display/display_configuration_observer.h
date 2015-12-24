@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_CONFIGURATION_OBSERVER_H_
 
 #include "ash/display/window_tree_host_manager.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace chromeos {
 

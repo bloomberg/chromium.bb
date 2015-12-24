@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -134,7 +135,7 @@ const char kWebUIInitPostpone[] = "postpone";
 // The delay of triggering initialization of the device policy subsystem
 // after the login screen is initialized. This makes sure that device policy
 // network requests are made while the system is idle waiting for user input.
-const int64 kPolicyServiceInitializationDelayMilliseconds = 100;
+const int64_t kPolicyServiceInitializationDelayMilliseconds = 100;
 
 // A class to observe an implicit animation and invokes the callback after the
 // animation is completed.

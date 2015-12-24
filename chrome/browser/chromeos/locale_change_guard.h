@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOCALE_CHANGE_GUARD_H_
 #define CHROME_BROWSER_CHROMEOS_LOCALE_CHANGE_GUARD_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "ash/system/locale/locale_observer.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <vector>
 
@@ -60,7 +62,7 @@ AbortCallback ThrottledFileSystem::ReadDirectory(
 AbortCallback ThrottledFileSystem::ReadFile(
     int file_handle,
     net::IOBuffer* buffer,
-    int64 offset,
+    int64_t offset,
     int length,
     const ReadChunkReceivedCallback& callback) {
   return file_system_->ReadFile(file_handle, buffer, offset, length, callback);
@@ -121,7 +123,7 @@ AbortCallback ThrottledFileSystem::CopyEntry(
 AbortCallback ThrottledFileSystem::WriteFile(
     int file_handle,
     net::IOBuffer* buffer,
-    int64 offset,
+    int64_t offset,
     int length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   return file_system_->WriteFile(file_handle, buffer, offset, length, callback);
@@ -136,7 +138,7 @@ AbortCallback ThrottledFileSystem::MoveEntry(
 
 AbortCallback ThrottledFileSystem::Truncate(
     const base::FilePath& file_path,
-    int64 length,
+    int64_t length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   return file_system_->Truncate(file_path, length, callback);
 }

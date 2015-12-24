@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -203,7 +205,7 @@ void OnSystemLogsAdded(const DebugLogWriter::StoreLogsCallback& callback,
 
 void IntializeLogFile(base::File* file,
                       const base::FilePath& file_path,
-                      uint32 flags) {
+                      uint32_t flags) {
   base::FilePath dir = file_path.DirName();
   if (!base::DirectoryExists(dir)) {
     if (!base::CreateDirectory(dir)) {

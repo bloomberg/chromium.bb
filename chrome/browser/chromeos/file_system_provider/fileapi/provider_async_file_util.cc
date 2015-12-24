@@ -251,7 +251,7 @@ void OnMoveEntry(const storage::AsyncFileUtil::StatusCallback& callback,
 void TruncateOnUIThread(
     scoped_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    int64 length,
+    int64_t length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
@@ -365,7 +365,7 @@ void ProviderAsyncFileUtil::Touch(
 void ProviderAsyncFileUtil::Truncate(
     scoped_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    int64 length,
+    int64_t length,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(BrowserThread::UI,

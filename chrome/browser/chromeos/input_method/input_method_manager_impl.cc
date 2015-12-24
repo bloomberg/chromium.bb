@@ -4,11 +4,12 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 
+#include <stdint.h>
+
 #include <algorithm>  // std::find
 
 #include <sstream>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/hash.h"
 #include "base/location.h"

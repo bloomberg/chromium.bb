@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_NOTIFICATION_MANAGER_INTERFACE_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 
 namespace chromeos {
 namespace file_system_provider {

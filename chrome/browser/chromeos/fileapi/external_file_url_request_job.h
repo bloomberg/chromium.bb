@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_REQUEST_JOB_H_
 #define CHROME_BROWSER_CHROMEOS_FILEAPI_EXTERNAL_FILE_URL_REQUEST_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/drive/file_errors.h"
 #include "net/base/net_errors.h"
@@ -98,7 +100,7 @@ class ExternalFileURLRequestJob : public net::URLRequestJob {
   // The range of the file to be returned.
   net::Error range_parse_result_;
   net::HttpByteRange byte_range_;
-  int64 remaining_bytes_;
+  int64_t remaining_bytes_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_ptr<IsolatedFileSystemScope> isolated_file_system_scope_;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/queue.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/files/file.h"

@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_STATUS_UPLOADER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_STATUS_UPLOADER_H_
 
+#include <stdint.h>
+
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -29,7 +32,7 @@ class DeviceStatusCollector;
 class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
  public:
   // Refresh constants.
-  static const int64 kDefaultUploadDelayMs;
+  static const int64_t kDefaultUploadDelayMs;
 
   // Constructor. |client| must be registered and must stay
   // valid and registered through the lifetime of this StatusUploader

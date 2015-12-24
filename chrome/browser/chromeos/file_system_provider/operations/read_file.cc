@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/read_file.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <string>
 
@@ -47,7 +49,7 @@ ReadFile::ReadFile(
     const ProvidedFileSystemInfo& file_system_info,
     int file_handle,
     scoped_refptr<net::IOBuffer> buffer,
-    int64 offset,
+    int64_t offset,
     int length,
     const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback)
     : Operation(event_router, file_system_info),
@@ -56,8 +58,7 @@ ReadFile::ReadFile(
       offset_(offset),
       length_(length),
       current_offset_(0),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 ReadFile::~ReadFile() {
 }

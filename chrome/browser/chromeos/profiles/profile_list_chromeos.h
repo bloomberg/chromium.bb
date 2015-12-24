@@ -7,7 +7,11 @@
 
 #include "chrome/browser/profiles/profile_list.h"
 
+#include <stddef.h>
+
 #include <vector>
+
+#include "base/macros.h"
 
 class ProfileInfoInterface;
 

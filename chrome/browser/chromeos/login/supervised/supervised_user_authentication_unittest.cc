@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chromeos/login/auth/key.h"

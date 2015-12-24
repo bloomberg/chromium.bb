@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_H_
 #define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

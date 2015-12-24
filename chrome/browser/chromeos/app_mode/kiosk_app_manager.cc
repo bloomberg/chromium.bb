@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 

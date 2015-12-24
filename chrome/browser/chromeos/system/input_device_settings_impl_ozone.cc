@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 
+#include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"

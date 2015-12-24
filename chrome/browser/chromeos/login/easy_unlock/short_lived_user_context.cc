@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task_runner.h"
@@ -15,7 +17,7 @@ namespace chromeos {
 namespace {
 
 // The number of minutes that the user context will be stored.
-const int64 kUserContextTimeToLiveMinutes = 10;
+const int64_t kUserContextTimeToLiveMinutes = 10;
 
 }  // namespace
 

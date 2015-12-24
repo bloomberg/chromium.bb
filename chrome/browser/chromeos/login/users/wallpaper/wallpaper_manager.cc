@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 
+#include <stdint.h>
+
 #include <numeric>
 #include <vector>
 
@@ -16,6 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -892,7 +895,7 @@ bool WallpaperManager::GetUserWallpaperInfo(const AccountId& account_id,
   std::string date_string;
   if (!info_dict->GetString(kNewWallpaperDateNodeName, &date_string))
     return false;
-  int64 date_val;
+  int64_t date_val;
   if (!base::StringToInt64(date_string, &date_val))
     return false;
 

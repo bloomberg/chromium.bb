@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/stl_util.h"

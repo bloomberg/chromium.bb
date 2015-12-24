@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -13,6 +16,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -386,7 +390,7 @@ void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
     const base::DictionaryValue* dict = NULL;
     std::string url;
     std::string hex_hash;
-    std::vector<uint8> hash;
+    std::vector<uint8_t> hash;
     if (it->second.value && it->second.value->GetAsDictionary(&dict) &&
         dict->GetStringWithoutPathExpansion("url", &url) &&
         dict->GetStringWithoutPathExpansion("hash", &hex_hash) &&

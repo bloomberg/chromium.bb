@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
@@ -407,9 +408,10 @@ void AppLaunchController::OnReadyToLaunch() {
 
   ClearNetworkWaitTimer();
 
-  const int64 time_taken_ms = (base::TimeTicks::Now() -
-      base::TimeTicks::FromInternalValue(launch_splash_start_time_)).
-      InMilliseconds();
+  const int64_t time_taken_ms =
+      (base::TimeTicks::Now() -
+       base::TimeTicks::FromInternalValue(launch_splash_start_time_))
+          .InMilliseconds();
 
   // Enforce that we show app install splash screen for some minimum amount
   // of time.

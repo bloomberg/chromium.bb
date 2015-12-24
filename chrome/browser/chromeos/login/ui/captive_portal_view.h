@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_CAPTIVE_PORTAL_VIEW_H_
 
 #include <string>
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/ui/simple_web_view_dialog.h"
 
 namespace chromeos {

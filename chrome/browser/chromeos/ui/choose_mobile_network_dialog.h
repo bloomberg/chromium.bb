@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_CHOOSE_MOBILE_NETWORK_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_UI_CHOOSE_MOBILE_NETWORK_DIALOG_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 

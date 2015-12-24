@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/file_task_executor.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

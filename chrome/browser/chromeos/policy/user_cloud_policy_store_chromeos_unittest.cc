@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/policy/user_cloud_policy_store_chromeos.h"
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -72,7 +74,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
 
     // Install the initial public key, so that by default the validation of
     // the stored/loaded policy blob succeeds.
-    std::vector<uint8> public_key;
+    std::vector<uint8_t> public_key;
     ASSERT_TRUE(policy_.GetSigningKey()->ExportPublicKey(&public_key));
     StoreUserPolicyKey(public_key);
 
@@ -122,7 +124,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     EXPECT_TRUE(base::StringValue(expected_value).Equals(entry->value));
   }
 
-  void StoreUserPolicyKey(const std::vector<uint8>& public_key) {
+  void StoreUserPolicyKey(const std::vector<uint8_t>& public_key) {
     ASSERT_TRUE(base::CreateDirectory(user_policy_key_file().DirName()));
     ASSERT_TRUE(
         base::WriteFile(user_policy_key_file(),
@@ -137,7 +139,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   // value will be expected; otherwise no previous policy is expected.
   // If |new_value| is set then a new policy with that value is expected after
   // storing the |policy_| blob.
-  void PerformStorePolicy(const std::vector<uint8>* new_public_key,
+  void PerformStorePolicy(const std::vector<uint8_t>* new_public_key,
                           const char* previous_value,
                           const char* new_value) {
     chromeos::SessionManagerClient::StorePolicyCallback store_callback;
@@ -238,7 +240,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStore) {
   // Make the policy blob contain a new public key.
   policy_.SetDefaultNewSigningKey();
   policy_.Build();
-  std::vector<uint8> new_public_key;
+  std::vector<uint8_t> new_public_key;
   ASSERT_TRUE(policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
   ASSERT_NO_FATAL_FAILURE(
       PerformStorePolicy(&new_public_key, NULL, kDefaultHomepage));
@@ -285,7 +287,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotation) {
   // Make the policy blob contain a new public key.
   policy_.SetDefaultNewSigningKey();
   policy_.Build();
-  std::vector<uint8> new_public_key;
+  std::vector<uint8_t> new_public_key;
   ASSERT_TRUE(policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
   ASSERT_NO_FATAL_FAILURE(
       PerformStorePolicy(&new_public_key, NULL, kDefaultHomepage));
@@ -565,7 +567,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationAndStoreNew) {
   policy_.payload().mutable_homepagelocation()->set_value(kNewHomepage);
   policy_.SetDefaultNewSigningKey();
   policy_.Build();
-  std::vector<uint8> new_public_key;
+  std::vector<uint8_t> new_public_key;
   ASSERT_TRUE(policy_.GetNewSigningKey()->ExportPublicKey(&new_public_key));
   ASSERT_NO_FATAL_FAILURE(
       PerformStorePolicy(&new_public_key, kDefaultHomepage, kNewHomepage));

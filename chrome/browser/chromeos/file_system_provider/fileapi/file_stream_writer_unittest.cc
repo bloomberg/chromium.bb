@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_writer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -103,7 +106,7 @@ class FileSystemProviderFileStreamWriter : public testing::Test {
 TEST_F(FileSystemProviderFileStreamWriter, Write) {
   std::vector<int> write_log;
 
-  const int64 initial_offset = 0;
+  const int64_t initial_offset = 0;
   FileStreamWriter writer(file_url_, initial_offset);
   scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
 
@@ -154,7 +157,7 @@ TEST_F(FileSystemProviderFileStreamWriter, Write) {
 TEST_F(FileSystemProviderFileStreamWriter, Cancel) {
   std::vector<int> write_log;
 
-  const int64 initial_offset = 0;
+  const int64_t initial_offset = 0;
   FileStreamWriter writer(file_url_, initial_offset);
   scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
 
@@ -176,7 +179,7 @@ TEST_F(FileSystemProviderFileStreamWriter, Cancel) {
 TEST_F(FileSystemProviderFileStreamWriter, Cancel_NotRunning) {
   std::vector<int> write_log;
 
-  const int64 initial_offset = 0;
+  const int64_t initial_offset = 0;
   FileStreamWriter writer(file_url_, initial_offset);
   scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
 
@@ -192,7 +195,7 @@ TEST_F(FileSystemProviderFileStreamWriter, Cancel_NotRunning) {
 TEST_F(FileSystemProviderFileStreamWriter, Write_WrongFile) {
   std::vector<int> write_log;
 
-  const int64 initial_offset = 0;
+  const int64_t initial_offset = 0;
   FileStreamWriter writer(wrong_file_url_, initial_offset);
   scoped_refptr<net::IOBuffer> io_buffer(new net::StringIOBuffer(kTextToWrite));
 
@@ -214,7 +217,7 @@ TEST_F(FileSystemProviderFileStreamWriter, Write_Append) {
   ASSERT_TRUE(entry);
 
   const std::string original_contents = entry->contents;
-  const int64 initial_offset = *entry->metadata->size;
+  const int64_t initial_offset = *entry->metadata->size;
   ASSERT_LT(0, initial_offset);
 
   FileStreamWriter writer(file_url_, initial_offset);

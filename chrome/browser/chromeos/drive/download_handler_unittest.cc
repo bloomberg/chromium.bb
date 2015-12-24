@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/download_handler.h"
 
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -44,13 +46,13 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
   }
 
   void FreeDiskSpaceIfNeededFor(
-      int64 num_bytes,
+      int64_t num_bytes,
       const FreeDiskSpaceCallback& callback) override {
     free_disk_space_if_needed_for_num_bytes_.push_back(num_bytes);
     callback.Run(true);
   }
 
-  std::vector<int64> free_disk_space_if_needed_for_num_bytes_;
+  std::vector<int64_t> free_disk_space_if_needed_for_num_bytes_;
 
  private:
   FileError error_;
@@ -72,13 +74,13 @@ class DownloadHandlerTestDownloadItem : public content::MockDownloadItem {
  public:
   bool IsDone() const override { return is_done_; }
 
-  int64 GetTotalBytes() const override { return total_bytes_; }
+  int64_t GetTotalBytes() const override { return total_bytes_; }
 
-  int64 GetReceivedBytes() const override { return received_bytes_; }
+  int64_t GetReceivedBytes() const override { return received_bytes_; }
 
   bool is_done_ = false;
-  int64 total_bytes_ = 0;
-  int64 received_bytes_ = 0;
+  int64_t total_bytes_ = 0;
+  int64_t received_bytes_ = 0;
 };
 
 }  // namespace

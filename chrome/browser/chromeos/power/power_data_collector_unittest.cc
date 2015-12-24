@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -57,13 +60,13 @@ TEST_F(PowerDataCollectorTest, SuspendDone) {
   const std::deque<PowerDataCollector::SystemResumedSample>& data1 =
       power_data_collector_->system_resumed_data();
   ASSERT_EQ(static_cast<size_t>(1), data1.size());
-  ASSERT_EQ(static_cast<int64>(10), data1[0].sleep_duration.InSeconds());
+  ASSERT_EQ(static_cast<int64_t>(10), data1[0].sleep_duration.InSeconds());
 
   power_data_collector_->SuspendDone(base::TimeDelta::FromSeconds(20));
   const std::deque<PowerDataCollector::SystemResumedSample>& data2 =
       power_data_collector_->system_resumed_data();
   ASSERT_EQ(static_cast<size_t>(2), data2.size());
-  ASSERT_EQ(static_cast<int64>(20), data2[1].sleep_duration.InSeconds());
+  ASSERT_EQ(static_cast<int64_t>(20), data2[1].sleep_duration.InSeconds());
 }
 
 TEST_F(PowerDataCollectorTest, AddSample) {

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <string>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -36,7 +39,7 @@ namespace {
 
 // Decodes a protobuf integer to an IntegerValue. Returns NULL in case the input
 // value is out of bounds.
-scoped_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
+scoped_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64_t value) {
   if (value < std::numeric_limits<int>::min() ||
       value > std::numeric_limits<int>::max()) {
     LOG(WARNING) << "Integer value " << value

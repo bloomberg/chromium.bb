@@ -24,7 +24,7 @@ WebkitFileStreamReaderImpl::WebkitFileStreamReaderImpl(
     const DriveFileStreamReader::FileSystemGetter& file_system_getter,
     base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& drive_file_path,
-    int64 offset,
+    int64_t offset,
     const base::Time& expected_modification_time)
     : stream_reader_(
           new DriveFileStreamReader(file_system_getter, file_task_runner)),
@@ -65,7 +65,7 @@ int WebkitFileStreamReaderImpl::Read(net::IOBuffer* buffer,
   return net::ERR_IO_PENDING;
 }
 
-int64 WebkitFileStreamReaderImpl::GetLength(
+int64_t WebkitFileStreamReaderImpl::GetLength(
     const net::Int64CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(stream_reader_);

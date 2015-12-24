@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_MOBILE_CONFIG_UI_H_
 #define CHROME_BROWSER_CHROMEOS_UI_MOBILE_CONFIG_UI_H_
 
-#include "base/basictypes.h"
 
 namespace chromeos {
 namespace mobile_config_ui {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/upload_job.h"
 
+#include <stddef.h>
+
 #include <queue>
 #include <set>
 #include <utility>
@@ -11,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

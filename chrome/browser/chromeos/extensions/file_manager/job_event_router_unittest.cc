@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/job_event_router.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,8 +63,8 @@ class JobEventRouterTest : public testing::Test {
   void SetUp() override { job_event_router.reset(new JobEventRouterImpl()); }
 
   drive::JobInfo CreateJobInfo(drive::JobID id,
-                               int64 num_completed_bytes,
-                               int64 num_total_bytes,
+                               int64_t num_completed_bytes,
+                               int64_t num_total_bytes,
                                const base::FilePath& file_path) {
     drive::JobInfo job(drive::TYPE_DOWNLOAD_FILE);
     job.job_id = id;

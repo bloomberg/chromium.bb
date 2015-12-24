@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 
+#include <stddef.h>
+
 #include "ash/touch/touch_hud_debug.h"
 #include "base/bind.h"
 #include "base/command_line.h"

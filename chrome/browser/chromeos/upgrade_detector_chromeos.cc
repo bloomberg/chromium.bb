@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -102,7 +105,7 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
 
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
   base::TimeDelta delta = base::Time::Now() - upgrade_detected_time_;
-  int64 time_passed = delta.InDays();
+  int64_t time_passed = delta.InDays();
 
   const int kSevereThreshold = 7;
   const int kHighThreshold = 4;

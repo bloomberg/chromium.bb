@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -28,9 +30,9 @@ namespace attestation {
 
 namespace {
 
-const int64 kCertValid = 90;
-const int64 kCertExpiringSoon = 20;
-const int64 kCertExpired = -20;
+const int64_t kCertValid = 90;
+const int64_t kCertExpiringSoon = 20;
+const int64_t kCertExpired = -20;
 
 void DBusCallbackFalse(const BoolDBusMethodCallback& callback) {
   base::MessageLoop::current()->PostTask(

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_WILDCARD_LOGIN_CHECKER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_WILDCARD_LOGIN_CHECKER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/user_info_fetcher.h"

@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"

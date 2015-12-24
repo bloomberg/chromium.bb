@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"

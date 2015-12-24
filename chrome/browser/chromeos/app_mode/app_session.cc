@@ -7,9 +7,9 @@
 #include <errno.h>
 #include <signal.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"

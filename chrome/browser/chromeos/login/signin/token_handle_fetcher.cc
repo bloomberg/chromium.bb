@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/signin/token_handle_fetcher.h"
 
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

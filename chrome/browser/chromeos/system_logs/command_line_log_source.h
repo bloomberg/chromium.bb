@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_COMMAND_LINE_LOG_SOURCE_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_COMMAND_LINE_LOG_SOURCE_H_
 
+#include "base/macros.h"
 #include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
 
 namespace system_logs {

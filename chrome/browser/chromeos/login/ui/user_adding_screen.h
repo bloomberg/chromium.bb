@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_USER_ADDING_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_USER_ADDING_SCREEN_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace chromeos {
 

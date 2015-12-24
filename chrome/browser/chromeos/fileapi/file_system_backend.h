@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_SYSTEM_BACKEND_H_
 #define CHROME_BROWSER_CHROMEOS_FILEAPI_FILE_SYSTEM_BACKEND_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -108,13 +111,13 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
       storage::FileSystemType type) const override;
   scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const storage::FileSystemURL& path,
-      int64 offset,
-      int64 max_bytes_to_read,
+      int64_t offset,
+      int64_t max_bytes_to_read,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context) const override;
   scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
       const storage::FileSystemURL& url,
-      int64 offset,
+      int64_t offset,
       storage::FileSystemContext* context) const override;
   storage::FileSystemQuotaUtil* GetQuotaUtil() override;
   const storage::UpdateObserverList* GetUpdateObservers(

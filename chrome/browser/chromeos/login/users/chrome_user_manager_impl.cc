@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 
+#include <stddef.h>
+
 #include <cstddef>
 #include <set>
 

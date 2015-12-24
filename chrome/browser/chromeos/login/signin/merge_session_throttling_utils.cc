@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
 
+#include <stdint.h>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -26,7 +29,7 @@ namespace merge_session_throttling_utils {
 
 namespace {
 
-const int64 kMaxSessionRestoreTimeInSec = 60;
+const int64_t kMaxSessionRestoreTimeInSec = 60;
 
 // The set of blocked profiles.
 class ProfileSet : public base::NonThreadSafe, public std::set<Profile*> {

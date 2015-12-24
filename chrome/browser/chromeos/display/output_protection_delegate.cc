@@ -17,7 +17,7 @@ namespace chromeos {
 
 namespace {
 
-bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64* display_id) {
+bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64_t* display_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(rfh);
   DCHECK(display_id);
@@ -164,7 +164,7 @@ void OutputProtectionDelegate::OnWindowHierarchyChanged(
     return;
   }
 
-  int64 new_display_id = 0;
+  int64_t new_display_id = 0;
   if (!GetCurrentDisplayId(rfh, &new_display_id))
     return;
   if (display_id_ == new_display_id)

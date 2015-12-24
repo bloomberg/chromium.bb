@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/events/event_rewriter.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "ash/sticky_keys/sticky_keys_controller.h"

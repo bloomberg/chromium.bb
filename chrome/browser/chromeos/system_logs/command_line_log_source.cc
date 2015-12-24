@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/system_logs/command_line_log_source.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

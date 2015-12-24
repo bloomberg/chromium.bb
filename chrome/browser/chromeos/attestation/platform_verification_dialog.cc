@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
 
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"

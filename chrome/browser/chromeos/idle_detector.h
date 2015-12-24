@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_IDLE_DETECTOR_H_
 #define CHROME_BROWSER_CHROMEOS_IDLE_DETECTOR_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/user_activity/user_activity_observer.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_KIOSK_AUTO_LAUNCHER_SESSION_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_KIOSK_AUTO_LAUNCHER_SESSION_MANAGER_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/session_manager/core/session_manager.h"
 

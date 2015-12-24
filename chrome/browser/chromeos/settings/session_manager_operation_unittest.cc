@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -77,7 +79,7 @@ class SessionManagerOperationTest : public testing::Test {
   void CheckPublicKeyLoaded(SessionManagerOperation* op) {
     ASSERT_TRUE(op->public_key().get());
     ASSERT_TRUE(op->public_key()->is_loaded());
-    std::vector<uint8> public_key;
+    std::vector<uint8_t> public_key;
     ASSERT_TRUE(policy_.GetSigningKey()->ExportPublicKey(&public_key));
     EXPECT_EQ(public_key, op->public_key()->data());
   }

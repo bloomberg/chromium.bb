@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_WRITE_FILE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_WRITE_FILE_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/operation.h"
@@ -36,7 +39,7 @@ class WriteFile : public Operation {
             const ProvidedFileSystemInfo& file_system_info,
             int file_handle,
             scoped_refptr<net::IOBuffer> buffer,
-            int64 offset,
+            int64_t offset,
             int length,
             const storage::AsyncFileUtil::StatusCallback& callback);
   ~WriteFile() override;
@@ -53,7 +56,7 @@ class WriteFile : public Operation {
  private:
   int file_handle_;
   scoped_refptr<net::IOBuffer> buffer_;
-  int64 offset_;
+  int64_t offset_;
   int length_;
   const storage::AsyncFileUtil::StatusCallback callback_;
 

@@ -8,6 +8,7 @@
 #include <list>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/aura/env_observer.h"

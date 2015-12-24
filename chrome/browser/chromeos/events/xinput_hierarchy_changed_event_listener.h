@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EVENTS_XINPUT_HIERARCHY_CHANGED_EVENT_LISTENER_H_
 #define CHROME_BROWSER_CHROMEOS_EVENTS_XINPUT_HIERARCHY_CHANGED_EVENT_LISTENER_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "ui/events/platform/platform_event_observer.h"

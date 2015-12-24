@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_context_initializer.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"

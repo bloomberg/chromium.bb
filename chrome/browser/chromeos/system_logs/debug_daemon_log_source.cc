@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/system_logs/debug_daemon_log_source.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"

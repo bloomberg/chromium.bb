@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/abort.h"
@@ -253,7 +254,7 @@ AbortCallback ProvidedFileSystem::ReadDirectory(
 AbortCallback ProvidedFileSystem::ReadFile(
     int file_handle,
     net::IOBuffer* buffer,
-    int64 offset,
+    int64_t offset,
     int length,
     const ReadChunkReceivedCallback& callback) {
   TRACE_EVENT1(
@@ -394,7 +395,7 @@ AbortCallback ProvidedFileSystem::CopyEntry(
 AbortCallback ProvidedFileSystem::WriteFile(
     int file_handle,
     net::IOBuffer* buffer,
-    int64 offset,
+    int64_t offset,
     int length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   TRACE_EVENT1("file_system_provider",
@@ -443,7 +444,7 @@ AbortCallback ProvidedFileSystem::MoveEntry(
 
 AbortCallback ProvidedFileSystem::Truncate(
     const base::FilePath& file_path,
-    int64 length,
+    int64_t length,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       TRUNCATE,

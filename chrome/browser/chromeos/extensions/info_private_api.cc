@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/values.h"

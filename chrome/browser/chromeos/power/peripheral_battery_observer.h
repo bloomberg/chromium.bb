@@ -7,9 +7,9 @@
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/power_manager_client.h"

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_AFFILIATED_CLOUD_POLICY_INVALIDATOR_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_AFFILIATED_CLOUD_POLICY_INVALIDATOR_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
@@ -57,7 +58,7 @@ class AffiliatedCloudPolicyInvalidator
   AffiliatedInvalidationServiceProvider* const invalidation_service_provider_;
 
   // The highest invalidation version that was handled already.
-  int64 highest_handled_invalidation_version_;
+  int64_t highest_handled_invalidation_version_;
 
   // The current |CloudPolicyInvalidator|. nullptr if no connected invalidation
   // service is available.

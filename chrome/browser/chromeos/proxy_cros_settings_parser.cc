@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
@@ -68,11 +71,11 @@ base::Value* CreateServerPortValue(const UIProxyConfig::ManualProxy& proxy) {
 }
 
 net::ProxyServer CreateProxyServer(std::string host,
-                                   uint16 port,
+                                   uint16_t port,
                                    net::ProxyServer::Scheme scheme) {
   if (host.empty() && port == 0)
     return net::ProxyServer();
-  uint16 default_port = net::ProxyServer::GetDefaultPortForScheme(scheme);
+  uint16_t default_port = net::ProxyServer::GetDefaultPortForScheme(scheme);
   net::HostPortPair host_port_pair;
   // Check if host is a valid URL or a string of valid format <server>::<port>.
   GURL url(host);
@@ -91,14 +94,14 @@ net::ProxyServer CreateProxyServerFromHost(
     const std::string& host,
     const UIProxyConfig::ManualProxy& proxy,
     net::ProxyServer::Scheme scheme) {
-  uint16 port = 0;
+  uint16_t port = 0;
   if (proxy.server.is_valid())
     port = proxy.server.host_port_pair().port();
   return CreateProxyServer(host, port, scheme);
 }
 
 net::ProxyServer CreateProxyServerFromPort(
-    uint16 port,
+    uint16_t port,
     const UIProxyConfig::ManualProxy& proxy,
     net::ProxyServer::Scheme scheme) {
   std::string host;

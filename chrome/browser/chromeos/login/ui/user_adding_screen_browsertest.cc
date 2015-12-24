@@ -4,6 +4,7 @@
 
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"

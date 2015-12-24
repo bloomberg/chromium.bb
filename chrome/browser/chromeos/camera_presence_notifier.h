@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CAMERA_PRESENCE_NOTIFIER_H_
 #define CHROME_BROWSER_CHROMEOS_CAMERA_PRESENCE_NOTIFIER_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

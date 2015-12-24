@@ -7,6 +7,7 @@
 
 #include <deque>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "content/public/test/test_utils.h"

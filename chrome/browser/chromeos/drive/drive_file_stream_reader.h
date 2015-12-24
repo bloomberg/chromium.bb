@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_STREAM_READER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_STREAM_READER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -58,8 +60,8 @@ class LocalReaderProxy : public ReaderProxy {
   // This class takes its ownership.
   // |length| is the number of bytes to be read. It must be equal or
   // smaller than the remaining data size in the |file_reader|.
-  LocalReaderProxy(
-      scoped_ptr<util::LocalFileReader> file_reader, int64 length);
+  LocalReaderProxy(scoped_ptr<util::LocalFileReader> file_reader,
+                   int64_t length);
   ~LocalReaderProxy() override;
 
   // ReaderProxy overrides.
@@ -77,7 +79,7 @@ class LocalReaderProxy : public ReaderProxy {
       const net::CompletionCallback& callback, int read_result);
 
   // The number of remaining bytes to be read.
-  int64 remaining_length_;
+  int64_t remaining_length_;
 
   base::ThreadChecker thread_checker_;
 
@@ -94,9 +96,10 @@ class NetworkReaderProxy : public ReaderProxy {
   // to cancel the job. |job_canceller| should be the callback to run the
   // cancelling. |full_content_length| is necessary for determining whether the
   // deletion is done in the middle of download process.
-  NetworkReaderProxy(
-      int64 offset, int64 content_length, int64 full_content_length,
-      const base::Closure& job_canceller);
+  NetworkReaderProxy(int64_t offset,
+                     int64_t content_length,
+                     int64_t full_content_length,
+                     const base::Closure& job_canceller);
   ~NetworkReaderProxy() override;
 
   // ReaderProxy overrides.
@@ -111,11 +114,11 @@ class NetworkReaderProxy : public ReaderProxy {
   ScopedVector<std::string> pending_data_;
 
   // The number of bytes to be skipped.
-  int64 remaining_offset_;
+  int64_t remaining_offset_;
 
   // The number of bytes of remaining data (including the data not yet
   // received from the server).
-  int64 remaining_content_length_;
+  int64_t remaining_content_length_;
 
   // Flag to remember whether this read request is for reading till the end of
   // the file.
@@ -199,7 +202,7 @@ class DriveFileStreamReader {
 
   // Part of Initialize. Called when the local file open process is done.
   void InitializeAfterLocalFileOpen(
-      int64 length,
+      int64_t length,
       const InitializeCompletionCallback& callback,
       scoped_ptr<ResourceEntry> entry,
       scoped_ptr<util::LocalFileReader> file_reader,

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/events/event_rewriter.h"
 

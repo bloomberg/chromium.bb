@@ -6,6 +6,7 @@
 
 #include <cryptohi.h>
 #include <keyhi.h>
+#include <stdint.h>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -86,10 +87,10 @@ crypto::ScopedSECKEYPrivateKey GetPrivateKeyOnWorkerThread(
     const std::string& public_key) {
   CHECK(slot);
 
-  const uint8* public_key_uint8 =
-      reinterpret_cast<const uint8*>(public_key.data());
-  std::vector<uint8> public_key_vector(
-      public_key_uint8, public_key_uint8 + public_key.size());
+  const uint8_t* public_key_uint8 =
+      reinterpret_cast<const uint8_t*>(public_key.data());
+  std::vector<uint8_t> public_key_vector(public_key_uint8,
+                                         public_key_uint8 + public_key.size());
 
   crypto::ScopedSECKEYPrivateKey rsa_key(
       crypto::FindNSSKeyFromPublicKeyInfoInSlot(public_key_vector, slot));

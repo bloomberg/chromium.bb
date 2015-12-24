@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_USER_POLICY_DISK_CACHE_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_USER_POLICY_DISK_CACHE_H_
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -297,8 +298,8 @@ void ExternalFileURLRequestJob::OnFileInfoObtained(
         net::URLRequestStatus::FAILED, net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
     return;
   }
-  const int64 offset = byte_range_.first_byte_position();
-  const int64 size =
+  const int64_t offset = byte_range_.first_byte_position();
+  const int64_t size =
       byte_range_.last_byte_position() + 1 - byte_range_.first_byte_position();
   set_expected_content_size(size);
   remaining_bytes_ = size;
@@ -352,7 +353,7 @@ int ExternalFileURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
     return 0;
 
   const int result = stream_reader_->Read(
-      buf, std::min<int64>(buf_size, remaining_bytes_),
+      buf, std::min<int64_t>(buf_size, remaining_bytes_),
       base::Bind(&ExternalFileURLRequestJob::OnReadCompleted,
                  weak_ptr_factory_.GetWeakPtr()));
 

@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/screens/screen_context.h"

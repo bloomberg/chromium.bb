@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
@@ -38,7 +40,8 @@ bool ConvertRequestValueToFileInfo(scoped_ptr<RequestValue> value,
     output->is_directory.reset(new bool(*params->metadata.is_directory));
 
   if (fields & ProvidedFileSystemInterface::METADATA_FIELD_SIZE)
-    output->size.reset(new int64(static_cast<int64>(*params->metadata.size)));
+    output->size.reset(
+        new int64_t(static_cast<int64_t>(*params->metadata.size)));
 
   if (fields & ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME) {
     std::string input_modification_time;

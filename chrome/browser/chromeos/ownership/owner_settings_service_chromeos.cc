@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 
 #include <keyhi.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <string>
@@ -101,7 +102,7 @@ void LoadPrivateKey(
     const base::Callback<void(const scoped_refptr<PublicKey>& public_key,
                               const scoped_refptr<PrivateKey>& private_key)>&
         callback) {
-  std::vector<uint8> public_key_data;
+  std::vector<uint8_t> public_key_data;
   scoped_refptr<PublicKey> public_key;
   if (!owner_key_util->ImportPublicKey(&public_key_data)) {
     scoped_refptr<PrivateKey> private_key;
@@ -129,7 +130,7 @@ void LoadPrivateKey(
 
 bool DoesPrivateKeyExistAsyncHelper(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util) {
-  std::vector<uint8> public_key;
+  std::vector<uint8_t> public_key;
   if (!owner_key_util->ImportPublicKey(&public_key))
     return false;
   crypto::ScopedSECKEYPrivateKey key =

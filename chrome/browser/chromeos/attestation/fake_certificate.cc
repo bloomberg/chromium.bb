@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/attestation/fake_certificate.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_certificate.h"
@@ -15,7 +18,7 @@ namespace attestation {
 namespace {
 
 // A test key encoded as ASN.1 PrivateKeyInfo from PKCS #8.
-const uint8 kTestKeyData[] = {
+const uint8_t kTestKeyData[] = {
     0x30, 0x82, 0x01, 0x55, 0x02, 0x01, 0x00, 0x30, 0x0d, 0x06, 0x09, 0x2a,
     0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x04, 0x82,
     0x01, 0x3f, 0x30, 0x82, 0x01, 0x3b, 0x02, 0x01, 0x00, 0x02, 0x41, 0x00,
@@ -57,9 +60,8 @@ bool GetFakeCertificateDER(const base::TimeDelta& expiry,
     valid_start = valid_expiry - base::TimeDelta::FromDays(1);
   }
   scoped_ptr<crypto::RSAPrivateKey> test_key(
-      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(
-          std::vector<uint8>(&kTestKeyData[0],
-                             &kTestKeyData[arraysize(kTestKeyData)])));
+      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(std::vector<uint8_t>(
+          &kTestKeyData[0], &kTestKeyData[arraysize(kTestKeyData)])));
   if (!test_key.get()) {
     return false;
   }

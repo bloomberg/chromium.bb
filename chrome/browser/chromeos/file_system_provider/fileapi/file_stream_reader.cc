@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/fileapi/file_stream_reader.h"
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
@@ -23,7 +24,7 @@ namespace file_system_provider {
 
 // Converts net::CompletionCallback to net::Int64CompletionCallback.
 void Int64ToIntCompletionCallback(net::CompletionCallback callback,
-                                  int64 result) {
+                                  int64_t result) {
   callback.Run(static_cast<int>(result));
 }
 
@@ -65,7 +66,7 @@ class FileStreamReader::OperationRunner
   // file has not been changed while reading. Must be called on UI thread.
   void ReadFileOnUIThread(
       scoped_refptr<net::IOBuffer> buffer,
-      int64 offset,
+      int64_t offset,
       int length,
       const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -196,7 +197,7 @@ class FileStreamReader::OperationRunner
 
 FileStreamReader::FileStreamReader(storage::FileSystemContext* context,
                                    const storage::FileSystemURL& url,
-                                   int64 initial_offset,
+                                   int64_t initial_offset,
                                    const base::Time& expected_modification_time)
     : url_(url),
       current_offset_(initial_offset),
@@ -204,8 +205,7 @@ FileStreamReader::FileStreamReader(storage::FileSystemContext* context,
       expected_modification_time_(expected_modification_time),
       runner_(new OperationRunner),
       state_(NOT_INITIALIZED),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 FileStreamReader::~FileStreamReader() {
   // FileStreamReader doesn't have a Cancel() method like in FileStreamWriter.
@@ -353,7 +353,7 @@ void FileStreamReader::OnReadCompleted(net::CompletionCallback callback,
       "file_system_provider", "FileStreamReader::Read", this);
 }
 
-int64 FileStreamReader::GetLength(
+int64_t FileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

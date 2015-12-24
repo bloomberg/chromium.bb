@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 

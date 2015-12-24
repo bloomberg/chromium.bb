@@ -4,10 +4,13 @@
 
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"

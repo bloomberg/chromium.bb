@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_USER_CLOUD_EXTERNAL_DATA_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_USER_CLOUD_EXTERNAL_DATA_MANAGER_H_
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base.h"
 #include "components/policy/core/common/policy_details.h"

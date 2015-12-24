@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FIRST_RUN_STEPS_TRAY_STEP_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/first_run/step.h"
 
 namespace chromeos {

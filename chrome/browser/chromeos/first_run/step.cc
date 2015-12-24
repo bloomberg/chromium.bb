@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/first_run/step.h"
 
+#include <stddef.h>
+
 #include <cctype>
 
 #include "ash/first_run/first_run_helper.h"

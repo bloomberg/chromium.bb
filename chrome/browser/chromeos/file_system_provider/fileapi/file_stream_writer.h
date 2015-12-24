@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FILEAPI_FILE_STREAM_WRITER_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FILEAPI_FILE_STREAM_WRITER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
@@ -22,7 +24,7 @@ class ProvidedFileSystemInterface;
 // to Write().
 class FileStreamWriter : public storage::FileStreamWriter {
  public:
-  FileStreamWriter(const storage::FileSystemURL& url, int64 initial_offset);
+  FileStreamWriter(const storage::FileSystemURL& url, int64_t initial_offset);
 
   ~FileStreamWriter() override;
 
@@ -75,7 +77,7 @@ class FileStreamWriter : public storage::FileStreamWriter {
                              const net::CompletionCallback& callback);
 
   storage::FileSystemURL url_;
-  int64 current_offset_;
+  int64_t current_offset_;
   scoped_refptr<OperationRunner> runner_;
   State state_;
 

@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"

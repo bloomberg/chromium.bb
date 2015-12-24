@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -44,7 +45,7 @@ const char* kUpstreamNotificationNotifyKey = "notify";
 const char* kUpstreamNotificationRegIdKey = "registration_id";
 
 // If we get an error registering with GCM, try again in two minutes.
-const int64 kRegistrationRetryDelayMs = 2 * 60 * 1000;
+const int64_t kRegistrationRetryDelayMs = 2 * 60 * 1000;
 
 const char* kHeartbeatSchedulerScope =
     "policy.heartbeat_scheduler.upstream_notification";
@@ -64,8 +65,8 @@ std::string GetDestinationID() {
 
 namespace policy {
 
-const int64 HeartbeatScheduler::kDefaultHeartbeatIntervalMs =
-    2 * 60 * 1000; // 2 minutes
+const int64_t HeartbeatScheduler::kDefaultHeartbeatIntervalMs =
+    2 * 60 * 1000;  // 2 minutes
 
 // Helper class used to manage GCM registration (handles retrying after
 // errors, etc).

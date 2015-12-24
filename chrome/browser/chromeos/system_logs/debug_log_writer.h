@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_DEBUG_LOG_WRITER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_DEBUG_LOG_WRITER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 
 namespace chromeos {
 

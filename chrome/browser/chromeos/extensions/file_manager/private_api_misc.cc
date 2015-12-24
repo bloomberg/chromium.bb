@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 

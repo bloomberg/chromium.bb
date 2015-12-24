@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_get_keys_operation.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -79,7 +81,8 @@ void EasyUnlockGetKeysOperation::OnGetKeyData(
     } else if (entry.name == kEasyUnlockKeyMetaNameBluetoothType) {
       if (entry.number) {
         if (*entry.number >=
-            static_cast<int64>(EasyUnlockDeviceKeyData::NUM_BLUETOOTH_TYPES)) {
+            static_cast<int64_t>(
+                EasyUnlockDeviceKeyData::NUM_BLUETOOTH_TYPES)) {
           PA_LOG(ERROR) << "Invalid Bluetooth type: " << *entry.number;
         } else {
           device.bluetooth_type =

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 
 class GoogleServiceAuthError;

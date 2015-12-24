@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

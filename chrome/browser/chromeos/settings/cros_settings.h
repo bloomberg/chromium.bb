@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chromeos/settings/cros_settings_names.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_LAYER_H_
 #define CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_LAYER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 

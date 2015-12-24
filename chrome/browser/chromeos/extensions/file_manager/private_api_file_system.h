@@ -7,8 +7,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_FILE_SYSTEM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -156,13 +160,14 @@ class FileManagerPrivateGetSizeStatsFunction
                        bool is_download);
 
   void OnGetDriveAvailableSpace(drive::FileError error,
-                                int64 bytes_total,
-                                int64 bytes_used);
+                                int64_t bytes_total,
+                                int64_t bytes_used);
 
   void OnGetMtpAvailableSpace(const MtpStorageInfo& mtp_storage_info,
                               const bool error);
 
-  void OnGetSizeStats(const uint64* total_size, const uint64* remaining_size);
+  void OnGetSizeStats(const uint64_t* total_size,
+                      const uint64_t* remaining_size);
 };
 
 // Implements the chrome.fileManagerPrivate.validatePathNameLength method.

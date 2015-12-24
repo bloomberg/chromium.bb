@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
@@ -71,7 +75,7 @@ class DummyTaskManager : public task_management::TestTaskManager {
   double GetCpuUsage(TaskId task_id) const override {
     return tasks_.at(task_id)->cpu_percent;
   }
-  int64 GetPhysicalMemoryUsage(TaskId task_id) const override {
+  int64_t GetPhysicalMemoryUsage(TaskId task_id) const override {
     return tasks_.at(task_id)->memory_bytes;
   }
   const std::string& GetTaskNameForRappor(TaskId task_id) const override {

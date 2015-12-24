@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_FAKE_SUPERVISED_USER_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_FAKE_SUPERVISED_USER_MANAGER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 
 namespace chromeos {

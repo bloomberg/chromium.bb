@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_ENGINE_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_ENGINE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -77,11 +80,11 @@ class MockInputMethodEngine : public ui::IMEEngineHandlerInterface {
   bool IsInterestedInKeyEvent() const override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
                        KeyEventDoneCallback& callback) override;
-  void CandidateClicked(uint32 index) override;
+  void CandidateClicked(uint32_t index) override;
   void SetSurroundingText(const std::string& text,
-                          uint32 cursor_pos,
-                          uint32 anchor_pos,
-                          uint32 offset_pos) override;
+                          uint32_t cursor_pos,
+                          uint32_t anchor_pos,
+                          uint32_t offset_pos) override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
   void HideInputView() override;
 

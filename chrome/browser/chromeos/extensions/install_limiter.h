@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_INSTALL_LIMITER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_INSTALL_LIMITER_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -57,7 +59,7 @@ class InstallLimiter : public KeyedService,
   // Otherwise, it just runs the installer.
   void AddWithSize(const scoped_refptr<CrxInstaller>& installer,
                    const base::FilePath& path,
-                   int64 size);
+                   int64_t size);
 
   // Checks and runs deferred big app installs when appropriate.
   void CheckAndRunDeferrredInstalls();

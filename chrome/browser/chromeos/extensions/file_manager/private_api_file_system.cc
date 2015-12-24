@@ -68,12 +68,12 @@ const char kRootPath[] = "/";
 
 // Retrieves total and remaining available size on |mount_path|.
 void GetSizeStatsOnBlockingPool(const std::string& mount_path,
-                                uint64* total_size,
-                                uint64* remaining_size) {
+                                uint64_t* total_size,
+                                uint64_t* remaining_size) {
   struct statvfs stat = {};  // Zero-clear
   if (HANDLE_EINTR(statvfs(mount_path.c_str(), &stat)) == 0) {
-    *total_size = static_cast<uint64>(stat.f_blocks) * stat.f_frsize;
-    *remaining_size = static_cast<uint64>(stat.f_bavail) * stat.f_frsize;
+    *total_size = static_cast<uint64_t>(stat.f_blocks) * stat.f_frsize;
+    *remaining_size = static_cast<uint64_t>(stat.f_bavail) * stat.f_frsize;
   }
 }
 
@@ -133,7 +133,7 @@ void NotifyCopyProgress(
     storage::FileSystemOperation::CopyProgressType type,
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
-    int64 size) {
+    int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager::EventRouter* event_router =
@@ -152,7 +152,7 @@ void OnCopyProgress(
     storage::FileSystemOperation::CopyProgressType type,
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
-    int64 size) {
+    int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
@@ -497,13 +497,13 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetLocalSpace(
 
 void FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace(
     drive::FileError error,
-    int64 bytes_total,
-    int64 bytes_used) {
+    int64_t bytes_total,
+    int64_t bytes_used) {
   if (error == drive::FILE_ERROR_OK) {
-    const uint64 bytes_total_unsigned = bytes_total;
+    const uint64_t bytes_total_unsigned = bytes_total;
     // bytes_used can be larger than bytes_total (over quota).
-    const uint64 bytes_remaining_unsigned =
-        std::max(bytes_total - bytes_used, int64(0));
+    const uint64_t bytes_remaining_unsigned =
+        std::max(bytes_total - bytes_used, int64_t(0));
     OnGetSizeStats(&bytes_total_unsigned, &bytes_remaining_unsigned);
   } else {
     // If stats couldn't be gotten for drive, result should be left undefined.
@@ -521,14 +521,14 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace(
     return;
   }
 
-  const uint64 max_capacity = mtp_storage_info.max_capacity();
-  const uint64 free_space_in_bytes = mtp_storage_info.free_space_in_bytes();
+  const uint64_t max_capacity = mtp_storage_info.max_capacity();
+  const uint64_t free_space_in_bytes = mtp_storage_info.free_space_in_bytes();
   OnGetSizeStats(&max_capacity, &free_space_in_bytes);
 }
 
 void FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats(
-    const uint64* total_size,
-    const uint64* remaining_size) {
+    const uint64_t* total_size,
+    const uint64_t* remaining_size) {
   base::DictionaryValue* sizes = new base::DictionaryValue();
   SetResult(sizes);
 
@@ -610,7 +610,7 @@ void GetFileMetadataOnIOThread(
 }
 
 // Checks if the available space of the |path| is enough for required |bytes|.
-bool CheckLocalDiskSpaceOnIOThread(const base::FilePath& path, int64 bytes) {
+bool CheckLocalDiskSpaceOnIOThread(const base::FilePath& path, int64_t bytes) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return bytes <= base::SysInfo::AmountOfFreeDiskSpace(path) -
                       cryptohome::kMinFreeSpaceInBytes;

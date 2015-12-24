@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_SCOPED_USER_MANAGER_ENABLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_SCOPED_USER_MANAGER_ENABLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace user_manager {
 class UserManager;

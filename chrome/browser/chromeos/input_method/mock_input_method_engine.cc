@@ -119,12 +119,12 @@ bool MockInputMethodEngine::IsInterestedInKeyEvent() const {
 void MockInputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
                                             KeyEventDoneCallback& callback) {}
 
-void MockInputMethodEngine::CandidateClicked(uint32 index) {}
+void MockInputMethodEngine::CandidateClicked(uint32_t index) {}
 
 void MockInputMethodEngine::SetSurroundingText(const std::string& text,
-                                               uint32 cursor_pos,
-                                               uint32 anchor_pos,
-                                               uint32 offset_pos) {}
+                                               uint32_t cursor_pos,
+                                               uint32_t anchor_pos,
+                                               uint32_t offset_pos) {}
 
 void MockInputMethodEngine::SetCompositionBounds(
     const std::vector<gfx::Rect>& bounds) {}

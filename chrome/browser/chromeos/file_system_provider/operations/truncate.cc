@@ -16,13 +16,12 @@ namespace operations {
 Truncate::Truncate(extensions::EventRouter* event_router,
                    const ProvidedFileSystemInfo& file_system_info,
                    const base::FilePath& file_path,
-                   int64 length,
+                   int64_t length,
                    const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       file_path_(file_path),
       length_(length),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 Truncate::~Truncate() {
 }

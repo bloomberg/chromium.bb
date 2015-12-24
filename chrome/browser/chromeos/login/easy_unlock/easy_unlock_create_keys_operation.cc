@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_create_keys_operation.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
@@ -341,7 +344,7 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
       kEasyUnlockKeyMetaNameBluetoothAddress, device->bluetooth_address));
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNameBluetoothType,
-      static_cast<int64>(device->bluetooth_type)));
+      static_cast<int64_t>(device->bluetooth_type)));
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNamePsk, device->psk));
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(

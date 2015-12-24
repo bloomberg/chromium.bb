@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 

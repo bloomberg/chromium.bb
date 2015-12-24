@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/chromeos/extensions/dictionary_event_router.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"

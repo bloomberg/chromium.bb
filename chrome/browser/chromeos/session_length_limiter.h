@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SESSION_LENGTH_LIMITER_H_
 #define CHROME_BROWSER_CHROMEOS_SESSION_LENGTH_LIMITER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/threading/thread_checker.h"

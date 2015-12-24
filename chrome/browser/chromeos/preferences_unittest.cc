@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/macros.h"
 #include "base/prefs/pref_member.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

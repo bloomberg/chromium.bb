@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_SNAPSHOT_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_SNAPSHOT_MANAGER_H_
 
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
@@ -50,10 +53,10 @@ class SnapshotManager {
   struct FileReferenceWithSizeInfo {
     FileReferenceWithSizeInfo(
         scoped_refptr<storage::ShareableFileReference> ref,
-        int64 size);
+        int64_t size);
     ~FileReferenceWithSizeInfo();
     scoped_refptr<storage::ShareableFileReference> file_ref;
-    int64 file_size;
+    int64_t file_size;
   };
 
  private:
@@ -61,7 +64,7 @@ class SnapshotManager {
   void CreateManagedSnapshotAfterSpaceComputed(
       const storage::FileSystemURL& filesystem_url,
       const LocalPathCallback& callback,
-      int64 needed_space);
+      int64_t needed_space);
 
   // Part of CreateManagedSnapshot.
   void OnCreateSnapshotFile(

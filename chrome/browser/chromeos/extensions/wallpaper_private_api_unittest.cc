@@ -8,6 +8,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
