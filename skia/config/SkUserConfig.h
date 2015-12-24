@@ -214,10 +214,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GETDEVICE
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_LAYER_BITMAP_IMAGEFILTERS
-#   define SK_SUPPORT_LEGACY_LAYER_BITMAP_IMAGEFILTERS
-#endif
-
 #ifndef    SK_IGNORE_ETC1_SUPPORT
 #   define SK_IGNORE_ETC1_SUPPORT
 #endif
@@ -244,11 +240,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
  *  or fall back to lazy runtime initialization. Chrome always wants the latter.
  */
 #define SK_ALLOW_STATIC_GLOBAL_INITIALIZERS 0
-
-/* Forcing the unoptimized path for the offset image filter in skia until
- * all filters used in Blink support the optimized path properly
- */
-#define SK_DISABLE_OFFSETIMAGEFILTER_OPTIMIZATION
 
 /* This flag forces Skia not to use typographic metrics with GDI.
  */
