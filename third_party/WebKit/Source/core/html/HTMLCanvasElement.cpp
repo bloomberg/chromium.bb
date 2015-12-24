@@ -576,7 +576,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& q
     return toDataURLInternal(mimeType, quality, BackBuffer);
 }
 
-void HTMLCanvasElement::toBlob(ScriptState* scriptState, FileCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState)
+void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState)
 {
     if (!originClean()) {
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
@@ -605,7 +605,7 @@ void HTMLCanvasElement::toBlob(ScriptState* scriptState, FileCallback* callback,
     // Add a ref to keep image data alive until completion of encoding
     RefPtr<DOMUint8ClampedArray> imageDataRef(imageData->data());
 
-    RefPtr<CanvasAsyncBlobCreator> asyncCreatorRef = CanvasAsyncBlobCreator::create(imageDataRef.release(), encodingMimeType, imageData->size(), callback, scriptState->executionContext());
+    RefPtr<CanvasAsyncBlobCreator> asyncCreatorRef = CanvasAsyncBlobCreator::create(imageDataRef.release(), encodingMimeType, imageData->size(), callback);
 
     // TODO(xlai): Remove idle-periods version of implementation completely, http://crbug.com/564218
     asyncCreatorRef->scheduleAsyncBlobCreation(false, quality);

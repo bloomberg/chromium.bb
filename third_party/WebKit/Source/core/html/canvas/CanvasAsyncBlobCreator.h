@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileCallback.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
@@ -18,23 +16,15 @@ namespace blink {
 
 class PNGImageEncoderState;
 
-class CORE_EXPORT CanvasAsyncBlobCreator
-    : public RefCounted<CanvasAsyncBlobCreator> {
+class CanvasAsyncBlobCreator final : public ThreadSafeRefCounted<CanvasAsyncBlobCreator> {
 public:
-    static PassRefPtr<CanvasAsyncBlobCreator> create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, FileCallback*, ExecutionContext*);
+    static PassRefPtr<CanvasAsyncBlobCreator> create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, FileCallback*);
     void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality = 0.0);
     static WebThread* getToBlobThreadInstance();
     virtual ~CanvasAsyncBlobCreator();
 
-protected:
-    CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> data, const String& mimeType, const IntSize&, FileCallback*);
-    virtual void scheduleCreateBlobAndCallOnMainThread();
-    virtual void scheduleCreateNullptrAndCallOnMainThread();
-    virtual void scheduleClearSelfRefOnMainThread();
-    std::atomic<bool> m_cancelled;
-
 private:
-    friend class CanvasAsyncBlobCreatorTest;
+    CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> data, const String& mimeType, const IntSize&, FileCallback*);
 
     OwnPtr<PNGImageEncoderState> m_encoderState;
     RefPtr<DOMUint8ClampedArray> m_data;
@@ -47,22 +37,13 @@ private:
     Persistent<FileCallback> m_callback;
 
     RefPtr<CanvasAsyncBlobCreator> m_selfRef;
-    void clearSelfReference();
 
     void initiatePngEncoding(double deadlineSeconds);
     void scheduleIdleEncodeRowsPng();
     void idleEncodeRowsPng(double deadlineSeconds);
-
     void createBlobAndCall();
 
-    void encodeImageOnEncoderThread(double quality);
-    bool initializeEncodeImageOnEncoderThread();
-    void nonprogressiveEncodeImageOnEncoderThread(double quality);
-    void progressiveEncodeImageOnEncoderThread();
-
-    class ContextObserver;
-    void createContextObserver(ExecutionContext*);
-    OwnPtrWillBePersistent<ContextObserver> m_contextObserver;
+    void encodeImageOnAsyncThread(double quality);
 };
 
 } // namespace blink
