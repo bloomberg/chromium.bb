@@ -5,19 +5,18 @@
 #ifndef TracedValue_h
 #define TracedValue_h
 
+#include "base/memory/ref_counted.h"
 #include "platform/EventTracer.h"
-
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace blink {
-class TracedArrayValue;
-class TracedDictionaryValue;
-class InternalValue;
+namespace base {
+namespace trace_event {
+class TracedValue;
+}
+}
 
-// TODO(bashi): Use Allocator which counts allocation size as tracing overhead.
-typedef Vector<RefPtr<InternalValue>> TracedValueVector;
-typedef HashMap<String, RefPtr<InternalValue>> TracedValueHashMap;
+namespace blink {
 
 class PLATFORM_EXPORT TracedValue : public TraceEvent::ConvertableToTraceFormat {
     WTF_MAKE_NONCOPYABLE(TracedValue);
@@ -48,10 +47,7 @@ private:
     TracedValue();
     ~TracedValue() override;
 
-    TracedDictionaryValue* currentDictionary() const;
-    TracedArrayValue* currentArray() const;
-
-    TracedValueVector m_stack;
+    scoped_refptr<base::trace_event::TracedValue> m_tracedValue;
 };
 
 } // namespace blink

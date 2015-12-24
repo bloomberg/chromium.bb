@@ -71,6 +71,7 @@
           '../bindings/modules/generated.gyp:modules_event_generated',
           '../bindings/modules/v8/generated.gyp:bindings_modules_v8_generated',
           '../wtf/wtf.gyp:wtf',
+          '<(DEPTH)/base/base.gyp:base',
           '<(DEPTH)/skia/skia.gyp:skia',
           '<(DEPTH)/url/url.gyp:url_lib',
           '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',

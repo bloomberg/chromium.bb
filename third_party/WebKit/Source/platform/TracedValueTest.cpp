@@ -4,9 +4,18 @@
 
 #include "platform/TracedValue.h"
 
+#include "base/json/json_reader.h"
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+scoped_ptr<base::Value> parseTracedValue(PassRefPtr<TracedValue> value)
+{
+    base::JSONReader reader;
+    CString utf8 = value->asTraceFormat().utf8();
+    return reader.Read(utf8.data());
+}
 
 TEST(TracedValueTest, FlatDictionary)
 {
@@ -15,8 +24,19 @@ TEST(TracedValueTest, FlatDictionary)
     value->setDouble("double", 0.0);
     value->setBoolean("bool", true);
     value->setString("string", "string");
-    String json = value->asTraceFormat();
-    EXPECT_EQ("{\"int\":2014,\"double\":0,\"bool\":true,\"string\":\"string\"}", json);
+
+    scoped_ptr<base::Value> parsed = parseTracedValue(value);
+    base::DictionaryValue* dictionary;
+    ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
+    int intValue;
+    EXPECT_TRUE(dictionary->GetInteger("int", &intValue));
+    EXPECT_EQ(2014, intValue);
+    double doubleValue;
+    EXPECT_TRUE(dictionary->GetDouble("double", &doubleValue));
+    EXPECT_EQ(0.0, doubleValue);
+    std::string stringValue;
+    EXPECT_TRUE(dictionary->GetString("string", &stringValue));
+    EXPECT_EQ("string", stringValue);
 }
 
 TEST(TracedValueTest, Hierarchy)
@@ -40,8 +60,44 @@ TEST(TracedValueTest, Hierarchy)
     value->endDictionary();
     value->endArray();
     value->setString("s0", "foo");
-    String json = value->asTraceFormat();
-    EXPECT_EQ("{\"i0\":2014,\"dict1\":{\"i1\":2014,\"dict2\":{\"b2\":false},\"s1\":\"foo\"},\"d0\":0,\"b0\":true,\"a1\":[1,true,{\"i2\":3}],\"s0\":\"foo\"}", json);
+
+    scoped_ptr<base::Value> parsed = parseTracedValue(value);
+    base::DictionaryValue* dictionary;
+    ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
+    int i0;
+    EXPECT_TRUE(dictionary->GetInteger("i0", &i0));
+    EXPECT_EQ(2014, i0);
+    int i1;
+    EXPECT_TRUE(dictionary->GetInteger("dict1.i1", &i1));
+    EXPECT_EQ(2014, i1);
+    bool b2;
+    EXPECT_TRUE(dictionary->GetBoolean("dict1.dict2.b2", &b2));
+    EXPECT_FALSE(b2);
+    std::string s1;
+    EXPECT_TRUE(dictionary->GetString("dict1.s1", &s1));
+    EXPECT_EQ("foo", s1);
+    double d0;
+    EXPECT_TRUE(dictionary->GetDouble("d0", &d0));
+    EXPECT_EQ(0.0, d0);
+    bool b0;
+    EXPECT_TRUE(dictionary->GetBoolean("b0", &b0));
+    EXPECT_TRUE(b0);
+    base::ListValue* a1;
+    EXPECT_TRUE(dictionary->GetList("a1", &a1));
+    int a1i0;
+    EXPECT_TRUE(a1->GetInteger(0, &a1i0));
+    EXPECT_EQ(1, a1i0);
+    bool a1b1;
+    EXPECT_TRUE(a1->GetBoolean(1, &a1b1));
+    EXPECT_TRUE(a1b1);
+    base::DictionaryValue* a1d2;
+    EXPECT_TRUE(a1->GetDictionary(2, &a1d2));
+    int i2;
+    EXPECT_TRUE(a1d2->GetInteger("i2", &i2));
+    EXPECT_EQ(3, i2);
+    std::string s0;
+    EXPECT_TRUE(dictionary->GetString("s0", &s0));
+    EXPECT_EQ("foo", s0);
 }
 
 TEST(TracedValueTest, Escape)
@@ -52,8 +108,25 @@ TEST(TracedValueTest, Escape)
     value->setString("s2", "\"value2\"");
     value->setString("s3\\", "value3");
     value->setString("\"s4\"", "value4");
-    String json = value->asTraceFormat();
-    EXPECT_EQ("{\"s0\":\"value0\\\\\",\"s1\":\"value\\n1\",\"s2\":\"\\\"value2\\\"\",\"s3\\\\\":\"value3\",\"\\\"s4\\\"\":\"value4\"}", json);
+
+    scoped_ptr<base::Value> parsed = parseTracedValue(value);
+    base::DictionaryValue* dictionary;
+    ASSERT_TRUE(parsed->GetAsDictionary(&dictionary));
+    std::string s0;
+    EXPECT_TRUE(dictionary->GetString("s0", &s0));
+    EXPECT_EQ("value0\\", s0);
+    std::string s1;
+    EXPECT_TRUE(dictionary->GetString("s1", &s1));
+    EXPECT_EQ("value\n1", s1);
+    std::string s2;
+    EXPECT_TRUE(dictionary->GetString("s2", &s2));
+    EXPECT_EQ("\"value2\"", s2);
+    std::string s3;
+    EXPECT_TRUE(dictionary->GetString("s3\\", &s3));
+    EXPECT_EQ("value3", s3);
+    std::string s4;
+    EXPECT_TRUE(dictionary->GetString("\"s4\"", &s4));
+    EXPECT_EQ("value4", s4);
 }
 
 } // namespace blink

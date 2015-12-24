@@ -1,7 +1,9 @@
 include_rules = [
+    "+base/json",
     "+base/location.h",
     "+base/memory",
     "+base/trace_event",
+    "+base/values.h",
     "+mozilla",
     "+platform",
     "+public/platform",
