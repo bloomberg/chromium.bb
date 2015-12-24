@@ -95,6 +95,12 @@ typedef struct {
 	qcms_CIE_xyY blue;
 } qcms_CIE_xyYTRIPLE;
 
+typedef struct {
+	float X;
+	float Y;
+	float Z;
+} qcms_xyz_float;
+
 qcms_profile* qcms_profile_create_rgb_with_gamma(
 		qcms_CIE_xyY white_point,
 		qcms_CIE_xyYTRIPLE primaries,
@@ -112,6 +118,7 @@ void qcms_profile_release(qcms_profile *profile);
 
 qcms_bool qcms_profile_is_bogus(qcms_profile *profile);
 qcms_bool qcms_profile_has_white_point(qcms_profile *profile);
+qcms_xyz_float qcms_profile_get_white_point(qcms_profile *profile);
 qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile);
 qcms_color_space qcms_profile_get_color_space(qcms_profile *profile);
 unsigned qcms_profile_get_version(qcms_profile *profile);

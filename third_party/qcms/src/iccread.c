@@ -348,6 +348,19 @@ qcms_bool qcms_profile_has_white_point(qcms_profile *profile)
     return (wp.X != 0) && (wp.Y != 0) && (wp.Z != 0);
 }
 
+qcms_xyz_float qcms_profile_get_white_point(qcms_profile *profile)
+{
+    qcms_xyz_float wp = { 0.0f, 0.0f, 0.0f };
+
+    if (qcms_profile_has_white_point(profile)) {
+        wp.X = s15Fixed16Number_to_float(profile->mediaWhitePoint.X);
+        wp.Y = s15Fixed16Number_to_float(profile->mediaWhitePoint.Y);
+        wp.Z = s15Fixed16Number_to_float(profile->mediaWhitePoint.Z);
+    }
+
+    return wp;
+}
+
 #define TAG_bXYZ 0x6258595a
 #define TAG_gXYZ 0x6758595a
 #define TAG_rXYZ 0x7258595a
