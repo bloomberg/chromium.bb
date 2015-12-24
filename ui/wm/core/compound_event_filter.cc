@@ -6,6 +6,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

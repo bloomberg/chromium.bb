@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/window_modality_controller.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "ui/aura/client/aura_constants.h"

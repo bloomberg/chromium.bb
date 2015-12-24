@@ -5,6 +5,7 @@
 #ifndef UI_WM_PUBLIC_SCOPED_TOOLTIP_DISABLER_H_
 #define UI_WM_PUBLIC_SCOPED_TOOLTIP_DISABLER_H_
 
+#include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {

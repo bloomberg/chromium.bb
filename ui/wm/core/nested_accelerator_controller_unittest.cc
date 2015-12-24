@@ -4,9 +4,13 @@
 
 #include "ui/wm/core/nested_accelerator_controller.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/event_types.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"

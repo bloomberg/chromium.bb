@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/compound_event_filter.h"
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"

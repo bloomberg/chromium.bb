@@ -4,6 +4,7 @@
 
 #include "ui/wm/core/shadow.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"

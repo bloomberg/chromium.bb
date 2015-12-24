@@ -7,8 +7,8 @@
 
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/wm_export.h"

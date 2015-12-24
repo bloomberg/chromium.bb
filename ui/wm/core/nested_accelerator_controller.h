@@ -6,6 +6,7 @@
 #define UI_WM_CORE_NESTED_ACCELERATOR_CONTROLLER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/wm/public/dispatcher_client.h"
 #include "ui/wm/wm_export.h"

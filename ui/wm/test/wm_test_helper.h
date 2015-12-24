@@ -6,6 +6,7 @@
 #define UI_WM_TEST_WM_TEST_HELPER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window_tree_host.h"

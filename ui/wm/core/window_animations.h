@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/wm/wm_export.h"
 

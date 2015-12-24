@@ -5,6 +5,7 @@
 #ifndef UI_WM_CORE_TRANSIENT_WINDOW_STACKING_CLIENT_H_
 #define UI_WM_CORE_TRANSIENT_WINDOW_STACKING_CLIENT_H_
 
+#include "base/macros.h"
 #include "ui/aura/client/window_stacking_client.h"
 #include "ui/wm/wm_export.h"
 

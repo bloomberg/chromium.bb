@@ -5,6 +5,7 @@
 #ifndef UI_WM_CORE_WM_STATE_H_
 #define UI_WM_CORE_WM_STATE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/wm/wm_export.h"
 

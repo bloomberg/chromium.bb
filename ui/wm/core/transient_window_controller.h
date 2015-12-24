@@ -5,6 +5,7 @@
 #ifndef UI_WM_CORE_TRANSIENT_WINDOW_CONTROLLER_H_
 #define UI_WM_CORE_TRANSIENT_WINDOW_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "ui/wm/public/transient_window_client.h"
 #include "ui/wm/wm_export.h"
 

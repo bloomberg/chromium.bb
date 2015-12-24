@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"

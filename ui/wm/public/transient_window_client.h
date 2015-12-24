@@ -5,7 +5,6 @@
 #ifndef UI_WM_PUBLIC_TRANSIENT_WINDOW_CLIENT_H_
 #define UI_WM_PUBLIC_TRANSIENT_WINDOW_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "ui/aura/aura_export.h"
 
 namespace aura {

@@ -4,6 +4,9 @@
 
 #include "ui/wm/core/nested_accelerator_dispatcher.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "base/run_loop.h"

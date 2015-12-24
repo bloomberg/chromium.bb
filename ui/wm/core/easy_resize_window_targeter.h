@@ -5,6 +5,7 @@
 #ifndef UI_WM_CORE_EASY_RESIZE_WINDOW_TARGETER_H_
 #define UI_WM_CORE_EASY_RESIZE_WINDOW_TARGETER_H_
 
+#include "base/macros.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/wm/wm_export.h"

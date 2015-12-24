@@ -9,7 +9,7 @@ namespace client {
 
 namespace {
 
-TransientWindowClient* instance = NULL;
+TransientWindowClient* instance = nullptr;
 
 }  // namespace
 
