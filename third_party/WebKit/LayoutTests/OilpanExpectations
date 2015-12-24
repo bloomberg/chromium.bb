@@ -48,3 +48,5 @@ crbug.com/451577 [ Linux ] http/tests/inspector-enabled/shadow-dom-rules-restart
 crbug.com/24182 [ Win Debug ] jquery/manipulation.html [ Slow Timeout Pass ]
 
 crbug.com/385014 [ Win Debug ] accessibility/canvas-fallback-content-2.html [ Pass Timeout Text ]
+
+crbug.com/518993 [ Debug ] imported/web-platform-tests/user-timing/test_user_timing_measure_navigation_timing.html [ Pass Text ]
