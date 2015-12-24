@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
+#include <stdint.h>  // required by xf86drmMode.h
 #include <xf86drmMode.h>
 
 namespace ui {

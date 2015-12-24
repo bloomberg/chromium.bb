@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"

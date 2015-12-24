@@ -8,6 +8,7 @@
 #include <dispatch/dispatch.h>
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"
 

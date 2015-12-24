@@ -60,7 +60,7 @@ ui::BaseWindow* GetBaseWindowForWebContents(
 
 }  // namespace
 
-void LoadRiskData(uint64 obfuscated_gaia_id,
+void LoadRiskData(uint64_t obfuscated_gaia_id,
                   content::WebContents* web_contents,
                   const base::Callback<void(const std::string&)>& callback) {
   // No easy way to get window bounds on Android, and that signal isn't very

@@ -4,6 +4,7 @@
 
 #include "base/memory/memory_pressure_monitor_mac.h"
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

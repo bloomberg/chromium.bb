@@ -5,6 +5,7 @@
 #include "base/memory/memory_pressure_monitor_mac.h"
 
 #include <dlfcn.h>
+#include <stddef.h>
 #include <sys/sysctl.h>
 
 #include "base/mac/mac_util.h"

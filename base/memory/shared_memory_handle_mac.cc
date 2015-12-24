@@ -5,6 +5,7 @@
 #include "base/memory/shared_memory_handle.h"
 
 #include <mach/mach_vm.h>
+#include <stddef.h>
 #include <sys/mman.h>
 #include <unistd.h>
 

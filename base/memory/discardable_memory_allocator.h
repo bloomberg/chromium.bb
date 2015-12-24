@@ -5,6 +5,8 @@
 #ifndef BASE_MEMORY_DISCARDABLE_MEMORY_ALLOCATOR_H_
 #define BASE_MEMORY_DISCARDABLE_MEMORY_ALLOCATOR_H_
 
+#include <stddef.h>
+
 #include "base/base_export.h"
 #include "base/memory/scoped_ptr.h"
 

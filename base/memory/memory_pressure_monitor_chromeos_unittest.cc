@@ -4,7 +4,7 @@
 
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"

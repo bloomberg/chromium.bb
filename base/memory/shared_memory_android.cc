@@ -4,6 +4,7 @@
 
 #include "base/memory/shared_memory.h"
 
+#include <stddef.h>
 #include <sys/mman.h>
 
 #include "base/logging.h"

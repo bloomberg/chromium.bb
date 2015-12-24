@@ -5,6 +5,8 @@
 #include "base/memory/shared_memory.h"
 
 #include <aclapi.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -256,12 +258,9 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (external_section_ && !IsSectionSafeToMap(mapped_file_))
     return false;
 
-  memory_ = MapViewOfFile(mapped_file_,
-                          read_only_ ? FILE_MAP_READ : FILE_MAP_READ |
-                              FILE_MAP_WRITE,
-                          static_cast<uint64>(offset) >> 32,
-                          static_cast<DWORD>(offset),
-                          bytes);
+  memory_ = MapViewOfFile(
+      mapped_file_, read_only_ ? FILE_MAP_READ : FILE_MAP_READ | FILE_MAP_WRITE,
+      static_cast<uint64_t>(offset) >> 32, static_cast<DWORD>(offset), bytes);
   if (memory_ != NULL) {
     DCHECK_EQ(0U, reinterpret_cast<uintptr_t>(memory_) &
         (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));

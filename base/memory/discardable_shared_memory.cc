@@ -4,10 +4,7 @@
 
 #include "base/memory/discardable_shared_memory.h"
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
-// For madvise() which is available on all POSIX compatible systems.
-#include <sys/mman.h>
-#endif
+#include <stdint.h>
 
 #include <algorithm>
 
@@ -16,6 +13,12 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_metrics.h"
+#include "build/build_config.h"
+
+#if defined(OS_POSIX) && !defined(OS_NACL)
+// For madvise() which is available on all POSIX compatible systems.
+#include <sys/mman.h>
+#endif
 
 #if defined(OS_ANDROID)
 #include "third_party/ashmem/ashmem.h"
@@ -38,28 +41,28 @@ typedef uintptr_t UAtomicType;
 // does not have enough precision to contain a timestamp in the standard
 // serialized format.
 template <int>
-Time TimeFromWireFormat(int64 value);
+Time TimeFromWireFormat(int64_t value);
 template <int>
-int64 TimeToWireFormat(Time time);
+int64_t TimeToWireFormat(Time time);
 
 // Serialize to Unix time when using 4-byte wire format.
 // Note: 19 January 2038, this will cease to work.
 template <>
-Time ALLOW_UNUSED_TYPE TimeFromWireFormat<4>(int64 value) {
+Time ALLOW_UNUSED_TYPE TimeFromWireFormat<4>(int64_t value) {
   return value ? Time::UnixEpoch() + TimeDelta::FromSeconds(value) : Time();
 }
 template <>
-int64 ALLOW_UNUSED_TYPE TimeToWireFormat<4>(Time time) {
+int64_t ALLOW_UNUSED_TYPE TimeToWireFormat<4>(Time time) {
   return time > Time::UnixEpoch() ? (time - Time::UnixEpoch()).InSeconds() : 0;
 }
 
 // Standard serialization format when using 8-byte wire format.
 template <>
-Time ALLOW_UNUSED_TYPE TimeFromWireFormat<8>(int64 value) {
+Time ALLOW_UNUSED_TYPE TimeFromWireFormat<8>(int64_t value) {
   return Time::FromInternalValue(value);
 }
 template <>
-int64 ALLOW_UNUSED_TYPE TimeToWireFormat<8>(Time time) {
+int64_t ALLOW_UNUSED_TYPE TimeToWireFormat<8>(Time time) {
   return time.ToInternalValue();
 }
 
@@ -68,7 +71,7 @@ struct SharedState {
 
   explicit SharedState(AtomicType ivalue) { value.i = ivalue; }
   SharedState(LockState lock_state, Time timestamp) {
-    int64 wire_timestamp = TimeToWireFormat<sizeof(AtomicType)>(timestamp);
+    int64_t wire_timestamp = TimeToWireFormat<sizeof(AtomicType)>(timestamp);
     DCHECK_GE(wire_timestamp, 0);
     DCHECK_EQ(lock_state & ~1, 0);
     value.u = (static_cast<UAtomicType>(wire_timestamp) << 1) | lock_state;
@@ -321,7 +324,7 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
 }
 
 void* DiscardableSharedMemory::memory() const {
-  return reinterpret_cast<uint8*>(shared_memory_.memory()) +
+  return reinterpret_cast<uint8_t*>(shared_memory_.memory()) +
          AlignToPageSize(sizeof(SharedState));
 }
 

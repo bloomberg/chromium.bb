@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_WEBSITE_SETTINGS_INFO_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_WEBSITE_SETTINGS_INFO_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"
@@ -59,7 +61,7 @@ class WebsiteSettingsInfo {
     return initial_default_value_.get();
   }
 
-  uint32 GetPrefRegistrationFlags() const;
+  uint32_t GetPrefRegistrationFlags() const;
 
   ScopingType scoping_type() const { return scoping_type_; }
 

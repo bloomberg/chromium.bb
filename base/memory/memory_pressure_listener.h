@@ -11,8 +11,8 @@
 #define BASE_MEMORY_MEMORY_PRESSURE_LISTENER_H_
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 
 namespace base {
 

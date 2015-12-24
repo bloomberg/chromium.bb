@@ -6,6 +6,7 @@
 #define BASE_MEMORY_MEMORY_PRESSURE_MONITOR_WIN_H_
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/weak_ptr.h"

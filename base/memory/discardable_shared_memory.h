@@ -5,11 +5,15 @@
 #ifndef BASE_MEMORY_DISCARDABLE_SHARED_MEMORY_H_
 #define BASE_MEMORY_DISCARDABLE_SHARED_MEMORY_H_
 
+#include <stddef.h>
+
 #include "base/base_export.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_collision_warner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 #if DCHECK_IS_ON()
 #include <set>

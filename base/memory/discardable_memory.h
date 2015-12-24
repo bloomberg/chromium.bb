@@ -6,7 +6,6 @@
 #define BASE_MEMORY_DISCARDABLE_MEMORY_H_
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
 namespace base {

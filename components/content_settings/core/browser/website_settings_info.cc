@@ -49,8 +49,8 @@ WebsiteSettingsInfo::WebsiteSettingsInfo(
 
 WebsiteSettingsInfo::~WebsiteSettingsInfo() {}
 
-uint32 WebsiteSettingsInfo::GetPrefRegistrationFlags() const {
-  uint32 flags = PrefRegistry::NO_REGISTRATION_FLAGS;
+uint32_t WebsiteSettingsInfo::GetPrefRegistrationFlags() const {
+  uint32_t flags = PrefRegistry::NO_REGISTRATION_FLAGS;
 
   if (sync_status_ == SYNCABLE)
     flags |= user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;

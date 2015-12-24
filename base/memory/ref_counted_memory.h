@@ -5,11 +5,14 @@
 #ifndef BASE_MEMORY_REF_COUNTED_MEMORY_H_
 #define BASE_MEMORY_REF_COUNTED_MEMORY_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace base {
