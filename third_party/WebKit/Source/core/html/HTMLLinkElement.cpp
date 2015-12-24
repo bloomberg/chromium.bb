@@ -518,11 +518,9 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
     CSSParserContext parserContext(m_owner->document(), 0, baseURL, charset);
 
-    bool restoredCachedStyleSheet = false;
     if (RefPtrWillBeRawPtr<StyleSheetContents> restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
         ASSERT(restoredSheet->isCacheable());
         ASSERT(!restoredSheet->isLoading());
-        restoredCachedStyleSheet = true;
 
         if (m_sheet)
             clearSheet();
@@ -533,9 +531,10 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
         m_loading = false;
         restoredSheet->checkLoaded();
+        Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet", true, 2);
         return;
     }
-    Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet", restoredCachedStyleSheet, 2);
+    Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet", false, 2);
 
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
 
