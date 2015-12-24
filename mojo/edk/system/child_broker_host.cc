@@ -74,6 +74,7 @@ void ChildBrokerHost::ConnectToProcess(base::ProcessId process_id,
   if (!child_channel_)
     return;  // Can happen at process shutdown on Windows.
   ConnectToProcessMessage data;
+  memset(&data, 0, sizeof(data));
   data.type = CONNECT_TO_PROCESS;
   data.process_id = process_id;
   scoped_ptr<MessageInTransit> message(new MessageInTransit(
@@ -94,6 +95,7 @@ void ChildBrokerHost::ConnectMessagePipe(uint64_t pipe_id,
   if (!child_channel_)
     return;  // Can happen at process shutdown on Windows.
   PeerPipeConnectedMessage data;
+  memset(&data, 0, sizeof(data));
   data.type = PEER_PIPE_CONNECTED;
   data.pipe_id = pipe_id;
   data.process_id = process_id;

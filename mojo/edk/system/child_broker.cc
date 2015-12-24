@@ -106,6 +106,7 @@ void ChildBroker::ConnectMessagePipe(uint64_t pipe_id,
   DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
 
   ConnectMessagePipeMessage data;
+  memset(&data, 0, sizeof(data));
   data.pipe_id = pipe_id;
   if (pending_connects_.find(pipe_id) != pending_connects_.end()) {
     if (!parent_async_channel_) {
