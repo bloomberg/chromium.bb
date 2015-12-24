@@ -7,11 +7,13 @@
 
 #include <limits.h>
 #include <linux/input.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"

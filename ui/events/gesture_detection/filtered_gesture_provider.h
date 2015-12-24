@@ -5,8 +5,10 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_FILTERED_GESTURE_PROVIDER_H_
 #define UI_EVENTS_GESTURE_DETECTION_FILTERED_GESTURE_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/events/gesture_detection/gesture_event_data_packet.h"
 #include "ui/events/gesture_detection/gesture_provider.h"
 #include "ui/events/gesture_detection/touch_disposition_gesture_filter.h"
@@ -42,7 +44,7 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
 
   // To be called upon asynchronous and synchronous ack of an event that was
   // forwarded after a successful call to |OnTouchEvent()|.
-  void OnTouchEventAck(uint32 unique_event_id, bool event_consumed);
+  void OnTouchEventAck(uint32_t unique_event_id, bool event_consumed);
 
   // Methods delegated to |gesture_provider_|.
   void ResetDetection();

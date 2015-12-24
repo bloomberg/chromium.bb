@@ -5,6 +5,9 @@
 #ifndef UI_EVENTS_PLATFORM_X11_X11_EVENT_SOURCE_H_
 #define UI_EVENTS_PLATFORM_X11_X11_EVENT_SOURCE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/events_export.h"
 #include "ui/events/platform/platform_event_source.h"

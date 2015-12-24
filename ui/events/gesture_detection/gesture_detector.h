@@ -6,6 +6,7 @@
 #define UI_EVENTS_GESTURE_DETECTION_GESTURE_DETECTOR_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/velocity_tracker_state.h"

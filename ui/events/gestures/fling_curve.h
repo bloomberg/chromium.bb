@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_GESTURES_FLING_CURVE_H_
 #define UI_EVENTS_GESTURES_FLING_CURVE_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/events/events_base_export.h"
 #include "ui/events/gesture_curve.h"

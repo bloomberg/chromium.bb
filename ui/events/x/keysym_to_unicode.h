@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_X_KEYSYM_TO_UNICODE_H_
 #define UI_EVENTS_X_KEYSYM_TO_UNICODE_H_
 
-#include <cstdint>
+#include <stdint.h>
 
 namespace ui {
 

@@ -4,6 +4,8 @@
 
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #define XK_3270  // for XK_3270_BackTab
@@ -13,8 +15,8 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/keysym.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,7 +60,7 @@ namespace {
 //
 const struct MAP0 {
   KeySym ch0;
-  uint8 vk;
+  uint8_t vk;
   bool operator()(const MAP0& m1, const MAP0& m2) const {
     return m1.ch0 < m2.ch0;
   }
@@ -119,7 +121,7 @@ const struct MAP0 {
 const struct MAP1 {
   KeySym ch0;
   unsigned sc;
-  uint8 vk;
+  uint8_t vk;
   bool operator()(const MAP1& m1, const MAP1& m2) const {
     if (m1.ch0 == m2.ch0)
       return m1.sc < m2.sc;
@@ -305,7 +307,7 @@ const struct MAP2 {
   KeySym ch0;
   unsigned sc;
   KeySym ch1;
-  uint8 vk;
+  uint8_t vk;
   bool operator()(const MAP2& m1, const MAP2& m2) const {
     if (m1.ch0 == m2.ch0 && m1.sc == m2.sc)
       return m1.ch1 < m2.ch1;
@@ -350,7 +352,7 @@ const struct MAP3 {
   unsigned sc;
   KeySym ch1;
   KeySym ch2;
-  uint8 vk;
+  uint8_t vk;
   bool operator()(const MAP3& m1, const MAP3& m2) const {
     if (m1.ch0 == m2.ch0 && m1.sc == m2.sc && m1.ch1 == m2.ch1)
       return m1.ch2 < m2.ch2;
@@ -884,7 +886,7 @@ DomCode CodeFromXEvent(const XEvent* xev) {
   return ui::KeycodeConverter::NativeKeycodeToDomCode(keycode);
 }
 
-uint16 GetCharacterFromXEvent(const XEvent* xev) {
+uint16_t GetCharacterFromXEvent(const XEvent* xev) {
   XEvent xkeyevent = {0};
   const XKeyEvent* xkey = NULL;
   if (xev->type == GenericEvent) {

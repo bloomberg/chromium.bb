@@ -9,7 +9,6 @@
 
 #import <objc/objc-class.h>
 
-#include "base/basictypes.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace cocoa_test_event_utils {

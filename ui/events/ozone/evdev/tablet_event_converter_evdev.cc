@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <linux/input.h>
+#include <stddef.h>
 
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"

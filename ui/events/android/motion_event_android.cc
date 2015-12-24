@@ -93,7 +93,7 @@ int FromAndroidMetaState(int meta_state) {
   return flags;
 }
 
-base::TimeTicks FromAndroidTime(int64 time_ms) {
+base::TimeTicks FromAndroidTime(int64_t time_ms) {
   return base::TimeTicks() + base::TimeDelta::FromMilliseconds(time_ms);
 }
 
@@ -188,7 +188,7 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
 MotionEventAndroid::~MotionEventAndroid() {
 }
 
-uint32 MotionEventAndroid::GetUniqueEventId() const {
+uint32_t MotionEventAndroid::GetUniqueEventId() const {
   return unique_event_id_;
 }
 

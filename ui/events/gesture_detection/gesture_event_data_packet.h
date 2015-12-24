@@ -5,6 +5,9 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_PACKET_H_
 #define UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_PACKET_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/containers/stack_container.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
@@ -58,14 +61,14 @@ class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
   // head of the queue, and then we handle the ack.
   void Ack(bool event_consumed);
   AckState ack_state() { return ack_state_; }
-  uint32 unique_touch_event_id() const { return unique_touch_event_id_; }
+  uint32_t unique_touch_event_id() const { return unique_touch_event_id_; }
 
  private:
   GestureEventDataPacket(base::TimeTicks timestamp,
                          GestureSource source,
                          const gfx::PointF& touch_location,
                          const gfx::PointF& raw_touch_location,
-                         uint32 unique_touch_event_id);
+                         uint32_t unique_touch_event_id);
 
   enum { kTypicalMaxGesturesPerTouch = 5 };
   base::TimeTicks timestamp_;
@@ -74,7 +77,7 @@ class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
   gfx::PointF raw_touch_location_;
   GestureSource gesture_source_;
   AckState ack_state_;
-  uint32 unique_touch_event_id_;
+  uint32_t unique_touch_event_id_;
 };
 
 }  // namespace ui

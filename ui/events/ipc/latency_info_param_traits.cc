@@ -54,7 +54,7 @@ bool ParamTraits<ui::LatencyInfo>::Read(const Message* m,
     return false;
 
   ui::LatencyInfo::InputCoordinate input_coordinates;
-  uint32 input_coordinates_size;
+  uint32_t input_coordinates_size;
   if (!ReadParam(m, iter, &input_coordinates_size))
     return false;
   for (size_t i = 0; i < input_coordinates_size; i++) {
@@ -65,7 +65,7 @@ bool ParamTraits<ui::LatencyInfo>::Read(const Message* m,
   }
 
   double timestamp;
-  uint32 coalesced_events_size;
+  uint32_t coalesced_events_size;
   if (!ReadParam(m, iter, &coalesced_events_size))
     return false;
   for (size_t i = 0; i < coalesced_events_size; i++) {

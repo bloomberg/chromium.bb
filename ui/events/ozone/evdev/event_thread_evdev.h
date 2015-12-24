@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_EVDEV_EVENT_THREAD_EVDEV_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {

@@ -5,8 +5,11 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_TOUCH_DISPOSITION_GESTURE_FILTER_H_
 #define UI_EVENTS_GESTURE_DETECTION_TOUCH_DISPOSITION_GESTURE_FILTER_H_
 
+#include <stdint.h>
+
 #include <queue>
 
+#include "base/macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/bitset_32.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
@@ -43,7 +46,7 @@ class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
   PacketResult OnGesturePacket(const GestureEventDataPacket& packet);
 
   // OnTouchEventAck must be called upon receipt of every touch event ack.
-  void OnTouchEventAck(uint32 unique_event_id, bool event_consumed);
+  void OnTouchEventAck(uint32_t unique_event_id, bool event_consumed);
 
   // Whether there are any active gesture sequences still queued in the filter.
   bool IsEmpty() const;

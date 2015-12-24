@@ -5,7 +5,9 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_UI_MOTION_EVENT_GENERIC_H_
 #define UI_EVENTS_GESTURE_DETECTION_UI_MOTION_EVENT_GENERIC_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/containers/stack_container.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
@@ -50,7 +52,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   ~MotionEventGeneric() override;
 
   // MotionEvent implementation.
-  uint32 GetUniqueEventId() const override;
+  uint32_t GetUniqueEventId() const override;
   Action GetAction() const override;
   int GetActionIndex() const override;
   size_t GetPointerCount() const override;
@@ -95,7 +97,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
 
   void set_action(Action action) { action_ = action; }
   void set_event_time(base::TimeTicks event_time) { event_time_ = event_time; }
-  void set_unique_event_id(uint32 unique_event_id) {
+  void set_unique_event_id(uint32_t unique_event_id) {
     unique_event_id_ = unique_event_id;
   }
   void set_action_index(int action_index) { action_index_ = action_index; }
@@ -117,7 +119,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
 
   Action action_;
   base::TimeTicks event_time_;
-  uint32 unique_event_id_;
+  uint32_t unique_event_id_;
   int action_index_;
   int button_state_;
   int flags_;

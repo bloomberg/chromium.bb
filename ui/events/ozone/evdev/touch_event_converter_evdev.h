@@ -5,10 +5,14 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <bitset>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event_constants.h"

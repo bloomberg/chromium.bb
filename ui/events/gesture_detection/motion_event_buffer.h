@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_MOTION_EVENT_BUFFER_H_
 #define UI_EVENTS_GESTURE_DETECTION_MOTION_EVENT_BUFFER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"

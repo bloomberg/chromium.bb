@@ -5,10 +5,12 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_NOISE_TOUCH_NOISE_FINDER_H_
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_NOISE_TOUCH_NOISE_FINDER_H_
 
+#include <stddef.h>
+
 #include <bitset>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"

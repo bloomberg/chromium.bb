@@ -8,6 +8,7 @@
 #include <bitset>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event.h"

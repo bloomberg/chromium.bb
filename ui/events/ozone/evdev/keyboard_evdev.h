@@ -5,9 +5,11 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_KEYBOARD_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_KEYBOARD_EVDEV_H_
 
-#include <bitset>
 #include <linux/input.h>
 
+#include <bitset>
+
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/events/ozone/evdev/event_device_util.h"

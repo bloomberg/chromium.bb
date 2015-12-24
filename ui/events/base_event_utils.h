@@ -5,14 +5,15 @@
 #ifndef UI_EVENTS_BASE_EVENT_UTILS_H_
 #define UI_EVENTS_BASE_EVENT_UTILS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "ui/events/events_base_export.h"
 
 // Common functions to be used for all platforms.
 namespace ui {
 
 // Generate an unique identifier for events.
-EVENTS_BASE_EXPORT uint32 GetNextTouchEventId();
+EVENTS_BASE_EXPORT uint32_t GetNextTouchEventId();
 
 // Checks if |flags| contains system key modifiers.
 EVENTS_BASE_EXPORT bool IsSystemKeyModifier(int flags);

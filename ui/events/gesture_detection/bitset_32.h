@@ -5,7 +5,8 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_BITSET_32_H_
 #define UI_EVENTS_GESTURE_DETECTION_BITSET_32_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/logging.h"
 
 namespace ui {

@@ -5,10 +5,11 @@
 #ifndef UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_
 #define UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 
 // For reference, the W3C UI Event spec is located at:

@@ -4,6 +4,8 @@
 
 #include "ui/events/blink/input_handler_proxy.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/auto_reset.h"

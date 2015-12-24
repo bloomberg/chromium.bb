@@ -5,11 +5,13 @@
 #ifndef UI_EVENTS_EVENT_H_
 #define UI_EVENTS_EVENT_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/event_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"
@@ -579,7 +581,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // The id of the pointer this event modifies.
   int touch_id() const { return touch_id_; }
   // A unique identifier for this event.
-  uint32 unique_event_id() const { return unique_event_id_; }
+  uint32_t unique_event_id() const { return unique_event_id_; }
 
   float rotation_angle() const { return rotation_angle_; }
 
@@ -619,7 +621,7 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   const int touch_id_;
 
   // A unique identifier for the touch event.
-  const uint32 unique_event_id_;
+  const uint32_t unique_event_id_;
 
   // Clockwise angle (in degrees) of the major axis from the X axis. Must be
   // less than 180 and non-negative.
@@ -779,7 +781,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // For a keystroke event, returns the same value as key_code().
   // For a character event, returns the same value as GetCharacter().
   // This exists for backwards compatibility with Windows key events.
-  uint16 GetConflatedWindowsKeyCode() const;
+  uint16_t GetConflatedWindowsKeyCode() const;
 
   // Returns true for [Alt]+<num-pad digit> Unicode alt key codes used by Win.
   // TODO(msw): Additional work may be needed for analogues on other platforms.

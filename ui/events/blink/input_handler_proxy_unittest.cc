@@ -4,7 +4,7 @@
 
 #include "ui/events/blink/input_handler_proxy.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"

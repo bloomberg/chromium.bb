@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_KEYCODES_DOM_US_LAYOUT_DATA_H_
 #define UI_EVENTS_KEYCODES_DOM_US_LAYOUT_DATA_H_
 
+#include "build/build_config.h"
+
 namespace ui {
 
 // This table maps a DomCode to a printable character, assuming US layout.

@@ -5,9 +5,11 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_MOUSE_BUTTON_MAP_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_MOUSE_BUTTON_MAP_EVDEV_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {

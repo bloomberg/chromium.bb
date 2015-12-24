@@ -5,6 +5,9 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_MOTION_EVENT_H_
 #define UI_EVENTS_GESTURE_DETECTION_MOTION_EVENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
@@ -50,7 +53,7 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   virtual ~MotionEvent() {}
 
   // An unique identifier this motion event.
-  virtual uint32 GetUniqueEventId() const = 0;
+  virtual uint32_t GetUniqueEventId() const = 0;
   virtual Action GetAction() const = 0;
   // Only valid if |GetAction()| returns ACTION_POINTER_UP or
   // ACTION_POINTER_DOWN.

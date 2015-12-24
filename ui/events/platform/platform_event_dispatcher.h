@@ -5,7 +5,8 @@
 #ifndef UI_EVENTS_PLATFORM_PLATFORM_EVENT_DISPATCHER_H_
 #define UI_EVENTS_PLATFORM_PLATFORM_EVENT_DISPATCHER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "ui/events/events_export.h"
 #include "ui/events/platform/platform_event_types.h"
 

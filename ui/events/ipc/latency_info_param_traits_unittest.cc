@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "ipc/ipc_message_macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/ipc/latency_info_param_traits.h"
@@ -77,13 +80,13 @@ TEST(LatencyInfoParamTraitsTest, InvalidData) {
   IPC::WriteParam(&msg, std::string());
   ui::LatencyInfo::LatencyMap components;
   IPC::WriteParam(&msg, components);
-  IPC::WriteParam(&msg, static_cast<uint32>(2));
+  IPC::WriteParam(&msg, static_cast<uint32_t>(2));
   IPC::WriteParam(&msg, ui::LatencyInfo::InputCoordinate());
   IPC::WriteParam(&msg, ui::LatencyInfo::InputCoordinate());
   // coalesced_events_size is 2 but only one event timestamp is written.
-  IPC::WriteParam(&msg, static_cast<uint32>(2));
+  IPC::WriteParam(&msg, static_cast<uint32_t>(2));
   IPC::WriteParam(&msg, static_cast<double>(10.0));
-  IPC::WriteParam(&msg, static_cast<int64>(1234));
+  IPC::WriteParam(&msg, static_cast<int64_t>(1234));
   IPC::WriteParam(&msg, true);
 
   base::PickleIterator iter(msg);

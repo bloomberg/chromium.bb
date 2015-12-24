@@ -7,6 +7,8 @@
 #define UI_EVENTS_ANDROID_MOTION_EVENT_ANDROID_H_
 
 #include <jni.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -61,7 +63,7 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   ~MotionEventAndroid() override;
 
   // ui::MotionEvent methods.
-  uint32 GetUniqueEventId() const override;
+  uint32_t GetUniqueEventId() const override;
   Action GetAction() const override;
   int GetActionIndex() const override;
   size_t GetPointerCount() const override;
@@ -129,7 +131,7 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
   } cached_pointers_[MAX_POINTERS_TO_CACHE];
 
   // A unique identifier for the Android motion event.
-  const uint32 unique_event_id_;
+  const uint32_t unique_event_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MotionEventAndroid);
 };

@@ -20,8 +20,8 @@
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/event_types.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/events_devices_export.h"

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "ui/events/gestures/fling_curve.h"

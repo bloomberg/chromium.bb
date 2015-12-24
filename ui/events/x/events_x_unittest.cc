@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/XInput2.h>
+
 #include <cstring>
 #include <set>
 #include <utility>
@@ -14,7 +17,9 @@
 #undef Bool
 #undef None
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -293,7 +298,7 @@ TEST_F(EventsXTest, TouchEventBasic) {
   EXPECT_FLOAT_EQ(GetTouchForce(scoped_xevent), 0.5f);
 }
 
-int GetTouchIdForTrackingId(uint32 tracking_id) {
+int GetTouchIdForTrackingId(uint32_t tracking_id) {
   int slot = 0;
   bool success =
       TouchFactory::GetInstance()->QuerySlotForTrackingID(tracking_id, &slot);

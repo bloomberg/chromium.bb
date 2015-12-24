@@ -4,15 +4,18 @@
 
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 
+#include <stddef.h>
 #include <xkbcommon/xkbcommon-names.h>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
+#include "build/build_config.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"

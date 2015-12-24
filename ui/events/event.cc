@@ -17,6 +17,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -906,7 +907,7 @@ KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {
   return NonLocatedToLocatedKeyboardCode(key_code_, code_);
 }
 
-uint16 KeyEvent::GetConflatedWindowsKeyCode() const {
+uint16_t KeyEvent::GetConflatedWindowsKeyCode() const {
   if (is_char_)
     return key_.ToCharacter();
   return key_code_;

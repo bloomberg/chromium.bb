@@ -6,6 +6,7 @@
 #define UI_EVENTS_EVENTS_SWITCHES_H_
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "ui/events/events_base_export.h"
 
 namespace switches {

@@ -4,9 +4,12 @@
 
 #include "ui/events/ozone/evdev/touch_noise/touch_noise_finder.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"

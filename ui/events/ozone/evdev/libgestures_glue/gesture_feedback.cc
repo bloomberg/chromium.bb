@@ -4,6 +4,7 @@
 
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_feedback.h"
 
+#include <stddef.h>
 #include <time.h>
 
 #include "base/bind.h"

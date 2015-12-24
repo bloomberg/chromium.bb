@@ -4,6 +4,8 @@
 
 #include "ui/events/x/keysym_to_unicode.h"
 
+#include <stddef.h>
+
 // Define XK_xxx before the #include of <X11/keysym.h> so that <X11/keysym.h>
 // defines all KeySyms we need.
 #define XK_MISCELLANY

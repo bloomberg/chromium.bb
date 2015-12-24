@@ -5,11 +5,12 @@
 #ifndef UI_EVENTS_LATENCY_INFO_H_
 #define UI_EVENTS_LATENCY_INFO_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/small_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -102,11 +103,11 @@ class EVENTS_BASE_EXPORT LatencyInfo {
     // Nondecreasing number that can be used to determine what events happened
     // in the component at the time this struct was sent on to the next
     // component.
-    int64 sequence_number;
+    int64_t sequence_number;
     // Average time of events that happened in this component.
     base::TimeTicks event_time;
     // Count of events that happened in this component
-    uint32 event_count;
+    uint32_t event_count;
   };
 
   struct EVENTS_BASE_EXPORT InputCoordinate {
@@ -123,17 +124,17 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   enum { kMaxCoalescedEventTimestamps = 2 };
   enum { kMaxInputCoordinates = 2 };
 
-  // Map a Latency Component (with a component-specific int64 id) to a
+  // Map a Latency Component (with a component-specific int64_t id) to a
   // component info.
   typedef base::SmallMap<
-      std::map<std::pair<LatencyComponentType, int64>, LatencyComponent>,
+      std::map<std::pair<LatencyComponentType, int64_t>, LatencyComponent>,
       kTypicalMaxComponentsPerLatencyInfo> LatencyMap;
 
   LatencyInfo();
   ~LatencyInfo();
 
   // For test only.
-  LatencyInfo(int64 trace_id, bool terminated);
+  LatencyInfo(int64_t trace_id, bool terminated);
 
   // Returns true if the vector |latency_info| is valid. Returns false
   // if it is not valid and log the |referring_msg|.
@@ -154,30 +155,30 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   // Modifies the current sequence number for a component, and adds a new
   // sequence number with the current timestamp.
   void AddLatencyNumber(LatencyComponentType component,
-                        int64 id,
-                        int64 component_sequence_number);
+                        int64_t id,
+                        int64_t component_sequence_number);
 
   // Similar to |AddLatencyNumber|, and also appends |trace_name_str| to
   // the trace event's name.
   // This function should only be called when adding a BEGIN component.
   void AddLatencyNumberWithTraceName(LatencyComponentType component,
-                                     int64 id,
-                                     int64 component_sequence_number,
+                                     int64_t id,
+                                     int64_t component_sequence_number,
                                      const char* trace_name_str);
 
   // Modifies the current sequence number and adds a certain number of events
   // for a specific component.
   void AddLatencyNumberWithTimestamp(LatencyComponentType component,
-                                     int64 id,
-                                     int64 component_sequence_number,
+                                     int64_t id,
+                                     int64_t component_sequence_number,
                                      base::TimeTicks time,
-                                     uint32 event_count);
+                                     uint32_t event_count);
 
   // Returns true if the a component with |type| and |id| is found in
   // the latency_components and the component is stored to |output| if
   // |output| is not NULL. Returns false if no such component is found.
   bool FindLatency(LatencyComponentType type,
-                   int64 id,
+                   int64_t id,
                    LatencyComponent* output) const;
 
   void RemoveLatency(LatencyComponentType type);
@@ -186,7 +187,7 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   // false otherwise.
   bool AddInputCoordinate(const InputCoordinate& input_coordinate);
 
-  uint32 input_coordinates_size() const { return input_coordinates_size_; }
+  uint32_t input_coordinates_size() const { return input_coordinates_size_; }
   const InputCoordinate* input_coordinates() const {
     return input_coordinates_;
   }
@@ -195,7 +196,7 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   // false otherwise.
   bool AddCoalescedEventTimestamp(double timestamp);
 
-  uint32 coalesced_events_size() const { return coalesced_events_size_; }
+  uint32_t coalesced_events_size() const { return coalesced_events_size_; }
   const double* timestamps_of_coalesced_events() const {
     return timestamps_of_coalesced_events_;
   }
@@ -203,14 +204,14 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   const LatencyMap& latency_components() const { return latency_components_; }
 
   bool terminated() const { return terminated_; }
-  int64 trace_id() const { return trace_id_; }
+  int64_t trace_id() const { return trace_id_; }
 
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
-                                         int64 id,
-                                         int64 component_sequence_number,
+                                         int64_t id,
+                                         int64_t component_sequence_number,
                                          base::TimeTicks time,
-                                         uint32 event_count,
+                                         uint32_t event_count,
                                          const char* trace_name_str);
 
   // Converts latencyinfo into format that can be dumped into trace buffer.
@@ -225,14 +226,14 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   LatencyMap latency_components_;
 
   // These coordinates represent window coordinates of the original input event.
-  uint32 input_coordinates_size_;
+  uint32_t input_coordinates_size_;
   InputCoordinate input_coordinates_[kMaxInputCoordinates];
 
-  uint32 coalesced_events_size_;
+  uint32_t coalesced_events_size_;
   double timestamps_of_coalesced_events_[kMaxCoalescedEventTimestamps];
 
   // The unique id for matching the ASYNC_BEGIN/END trace event.
-  int64 trace_id_;
+  int64_t trace_id_;
   // Whether a terminal component has been added.
   bool terminated_;
 

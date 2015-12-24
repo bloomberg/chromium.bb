@@ -4,6 +4,7 @@
 
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
 
+#include <stdint.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>

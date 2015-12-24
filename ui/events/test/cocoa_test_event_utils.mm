@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <mach/mach_time.h>
+#include <stdint.h>
 
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/events/test/cocoa_test_event_utils.h"

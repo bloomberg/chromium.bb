@@ -4,6 +4,8 @@
 
 #include "ui/events/gesture_detection/motion_event_buffer.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/trace_event/trace_event.h"

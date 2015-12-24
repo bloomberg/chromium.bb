@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <linux/input.h>
+#include <stddef.h>
 
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"

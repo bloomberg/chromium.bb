@@ -4,9 +4,12 @@
 
 #include "ui/events/ozone/evdev/touch_noise/far_apart_taps_touch_noise_filter.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 

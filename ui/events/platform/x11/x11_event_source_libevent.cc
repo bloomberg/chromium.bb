@@ -6,6 +6,7 @@
 
 #include <X11/Xlib.h>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_libevent.h"
 

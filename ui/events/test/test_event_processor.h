@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_TEST_TEST_EVENT_PROCESSOR_H_
 #define UI_EVENTS_TEST_TEST_EVENT_PROCESSOR_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_processor.h"
 

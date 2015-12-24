@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"

@@ -5,7 +5,9 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_VELOCITY_TRACKER_H_
 #define UI_EVENTS_GESTURE_DETECTION_VELOCITY_TRACKER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/bitset_32.h"

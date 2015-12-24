@@ -5,10 +5,13 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_EVDEV_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"

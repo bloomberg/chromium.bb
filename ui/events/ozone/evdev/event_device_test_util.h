@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_EVDEV_EVENT_DEVICE_TEST_UTIL_H_
 
 #include <linux/input.h>
+#include <stddef.h>
 
 namespace ui {
 

@@ -5,6 +5,7 @@
 #include "ui/events/ozone/evdev/input_injector_evdev.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

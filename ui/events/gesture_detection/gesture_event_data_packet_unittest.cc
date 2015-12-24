@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/gesture_detection/gesture_event_data_packet.h"
 #include "ui/events/test/motion_event_test_utils.h"

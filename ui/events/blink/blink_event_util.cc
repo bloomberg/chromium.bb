@@ -7,10 +7,13 @@
 
 #include "ui/events/blink/blink_event_util.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"

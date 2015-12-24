@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/basictypes.h"
 #include "ui/events/events_base_export.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"

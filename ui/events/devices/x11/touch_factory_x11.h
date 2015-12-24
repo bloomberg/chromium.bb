@@ -5,12 +5,15 @@
 #ifndef UI_EVENTS_DEVICES_X11_TOUCH_FACTORY_X11_H_
 #define UI_EVENTS_DEVICES_X11_TOUCH_FACTORY_X11_H_
 
+#include <stdint.h>
+
 #include <bitset>
 #include <map>
 #include <set>
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/sequential_id_generator.h"
 
@@ -67,14 +70,14 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
   // Tries to find an existing slot ID mapping to tracking ID. Returns true
   // if the slot is found and it is saved in |slot|, false if no such slot
   // can be found.
-  bool QuerySlotForTrackingID(uint32 tracking_id, int* slot);
+  bool QuerySlotForTrackingID(uint32_t tracking_id, int* slot);
 
   // Tries to find an existing slot ID mapping to tracking ID. If there
   // isn't one already, allocates a new slot ID and sets up the mapping.
-  int GetSlotForTrackingID(uint32 tracking_id);
+  int GetSlotForTrackingID(uint32_t tracking_id);
 
   // Releases the slot ID mapping to tracking ID.
-  void ReleaseSlotForTrackingID(uint32 tracking_id);
+  void ReleaseSlotForTrackingID(uint32_t tracking_id);
 
   // Whether any touch device is currently present and enabled.
   bool IsTouchDevicePresent();

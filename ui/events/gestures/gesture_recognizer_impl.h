@@ -5,9 +5,12 @@
 #ifndef UI_EVENTS_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
 #define UI_EVENTS_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
@@ -61,7 +64,7 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   bool ProcessTouchEventPreDispatch(TouchEvent* event,
                                     GestureConsumer* consumer) override;
 
-  Gestures* AckTouchEvent(uint32 unique_event_id,
+  Gestures* AckTouchEvent(uint32_t unique_event_id,
                           ui::EventResult result,
                           GestureConsumer* consumer) override;
 

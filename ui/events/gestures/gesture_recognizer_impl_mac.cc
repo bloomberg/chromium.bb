@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 
@@ -22,7 +24,7 @@ class GestureRecognizerImplMac : public GestureRecognizer {
     return false;
   }
 
-  Gestures* AckTouchEvent(uint32 unique_event_id,
+  Gestures* AckTouchEvent(uint32_t unique_event_id,
                           ui::EventResult result,
                           GestureConsumer* consumer) override {
     return NULL;

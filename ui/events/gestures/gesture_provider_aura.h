@@ -5,7 +5,9 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_UI_GESTURE_PROVIDER_H_
 #define UI_EVENTS_GESTURE_DETECTION_UI_GESTURE_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
@@ -38,7 +40,7 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   }
 
   bool OnTouchEvent(TouchEvent* event);
-  void OnTouchEventAck(uint32 unique_event_id, bool event_consumed);
+  void OnTouchEventAck(uint32_t unique_event_id, bool event_consumed);
   const MotionEventAura& pointer_state() { return pointer_state_; }
   ScopedVector<GestureEvent>* GetAndResetPendingGestures();
 

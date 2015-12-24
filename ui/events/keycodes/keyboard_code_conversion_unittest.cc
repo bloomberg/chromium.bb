@@ -4,7 +4,8 @@
 
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"

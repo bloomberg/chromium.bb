@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_GESTURES_BLINK_WEB_GESTURE_CURVE_IMPL_H_
 #define UI_EVENTS_GESTURES_BLINK_WEB_GESTURE_CURVE_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
@@ -49,7 +51,7 @@ class WebGestureCurveImpl : public NON_EXPORTED_BASE(blink::WebGestureCurve) {
   gfx::Vector2dF last_offset_;
 
   ThreadType animating_thread_type_;
-  int64 ticks_since_first_animate_;
+  int64_t ticks_since_first_animate_;
   double first_animate_time_;
   double last_animate_time_;
 

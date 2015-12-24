@@ -10,7 +10,7 @@
 
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/x/x11_types.h"

@@ -7,6 +7,8 @@
 
 #include "ui/events/gesture_detection/gesture_detector.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 

@@ -4,6 +4,7 @@
 
 #include "ui/events/event_constants.h"
 
+#include <stddef.h>
 #include <string.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -13,7 +14,9 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"

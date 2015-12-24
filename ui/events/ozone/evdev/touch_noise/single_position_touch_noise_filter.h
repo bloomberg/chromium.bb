@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_NOISE_SINGLE_POSITION_TOUCH_NOISE_FILTER_H_
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_NOISE_SINGLE_POSITION_TOUCH_NOISE_FILTER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/events/ozone/evdev/touch_noise/touch_noise_filter.h"

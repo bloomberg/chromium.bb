@@ -4,9 +4,12 @@
 
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"

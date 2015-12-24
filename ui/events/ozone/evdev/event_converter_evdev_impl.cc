@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <linux/input.h>
+#include <stddef.h>
 
 #include "base/trace_event/trace_event.h"
 #include "ui/events/event.h"

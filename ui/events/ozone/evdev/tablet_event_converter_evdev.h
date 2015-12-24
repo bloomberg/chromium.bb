@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_TABLET_EVENT_CONVERTER_EVDEV_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"

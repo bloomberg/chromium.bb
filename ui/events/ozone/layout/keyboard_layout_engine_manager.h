@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PUBLIC_KEYBOARD_LAYOUT_ENGINE_MANAGER_H_
 #define UI_OZONE_PUBLIC_KEYBOARD_LAYOUT_ENGINE_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/ozone/layout/events_ozone_layout_export.h"
 

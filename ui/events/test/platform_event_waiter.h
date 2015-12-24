@@ -6,6 +6,7 @@
 #define UI_EVENTS_TEST_PLATFORM_EVENT_WAITER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "ui/events/platform/platform_event_observer.h"
 
 namespace ui {

@@ -5,16 +5,18 @@
 #ifndef UI_EVENTS_EVENT_UTILS_H_
 #define UI_EVENTS_EVENT_UTILS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/events_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/events/events_export.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -161,8 +163,8 @@ EVENTS_EXPORT bool IsMouseEventFromTouch(UINT message);
 
 // Converts scan code and lParam each other.  The scan code
 // representing an extended key contains 0xE000 bits.
-EVENTS_EXPORT uint16 GetScanCodeFromLParam(LPARAM lParam);
-EVENTS_EXPORT LPARAM GetLParamFromScanCode(uint16 scan_code);
+EVENTS_EXPORT uint16_t GetScanCodeFromLParam(LPARAM lParam);
+EVENTS_EXPORT LPARAM GetLParamFromScanCode(uint16_t scan_code);
 
 #endif
 

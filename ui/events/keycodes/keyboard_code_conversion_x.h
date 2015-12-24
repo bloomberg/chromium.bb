@@ -5,7 +5,8 @@
 #ifndef UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_
 #define UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_X_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 #include "ui/events/events_base_export.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -25,7 +26,7 @@ EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 EVENTS_BASE_EXPORT DomCode CodeFromXEvent(const XEvent* xev);
 
 // Returns a character on a standard US PC keyboard from an XEvent.
-EVENTS_BASE_EXPORT uint16 GetCharacterFromXEvent(const XEvent* xev);
+EVENTS_BASE_EXPORT uint16_t GetCharacterFromXEvent(const XEvent* xev);
 
 // Returns DomKey and character from an XEvent.
 EVENTS_BASE_EXPORT DomKey GetDomKeyFromXEvent(const XEvent* xev);

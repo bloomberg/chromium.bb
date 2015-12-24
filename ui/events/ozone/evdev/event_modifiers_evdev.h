@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_EVDEV_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {

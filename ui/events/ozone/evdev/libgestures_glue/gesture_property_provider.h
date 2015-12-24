@@ -7,14 +7,16 @@
 
 #include <gestures/gestures.h>
 #include <libevdev/libevdev.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <map>
 #include <ostream>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"

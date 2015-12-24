@@ -4,6 +4,8 @@
 
 #include "ui/events/gesture_detection/touch_disposition_gesture_filter.h"
 
+#include <stddef.h>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "ui/events/gesture_event_details.h"
@@ -180,7 +182,7 @@ TouchDispositionGestureFilter::OnGesturePacket(
   return SUCCESS;
 }
 
-void TouchDispositionGestureFilter::OnTouchEventAck(uint32 unique_event_id,
+void TouchDispositionGestureFilter::OnTouchEventAck(uint32_t unique_event_id,
                                                     bool event_consumed) {
   // Spurious asynchronous acks should not trigger a crash.
   if (IsEmpty() || (Head().empty() && sequences_.size() == 1))

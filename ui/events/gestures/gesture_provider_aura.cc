@@ -41,7 +41,7 @@ bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
   return true;
 }
 
-void GestureProviderAura::OnTouchEventAck(uint32 unique_event_id,
+void GestureProviderAura::OnTouchEventAck(uint32_t unique_event_id,
                                           bool event_consumed) {
   DCHECK(pending_gestures_.empty());
   DCHECK(!handling_event_);

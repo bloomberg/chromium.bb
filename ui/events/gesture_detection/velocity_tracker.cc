@@ -4,6 +4,8 @@
 
 #include "ui/events/gesture_detection/velocity_tracker.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/logging.h"

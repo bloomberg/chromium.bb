@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/test_event_processor.h"
 

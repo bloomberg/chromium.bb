@@ -8,8 +8,8 @@
 #include <list>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"

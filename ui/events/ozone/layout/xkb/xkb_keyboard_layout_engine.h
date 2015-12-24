@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_OZONE_LAYOUT_XKB_XKB_KEYBOARD_LAYOUT_ENGINE_H_
 #define UI_EVENTS_OZONE_LAYOUT_XKB_XKB_KEYBOARD_LAYOUT_ENGINE_H_
 
+#include <stdint.h>
 #include <xkbcommon/xkbcommon.h>
 #include <vector>
 

@@ -5,7 +5,8 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_EVDEV_TYPES_H_
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_EVDEV_TYPES_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 

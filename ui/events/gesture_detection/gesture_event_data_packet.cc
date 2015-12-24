@@ -46,7 +46,7 @@ GestureEventDataPacket::GestureEventDataPacket(
     GestureSource source,
     const gfx::PointF& touch_location,
     const gfx::PointF& raw_touch_location,
-    uint32 unique_touch_event_id)
+    uint32_t unique_touch_event_id)
     : timestamp_(timestamp),
       touch_location_(touch_location),
       raw_touch_location_(raw_touch_location),

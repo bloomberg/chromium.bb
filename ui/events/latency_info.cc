@@ -4,12 +4,15 @@
 
 #include "ui/events/latency_info.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 
 namespace {
@@ -148,7 +151,7 @@ LatencyInfo::LatencyInfo()
 LatencyInfo::~LatencyInfo() {
 }
 
-LatencyInfo::LatencyInfo(int64 trace_id, bool terminated)
+LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
     : input_coordinates_size_(0),
       coalesced_events_size_(0),
       trace_id_(trace_id),
@@ -193,38 +196,38 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
 }
 
 void LatencyInfo::AddLatencyNumber(LatencyComponentType component,
-                                   int64 id,
-                                   int64 component_sequence_number) {
+                                   int64_t id,
+                                   int64_t component_sequence_number) {
   AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
                                     base::TimeTicks::Now(), 1, nullptr);
 }
 
 void LatencyInfo::AddLatencyNumberWithTraceName(
     LatencyComponentType component,
-    int64 id,
-    int64 component_sequence_number,
+    int64_t id,
+    int64_t component_sequence_number,
     const char* trace_name_str) {
   AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
                                     base::TimeTicks::Now(), 1, trace_name_str);
 }
 
-void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
-                                                int64 id,
-                                                int64 component_sequence_number,
-                                                base::TimeTicks time,
-                                                uint32 event_count) {
+void LatencyInfo::AddLatencyNumberWithTimestamp(
+    LatencyComponentType component,
+    int64_t id,
+    int64_t component_sequence_number,
+    base::TimeTicks time,
+    uint32_t event_count) {
   AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
                                     time, event_count, nullptr);
 }
 
 void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     LatencyComponentType component,
-    int64 id,
-    int64 component_sequence_number,
+    int64_t id,
+    int64_t component_sequence_number,
     base::TimeTicks time,
-    uint32 event_count,
+    uint32_t event_count,
     const char* trace_name_str) {
-
   const unsigned char* latency_info_enabled =
       g_latency_info_enabled.Get().latency_info_enabled;
 
@@ -240,7 +243,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
       // originally created, e.g. the timestamp of its ORIGINAL/UI_COMPONENT,
       // not when we actually issue the ASYNC_BEGIN trace event.
       LatencyComponent begin_component;
-      int64 ts = 0;
+      int64_t ts = 0;
       if (FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                       0,
                       &begin_component) ||
@@ -281,7 +284,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
   } else {
     it->second.sequence_number = std::max(component_sequence_number,
                                           it->second.sequence_number);
-    uint32 new_count = event_count + it->second.event_count;
+    uint32_t new_count = event_count + it->second.event_count;
     if (event_count > 0 && new_count != 0) {
       // Do a weighted average, so that the new event_time is the average of
       // the times of events currently in this structure with the time passed
@@ -346,7 +349,7 @@ LatencyInfo::CoordinatesAsTraceableData() {
 }
 
 bool LatencyInfo::FindLatency(LatencyComponentType type,
-                              int64 id,
+                              int64_t id,
                               LatencyComponent* output) const {
   LatencyMap::const_iterator it = latency_components_.find(
       std::make_pair(type, id));

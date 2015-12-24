@@ -4,6 +4,8 @@
 
 #include "ui/events/latency_info.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {

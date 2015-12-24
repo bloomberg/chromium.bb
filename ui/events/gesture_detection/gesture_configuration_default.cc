@@ -4,6 +4,7 @@
 
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ui/gfx/screen.h"
 

@@ -5,7 +5,9 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversion_utils.h"
+#include "build/build_config.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 
@@ -189,7 +191,8 @@ DomKey KeycodeConverter::KeyStringToDomKey(const std::string& key) {
   // the key value is that character.
   int32_t char_index = 0;
   uint32_t character;
-  if (base::ReadUnicodeCharacter(key.c_str(), static_cast<int32>(key.length()),
+  if (base::ReadUnicodeCharacter(key.c_str(),
+                                 static_cast<int32_t>(key.length()),
                                  &char_index, &character) &&
       key[++char_index] == 0) {
     return DomKey::FromCharacter(character);

@@ -5,8 +5,8 @@
 #ifndef UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_H_
 #define UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_H_
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/input/input_handler.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"

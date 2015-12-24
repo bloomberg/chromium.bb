@@ -5,11 +5,13 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_LIBGESTURES_GLUE_GESTURE_INTERPRETER_LIBEVDEV_CROS_H_
 #define UI_EVENTS_OZONE_EVDEV_LIBGESTURES_GLUE_GESTURE_INTERPRETER_LIBEVDEV_CROS_H_
 
-#include <bitset>
 #include <gestures/gestures.h>
 #include <libevdev/libevdev.h>
 
+#include <bitset>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_device_util.h"

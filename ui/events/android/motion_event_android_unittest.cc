@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <android/input.h>
+#include <stddef.h>
 
 #include "base/android/jni_android.h"
 #include "testing/gtest/include/gtest/gtest.h"

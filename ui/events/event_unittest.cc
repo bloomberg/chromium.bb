@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -181,7 +186,7 @@ TEST(EventTest, KeyEvent) {
   static const struct {
     KeyboardCode key_code;
     int flags;
-    uint16 character;
+    uint16_t character;
   } kTestData[] = {
     { VKEY_A, 0, 'a' },
     { VKEY_A, EF_SHIFT_DOWN, 'A' },
@@ -351,7 +356,7 @@ TEST(EventTest, KeyEventCode) {
   const char kCodeForSpace[] = "Space";
   ASSERT_EQ(kDomCodeForSpace,
             ui::KeycodeConverter::CodeStringToDomCode(kCodeForSpace));
-  const uint16 kNativeCodeSpace =
+  const uint16_t kNativeCodeSpace =
       ui::KeycodeConverter::DomCodeToNativeKeycode(kDomCodeForSpace);
   ASSERT_NE(ui::KeycodeConverter::InvalidNativeKeycode(), kNativeCodeSpace);
   ASSERT_EQ(kNativeCodeSpace,
@@ -396,7 +401,7 @@ TEST(EventTest, KeyEventCode) {
   }
   {
     const char kCodeForHome[]  = "Home";
-    const uint16 kNativeCodeHome  = 0xe047;
+    const uint16_t kNativeCodeHome = 0xe047;
 
     // 'Home' is an extended key with 0xe000 bits.
     ASSERT_NE((kNativeCodeHome & 0xFF), kNativeCodeHome);
@@ -434,9 +439,9 @@ void AdvanceKeyEventTimestamp(MSG& msg) {
 
 #if defined(USE_X11) || defined(OS_WIN)
 TEST(EventTest, AutoRepeat) {
-  const uint16 kNativeCodeA =
+  const uint16_t kNativeCodeA =
       ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::KEY_A);
-  const uint16 kNativeCodeB =
+  const uint16_t kNativeCodeB =
       ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::KEY_B);
 #if defined(USE_X11)
   ScopedXI2Event native_event_a_pressed;

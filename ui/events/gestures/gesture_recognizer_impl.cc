@@ -4,6 +4,8 @@
 
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/command_line.h"
@@ -227,7 +229,7 @@ bool GestureRecognizerImpl::ProcessTouchEventPreDispatch(
 }
 
 GestureRecognizer::Gestures* GestureRecognizerImpl::AckTouchEvent(
-    uint32 unique_event_id,
+    uint32_t unique_event_id,
     ui::EventResult result,
     GestureConsumer* consumer) {
   GestureProviderAura* gesture_provider =

@@ -4,14 +4,19 @@
 
 #include "ui/events/test/event_generator.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
+#include "build/build_config.h"
 #include "ui/events/event.h"
 #include "ui/events/event_source.h"
 #include "ui/events/event_utils.h"
@@ -44,7 +49,7 @@ class TestTickClock : public base::TickClock {
   }
 
  private:
-  int64 ticks_ = 1;
+  int64_t ticks_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(TestTickClock);
 };
@@ -578,7 +583,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
                                       int flags) {
 #if defined(OS_WIN)
   UINT key_press = WM_KEYDOWN;
-  uint16 character = ui::DomCodeToUsLayoutCharacter(
+  uint16_t character = ui::DomCodeToUsLayoutCharacter(
       ui::UsLayoutKeyboardCodeToDomCode(key_code), flags);
   if (is_press && character) {
     MSG native_event = { NULL, WM_KEYDOWN, key_code, 0 };

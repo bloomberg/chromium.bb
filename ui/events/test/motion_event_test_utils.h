@@ -5,10 +5,11 @@
 #ifndef UI_EVENTS_TEST_MOTION_EVENT_TEST_UTILS_H_
 #define UI_EVENTS_TEST_MOTION_EVENT_TEST_UTILS_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
 #include "ui/gfx/geometry/point_f.h"

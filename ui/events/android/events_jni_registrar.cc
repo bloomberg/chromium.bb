@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/macros.h"
 #include "ui/events/android/motion_event_android.h"
 
 namespace ui {

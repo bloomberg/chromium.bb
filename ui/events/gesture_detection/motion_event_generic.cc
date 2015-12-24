@@ -109,7 +109,7 @@ MotionEventGeneric::MotionEventGeneric(const MotionEventGeneric& other)
 MotionEventGeneric::~MotionEventGeneric() {
 }
 
-uint32 MotionEventGeneric::GetUniqueEventId() const {
+uint32_t MotionEventGeneric::GetUniqueEventId() const {
   return unique_event_id_;
 }
 

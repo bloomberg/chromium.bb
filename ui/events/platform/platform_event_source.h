@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_PLATFORM_PLATFORM_EVENT_SOURCE_H_
 #define UI_EVENTS_PLATFORM_PLATFORM_EVENT_SOURCE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 

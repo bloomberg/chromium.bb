@@ -9,6 +9,7 @@
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace ui {

@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 
 namespace ui {
 namespace {

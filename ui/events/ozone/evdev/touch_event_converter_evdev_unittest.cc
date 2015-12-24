@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <linux/input.h>
+#include <stddef.h>
 #include <unistd.h>
 
 #include <vector>
@@ -11,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"

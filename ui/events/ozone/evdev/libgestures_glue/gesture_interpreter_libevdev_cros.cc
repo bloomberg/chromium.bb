@@ -8,6 +8,7 @@
 #include <libevdev/libevdev.h>
 #include <linux/input.h>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
 #include "ui/events/event.h"

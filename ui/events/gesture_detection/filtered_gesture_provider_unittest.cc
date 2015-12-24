@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"

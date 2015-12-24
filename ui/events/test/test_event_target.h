@@ -5,10 +5,13 @@
 #ifndef UI_EVENTS_TEST_TEST_EVENT_TARGET_H_
 #define UI_EVENTS_TEST_TEST_EVENT_TARGET_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/events/event_target.h"
 
