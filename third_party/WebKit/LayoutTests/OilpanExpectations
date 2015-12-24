@@ -46,3 +46,5 @@ crbug.com/451577 [ Linux ] http/tests/inspector/elements/styles/edit-css-with-so
 crbug.com/451577 [ Linux ] http/tests/inspector-enabled/shadow-dom-rules-restart.html [ Slow ]
 
 crbug.com/24182 [ Win Debug ] jquery/manipulation.html [ Slow Timeout Pass ]
+
+crbug.com/385014 [ Win Debug ] accessibility/canvas-fallback-content-2.html [ Pass Timeout Text ]
