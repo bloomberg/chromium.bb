@@ -5,6 +5,7 @@
 #include "ui/shell_dialogs/select_file_dialog_win.h"
 
 #include <shlobj.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <set>
@@ -13,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/tuple.h"

@@ -6,9 +6,8 @@
 
 namespace ui {
 
-AXNode::AXNode(AXNode* parent, int32 id, int32 index_in_parent)
-    : index_in_parent_(index_in_parent),
-      parent_(parent) {
+AXNode::AXNode(AXNode* parent, int32_t id, int32_t index_in_parent)
+    : index_in_parent_(index_in_parent), parent_(parent) {
   data_.id = id;
 }
 

@@ -5,6 +5,9 @@
 #ifndef UI_ACCESSIBILITY_AX_TREE_SERIALIZER_H_
 #define UI_ACCESSIBILITY_AX_TREE_SERIALIZER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/containers/hash_tables.h"
@@ -140,7 +143,7 @@ class AXTreeSerializer {
   bool AnyDescendantWasReparented(AXSourceNode node,
                                   AXSourceNode* out_lca);
 
-  ClientTreeNode* ClientTreeNodeById(int32 id);
+  ClientTreeNode* ClientTreeNodeById(int32_t id);
 
   // Delete the given client tree node and recursively delete all of its
   // descendants.
@@ -164,7 +167,7 @@ class AXTreeSerializer {
   ClientTreeNode* client_root_;
 
   // A map from IDs to nodes in the client tree.
-  base::hash_map<int32, ClientTreeNode*> client_id_map_;
+  base::hash_map<int32_t, ClientTreeNode*> client_id_map_;
 
   // The maximum number of nodes to serialize in a given call to
   // SerializeChanges, or 0 if there's no maximum.
@@ -177,7 +180,7 @@ class AXTreeSerializer {
 struct AX_EXPORT ClientTreeNode {
   ClientTreeNode();
   virtual ~ClientTreeNode();
-  int32 id;
+  int32_t id;
   ClientTreeNode* parent;
   std::vector<ClientTreeNode*> children;
 };
@@ -304,8 +307,8 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
 template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
 ClientTreeNode*
 AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::ClientTreeNodeById(
-    int32 id) {
-  base::hash_map<int32, ClientTreeNode*>::iterator iter =
+    int32_t id) {
+  base::hash_map<int32_t, ClientTreeNode*>::iterator iter =
       client_id_map_.find(id);
   if (iter != client_id_map_.end())
     return iter->second;
@@ -430,7 +433,7 @@ void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
   // If we've hit the maximum number of serialized nodes, pretend
   // this node has no children but keep going so that we get
   // consistent results.
-  base::hash_set<int32> new_child_ids;
+  base::hash_set<int32_t> new_child_ids;
   std::vector<AXSourceNode> children;
   if (max_node_count_ == 0 || out_update->nodes.size() < max_node_count_) {
     tree_->GetChildren(node, &children);
@@ -459,7 +462,7 @@ void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
   // first in a separate pass so that nodes that are reparented
   // don't end up children of two different parents in the middle
   // of an update, which can lead to a double-free.
-  base::hash_map<int32, ClientTreeNode*> client_child_id_map;
+  base::hash_map<int32_t, ClientTreeNode*> client_child_id_map;
   std::vector<ClientTreeNode*> old_children;
   old_children.swap(client_node->children);
   for (size_t i = 0; i < old_children.size(); ++i) {
@@ -493,7 +496,7 @@ void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
 
   // Iterate over the children, serialize them, and update the ClientTreeNode
   // data structure to reflect the new tree.
-  std::vector<int32> actual_serialized_node_child_ids;
+  std::vector<int32_t> actual_serialized_node_child_ids;
   client_node->children.reserve(children.size());
   for (size_t i = 0; i < children.size(); ++i) {
     AXSourceNode& child = children[i];

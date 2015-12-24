@@ -5,8 +5,8 @@
 #ifndef UI_NATIVE_THEME_NATIVE_THEME_DARK_WIN_H_
 #define UI_NATIVE_THEME_NATIVE_THEME_DARK_WIN_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/native_theme/native_theme_win.h"
 
 namespace ui {

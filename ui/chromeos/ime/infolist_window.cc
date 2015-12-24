@@ -4,10 +4,13 @@
 
 #include "ui/chromeos/ime/infolist_window.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"

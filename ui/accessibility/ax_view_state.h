@@ -5,7 +5,8 @@
 #ifndef UI_ACCESSIBILITY_AX_VIEW_STATE_H_
 #define UI_ACCESSIBILITY_AX_VIEW_STATE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.h"
@@ -33,7 +34,7 @@ struct AX_EXPORT AXViewState {
   // The view's state, a bitmask containing fields such as checked
   // (for a checkbox) and protected (for a password text box). This "state"
   // should not be confused with the class's name.
-  uint32 state() { return state_; }
+  uint32_t state() { return state_; }
 
   // The view's role, like button or list box.
   AXRole role;
@@ -73,7 +74,7 @@ struct AX_EXPORT AXViewState {
   base::Callback<void(const base::string16&)> set_value_callback;
 
  private:
-  uint32 state_;
+  uint32_t state_;
 };
 
 }  // namespace ui

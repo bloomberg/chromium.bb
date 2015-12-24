@@ -4,6 +4,8 @@
 
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"

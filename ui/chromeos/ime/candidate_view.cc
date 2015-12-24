@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/chromeos/ime/candidate_view.h"

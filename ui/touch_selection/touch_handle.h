@@ -6,6 +6,7 @@
 #define UI_TOUCH_SELECTION_TOUCH_HANDLE_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/motion_event.h"

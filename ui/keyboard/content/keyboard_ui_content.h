@@ -5,6 +5,7 @@
 #ifndef UI_KEYBOARD_CONTENT_KEYBOARD_UI_CONTENT_H_
 #define UI_KEYBOARD_CONTENT_KEYBOARD_UI_CONTENT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/aura/window_observer.h"

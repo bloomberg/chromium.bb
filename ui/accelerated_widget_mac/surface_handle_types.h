@@ -7,8 +7,8 @@
 
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/CGLIOSurface.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 
@@ -24,19 +24,19 @@ enum SurfaceHandleType {
 };
 
 ACCELERATED_WIDGET_MAC_EXPORT
-SurfaceHandleType GetSurfaceHandleType(uint64 surface_handle);
+SurfaceHandleType GetSurfaceHandleType(uint64_t surface_handle);
 
 ACCELERATED_WIDGET_MAC_EXPORT
-CAContextID CAContextIDFromSurfaceHandle(uint64 surface_handle);
+CAContextID CAContextIDFromSurfaceHandle(uint64_t surface_handle);
 
 ACCELERATED_WIDGET_MAC_EXPORT
-IOSurfaceID IOSurfaceIDFromSurfaceHandle(uint64 surface_handle);
+IOSurfaceID IOSurfaceIDFromSurfaceHandle(uint64_t surface_handle);
 
 ACCELERATED_WIDGET_MAC_EXPORT
-uint64 SurfaceHandleFromIOSurfaceID(IOSurfaceID io_surface_id);
+uint64_t SurfaceHandleFromIOSurfaceID(IOSurfaceID io_surface_id);
 
 ACCELERATED_WIDGET_MAC_EXPORT
-uint64 SurfaceHandleFromCAContextID(CAContextID ca_context_id);
+uint64_t SurfaceHandleFromCAContextID(CAContextID ca_context_id);
 
 }  //  namespace ui
 

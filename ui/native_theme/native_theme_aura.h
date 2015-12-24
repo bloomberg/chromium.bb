@@ -5,8 +5,10 @@
 #ifndef UI_NATIVE_THEME_NATIVE_THEME_AURA_H_
 #define UI_NATIVE_THEME_NATIVE_THEME_AURA_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/native_theme/native_theme_base.h"
 
 namespace gfx {
@@ -87,23 +89,23 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
     // value associated with each state, so that a DualPainter for overlay
     // scrollbar thumb would only need state as input to paint correctly.
     DualPainter(scoped_ptr<gfx::NineImagePainter> fill_painter,
-                const uint8 fill_alphas[kNumStates],
+                const uint8_t fill_alphas[kNumStates],
                 scoped_ptr<gfx::NineImagePainter> stroke_painter,
-                const uint8 stroke_alphas[kNumStates]);
+                const uint8_t stroke_alphas[kNumStates]);
     ~DualPainter();
 
     scoped_ptr<gfx::NineImagePainter> fill_painter;
-    const uint8* const fill_alphas;
+    const uint8_t* const fill_alphas;
     scoped_ptr<gfx::NineImagePainter> stroke_painter;
-    const uint8* const stroke_alphas;
+    const uint8_t* const stroke_alphas;
   };
 
   // Returns DualPainter from specific fill and stroke, creating if necessary.
   scoped_ptr<DualPainter> CreateDualPainter(
       const int fill_image_ids[9],
-      const uint8 fill_alphas[kNumStates],
+      const uint8_t fill_alphas[kNumStates],
       const int stroke_image_ids[9],
-      const uint8 stroke_alphas[kNumStates]) const;
+      const uint8_t stroke_alphas[kNumStates]) const;
 
   // Paints |dualPainter| into the canvas using |rect| and specific alpha.
   void PaintDualPainter(DualPainter* dual_painter,

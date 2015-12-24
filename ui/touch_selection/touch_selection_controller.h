@@ -5,6 +5,7 @@
 #ifndef UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_H_
 #define UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/base/touch/selection_bound.h"
 #include "ui/gfx/geometry/point_f.h"

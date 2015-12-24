@@ -4,6 +4,8 @@
 
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 

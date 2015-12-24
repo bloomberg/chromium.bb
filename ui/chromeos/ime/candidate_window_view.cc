@@ -4,8 +4,11 @@
 
 #include "ui/chromeos/ime/candidate_window_view.h"
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"

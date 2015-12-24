@@ -8,6 +8,7 @@
 #include <shlobj.h>
 #include <set>
 
+#include "base/macros.h"
 #include "ui/shell_dialogs/base_shell_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
 

@@ -8,6 +8,8 @@
 // Defines UI_TOUCH_SELECTION_EXPORT so that functionality implemented by the UI
 // touch selection module can be exported to consumers.
 
+#include "build/build_config.h"
+
 #if defined(COMPONENT_BUILD)
 
 #if defined(WIN32)

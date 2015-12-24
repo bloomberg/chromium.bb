@@ -4,12 +4,15 @@
 
 #include "ui/surface/transport_dib.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "build/build_config.h"
 #include "skia/ext/platform_canvas.h"
 
 TransportDIB::TransportDIB()
@@ -25,7 +28,7 @@ TransportDIB::~TransportDIB() {
 }
 
 // static
-TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
+TransportDIB* TransportDIB::Create(size_t size, uint32_t sequence_num) {
   TransportDIB* dib = new TransportDIB;
   if (!dib->shared_memory_.CreateAndMapAnonymous(size)) {
     delete dib;

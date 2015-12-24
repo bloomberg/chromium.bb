@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,31 +66,31 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
 
   bool tree_data_changed() const { return tree_data_changed_; }
   bool root_changed() const { return root_changed_; }
-  const std::vector<int32>& deleted_ids() { return deleted_ids_; }
-  const std::vector<int32>& subtree_deleted_ids() {
+  const std::vector<int32_t>& deleted_ids() { return deleted_ids_; }
+  const std::vector<int32_t>& subtree_deleted_ids() {
     return subtree_deleted_ids_;
   }
-  const std::vector<int32>& created_ids() { return created_ids_; }
-  const std::vector<int32>& node_creation_finished_ids() {
+  const std::vector<int32_t>& created_ids() { return created_ids_; }
+  const std::vector<int32_t>& node_creation_finished_ids() {
     return node_creation_finished_ids_;
   }
-  const std::vector<int32>& subtree_creation_finished_ids() {
+  const std::vector<int32_t>& subtree_creation_finished_ids() {
     return subtree_creation_finished_ids_;
   }
-  const std::vector<int32>& change_finished_ids() {
+  const std::vector<int32_t>& change_finished_ids() {
     return change_finished_ids_;
   }
 
  private:
   bool tree_data_changed_;
   bool root_changed_;
-  std::vector<int32> deleted_ids_;
-  std::vector<int32> subtree_deleted_ids_;
-  std::vector<int32> created_ids_;
-  std::vector<int32> changed_ids_;
-  std::vector<int32> node_creation_finished_ids_;
-  std::vector<int32> subtree_creation_finished_ids_;
-  std::vector<int32> change_finished_ids_;
+  std::vector<int32_t> deleted_ids_;
+  std::vector<int32_t> subtree_deleted_ids_;
+  std::vector<int32_t> created_ids_;
+  std::vector<int32_t> changed_ids_;
+  std::vector<int32_t> node_creation_finished_ids_;
+  std::vector<int32_t> subtree_creation_finished_ids_;
+  std::vector<int32_t> change_finished_ids_;
 };
 
 }  // namespace

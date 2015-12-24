@@ -4,6 +4,7 @@
 
 #include "ui/keyboard/keyboard_util.h"
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keyboard {

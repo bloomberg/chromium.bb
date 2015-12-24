@@ -4,9 +4,10 @@
 
 // Multiply-included message file, no include guard.
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
@@ -20,11 +21,11 @@ IPC_ENUM_TRAITS(ui::EventFlags)
 // Contains the parameters sent for a mousebutton message.
 IPC_STRUCT_BEGIN(MetroViewerHostMsg_MouseButtonParams)
 
-  IPC_STRUCT_MEMBER(int32, x)
-  IPC_STRUCT_MEMBER(int32, y)
-  IPC_STRUCT_MEMBER(int32, extra)
+  IPC_STRUCT_MEMBER(int32_t, x)
+  IPC_STRUCT_MEMBER(int32_t, y)
+  IPC_STRUCT_MEMBER(int32_t, extra)
   IPC_STRUCT_MEMBER(ui::EventType, event_type)
-  IPC_STRUCT_MEMBER(uint32, flags)
+  IPC_STRUCT_MEMBER(uint32_t, flags)
   IPC_STRUCT_MEMBER(ui::EventFlags, changed_button)
   IPC_STRUCT_MEMBER(bool, is_horizontal_wheel)
 
@@ -38,29 +39,29 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SetTargetSurface,
                      float             /* device scale */)
 // Informs the browser that the mouse moved.
 IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseMoved,
-                     int32,       /* x-coordinate */
-                     int32,       /* y-coordinate */
-                     int32        /* flags */)
+                     int32_t, /* x-coordinate */
+                     int32_t, /* y-coordinate */
+                     int32_t /* flags */)
 // Informs the brower that a mouse button was pressed.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_MouseButton,
                      MetroViewerHostMsg_MouseButtonParams)
 // Informs the browser that a key was pressed.
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_KeyDown,
-                     uint32,       /* virtual key */
-                     uint32,       /* repeat count */
-                     uint32,       /* scan code */
-                     uint32        /* key state */)
+                     uint32_t, /* virtual key */
+                     uint32_t, /* repeat count */
+                     uint32_t, /* scan code */
+                     uint32_t /* key state */)
 // Informs the browser that a key was released.
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_KeyUp,
-                     uint32,       /* virtual key */
-                     uint32,       /* repeat count */
-                     uint32,       /* scan code */
-                     uint32        /* key state */)
+                     uint32_t, /* virtual key */
+                     uint32_t, /* repeat count */
+                     uint32_t, /* scan code */
+                     uint32_t /* key state */)
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_Character,
-                     uint32,       /* virtual key */
-                     uint32,       /* repeat count */
-                     uint32,       /* scan code */
-                     uint32        /* key state */)
+                     uint32_t, /* virtual key */
+                     uint32_t, /* repeat count */
+                     uint32_t, /* scan code */
+                     uint32_t /* key state */)
 // Informs the browser that the Metro window has been activated.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_WindowActivated,
                      bool /* Whether the window should be repainted */)
@@ -69,20 +70,20 @@ IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_WindowActivated,
 IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_EdgeGesture)
 
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_TouchDown,
-                     int32,           /* x-coordinate */
-                     int32,           /* y-coordinate */
-                     uint64,          /* timestamp */
-                     uint32)          /* pointer_id */
+                     int32_t,  /* x-coordinate */
+                     int32_t,  /* y-coordinate */
+                     uint64_t, /* timestamp */
+                     uint32_t) /* pointer_id */
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_TouchUp,
-                     int32,           /* x-coordinate */
-                     int32,           /* y-coordinate */
-                     uint64,          /* timestamp */
-                     uint32)          /* pointer_id */
+                     int32_t,  /* x-coordinate */
+                     int32_t,  /* y-coordinate */
+                     uint64_t, /* timestamp */
+                     uint32_t) /* pointer_id */
 IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_TouchMoved,
-                     int32,           /* x-coordinate */
-                     int32,           /* y-coordinate */
-                     uint64,          /* timestamp */
-                     uint32)          /* pointer_id */
+                     int32_t,  /* x-coordinate */
+                     int32_t,  /* y-coordinate */
+                     uint64_t, /* timestamp */
+                     uint32_t) /* pointer_id */
 
 // Informs the browser of the result of a file save as operation.
 IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_FileSaveAsDone,
@@ -120,8 +121,7 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_OpenURLOnDesktop,
                      base::string16 /* url */)
 
 // Requests the viewer to change the pointer to a new cursor.
-IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetCursor,
-                     int64         /* cursor */)
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetCursor, int64_t /* cursor */)
 
 // This structure contains the parameters sent to the viewer process to display
 // the file save dialog.
@@ -137,7 +137,7 @@ IPC_STRUCT_BEGIN(MetroViewerHostMsg_SaveAsDialogParams)
   IPC_STRUCT_MEMBER(base::string16, filter)
 
   // The filter index.
-  IPC_STRUCT_MEMBER(uint32, filter_index)
+  IPC_STRUCT_MEMBER(uint32_t, filter_index)
 
   // The default extension.
   IPC_STRUCT_MEMBER(base::string16, default_extension)
@@ -177,8 +177,8 @@ IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SearchRequest,
 // Sent from the metro viewer process to the browser process to indicate that
 // the viewer window size has changed.
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_WindowSizeChanged,
-                     uint32,   /* width */
-                     uint32)   /* height */
+                     uint32_t, /* width */
+                     uint32_t) /* height */
 
 IPC_STRUCT_TRAITS_BEGIN(metro_viewer::UnderlineInfo)
   IPC_STRUCT_TRAITS_MEMBER(start_offset)
@@ -188,12 +188,11 @@ IPC_STRUCT_TRAITS_END()
 
 // Sent from the metro viewer process to the browser process to update the
 // composition string.
-IPC_MESSAGE_CONTROL4(
-    MetroViewerHostMsg_ImeCompositionChanged,
-    base::string16,                                  /* text */
-    int32,                                     /* selection_start */
-    int32,                                     /* selection_end */
-    std::vector<metro_viewer::UnderlineInfo>)  /* underlines */
+IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_ImeCompositionChanged,
+                     base::string16, /* text */
+                     int32_t,        /* selection_start */
+                     int32_t,        /* selection_end */
+                     std::vector<metro_viewer::UnderlineInfo>) /* underlines */
 
 // Sent from the metro viewer process to the browser process to update the
 // status of popup window that is managed by an IME.
@@ -208,8 +207,8 @@ IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_ImeTextCommitted,
 // Sent from the metro viewer process to the browser process to notify that the
 // active text input source is changed.
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_ImeInputSourceChanged,
-                     uint16,                   /* Win32 LangID */
-                     bool)                     /* is IME or not */
+                     uint16_t, /* Win32 LangID */
+                     bool)     /* is IME or not */
 
 // Requests the viewer to cancel the on-going composition.
 IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_ImeCancelComposition)
@@ -225,5 +224,5 @@ IPC_STRUCT_TRAITS_END()
 // InputScopes and character bounds.
 IPC_MESSAGE_CONTROL2(
     MetroViewerHostMsg_ImeTextInputClientUpdated,
-    std::vector<int32>,                           /* InputScope enums */
-    std::vector<metro_viewer::CharacterBounds>)   /* character bounds */
+    std::vector<int32_t>,                       /* InputScope enums */
+    std::vector<metro_viewer::CharacterBounds>) /* character bounds */

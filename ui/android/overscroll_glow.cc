@@ -4,6 +4,8 @@
 
 #include "ui/android/overscroll_glow.h"
 
+#include <stddef.h>
+
 #include "cc/layers/layer.h"
 #include "ui/android/edge_effect_base.h"
 #include "ui/android/window_android_compositor.h"

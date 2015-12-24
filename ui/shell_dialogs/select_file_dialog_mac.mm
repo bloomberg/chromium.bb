@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <CoreServices/CoreServices.h>
+#include <stddef.h>
 
 #include <map>
 #include <set>
@@ -18,6 +19,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"

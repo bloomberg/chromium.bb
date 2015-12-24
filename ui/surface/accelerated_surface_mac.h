@@ -7,6 +7,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOSurface/IOSurface.h>
+#include <stdint.h>
 
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -61,10 +62,10 @@ class SURFACE_EXPORT AcceleratedSurface {
   // the height or width changes. Returns a unique id of the IOSurface to
   // which the surface is bound, or 0 if no changes were made or an error
   // occurred. MakeCurrent() will have been called on the new surface.
-  uint32 SetSurfaceSize(const gfx::Size& size);
+  uint32_t SetSurfaceSize(const gfx::Size& size);
 
   // Returns the id of this surface's IOSurface.
-  uint32 GetSurfaceId();
+  uint32_t GetSurfaceId();
 
   // Sets the GL context to be the current one for drawing. Returns true if
   // it succeeded.
@@ -122,7 +123,7 @@ class SURFACE_EXPORT AcceleratedSurface {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
 
   // The id of |io_surface_| or 0 if that's NULL.
-  uint32 io_surface_id_;
+  uint32_t io_surface_id_;
 
   gfx::Size surface_size_;
   // It's important to avoid allocating zero-width or zero-height

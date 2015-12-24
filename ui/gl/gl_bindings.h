@@ -5,10 +5,6 @@
 #ifndef UI_GL_GL_BINDINGS_H_
 #define UI_GL_GL_BINDINGS_H_
 
-#include <stdint.h>
-
-#include <string>
-
 // Includes the platform independent and platform dependent GL headers.
 // Only include this in cc files. It pulls in system headers, including
 // the X11 headers on linux, which define all kinds of macros that are
@@ -18,6 +14,9 @@
 #include <GL/glext.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#include <stdint.h>
+
+#include <string>
 
 #include "base/logging.h"
 #include "base/threading/thread_local.h"

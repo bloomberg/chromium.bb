@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"

@@ -4,6 +4,8 @@
 
 #include "ui/snapshot/screenshot_grabber.h"
 
+#include <stddef.h>
+
 #include <climits>
 #include <string>
 

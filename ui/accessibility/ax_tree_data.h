@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_AX_TREE_DATA_H_
 #define UI_ACCESSIBILITY_AX_TREE_DATA_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -30,10 +32,10 @@ struct AX_EXPORT AXTreeData {
   // public and copyable.
 
   // The globally unique ID of this accessibility tree.
-  int32 tree_id;
+  int32_t tree_id;
 
   // The ID of the accessibility tree that this tree is contained in, if any.
-  int32 parent_tree_id;
+  int32_t parent_tree_id;
 
   // Attributes specific to trees that are web frames.
   std::string url;
@@ -46,10 +48,10 @@ struct AX_EXPORT AXTreeData {
   // The current text selection within this tree, if any, expressed as the
   // node ID and character offset of the anchor (selection start) and focus
   // (selection end).
-  int32 sel_anchor_object_id;
-  int32 sel_anchor_offset;
-  int32 sel_focus_object_id;
-  int32 sel_focus_offset;
+  int32_t sel_anchor_object_id;
+  int32_t sel_anchor_offset;
+  int32_t sel_focus_object_id;
+  int32_t sel_focus_offset;
 };
 
 AX_EXPORT bool operator==(const AXTreeData& lhs, const AXTreeData& rhs);

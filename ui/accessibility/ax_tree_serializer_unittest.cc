@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -197,8 +201,8 @@ class AXTreeSourceWithInvalidId
   // AXTreeSource implementation.
   AXTreeData GetTreeData() const override { return AXTreeData(); }
   AXNode* GetRoot() const override { return tree_->root(); }
-  AXNode* GetFromId(int32 id) const override { return tree_->GetFromId(id); }
-  int32 GetId(const AXNode* node) const override { return node->id(); }
+  AXNode* GetFromId(int32_t id) const override { return tree_->GetFromId(id); }
+  int32_t GetId(const AXNode* node) const override { return node->id(); }
   void GetChildren(const AXNode* node,
                    std::vector<const AXNode*>* out_children) const override {
     for (int i = 0; i < node->child_count(); ++i)

@@ -5,6 +5,7 @@
 #ifndef UI_SNAPSHOT_SNAPSHOT_ASYNC_H_
 #define UI_SNAPSHOT_SNAPSHOT_ASYNC_H_
 
+#include "base/macros.h"
 #include "cc/output/copy_output_result.h"
 #include "ui/snapshot/snapshot.h"
 

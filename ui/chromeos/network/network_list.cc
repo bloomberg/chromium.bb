@@ -4,6 +4,8 @@
 
 #include "ui/chromeos/network/network_list.h"
 
+#include <stddef.h>
+
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"

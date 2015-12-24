@@ -4,6 +4,8 @@
 
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
@@ -121,8 +123,8 @@ void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
   DCHECK((cv_time.videoRefreshPeriod & ~0xffffFFFFull) == 0ull);
 
   // Verify that the numerator and denominator make some sense.
-  uint32 numerator = static_cast<uint32>(cv_time.videoRefreshPeriod);
-  uint32 denominator = cv_time.videoTimeScale;
+  uint32_t numerator = static_cast<uint32_t>(cv_time.videoRefreshPeriod);
+  uint32_t denominator = cv_time.videoTimeScale;
   if (numerator <= 0 || denominator <= 0) {
     LOG(WARNING) << "Unexpected numerator or denominator, bailing.";
     return;
@@ -131,7 +133,7 @@ void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
   timebase_ = base::TimeTicks::FromInternalValue(
       cv_time.hostTime / 1000);
   interval_ = base::TimeDelta::FromMicroseconds(
-      1000000 * static_cast<int64>(numerator) / denominator);
+      1000000 * static_cast<int64_t>(numerator) / denominator);
   timebase_and_interval_valid_ = true;
 
   // Don't restart the display link for 10 seconds.

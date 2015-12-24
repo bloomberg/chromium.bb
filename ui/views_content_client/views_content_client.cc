@@ -4,6 +4,7 @@
 
 #include "ui/views_content_client/views_content_client.h"
 
+#include "build/build_config.h"
 #include "content/public/app/content_main.h"
 #include "ui/views_content_client/views_content_main_delegate.h"
 

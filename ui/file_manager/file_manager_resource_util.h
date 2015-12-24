@@ -5,7 +5,7 @@
 #ifndef UI_FILE_MANAGER_FILE_MANAGER_RESOURCE_UTIL_H_
 #define UI_FILE_MANAGER_FILE_MANAGER_RESOURCE_UTIL_H_
 
-#include <cstddef>
+#include <stddef.h>
 
 #include "ui/file_manager/file_manager_export.h"
 

@@ -5,7 +5,6 @@
 #ifndef UI_CONTENT_ACCELERATORS_ACCELERATOR_UTIL_H_
 #define UI_CONTENT_ACCELERATORS_ACCELERATOR_UTIL_H_
 
-#include "base/basictypes.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/accelerators/accelerator.h"
 

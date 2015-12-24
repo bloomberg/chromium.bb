@@ -5,8 +5,8 @@
 #ifndef UI_KEYBOARD_KEYBOARD_CONTROLLER_H_
 #define UI_KEYBOARD_KEYBOARD_CONTROLLER_H_
 
-#include "base/basictypes.h"
 #include "base/event_types.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"

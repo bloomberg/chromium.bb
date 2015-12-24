@@ -5,7 +5,6 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_VIEW_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_VIEW_H_
 
-
 #include <stddef.h>
 
 #include "base/macros.h"

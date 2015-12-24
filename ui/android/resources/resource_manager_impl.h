@@ -6,6 +6,7 @@
 #define UI_ANDROID_RESOURCES_RESOURCE_MANAGER_IMPL_H_
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/rect.h"

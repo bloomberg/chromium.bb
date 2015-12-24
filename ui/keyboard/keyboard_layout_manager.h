@@ -5,6 +5,7 @@
 #ifndef UI_KEYBOARD_KEYBOARD_LAYOUT_MANAGER_H_
 #define UI_KEYBOARD_KEYBOARD_LAYOUT_MANAGER_H_
 
+#include "base/macros.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 

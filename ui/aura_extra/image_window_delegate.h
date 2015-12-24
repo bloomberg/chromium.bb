@@ -5,6 +5,7 @@
 #ifndef UI_AURA_EXTRA_IMAGE_WINDOW_DELEGATE_H_
 #define UI_AURA_EXTRA_IMAGE_WINDOW_DELEGATE_H_
 
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura_extra/aura_extra_export.h"

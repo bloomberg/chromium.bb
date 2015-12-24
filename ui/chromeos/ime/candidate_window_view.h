@@ -5,6 +5,7 @@
 #ifndef UI_CHROMEOS_IME_CANDIDATE_WINDOW_VIEW_H_
 #define UI_CHROMEOS_IME_CANDIDATE_WINDOW_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/views/bubble/bubble_delegate.h"

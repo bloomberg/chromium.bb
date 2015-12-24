@@ -4,6 +4,7 @@
 
 #include "ui/chromeos/network/network_icon.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connection_handler.h"

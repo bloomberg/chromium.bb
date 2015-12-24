@@ -4,7 +4,10 @@
 
 #include "ui/chromeos/ime/candidate_view.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"

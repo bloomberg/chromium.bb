@@ -8,7 +8,6 @@
 #include <OpenGL/OpenGL.h>
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"

@@ -116,7 +116,7 @@ static void AddBooleanValue(CFMutableDictionaryRef dictionary,
 
 static void AddIntegerValue(CFMutableDictionaryRef dictionary,
                             const CFStringRef key,
-                            int32 value) {
+                            int32_t value) {
   base::ScopedCFTypeRef<CFNumberRef> number(
       CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
   CFDictionaryAddValue(dictionary, key, number.get());
@@ -181,7 +181,7 @@ void AcceleratedSurface::Clear(const gfx::Rect& rect) {
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
+uint32_t AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   if (surface_size_ == size) {
     // Return 0 to indicate to the caller that no new backing store
     // allocation occurred.
@@ -261,6 +261,6 @@ uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   return io_surface_id_;
 }
 
-uint32 AcceleratedSurface::GetSurfaceId() {
+uint32_t AcceleratedSurface::GetSurfaceId() {
   return io_surface_id_;
 }

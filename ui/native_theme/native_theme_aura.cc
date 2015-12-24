@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/base/layout.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
@@ -45,18 +46,18 @@ const int kScrollbarArrowButtonImages[NativeTheme::kNumStates][9] = {
   IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED)
 };
 
-const uint8 kScrollbarOverlayThumbFillAlphas[NativeTheme::kNumStates] = {
-  0,    // Does not matter, will not paint for disabled state.
-  178,  // Hover state, opacity 70%, alpha would be 0.7 * 255.
-  140,  // Normal state, opacity 55%, alpha would be 0.55 * 255.
-  178   // Pressed state, opacity 70%, alpha would be 0.7 * 255.
+const uint8_t kScrollbarOverlayThumbFillAlphas[NativeTheme::kNumStates] = {
+    0,    // Does not matter, will not paint for disabled state.
+    178,  // Hover state, opacity 70%, alpha would be 0.7 * 255.
+    140,  // Normal state, opacity 55%, alpha would be 0.55 * 255.
+    178   // Pressed state, opacity 70%, alpha would be 0.7 * 255.
 };
 
-const uint8 kScrollbarOverlayThumbStrokeAlphas[NativeTheme::kNumStates] = {
-  0,   // Does not matter, will not paint for disabled state.
-  51,  // Hover state, opacity 20%, alpha would be 0.2 * 255.
-  38,  // Normal state, opacity 15%, alpha would be 0.15 * 255.
-  51   // Pressed state, opacity 20%, alpha would be 0.2 * 255.
+const uint8_t kScrollbarOverlayThumbStrokeAlphas[NativeTheme::kNumStates] = {
+    0,   // Does not matter, will not paint for disabled state.
+    51,  // Hover state, opacity 20%, alpha would be 0.2 * 255.
+    38,  // Normal state, opacity 15%, alpha would be 0.15 * 255.
+    51   // Pressed state, opacity 20%, alpha would be 0.2 * 255.
 };
 
 const int kScrollbarOverlayThumbStrokeImages[9] =
@@ -275,9 +276,9 @@ void NativeThemeAura::PaintPainter(NineImagePainter* painter,
 
 scoped_ptr<NativeThemeAura::DualPainter> NativeThemeAura::CreateDualPainter(
     const int fill_image_ids[9],
-    const uint8 fill_alphas[kNumStates],
+    const uint8_t fill_alphas[kNumStates],
     const int stroke_image_ids[9],
-    const uint8 stroke_alphas[kNumStates]) const {
+    const uint8_t stroke_alphas[kNumStates]) const {
   scoped_ptr<NativeThemeAura::DualPainter> dual_painter(
       new NativeThemeAura::DualPainter(CreateNineImagePainter(fill_image_ids),
                                        fill_alphas,
@@ -308,14 +309,14 @@ void NativeThemeAura::PaintDualPainterTransition(
     double progress) const {
   DCHECK(dual_painter);
   scoped_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
-  uint8 fill_alpha = dual_painter->fill_alphas[startState] +
-                     (dual_painter->fill_alphas[endState] -
-                      dual_painter->fill_alphas[startState]) *
-                         progress;
-  uint8 stroke_alpha = dual_painter->stroke_alphas[startState] +
-                       (dual_painter->stroke_alphas[endState] -
-                        dual_painter->stroke_alphas[startState]) *
+  uint8_t fill_alpha = dual_painter->fill_alphas[startState] +
+                       (dual_painter->fill_alphas[endState] -
+                        dual_painter->fill_alphas[startState]) *
                            progress;
+  uint8_t stroke_alpha = dual_painter->stroke_alphas[startState] +
+                         (dual_painter->stroke_alphas[endState] -
+                          dual_painter->stroke_alphas[startState]) *
+                             progress;
 
   dual_painter->fill_painter->Paint(canvas.get(), rect, fill_alpha);
   dual_painter->stroke_painter->Paint(canvas.get(), rect, stroke_alpha);
@@ -323,9 +324,9 @@ void NativeThemeAura::PaintDualPainterTransition(
 
 NativeThemeAura::DualPainter::DualPainter(
     scoped_ptr<NineImagePainter> fill_painter,
-    const uint8 fill_alphas[kNumStates],
+    const uint8_t fill_alphas[kNumStates],
     scoped_ptr<NineImagePainter> stroke_painter,
-    const uint8 stroke_alphas[kNumStates])
+    const uint8_t stroke_alphas[kNumStates])
     : fill_painter(std::move(fill_painter)),
       fill_alphas(fill_alphas),
       stroke_painter(std::move(stroke_painter)),

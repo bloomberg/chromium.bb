@@ -5,6 +5,7 @@
 #ifndef UI_CHROMEOS_TOUCH_EXPLORATION_CONTROLLER_H_
 #define UI_CHROMEOS_TOUCH_EXPLORATION_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"

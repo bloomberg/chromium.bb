@@ -4,7 +4,11 @@
 
 #include "ui/snapshot/snapshot.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_helper.h"
@@ -62,8 +66,8 @@ class TestPaintingWindowDelegate : public aura::test::TestWindowDelegate {
 size_t GetFailedPixelsCountWithScaleFactor(const gfx::Image& image,
                                            int scale_factor) {
   const SkBitmap* bitmap = image.ToSkBitmap();
-  uint32* bitmap_data = reinterpret_cast<uint32*>(
-      bitmap->pixelRef()->pixels());
+  uint32_t* bitmap_data =
+      reinterpret_cast<uint32_t*>(bitmap->pixelRef()->pixels());
   size_t result = 0;
   for (int y = 0; y < bitmap->height(); y += scale_factor) {
     for (int x = 0; x < bitmap->width(); x += scale_factor) {

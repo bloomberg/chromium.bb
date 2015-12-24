@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 

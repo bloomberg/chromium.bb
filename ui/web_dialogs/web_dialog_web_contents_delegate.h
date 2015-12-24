@@ -6,6 +6,7 @@
 #define UI_WEB_DIALOGS_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
 

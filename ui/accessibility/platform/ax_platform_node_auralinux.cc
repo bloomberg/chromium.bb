@@ -4,6 +4,8 @@
 
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_runner.h"
@@ -432,7 +434,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
 }
 
 void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
-  uint32 state = GetData().state;
+  uint32_t state = GetData().state;
 
   if (state & (1 << ui::AX_STATE_CHECKED))
     atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKED);

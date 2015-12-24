@@ -5,6 +5,7 @@
 #include "ui/chromeos/ime/mode_indicator_view.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"

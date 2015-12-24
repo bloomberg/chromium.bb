@@ -4,7 +4,6 @@
 
 #include "ui/native_theme/native_theme_android.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "ui/gfx/geometry/size.h"
 

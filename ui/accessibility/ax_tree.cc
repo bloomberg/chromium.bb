@@ -4,6 +4,8 @@
 
 #include "ui/accessibility/ax_tree.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/logging.h"
@@ -72,8 +74,8 @@ void AXTree::SetDelegate(AXTreeDelegate* delegate) {
   delegate_ = delegate;
 }
 
-AXNode* AXTree::GetFromId(int32 id) const {
-  base::hash_map<int32, AXNode*>::const_iterator iter = id_map_.find(id);
+AXNode* AXTree::GetFromId(int32_t id) const {
+  base::hash_map<int32_t, AXNode*>::const_iterator iter = id_map_.find(id);
   return iter != id_map_.end() ? iter->second : NULL;
 }
 
@@ -85,7 +87,7 @@ void AXTree::UpdateData(const AXTreeData& data) {
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
   AXTreeUpdateState update_state;
-  int32 old_root_id = root_ ? root_->id() : 0;
+  int32_t old_root_id = root_ ? root_->id() : 0;
 
   if (update.has_tree_data)
     UpdateData(update.tree_data);
@@ -156,7 +158,9 @@ std::string AXTree::ToString() const {
   return "AXTree" + data_.ToString() + "\n" + TreeToStringHelper(root_, 0);
 }
 
-AXNode* AXTree::CreateNode(AXNode* parent, int32 id, int32 index_in_parent) {
+AXNode* AXTree::CreateNode(AXNode* parent,
+                           int32_t id,
+                           int32_t index_in_parent) {
   AXNode* new_node = new AXNode(parent, id, index_in_parent);
   id_map_[new_node->id()] = new_node;
   if (delegate_)
@@ -248,11 +252,11 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
 }
 
 bool AXTree::DeleteOldChildren(AXNode* node,
-                               const std::vector<int32>& new_child_ids,
+                               const std::vector<int32_t>& new_child_ids,
                                AXTreeUpdateState* update_state) {
   // Create a set of child ids in |src| for fast lookup, and return false
   // if a duplicate is found;
-  std::set<int32> new_child_id_set;
+  std::set<int32_t> new_child_id_set;
   for (size_t i = 0; i < new_child_ids.size(); ++i) {
     if (new_child_id_set.find(new_child_ids[i]) != new_child_id_set.end()) {
       error_ = base::StringPrintf("Node %d has duplicate child id %d",
@@ -274,13 +278,13 @@ bool AXTree::DeleteOldChildren(AXNode* node,
 }
 
 bool AXTree::CreateNewChildVector(AXNode* node,
-                                  const std::vector<int32>& new_child_ids,
+                                  const std::vector<int32_t>& new_child_ids,
                                   std::vector<AXNode*>* new_children,
                                   AXTreeUpdateState* update_state) {
   bool success = true;
   for (size_t i = 0; i < new_child_ids.size(); ++i) {
-    int32 child_id = new_child_ids[i];
-    int32 index_in_parent = static_cast<int32>(i);
+    int32_t child_id = new_child_ids[i];
+    int32_t index_in_parent = static_cast<int32_t>(i);
     AXNode* child = GetFromId(child_id);
     if (child) {
       if (child->parent() != node) {

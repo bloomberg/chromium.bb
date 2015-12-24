@@ -5,6 +5,7 @@
 #include "ui/keyboard/content/keyboard_ui_content.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"

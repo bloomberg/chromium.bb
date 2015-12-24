@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_AX_NODE_DATA_H_
 #define UI_ACCESSIBILITY_AX_NODE_DATA_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -63,10 +65,10 @@ struct AX_EXPORT AXNodeData {
       AXStringAttribute attribute) const;
 
   bool HasIntListAttribute(AXIntListAttribute attribute) const;
-  const std::vector<int32>& GetIntListAttribute(
+  const std::vector<int32_t>& GetIntListAttribute(
       AXIntListAttribute attribute) const;
   bool GetIntListAttribute(AXIntListAttribute attribute,
-                           std::vector<int32>* value) const;
+                           std::vector<int32_t>* value) const;
 
   bool GetHtmlAttribute(const char* attr, base::string16* value) const;
   bool GetHtmlAttribute(const char* attr, std::string* value) const;
@@ -78,7 +80,7 @@ struct AX_EXPORT AXNodeData {
   void AddFloatAttribute(AXFloatAttribute attribute, float value);
   void AddBoolAttribute(AXBoolAttribute attribute, bool value);
   void AddIntListAttribute(AXIntListAttribute attribute,
-                           const std::vector<int32>& value);
+                           const std::vector<int32_t>& value);
 
   // Convenience functions, mainly for writing unit tests.
   // Equivalent to AddStringAttribute(ATTR_NAME, name).
@@ -94,18 +96,18 @@ struct AX_EXPORT AXNodeData {
 
   // This is a simple serializable struct. All member variables should be
   // public and copyable.
-  int32 id;
+  int32_t id;
   AXRole role;
-  uint32 state;
+  uint32_t state;
   gfx::Rect location;
   std::vector<std::pair<AXStringAttribute, std::string> > string_attributes;
-  std::vector<std::pair<AXIntAttribute, int32> > int_attributes;
+  std::vector<std::pair<AXIntAttribute, int32_t>> int_attributes;
   std::vector<std::pair<AXFloatAttribute, float> > float_attributes;
   std::vector<std::pair<AXBoolAttribute, bool> > bool_attributes;
-  std::vector<std::pair<AXIntListAttribute, std::vector<int32> > >
+  std::vector<std::pair<AXIntListAttribute, std::vector<int32_t>>>
       intlist_attributes;
   base::StringPairs html_attributes;
-  std::vector<int32> child_ids;
+  std::vector<int32_t> child_ids;
 };
 
 }  // namespace ui

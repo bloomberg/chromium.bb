@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views_content_client/views_content_client_export.h"
 

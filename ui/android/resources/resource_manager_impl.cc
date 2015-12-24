@@ -4,6 +4,8 @@
 
 #include "ui/android/resources/resource_manager_impl.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 

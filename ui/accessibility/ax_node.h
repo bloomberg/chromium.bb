@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_AX_NODE_H_
 #define UI_ACCESSIBILITY_AX_NODE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ui/accessibility/ax_node_data.h"
@@ -21,11 +23,11 @@ class AX_EXPORT AXNode {
   // The constructor requires a parent, id, and index in parent, but
   // the data is not required. After initialization, only index_in_parent
   // is allowed to change, the others are guaranteed to never change.
-  AXNode(AXNode* parent, int32 id, int32 index_in_parent);
+  AXNode(AXNode* parent, int32_t id, int32_t index_in_parent);
   virtual ~AXNode();
 
   // Accessors.
-  int32 id() const { return data_.id; }
+  int32_t id() const { return data_.id; }
   AXNode* parent() const { return parent_; }
   int child_count() const { return static_cast<int>(children_.size()); }
   const AXNodeData& data() const { return data_; }

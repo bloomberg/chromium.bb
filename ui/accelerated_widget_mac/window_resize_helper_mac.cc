@@ -4,10 +4,13 @@
 
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -40,7 +43,7 @@ class WrappedTask {
   base::Closure closure_;
   base::TimeTicks can_run_time_;
   bool has_run_;
-  uint64 sequence_number_;
+  uint64_t sequence_number_;
   WrappedTaskQueue::iterator iterator_;
 
   // Back pointer to the pumpable task runner that this task is enqueued in.
@@ -146,7 +149,7 @@ void WrappedTask::AddToTaskRunnerQueue(
     PumpableTaskRunner* pumpable_task_runner) {
   pumpable_task_runner_ = pumpable_task_runner;
   base::AutoLock lock(pumpable_task_runner_->task_queue_lock_);
-  static uint64 last_sequence_number = 0;
+  static uint64_t last_sequence_number = 0;
   last_sequence_number += 1;
   sequence_number_ = last_sequence_number;
   iterator_ = pumpable_task_runner_->task_queue_.insert(

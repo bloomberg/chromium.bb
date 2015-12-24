@@ -4,6 +4,7 @@
 
 #include "ui/android/edge_effect.h"
 
+#include "base/macros.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "ui/android/animation_utils.h"

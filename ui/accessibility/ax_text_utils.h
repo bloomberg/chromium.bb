@@ -5,9 +5,10 @@
 #ifndef UI_ACCESSIBILITY_AX_TEXT_UTILS_H_
 #define UI_ACCESSIBILITY_AX_TEXT_UTILS_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_export.h"
 

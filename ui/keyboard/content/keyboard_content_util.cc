@@ -5,6 +5,7 @@
 #include "ui/keyboard/content/keyboard_content_util.h"
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "grit/keyboard_resources.h"
 #include "grit/keyboard_resources_map.h"
 #include "url/gurl.h"

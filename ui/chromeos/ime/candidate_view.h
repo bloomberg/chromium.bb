@@ -6,6 +6,7 @@
 #define UI_CHROMEOS_IME_CANDIDATE_VIEW_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/views/controls/button/custom_button.h"

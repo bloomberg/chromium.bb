@@ -5,6 +5,7 @@
 #ifndef UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_TEST_API_H_
 #define UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_TEST_API_H_
 
+#include "base/macros.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
 namespace ui {

@@ -5,6 +5,8 @@
 #ifndef UI_KEYBOARD_CONTENT_KEYBOARD_COTNENT_UTIL_H_
 #define UI_KEYBOARD_CONTENT_KEYBOARD_COTNENT_UTIL_H_
 
+#include <stddef.h>
+
 #include "base/strings/string16.h"
 #include "ui/keyboard/keyboard_export.h"
 

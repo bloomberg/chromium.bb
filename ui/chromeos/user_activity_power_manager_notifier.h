@@ -5,8 +5,8 @@
 #ifndef UI_CHROMEOS_USER_ACTIVITY_POWER_MANAGER_NOTIFIER_H_
 #define UI_CHROMEOS_USER_ACTIVITY_POWER_MANAGER_NOTIFIER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/chromeos/ui_chromeos_export.h"

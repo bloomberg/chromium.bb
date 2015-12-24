@@ -5,6 +5,7 @@
 #ifndef UI_CHROMEOS_IME_MODE_INDICATOR_VIEW_H_
 #define UI_CHROMEOS_IME_MODE_INDICATOR_VIEW_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/chromeos/ui_chromeos_export.h"

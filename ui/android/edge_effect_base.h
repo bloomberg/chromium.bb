@@ -5,7 +5,6 @@
 #ifndef UI_ANDROID_EDGE_EFFECT_BASE_H_
 #define UI_ANDROID_EDGE_EFFECT_BASE_H_
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
