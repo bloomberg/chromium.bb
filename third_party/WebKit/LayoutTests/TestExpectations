@@ -595,6 +595,14 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-progression-vrl-0
 # Test sometimes flakes on most platforms
 crbug.com/571531 imported/csswg-test/css-flexbox-1/css-flexbox-height-animation-stretch.html [ Pass Failure ]
 
+# failing on XP after https://codereview.chromium.org/1548053002
+crbug.com/492664 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-sideways-vrl-100.html [ Failure ]
+crbug.com/492664 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-mixed-vrl-100.html [ Failure ]
+crbug.com/492664 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-upright-vlr-100.html [ Failure ]
+crbug.com/492664 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-upright-vrl-100.html [ Failure ]
+crbug.com/492664 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-sideways-vlr-100.html [ Failure ]
+crbug.com/492664 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-mixed-vlr-100.html [ Failure ]
+
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Skip ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001q.html [ Failure ]
