@@ -58,7 +58,7 @@ void AbortsPageLoadMetricsObserver::OnComplete(
   // If |timing.IsEmpty()|, then this load was not tracked by the renderer. It
   // is impossible to know whether the abort signals came before the page
   // painted.
-  if (extra_info.has_commit && !timing.IsEmpty()) {
+  if (!extra_info.time_to_commit.is_zero() && !timing.IsEmpty()) {
     switch (abort_type) {
       case UserAbortType::ABORT_RELOAD:
         PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforePaint,
@@ -91,7 +91,7 @@ void AbortsPageLoadMetricsObserver::OnComplete(
     }
     NOTREACHED();
   }
-  if (extra_info.has_commit) {
+  if (!extra_info.time_to_commit.is_zero()) {
     // This load was not tracked by the renderer.
     return;
   }

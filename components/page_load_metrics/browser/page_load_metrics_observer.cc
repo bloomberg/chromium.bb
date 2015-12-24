@@ -10,14 +10,15 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     const base::TimeDelta& first_background_time,
     const base::TimeDelta& first_foreground_time,
     bool started_in_foreground,
-    bool has_commit,
+    const base::TimeDelta& time_to_commit,
     UserAbortType abort_type,
     const base::TimeDelta& time_to_abort)
     : first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
       started_in_foreground(started_in_foreground),
-      has_commit(has_commit),
+      time_to_commit(time_to_commit),
       abort_type(abort_type),
-      time_to_abort(time_to_abort) {}
+      time_to_abort(time_to_abort) {
+}
 
 }  // namespace page_load_metrics

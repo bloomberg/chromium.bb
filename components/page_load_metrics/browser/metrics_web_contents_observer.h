@@ -36,6 +36,7 @@ namespace page_load_metrics {
 class PageLoadTracker;
 
 // These constants are for keeping the tests in sync.
+const char kHistogramCommit[] = "PageLoad.Timing2.NavigationToCommit";
 const char kHistogramFirstLayout[] = "PageLoad.Timing2.NavigationToFirstLayout";
 const char kHistogramFirstTextPaint[] =
     "PageLoad.Timing2.NavigationToFirstTextPaint";
@@ -47,6 +48,8 @@ const char kHistogramFirstImagePaint[] =
     "PageLoad.Timing2.NavigationToFirstImagePaint";
 const char kHistogramFirstContentfulPaint[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint";
+const char kBackgroundHistogramCommit[] =
+    "PageLoad.Timing2.NavigationToCommit.Background";
 const char kBackgroundHistogramFirstLayout[] =
     "PageLoad.Timing2.NavigationToFirstLayout.Background";
 const char kBackgroundHistogramFirstTextPaint[] =
@@ -78,11 +81,8 @@ const char kHistogramBackgroundBeforeCommit[] =
     "PageLoad.Timing2.NavigationToFirstBackground.BeforeCommit";
 
 const char kProvisionalEvents[] = "PageLoad.Events.Provisional";
-const char kCommittedEvents[] = "PageLoad.Events.Committed";
 const char kBackgroundProvisionalEvents[] =
     "PageLoad.Events.Provisional.Background";
-const char kBackgroundCommittedEvents[] =
-    "PageLoad.Events.Committed.Background";
 
 const char kErrorEvents[] = "PageLoad.Events.InternalError";
 
@@ -121,34 +121,6 @@ enum ProvisionalLoadEvent {
 
   // Add values before this final count.
   PROVISIONAL_LOAD_LAST_ENTRY
-};
-
-// CommittedRelevantLoadEvents are events that occur on committed loads that the
-// MetricsWebContentsObserver tracks. Note events are only captured for
-// committed loads that:
-//  - Are http/https.
-//  - Not same-page navigations.
-//  - Are not navigations to an error page.
-// We only know these things about a navigation post-commit.
-//
-// If you add elements to this enum, make sure you update the enum
-// value in histograms.xml. Only add elements to the end to prevent
-// inconsistencies between versions.
-enum CommittedRelevantLoadEvent {
-  // When a load that eventually commits started. This cannot be logged until
-  // commit time, but it represents when the actual page load started. Thus, it
-  // only separates into .Background when a page load starts backgrounded.
-  RELEVANT_LOAD_STARTED,
-
-  // These two events are disjoint. Sum them to find the total number of
-  // committed loads that are tracked.
-  RELEVANT_LOAD_FAILED_BEFORE_FIRST_LAYOUT,
-  RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT,
-
-  // TODO(csharrison) once first paint metrics are in place, add new events.
-
-  // Add values before this final count.
-  RELEVANT_LOAD_LAST_ENTRY
 };
 
 // These errors are internal to the page_load_metrics subsystem and do not
@@ -225,8 +197,6 @@ class PageLoadTracker {
   // Returns true if the timing was successfully updated.
   bool UpdateTiming(const PageLoadTiming& timing);
   void RecordProvisionalEvent(ProvisionalLoadEvent event);
-  void RecordCommittedEvent(CommittedRelevantLoadEvent event,
-                            bool backgrounded);
   bool HasBackgrounded();
 
   void set_renderer_tracked(bool renderer_tracked);
@@ -256,10 +226,12 @@ class PageLoadTracker {
   // Whether the renderer should be sending timing IPCs to this page load.
   bool renderer_tracked_;
 
-  bool has_commit_;
-
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
+
+  // Time this navigation was committed, or zero if this navigation hasn't
+  // committed yet.
+  base::TimeTicks commit_time_;
 
   // Will be ABORT_NONE if we have not aborted this load yet. Otherwise will
   // be the first abort action the user performed.

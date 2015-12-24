@@ -49,7 +49,7 @@ struct PageLoadExtraInfo {
   PageLoadExtraInfo(const base::TimeDelta& first_background_time,
                     const base::TimeDelta& first_foreground_time,
                     bool started_in_foreground,
-                    bool has_commit,
+                    const base::TimeDelta& time_to_commit,
                     UserAbortType abort_type,
                     const base::TimeDelta& time_to_abort);
 
@@ -66,8 +66,9 @@ struct PageLoadExtraInfo {
   // True if the page load started in the foreground.
   const bool started_in_foreground;
 
-  // True if the page load committed and received its first bytes of data.
-  const bool has_commit;
+  // Time from navigation start until commit. If the page load did not commit,
+  // |time_to_commit| will be zero.
+  const base::TimeDelta time_to_commit;
 
   // The abort time and time to abort for this page load. If the page was not
   // aborted, |abort_type| will be |ABORT_NONE| and |time_to_abort| will be

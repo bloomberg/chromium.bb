@@ -123,7 +123,6 @@ PageLoadTracker::PageLoadTracker(
     PageLoadMetricsEmbedderInterface* embedder_interface,
     content::NavigationHandle* navigation_handle)
     : renderer_tracked_(false),
-      has_commit_(false),
       navigation_start_(navigation_handle->NavigationStart()),
       abort_type_(ABORT_NONE),
       started_in_foreground_(in_foreground),
@@ -157,14 +156,10 @@ void PageLoadTracker::WebContentsShown() {
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
-  has_commit_ = true;
+  // TODO(bmcquade): To improve accuracy, consider adding commit time to
+  // NavigationHandle. Taking a timestamp here should be close enough for now.
+  commit_time_ = base::TimeTicks::Now();
   url_ = navigation_handle->GetURL();
-  // We log the event that this load started. Because we don't know if a load is
-  // relevant or if it will commit before now, we have to log this event at
-  // commit time.
-  if (renderer_tracked())
-    RecordCommittedEvent(RELEVANT_LOAD_STARTED, !started_in_foreground_);
-
   for (const auto& observer : observers_) {
     observer->OnCommit(navigation_handle);
   }
@@ -208,6 +203,7 @@ PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   base::TimeDelta first_background_time;
   base::TimeDelta first_foreground_time;
   base::TimeDelta time_to_abort;
+  base::TimeDelta time_to_commit;
   if (!background_time_.is_null() && started_in_foreground_)
     first_background_time = background_time_ - navigation_start_;
   if (!foreground_time_.is_null() && !started_in_foreground_)
@@ -215,14 +211,20 @@ PageLoadExtraInfo PageLoadTracker::GetPageLoadMetricsInfo() {
   if (abort_type_ != ABORT_NONE) {
     DCHECK_GT(abort_time_, navigation_start_);
     time_to_abort = abort_time_ - navigation_start_;
+  } else {
+    DCHECK(abort_time_.is_null());
+  }
+  if (!commit_time_.is_null()) {
+    DCHECK_GT(commit_time_, navigation_start_);
+    time_to_commit = commit_time_ - navigation_start_;
   }
   return PageLoadExtraInfo(first_background_time, first_foreground_time,
-                           started_in_foreground_, has_commit_, abort_type_,
+                           started_in_foreground_, time_to_commit, abort_type_,
                            time_to_abort);
 }
 
 const GURL& PageLoadTracker::committed_url() {
-  DCHECK(has_commit_);
+  DCHECK(!commit_time_.is_null());
   return url_;
 }
 
@@ -272,7 +274,7 @@ void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
 void PageLoadTracker::RecordTimingHistograms(const PageLoadExtraInfo& info) {
   if (!info.first_background_time.is_zero() &&
       !EventOccurredInForeground(timing_.first_paint, info)) {
-    if (has_commit_) {
+    if (!info.time_to_commit.is_zero()) {
       PAGE_LOAD_HISTOGRAM(kHistogramBackgroundBeforePaint,
                           info.first_background_time);
     } else {
@@ -282,8 +284,14 @@ void PageLoadTracker::RecordTimingHistograms(const PageLoadExtraInfo& info) {
   }
 
   // The rest of the histograms require the load to have commit and be relevant.
-  if (!has_commit_ || !renderer_tracked())
+  if (info.time_to_commit.is_zero() || !renderer_tracked())
     return;
+
+  if (EventOccurredInForeground(info.time_to_commit, info)) {
+    PAGE_LOAD_HISTOGRAM(kHistogramCommit, info.time_to_commit);
+  } else {
+    PAGE_LOAD_HISTOGRAM(kBackgroundHistogramCommit, info.time_to_commit);
+  }
 
   // The rest of the timing histograms require us to have received IPCs from the
   // renderer. Record UMA for how often this occurs (usually for quickly aborted
@@ -310,17 +318,12 @@ void PageLoadTracker::RecordTimingHistograms(const PageLoadExtraInfo& info) {
       PAGE_LOAD_HISTOGRAM(kBackgroundHistogramLoad, timing_.load_event_start);
     }
   }
-  if (timing_.first_layout.is_zero()) {
-    RecordCommittedEvent(RELEVANT_LOAD_FAILED_BEFORE_FIRST_LAYOUT,
-                         HasBackgrounded());
-  } else {
+  if (!timing_.first_layout.is_zero()) {
     if (EventOccurredInForeground(timing_.first_layout, info)) {
       PAGE_LOAD_HISTOGRAM(kHistogramFirstLayout, timing_.first_layout);
-      RecordCommittedEvent(RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT, false);
     } else {
       PAGE_LOAD_HISTOGRAM(kBackgroundHistogramFirstLayout,
                           timing_.first_layout);
-      RecordCommittedEvent(RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT, true);
     }
   }
   if (!timing_.first_paint.is_zero()) {
@@ -384,22 +387,8 @@ void PageLoadTracker::RecordProvisionalEvent(ProvisionalLoadEvent event) {
   }
 }
 
-// RecordCommittedEvent needs a backgrounded input because we need to special
-// case a few events that need either precise timing measurements, or different
-// logic than simply "Did I background before logging this event?"
-void PageLoadTracker::RecordCommittedEvent(CommittedRelevantLoadEvent event,
-                                           bool backgrounded) {
-  if (backgrounded) {
-    UMA_HISTOGRAM_ENUMERATION(kBackgroundCommittedEvents, event,
-                              RELEVANT_LOAD_LAST_ENTRY);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(kCommittedEvents, event,
-                              RELEVANT_LOAD_LAST_ENTRY);
-  }
-}
-
 void PageLoadTracker::RecordRappor(const PageLoadExtraInfo& info) {
-  if (!info.has_commit)
+  if (info.time_to_commit.is_zero())
     return;
   DCHECK(!committed_url().is_empty());
   rappor::RapporService* rappor_service =
@@ -416,7 +405,8 @@ void PageLoadTracker::RecordRappor(const PageLoadExtraInfo& info) {
     uint64_t bucket_index = RapporHistogramBucketIndex(first_contentful_paint);
     sample->SetFlagsField("Bucket", uint64_t(1) << bucket_index,
                           kNumRapporHistogramBuckets);
-    // The IsSlow flag is just a one bit boolean if the first layout was > 10s.
+    // The IsSlow flag is just a one bit boolean if the first contentful paint
+    // was > 10s.
     sample->SetFlagsField("IsSlow", first_contentful_paint.InSecondsF() >= 10,
                           1);
     rappor_service->RecordSampleObj(kRapporMetricsNameCoarseTiming,

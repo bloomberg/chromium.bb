@@ -31839,6 +31839,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.Events.Committed" enum="CommittedLoadEvent">
   <owner>csharrison@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
+  <obsolete>
+    Deprecated in favor of PageLoad.Timing2.NavigationToCommit and
+    PageLoad.AbortTiming.
+  </obsolete>
   <summary>
     Captures counts of load events post-commit, on relevant page loads (i.e.
     http/https, not same-page, not an error page). These events include aborts
@@ -31903,6 +31907,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Measures the time from navigation timing's navigation start to the time the
     load event is fired, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.NavigationToCommit" units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    navigation committed, for main frame documents.
   </summary>
 </histogram>
 
@@ -58282,6 +58295,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="CommittedLoadEvent" type="int">
+  <obsolete>
+    Deprecated in favor of PageLoad.Timing2.NavigationToCommit and
+    PageLoad.AbortTiming.
+  </obsolete>
   <int value="0" label="Committed load started"/>
   <int value="1" label="Committed load failed before first layout"/>
   <int value="2" label="Successful first layout"/>
@@ -83769,6 +83786,7 @@ To add a new entry, add it with any value and run test to compute valid value.
              this event."/>
   <affected-histogram name="PageLoad.Events.Committed"/>
   <affected-histogram name="PageLoad.Events.Provisional"/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToCommit"/>
   <affected-histogram
       name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>

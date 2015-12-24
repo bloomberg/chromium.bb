@@ -53,8 +53,6 @@ class MetricsWebContentsObserverTest
   MetricsWebContentsObserverTest()
       : num_provisional_events_(0),
       num_provisional_events_bg_(0),
-      num_committed_events_(0),
-      num_committed_events_bg_(0),
       num_errors_(0) {}
 
   void SetUp() override {
@@ -89,19 +87,6 @@ class MetricsWebContentsObserverTest
     }
   }
 
-  void CheckCommittedEvent(CommittedRelevantLoadEvent event,
-                           int count,
-                           bool background) {
-    if (background) {
-      histogram_tester_.ExpectBucketCount(kBackgroundCommittedEvents, event,
-                                          count);
-      num_committed_events_bg_ += count;
-    } else {
-      histogram_tester_.ExpectBucketCount(kCommittedEvents, event, count);
-      num_committed_events_ += count;
-    }
-  }
-
   void CheckErrorEvent(InternalErrorLoadEvent error, int count) {
     histogram_tester_.ExpectBucketCount(kErrorEvents, error, count);
     num_errors_ += count;
@@ -110,11 +95,8 @@ class MetricsWebContentsObserverTest
   void CheckTotalEvents() {
     histogram_tester_.ExpectTotalCount(kProvisionalEvents,
                                        num_provisional_events_);
-    histogram_tester_.ExpectTotalCount(kCommittedEvents, num_committed_events_);
     histogram_tester_.ExpectTotalCount(kBackgroundProvisionalEvents,
                                        num_provisional_events_bg_);
-    histogram_tester_.ExpectTotalCount(kBackgroundCommittedEvents,
-                                       num_committed_events_bg_);
     histogram_tester_.ExpectTotalCount(kErrorEvents, num_errors_);
   }
 
@@ -126,8 +108,6 @@ class MetricsWebContentsObserverTest
  private:
   int num_provisional_events_;
   int num_provisional_events_bg_;
-  int num_committed_events_;
-  int num_committed_events_bg_;
   int num_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserverTest);
@@ -207,6 +187,7 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTriggerUntilTrueNavCommit) {
   // But we should keep the timing info and log it when we get another
   // navigation.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  histogram_tester_.ExpectTotalCount(kHistogramCommit, 1);
   histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
   histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
   histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 1);
@@ -235,6 +216,7 @@ TEST_F(MetricsWebContentsObserverTest, SingleMetricAfterCommit) {
   // Navigate again to force histogram recording.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
 
+  histogram_tester_.ExpectTotalCount(kHistogramCommit, 1);
   histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
   histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
   histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 1);
@@ -279,6 +261,7 @@ TEST_F(MetricsWebContentsObserverTest, MultipleMetricsAfterCommits) {
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
+  histogram_tester_.ExpectTotalCount(kHistogramCommit, 2);
   histogram_tester_.ExpectBucketCount(kHistogramFirstLayout,
                                       first_layout_1.InMilliseconds(), 1);
   histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 2);
@@ -324,6 +307,7 @@ TEST_F(MetricsWebContentsObserverTest, BackgroundDifferentHistogram) {
   // Navigate again to force histogram recording.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
 
+  histogram_tester_.ExpectTotalCount(kBackgroundHistogramCommit, 1);
   histogram_tester_.ExpectTotalCount(kBackgroundHistogramDomContentLoaded, 0);
   histogram_tester_.ExpectTotalCount(kBackgroundHistogramLoad, 0);
   histogram_tester_.ExpectTotalCount(kBackgroundHistogramFirstLayout, 1);
@@ -331,6 +315,7 @@ TEST_F(MetricsWebContentsObserverTest, BackgroundDifferentHistogram) {
                                       first_layout.InMilliseconds(), 1);
   histogram_tester_.ExpectTotalCount(kBackgroundHistogramFirstTextPaint, 0);
 
+  histogram_tester_.ExpectTotalCount(kHistogramCommit, 0);
   histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
   histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
   histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 0);
@@ -382,6 +367,7 @@ TEST_F(MetricsWebContentsObserverTest, OnlyBackgroundLaterEvents) {
   // Navigate again to force histogram recording.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
 
+  histogram_tester_.ExpectTotalCount(kBackgroundHistogramCommit, 0);
   histogram_tester_.ExpectTotalCount(kBackgroundHistogramDomContentLoaded, 0);
   histogram_tester_.ExpectTotalCount(kBackgroundHistogramLoad, 0);
   histogram_tester_.ExpectTotalCount(kBackgroundHistogramFirstLayout, 1);
@@ -392,6 +378,7 @@ TEST_F(MetricsWebContentsObserverTest, OnlyBackgroundLaterEvents) {
                                       timing.first_text_paint.InMilliseconds(),
                                       1);
 
+  histogram_tester_.ExpectTotalCount(kHistogramCommit, 1);
   histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectBucketCount(
       kHistogramDomContentLoaded,
@@ -435,6 +422,7 @@ TEST_F(MetricsWebContentsObserverTest, DontBackgroundQuickerLoad) {
   // Navigate again to see if the timing updated for the foregrounded load.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
+  histogram_tester_.ExpectTotalCount(kHistogramCommit, 1);
   histogram_tester_.ExpectTotalCount(kHistogramDomContentLoaded, 0);
   histogram_tester_.ExpectTotalCount(kHistogramLoad, 0);
   histogram_tester_.ExpectTotalCount(kHistogramFirstLayout, 1);
@@ -526,7 +514,6 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
   CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 2, false);
-  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 1, false);
   CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
   CheckTotalEvents();
@@ -555,75 +542,6 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainError) {
   CheckErrorEvent(ERR_IPC_FROM_WRONG_FRAME, 1);
 }
 
-TEST_F(MetricsWebContentsObserverTest, AbortCommittedLoadBeforeFirstLayout) {
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(10);
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      main_rfh());
-  // Navigate again to force histogram logging.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 2, false);
-  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 2, false);
-  CheckCommittedEvent(RELEVANT_LOAD_FAILED_BEFORE_FIRST_LAYOUT, 1, false);
-  CheckTotalEvents();
-}
-
-TEST_F(MetricsWebContentsObserverTest, SuccessfulFirstLayoutInForegroundEvent) {
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(10);
-  timing.first_layout = base::TimeDelta::FromMilliseconds(100);
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      main_rfh());
-  // Navigate again to force histogram logging.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 2, false);
-  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 2, false);
-  CheckCommittedEvent(RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT, 1, false);
-  CheckTotalEvents();
-}
-
-TEST_F(MetricsWebContentsObserverTest,
-       SuccessfulFirstLayoutInBackgroundEvent) {
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = base::TimeDelta::FromSeconds(30);
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  // Background the tab.
-  observer_->WasHidden();
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      main_rfh());
-
-  observer_->WasShown();
-  // Navigate again to force histogram logging.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 1, true);
-  CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 1, false);
-  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 1, true);
-  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 1, false);
-  CheckCommittedEvent(RELEVANT_LOAD_SUCCESSFUL_FIRST_LAYOUT, 1, true);
-  CheckTotalEvents();
-}
-
 TEST_F(MetricsWebContentsObserverTest, BadIPC) {
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(10);
@@ -642,7 +560,6 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
       main_rfh());
 
   CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 1, false);
-  CheckCommittedEvent(RELEVANT_LOAD_STARTED, 1, false);
   CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
   CheckTotalEvents();
 }
