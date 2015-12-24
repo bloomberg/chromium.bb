@@ -4,6 +4,8 @@
 
 #include "base/i18n/icu_encoding_detection.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/strings/string_util.h"

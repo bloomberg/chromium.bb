@@ -4,6 +4,8 @@
 
 #include "base/i18n/number_formatting.h"
 
+#include <stddef.h>
+
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -45,7 +47,7 @@ LazyInstance<NumberFormatWrapper> g_number_format_float =
 
 }  // namespace
 
-string16 FormatNumber(int64 number) {
+string16 FormatNumber(int64_t number) {
   icu::NumberFormat* number_format =
       g_number_format_int.Get().number_format.get();
 

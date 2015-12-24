@@ -4,13 +4,17 @@
 
 #include "base/i18n/rtl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"

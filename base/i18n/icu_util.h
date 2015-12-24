@@ -5,6 +5,8 @@
 #ifndef BASE_I18N_ICU_UTIL_H_
 #define BASE_I18N_ICU_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/files/memory_mapped_file.h"
 #include "base/i18n/base_i18n_export.h"
 #include "build/build_config.h"
@@ -38,7 +40,7 @@ BASE_I18N_EXPORT bool InitializeICUWithFileDescriptor(
 // different binaries in the same address space. This returns an unowned
 // pointer to the memory mapped icu data file; consumers copies of base must
 // not outlive the copy of base that owns the memory mapped file.
-BASE_I18N_EXPORT const uint8* GetRawIcuMemory();
+BASE_I18N_EXPORT const uint8_t* GetRawIcuMemory();
 
 // Initializes ICU memory
 //
@@ -48,7 +50,7 @@ BASE_I18N_EXPORT const uint8* GetRawIcuMemory();
 // of base linked in, and the majority of mojo applications will have base
 // linked in but in non-component builds, these will be separate copies of
 // base.)
-BASE_I18N_EXPORT bool InitializeICUFromRawMemory(const uint8* raw_memory);
+BASE_I18N_EXPORT bool InitializeICUFromRawMemory(const uint8_t* raw_memory);
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 #endif  // !defined(OS_NACL)
 

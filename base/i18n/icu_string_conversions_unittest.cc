@@ -4,14 +4,15 @@
 
 #include <math.h>
 #include <stdarg.h>
+#include <stddef.h>
 
 #include <limits>
 #include <sstream>
 
-#include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

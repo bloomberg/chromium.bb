@@ -11,10 +11,13 @@
 #ifndef BASE_I18N_STREAMING_UTF8_VALIDATOR_H_
 #define BASE_I18N_STREAMING_UTF8_VALIDATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/i18n/base_i18n_export.h"
+#include "base/macros.h"
 
 namespace base {
 
@@ -51,7 +54,7 @@ class BASE_I18N_EXPORT StreamingUtf8Validator {
   // The current state of the validator. Value 0 is the initial/valid state.
   // The state is stored as an offset into |kUtf8ValidatorTables|. The special
   // state |kUtf8InvalidState| is invalid.
-  uint8 state_;
+  uint8_t state_;
 
   // This type could be made copyable but there is currently no use-case for
   // it.

@@ -5,7 +5,10 @@
 #ifndef BASE_I18N_UTF8_VALIDATOR_TABLES_H_
 #define BASE_I18N_UTF8_VALIDATOR_TABLES_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 
 namespace base {
 namespace internal {
@@ -14,7 +17,7 @@ namespace internal {
 // next_state, next_state, ....). The right_shifts are used to reduce the
 // overall size of the table. The table only covers bytes in the range
 // [0x80, 0xFF] to save space.
-extern const uint8 kUtf8ValidatorTables[];
+extern const uint8_t kUtf8ValidatorTables[];
 
 extern const size_t kUtf8ValidatorTablesSize;
 

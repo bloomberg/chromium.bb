@@ -4,11 +4,14 @@
 
 #include "base/i18n/streaming_utf8_validator.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +24,6 @@
 
 #ifdef BASE_I18N_UTF8_VALIDATOR_THOROUGH_TEST
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -48,7 +50,7 @@ const StreamingUtf8Validator::State INVALID = StreamingUtf8Validator::INVALID;
 
 #ifdef BASE_I18N_UTF8_VALIDATOR_THOROUGH_TEST
 
-const uint32 kThoroughTestChunkSize = 1 << 24;
+const uint32_t kThoroughTestChunkSize = 1 << 24;
 
 class StreamingUtf8ValidatorThoroughTest : public ::testing::Test {
  protected:
@@ -57,11 +59,11 @@ class StreamingUtf8ValidatorThoroughTest : public ::testing::Test {
 
   // This uses the same logic as base::IsStringUTF8 except it considers
   // non-characters valid (and doesn't require a string as input).
-  static bool IsStringUtf8(const char* src, int32 src_len) {
-    int32 char_index = 0;
+  static bool IsStringUtf8(const char* src, int32_t src_len) {
+    int32_t char_index = 0;
 
     while (char_index < src_len) {
-      int32 code_point;
+      int32_t code_point;
       U8_NEXT(src, char_index, src_len, code_point);
       if (!base::IsValidCodepoint(code_point))
         return false;
@@ -72,7 +74,7 @@ class StreamingUtf8ValidatorThoroughTest : public ::testing::Test {
   // Converts the passed-in integer to a 4 byte string and then
   // verifies that IsStringUtf8 and StreamingUtf8Validator agree on
   // whether it is valid UTF-8 or not.
-  void TestNumber(uint32 n) const {
+  void TestNumber(uint32_t n) const {
     char test[sizeof n];
     memcpy(test, &n, sizeof n);
     StreamingUtf8Validator validator;
@@ -91,8 +93,8 @@ class StreamingUtf8ValidatorThoroughTest : public ::testing::Test {
   // starting at |begin|. This is intended to be run from a worker
   // pool. Signals |all_done_| at the end if it thinks all tasks are
   // finished.
-  void TestRange(uint32 begin, uint32 size) {
-    for (uint32 i = 0; i < size; ++i) {
+  void TestRange(uint32_t begin, uint32_t size) {
+    for (uint32_t i = 0; i < size; ++i) {
       TestNumber(begin + i);
     }
     base::AutoLock al(lock_);
@@ -115,7 +117,7 @@ TEST_F(StreamingUtf8ValidatorThoroughTest, TestEverything) {
   scoped_refptr<base::SequencedWorkerPool> pool =
       new base::SequencedWorkerPool(32, "TestEverything");
   base::AutoLock al(lock_);
-  uint32 begin = 0;
+  uint32_t begin = 0;
   do {
     pool->PostWorkerTask(
         FROM_HERE,

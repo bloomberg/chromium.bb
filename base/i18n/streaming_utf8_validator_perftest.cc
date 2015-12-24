@@ -12,11 +12,13 @@
 
 #include "base/i18n/streaming_utf8_validator.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"

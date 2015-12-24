@@ -5,9 +5,9 @@
 #ifndef BASE_I18N_BIDI_LINE_ITERATOR_H_
 #define BASE_I18N_BIDI_LINE_ITERATOR_H_
 
-#include "base/basictypes.h"
 #include "base/i18n/base_i18n_export.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 

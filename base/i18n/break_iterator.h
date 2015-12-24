@@ -5,8 +5,10 @@
 #ifndef BASE_I18N_BREAK_ITERATOR_H_
 #define BASE_I18N_BREAK_ITERATOR_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/i18n/base_i18n_export.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 

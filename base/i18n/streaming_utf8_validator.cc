@@ -14,7 +14,7 @@
 namespace base {
 namespace {
 
-uint8 StateTableLookup(uint8 offset) {
+uint8_t StateTableLookup(uint8_t offset) {
   DCHECK_LT(offset, internal::kUtf8ValidatorTablesSize);
   return internal::kUtf8ValidatorTables[offset];
 }
@@ -25,7 +25,7 @@ StreamingUtf8Validator::State StreamingUtf8Validator::AddBytes(const char* data,
                                                                size_t size) {
   // Copy |state_| into a local variable so that the compiler doesn't have to be
   // careful of aliasing.
-  uint8 state = state_;
+  uint8_t state = state_;
   for (const char* p = data; p != data + size; ++p) {
     if ((*p & 0x80) == 0) {
       if (state == 0)
@@ -33,8 +33,8 @@ StreamingUtf8Validator::State StreamingUtf8Validator::AddBytes(const char* data,
       state = internal::I18N_UTF8_VALIDATOR_INVALID_INDEX;
       break;
     }
-    const uint8 shift_amount = StateTableLookup(state);
-    const uint8 shifted_char = (*p & 0x7F) >> shift_amount;
+    const uint8_t shift_amount = StateTableLookup(state);
+    const uint8_t shifted_char = (*p & 0x7F) >> shift_amount;
     state = StateTableLookup(state + shifted_char + 1);
     // State may be INVALID here, but this code is optimised for the case of
     // valid UTF-8 and it is more efficient (by about 2%) to not attempt an

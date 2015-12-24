@@ -6,10 +6,13 @@
 
 #include "base/i18n/file_util_icu.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/string_compare.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
@@ -110,7 +113,7 @@ void ReplaceIllegalCharactersInPath(FilePath::StringType* file_name,
   int cursor = 0;  // The ICU macros expect an int.
   while (cursor < static_cast<int>(file_name->size())) {
     int char_begin = cursor;
-    uint32 code_point;
+    uint32_t code_point;
 #if defined(OS_MACOSX)
     // Mac uses UTF-8 encoding for filenames.
     U8_NEXT(file_name->data(), cursor, static_cast<int>(file_name->length()),

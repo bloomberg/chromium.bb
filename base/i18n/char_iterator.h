@@ -5,11 +5,15 @@
 #ifndef BASE_I18N_CHAR_ITERATOR_H_
 #define BASE_I18N_CHAR_ITERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/i18n/base_i18n_export.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 
 // The CharIterator classes iterate through the characters in UTF8 and
 // UTF16 strings.  Example usage:
@@ -35,14 +39,14 @@ class BASE_I18N_EXPORT UTF8CharIterator {
 
   // Return the starting array index of the current character within the
   // string.
-  int32 array_pos() const { return array_pos_; }
+  int32_t array_pos() const { return array_pos_; }
 
   // Return the logical index of the current character, independent of the
   // number of bytes each character takes.
-  int32 char_pos() const { return char_pos_; }
+  int32_t char_pos() const { return char_pos_; }
 
   // Return the current char.
-  int32 get() const { return char_; }
+  int32_t get() const { return char_; }
 
   // Returns true if we're at the end of the string.
   bool end() const { return array_pos_ == len_; }
@@ -56,19 +60,19 @@ class BASE_I18N_EXPORT UTF8CharIterator {
   const uint8_t* str_;
 
   // The length of the encoded string.
-  int32 len_;
+  int32_t len_;
 
   // Array index.
-  int32 array_pos_;
+  int32_t array_pos_;
 
   // The next array index.
-  int32 next_pos_;
+  int32_t next_pos_;
 
   // Character index.
-  int32 char_pos_;
+  int32_t char_pos_;
 
   // The current character.
-  int32 char_;
+  int32_t char_;
 
   DISALLOW_COPY_AND_ASSIGN(UTF8CharIterator);
 };
@@ -82,14 +86,14 @@ class BASE_I18N_EXPORT UTF16CharIterator {
 
   // Return the starting array index of the current character within the
   // string.
-  int32 array_pos() const { return array_pos_; }
+  int32_t array_pos() const { return array_pos_; }
 
   // Return the logical index of the current character, independent of the
   // number of codewords each character takes.
-  int32 char_pos() const { return char_pos_; }
+  int32_t char_pos() const { return char_pos_; }
 
   // Return the current char.
-  int32 get() const { return char_; }
+  int32_t get() const { return char_; }
 
   // Returns true if we're at the end of the string.
   bool end() const { return array_pos_ == len_; }
@@ -107,19 +111,19 @@ class BASE_I18N_EXPORT UTF16CharIterator {
   const char16* str_;
 
   // The length of the encoded string.
-  int32 len_;
+  int32_t len_;
 
   // Array index.
-  int32 array_pos_;
+  int32_t array_pos_;
 
   // The next array index.
-  int32 next_pos_;
+  int32_t next_pos_;
 
   // Character index.
-  int32 char_pos_;
+  int32_t char_pos_;
 
   // The current character.
-  int32 char_;
+  int32_t char_;
 
   DISALLOW_COPY_AND_ASSIGN(UTF16CharIterator);
 };

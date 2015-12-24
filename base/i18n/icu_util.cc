@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/putil.h"
 #include "third_party/icu/source/common/unicode/udata.h"
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -155,7 +156,7 @@ bool InitializeICUWithFileDescriptorInternal(
   g_icudtl_mapped_file = icudtl_mapped_file.release();
 
   UErrorCode err = U_ZERO_ERROR;
-  udata_setCommonData(const_cast<uint8*>(g_icudtl_mapped_file->data()), &err);
+  udata_setCommonData(const_cast<uint8_t*>(g_icudtl_mapped_file->data()), &err);
   return err == U_ZERO_ERROR;
 }
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
@@ -183,12 +184,12 @@ PlatformFile GetIcuDataFileHandle(MemoryMappedFile::Region* out_region) {
 }
 #endif
 
-const uint8* GetRawIcuMemory() {
+const uint8_t* GetRawIcuMemory() {
   CHECK(g_icudtl_mapped_file);
   return g_icudtl_mapped_file->data();
 }
 
-bool InitializeICUFromRawMemory(const uint8* raw_memory) {
+bool InitializeICUFromRawMemory(const uint8_t* raw_memory) {
 #if !defined(COMPONENT_BUILD)
 #if !defined(NDEBUG)
   DCHECK(!g_check_called_once || !g_called_once);
@@ -196,7 +197,7 @@ bool InitializeICUFromRawMemory(const uint8* raw_memory) {
 #endif
 
   UErrorCode err = U_ZERO_ERROR;
-  udata_setCommonData(const_cast<uint8*>(raw_memory), &err);
+  udata_setCommonData(const_cast<uint8_t*>(raw_memory), &err);
   return err == U_ZERO_ERROR;
 #else
   return true;

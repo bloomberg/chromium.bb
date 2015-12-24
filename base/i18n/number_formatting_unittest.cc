@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 
@@ -16,15 +21,15 @@ namespace {
 
 TEST(NumberFormattingTest, FormatNumber) {
   static const struct {
-    int64 number;
+    int64_t number;
     const char* expected_english;
     const char* expected_german;
   } cases[] = {
     {0, "0", "0"},
     {1024, "1,024", "1.024"},
-    {std::numeric_limits<int64>::max(),
+    {std::numeric_limits<int64_t>::max(),
         "9,223,372,036,854,775,807", "9.223.372.036.854.775.807"},
-    {std::numeric_limits<int64>::min(),
+    {std::numeric_limits<int64_t>::min(),
         "-9,223,372,036,854,775,808", "-9.223.372.036.854.775.808"},
     {-42, "-42", "-42"},
   };

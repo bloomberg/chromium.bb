@@ -4,6 +4,8 @@
 
 #include "base/i18n/time_formatting.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"

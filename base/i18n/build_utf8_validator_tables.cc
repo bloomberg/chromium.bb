@@ -23,9 +23,11 @@
 // Because the table is not expected to ever change, it is checked into the
 // repository rather than being regenerated at build time.
 //
-// This code uses type uint8 throughout to represent bytes, to avoid
+// This code uses type uint8_t throughout to represent bytes, to avoid
 // signed/unsigned char confusion.
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,11 +37,11 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/icu/source/common/unicode/utf8.h"
@@ -63,7 +65,7 @@ const char kProlog[] =
     "namespace base {\n"
     "namespace internal {\n"
     "\n"
-    "const uint8 kUtf8ValidatorTables[] = {\n";
+    "const uint8_t kUtf8ValidatorTables[] = {\n";
 
 const char kEpilog[] =
     "};\n"
@@ -77,7 +79,7 @@ const char kEpilog[] =
 class Range {
  public:
   // Ranges always start with just one byte.
-  explicit Range(uint8 value) : from_(value), to_(value) {}
+  explicit Range(uint8_t value) : from_(value), to_(value) {}
 
   // Range objects are copyable and assignable to be used in STL
   // containers. Since they only contain non-pointer POD types, the default copy
@@ -85,13 +87,13 @@ class Range {
 
   // Add a byte to the range. We intentionally only support adding a byte at the
   // end, since that is the only operation the code needs.
-  void AddByte(uint8 to) {
+  void AddByte(uint8_t to) {
     CHECK(to == to_ + 1);
     to_ = to;
   }
 
-  uint8 from() const { return from_; }
-  uint8 to() const { return to_; }
+  uint8_t from() const { return from_; }
+  uint8_t to() const { return to_; }
 
   bool operator<(const Range& rhs) const {
     return (from() < rhs.from() || (from() == rhs.from() && to() < rhs.to()));
@@ -102,8 +104,8 @@ class Range {
   }
 
  private:
-  uint8 from_;
-  uint8 to_;
+  uint8_t from_;
+  uint8_t to_;
 };
 
 // A vector of Ranges is like a simple regular expression--it corresponds to
@@ -112,7 +114,7 @@ class Range {
 typedef std::vector<Range> StringSet;
 
 // A UTF-8 "character" is represented by a sequence of bytes.
-typedef std::vector<uint8> Character;
+typedef std::vector<uint8_t> Character;
 
 // In the second stage of the algorithm, we want to convert a large list of
 // Characters into a small list of StringSets.
@@ -129,7 +131,7 @@ class TablePrinter {
   explicit TablePrinter(FILE* stream)
       : stream_(stream), values_on_this_line_(0), current_offset_(0) {}
 
-  void PrintValue(uint8 value) {
+  void PrintValue(uint8_t value) {
     if (values_on_this_line_ == 0) {
       fputs("   ", stream_);
     } else if (values_on_this_line_ == kMaxValuesPerLine) {
@@ -175,7 +177,7 @@ PairVector InitializeCharacters() {
       // explicitly permitted.
       continue;
     }
-    uint8 bytes[4];
+    uint8_t bytes[4];
     unsigned int offset = 0;
     UBool is_error = false;
     U8_APPEND(bytes, offset, arraysize(bytes), i, is_error);
@@ -281,8 +283,8 @@ void LogStringSets(const PairVector& pairs) {
 // byte and the next entry in the vector (or 0xFF) result in a transition to the
 // target state.
 struct StateRange {
-  uint8 from;
-  uint8 target_state;
+  uint8_t from;
+  uint8_t target_state;
 };
 
 typedef std::vector<StateRange> State;
@@ -297,30 +299,31 @@ State GenerateInvalidState() {
 
 // A map from a state (ie. a set of strings which will match from this state) to
 // a number (which is an index into the array of states).
-typedef std::map<StringSet, uint8> StateMap;
+typedef std::map<StringSet, uint8_t> StateMap;
 
 // Create a new state corresponding to |set|, add it |states| and |state_map|
 // and return the index it was given in |states|.
-uint8 MakeState(const StringSet& set,
-                std::vector<State>* states,
-                StateMap* state_map) {
+uint8_t MakeState(const StringSet& set,
+                  std::vector<State>* states,
+                  StateMap* state_map) {
   DCHECK(!set.empty());
   const Range& range = set.front();
   const StringSet rest(set.begin() + 1, set.end());
   const StateMap::const_iterator where = state_map->find(rest);
-  const uint8 target_state = where == state_map->end()
-                                 ? MakeState(rest, states, state_map)
-                                 : where->second;
+  const uint8_t target_state = where == state_map->end()
+                                   ? MakeState(rest, states, state_map)
+                                   : where->second;
   DCHECK_LT(0, range.from());
   DCHECK_LT(range.to(), 0xFF);
   const StateRange new_state_initializer[] = {
-      {0, 1}, {range.from(), target_state},
-      {static_cast<uint8>(range.to() + 1), 1}};
+      {0, 1},
+      {range.from(), target_state},
+      {static_cast<uint8_t>(range.to() + 1), 1}};
   states->push_back(
       State(new_state_initializer,
             new_state_initializer + arraysize(new_state_initializer)));
-  const uint8 new_state_number =
-      base::checked_cast<uint8>(states->size() - 1);
+  const uint8_t new_state_number =
+      base::checked_cast<uint8_t>(states->size() - 1);
   CHECK(state_map->insert(std::make_pair(set, new_state_number)).second);
   return new_state_number;
 }
@@ -336,19 +339,20 @@ std::vector<State> GenerateStates(const PairVector& pairs) {
     const Range& range = it->set.front();
     const StringSet rest(it->set.begin() + 1, it->set.end());
     const StateMap::const_iterator where = state_map.find(rest);
-    const uint8 target_state = where == state_map.end()
-                                   ? MakeState(rest, &states, &state_map)
-                                   : where->second;
+    const uint8_t target_state = where == state_map.end()
+                                     ? MakeState(rest, &states, &state_map)
+                                     : where->second;
     if (states[0].back().from == range.from()) {
       DCHECK_EQ(1, states[0].back().target_state);
       states[0].back().target_state = target_state;
       DCHECK_LT(range.to(), 0xFF);
-      const StateRange new_range = {static_cast<uint8>(range.to() + 1), 1};
+      const StateRange new_range = {static_cast<uint8_t>(range.to() + 1), 1};
       states[0].push_back(new_range);
     } else {
       DCHECK_LT(range.to(), 0xFF);
-      const StateRange new_range_initializer[] = {{range.from(), target_state},
-           {static_cast<uint8>(range.to() + 1), 1}};
+      const StateRange new_range_initializer[] = {
+          {range.from(), target_state},
+          {static_cast<uint8_t>(range.to() + 1), 1}};
       states[0]
           .insert(states[0].end(),
                   new_range_initializer,
@@ -368,9 +372,9 @@ void PrintStates(const std::vector<State>& states, FILE* stream) {
   // First calculate the start-offset of each state. This allows the state
   // machine to jump directly to the correct offset, avoiding an extra
   // indirection. State 0 starts at offset 0.
-  std::vector<uint8> state_offset(1, 0);
-  std::vector<uint8> shifts;
-  uint8 pos = 0;
+  std::vector<uint8_t> state_offset(1, 0);
+  std::vector<uint8_t> shifts;
+  uint8_t pos = 0;
 
   for (std::vector<State>::const_iterator state_it = states.begin();
        state_it != states.end();
@@ -379,7 +383,7 @@ void PrintStates(const std::vector<State>& states, FILE* stream) {
     // set bit in any of the ranges for this state, since this tells us how many
     // bits we can discard and still determine what range a byte lies in. Sadly
     // it appears that ffs() is not portable, so we do it clumsily.
-    uint8 shift = 7;
+    uint8_t shift = 7;
     for (State::const_iterator range_it = state_it->begin();
          range_it != state_it->end();
          ++range_it) {
@@ -397,10 +401,10 @@ void PrintStates(const std::vector<State>& states, FILE* stream) {
   fputs(kProlog, stream);
   TablePrinter table_printer(stream);
 
-  for (uint8 state_index = 0; state_index < states.size(); ++state_index) {
-    const uint8 shift = shifts[state_index];
-    uint8 next_range = 0;
-    uint8 target_state = 1;
+  for (uint8_t state_index = 0; state_index < states.size(); ++state_index) {
+    const uint8_t shift = shifts[state_index];
+    uint8_t next_range = 0;
+    uint8_t target_state = 1;
     fprintf(stream,
             "    // State %d, offset 0x%02x\n",
             static_cast<int>(state_index),

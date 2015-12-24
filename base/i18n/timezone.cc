@@ -4,10 +4,12 @@
 
 #include "base/i18n/timezone.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
