@@ -61,7 +61,8 @@ ScrollAnimator::~ScrollAnimator()
 
 FloatPoint ScrollAnimator::desiredTargetPosition() const
 {
-    return m_animationCurve ? m_targetOffset : currentPosition();
+    return (m_animationCurve || m_runState == RunState::WaitingToSendToCompositor)
+        ? m_targetOffset : currentPosition();
 }
 
 float ScrollAnimator::computeDeltaToConsume(
