@@ -4303,6 +4303,9 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 {
 	struct wl_event_loop *loop;
 
+	/* Verify we haven't reached the limit of 32 available output IDs */
+	assert(ffs(~c->output_id_pool) > 0);
+
 	output->compositor = c;
 	output->x = x;
 	output->y = y;
