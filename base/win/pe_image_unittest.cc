@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/scoped_native_library.h"
 #include "base/win/pe_image.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,26 +103,26 @@ TEST(PEImageTest, EnumeratesPE) {
   const int sections = 6;
   const int imports_dlls = 2;
   const int delay_dlls = 2;
-  const int exports = 2;
-  const int imports = 69;
+  const int exports = 3;
+  const int imports = 70;
   const int delay_imports = 2;
-  const int relocs = 632;
+  const int relocs = 976;
 #else
   pe_image_test_path =
       pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_32.dll"));
   const int sections = 5;
   const int imports_dlls = 2;
   const int delay_dlls = 2;
-  const int exports = 2;
+  const int exports = 3;
   const int imports = 66;
   const int delay_imports = 2;
-  const int relocs = 1586;
+  const int relocs = 2114;
 #endif
 
-  HMODULE module = LoadLibrary(pe_image_test_path.value().c_str());
-  ASSERT_TRUE(NULL != module);
+  ScopedNativeLibrary module(pe_image_test_path);
+  ASSERT_TRUE(module.is_valid());
 
-  PEImage pe(module);
+  PEImage pe(module.get());
   int count = 0;
   EXPECT_TRUE(pe.VerifyMagic());
 
@@ -151,16 +152,14 @@ TEST(PEImageTest, EnumeratesPE) {
   count = 0;
   pe.EnumRelocs(RelocsCallback, &count);
   EXPECT_EQ(relocs, count);
-
-  FreeLibrary(module);
 }
 
 // Tests that we can locate an specific exported symbol, by name and by ordinal.
 TEST(PEImageTest, RetrievesExports) {
-  HMODULE module = LoadLibrary(L"advapi32.dll");
-  ASSERT_TRUE(NULL != module);
+  ScopedNativeLibrary module(FilePath(L"advapi32.dll"));
+  ASSERT_TRUE(module.is_valid());
 
-  PEImage pe(module);
+  PEImage pe(module.get());
   WORD ordinal;
 
   EXPECT_TRUE(pe.GetProcOrdinal("RegEnumKeyExW", &ordinal));
@@ -170,16 +169,44 @@ TEST(PEImageTest, RetrievesExports) {
   EXPECT_TRUE(address1 != NULL);
   EXPECT_TRUE(address2 != NULL);
   EXPECT_TRUE(address1 == address2);
+}
 
-  FreeLibrary(module);
+// Tests that we can locate a forwarded export.
+TEST(PEImageTest, ForwardedExport) {
+  base::FilePath pe_image_test_path;
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &pe_image_test_path));
+  pe_image_test_path = pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image"));
+
+#if defined(ARCH_CPU_64_BITS)
+  pe_image_test_path =
+      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_64.dll"));
+#else
+  pe_image_test_path =
+      pe_image_test_path.Append(FILE_PATH_LITERAL("pe_image_test_32.dll"));
+#endif
+
+  ScopedNativeLibrary module(pe_image_test_path);
+
+  ASSERT_TRUE(module.is_valid());
+
+  PEImage pe(module.get());
+
+  FARPROC addr = pe.GetProcAddress("FwdExport");
+  EXPECT_EQ(FARPROC(-1), addr);
+
+  PDWORD export_entry = pe.GetExportEntry("FwdExport");
+  EXPECT_NE(nullptr, export_entry);
+  PVOID fwd_addr = pe.RVAToAddr(*export_entry);
+  const char expected_fwd[] = "KERNEL32.CreateFileA";
+  EXPECT_STREQ(expected_fwd, reinterpret_cast<char*>(fwd_addr));
 }
 
 // Test that we can get debug id out of a module.
 TEST(PEImageTest, GetDebugId) {
-  HMODULE module = LoadLibrary(L"advapi32.dll");
-  ASSERT_TRUE(NULL != module);
+  ScopedNativeLibrary module(FilePath(L"advapi32.dll"));
+  ASSERT_TRUE(module.is_valid());
 
-  PEImage pe(module);
+  PEImage pe(module.get());
   GUID guid = {0};
   DWORD age = 0;
   EXPECT_TRUE(pe.GetDebugId(&guid, &age));
@@ -187,7 +214,6 @@ TEST(PEImageTest, GetDebugId) {
   GUID empty_guid = {0};
   EXPECT_TRUE(!IsEqualGUID(empty_guid, guid));
   EXPECT_NE(0U, age);
-  FreeLibrary(module);
 }
 
 }  // namespace win

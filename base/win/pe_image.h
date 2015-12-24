@@ -146,7 +146,7 @@ class PEImage {
   // Pre: 'f' is either a zero terminated string or ordinal.
   // Post: if 'f' is a non-forwarded export from image, 'p' is
   //       the exported function. If 'f' is a forwarded export
-  //       then p is the special value 0xFFFFFFFF. In this case
+  //       then p is the special value -1. In this case
   //       RVAToAddr(*GetExportEntry) can be used to resolve
   //       the string that describes the forward.
   FARPROC GetProcAddress(LPCSTR function_name) const;

@@ -7,6 +7,8 @@
 #include <cfgmgr32.h>
 #include <shellapi.h>
 
+#pragma comment(linker, "/export:FwdExport=KERNEL32.CreateFileA")
+
 extern "C" {
 
 __declspec(dllexport) void ExportFunc1() {

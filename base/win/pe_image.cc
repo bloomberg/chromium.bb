@@ -12,8 +12,6 @@
 namespace base {
 namespace win {
 
-// TODO(jschuh): crbug.com/167707 Make sure this code works on 64-bit.
-
 // Structure to perform imports enumerations.
 struct EnumAllImportsStorage {
   PEImage::EnumImportsFunction callback;
@@ -213,11 +211,7 @@ FARPROC PEImage::GetProcAddress(LPCSTR function_name) const {
 
   // Check for forwarded exports as a special case.
   if (exports <= function && exports + size > function)
-#pragma warning(push)
-#pragma warning(disable: 4312)
-    // This cast generates a warning because it is 32 bit specific.
-    return reinterpret_cast<FARPROC>(0xFFFFFFFF);
-#pragma warning(pop)
+    return reinterpret_cast<FARPROC>(-1);
 
   return reinterpret_cast<FARPROC>(function);
 }
@@ -456,14 +450,14 @@ bool PEImage::EnumDelayImportChunks(EnumDelayImportChunksFunction callback,
       iat = reinterpret_cast<PIMAGE_THUNK_DATA>(
           RVAToAddr(delay_descriptor->rvaIAT));
     } else {
-#pragma warning(push)
-#pragma warning(disable: 4312)
-      // These casts generate warnings because they are 32 bit specific.
-      module_name = reinterpret_cast<LPCSTR>(delay_descriptor->rvaDLLName);
-      name_table =
-          reinterpret_cast<PIMAGE_THUNK_DATA>(delay_descriptor->rvaINT);
-      iat = reinterpret_cast<PIMAGE_THUNK_DATA>(delay_descriptor->rvaIAT);
-#pragma warning(pop)
+      // Values in IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT are 32-bit, even on 64-bit
+      // platforms. See section 4.8 of PECOFF image spec rev 8.3.
+      module_name = reinterpret_cast<LPCSTR>(
+          static_cast<uintptr_t>(delay_descriptor->rvaDLLName));
+      name_table = reinterpret_cast<PIMAGE_THUNK_DATA>(
+          static_cast<uintptr_t>(delay_descriptor->rvaINT));
+      iat = reinterpret_cast<PIMAGE_THUNK_DATA>(
+          static_cast<uintptr_t>(delay_descriptor->rvaIAT));
     }
 
     if (!callback(*this, delay_descriptor, module_name, name_table, iat,
@@ -495,12 +489,8 @@ bool PEImage::EnumOneDelayImportChunk(EnumImportsFunction callback,
         import = reinterpret_cast<PIMAGE_IMPORT_BY_NAME>(
                      RVAToAddr(name_table->u1.ForwarderString));
       } else {
-#pragma warning(push)
-#pragma warning(disable: 4312)
-        // This cast generates a warning because it is 32 bit specific.
         import = reinterpret_cast<PIMAGE_IMPORT_BY_NAME>(
                      name_table->u1.ForwarderString);
-#pragma warning(pop)
       }
 
       hint = import->Hint;
