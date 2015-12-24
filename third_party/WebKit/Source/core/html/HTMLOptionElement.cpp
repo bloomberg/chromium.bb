@@ -266,7 +266,17 @@ bool HTMLOptionElement::selectedForBinding() const
 
 void HTMLOptionElement::setSelectedForBinding(bool selected)
 {
+    bool wasSelected = m_isSelected;
     setSelected(selected);
+
+    // As of December 2015, the HTML specification says the dirtiness becomes
+    // true by |selected| setter unconditionally. However it caused a real bug,
+    // crbug.com/570367, and is not compatible with other browsers.
+    // Firefox seems not to set dirtiness if an option is owned by a select
+    // element and selectedness is not changed.
+    if (ownerSelectElement() && wasSelected == m_isSelected)
+        return;
+
     m_isDirty = true;
 }
 
