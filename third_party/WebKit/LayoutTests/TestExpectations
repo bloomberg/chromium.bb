@@ -494,6 +494,9 @@ crbug.com/570702 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-changing-s
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 
+crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
+crbug.com/535408 inspector/sources/debugger/properties-special.html [ NeedsManualRebaseline ]
+
 crbug.com/405389 imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ Failure ]
