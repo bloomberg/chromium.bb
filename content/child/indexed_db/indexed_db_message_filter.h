@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_INDEXED_DB_INDEXED_DB_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_INDEXED_DB_INDEXED_DB_MESSAGE_FILTER_H_
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/worker_thread_message_filter.h"
 

@@ -5,6 +5,7 @@
 #include "base/threading/platform_thread.h"
 
 #include <errno.h>
+#include <stddef.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
 #include <sys/types.h>

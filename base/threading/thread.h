@@ -5,10 +5,13 @@
 #ifndef BASE_THREADING_THREAD_H_
 #define BASE_THREADING_THREAD_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/timer_slack.h"
@@ -16,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 
 namespace base {
 

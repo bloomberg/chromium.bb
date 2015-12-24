@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_DISPATCHER_H_
 #define CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_DISPATCHER_H_
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
 class GURL;

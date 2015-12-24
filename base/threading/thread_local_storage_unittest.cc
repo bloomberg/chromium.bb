@@ -7,8 +7,10 @@
 #include <process.h>
 #endif
 
+#include "base/macros.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local_storage.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

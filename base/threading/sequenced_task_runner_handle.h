@@ -6,6 +6,7 @@
 #define BASE_THREADING_SEQUENCED_TASK_RUNNER_HANDLE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace base {

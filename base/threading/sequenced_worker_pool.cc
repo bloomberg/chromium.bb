@@ -4,6 +4,8 @@
 
 #include "base/threading/sequenced_worker_pool.h"
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <set>
@@ -16,6 +18,7 @@
 #include "base/critical_closure.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -29,6 +32,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -62,7 +66,7 @@ struct SequencedTask : public TrackingInfo  {
 
   int sequence_token_id;
   int trace_id;
-  int64 sequence_task_number;
+  int64_t sequence_task_number;
   SequencedWorkerPool::WorkerShutdown shutdown_behavior;
   tracked_objects::Location posted_from;
   Closure task;
@@ -213,10 +217,9 @@ bool SequencedWorkerPoolSequencedTaskRunner::PostNonNestableDelayedTask(
 // Create a process-wide unique ID to represent this task in trace events. This
 // will be mangled with a Process ID hash to reduce the likelyhood of colliding
 // with MessageLoop pointers on other processes.
-uint64 GetTaskTraceID(const SequencedTask& task,
-                      void* pool) {
-  return (static_cast<uint64>(task.trace_id) << 32) |
-         static_cast<uint64>(reinterpret_cast<intptr_t>(pool));
+uint64_t GetTaskTraceID(const SequencedTask& task, void* pool) {
+  return (static_cast<uint64_t>(task.trace_id) << 32) |
+         static_cast<uint64_t>(reinterpret_cast<intptr_t>(pool));
 }
 
 }  // namespace
@@ -347,7 +350,7 @@ class SequencedWorkerPool::Inner {
   int LockedGetNamedTokenID(const std::string& name);
 
   // Called from within the lock, this returns the next sequence task number.
-  int64 LockedGetNextSequenceTaskNumber();
+  int64_t LockedGetNextSequenceTaskNumber();
 
   // Gets new task. There are 3 cases depending on the return value:
   //
@@ -463,7 +466,7 @@ class SequencedWorkerPool::Inner {
   PendingTaskSet pending_tasks_;
 
   // The next sequence number for a new sequenced task.
-  int64 next_sequence_task_number_;
+  int64_t next_sequence_task_number_;
 
   // Number of tasks in the pending_tasks_ list that are marked as blocking
   // shutdown.
@@ -941,7 +944,7 @@ int SequencedWorkerPool::Inner::LockedGetNamedTokenID(
   return result.id_;
 }
 
-int64 SequencedWorkerPool::Inner::LockedGetNextSequenceTaskNumber() {
+int64_t SequencedWorkerPool::Inner::LockedGetNextSequenceTaskNumber() {
   lock_.AssertAcquired();
   // We assume that we never create enough tasks to wrap around.
   return next_sequence_task_number_++;

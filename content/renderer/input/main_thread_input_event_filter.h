@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_INPUT_MAIN_THREAD_INPUT_EVENT_FILTER_H_
 #define CONTENT_RENDERER_INPUT_MAIN_THREAD_INPUT_EVENT_FILTER_H_
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "ipc/message_filter.h"
 

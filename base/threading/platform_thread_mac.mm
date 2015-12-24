@@ -8,6 +8,7 @@
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
+#include <stddef.h>
 #include <sys/resource.h>
 
 #include <algorithm>
@@ -17,6 +18,7 @@
 #include "base/mac/mach_logging.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 
 namespace base {
 

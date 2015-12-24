@@ -5,6 +5,7 @@
 #include "base/threading/watchdog.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/synchronization/spin_wait.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"

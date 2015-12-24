@@ -192,14 +192,14 @@ void OfflinePageMetadataStoreImpl::AddOrUpdateOfflinePage(
 }
 
 void OfflinePageMetadataStoreImpl::RemoveOfflinePages(
-    const std::vector<int64>& bookmark_ids,
+    const std::vector<int64_t>& bookmark_ids,
     const UpdateCallback& callback) {
   scoped_ptr<ProtoDatabase<OfflinePageEntry>::KeyEntryVector> entries_to_save(
       new ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
   scoped_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
 
-  for (int64 id : bookmark_ids)
+  for (int64_t id : bookmark_ids)
     keys_to_remove->push_back(base::Int64ToString(id));
 
   UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(), callback);

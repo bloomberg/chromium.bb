@@ -13,6 +13,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_checker_impl.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

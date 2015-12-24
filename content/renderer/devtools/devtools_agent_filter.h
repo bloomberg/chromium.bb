@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/basictypes.h"
 #include "ipc/message_filter.h"
 
 struct DevToolsMessageData;

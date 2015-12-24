@@ -52,7 +52,7 @@ class OfflinePageMetadataStore {
 
   // Asynchronously removes offline page metadata from the store.
   // Result of the update is passed in callback.
-  virtual void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
+  virtual void RemoveOfflinePages(const std::vector<int64_t>& bookmark_ids,
                                   const UpdateCallback& callback) = 0;
 
   // Resets the store.

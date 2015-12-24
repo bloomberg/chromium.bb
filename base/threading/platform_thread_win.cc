@@ -4,6 +4,8 @@
 
 #include "base/threading/platform_thread.h"
 
+#include <stddef.h>
+
 #include "base/debug/alias.h"
 #include "base/debug/profiler.h"
 #include "base/logging.h"

@@ -4,10 +4,13 @@
 
 #include "base/threading/sequenced_worker_pool.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"

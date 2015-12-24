@@ -38,7 +38,7 @@ class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
   void Load(const LoadCallback& callback) override;
   void AddOrUpdateOfflinePage(const OfflinePageItem& offline_page_record,
                               const UpdateCallback& callback) override;
-  void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
+  void RemoveOfflinePages(const std::vector<int64_t>& bookmark_ids,
                           const UpdateCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
 

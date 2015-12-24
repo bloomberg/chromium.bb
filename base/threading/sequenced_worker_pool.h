@@ -5,12 +5,14 @@
 #ifndef BASE_THREADING_SEQUENCED_WORKER_POOL_H_
 #define BASE_THREADING_SEQUENCED_WORKER_POOL_H_
 
+#include <stddef.h>
+
 #include <cstddef>
 #include <string>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"

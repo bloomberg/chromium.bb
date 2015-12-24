@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_
 #define COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_
 
+#include <stdint.h>
+
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace storage_monitor {
@@ -32,32 +34,32 @@ class TestMediaTransferProtocolManagerLinux
   void CloseStorage(const std::string& storage_handle,
                     const CloseStorageCallback& callback) override;
   void CreateDirectory(const std::string& storage_handle,
-                       const uint32 parent_id,
+                       const uint32_t parent_id,
                        const std::string& directory_name,
                        const CreateDirectoryCallback& callback) override;
   void ReadDirectory(const std::string& storage_handle,
-                     const uint32 file_id,
+                     const uint32_t file_id,
                      const size_t max_size,
                      const ReadDirectoryCallback& callback) override;
   void ReadFileChunk(const std::string& storage_handle,
-                     uint32 file_id,
-                     uint32 offset,
-                     uint32 count,
+                     uint32_t file_id,
+                     uint32_t offset,
+                     uint32_t count,
                      const ReadFileCallback& callback) override;
   void GetFileInfo(const std::string& storage_handle,
-                   uint32 file_id,
+                   uint32_t file_id,
                    const GetFileInfoCallback& callback) override;
   void RenameObject(const std::string& storage_handle,
-                    const uint32 object_id,
+                    const uint32_t object_id,
                     const std::string& new_name,
                     const RenameObjectCallback& callback) override;
   void CopyFileFromLocal(const std::string& storage_handle,
                          const int source_file_descriptor,
-                         const uint32 parent_id,
+                         const uint32_t parent_id,
                          const std::string& file_name,
                          const CopyFileFromLocalCallback& callback) override;
   void DeleteObject(const std::string& storage_handle,
-                    const uint32 object_id,
+                    const uint32_t object_id,
                     const DeleteObjectCallback& callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);

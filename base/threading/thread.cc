@@ -12,6 +12,7 @@
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"

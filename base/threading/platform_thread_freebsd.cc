@@ -6,11 +6,13 @@
 
 #include <errno.h>
 #include <sched.h>
+#include <stddef.h>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 
 #if !defined(OS_NACL)
 #include <pthread.h>
