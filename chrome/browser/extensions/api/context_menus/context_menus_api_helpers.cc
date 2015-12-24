@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/context_menus/context_menus_api_helpers.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
 
 namespace extensions {

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/sync_bundle.h"

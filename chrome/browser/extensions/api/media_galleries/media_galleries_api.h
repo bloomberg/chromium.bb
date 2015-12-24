@@ -8,10 +8,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -286,7 +289,7 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
   void GetMetadata(MediaGalleries::GetMetadataType metadata_type,
                    const std::string& blob_uuid,
                    scoped_ptr<std::string> blob_header,
-                   int64 total_blob_length);
+                   int64_t total_blob_length);
 
   void OnSafeMediaMetadataParserDone(
       bool parse_success, scoped_ptr<base::DictionaryValue> result_dictionary,

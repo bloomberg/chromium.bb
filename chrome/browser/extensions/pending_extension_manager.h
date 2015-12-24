@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "extensions/common/manifest.h"
 

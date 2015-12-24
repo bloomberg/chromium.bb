@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/dial/dial_api.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/time/time.h"

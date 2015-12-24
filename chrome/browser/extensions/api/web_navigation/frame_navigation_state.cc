@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/common/constants.h"

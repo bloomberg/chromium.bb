@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PREFERENCES_PRIVATE_PREFERENCES_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PREFERENCES_PRIVATE_PREFERENCES_PRIVATE_API_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "extensions/browser/extension_function.h"

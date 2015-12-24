@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"

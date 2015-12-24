@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_SERVICE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_SERVICE_H_
 
+#include <stdint.h>
+
 #include <vector>
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/blob_reader.h"
@@ -47,9 +49,9 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
  private:
   // Callbacks to receive blob data.
   void AttachedFileCallback(scoped_ptr<std::string> data,
-                            int64 total_blob_length);
+                            int64_t total_blob_length);
   void ScreenshotCallback(scoped_ptr<std::string> data,
-                          int64 total_blob_length);
+                          int64_t total_blob_length);
 
   // Checks if we have read all the blobs we need to; signals the feedback
   // data object once all the requisite data has been populated.

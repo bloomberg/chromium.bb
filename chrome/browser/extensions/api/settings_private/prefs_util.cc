@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/profiles/profile.h"

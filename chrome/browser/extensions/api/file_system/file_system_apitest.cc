@@ -4,6 +4,7 @@
 
 #include "apps/saved_files_service.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"

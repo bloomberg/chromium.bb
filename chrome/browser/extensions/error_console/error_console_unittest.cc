@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/error_console/error_console.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

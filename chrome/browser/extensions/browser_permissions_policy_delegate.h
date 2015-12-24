@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_BROWSER_PERMISSIONS_POLICY_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_BROWSER_PERMISSIONS_POLICY_DELEGATE_H_
 
+#include "base/macros.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {

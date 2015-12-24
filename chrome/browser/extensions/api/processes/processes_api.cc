@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -185,7 +188,7 @@ base::DictionaryValue* CreateProcessFromModel(int process_id,
   // Network is reported by the TaskManager per resource (tab), not per
   // process, therefore we need to iterate through the group of resources
   // and aggregate the data.
-  int64 net = 0;
+  int64_t net = 0;
   int length = model->GetGroupRangeForResource(index).second;
   for (int i = 0; i < length; ++i)
     net += model->GetNetworkUsage(index + i);
@@ -201,8 +204,8 @@ void AddMemoryDetails(base::DictionaryValue* result,
                       TaskManagerModel* model,
                       int index) {
   size_t mem;
-  int64 pr_mem = model->GetPrivateMemory(index, &mem) ?
-      static_cast<int64>(mem) : -1;
+  int64_t pr_mem =
+      model->GetPrivateMemory(index, &mem) ? static_cast<int64_t>(mem) : -1;
   result->SetDouble(keys::kPrivateMemoryKey, static_cast<double>(pr_mem));
 }
 

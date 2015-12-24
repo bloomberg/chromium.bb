@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -24,7 +26,7 @@ const char kPrivetInfoResponse[] =
     "  \"crypto\":[\"p224_spake2\"]"
     "}}";
 
-const uint8 kAnnouncePacket[] = {
+const uint8_t kAnnouncePacket[] = {
     // Header
     0x00, 0x00,  // ID is zeroed out
     0x80, 0x00,  // Standard query response, no error
@@ -123,7 +125,7 @@ class GcdPrivateWithMdnsAPITest : public GcdPrivateAPITest {
   }
 
  protected:
-  void SimulateReceiveWithDelay(const uint8* packet, int size) {
+  void SimulateReceiveWithDelay(const uint8_t* packet, int size) {
     if (ExtensionSubtestsAreSkipped())
       return;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

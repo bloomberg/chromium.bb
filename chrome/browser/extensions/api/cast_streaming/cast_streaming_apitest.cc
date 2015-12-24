@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -254,10 +258,10 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     // Scan from the bottom-right until the first non-black pixel is
     // encountered.
     for (int y = height - 1; y >= 0; --y) {
-      const uint8* const start =
+      const uint8_t* const start =
           frame->data(media::VideoFrame::kYPlane) + y * stride;
-      const uint8* const end = start + width;
-      for (const uint8* p = end - 1; p >= start; --p) {
+      const uint8_t* const end = start + width;
+      for (const uint8_t* p = end - 1; p >= start; --p) {
         if (*p > kNonBlackIntensityThreshold) {
           result.set_width(p - start + 1);
           result.set_height(y + 1);
@@ -269,10 +273,10 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
 
     // Scan from the upper-left until the first non-black pixel is encountered.
     for (int y = 0; y < result.height(); ++y) {
-      const uint8* const start =
+      const uint8_t* const start =
           frame->data(media::VideoFrame::kYPlane) + y * stride;
-      const uint8* const end = start + result.width();
-      for (const uint8* p = start; p < end; ++p) {
+      const uint8_t* const end = start + result.width();
+      for (const uint8_t* p = start; p < end; ++p) {
         if (*p > kNonBlackIntensityThreshold) {
           result.set_x(p - start);
           result.set_width(result.width() - result.x());
@@ -287,13 +291,13 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     return result;
   }
 
-  static uint8 ComputeMedianIntensityInRegionInPlane(const gfx::Rect& region,
-                                                     int stride,
-                                                     const uint8* data) {
+  static uint8_t ComputeMedianIntensityInRegionInPlane(const gfx::Rect& region,
+                                                       int stride,
+                                                       const uint8_t* data) {
     if (region.IsEmpty())
       return 0;
     const size_t num_values = region.size().GetArea();
-    scoped_ptr<uint8[]> values(new uint8[num_values]);
+    scoped_ptr<uint8_t[]> values(new uint8_t[num_values]);
     for (int y = 0; y < region.height(); ++y) {
       memcpy(values.get() + y * region.width(),
              data + (region.y() + y) * stride + region.x(),

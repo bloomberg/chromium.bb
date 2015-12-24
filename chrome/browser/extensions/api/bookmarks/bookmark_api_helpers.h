@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_HELPERS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_HELPERS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 
 namespace bookmarks {
@@ -52,7 +53,7 @@ void AddNodeFoldersOnly(
 // Remove node of |id|.
 bool RemoveNode(bookmarks::BookmarkModel* model,
                 bookmarks::ManagedBookmarkService* managed,
-                int64 id,
+                int64_t id,
                 bool recursive,
                 std::string* error);
 

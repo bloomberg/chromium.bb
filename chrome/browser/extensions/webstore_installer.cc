@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/webstore_installer.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
@@ -23,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"

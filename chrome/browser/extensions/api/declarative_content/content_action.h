@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/common/user_script.h"

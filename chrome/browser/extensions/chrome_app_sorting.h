@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_APP_SORTING_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_APP_SORTING_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"

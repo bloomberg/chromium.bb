@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
@@ -96,7 +99,7 @@ void ExtensionCacheImpl::OnCacheInitialized() {
   }
   init_callbacks_.clear();
 
-  uint64 cache_size = 0;
+  uint64_t cache_size = 0;
   size_t extensions_count = 0;
   if (cache_->GetStatistics(&cache_size, &extensions_count)) {
     UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionCacheCount",

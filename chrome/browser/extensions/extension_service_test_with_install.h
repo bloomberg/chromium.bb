@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_TEST_WITH_INSTALL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_TEST_WITH_INSTALL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/macros.h"

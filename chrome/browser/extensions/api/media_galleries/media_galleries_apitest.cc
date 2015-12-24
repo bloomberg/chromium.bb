@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -12,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries/media_galleries_api.h"
@@ -121,7 +124,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     PlatformAppBrowserTest::SetUpOnMainThread();
     ensure_media_directories_exists_.reset(new EnsureMediaDirectoriesExists);
 
-    int64 file_size;
+    int64_t file_size;
     ASSERT_TRUE(base::GetFileSize(GetCommonDataDir().AppendASCII("test.jpg"),
                                   &file_size));
     test_jpg_size_ = base::checked_cast<int>(file_size);

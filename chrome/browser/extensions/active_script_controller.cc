@@ -160,7 +160,7 @@ void ActiveScriptController::RunPendingForExtension(
 void ActiveScriptController::OnRequestScriptInjectionPermission(
     const std::string& extension_id,
     UserScript::InjectionType script_type,
-    int64 request_id) {
+    int64_t request_id) {
   if (!crx_file::id_util::IdIsValid(extension_id)) {
     NOTREACHED() << "'" << extension_id << "' is not a valid id.";
     return;
@@ -197,7 +197,7 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
   }
 }
 
-void ActiveScriptController::PermitScriptInjection(int64 request_id) {
+void ActiveScriptController::PermitScriptInjection(int64_t request_id) {
   // This only sends the response to the renderer - the process of adding the
   // extension to the list of |permitted_extensions_| is done elsewhere.
   // TODO(devlin): Instead of sending this to all frames, we should include the

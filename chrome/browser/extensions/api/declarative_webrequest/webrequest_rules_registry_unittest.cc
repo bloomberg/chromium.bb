@@ -4,11 +4,13 @@
 
 #include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"

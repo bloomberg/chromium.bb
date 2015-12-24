@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/user_script_listener.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/chrome_notification_types.h"

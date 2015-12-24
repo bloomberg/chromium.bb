@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_API_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -92,8 +94,8 @@ class SyncFileSystemGetUsageAndQuotaFunction
 
  private:
   void DidGetUsageAndQuota(storage::QuotaStatusCode status,
-                           int64 usage,
-                           int64 quota);
+                           int64_t usage,
+                           int64_t quota);
 };
 
 class SyncFileSystemRequestFileSystemFunction

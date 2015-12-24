@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 
@@ -11,6 +13,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
@@ -618,7 +621,7 @@ void ActivityLog::GetFilteredActions(
 
 // DELETE ACTIONS. -------------------------------------------------------------
 
-void ActivityLog::RemoveActions(const std::vector<int64>& action_ids) {
+void ActivityLog::RemoveActions(const std::vector<int64_t>& action_ids) {
   if (!database_policy_)
     return;
   database_policy_->RemoveActions(action_ids);

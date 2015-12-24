@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_COUNTING_POLICY_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_COUNTING_POLICY_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/containers/hash_tables.h"
@@ -47,7 +49,7 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   }
 
   // Remove actions (rows) which IDs are specified in the action_ids array.
-  void RemoveActions(const std::vector<int64>& action_ids) override;
+  void RemoveActions(const std::vector<int64_t>& action_ids) override;
 
   // Clean the URL data stored for this policy.
   void RemoveURLs(const std::vector<GURL>&) override;
@@ -97,7 +99,7 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
 
   // The implementation of RemoveActions; this must only run on the database
   // thread.
-  void DoRemoveActions(const std::vector<int64>& action_ids);
+  void DoRemoveActions(const std::vector<int64_t>& action_ids);
 
   // The implementation of RemoveURLs; this must only run on the database
   // thread.

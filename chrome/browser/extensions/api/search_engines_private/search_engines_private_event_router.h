@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SEARCH_ENGINES_PRIVATE_SEARCH_ENGINES_PRIVATE_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SEARCH_ENGINES_PRIVATE_SEARCH_ENGINES_PRIVATE_EVENT_ROUTER_H_
 
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"

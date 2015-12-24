@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_chromeos.h"
 #endif

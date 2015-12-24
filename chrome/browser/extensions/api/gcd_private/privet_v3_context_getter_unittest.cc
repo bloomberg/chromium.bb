@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 
+#include <stddef.h>
+
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"

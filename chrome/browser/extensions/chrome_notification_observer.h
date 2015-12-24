@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_NOTIFICATION_OBSERVER_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_NOTIFICATION_OBSERVER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

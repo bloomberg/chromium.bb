@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/networking_private/crypto_verify_impl.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_CONNECTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_CONNECTION_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "extensions/browser/api/api_resource.h"

@@ -6,6 +6,8 @@
 #error This test requires brlapi.
 #endif
 
+#include <stddef.h>
+
 #include <deque>
 
 #include "base/bind.h"

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -14,6 +17,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -405,9 +409,8 @@ class CountingPolicyTest : public testing::Test {
   // deletion.
   void CheckRemoveActions(
       ActivityLogDatabasePolicy* policy,
-      const std::vector<int64>& action_ids,
+      const std::vector<int64_t>& action_ids,
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
-
     // Use a mock clock to ensure that events are not recorded on the wrong day
     // when the test is run close to local midnight.
     base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
@@ -1373,7 +1376,7 @@ TEST_F(CountingPolicyTest, RemoveActions) {
   ActivityLogDatabasePolicy* policy = new CountingPolicy(profile_.get());
   policy->Init();
 
-  std::vector<int64> action_ids;
+  std::vector<int64_t> action_ids;
 
   CheckRemoveActions(
       policy, action_ids, base::Bind(&CountingPolicyTest::NoActionsDeleted));

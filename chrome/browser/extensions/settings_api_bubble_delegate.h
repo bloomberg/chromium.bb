@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_API_BUBBLE_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_SETTINGS_API_BUBBLE_DELEGATE_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/macros.h"

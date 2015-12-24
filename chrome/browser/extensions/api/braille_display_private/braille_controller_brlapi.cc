@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller_brlapi.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
@@ -11,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_keycode_map.h"
@@ -26,10 +30,10 @@ namespace braille_display_private {
 namespace {
 // Delay between detecting a directory update and trying to connect
 // to the brlapi.
-const int64 kConnectionDelayMs = 500;
+const int64_t kConnectionDelayMs = 500;
 // How long to periodically retry connecting after a brltty restart.
 // Some displays are slow to connect.
-const int64 kConnectRetryTimeout = 20000;
+const int64_t kConnectRetryTimeout = 20000;
 }  // namespace
 
 BrailleController::BrailleController() {

@@ -4,10 +4,14 @@
 
 #include "chrome/browser/extensions/extension_creator_filter.h"
 
-#include <vector>
+#include <stddef.h>
+
 #include <set>
+#include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

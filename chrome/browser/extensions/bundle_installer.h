@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_BUNDLE_INSTALLER_H_
 #define CHROME_BROWSER_EXTENSIONS_BUNDLE_INSTALLER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"

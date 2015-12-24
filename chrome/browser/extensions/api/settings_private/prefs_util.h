@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/common/extensions/api/settings_private.h"
 
 class PrefService;

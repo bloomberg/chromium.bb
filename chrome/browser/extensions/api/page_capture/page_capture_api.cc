@@ -136,8 +136,7 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
       base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this));
 }
 
-void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(
-    int64 mhtml_file_size) {
+void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(int64_t mhtml_file_size) {
   if (mhtml_file_size <= 0) {
     ReturnFailure(kMHTMLGenerationFailedError);
     return;
@@ -161,7 +160,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnFailure(const std::string& error) {
   Release();  // Balanced in Run()
 }
 
-void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
+void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = GetWebContents();

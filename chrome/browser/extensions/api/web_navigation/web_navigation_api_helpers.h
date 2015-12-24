@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "ui/base/page_transition_types.h"
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_DEFAULT_APPS_H_
 #define CHROME_BROWSER_EXTENSIONS_DEFAULT_APPS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "extensions/common/manifest.h"
 

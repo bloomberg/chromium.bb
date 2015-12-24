@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_ACTIONS_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_ACTIONS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,7 +52,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
          const base::Time& time,
          const ActionType action_type,
          const std::string& api_name,
-         int64 action_id = -1);
+         int64_t action_id = -1);
 
   // Creates and returns a mutable copy of an Action.
   scoped_refptr<Action> Clone() const;
@@ -105,7 +108,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
   // An ID that identifies an action stored in the Activity Log database. If the
   // action is not retrieved from the database, e.g., live stream, then the ID
   // is set to -1.
-  int64 action_id() const { return action_id_; }
+  int64_t action_id() const { return action_id_; }
 
   // Helper methods for serializing and deserializing URLs into strings.  If
   // the URL is marked as incognito, then the string is prefixed with
@@ -144,7 +147,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
   bool arg_incognito_;
   scoped_ptr<base::DictionaryValue> other_;
   int count_;
-  int64 action_id_;
+  int64_t action_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Action);
 };

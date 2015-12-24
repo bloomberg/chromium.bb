@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_browsertest.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/command_line.h"
@@ -14,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"

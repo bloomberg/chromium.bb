@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"

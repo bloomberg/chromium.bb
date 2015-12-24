@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_web_ui.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 

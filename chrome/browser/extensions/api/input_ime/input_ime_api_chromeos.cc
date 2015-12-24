@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -115,8 +117,8 @@ void Operation::OnBurnFinished(const base::Closure& continuation,
 }
 
 void Operation::OnBurnProgress(const std::string& target_path,
-                               int64 num_bytes_burnt,
-                               int64 total_size) {
+                               int64_t num_bytes_burnt,
+                               int64_t total_size) {
   int progress = kProgressComplete * num_bytes_burnt / total_size;
   SetProgress(progress);
 }

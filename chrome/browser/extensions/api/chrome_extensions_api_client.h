@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_CHROME_EXTENSIONS_API_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "extensions/browser/api/extensions_api_client.h"
 
 namespace extensions {

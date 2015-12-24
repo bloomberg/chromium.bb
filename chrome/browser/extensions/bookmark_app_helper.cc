@@ -4,11 +4,15 @@
 
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 
+#include <stddef.h>
+
 #include <cctype>
 #include <string>
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"

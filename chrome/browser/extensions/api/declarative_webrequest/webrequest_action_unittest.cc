@@ -4,8 +4,11 @@
 
 #include "extensions/browser/api/declarative_webrequest/webrequest_action.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"

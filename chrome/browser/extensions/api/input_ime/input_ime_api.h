@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"

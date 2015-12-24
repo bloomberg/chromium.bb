@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_ASH_PANEL_CONTENTS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_ASH_PANEL_CONTENTS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -36,7 +38,7 @@ class AshPanelContents
 
   // extensions::AppWindowContents
   void Initialize(content::BrowserContext* context, const GURL& url) override;
-  void LoadContents(int32 creator_process_id) override;
+  void LoadContents(int32_t creator_process_id) override;
   void NativeWindowChanged(
       extensions::NativeAppWindow* native_app_window) override;
   void NativeWindowClosed() override;

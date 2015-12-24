@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/chrome_switches.h"

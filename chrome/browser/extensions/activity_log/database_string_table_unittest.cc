@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/database_string_table.h"
@@ -39,13 +42,13 @@ TEST_F(DatabaseStringTableTest, Init) {
 TEST_F(DatabaseStringTableTest, Insert) {
   DatabaseStringTable table("test");
   table.Initialize(&db_);
-  int64 id;
+  int64_t id;
   ASSERT_TRUE(table.StringToInt(&db_, "abc", &id));
 
   sql::Statement query(
       db_.GetUniqueStatement("SELECT id FROM test WHERE value = 'abc'"));
   ASSERT_TRUE(query.Step());
-  int64 raw_id = query.ColumnInt64(0);
+  int64_t raw_id = query.ColumnInt64(0);
   ASSERT_EQ(id, raw_id);
 }
 
@@ -55,13 +58,13 @@ TEST_F(DatabaseStringTableTest, InsertMultiple) {
   DatabaseStringTable table("test");
   table.Initialize(&db_);
 
-  int64 id1;
-  int64 id2;
+  int64_t id1;
+  int64_t id2;
   ASSERT_TRUE(table.StringToInt(&db_, "string1", &id1));
   ASSERT_TRUE(table.StringToInt(&db_, "string2", &id2));
   ASSERT_NE(id1, id2);
 
-  int64 id1a;
+  int64_t id1a;
   ASSERT_TRUE(table.StringToInt(&db_, "string1", &id1a));
   ASSERT_EQ(id1, id1a);
 }
@@ -72,12 +75,12 @@ TEST_F(DatabaseStringTableTest, CacheCleared) {
   DatabaseStringTable table("test");
   table.Initialize(&db_);
 
-  int64 id1;
+  int64_t id1;
   ASSERT_TRUE(table.StringToInt(&db_, "string1", &id1));
 
   table.ClearCache();
 
-  int64 id2;
+  int64_t id2;
   ASSERT_TRUE(table.StringToInt(&db_, "string1", &id2));
   ASSERT_EQ(id1, id2);
 }
@@ -88,19 +91,19 @@ TEST_F(DatabaseStringTableTest, DatabaseModified) {
   DatabaseStringTable table("test");
   table.Initialize(&db_);
 
-  int64 id1;
+  int64_t id1;
   ASSERT_TRUE(table.StringToInt(&db_, "modified", &id1));
 
   ASSERT_TRUE(
       db_.Execute("UPDATE test SET id = id + 1 WHERE value = 'modified'"));
 
-  int64 id2;
+  int64_t id2;
   ASSERT_TRUE(table.StringToInt(&db_, "modified", &id2));
   ASSERT_EQ(id1, id2);
 
   table.ClearCache();
 
-  int64 id3;
+  int64_t id3;
   ASSERT_TRUE(table.StringToInt(&db_, "modified", &id3));
   ASSERT_EQ(id1 + 1, id3);
 }
@@ -117,7 +120,7 @@ TEST_F(DatabaseStringTableTest, BadLookup) {
 TEST_F(DatabaseStringTableTest, Lookup) {
   DatabaseStringTable table("test");
   table.Initialize(&db_);
-  int64 id;
+  int64_t id;
   ASSERT_TRUE(table.StringToInt(&db_, "abc", &id));
 
   std::string value;
@@ -141,7 +144,7 @@ TEST_F(DatabaseStringTableTest, Prune) {
 
   transaction.Begin();
   for (int i = 0; i < 2000; i++) {
-    int64 id;
+    int64_t id;
     ASSERT_TRUE(table.StringToInt(&db_, base::StringPrintf("value-%d", i),
                                   &id));
   }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/idltest/idltest_api.h"
 
+#include <stddef.h>
+
 #include "base/values.h"
 
 using base::BinaryValue;

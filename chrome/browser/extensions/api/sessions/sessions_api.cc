@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/i18n/rtl.h"

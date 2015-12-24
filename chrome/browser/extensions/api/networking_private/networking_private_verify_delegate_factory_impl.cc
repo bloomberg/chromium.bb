@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_verify_delegate_factory_impl.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/networking_private/crypto_verify_impl.h"
 
 namespace extensions {

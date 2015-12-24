@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_view_host.h"
 
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"

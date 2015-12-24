@@ -7,6 +7,7 @@
 
 #include <windows.h>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"

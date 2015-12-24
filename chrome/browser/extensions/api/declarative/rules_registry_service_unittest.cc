@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/test/base/testing_profile.h"

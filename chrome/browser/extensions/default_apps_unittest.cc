@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/common/chrome_paths.h"

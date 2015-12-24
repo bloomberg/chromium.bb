@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/run_loop.h"
@@ -92,7 +94,7 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     return storage_monitor_;
   }
 
-  int64 GetInitialExtensionThreshold() {
+  int64_t GetInitialExtensionThreshold() {
     CHECK(storage_monitor_);
     return storage_monitor_->initial_extension_threshold_;
   }
@@ -117,13 +119,13 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     return monitor()->IsStorageNotificationEnabled(extension_id);
   }
 
-  int64 GetNextStorageThreshold(const std::string& extension_id) {
+  int64_t GetNextStorageThreshold(const std::string& extension_id) {
     return monitor()->GetNextStorageThreshold(extension_id);
   }
 
   void WriteBytesExpectingNotification(const Extension* extension,
                                        int num_bytes) {
-    int64 previous_threshold = GetNextStorageThreshold(extension->id());
+    int64_t previous_threshold = GetNextStorageThreshold(extension->id());
     WriteBytes(extension, num_bytes, true);
     EXPECT_GT(GetNextStorageThreshold(extension->id()), previous_threshold);
   }
@@ -231,8 +233,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UserDisabledNotifications) {
 
   // Expect to receive no further notifications when usage continues to
   // increase.
-  int64 next_threshold = GetNextStorageThreshold(extension->id());
-  int64 next_data_size = next_threshold - GetInitialExtensionThreshold();
+  int64_t next_threshold = GetNextStorageThreshold(extension->id());
+  int64_t next_data_size = next_threshold - GetInitialExtensionThreshold();
   ASSERT_GT(next_data_size, 0);
 
   WriteBytesNotExpectingNotification(extension, next_data_size);

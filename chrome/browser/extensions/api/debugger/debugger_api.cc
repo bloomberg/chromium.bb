@@ -6,6 +6,8 @@
 
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 
@@ -14,6 +16,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/scoped_observer.h"

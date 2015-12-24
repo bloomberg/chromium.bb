@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -104,7 +105,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
     return false;
   }
 
-  uint64 pipe_name_token;
+  uint64_t pipe_name_token;
   crypto::RandBytes(&pipe_name_token, sizeof(pipe_name_token));
   base::string16 out_pipe_name = base::StringPrintf(
       L"\\\\.\\pipe\\chrome.nativeMessaging.out.%llx", pipe_name_token);

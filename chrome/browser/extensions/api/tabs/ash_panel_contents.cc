@@ -54,7 +54,7 @@ void AshPanelContents::Initialize(content::BrowserContext* context,
       new LauncherFaviconLoader(this, web_contents_.get()));
 }
 
-void AshPanelContents::LoadContents(int32 creator_process_id) {
+void AshPanelContents::LoadContents(int32_t creator_process_id) {
   web_contents_->GetController().LoadURL(
       url_, content::Referrer(), ui::PAGE_TRANSITION_LINK,
       std::string());

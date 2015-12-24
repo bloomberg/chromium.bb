@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"

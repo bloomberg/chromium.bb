@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <set>
@@ -9,7 +12,6 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -19,6 +21,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -31,6 +34,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -687,7 +691,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   InitializeGoodInstalledExtensionService();
   service()->Init();
 
-  uint32 expected_num_extensions = 3u;
+  uint32_t expected_num_extensions = 3u;
   ASSERT_EQ(expected_num_extensions, loaded_.size());
 
   EXPECT_EQ(std::string(good0), loaded_[0]->id());
@@ -4200,7 +4204,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
           ->GetDatabaseTracker();
   base::string16 db_name = base::UTF8ToUTF16("db");
   base::string16 description = base::UTF8ToUTF16("db_description");
-  int64 size;
+  int64_t size;
   db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
   db_tracker->DatabaseClosed(origin_id, db_name);
   std::vector<storage::OriginInfo> origins;
@@ -4323,7 +4327,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
           ->GetDatabaseTracker();
   base::string16 db_name = base::UTF8ToUTF16("db");
   base::string16 description = base::UTF8ToUTF16("db_description");
-  int64 size;
+  int64_t size;
   db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
   db_tracker->DatabaseClosed(origin_id, db_name);
   std::vector<storage::OriginInfo> origins;

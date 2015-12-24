@@ -4,10 +4,14 @@
 
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -97,7 +101,7 @@ class LocalExtensionCacheTest : public testing::Test {
     crypto::SecureHash* hash =
         crypto::SecureHash::Create(crypto::SecureHash::SHA256);
     hash->Update(data.c_str(), size);
-    uint8 output[crypto::kSHA256Length];
+    uint8_t output[crypto::kSHA256Length];
     hash->Finish(output, sizeof(output));
     const std::string hex_hash =
         base::ToLowerASCII(base::HexEncode(output, sizeof(output)));

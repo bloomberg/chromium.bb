@@ -109,7 +109,7 @@ void ChromeExtensionWebContentsObserver::OnDetailedConsoleMessageAdded(
     const base::string16& message,
     const base::string16& source,
     const StackTrace& stack_trace,
-    int32 severity_level) {
+    int32_t severity_level) {
   if (!IsSourceFromAnExtension(source))
     return;
 

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 #include "grit/browser_resources.h"

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar_service.h"

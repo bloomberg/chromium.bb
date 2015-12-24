@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/display_info_provider_win.h"
 
 #include <windows.h>
+#include <stddef.h>
 
 #include "base/hash.h"
 #include "base/strings/string_number_conversions.h"

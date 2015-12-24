@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -197,7 +200,7 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
   }
 
   PushMessagingAppIdentifier GetAppIdentifierForServiceWorkerRegistration(
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const GURL& origin) {
     PushMessagingAppIdentifier app_identifier =
         PushMessagingAppIdentifier::FindByServiceWorker(

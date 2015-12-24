@@ -4,8 +4,10 @@
 
 #include "chrome/browser/extensions/api/system_private/system_private_api.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/profiles/profile.h"

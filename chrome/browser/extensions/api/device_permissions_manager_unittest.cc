@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/test/base/testing_profile.h"
 #include "device/core/mock_device_client.h"
@@ -60,17 +63,19 @@ class DevicePermissionsManagerTest : public testing::Test {
     device3_ = new MockUsbDevice(0, 0, "Test Manufacturer", "Test Product", "");
     device4_ =
         new HidDeviceInfo(kTestDeviceIds[0], 0, 0, "Test HID Device", "abcde",
-                          device::kHIDBusTypeUSB, std::vector<uint8>());
+                          device::kHIDBusTypeUSB, std::vector<uint8_t>());
     device_client_.hid_service()->AddDevice(device4_);
-    device5_ = new HidDeviceInfo(kTestDeviceIds[1], 0, 0, "Test HID Device", "",
-                                 device::kHIDBusTypeUSB, std::vector<uint8>());
+    device5_ =
+        new HidDeviceInfo(kTestDeviceIds[1], 0, 0, "Test HID Device", "",
+                          device::kHIDBusTypeUSB, std::vector<uint8_t>());
     device_client_.hid_service()->AddDevice(device5_);
     device6_ =
         new HidDeviceInfo(kTestDeviceIds[2], 0, 0, "Test HID Device", "67890",
-                          device::kHIDBusTypeUSB, std::vector<uint8>());
+                          device::kHIDBusTypeUSB, std::vector<uint8_t>());
     device_client_.hid_service()->AddDevice(device6_);
-    device7_ = new HidDeviceInfo(kTestDeviceIds[3], 0, 0, "Test HID Device", "",
-                                 device::kHIDBusTypeUSB, std::vector<uint8>());
+    device7_ =
+        new HidDeviceInfo(kTestDeviceIds[3], 0, 0, "Test HID Device", "",
+                          device::kHIDBusTypeUSB, std::vector<uint8_t>());
     device_client_.hid_service()->AddDevice(device7_);
     device_client_.hid_service()->FirstEnumerationComplete();
   }

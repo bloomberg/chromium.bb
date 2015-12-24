@@ -30,7 +30,7 @@ const char LocalExtensionCache::kCacheReadyFlagFileName[] = ".initialized";
 
 LocalExtensionCache::LocalExtensionCache(
     const base::FilePath& cache_dir,
-    uint64 max_cache_size,
+    uint64_t max_cache_size,
     const base::TimeDelta& max_cache_age,
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner)
     : cache_dir_(cache_dir),
@@ -40,8 +40,7 @@ LocalExtensionCache::LocalExtensionCache(
       state_(kUninitialized),
       cache_status_polling_delay_(
           base::TimeDelta::FromMilliseconds(kCacheStatusPollingDelayMs)),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 LocalExtensionCache::~LocalExtensionCache() {
   if (state_ == kReady)
@@ -213,7 +212,7 @@ bool LocalExtensionCache::RemoveExtension(const std::string& id,
   return true;
 }
 
-bool LocalExtensionCache::GetStatistics(uint64* cache_size,
+bool LocalExtensionCache::GetStatistics(uint64_t* cache_size,
                                         size_t* extensions_count) {
   if (state_ != kReady)
     return false;
@@ -609,14 +608,13 @@ LocalExtensionCache::CacheItemInfo::CacheItemInfo(
     const std::string& version,
     const std::string& expected_hash,
     const base::Time& last_used,
-    uint64 size,
+    uint64_t size,
     const base::FilePath& file_path)
     : version(version),
       expected_hash(base::ToLowerASCII(expected_hash)),
       last_used(last_used),
       size(size),
-      file_path(file_path) {
-}
+      file_path(file_path) {}
 
 LocalExtensionCache::CacheItemInfo::~CacheItemInfo() {
 }

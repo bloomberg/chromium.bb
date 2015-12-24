@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 #include <vector>

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_keycode_map.h"
 
+#include <stdint.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 
@@ -46,7 +48,7 @@ void MapKeySym(brlapi_keyCode_t code, KeyEvent* event) {
   brlapi_keyCode_t key_sym = code & BRLAPI_KEY_CODE_MASK;
   if (key_sym < kMaxLatin1KeySym ||
       (key_sym & BRLAPI_KEY_SYM_UNICODE) != 0) {
-    uint32 code_point = key_sym & ~BRLAPI_KEY_SYM_UNICODE;
+    uint32_t code_point = key_sym & ~BRLAPI_KEY_SYM_UNICODE;
     if (!base::IsValidCharacter(code_point))
       return;
     event->standard_key_char.reset(new std::string);

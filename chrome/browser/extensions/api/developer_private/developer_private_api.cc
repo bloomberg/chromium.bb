@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"

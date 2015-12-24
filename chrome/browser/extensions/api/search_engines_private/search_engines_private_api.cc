@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/search_engines_private/search_engines_private_api.h"
 
+#include <stddef.h>
+
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

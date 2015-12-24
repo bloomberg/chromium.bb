@@ -4,11 +4,13 @@
 
 #include "chrome/browser/extensions/activity_log/activity_log_policy.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -148,8 +150,8 @@ base::Time ActivityLogPolicy::Util::AddDays(const base::Time& base_date,
 // static
 void ActivityLogPolicy::Util::ComputeDatabaseTimeBounds(const base::Time& now,
                                                         int days_ago,
-                                                        int64* early_bound,
-                                                        int64* late_bound) {
+                                                        int64_t* early_bound,
+                                                        int64_t* late_bound) {
   base::Time morning_midnight = now.LocalMidnight();
   if (days_ago == 0) {
       *early_bound = morning_midnight.ToInternalValue();

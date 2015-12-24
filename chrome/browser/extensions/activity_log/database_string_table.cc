@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/activity_log/database_string_table.h"
 
+#include <stddef.h>
+
 #include "base/strings/stringprintf.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -36,8 +38,8 @@ bool DatabaseStringTable::Initialize(sql::Connection* connection) {
 
 bool DatabaseStringTable::StringToInt(sql::Connection* connection,
                                       const std::string& value,
-                                      int64* id) {
-  std::map<std::string, int64>::const_iterator lookup =
+                                      int64_t* id) {
+  std::map<std::string, int64_t>::const_iterator lookup =
       value_to_id_.find(value);
   if (lookup != value_to_id_.end()) {
     *id = lookup->second;
@@ -81,10 +83,9 @@ bool DatabaseStringTable::StringToInt(sql::Connection* connection,
 }
 
 bool DatabaseStringTable::IntToString(sql::Connection* connection,
-                                      int64 id,
+                                      int64_t id,
                                       std::string* value) {
-  std::map<int64, std::string>::const_iterator lookup =
-      id_to_value_.find(id);
+  std::map<int64_t, std::string>::const_iterator lookup = id_to_value_.find(id);
   if (lookup != id_to_value_.end()) {
     *value = lookup->second;
     return true;

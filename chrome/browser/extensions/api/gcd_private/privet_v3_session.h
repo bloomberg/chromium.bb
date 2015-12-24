@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_PRIVET_V3_SESSION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_GCD_PRIVATE_PRIVET_V3_SESSION_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"

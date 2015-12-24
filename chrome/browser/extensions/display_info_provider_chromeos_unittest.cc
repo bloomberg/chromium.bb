@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
+#include <stdint.h>
+
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
@@ -14,6 +16,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/system_display.h"
@@ -46,7 +49,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
     *success = DisplayInfoProvider::Get()->SetInfo(display_id, info, error);
   }
 
-  bool DisplayExists(int64 display_id) const {
+  bool DisplayExists(int64_t display_id) const {
     const gfx::Display& display =
         GetDisplayManager()->GetDisplayForId(display_id);
     return display.id() != gfx::Display::kInvalidDisplayID;
@@ -84,7 +87,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBasic) {
 
   ASSERT_EQ(2u, result.size());
 
-  int64 display_id;
+  int64_t display_id;
   ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
       << "Display id must be convertable to integer: " << result[0]->id;
 
@@ -126,7 +129,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetWithUnifiedDesktop) {
 
   ASSERT_EQ(2u, result.size());
 
-  int64 display_id;
+  int64_t display_id;
   ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
       << "Display id must be convertable to integer: " << result[0]->id;
 
@@ -239,7 +242,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   ASSERT_EQ(1u, result.size());
 
-  int64 display_id;
+  int64_t display_id;
   ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
       << "Display id must be convertable to integer: " << result[0]->id;
 
@@ -322,7 +325,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
 
   ASSERT_EQ(2u, result.size());
 
-  int64 display_id;
+  int64_t display_id;
   ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id))
       << "Display id must be convertable to integer: " << result[1]->id;
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
@@ -372,13 +375,13 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
 
   ASSERT_EQ(2u, result.size());
 
-  int64 display_id_primary;
+  int64_t display_id_primary;
   ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id_primary))
       << "Display id must be convertable to integer: " << result[0]->id;
   ASSERT_TRUE(DisplayExists(display_id_primary)) << display_id_primary
                                                  << " not found";
 
-  int64 display_id_secondary;
+  int64_t display_id_secondary;
   ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id_secondary))
       << "Display id must be convertable to integer: " << result[1]->id;
   ASSERT_TRUE(DisplayExists(display_id_secondary)) << display_id_secondary
@@ -1061,7 +1064,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscan) {
 
 TEST_F(DisplayInfoProviderChromeosTest, SetOverscanForInternal) {
   UpdateDisplay("1200x600,600x1000*2");
-  const int64 internal_display_id =
+  const int64_t internal_display_id =
       ash::test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
   api::system_display::DisplayProperties info;

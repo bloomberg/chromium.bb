@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_POLICY_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_POLICY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -13,6 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
@@ -114,8 +117,8 @@ class ActivityLogPolicy {
     // time.
     static void ComputeDatabaseTimeBounds(const base::Time& now,
                                           int days_ago,
-                                          int64* early_bound,
-                                          int64* late_bound);
+                                          int64_t* early_bound,
+                                          int64_t* late_bound);
 
     // Deletes obsolete database tables from an activity log database.  This
     // can be used in InitDatabase() methods of ActivityLogDatabasePolicy
@@ -178,7 +181,7 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
          <void(scoped_ptr<Action::ActionVector>)>& callback) = 0;
 
   // Remove actions (rows) which IDs are in the action_ids array.
-  virtual void RemoveActions(const std::vector<int64>& action_ids) = 0;
+  virtual void RemoveActions(const std::vector<int64_t>& action_ids) = 0;
 
   // Clean the relevant URL data. The cleaning may need to be different for
   // different policies. If restrict_urls is empty then all URLs are removed.

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <sstream>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/strings/utf_string_conversions.h"

@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/default_tick_clock.h"
@@ -97,13 +100,11 @@ class SkewedCastEnvironment : public media::cast::StandaloneCastEnvironment {
 
 // We log one of these for each call to OnAudioFrame/OnVideoFrame.
 struct TimeData {
-  TimeData(uint16 frame_no_, base::TimeTicks render_time_) :
-      frame_no(frame_no_),
-      render_time(render_time_) {
-  }
+  TimeData(uint16_t frame_no_, base::TimeTicks render_time_)
+      : frame_no(frame_no_), render_time(render_time_) {}
   // The unit here is video frames, for audio data there can be duplicates.
   // This was decoded from the actual audio/video data.
-  uint16 frame_no;
+  uint16_t frame_no;
   // This is when we should play this data, according to the sender.
   base::TimeTicks render_time;
 };
@@ -189,7 +190,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
                           media::cast::GetDefaultVideoReceiverConfig()) {
   }
 
-  typedef std::map<uint16, base::TimeTicks> TimeMap;
+  typedef std::map<uint16_t, base::TimeTicks> TimeMap;
 
   // Build a map from frame ID (as encoded in the audio and video data)
   // to the rtp timestamp for that frame. Note that there will be multiple
@@ -246,7 +247,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
 
     // Note: This is the number of the video frame that this audio belongs to.
-    uint16 frame_no;
+    uint16_t frame_no;
     if (media::cast::DecodeTimestamp(audio_frame->channel(0),
                                      audio_frame->frames(),
                                      &frame_no)) {
@@ -266,7 +267,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
         TRACE_EVENT_SCOPE_THREAD,
         "render_time", render_time.ToInternalValue());
 
-    uint16 frame_no;
+    uint16_t frame_no;
     if (media::cast::test::DecodeBarcode(video_frame, &frame_no)) {
       video_events_.push_back(TimeData(frame_no, render_time));
     } else {

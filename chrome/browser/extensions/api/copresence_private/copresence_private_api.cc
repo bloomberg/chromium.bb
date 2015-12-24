@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

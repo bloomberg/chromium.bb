@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/tabs/windows_event_router.h"
 
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/tabs/app_base_window.h"
 #include "chrome/browser/extensions/api/tabs/app_window_controller.h"

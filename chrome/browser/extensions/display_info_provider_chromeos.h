@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_CHROMEOS_H_
 #define CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_CHROMEOS_H_
 
+#include "base/macros.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
 namespace extensions {

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_registry.h"

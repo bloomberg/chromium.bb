@@ -44,7 +44,7 @@ Action::Action(const std::string& extension_id,
                const base::Time& time,
                const ActionType action_type,
                const std::string& api_name,
-               int64 action_id)
+               int64_t action_id)
     : extension_id_(extension_id),
       time_(time),
       action_type_(action_type),

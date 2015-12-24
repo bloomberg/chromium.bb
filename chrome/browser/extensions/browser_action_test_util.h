@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_BROWSER_ACTION_TEST_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_BROWSER_ACTION_TEST_UTIL_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 

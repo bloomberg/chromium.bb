@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"

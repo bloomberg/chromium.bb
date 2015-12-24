@@ -5,12 +5,13 @@
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <DiskArbitration/DASession.h>
 #include <DiskArbitration/DADisk.h>
+#include <DiskArbitration/DASession.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/network/IOEthernetController.h>
 #include <IOKit/network/IOEthernetInterface.h>
 #include <IOKit/network/IONetworkInterface.h>
+#include <stddef.h>
 #include <sys/mount.h>
 
 #include "base/bind.h"

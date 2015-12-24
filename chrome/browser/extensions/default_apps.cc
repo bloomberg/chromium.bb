@@ -4,10 +4,13 @@
 
 #include "chrome/browser/extensions/default_apps.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"

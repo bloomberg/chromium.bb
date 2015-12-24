@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -75,7 +78,7 @@ namespace {
 // This returns NULL in case of failure.
 const BookmarkNode* GetNodeFromString(BookmarkModel* model,
                                       const std::string& id_string) {
-  int64 id;
+  int64_t id;
   if (!base::StringToInt64(id_string, &id))
     return NULL;
   return bookmarks::GetBookmarkNodeByID(model, id);
@@ -799,7 +802,7 @@ bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
   BookmarkModel* model = GetBookmarkModel();
   bookmarks::ManagedBookmarkService* managed = GetManagedBookmarkService();
   bookmarks::ScopedGroupBookmarkActions group_deletes(model);
-  int64 id;
+  int64_t id;
   for (size_t i = 0; i < params->id_list.size(); ++i) {
     if (!GetBookmarkIdAsInt64(params->id_list[i], &id))
       return false;

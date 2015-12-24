@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_FULLSTREAM_UI_POLICY_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_FULLSTREAM_UI_POLICY_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "chrome/browser/extensions/activity_log/activity_database.h"
@@ -41,7 +43,7 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
   void Close() override;
 
   // Remove the actions stored for this policy according to the passed IDs.
-  void RemoveActions(const std::vector<int64>& action_ids) override;
+  void RemoveActions(const std::vector<int64_t>& action_ids) override;
 
   // Clean the URL data stored for this policy.
   void RemoveURLs(const std::vector<GURL>& restrict_urls) override;
@@ -78,7 +80,7 @@ class FullStreamUIPolicy : public ActivityLogDatabasePolicy {
 
   // The implementation of RemoveActions; this must only run on the database
   // thread.
-  void DoRemoveActions(const std::vector<int64>& action_ids);
+  void DoRemoveActions(const std::vector<int64_t>& action_ids);
 
   // The implementation of RemoveURLs; this must only run on the database
   // thread.

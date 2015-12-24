@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/api/autofill_private/autofill_private_event_router_factory.h"

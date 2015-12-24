@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/base_switches.h"
@@ -11,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -134,8 +138,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     if (!unauthenticated_load_allowed_)
       num_expected_extensions = 0;
 
-    ASSERT_EQ(static_cast<uint32>(num_expected_extensions),
-              static_cast<uint32>(found_extensions));
+    ASSERT_EQ(static_cast<uint32_t>(num_expected_extensions),
+              static_cast<uint32_t>(found_extensions));
 
     ExtensionService* service = extensions::ExtensionSystem::Get(
                                     browser()->profile())->extension_service();

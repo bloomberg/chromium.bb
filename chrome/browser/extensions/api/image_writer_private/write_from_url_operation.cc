@@ -101,15 +101,15 @@ void WriteFromUrlOperation::DestroyUrlFetcher() { url_fetcher_.reset(); }
 
 void WriteFromUrlOperation::OnURLFetchUploadProgress(
     const net::URLFetcher* source,
-    int64 current,
-    int64 total) {
+    int64_t current,
+    int64_t total) {
   // No-op
 }
 
 void WriteFromUrlOperation::OnURLFetchDownloadProgress(
     const net::URLFetcher* source,
-    int64 current,
-    int64 total) {
+    int64_t current,
+    int64_t total) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (IsCancelled()) {

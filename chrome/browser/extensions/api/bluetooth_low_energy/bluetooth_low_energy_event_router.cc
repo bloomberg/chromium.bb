@@ -101,7 +101,7 @@ void PopulateCharacteristic(const BluetoothGattCharacteristic* characteristic,
   PopulateCharacteristicProperties(characteristic->GetProperties(),
                                    &out->properties);
 
-  const std::vector<uint8>& value = characteristic->GetValue();
+  const std::vector<uint8_t>& value = characteristic->GetValue();
   if (value.empty())
     return;
 
@@ -118,7 +118,7 @@ void PopulateDescriptor(const BluetoothGattDescriptor* descriptor,
 
   PopulateCharacteristic(descriptor->GetCharacteristic(), &out->characteristic);
 
-  const std::vector<uint8>& value = descriptor->GetValue();
+  const std::vector<uint8_t>& value = descriptor->GetValue();
   if (value.empty())
     return;
 
@@ -611,7 +611,7 @@ void BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
 void BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
     const Extension* extension,
     const std::string& instance_id,
-    const std::vector<uint8>& value,
+    const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -785,7 +785,7 @@ void BluetoothLowEnergyEventRouter::ReadDescriptorValue(
 void BluetoothLowEnergyEventRouter::WriteDescriptorValue(
     const Extension* extension,
     const std::string& instance_id,
-    const std::vector<uint8>& value,
+    const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -997,7 +997,7 @@ void BluetoothLowEnergyEventRouter::GattDescriptorRemoved(
 void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT characteristic value changed: "
@@ -1030,7 +1030,7 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
 void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
     BluetoothAdapter* adapter,
     BluetoothGattDescriptor* descriptor,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT descriptor value changed: " << descriptor->GetIdentifier();
@@ -1258,7 +1258,7 @@ BluetoothGattDescriptor* BluetoothLowEnergyEventRouter::FindDescriptorById(
 
 void BluetoothLowEnergyEventRouter::OnValueSuccess(
     const base::Closure& callback,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   VLOG(2) << "Remote characteristic/descriptor value read successful.";
   callback.Run();
 }

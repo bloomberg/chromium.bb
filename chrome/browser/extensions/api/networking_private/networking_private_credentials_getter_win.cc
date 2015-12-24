@@ -4,8 +4,11 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
@@ -44,7 +47,7 @@ class CredentialsGetterHostClient : public UtilityProcessHostClient {
   ~CredentialsGetterHostClient() override;
 
   // Public key used to encrypt results
-  std::vector<uint8> public_key_;
+  std::vector<uint8_t> public_key_;
 
   // Callback for reporting the result.
   NetworkingPrivateCredentialsGetter::CredentialsCallback callback_;
@@ -78,7 +81,7 @@ void CredentialsGetterHostClient::OnProcessLaunchFailed() {
 void CredentialsGetterHostClient::OnGotCredentials(const std::string& key_data,
                                                    bool success) {
   if (success) {
-    std::vector<uint8> ciphertext;
+    std::vector<uint8_t> ciphertext;
     if (!networking_private_crypto::EncryptByteString(
             public_key_, key_data, &ciphertext)) {
       callback_.Run("", "Encrypt Credentials Failed");

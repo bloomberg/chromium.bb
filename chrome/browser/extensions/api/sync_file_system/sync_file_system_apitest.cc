@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -77,8 +79,8 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
 
  private:
   ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service_;
-  int64 real_minimum_preserved_space_;
-  int64 real_default_quota_;
+  int64_t real_minimum_preserved_space_;
+  int64_t real_default_quota_;
 };
 
 ACTION_P(NotifyOkStateAndCallback, mock_remote_service) {

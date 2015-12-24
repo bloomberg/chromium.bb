@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_OPERATION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_OPERATION_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
@@ -12,6 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_utility_client.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
 
@@ -135,7 +138,7 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
   // of the MD5 sum before updating |progress_| but after scaling.
   void GetMD5SumOfFile(
       const base::FilePath& file,
-      int64 file_size,
+      int64_t file_size,
       int progress_offset,
       int progress_scale,
       const base::Callback<void(const std::string&)>& callback);
@@ -163,7 +166,7 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
   void StopUtilityClient();
 
   // Reports progress from the client, transforming from bytes to percentage.
-  virtual void WriteImageProgress(int64 total_bytes, int64 curr_bytes);
+  virtual void WriteImageProgress(int64_t total_bytes, int64_t curr_bytes);
 
   scoped_refptr<ImageWriterUtilityClient> image_writer_client_;
 #endif
@@ -182,22 +185,22 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
                       bool success,
                       const std::string& error);
   void OnBurnProgress(const std::string& target_path,
-                      int64 num_bytes_burnt,
-                      int64 total_size);
+                      int64_t num_bytes_burnt,
+                      int64_t total_size);
   void OnBurnError();
 #endif
 
   // Incrementally calculates the MD5 sum of a file.
   void MD5Chunk(base::File file,
-                int64 bytes_processed,
-                int64 bytes_total,
+                int64_t bytes_processed,
+                int64_t bytes_total,
                 int progress_offset,
                 int progress_scale,
                 const base::Callback<void(const std::string&)>& callback);
 
   // Callbacks for zip::ZipReader.
   void OnUnzipFailure();
-  void OnUnzipProgress(int64 total_bytes, int64 progress_bytes);
+  void OnUnzipProgress(int64_t total_bytes, int64_t progress_bytes);
 
   // Runs all cleanup functions.
   void CleanUp();

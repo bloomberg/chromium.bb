@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -37,7 +39,7 @@ class FakeTimer {
   }
 
  private:
-  int64 internal_;
+  int64_t internal_;
 };
 
 class MockContentSettingsStoreObserver

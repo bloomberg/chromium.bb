@@ -4,12 +4,16 @@
 
 #include "chrome/browser/extensions/install_signer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process_info.h"
@@ -20,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crx_file/constants.h"
 #include "crypto/random.h"
@@ -204,7 +209,7 @@ scoped_ptr<InstallSignature> InstallSignature::FromValue(
   // so older entries will not necessarily have this.
   if (value.HasKey(kTimestampKey)) {
     std::string timestamp;
-    int64 timestamp_value = 0;
+    int64_t timestamp_value = 0;
     if (!value.GetString(kTimestampKey, &timestamp) ||
         !base::StringToInt64(timestamp, &timestamp_value)) {
       result.reset();
@@ -253,16 +258,15 @@ bool InstallSigner::VerifySignature(const InstallSignature& signature) {
     return false;
 
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(crx_file::kSignatureAlgorithm,
-                           sizeof(crx_file::kSignatureAlgorithm),
-                           reinterpret_cast<const uint8*>(
-                               signature.signature.data()),
-                           signature.signature.size(),
-                           reinterpret_cast<const uint8*>(public_key.data()),
-                           public_key.size()))
+  if (!verifier.VerifyInit(
+          crx_file::kSignatureAlgorithm, sizeof(crx_file::kSignatureAlgorithm),
+          reinterpret_cast<const uint8_t*>(signature.signature.data()),
+          signature.signature.size(),
+          reinterpret_cast<const uint8_t*>(public_key.data()),
+          public_key.size()))
     return false;
 
-  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(signed_data.data()),
+  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(signed_data.data()),
                         signed_data.size());
   return verifier.VerifyFinal();
 }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/run_loop.h"
 #include "base/test/values_test_util.h"

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_DATA_DELETER_H_
 
 #include <string>
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 
 class Profile;
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/common/extensions/api/log_private.h"
 
 namespace extensions {

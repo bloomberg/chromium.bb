@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_DATABASE_STRING_TABLE_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_DATABASE_STRING_TABLE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 
 namespace sql {
 class Connection;
@@ -44,13 +46,13 @@ class DatabaseStringTable {
   // on success and false on database error.
   bool StringToInt(sql::Connection* connection,
                    const std::string& value,
-                   int64* id);
+                   int64_t* id);
 
   // Looks up an integer value and converts it to a string (which is stored in
   // *value).  Returns true on success.  A false return does not necessarily
   // indicate a database error; it might simply be that the value cannot be
   // found.
-  bool IntToString(sql::Connection* connection, int64 id, std::string* value);
+  bool IntToString(sql::Connection* connection, int64_t id, std::string* value);
 
   // Clears the in-memory cache; this should be called if the underlying
   // database table has been manipulated and the cache may be stale.
@@ -61,8 +63,8 @@ class DatabaseStringTable {
   void PruneCache();
 
   // In-memory caches of recently accessed values.
-  std::map<int64, std::string> id_to_value_;
-  std::map<std::string, int64> value_to_id_;
+  std::map<int64_t, std::string> id_to_value_;
+  std::map<std::string, int64_t> value_to_id_;
 
   // The name of the database table where the mapping is stored.
   std::string table_;

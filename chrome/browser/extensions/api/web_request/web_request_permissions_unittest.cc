@@ -4,6 +4,9 @@
 
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/extension_test_util.h"

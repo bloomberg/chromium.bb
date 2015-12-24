@@ -4,10 +4,13 @@
 
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

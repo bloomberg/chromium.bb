@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_utility_client.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
@@ -83,7 +84,7 @@ void ImageWriterUtilityClient::Shutdown() {
 
   // Clear handlers to not hold any reference to the caller.
   success_callback_ = base::Closure();
-  progress_callback_ = base::Callback<void(int64)>();
+  progress_callback_ = base::Callback<void(int64_t)>();
   error_callback_ = base::Callback<void(const std::string&)>();
   cancel_callback_ = base::Closure();
 }
@@ -154,7 +155,7 @@ void ImageWriterUtilityClient::OnWriteImageFailed(const std::string& message) {
   }
 }
 
-void ImageWriterUtilityClient::OnWriteImageProgress(int64 progress) {
+void ImageWriterUtilityClient::OnWriteImageProgress(int64_t progress) {
   if (!progress_callback_.is_null()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(progress_callback_, progress));
   }

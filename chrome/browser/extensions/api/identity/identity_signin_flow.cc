@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"

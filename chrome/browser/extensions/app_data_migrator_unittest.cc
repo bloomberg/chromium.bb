@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 
@@ -109,7 +111,7 @@ scoped_refptr<const Extension> GetTestExtension(bool platform_app) {
 void MigrationCallback() {
 }
 
-void DidWrite(base::File::Error status, int64 bytes, bool complete) {
+void DidWrite(base::File::Error status, int64_t bytes, bool complete) {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/socket/tcp_socket.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"

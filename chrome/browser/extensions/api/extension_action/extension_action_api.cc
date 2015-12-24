@@ -4,8 +4,11 @@
 
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"

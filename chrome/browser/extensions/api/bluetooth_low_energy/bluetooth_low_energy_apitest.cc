@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
@@ -65,7 +67,8 @@ const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties0 =
     BluetoothGattCharacteristic::PROPERTY_READ |
     BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE |
     BluetoothGattCharacteristic::PROPERTY_INDICATE;
-const uint8 kTestCharacteristicDefaultValue0[] = {0x01, 0x02, 0x03, 0x04, 0x05};
+const uint8_t kTestCharacteristicDefaultValue0[] = {0x01, 0x02, 0x03, 0x04,
+                                                    0x05};
 
 const char kTestCharacteristicId1[] = "char_id1";
 const char kTestCharacteristicUuid1[] = "1212";
@@ -73,7 +76,7 @@ const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties1 =
     BluetoothGattCharacteristic::PROPERTY_READ |
     BluetoothGattCharacteristic::PROPERTY_WRITE |
     BluetoothGattCharacteristic::PROPERTY_NOTIFY;
-const uint8 kTestCharacteristicDefaultValue1[] = {0x06, 0x07, 0x08};
+const uint8_t kTestCharacteristicDefaultValue1[] = {0x06, 0x07, 0x08};
 
 const char kTestCharacteristicId2[] = "char_id2";
 const char kTestCharacteristicUuid2[] = "1213";
@@ -83,11 +86,11 @@ const BluetoothGattCharacteristic::Properties kTestCharacteristicProperties2 =
 // Test descriptor constants.
 const char kTestDescriptorId0[] = "desc_id0";
 const char kTestDescriptorUuid0[] = "1221";
-const uint8 kTestDescriptorDefaultValue0[] = {0x01, 0x02, 0x03};
+const uint8_t kTestDescriptorDefaultValue0[] = {0x01, 0x02, 0x03};
 
 const char kTestDescriptorId1[] = "desc_id1";
 const char kTestDescriptorUuid1[] = "1222";
-const uint8 kTestDescriptorDefaultValue1[] = {0x04, 0x05};
+const uint8_t kTestDescriptorDefaultValue1[] = {0x04, 0x05};
 
 class BluetoothLowEnergyApiTest : public ExtensionApiTest {
  public:
@@ -146,7 +149,7 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
     // need to reflect what the characteristic is actually capable of, since
     // the JS API just passes values through from
     // device::BluetoothGattCharacteristic.
-    std::vector<uint8> default_value;
+    std::vector<uint8_t> default_value;
     chrc0_.reset(new testing::NiceMock<MockBluetoothGattCharacteristic>(
         service0_.get(),
         kTestCharacteristicId0,
@@ -673,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-  std::vector<uint8> value;
+  std::vector<uint8_t> value;
   event_router()->GattCharacteristicValueChanged(
       mock_adapter_, chrc0_.get(), value);
   event_router()->GattCharacteristicValueChanged(
@@ -710,7 +713,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadCharacteristicValue) {
       .Times(3)
       .WillRepeatedly(Return(chrc0_.get()));
 
-  std::vector<uint8> value;
+  std::vector<uint8_t> value;
   EXPECT_CALL(*chrc0_, ReadRemoteCharacteristic(_, _))
       .Times(2)
       .WillOnce(
@@ -752,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteCharacteristicValue) {
       .Times(3)
       .WillRepeatedly(Return(chrc0_.get()));
 
-  std::vector<uint8> write_value;
+  std::vector<uint8_t> write_value;
   EXPECT_CALL(*chrc0_, WriteRemoteCharacteristic(_, _, _))
       .Times(2)
       .WillOnce(
@@ -933,7 +936,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, DescriptorValueChanged) {
       "bluetooth_low_energy/descriptor_value_changed")));
 
   // Cause events to be sent to the extension.
-  std::vector<uint8> value;
+  std::vector<uint8_t> value;
   event_router()->GattDescriptorValueChanged(
       mock_adapter_, desc0_.get(), value);
   event_router()->GattDescriptorValueChanged(
@@ -975,7 +978,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadDescriptorValue) {
       .Times(9)
       .WillRepeatedly(Return(desc0_.get()));
 
-  std::vector<uint8> value;
+  std::vector<uint8_t> value;
   EXPECT_CALL(*desc0_, ReadRemoteDescriptor(_, _))
       .Times(8)
       .WillOnce(
@@ -1035,7 +1038,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteDescriptorValue) {
       .Times(3)
       .WillRepeatedly(Return(desc0_.get()));
 
-  std::vector<uint8> write_value;
+  std::vector<uint8_t> write_value;
   EXPECT_CALL(*desc0_, WriteRemoteDescriptor(_, _, _))
       .Times(2)
       .WillOnce(
@@ -1115,7 +1118,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, UuidPermissionEvents) {
   event_router()->GattCharacteristicAdded(mock_adapter_, chrc0_.get());
   event_router()->GattDescriptorAdded(mock_adapter_, desc0_.get());
 
-  std::vector<uint8> value;
+  std::vector<uint8_t> value;
   event_router()->GattCharacteristicValueChanged(
       mock_adapter_, chrc0_.get(), value);
   event_router()->GattDescriptorValueChanged(
@@ -1293,7 +1296,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-  std::vector<uint8> value;
+  std::vector<uint8_t> value;
   event_router()->GattCharacteristicValueChanged(
       mock_adapter_, chrc0_.get(), value);
   event_router()->GattCharacteristicValueChanged(

@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_OFFSCREEN_TAB_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_OFFSCREEN_TAB_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

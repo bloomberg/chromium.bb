@@ -4,15 +4,19 @@
 
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/callback.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_conversion_helper.h"

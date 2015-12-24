@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/command_line.h"

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/extensions/event_router_forwarder.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"

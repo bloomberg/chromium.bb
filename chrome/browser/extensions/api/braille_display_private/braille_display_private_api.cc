@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/braille_display_private/braille_display_private_api.h"
 
 #include "base/lazy_instance.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"

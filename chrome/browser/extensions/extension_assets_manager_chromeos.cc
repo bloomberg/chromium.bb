@@ -4,11 +4,14 @@
 
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"

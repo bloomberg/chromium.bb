@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/webstore_widget_private/app_installer.h"
 
+#include "base/macros.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"

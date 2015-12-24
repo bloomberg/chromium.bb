@@ -4,9 +4,13 @@
 
 #include "extensions/browser/api/socket/udp_socket.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -29,7 +33,7 @@ static void OnConnected(int result) {
 static void OnCompleted(int bytes_read,
                         scoped_refptr<net::IOBuffer> io_buffer,
                         const std::string& address,
-                        uint16 port) {
+                        uint16_t port) {
   // Do nothing; don't care.
 }
 

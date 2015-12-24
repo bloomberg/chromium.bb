@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/display_info_provider_chromeos.h"
 
+#include <stdint.h>
+
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
@@ -62,8 +64,8 @@ bool PointIsOverRadiusVector(const gfx::Point& point,
   // two is 0.
   // So, (x, y) is over (a, b) if x * b + y * (-a) >= 0, which is equivalent to
   // x * b >= y * a.
-  return static_cast<int64>(point.x()) * static_cast<int64>(vector.y()) >=
-         static_cast<int64>(point.y()) * static_cast<int64>(vector.x());
+  return static_cast<int64_t>(point.x()) * static_cast<int64_t>(vector.y()) >=
+         static_cast<int64_t>(point.y()) * static_cast<int64_t>(vector.x());
 }
 
 // Created ash::DisplayLayout value for |rectangle| compared to the |reference|
@@ -175,7 +177,7 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
 bool ValidateParamsForDisplay(const DisplayProperties& info,
                               const gfx::Display& display,
                               DisplayManager* display_manager,
-                              int64 primary_display_id,
+                              int64_t primary_display_id,
                               std::string* error) {
   bool is_primary = display.id() == primary_display_id ||
                     (info.is_primary && *info.is_primary);
@@ -183,7 +185,7 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
   // If mirroring source id is set, a display with the given id should exist,
   // and if should not be the same as the target display's id.
   if (info.mirroring_source_id && !info.mirroring_source_id->empty()) {
-    int64 mirroring_id;
+    int64_t mirroring_id;
     if (!base::StringToInt64(*info.mirroring_source_id, &mirroring_id) ||
         display_manager->GetDisplayForId(mirroring_id).id() ==
             gfx::Display::kInvalidDisplayID) {
@@ -268,7 +270,7 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
 // Gets the display with the provided string id.
 gfx::Display GetTargetDisplay(const std::string& display_id_str,
                               DisplayManager* manager) {
-  int64 display_id;
+  int64_t display_id;
   if (!base::StringToInt64(display_id_str, &display_id)) {
     // This should return invalid display.
     return gfx::Display();
@@ -301,7 +303,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
     return false;
   }
 
-  int64 display_id = target.id();
+  int64_t display_id = target.id();
   // TODO(scottmg): Native is wrong http://crbug.com/133312
   const gfx::Display& primary =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
@@ -402,7 +404,7 @@ DisplayInfo DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
   CHECK_GT(displays.size(), 0u);
 
   // Use first display as primary.
-  int64 primary_id = displays[0].id();
+  int64_t primary_id = displays[0].id();
   DisplayInfo all_displays;
   for (const gfx::Display& display : displays) {
     linked_ptr<api::system_display::DisplayUnitInfo> unit(

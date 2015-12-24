@@ -6,6 +6,8 @@
 
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"

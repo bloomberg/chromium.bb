@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/profiles/profile.h"
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/website_settings_info.h"

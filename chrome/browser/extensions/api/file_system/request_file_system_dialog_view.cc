@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/file_system/request_file_system_dialog_view.h"
 
+#include <stddef.h>
+
 #include <cstdlib>
 
 #include "base/strings/utf_string_conversions.h"

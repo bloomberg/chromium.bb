@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 
+#include <stddef.h>
+
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/values.h"

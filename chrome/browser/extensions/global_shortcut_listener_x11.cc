@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/global_shortcut_listener_x11.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_IMPL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_IMPL_H_
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 

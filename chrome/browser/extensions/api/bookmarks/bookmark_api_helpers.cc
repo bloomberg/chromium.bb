@@ -124,7 +124,7 @@ void AddNodeFoldersOnly(bookmarks::ManagedBookmarkService* managed,
 
 bool RemoveNode(BookmarkModel* model,
                 bookmarks::ManagedBookmarkService* managed,
-                int64 id,
+                int64_t id,
                 bool recursive,
                 std::string* error) {
   const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);

@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
@@ -108,7 +111,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
 
   // Remove actions from the activity log database which IDs specified in the
   // action_ids array.
-  void RemoveActions(const std::vector<int64>& action_ids);
+  void RemoveActions(const std::vector<int64_t>& action_ids);
 
   // Clean up URLs from the activity log database.
   // If restrict_urls is empty then all URLs in the activity log database are

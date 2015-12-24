@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_requirements_checker.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"

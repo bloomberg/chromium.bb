@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/sessions/session_id.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
 
 namespace extensions {

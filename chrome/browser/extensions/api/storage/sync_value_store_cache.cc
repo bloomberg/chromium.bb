@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"

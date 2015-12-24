@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_STARTUP_INSTALLER_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
 
 namespace extensions {

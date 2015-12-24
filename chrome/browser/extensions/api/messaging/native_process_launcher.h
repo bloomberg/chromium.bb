@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "ui/gfx/native_widget_types.h"

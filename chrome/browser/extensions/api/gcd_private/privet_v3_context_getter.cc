@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/common/chrome_content_client.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"

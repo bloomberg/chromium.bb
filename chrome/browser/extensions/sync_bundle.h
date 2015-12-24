@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"

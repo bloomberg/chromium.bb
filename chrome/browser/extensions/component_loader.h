@@ -5,14 +5,18 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_COMPONENT_LOADER_H_
 #define CHROME_BROWSER_EXTENSIONS_COMPONENT_LOADER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "build/build_config.h"
 
 class ExtensionServiceInterface;
 class PrefService;

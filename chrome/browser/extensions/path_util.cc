@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>

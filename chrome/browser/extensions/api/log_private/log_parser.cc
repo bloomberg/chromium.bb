@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
@@ -178,8 +181,8 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
   if (!arg_url.empty())
     query.BindString(++i, arg_url + "%");
   if (days_ago >= 0) {
-    int64 early_bound;
-    int64 late_bound;
+    int64_t early_bound;
+    int64_t late_bound;
     Util::ComputeDatabaseTimeBounds(Now(), days_ago, &early_bound, &late_bound);
     query.BindInt64(++i, early_bound);
     query.BindInt64(++i, late_bound);
@@ -220,7 +223,8 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
   return actions.Pass();
 }
 
-void FullStreamUIPolicy::DoRemoveActions(const std::vector<int64>& action_ids) {
+void FullStreamUIPolicy::DoRemoveActions(
+    const std::vector<int64_t>& action_ids) {
   if (action_ids.empty())
     return;
 
@@ -410,7 +414,7 @@ void FullStreamUIPolicy::ReadFilteredData(
       callback);
 }
 
-void FullStreamUIPolicy::RemoveActions(const std::vector<int64>& action_ids) {
+void FullStreamUIPolicy::RemoveActions(const std::vector<int64_t>& action_ids) {
   ScheduleAndForget(this, &FullStreamUIPolicy::DoRemoveActions, action_ids);
 }
 

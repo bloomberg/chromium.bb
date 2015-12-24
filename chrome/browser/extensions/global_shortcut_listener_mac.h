@@ -13,6 +13,7 @@
 #include <map>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 
 namespace extensions {
 

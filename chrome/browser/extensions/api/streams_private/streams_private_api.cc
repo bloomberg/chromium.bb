@@ -65,7 +65,7 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     content::WebContents* web_contents,
     scoped_ptr<content::StreamInfo> stream,
     const std::string& view_id,
-    int64 expected_content_size,
+    int64_t expected_content_size,
     bool embedded,
     int render_process_id,
     int render_frame_id) {

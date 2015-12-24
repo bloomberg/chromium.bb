@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 #include <vector>

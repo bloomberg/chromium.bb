@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"

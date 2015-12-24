@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
 
+#include <stddef.h>
+
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"

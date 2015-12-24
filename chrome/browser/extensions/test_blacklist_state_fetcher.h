@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/common/safe_browsing/crx_info.pb.h"
 #include "net/url_request/test_url_fetcher_factory.h"

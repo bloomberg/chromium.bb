@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/convert_user_script.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

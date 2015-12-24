@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_prefs_unittest.h"
 
-#include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/prefs/mock_pref_change_callback.h"

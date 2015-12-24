@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/warning_badge_service.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/warning_badge_service_factory.h"

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"

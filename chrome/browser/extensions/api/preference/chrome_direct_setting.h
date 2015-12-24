@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_CHROME_DIRECT_SETTING_H__
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
 class PrefService;

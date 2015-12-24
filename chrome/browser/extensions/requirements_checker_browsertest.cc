@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/chrome_paths.h"

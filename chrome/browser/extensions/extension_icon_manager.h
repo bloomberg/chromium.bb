@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/insets.h"

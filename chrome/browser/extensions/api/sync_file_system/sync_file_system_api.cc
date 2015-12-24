@@ -325,8 +325,8 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
 
 void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
     storage::QuotaStatusCode status,
-    int64 usage,
-    int64 quota) {
+    int64_t usage,
+    int64_t quota) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);

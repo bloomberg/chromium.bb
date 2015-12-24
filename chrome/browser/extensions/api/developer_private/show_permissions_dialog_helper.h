@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_SHOW_PERMISSIONS_DIALOG_HELPER_H_
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 

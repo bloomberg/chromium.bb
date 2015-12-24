@@ -6,12 +6,15 @@
 
 #include "chrome/browser/extensions/api/media_galleries/media_galleries_api.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -933,8 +936,10 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
 }
 
 void MediaGalleriesGetMetadataFunction::GetMetadata(
-    MediaGalleries::GetMetadataType metadata_type, const std::string& blob_uuid,
-    scoped_ptr<std::string> blob_header, int64 total_blob_length) {
+    MediaGalleries::GetMetadataType metadata_type,
+    const std::string& blob_uuid,
+    scoped_ptr<std::string> blob_header,
+    int64_t total_blob_length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::string mime_type;

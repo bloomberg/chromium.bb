@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 class FilePath;
@@ -83,12 +85,12 @@ class ExtensionCreator {
   // Signs the temporary zip and returns the signature.
   bool SignZip(const base::FilePath& zip_path,
                crypto::RSAPrivateKey* private_key,
-               std::vector<uint8>* signature);
+               std::vector<uint8_t>* signature);
 
   // Export installable .crx to |crx_path|.
   bool WriteCRX(const base::FilePath& zip_path,
                 crypto::RSAPrivateKey* private_key,
-                const std::vector<uint8>& signature,
+                const std::vector<uint8_t>& signature,
                 const base::FilePath& crx_path);
 
   // Holds a message for any error that is raised during Run(...).

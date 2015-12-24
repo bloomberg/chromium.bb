@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 
 const char kErrorNotImplemented[] = "Error.NotImplemented";

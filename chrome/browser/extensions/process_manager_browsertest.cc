@@ -4,7 +4,10 @@
 
 #include "extensions/browser/process_manager.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"

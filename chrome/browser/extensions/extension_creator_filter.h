@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_FILTER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_CREATOR_FILTER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace base {

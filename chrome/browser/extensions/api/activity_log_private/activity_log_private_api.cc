@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -181,8 +184,8 @@ bool ActivityLogPrivateDeleteActivitiesFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Put the arguments in the right format.
-  std::vector<int64> action_ids;
-  int64 value;
+  std::vector<int64_t> action_ids;
+  int64_t value;
   for (size_t i = 0; i < params->activity_ids.size(); i++) {
     if (base::StringToInt64(params->activity_ids[i], &value))
       action_ids.push_back(value);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -38,8 +40,8 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
 
   static void Prerender_Arguments(
       const std::string& extension_id,
-      uint16 port,
-      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+      uint16_t port,
+      scoped_ptr<std::vector<scoped_refptr<Action>>> i) {
     // This is to exit RunLoop (base::MessageLoop::current()->Run()) below
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
@@ -67,7 +69,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
-  uint16 port = embedded_test_server()->port();
+  uint16_t port = embedded_test_server()->port();
 
   // Get the extension (chrome/test/data/extensions/activity_log)
   const Extension* ext =

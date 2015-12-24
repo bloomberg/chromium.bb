@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/autofill_private/autofill_private_api.h"
 
+#include <stddef.h>
+
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

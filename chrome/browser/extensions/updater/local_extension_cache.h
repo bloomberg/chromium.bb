@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_LOCAL_EXTENSION_CACHE_H_
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_LOCAL_EXTENSION_CACHE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -31,11 +35,11 @@ class LocalExtensionCache {
   // |max_cache_age| - maximum age that unused item can be kept in cache, 0 age
   // means that all unused cache items will be removed on Shutdown.
   // All file I/O is done via the |backend_task_runner|.
-  LocalExtensionCache(const base::FilePath& cache_dir,
-                      uint64 max_cache_size,
-                      const base::TimeDelta& max_cache_age,
-                      const scoped_refptr<base::SequencedTaskRunner>&
-                          backend_task_runner);
+  LocalExtensionCache(
+      const base::FilePath& cache_dir,
+      uint64_t max_cache_size,
+      const base::TimeDelta& max_cache_age,
+      const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner);
   ~LocalExtensionCache();
 
   // Name of flag file that indicates that cache is ready (import finished).
@@ -85,8 +89,7 @@ class LocalExtensionCache {
   bool RemoveExtension(const std::string& id, const std::string& expected_hash);
 
   // Return cache statistics. Returns |false| if cache is not ready.
-  bool GetStatistics(uint64* cache_size,
-                     size_t* extensions_count);
+  bool GetStatistics(uint64_t* cache_size, size_t* extensions_count);
 
   // Outputs properly formatted extension file name, as it will be stored in
   // cache. If |expected_hash| is empty, it will be <id>-<version>.crx,
@@ -107,13 +110,13 @@ class LocalExtensionCache {
     std::string version;
     std::string expected_hash;
     base::Time last_used;
-    uint64 size;
+    uint64_t size;
     base::FilePath file_path;
 
     CacheItemInfo(const std::string& version,
                   const std::string& expected_hash,
                   const base::Time& last_used,
-                  uint64 size,
+                  uint64_t size,
                   const base::FilePath& file_path);
     ~CacheItemInfo();
   };
@@ -247,7 +250,7 @@ class LocalExtensionCache {
   base::FilePath cache_dir_;
 
   // Maximum size of cache dir on disk.
-  uint64 max_cache_size_;
+  uint64_t max_cache_size_;
 
   // Minimal age of unused item in cache, items prior to this age will be
   // deleted on shutdown.

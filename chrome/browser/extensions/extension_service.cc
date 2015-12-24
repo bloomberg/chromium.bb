@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 #include <set>
@@ -21,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"

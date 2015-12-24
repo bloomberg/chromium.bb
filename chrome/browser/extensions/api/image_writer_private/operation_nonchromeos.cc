@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/threading/worker_pool.h"
@@ -24,7 +26,7 @@ void Operation::Write(const base::Closure& continuation) {
   SetStage(image_writer_api::STAGE_WRITE);
   StartUtilityClient();
 
-  int64 file_size;
+  int64_t file_size;
   if (!base::GetFileSize(image_path_, &file_size)) {
     Error(error::kImageReadError);
     return;
@@ -53,7 +55,7 @@ void Operation::VerifyWrite(const base::Closure& continuation) {
   SetStage(image_writer_api::STAGE_VERIFYWRITE);
   StartUtilityClient();
 
-  int64 file_size;
+  int64_t file_size;
   if (!base::GetFileSize(image_path_, &file_size)) {
     Error(error::kImageReadError);
     return;

@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_sync_service.h"
 
 #include "base/auto_reset.h"
-#include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"

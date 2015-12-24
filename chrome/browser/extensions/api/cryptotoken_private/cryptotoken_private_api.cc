@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/cryptotoken_private/cryptotoken_private_api.h"
 
+#include <stddef.h>
+
 #include "extensions/common/error_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 

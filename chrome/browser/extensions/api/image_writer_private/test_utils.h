@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_TEST_UTILS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_TEST_UTILS_H_
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_utility_client.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -97,7 +100,7 @@ class FakeImageWriterClient : public ImageWriterUtilityClient {
   void SetVerifyCallback(const base::Closure& verify_callback);
 
   // Triggers the progress callback.
-  void Progress(int64 progress);
+  void Progress(int64_t progress);
   // Triggers the success callback.
   void Success();
   // Triggers the error callback.

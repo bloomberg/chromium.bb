@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/policy_handlers.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/prefs/pref_value_map.h"
 #include "chrome/browser/extensions/extension_management_constants.h"

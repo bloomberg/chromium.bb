@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "extensions/browser/value_store/value_store_change.h"
 #include "sync/api/sync_error.h"
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/external_component_loader.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
 #include "chrome/browser/search/hotword_service.h"

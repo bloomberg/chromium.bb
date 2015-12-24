@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_SIGNIN_SCOPED_GAIA_AUTH_EXTENSION_H_
 #define CHROME_BROWSER_EXTENSIONS_SIGNIN_SCOPED_GAIA_AUTH_EXTENSION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace content {
 class BrowserContext;

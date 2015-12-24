@@ -4,7 +4,10 @@
 
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,7 +23,7 @@ bool ComputeHmacSha256(const std::string& key,
                        std::string* signature_return) {
   crypto::HMAC hmac(crypto::HMAC::SHA256);
   const size_t digest_length = hmac.DigestLength();
-  std::vector<uint8> digest(digest_length);
+  std::vector<uint8_t> digest(digest_length);
   bool result = hmac.Init(key) &&
       hmac.Sign(text, &digest[0], digest.size());
   if (result) {

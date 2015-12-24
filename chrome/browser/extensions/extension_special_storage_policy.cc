@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -39,7 +42,9 @@ using storage::SpecialStoragePolicy;
 
 namespace {
 
-void ReportQuotaUsage(storage::QuotaStatusCode code, int64 usage, int64 quota) {
+void ReportQuotaUsage(storage::QuotaStatusCode code,
+                      int64_t usage,
+                      int64_t quota) {
   if (code == storage::kQuotaStatusOk) {
     // We're interested in the amount of space hosted apps are using. Record it
     // when the extension is granted the unlimited storage permission (once per

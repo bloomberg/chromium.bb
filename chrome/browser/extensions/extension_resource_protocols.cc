@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"

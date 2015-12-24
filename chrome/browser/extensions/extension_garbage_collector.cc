@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_garbage_collector.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"

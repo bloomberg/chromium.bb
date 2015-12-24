@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MUSIC_MANAGER_PRIVATE_DEVICE_ID_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MUSIC_MANAGER_PRIVATE_DEVICE_ID_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"

@@ -7,6 +7,7 @@
 
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 
+#include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace extensions {

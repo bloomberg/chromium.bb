@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
@@ -119,7 +121,7 @@ void FakeImageWriterClient::SetVerifyCallback(
   verify_callback_ = verify_callback;
 }
 
-void FakeImageWriterClient::Progress(int64 progress) {
+void FakeImageWriterClient::Progress(int64_t progress) {
   if (!progress_callback_.is_null())
     progress_callback_.Run(progress);
 }

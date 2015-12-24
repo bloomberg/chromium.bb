@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/top_sites/top_sites_api.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/history/top_sites_factory.h"

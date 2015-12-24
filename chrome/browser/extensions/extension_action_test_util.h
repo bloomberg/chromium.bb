@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_TEST_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_TEST_UTIL_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/common/manifest.h"
 

@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_WEB_CONTENTS_OBSERVER_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_WEB_CONTENTS_OBSERVER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/extension_web_contents_observer.h"
@@ -51,7 +54,7 @@ class ChromeExtensionWebContentsObserver
       const base::string16& message,
       const base::string16& source,
       const StackTrace& stack_trace,
-      int32 severity_level);
+      int32_t severity_level);
 
   // Reloads an extension if it is on the terminated list.
   void ReloadIfTerminated(content::RenderViewHost* render_view_host);

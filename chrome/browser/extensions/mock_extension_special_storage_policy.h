@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "url/gurl.h"
 

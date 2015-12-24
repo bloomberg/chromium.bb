@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
@@ -13,8 +15,8 @@ namespace extensions {
 // https://code.google.com/p/chromium/issues/detail?id=284898
 
 // Returns the integer contained in |attr|.  Returns 0 on error.
-static uint64 get_int_attr(const char* attr) {
-  uint64 result = 0;
+static uint64_t get_int_attr(const char* attr) {
+  uint64_t result = 0;
   // In error cases, StringToInt will set result to 0
   base::StringToUint64(attr, &result);
   return result;

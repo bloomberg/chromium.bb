@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/installed_loader.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"

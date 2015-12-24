@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_EXPERIENCE_SAMPLING_PRIVATE_EXPERIENCE_SAMPLING_H_
 #define CHROME_BROWSER_EXTENSIONS_API_EXPERIENCE_SAMPLING_PRIVATE_EXPERIENCE_SAMPLING_H_
 
+#include "base/macros.h"
 #include "chrome/common/extensions/api/experience_sampling_private.h"
 
 namespace content {

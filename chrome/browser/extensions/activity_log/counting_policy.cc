@@ -30,6 +30,8 @@
 
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -38,6 +40,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_constants.h"
@@ -293,8 +296,8 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
 
     // The contents in values must match up with fields in matched_columns.  A
     // value of -1 is used to encode a null database value.
-    int64 id;
-    std::vector<int64> matched_values;
+    int64_t id;
+    std::vector<int64_t> matched_values;
 
     if (!string_table_.StringToInt(db, action.extension_id(), &id))
       return false;
@@ -377,7 +380,7 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
 
     if (locate_statement.Step()) {
       // A matching row was found.  Update the count and time.
-      int64 rowid = locate_statement.ColumnInt64(0);
+      int64_t rowid = locate_statement.ColumnInt64(0);
       sql::Statement update_statement(db->GetCachedStatement(
           sql::StatementID(SQL_FROM_HERE), update_str.c_str()));
       update_statement.BindInt(0, count);
@@ -480,8 +483,8 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
   if (!arg_url.empty())
     query.BindString(++i, arg_url + "%");
   if (days_ago >= 0) {
-    int64 early_bound;
-    int64 late_bound;
+    int64_t early_bound;
+    int64_t late_bound;
     Util::ComputeDatabaseTimeBounds(Now(), days_ago, &early_bound, &late_bound);
     query.BindInt64(++i, early_bound);
     query.BindInt64(++i, late_bound);
@@ -523,7 +526,7 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
   return actions.Pass();
 }
 
-void CountingPolicy::DoRemoveActions(const std::vector<int64>& action_ids) {
+void CountingPolicy::DoRemoveActions(const std::vector<int64_t>& action_ids) {
   if (action_ids.empty())
     return;
 
@@ -590,7 +593,7 @@ void CountingPolicy::DoRemoveURLs(const std::vector<GURL>& restrict_urls) {
 
   // If URLs are specified then restrict to only those URLs.
   for (size_t i = 0; i < restrict_urls.size(); ++i) {
-    int64 url_id;
+    int64_t url_id;
     if (!restrict_urls[i].is_valid() ||
         !url_table_.StringToInt(db, restrict_urls[i].spec(), &url_id)) {
       continue;
@@ -650,7 +653,7 @@ void CountingPolicy::DoRemoveExtensionData(const std::string& extension_id) {
       "DELETE FROM %s WHERE extension_id_x=?", kTableName);
   sql::Statement statement(
       db->GetCachedStatement(sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
-  int64 id;
+  int64_t id;
   if (string_table_.StringToInt(db, extension_id, &id)) {
     statement.BindInt64(0, id);
   } else {
@@ -737,7 +740,7 @@ void CountingPolicy::ReadFilteredData(
       callback);
 }
 
-void CountingPolicy::RemoveActions(const std::vector<int64>& action_ids) {
+void CountingPolicy::RemoveActions(const std::vector<int64_t>& action_ids) {
   ScheduleAndForget(this, &CountingPolicy::DoRemoveActions, action_ids);
 }
 

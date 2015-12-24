@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -159,7 +162,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   LocalFileSyncService* local_service_;
   drive_backend::SyncEngine* remote_service_;
 
-  int64 real_minimum_preserved_space_;
+  int64_t real_minimum_preserved_space_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemTest);
 };

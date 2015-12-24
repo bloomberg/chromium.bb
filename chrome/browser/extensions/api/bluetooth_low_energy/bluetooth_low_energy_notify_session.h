@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "extensions/browser/api/api_resource.h"

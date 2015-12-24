@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_STORAGE_MONITOR_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_STORAGE_MONITOR_H_
 
+#include <stdint.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -77,10 +80,10 @@ class ExtensionStorageMonitor : public KeyedService,
   std::string GetNotificationId(const std::string& extension_id);
 
   void OnStorageThresholdExceeded(const std::string& extension_id,
-                                  int64 next_threshold,
-                                  int64 current_usage);
+                                  int64_t next_threshold,
+                                  int64_t current_usage);
   void OnImageLoaded(const std::string& extension_id,
-                     int64 current_usage,
+                     int64_t current_usage,
                      const gfx::Image& image);
   void OnNotificationButtonClick(const std::string& extension_id,
                                  int button_index);
@@ -98,13 +101,14 @@ class ExtensionStorageMonitor : public KeyedService,
 
   // Returns/sets the next threshold for displaying a notification if an
   // extension or app consumes excessive disk space.
-  int64 GetNextStorageThreshold(const std::string& extension_id) const;
+  int64_t GetNextStorageThreshold(const std::string& extension_id) const;
   void SetNextStorageThreshold(const std::string& extension_id,
-                               int64 next_threshold);
+                               int64_t next_threshold);
 
   // Returns the raw next storage threshold value stored in prefs. Returns 0 if
   // the initial threshold has not yet been reached.
-  int64 GetNextStorageThresholdFromPrefs(const std::string& extension_id) const;
+  int64_t GetNextStorageThresholdFromPrefs(
+      const std::string& extension_id) const;
 
   // Returns/sets whether notifications should be shown if an extension or app
   // consumes too much disk space.
@@ -118,7 +122,7 @@ class ExtensionStorageMonitor : public KeyedService,
 
   // The first notification is shown after the initial threshold is exceeded.
   // A lower threshold is set by tests.
-  int64 initial_extension_threshold_;
+  int64_t initial_extension_threshold_;
 
   // The rate at which we would like to receive storage updates
   // from QuotaManager. Overridden in tests.

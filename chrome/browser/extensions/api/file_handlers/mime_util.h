@@ -7,10 +7,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_MIME_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_MIME_UTIL_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 

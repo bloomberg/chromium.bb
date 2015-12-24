@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/api/audio_modem.h"
 #include "components/audio_modem/public/modem.h"

@@ -13,8 +13,9 @@
 
 #include "chrome/browser/extensions/api/proxy/proxy_api_helpers.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

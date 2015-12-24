@@ -5,14 +5,17 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_MENU_MANAGER_H_
 #define CHROME_BROWSER_EXTENSIONS_MENU_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -154,7 +157,7 @@ class MenuItem {
     }
 
    private:
-    uint32 value_;  // A bitmask of Context values.
+    uint32_t value_;  // A bitmask of Context values.
   };
 
   MenuItem(const Id& id,

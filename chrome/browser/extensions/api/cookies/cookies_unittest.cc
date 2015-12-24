@@ -7,6 +7,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"

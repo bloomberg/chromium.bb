@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"

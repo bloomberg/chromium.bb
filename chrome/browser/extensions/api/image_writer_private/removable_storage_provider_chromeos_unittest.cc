@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
@@ -23,7 +25,7 @@ const char kDeviceId[] = "FFFF-FFFF";
 const char kDeviceName[] = "Test Device Name";
 const char kVendorName[] = "Test Vendor";
 const char kProductName[] = "Test Product";
-const uint64 kDeviceSize = 1024 * 1024 * 1024;
+const uint64_t kDeviceSize = 1024 * 1024 * 1024;
 const bool kOnRemovableDevice = true;
 
 const char kUnknownSDDiskModel[] = "SD Card";
@@ -100,7 +102,7 @@ class RemovableStorageProviderChromeOsUnitTest : public testing::Test {
                     const std::string& device_path,
                     const std::string& vendor,
                     const std::string& model,
-                    uint64 capacity) {
+                    uint64_t capacity) {
     RemovableStorageDevice* device = FindDevice(devices_.get(), device_path);
 
     ASSERT_TRUE(device != NULL);

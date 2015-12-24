@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/updater/extension_updater.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <set>
 #include <vector>
@@ -255,8 +257,8 @@ void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
   double delay_ms = target_delay.InMillisecondsF();
   double jitter_factor = (RandDouble() * .2) - 0.1;
   delay_ms += delay_ms * jitter_factor;
-  TimeDelta actual_delay = TimeDelta::FromMilliseconds(
-      static_cast<int64>(delay_ms));
+  TimeDelta actual_delay =
+      TimeDelta::FromMilliseconds(static_cast<int64_t>(delay_ms));
 
   // Save the time of next check.
   Time next = Time::Now() + actual_delay;
@@ -285,7 +287,7 @@ void ExtensionUpdater::TimerFired() {
   }
 
   // Save the last check time, and schedule the next check.
-  int64 now = Time::Now().ToInternalValue();
+  int64_t now = Time::Now().ToInternalValue();
   prefs_->SetInt64(pref_names::kLastUpdateCheck, now);
   ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
 }

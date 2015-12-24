@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "extensions/browser/extension_icon_image.h"
 

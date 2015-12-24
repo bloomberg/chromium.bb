@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/settings_overrides/settings_overrides_api.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"

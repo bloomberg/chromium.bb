@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/common/extensions/api/log_private.h"

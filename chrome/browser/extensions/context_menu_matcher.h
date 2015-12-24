@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CONTEXT_MENU_MATCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_CONTEXT_MENU_MATCHER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "ui/base/models/simple_menu_model.h"

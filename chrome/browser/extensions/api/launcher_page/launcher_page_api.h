@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_LAUNCHER_PAGE_LAUNCHER_PAGE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_LAUNCHER_PAGE_LAUNCHER_PAGE_API_H_
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 

@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_X11_H_
 #define CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_X11_H_
 
+#include <stdint.h>
 #include <X11/Xlib.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 

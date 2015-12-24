@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_LOADER_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 

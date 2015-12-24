@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media/desktop_media_list.h"

@@ -5,9 +5,11 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 
 #include <Security/Security.h>
+#include <stdint.h>
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
 #include "components/wifi/wifi_service.h"
@@ -55,8 +57,8 @@ void NetworkingPrivateCredentialsGetterMac::Start(
     return;
   }
 
-  std::vector<uint8> public_key_data(public_key.begin(), public_key.end());
-  std::vector<uint8> ciphertext;
+  std::vector<uint8_t> public_key_data(public_key.begin(), public_key.end());
+  std::vector<uint8_t> ciphertext;
   if (!networking_private_crypto::EncryptByteString(
           public_key_data, key_data, &ciphertext)) {
     callback.Run("", kErrorEncryption);

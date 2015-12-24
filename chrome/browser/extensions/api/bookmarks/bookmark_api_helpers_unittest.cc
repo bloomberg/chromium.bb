@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -144,7 +146,7 @@ TEST_F(ExtensionBookmarksTest, GetManagedNode) {
 }
 
 TEST_F(ExtensionBookmarksTest, RemoveNodeInvalidId) {
-  int64 invalid_id = model_->next_node_id();
+  int64_t invalid_id = model_->next_node_id();
   std::string error;
   EXPECT_FALSE(RemoveNode(model_, managed_, invalid_id, true, &error));
   EXPECT_EQ(keys::kNoNodeError, error);

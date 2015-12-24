@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_EXTENSIONS_WINDOW_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/common/extensions/api/windows.h"
 
 class Browser;  // TODO(stevenjb) eliminate this dependency.

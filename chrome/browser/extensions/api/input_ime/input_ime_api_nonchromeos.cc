@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace {

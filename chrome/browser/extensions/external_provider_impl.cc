@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/external_provider_impl.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 
@@ -17,6 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"

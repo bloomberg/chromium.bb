@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
 
+#include <stddef.h>
+
 #include "base/callback_list.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"

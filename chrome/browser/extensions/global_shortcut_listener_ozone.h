@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_OZONE_H_
 #define CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_OZONE_H_
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 
 namespace extensions {

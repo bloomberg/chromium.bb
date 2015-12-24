@@ -9,6 +9,7 @@
 
 #include "ash/cast_config_delegate.h"
 #include "base/callback_list.h"
+#include "base/macros.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
