@@ -5,6 +5,9 @@
 #ifndef UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_
 #define UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "ui/display/chromeos/x11/native_display_delegate_x11.h"

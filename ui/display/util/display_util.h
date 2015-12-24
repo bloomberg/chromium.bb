@@ -5,6 +5,8 @@
 #ifndef UI_DISPLAY_UTIL_DISPLAY_UTIL_H_
 #define UI_DISPLAY_UTIL_DISPLAY_UTIL_H_
 
+#include <stdint.h>
+
 #include "ui/display/util/display_util_export.h"
 #include "ui/gfx/geometry/size.h"
 

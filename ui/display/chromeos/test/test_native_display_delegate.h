@@ -5,6 +5,8 @@
 #ifndef UI_DISPLAY_CHROMEOS_TEST_TEST_NATIVE_DISPLAY_DELEGATE_H_
 #define UI_DISPLAY_CHROMEOS_TEST_TEST_NATIVE_DISPLAY_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

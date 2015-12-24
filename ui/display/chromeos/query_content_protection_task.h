@@ -5,7 +5,11 @@
 #ifndef UI_DISPLAY_CHROMEOS_QUERY_CONTENT_PROTECTION_TASK_H_
 #define UI_DISPLAY_CHROMEOS_QUERY_CONTENT_PROTECTION_TASK_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"

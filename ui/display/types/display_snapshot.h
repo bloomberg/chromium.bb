@@ -5,8 +5,11 @@
 #ifndef UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_H_
 #define UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/gfx/geometry/point.h"

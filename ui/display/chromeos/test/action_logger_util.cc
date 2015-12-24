@@ -4,6 +4,8 @@
 
 #include "ui/display/chromeos/test/action_logger_util.h"
 
+#include <stddef.h>
+
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"

@@ -5,10 +5,13 @@
 #ifndef UI_DISPLAY_CHROMEOS_CONFIGURATION_TASK_H_
 #define UI_DISPLAY_CHROMEOS_CONFIGURATION_TASK_H_
 
+#include <stddef.h>
+
 #include <queue>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display_export.h"
 #include "ui/gfx/geometry/point.h"

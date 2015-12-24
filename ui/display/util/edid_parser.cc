@@ -4,6 +4,8 @@
 
 #include "ui/display/util/edid_parser.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/hash.h"

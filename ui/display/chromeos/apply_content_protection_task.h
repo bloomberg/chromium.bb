@@ -5,9 +5,13 @@
 #ifndef UI_DISPLAY_CHROMEOS_APPLY_CONTENT_PROTECTION_TASK_H_
 #define UI_DISPLAY_CHROMEOS_APPLY_CONTENT_PROTECTION_TASK_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/chromeos/display_configurator.h"
 

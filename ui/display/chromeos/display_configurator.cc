@@ -4,9 +4,12 @@
 
 #include "ui/display/chromeos/display_configurator.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "ui/display/chromeos/apply_content_protection_task.h"

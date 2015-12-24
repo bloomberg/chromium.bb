@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <X11/extensions/Xrandr.h>
 
 #undef Bool
 #undef None
 
+#include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/x11/display_mode_x11.h"

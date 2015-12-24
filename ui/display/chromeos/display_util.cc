@@ -4,6 +4,8 @@
 
 #include "ui/display/chromeos/display_util.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

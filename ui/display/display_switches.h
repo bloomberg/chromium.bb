@@ -6,6 +6,7 @@
 #define UI_DISPLAY_DISPLAY_SWITCHES_H_
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "ui/display/display_export.h"
 
 namespace ui {

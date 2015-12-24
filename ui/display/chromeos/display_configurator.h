@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/event_types.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"

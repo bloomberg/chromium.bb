@@ -5,6 +5,8 @@
 #ifndef UI_DISPLAY_CHROMEOS_TEST_ACTION_LOGGER_UTIL_H_
 #define UI_DISPLAY_CHROMEOS_TEST_ACTION_LOGGER_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

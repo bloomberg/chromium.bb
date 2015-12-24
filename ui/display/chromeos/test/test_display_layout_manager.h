@@ -5,6 +5,7 @@
 #ifndef UI_DISPLAY_CHROMEOS_TEST_TEST_DISPLAY_LAYOUT_MANAGER_H_
 #define UI_DISPLAY_CHROMEOS_TEST_TEST_DISPLAY_LAYOUT_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/chromeos/display_layout_manager.h"

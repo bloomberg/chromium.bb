@@ -7,6 +7,8 @@
 
 #include "ui/display/types/display_snapshot.h"
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/display/types/display_mode.h"

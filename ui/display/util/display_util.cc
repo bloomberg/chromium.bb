@@ -4,7 +4,10 @@
 
 #include "ui/display/util/display_util.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace ui {
 

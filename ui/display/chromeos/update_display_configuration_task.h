@@ -5,8 +5,11 @@
 #ifndef UI_DISPLAY_CHROMEOS_UPDATE_DISPLAY_CONFIGURATION_TASK_H_
 #define UI_DISPLAY_CHROMEOS_UPDATE_DISPLAY_CONFIGURATION_TASK_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/chromeos/configure_displays_task.h"
 #include "ui/display/chromeos/display_configurator.h"
