@@ -5,10 +5,12 @@
 #import "chrome/browser/ui/cocoa/applescript/apple_event_util.h"
 
 #include <CoreServices/CoreServices.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/json/json_reader.h"
 #include "base/mac/scoped_aedesc.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

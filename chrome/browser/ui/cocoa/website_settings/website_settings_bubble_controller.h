@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"

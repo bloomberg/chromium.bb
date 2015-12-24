@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_MEDIA_ROUTER_ACTION_PLATFORM_DELEGATE_COCOA_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_MEDIA_ROUTER_ACTION_PLATFORM_DELEGATE_COCOA_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/toolbar/media_router_action_platform_delegate.h"
 
 // The Cocoa platform delegate for the Media Router component action.

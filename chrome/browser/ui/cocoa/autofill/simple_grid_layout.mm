@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/autofill/simple_grid_layout.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/applescript/apple_event_util.h"
 
 #import <Carbon/Carbon.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"

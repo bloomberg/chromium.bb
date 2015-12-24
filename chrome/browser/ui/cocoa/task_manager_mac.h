@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/cocoa/table_row_nsimage_cache.h"
 

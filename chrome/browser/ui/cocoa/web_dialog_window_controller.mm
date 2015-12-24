@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"

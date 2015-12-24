@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile_window.h"

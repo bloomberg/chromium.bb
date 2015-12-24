@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/cocoa/location_bar/bubble_decoration.h"
 
 // Draws the "Extended Validation SSL" bubble.  This will be a lock

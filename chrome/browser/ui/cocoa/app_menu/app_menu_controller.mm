@@ -4,9 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/mac/bundle_locations.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/scoped_observer.h"

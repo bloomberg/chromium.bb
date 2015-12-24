@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_LOCATION_BAR_CONTENT_SETTING_DECORATION_H_
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_CONTENT_SETTING_DECORATION_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #include "components/content_settings/core/common/content_settings_types.h"

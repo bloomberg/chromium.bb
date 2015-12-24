@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_process.h"

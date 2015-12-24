@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 
+#include "base/macros.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"

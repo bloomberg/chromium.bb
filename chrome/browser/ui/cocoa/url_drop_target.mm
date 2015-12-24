@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 
-#include "base/basictypes.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "url/gurl.h"

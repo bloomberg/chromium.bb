@@ -6,8 +6,10 @@
 
 #import <Carbon/Carbon.h>  // kVK_Return.
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/mac/bundle_locations.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"

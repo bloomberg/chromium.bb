@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"

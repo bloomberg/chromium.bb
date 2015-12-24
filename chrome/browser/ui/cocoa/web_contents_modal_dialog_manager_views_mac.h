@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_MAC_H_
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "ui/views/widget/widget_observer.h"
 

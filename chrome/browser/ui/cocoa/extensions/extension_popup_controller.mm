@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"

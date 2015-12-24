@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 
+#include <stddef.h>
+
 #include "base/mac/bundle_locations.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram.h"
@@ -1112,7 +1114,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (IBAction)openBookmarkMenuItem:(id)sender {
-  int64 tag = [self nodeIdFromMenuTag:[sender tag]];
+  int64_t tag = [self nodeIdFromMenuTag:[sender tag]];
   const BookmarkNode* node =
       bookmarks::GetBookmarkNodeByID(bookmarkModel_, tag);
   WindowOpenDisposition disposition =
@@ -1898,12 +1900,12 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 // Given a NSMenuItem tag, return the appropriate bookmark node id.
-- (int64)nodeIdFromMenuTag:(int32)tag {
+- (int64_t)nodeIdFromMenuTag:(int32_t)tag {
   return menuTagMap_[tag];
 }
 
 // Create and return a new tag for the given node id.
-- (int32)menuTagFromNodeId:(int64)menuid {
+- (int32_t)menuTagFromNodeId:(int64_t)menuid {
   int tag = seedId_++;
   menuTagMap_[tag] = menuid;
   return tag;

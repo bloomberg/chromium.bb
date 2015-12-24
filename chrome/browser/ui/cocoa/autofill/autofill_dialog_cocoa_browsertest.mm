@@ -4,6 +4,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

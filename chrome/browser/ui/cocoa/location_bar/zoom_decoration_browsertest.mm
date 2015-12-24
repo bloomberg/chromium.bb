@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 
 #include "base/auto_reset.h"
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser/zoom_bubble_controller.h"

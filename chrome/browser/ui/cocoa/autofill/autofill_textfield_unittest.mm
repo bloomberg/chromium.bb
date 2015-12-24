@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

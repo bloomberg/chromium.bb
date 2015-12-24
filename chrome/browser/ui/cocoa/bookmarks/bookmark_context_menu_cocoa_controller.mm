@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/ui/browser.h"

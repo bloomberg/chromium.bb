@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"

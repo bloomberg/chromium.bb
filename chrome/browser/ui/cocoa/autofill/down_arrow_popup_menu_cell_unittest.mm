@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

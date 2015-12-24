@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/extensions/media_gallery_list_entry_view.h"

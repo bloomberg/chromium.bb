@@ -4,10 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
@@ -338,8 +341,8 @@ class FullscreenObserver : public WebContentsObserver {
     // TODO(miu): This is basically media::ComputeLetterboxRegion(), and it
     // looks like others have written this code elsewhere.  Let's consolidate
     // into a shared function ui/gfx/geometry or around there.
-    const int64 x = static_cast<int64>(captureSize.width()) * rect.height();
-    const int64 y = static_cast<int64>(captureSize.height()) * rect.width();
+    const int64_t x = static_cast<int64_t>(captureSize.width()) * rect.height();
+    const int64_t y = static_cast<int64_t>(captureSize.height()) * rect.width();
     if (y < x) {
       rect.ClampToCenteredSize(gfx::Size(
           rect.width(), static_cast<int>(y / captureSize.width())));

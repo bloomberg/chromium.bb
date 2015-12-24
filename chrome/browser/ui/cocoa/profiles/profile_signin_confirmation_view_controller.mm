@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 

@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_CONTAINER_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_CONTAINER_COCOA_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 
 @class InfoBarContainerController;

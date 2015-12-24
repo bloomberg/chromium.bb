@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"

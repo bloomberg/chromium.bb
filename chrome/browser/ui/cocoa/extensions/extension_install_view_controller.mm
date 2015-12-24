@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 
+#include <stddef.h>
+
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"

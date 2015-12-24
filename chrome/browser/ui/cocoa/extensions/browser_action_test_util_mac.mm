@@ -4,8 +4,11 @@
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
+#include <stddef.h>
+
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/browser.h"

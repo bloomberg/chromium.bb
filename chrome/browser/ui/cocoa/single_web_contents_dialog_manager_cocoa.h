@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_SINGLE_WEB_CONTENTS_DIALOG_MANAGER_COCOA_H_
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 
 class ConstrainedWindowMac;

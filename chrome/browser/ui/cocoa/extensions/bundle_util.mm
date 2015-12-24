@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/extensions/bundle_util.h"
 
+#include <stddef.h>
+
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"

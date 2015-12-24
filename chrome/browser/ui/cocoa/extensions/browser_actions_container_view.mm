@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/appkit_utils.h"

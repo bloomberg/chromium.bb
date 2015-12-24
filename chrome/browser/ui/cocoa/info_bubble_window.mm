@@ -6,9 +6,9 @@
 
 #include <Carbon/Carbon.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

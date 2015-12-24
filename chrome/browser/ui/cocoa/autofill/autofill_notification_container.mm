@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_notification_container.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"

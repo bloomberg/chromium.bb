@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_web_dialog_sheet.h"

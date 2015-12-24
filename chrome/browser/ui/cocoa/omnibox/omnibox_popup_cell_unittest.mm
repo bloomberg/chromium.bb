@@ -4,8 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
 
+#include <stddef.h>
+
 #include "base/json/json_reader.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

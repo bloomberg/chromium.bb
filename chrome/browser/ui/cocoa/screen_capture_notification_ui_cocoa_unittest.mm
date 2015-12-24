@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/screen_capture_notification_ui_cocoa.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 

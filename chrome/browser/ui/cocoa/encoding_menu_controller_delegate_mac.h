@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_ENCODING_MENU_CONTROLLER_DELEGATE_MAC_H_
 #define CHROME_BROWSER_UI_COCOA_ENCODING_MENU_CONTROLLER_DELEGATE_MAC_H_
 
-#include "base/basictypes.h"  // For DISALLOW_IMPLICIT_CONSTRUCTORS
+#include "base/macros.h"
 
 @class NSMenu;
 class Profile;

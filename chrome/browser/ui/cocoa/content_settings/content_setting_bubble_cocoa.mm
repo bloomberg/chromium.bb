@@ -4,8 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"

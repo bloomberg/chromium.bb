@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"

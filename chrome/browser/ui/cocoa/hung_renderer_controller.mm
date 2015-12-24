@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/bundle_locations.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"

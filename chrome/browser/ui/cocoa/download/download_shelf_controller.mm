@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 
+#include <stddef.h>
+
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/download/download_stats.h"

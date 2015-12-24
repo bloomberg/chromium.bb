@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 

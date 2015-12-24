@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/infobars/alternate_nav_infobar_controller.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"

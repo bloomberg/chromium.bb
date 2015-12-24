@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -666,8 +668,8 @@ TEST_F(BookmarkBarControllerTest, TestDragShouldLockBarVisibility) {
 }
 
 TEST_F(BookmarkBarControllerTest, TagMap) {
-  int64 ids[] = { 1, 3, 4, 40, 400, 4000, 800000000, 2, 123456789 };
-  std::vector<int32> tags;
+  int64_t ids[] = {1, 3, 4, 40, 400, 4000, 800000000, 2, 123456789};
+  std::vector<int32_t> tags;
 
   // Generate some tags
   for (unsigned int i = 0; i < arraysize(ids); i++) {
@@ -705,7 +707,7 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
   item = [menu itemWithTitle:@"small"];
   EXPECT_TRUE(item);
   if (item) {
-    int64 tag = [bar_ nodeIdFromMenuTag:[item tag]];
+    int64_t tag = [bar_ nodeIdFromMenuTag:[item tag]];
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, tag);
     EXPECT_TRUE(node);
     EXPECT_EQ(gurl, node->url());

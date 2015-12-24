@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 
 class ExtensionInstallPromptShowParams;

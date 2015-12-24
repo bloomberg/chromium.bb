@@ -4,7 +4,10 @@
 
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 
+#include <stddef.h>
+
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"

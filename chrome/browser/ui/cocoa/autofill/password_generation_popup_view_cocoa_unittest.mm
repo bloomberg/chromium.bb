@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/autofill/password_generation_popup_view_cocoa.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

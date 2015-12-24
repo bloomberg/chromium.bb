@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
 #include "base/mac/bundle_locations.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"

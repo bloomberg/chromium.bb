@@ -11,6 +11,7 @@
 #import "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/macros.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"

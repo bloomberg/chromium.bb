@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button_cell.h"
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 

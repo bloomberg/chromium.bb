@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/mac/foundation_util.h"

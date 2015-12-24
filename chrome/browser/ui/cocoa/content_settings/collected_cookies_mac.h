@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"

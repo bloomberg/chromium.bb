@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"

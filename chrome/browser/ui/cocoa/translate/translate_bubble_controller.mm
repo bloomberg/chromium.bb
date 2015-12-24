@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"

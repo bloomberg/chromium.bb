@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_LOCATION_BAR_IMAGE_DECORATION_H_
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 
 // |LocationBarDecoration| which sizes and draws itself according to

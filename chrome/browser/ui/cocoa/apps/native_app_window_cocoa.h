@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/app_window/app_window.h"

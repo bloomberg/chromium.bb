@@ -5,6 +5,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"

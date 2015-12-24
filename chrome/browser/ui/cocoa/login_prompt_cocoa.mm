@@ -6,6 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"

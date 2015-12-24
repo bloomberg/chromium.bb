@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_VIEW_TESTER_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_VIEW_TESTER_COCOA_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_tester.h"
 
 @class AutofillDialogWindowController;

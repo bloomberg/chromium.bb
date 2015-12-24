@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #import "chrome/browser/ui/cocoa/browser/zoom_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 

@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/bubble_sync_promo_controller.h"
 
+#include <stddef.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/chrome_pages.h"

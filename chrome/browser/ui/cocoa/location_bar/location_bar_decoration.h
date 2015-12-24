@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/basictypes.h"
+#include "base/macros.h"
 
 // Base class for decorations at the left and right of the location
 // bar.  For instance, the location icon.

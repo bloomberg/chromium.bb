@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button_cell.h"
 
+#include "base/macros.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/geometry/rect.h"

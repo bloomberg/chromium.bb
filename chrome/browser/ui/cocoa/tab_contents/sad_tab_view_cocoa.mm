@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/tab_contents/sad_tab_view_cocoa.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/url_constants.h"

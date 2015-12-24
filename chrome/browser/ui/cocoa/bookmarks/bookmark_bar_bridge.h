@@ -11,8 +11,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_BRIDGE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 

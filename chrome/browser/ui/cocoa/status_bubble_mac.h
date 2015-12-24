@@ -9,8 +9,10 @@
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -105,7 +107,7 @@ class StatusBubbleMac : public StatusBubble {
   // TimerFired must be called from one of these states.  StartTimer may be
   // called while the timer is still running; in that case, the timer will be
   // reset. CancelTimer may be called from any state.
-  void StartTimer(int64 time_ms);
+  void StartTimer(int64_t time_ms);
   void CancelTimer();
   void TimerFired();
 

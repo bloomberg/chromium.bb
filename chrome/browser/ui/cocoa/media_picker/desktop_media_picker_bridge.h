@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_MEDIA_PICKER_DESKTOP_MEDIA_PICKER_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_MEDIA_PICKER_DESKTOP_MEDIA_PICKER_BRIDGE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 
 // Protocol corresponding to |DesktopMediaListObserver|.

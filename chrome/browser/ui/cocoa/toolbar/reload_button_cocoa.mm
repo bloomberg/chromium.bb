@@ -4,6 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/reload_button_cocoa.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"

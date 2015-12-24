@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/profiles/profile_menu_controller.h"
 
+#include <stddef.h>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"

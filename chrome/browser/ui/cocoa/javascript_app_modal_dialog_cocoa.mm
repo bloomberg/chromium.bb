@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/cocoa/javascript_app_modal_dialog_cocoa.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"

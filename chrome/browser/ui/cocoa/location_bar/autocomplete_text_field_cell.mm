@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"

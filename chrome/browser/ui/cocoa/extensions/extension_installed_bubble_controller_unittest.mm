@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/values.h"

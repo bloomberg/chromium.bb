@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/ssl_client_certificate_selector_cocoa.h"
 
 #import <SecurityInterface/SFChooseIdentityPanel.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"

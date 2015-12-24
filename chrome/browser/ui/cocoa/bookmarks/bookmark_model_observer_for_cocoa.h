@@ -23,8 +23,8 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_block.h"
+#include "base/macros.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 

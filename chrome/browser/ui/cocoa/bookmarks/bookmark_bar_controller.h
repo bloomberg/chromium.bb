@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+#include <stdint.h>
 #include <map>
 
 #import "base/mac/cocoa_protocols.h"
@@ -185,8 +186,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // to represent the bookmark node they refer to.  This map provides
   // a mapping from one to the other, so we can properly identify the
   // node from the item.  When adding items in, we start with seedId_.
-  int32 seedId_;
-  std::map<int32,int64> menuTagMap_;
+  int32_t seedId_;
+  std::map<int32_t, int64_t> menuTagMap_;
 
   // Our bookmark buttons, ordered from L-->R.
   base::scoped_nsobject<NSMutableArray> buttons_;
@@ -434,8 +435,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;
 - (void)frameDidChange;
-- (int64)nodeIdFromMenuTag:(int32)tag;
-- (int32)menuTagFromNodeId:(int64)menuid;
+- (int64_t)nodeIdFromMenuTag:(int32_t)tag;
+- (int32_t)menuTagFromNodeId:(int64_t)menuid;
 - (void)updateTheme:(const ui::ThemeProvider*)themeProvider;
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;

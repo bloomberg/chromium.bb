@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 

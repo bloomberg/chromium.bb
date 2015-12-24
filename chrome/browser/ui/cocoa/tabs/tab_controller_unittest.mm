@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"

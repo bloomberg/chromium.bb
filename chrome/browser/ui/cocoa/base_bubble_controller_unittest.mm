@@ -8,6 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/macros.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"

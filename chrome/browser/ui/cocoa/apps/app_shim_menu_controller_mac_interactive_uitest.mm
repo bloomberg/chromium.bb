@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"

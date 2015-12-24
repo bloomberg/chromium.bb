@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"

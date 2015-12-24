@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BUBBLE_OBSERVER_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BUBBLE_OBSERVER_COCOA_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_observer.h"
 
 #import "base/mac/scoped_nsobject.h"

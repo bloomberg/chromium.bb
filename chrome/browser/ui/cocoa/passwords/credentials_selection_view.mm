@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/passwords/credentials_selection_view.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"

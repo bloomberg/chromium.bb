@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"

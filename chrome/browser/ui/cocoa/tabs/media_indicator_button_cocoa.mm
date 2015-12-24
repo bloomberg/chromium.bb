@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #include "content/public/browser/user_metrics.h"

@@ -46,8 +46,8 @@ const int kTextPadding = 3;
 const CGFloat kBubbleOpacity = 1.0;
 
 // Delay before showing or hiding the bubble after a SetStatus or SetURL call.
-const int64 kShowDelayMS = 80;
-const int64 kHideDelayMS = 250;
+const int64_t kShowDelayMS = 80;
+const int64_t kHideDelayMS = 250;
 
 // How long each fade should last.
 const NSTimeInterval kShowFadeInDurationSeconds = 0.120;
@@ -595,7 +595,7 @@ void StatusBubbleMac::AnimateWindowAlpha(CGFloat alpha,
       }];
 }
 
-void StatusBubbleMac::StartTimer(int64 delay_ms) {
+void StatusBubbleMac::StartTimer(int64_t delay_ms) {
   DCHECK([NSThread isMainThread]);
   DCHECK(state_ == kBubbleShowingTimer || state_ == kBubbleHidingTimer);
 

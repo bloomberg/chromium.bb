@@ -10,8 +10,8 @@
 #include <list>
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel_stack_window.h"
 #include "ui/gfx/geometry/rect.h"

@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 
 class Browser;

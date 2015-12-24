@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_PROFILES_AVATAR_MENU_BUBBLE_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"

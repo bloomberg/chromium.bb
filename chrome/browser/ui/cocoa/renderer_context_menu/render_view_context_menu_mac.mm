@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #import "base/mac/scoped_sending_event.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/tracked_objects.h"

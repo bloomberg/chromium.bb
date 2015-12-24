@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

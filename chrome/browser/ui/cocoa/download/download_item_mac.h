@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/icon_manager.h"

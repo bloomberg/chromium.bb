@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/mac/bind_objc_block.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"

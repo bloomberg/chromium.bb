@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_POPUP_VIEW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_base_view_cocoa.h"
 

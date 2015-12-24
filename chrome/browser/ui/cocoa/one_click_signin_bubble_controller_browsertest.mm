@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/one_click_signin_bubble_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"

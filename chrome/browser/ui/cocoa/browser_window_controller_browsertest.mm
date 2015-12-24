@@ -4,8 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
+#include <stddef.h>
 #import "base/mac/mac_util.h"
+
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"

@@ -4,6 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"

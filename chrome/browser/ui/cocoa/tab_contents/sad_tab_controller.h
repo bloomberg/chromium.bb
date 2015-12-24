@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_CONTROLLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/sad_tab.h"
 
 #import <Cocoa/Cocoa.h>

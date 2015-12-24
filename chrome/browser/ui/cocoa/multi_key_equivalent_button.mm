@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
 
 @implementation MultiKeyEquivalentButton

@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/gfx/geometry/rect.h"

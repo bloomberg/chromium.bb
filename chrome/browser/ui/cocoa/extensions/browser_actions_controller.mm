@@ -4,8 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"

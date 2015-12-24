@@ -10,6 +10,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"

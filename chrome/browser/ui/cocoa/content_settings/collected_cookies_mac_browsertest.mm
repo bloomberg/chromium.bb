@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

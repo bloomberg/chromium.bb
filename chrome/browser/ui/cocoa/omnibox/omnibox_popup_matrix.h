@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_OMNIBOX_OMNIBOX_POPUP_MATRIX_H_
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/window_open_disposition.h"

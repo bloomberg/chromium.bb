@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/ui/browser.h"

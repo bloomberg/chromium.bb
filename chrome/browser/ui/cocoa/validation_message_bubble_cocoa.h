@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_VALIDATION_MESSAGE_BUBBLE_COCOA_H_
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
 
 @class ValidationMessageBubbleController;

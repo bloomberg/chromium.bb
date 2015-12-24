@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_POPUP_VIEW_BRIDGE_H_
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_POPUP_VIEW_BRIDGE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
 

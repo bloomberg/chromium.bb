@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.h"
 
+#include <stddef.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_dialog_window_controller.h"

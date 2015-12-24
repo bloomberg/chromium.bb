@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
 
+#include <stddef.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"

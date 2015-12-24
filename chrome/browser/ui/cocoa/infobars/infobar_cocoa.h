@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_COCOA_H_
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/infobars/core/infobar.h"
 

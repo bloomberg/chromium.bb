@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
@@ -21,7 +23,7 @@ const float kBadgeFraction = 0.4f;
 const float kBadgeIndent = 5.0f;
 
 // The maximum update rate for the dock icon. 200ms = 5fps.
-const int64 kUpdateFrequencyMs = 200;
+const int64_t kUpdateFrequencyMs = 200;
 
 }  // namespace
 

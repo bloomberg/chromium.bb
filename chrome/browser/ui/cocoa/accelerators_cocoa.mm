@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "ui/base/accelerators/platform_accelerator_cocoa.h"

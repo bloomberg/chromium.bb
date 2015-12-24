@@ -7,7 +7,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"

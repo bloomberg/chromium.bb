@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_MOCK_CONFIRM_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_COCOA_INFOBARS_MOCK_CONFIRM_INFOBAR_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 

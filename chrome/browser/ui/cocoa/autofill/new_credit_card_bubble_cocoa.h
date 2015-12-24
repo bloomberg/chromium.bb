@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_COCOA_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/new_credit_card_bubble_view.h"
 

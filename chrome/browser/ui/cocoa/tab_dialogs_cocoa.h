@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_TAB_DIALOGS_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_TAB_DIALOGS_COCOA_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 
 // Cocoa implementation of TabDialogs interface.

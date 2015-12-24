@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_DIALOG_HOST_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_WEB_CONTENTS_DIALOG_HOST_COCOA_H_
 
+#include "base/macros.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 
 @class ConstrainedWindowSheetController;

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
