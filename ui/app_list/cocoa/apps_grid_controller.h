@@ -6,6 +6,7 @@
 #define UI_APP_LIST_COCOA_APPS_GRID_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"

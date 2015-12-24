@@ -5,7 +5,9 @@
 #ifndef UI_APP_LIST_SPEECH_UI_MODEL_H_
 #define UI_APP_LIST_SPEECH_UI_MODEL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
@@ -22,7 +24,7 @@ class APP_LIST_EXPORT SpeechUIModel {
   virtual ~SpeechUIModel();
 
   void SetSpeechResult(const base::string16& result, bool is_final);
-  void UpdateSoundLevel(int16 level);
+  void UpdateSoundLevel(int16_t level);
   // Sets the speech recognition state. If |always_show_ui| is true,
   // sends the state change to the UI observers regardless of whether
   // the |new_state| is different from the old one.
@@ -34,7 +36,7 @@ class APP_LIST_EXPORT SpeechUIModel {
 
   const base::string16& result() const { return result_; }
   bool is_final() const { return is_final_; }
-  int16 sound_level() const { return sound_level_; }
+  int16_t sound_level() const { return sound_level_; }
   SpeechRecognitionState state() const { return state_; }
   const gfx::ImageSkia& logo() const { return logo_; }
   void set_logo(const gfx::ImageSkia& logo) { logo_ = logo; }
@@ -42,15 +44,15 @@ class APP_LIST_EXPORT SpeechUIModel {
  private:
   base::string16 result_;
   bool is_final_;
-  int16 sound_level_;
+  int16_t sound_level_;
   SpeechRecognitionState state_;
 
   // The logo image which the speech UI will show at the top-left.
   gfx::ImageSkia logo_;
 
   // The sound level range to compute visible sound-level.
-  int16 minimum_sound_level_;
-  int16 maximum_sound_level_;
+  int16_t minimum_sound_level_;
+  int16_t maximum_sound_level_;
 
   base::ObserverList<SpeechUIModelObserver> observers_;
 

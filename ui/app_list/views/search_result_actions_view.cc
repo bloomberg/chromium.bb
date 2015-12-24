@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/search_result_actions_view.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "ui/app_list/views/search_result_actions_view_delegate.h"

@@ -5,8 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_PULSING_BLOCK_VIEW_H_
 #define UI_APP_LIST_VIEWS_PULSING_BLOCK_VIEW_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/views/view.h"
 

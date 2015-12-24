@@ -5,8 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_APP_LIST_BACKGROUND_H_
 #define UI_APP_LIST_VIEWS_APP_LIST_BACKGROUND_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/background.h"
 
 namespace views {

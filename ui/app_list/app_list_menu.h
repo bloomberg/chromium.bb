@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_APP_LIST_MENU_H_
 #define UI_APP_LIST_APP_LIST_MENU_H_
 
+#include "base/macros.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/base/models/simple_menu_model.h"
 

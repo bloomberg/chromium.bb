@@ -4,6 +4,8 @@
 
 #include "ui/app_list/search/history.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/search/history_data.h"

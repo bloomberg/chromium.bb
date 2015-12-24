@@ -4,6 +4,7 @@
 
 #include "ui/app_list/app_list_constants.h"
 
+#include "build/build_config.h"
 #include "ui/gfx/color_palette.h"
 
 namespace app_list {

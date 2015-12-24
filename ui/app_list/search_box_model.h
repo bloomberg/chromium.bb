@@ -5,7 +5,7 @@
 #ifndef UI_APP_LIST_SEARCH_BOX_MODEL_H_
 #define UI_APP_LIST_SEARCH_BOX_MODEL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"

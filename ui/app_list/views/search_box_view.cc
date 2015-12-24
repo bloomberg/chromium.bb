@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"

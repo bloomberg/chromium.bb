@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/image_shadow_animator.h"
 
+#include <stddef.h>
+
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/image/image_skia_operations.h"

@@ -4,9 +4,11 @@
 
 #include "ui/app_list/search/tokenized_string_match.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

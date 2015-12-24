@@ -46,11 +46,11 @@ bool TokenizedStringCharIterator::NextToken() {
   return !!current_token_iter_;
 }
 
-int32 TokenizedStringCharIterator::Get() const {
+int32_t TokenizedStringCharIterator::Get() const {
   return current_token_iter_ ? current_token_iter_->get() : 0;
 }
 
-int32 TokenizedStringCharIterator::GetArrayPos() const {
+int32_t TokenizedStringCharIterator::GetArrayPos() const {
   DCHECK(current_token_iter_);
   return mappings_[current_token_].start() +
       current_token_iter_->array_pos();

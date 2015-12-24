@@ -7,6 +7,7 @@
 #include <cctype>
 #include <map>
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/search_box_view_delegate.h"

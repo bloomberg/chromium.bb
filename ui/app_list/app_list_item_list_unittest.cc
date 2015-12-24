@@ -4,8 +4,11 @@
 
 #include "ui/app_list/app_list_item_list.h"
 
+#include <stddef.h>
+
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"

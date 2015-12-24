@@ -4,6 +4,8 @@
 
 #include "ui/app_list/search/tokenized_string.h"
 
+#include <stddef.h>
+
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"

@@ -5,9 +5,11 @@
 #ifndef UI_APP_LIST_APP_LIST_ITEM_H_
 #define UI_APP_LIST_APP_LIST_ITEM_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "sync/api/string_ordinal.h"
 #include "ui/app_list/app_list_export.h"

@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 #include "ui/app_list/app_list_menu.h"

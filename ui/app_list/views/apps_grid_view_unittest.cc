@@ -4,15 +4,18 @@
 
 #include "ui/app_list/views/apps_grid_view.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"

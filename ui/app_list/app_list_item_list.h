@@ -5,8 +5,11 @@
 #ifndef UI_APP_LIST_APP_LIST_ITEM_LIST_H_
 #define UI_APP_LIST_APP_LIST_ITEM_LIST_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"

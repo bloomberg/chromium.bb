@@ -5,8 +5,11 @@
 #ifndef UI_APP_LIST_COCOA_TEST_APPS_GRID_CONTROLLER_TEST_HELPER_H_
 #define UI_APP_LIST_COCOA_TEST_APPS_GRID_CONTROLLER_TEST_HELPER_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"

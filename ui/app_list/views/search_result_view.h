@@ -5,11 +5,13 @@
 #ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_H_
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/search_result_observer.h"

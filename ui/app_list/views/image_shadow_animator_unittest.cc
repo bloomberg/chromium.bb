@@ -4,6 +4,7 @@
 
 #include "ui/app_list/views/image_shadow_animator.h"
 
+#include "base/macros.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace {

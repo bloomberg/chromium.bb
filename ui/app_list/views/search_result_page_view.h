@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"

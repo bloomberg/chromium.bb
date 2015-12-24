@@ -4,8 +4,11 @@
 
 #include "ui/app_list/views/pulsing_block_view.h"
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer.h"

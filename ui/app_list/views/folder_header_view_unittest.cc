@@ -4,11 +4,13 @@
 
 #include "ui/app_list/views/folder_header_view.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/app_list/app_list_model.h"
 #import "ui/app_list/cocoa/apps_search_results_controller.h"

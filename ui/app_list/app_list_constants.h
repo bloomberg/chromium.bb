@@ -5,6 +5,9 @@
 #ifndef UI_APP_LIST_APP_LIST_CONSTANTS_H_
 #define UI_APP_LIST_APP_LIST_CONSTANTS_H_
 
+#include <stddef.h>
+
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/base/resource/resource_bundle.h"

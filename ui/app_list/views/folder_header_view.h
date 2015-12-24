@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_observer.h"
 #include "ui/views/controls/button/button.h"

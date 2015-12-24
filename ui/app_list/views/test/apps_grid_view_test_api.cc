@@ -4,6 +4,7 @@
 
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 
+#include "build/build_config.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/events/event.h"

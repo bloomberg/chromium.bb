@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_item_list.h"

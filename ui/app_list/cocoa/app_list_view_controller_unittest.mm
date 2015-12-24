@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #import "testing/gtest_mac.h"
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"

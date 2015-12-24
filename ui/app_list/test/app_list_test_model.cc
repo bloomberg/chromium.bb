@@ -4,6 +4,8 @@
 
 #include "ui/app_list/test/app_list_test_model.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"

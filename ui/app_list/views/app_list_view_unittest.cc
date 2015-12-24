@@ -4,13 +4,17 @@
 
 #include "ui/app_list/views/app_list_view.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"

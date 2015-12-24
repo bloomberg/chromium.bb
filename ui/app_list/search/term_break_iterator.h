@@ -5,7 +5,9 @@
 #ifndef UI_APP_LIST_SEARCH_TERM_BREAK_ITERATOR_H_
 #define UI_APP_LIST_SEARCH_TERM_BREAK_ITERATOR_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"

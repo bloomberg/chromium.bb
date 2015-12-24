@@ -4,8 +4,11 @@
 
 #include "ui/app_list/views/search_result_list_view.h"
 
+#include <stddef.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_model.h"

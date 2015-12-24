@@ -5,9 +5,11 @@
 #ifndef UI_APP_LIST_VIEWS_START_PAGE_VIEW_H_
 #define UI_APP_LIST_VIEWS_START_PAGE_VIEW_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/views/app_list_page.h"
 

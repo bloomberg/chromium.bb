@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_view_delegate.h"

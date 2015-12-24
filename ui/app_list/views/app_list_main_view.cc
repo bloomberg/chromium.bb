@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"

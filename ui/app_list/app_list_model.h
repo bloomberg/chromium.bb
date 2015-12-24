@@ -5,10 +5,12 @@
 #ifndef UI_APP_LIST_APP_LIST_MODEL_H_
 #define UI_APP_LIST_APP_LIST_MODEL_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"

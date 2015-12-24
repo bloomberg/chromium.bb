@@ -6,6 +6,7 @@
 #define UI_APP_LIST_COCOA_APPS_COLLECTION_VIEW_DRAG_MANAGER_H_
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "ui/app_list/app_list_export.h"

@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_model_observer.h"

@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_FOLDER_BACKGROUND_VIEW_H_
 #define UI_APP_LIST_VIEWS_FOLDER_BACKGROUND_VIEW_H_
 
+#include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/view.h"
 

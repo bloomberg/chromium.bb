@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"

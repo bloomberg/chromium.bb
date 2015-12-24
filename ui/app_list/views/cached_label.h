@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_CACHED_LABEL_H_
 #define UI_APP_LIST_VIEWS_CACHED_LABEL_H_
 
+#include "build/build_config.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"

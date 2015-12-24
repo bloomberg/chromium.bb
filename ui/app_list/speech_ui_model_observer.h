@@ -5,7 +5,8 @@
 #ifndef UI_APP_LIST_SPEECH_UI_MODEL_OBSERVER_H_
 #define UI_APP_LIST_SPEECH_UI_MODEL_OBSERVER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
 
@@ -25,7 +26,7 @@ class APP_LIST_EXPORT SpeechUIModelObserver {
  public:
   // Invoked when sound level for the speech recognition has changed. |level|
   // represents the current sound-level in the range of [0, 255].
-  virtual void OnSpeechSoundLevelChanged(uint8 level) {}
+  virtual void OnSpeechSoundLevelChanged(uint8_t level) {}
 
   // Invoked when a speech result arrives. |is_final| is true only when the
   // speech result is final.

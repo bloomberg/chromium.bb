@@ -4,8 +4,11 @@
 
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 
+#include <stddef.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"

@@ -5,7 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_PAGE_SWITCHER_H_
 #define UI_APP_LIST_VIEWS_PAGE_SWITCHER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"

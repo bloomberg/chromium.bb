@@ -4,7 +4,10 @@
 
 #import "ui/app_list/cocoa/apps_search_results_controller.h"
 
+#include <stddef.h>
+
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"

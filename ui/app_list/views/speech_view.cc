@@ -8,6 +8,7 @@
 
 #include <limits>
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"

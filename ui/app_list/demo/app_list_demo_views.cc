@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "ui/app_list/test/app_list_test_model.h"

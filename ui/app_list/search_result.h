@@ -5,10 +5,12 @@
 #ifndef UI_APP_LIST_SEARCH_RESULT_H_
 #define UI_APP_LIST_SEARCH_RESULT_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"

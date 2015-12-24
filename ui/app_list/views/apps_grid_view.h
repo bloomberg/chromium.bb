@@ -5,14 +5,17 @@
 #ifndef UI_APP_LIST_VIEWS_APPS_GRID_VIEW_H_
 #define UI_APP_LIST_VIEWS_APPS_GRID_VIEW_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <tuple>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_model_observer.h"

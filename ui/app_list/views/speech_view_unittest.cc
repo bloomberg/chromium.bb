@@ -4,6 +4,7 @@
 
 #include "ui/app_list/views/speech_view.h"
 
+#include "base/macros.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/image_button.h"

@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_ACTIONS_VIEW_DELEGATE_H_
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_ACTIONS_VIEW_DELEGATE_H_
 
+#include <stddef.h>
+
 namespace app_list {
 
 class SearchResultActionsViewDelegate {

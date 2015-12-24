@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "ui/app_list/search_box_model_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/gfx/shadow_value.h"

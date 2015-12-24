@@ -5,6 +5,9 @@
 #ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_CONTAINER_VIEW_H_
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_CONTAINER_VIEW_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/views/view.h"

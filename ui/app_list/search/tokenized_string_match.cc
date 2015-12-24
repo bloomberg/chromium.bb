@@ -4,10 +4,13 @@
 
 #include "ui/app_list/search/tokenized_string_match.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/app_list/search/tokenized_string_char_iterator.h"
 
 namespace app_list {

@@ -5,7 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_PROGRESS_BAR_VIEW_H_
 #define UI_APP_LIST_VIEWS_PROGRESS_BAR_VIEW_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/progress_bar.h"
 

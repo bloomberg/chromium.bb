@@ -5,10 +5,12 @@
 #ifndef UI_APP_LIST_SEARCH_MIXER_H_
 #define UI_APP_LIST_SEARCH_MIXER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"

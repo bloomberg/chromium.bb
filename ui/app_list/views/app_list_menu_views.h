@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_APP_LIST_MENU_VIEWS_H_
 #define UI_APP_LIST_VIEWS_APP_LIST_MENU_VIEWS_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_menu.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"

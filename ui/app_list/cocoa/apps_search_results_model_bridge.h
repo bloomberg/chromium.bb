@@ -5,7 +5,10 @@
 #ifndef UI_APP_LIST_COCOA_APPS_SEARCH_RESULTS_MODEL_BRIDGE_H_
 #define UI_APP_LIST_COCOA_APPS_SEARCH_RESULTS_MODEL_BRIDGE_H_
 
+#include <stddef.h>
+
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/base/models/list_model_observer.h"
 

@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_FOLDER_IMAGE_H_
 #define UI_APP_LIST_FOLDER_IMAGE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/observer_list.h"

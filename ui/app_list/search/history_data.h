@@ -5,11 +5,13 @@
 #ifndef UI_APP_LIST_SEARCH_HISTORY_DATA_H_
 #define UI_APP_LIST_SEARCH_HISTORY_DATA_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

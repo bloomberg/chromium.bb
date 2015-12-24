@@ -5,7 +5,9 @@
 #ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_LIST_VIEW_H_
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_LIST_VIEW_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/views/search_result_container_view.h"
 #include "ui/gfx/animation/animation_delegate.h"

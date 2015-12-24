@@ -5,6 +5,7 @@
 #include "ui/app_list/views/cached_label.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"

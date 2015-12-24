@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"

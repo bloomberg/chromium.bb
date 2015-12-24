@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"

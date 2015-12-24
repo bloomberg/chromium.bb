@@ -6,8 +6,10 @@
 #define UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"

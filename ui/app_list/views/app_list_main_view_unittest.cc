@@ -4,10 +4,12 @@
 
 #include "ui/app_list/views/app_list_main_view.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_model.h"

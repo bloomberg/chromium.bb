@@ -5,12 +5,15 @@
 #ifndef UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_view_delegate.h"

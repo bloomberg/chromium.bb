@@ -5,7 +5,9 @@
 #ifndef UI_APP_LIST_SEARCH_CONTROLLER_H_
 #define UI_APP_LIST_SEARCH_CONTROLLER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/timer/timer.h"

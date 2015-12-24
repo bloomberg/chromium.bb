@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/apps_search_box_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"

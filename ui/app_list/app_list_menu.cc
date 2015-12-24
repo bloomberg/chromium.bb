@@ -4,6 +4,9 @@
 
 #include "ui/app_list/app_list_menu.h"
 
+#include <stddef.h>
+
+#include "build/build_config.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/resources/grit/app_list_resources.h"
 #include "ui/base/l10n/l10n_util.h"
