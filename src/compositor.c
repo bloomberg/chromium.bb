@@ -1069,15 +1069,15 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	client = wl_resource_get_client(es->resource);
 
 	wl_list_for_each(output, &es->compositor->output_list, link) {
-		if (1 << output->id & different)
+		if (1u << output->id & different)
 			resource =
 				wl_resource_find_for_client(&output->resource_list,
 							 client);
 		if (resource == NULL)
 			continue;
-		if (1 << output->id & entered)
+		if (1u << output->id & entered)
 			wl_surface_send_enter(es->resource, resource);
-		if (1 << output->id & left)
+		if (1u << output->id & left)
 			wl_surface_send_leave(es->resource, resource);
 	}
 }
@@ -1166,7 +1166,7 @@ weston_view_assign_output(struct weston_view *ev)
 		area = (e->x2 - e->x1) * (e->y2 - e->y1);
 
 		if (area > 0)
-			mask |= 1 << output->id;
+			mask |= 1u << output->id;
 
 		if (area >= max) {
 			new_output = output;
@@ -1503,7 +1503,7 @@ weston_surface_schedule_repaint(struct weston_surface *surface)
 	struct weston_output *output;
 
 	wl_list_for_each(output, &surface->compositor->output_list, link)
-		if (surface->output_mask & (1 << output->id))
+		if (surface->output_mask & (1u << output->id))
 			weston_output_schedule_repaint(output);
 }
 
@@ -1519,7 +1519,7 @@ weston_view_schedule_repaint(struct weston_view *view)
 	struct weston_output *output;
 
 	wl_list_for_each(output, &view->surface->compositor->output_list, link)
-		if (view->output_mask & (1 << output->id))
+		if (view->output_mask & (1u << output->id))
 			weston_output_schedule_repaint(output);
 }
 
@@ -3307,7 +3307,7 @@ subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 				      struct weston_output, link);
 
 		surface->output = output;
-		weston_surface_update_output_mask(surface, 1 << output->id);
+		weston_surface_update_output_mask(surface, 1u << output->id);
 	}
 }
 
@@ -4108,7 +4108,7 @@ weston_output_destroy(struct weston_output *output)
 	output->destroying = 1;
 
 	wl_list_for_each(view, &output->compositor->view_list, link) {
-		if (view->output_mask & (1 << output->id))
+		if (view->output_mask & (1u << output->id))
 			weston_view_assign_output(view);
 	}
 
@@ -4125,7 +4125,7 @@ weston_output_destroy(struct weston_output *output)
 	free(output->name);
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
-	output->compositor->output_id_pool &= ~(1 << output->id);
+	output->compositor->output_id_pool &= ~(1u << output->id);
 
 	wl_resource_for_each(resource, &output->resource_list) {
 		wl_resource_set_destructor(resource, NULL);
@@ -4336,7 +4336,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	 * as our ID, and mark it used in the compositor's output_id_pool.
 	 */
 	output->id = ffs(~output->compositor->output_id_pool) - 1;
-	output->compositor->output_id_pool |= 1 << output->id;
+	output->compositor->output_id_pool |= 1u << output->id;
 
 	output->global =
 		wl_global_create(c->wl_display, &wl_output_interface, 2,
