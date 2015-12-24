@@ -17,8 +17,8 @@
     mac_chromium_asan_rel_ng -b mac_chromium_gn_dbg -b ios_rel_device_ninja &&
     git cl try -m tryserver.chromium.linux -b linux_chromium_chromeos_dbg_ng
     -b linux_chromium_asan_rel_ng -b linux_chromium_chromeos_asan_rel_ng
-    -b android_clang_dbg_recipe -b linux_chromium_rel_ng
-    -b linux_chromium_msan_rel_ng &&
+    -b linux_chromium_rel_ng -b linux_chromium_msan_rel_ng &&
+    git cl try -m tryserver.chromium.android -b android_clang_dbg_recipe &&
     git cl try -m tryserver.blink -b linux_blink_rel`
 1.  Commit roll CL from the first step
 1.  The bots will now pull the prebuilt binary, and goma will have a matching
