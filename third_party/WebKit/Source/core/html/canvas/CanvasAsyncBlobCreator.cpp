@@ -9,7 +9,6 @@
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/heap/Handle.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
@@ -32,29 +31,26 @@ bool isDeadlineNearOrPassed(double deadlineSeconds)
 
 } // anonymous namespace
 
-class CanvasAsyncBlobCreator::ContextObserver final : public NoBaseWillBeGarbageCollected<CanvasAsyncBlobCreator::ContextObserver>, public ContextLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasAsyncBlobCreator::ContextObserver);
-public:
-    ContextObserver(ExecutionContext* executionContext, CanvasAsyncBlobCreator* asyncBlobCreator)
-        : ContextLifecycleObserver(executionContext)
-        , m_asyncBlobCreator(asyncBlobCreator)
-    {
-    }
+class CanvasAsyncBlobCreator::ContextObserver final : public ContextLifecycleObserver {
+    public:
+        ContextObserver(ExecutionContext* executionContext, CanvasAsyncBlobCreator* asyncBlobCreator)
+            : ContextLifecycleObserver(executionContext)
+            , m_asyncBlobCreator(asyncBlobCreator)
+        {
+        }
 
-    DECLARE_VIRTUAL_TRACE();
+        void contextDestroyed() override
+        {
+            ContextLifecycleObserver::contextDestroyed();
+            ASSERT(m_asyncBlobCreator);
+            m_asyncBlobCreator->m_cancelled = true;
+            // After sending cancel signal to asyncBlobCreator, the observer has
+            // done its job and thus deref asyncBlobCreator for proper destruction
+            m_asyncBlobCreator = nullptr;
+        }
 
-    void contextDestroyed() override
-    {
-        ContextLifecycleObserver::contextDestroyed();
-        ASSERT(m_asyncBlobCreator);
-        m_asyncBlobCreator->m_cancelled = true;
-        // After sending cancel signal to asyncBlobCreator, the observer has
-        // done its job and thus deref asyncBlobCreator for proper destruction
-        m_asyncBlobCreator = nullptr;
-    }
-
-private:
-    CanvasAsyncBlobCreator* m_asyncBlobCreator;
+    private:
+        CanvasAsyncBlobCreator* m_asyncBlobCreator;
 };
 
 PassRefPtr<CanvasAsyncBlobCreator> CanvasAsyncBlobCreator::create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize& size, FileCallback* callback, ExecutionContext* executionContext)
@@ -78,11 +74,6 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> 
 }
 
 CanvasAsyncBlobCreator::~CanvasAsyncBlobCreator() { }
-
-DEFINE_TRACE(CanvasAsyncBlobCreator::ContextObserver)
-{
-    ContextLifecycleObserver::trace(visitor);
-}
 
 void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality)
 {
