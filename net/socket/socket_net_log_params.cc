@@ -45,8 +45,10 @@ scoped_ptr<base::Value> NetLogSourceAddressCallback(
     socklen_t address_len,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("source_address",
-                  NetAddressToStringWithPort(net_address, address_len));
+  IPEndPoint ipe;
+  bool result = ipe.FromSockAddr(net_address, address_len);
+  DCHECK(result);
+  dict->SetString("source_address", ipe.ToString());
   return dict.Pass();
 }
 

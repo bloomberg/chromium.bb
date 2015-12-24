@@ -6,6 +6,7 @@
 
 #include <iphlpapi.h>
 #include <wlanapi.h>
+#pragma comment(lib, "iphlpapi.lib")
 
 #include <algorithm>
 

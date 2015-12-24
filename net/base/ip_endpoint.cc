@@ -8,6 +8,7 @@
 
 #if defined(OS_WIN)
 #include <winsock2.h>
+#include <ws2bth.h>
 #elif defined(OS_POSIX)
 #include <netinet/in.h>
 #endif
@@ -27,6 +28,52 @@ namespace {
 // By definition, socklen_t is large enough to hold both sizes.
 const socklen_t kSockaddrInSize = sizeof(struct sockaddr_in);
 const socklen_t kSockaddrIn6Size = sizeof(struct sockaddr_in6);
+
+// Extracts the address and port portions of a sockaddr.
+bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
+                              socklen_t sock_addr_len,
+                              const uint8_t** address,
+                              size_t* address_len,
+                              uint16_t* port) {
+  if (sock_addr->sa_family == AF_INET) {
+    if (sock_addr_len < static_cast<socklen_t>(sizeof(struct sockaddr_in)))
+      return false;
+    const struct sockaddr_in* addr =
+        reinterpret_cast<const struct sockaddr_in*>(sock_addr);
+    *address = reinterpret_cast<const uint8_t*>(&addr->sin_addr);
+    *address_len = kIPv4AddressSize;
+    if (port)
+      *port = base::NetToHost16(addr->sin_port);
+    return true;
+  }
+
+  if (sock_addr->sa_family == AF_INET6) {
+    if (sock_addr_len < static_cast<socklen_t>(sizeof(struct sockaddr_in6)))
+      return false;
+    const struct sockaddr_in6* addr =
+        reinterpret_cast<const struct sockaddr_in6*>(sock_addr);
+    *address = reinterpret_cast<const uint8_t*>(&addr->sin6_addr);
+    *address_len = kIPv6AddressSize;
+    if (port)
+      *port = base::NetToHost16(addr->sin6_port);
+    return true;
+  }
+
+#if defined(OS_WIN)
+  if (sock_addr->sa_family == AF_BTH) {
+    if (sock_addr_len < static_cast<socklen_t>(sizeof(SOCKADDR_BTH)))
+      return false;
+    const SOCKADDR_BTH* addr = reinterpret_cast<const SOCKADDR_BTH*>(sock_addr);
+    *address = reinterpret_cast<const uint8_t*>(&addr->btAddr);
+    *address_len = kBluetoothAddressSize;
+    if (port)
+      *port = static_cast<uint16_t>(addr->port);
+    return true;
+  }
+#endif
+
+  return false;  // Unrecognized |sa_family|.
+}
 
 }  // namespace
 

@@ -88,24 +88,6 @@ struct SockaddrStorage {
   struct sockaddr* const addr;
 };
 
-// Extracts the IP address and port portions of a sockaddr. |port| is optional,
-// and will not be filled in if NULL.
-bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
-                              socklen_t sock_addr_len,
-                              const unsigned char** address,
-                              size_t* address_len,
-                              uint16_t* port);
-
-// Same as IPAddressToString() but for a sockaddr. This output will not include
-// the IPv6 scope ID.
-NET_EXPORT std::string NetAddressToString(const struct sockaddr* sa,
-                                          socklen_t sock_addr_len);
-
-// Same as IPAddressToStringWithPort() but for a sockaddr. This output will not
-// include the IPv6 scope ID.
-NET_EXPORT std::string NetAddressToStringWithPort(const struct sockaddr* sa,
-                                                  socklen_t sock_addr_len);
-
 // Returns the hostname of the current system. Returns empty string on failure.
 NET_EXPORT std::string GetHostName();
 

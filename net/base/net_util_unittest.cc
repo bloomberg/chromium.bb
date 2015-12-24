@@ -60,28 +60,6 @@ const unsigned char kLocalhostIPv6[] =
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 const uint16_t kLocalhostLookupPort = 80;
 
-// Fills in sockaddr for the given 32-bit address (IPv4.)
-// |bytes| should be an array of length 4.
-void MakeIPv4Address(const uint8_t* bytes, int port, SockaddrStorage* storage) {
-  memset(&storage->addr_storage, 0, sizeof(storage->addr_storage));
-  storage->addr_len = sizeof(struct sockaddr_in);
-  struct sockaddr_in* addr4 = reinterpret_cast<sockaddr_in*>(storage->addr);
-  addr4->sin_port = base::HostToNet16(port);
-  addr4->sin_family = AF_INET;
-  memcpy(&addr4->sin_addr, bytes, 4);
-}
-
-// Fills in sockaddr for the given 128-bit address (IPv6.)
-// |bytes| should be an array of length 16.
-void MakeIPv6Address(const uint8_t* bytes, int port, SockaddrStorage* storage) {
-  memset(&storage->addr_storage, 0, sizeof(storage->addr_storage));
-  storage->addr_len = sizeof(struct sockaddr_in6);
-  struct sockaddr_in6* addr6 = reinterpret_cast<sockaddr_in6*>(storage->addr);
-  addr6->sin6_port = base::HostToNet16(port);
-  addr6->sin6_family = AF_INET6;
-  memcpy(&addr6->sin6_addr, bytes, 16);
-}
-
 bool HasEndpoint(const IPEndPoint& endpoint, const AddressList& addresses) {
   for (const auto& address : addresses) {
     if (endpoint == address)
@@ -325,66 +303,6 @@ TEST(NetUtilTest, GetHostAndOptionalPort) {
     std::string host_and_port = GetHostAndOptionalPort(tests[i].url);
     EXPECT_EQ(std::string(tests[i].expected_host_and_port), host_and_port);
   }
-}
-
-TEST(NetUtilTest, NetAddressToString_IPv4) {
-  const struct {
-    uint8_t addr[4];
-    const char* const result;
-  } tests[] = {
-    {{0, 0, 0, 0}, "0.0.0.0"},
-    {{127, 0, 0, 1}, "127.0.0.1"},
-    {{192, 168, 0, 1}, "192.168.0.1"},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SockaddrStorage storage;
-    MakeIPv4Address(tests[i].addr, 80, &storage);
-    std::string result = NetAddressToString(storage.addr, storage.addr_len);
-    EXPECT_EQ(std::string(tests[i].result), result);
-  }
-}
-
-TEST(NetUtilTest, NetAddressToString_IPv6) {
-  const struct {
-    uint8_t addr[16];
-    const char* const result;
-  } tests[] = {
-    {{0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0xFE, 0xDC, 0xBA,
-      0x98, 0x76, 0x54, 0x32, 0x10},
-     "fedc:ba98:7654:3210:fedc:ba98:7654:3210"},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SockaddrStorage storage;
-    MakeIPv6Address(tests[i].addr, 80, &storage);
-    EXPECT_EQ(std::string(tests[i].result),
-        NetAddressToString(storage.addr, storage.addr_len));
-  }
-}
-
-TEST(NetUtilTest, NetAddressToStringWithPort_IPv4) {
-  uint8_t addr[] = {127, 0, 0, 1};
-  SockaddrStorage storage;
-  MakeIPv4Address(addr, 166, &storage);
-  std::string result = NetAddressToStringWithPort(storage.addr,
-                                                  storage.addr_len);
-  EXPECT_EQ("127.0.0.1:166", result);
-}
-
-TEST(NetUtilTest, NetAddressToStringWithPort_IPv6) {
-  uint8_t addr[] = {
-      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0xFE, 0xDC, 0xBA,
-      0x98, 0x76, 0x54, 0x32, 0x10
-  };
-  SockaddrStorage storage;
-  MakeIPv6Address(addr, 361, &storage);
-  std::string result = NetAddressToStringWithPort(storage.addr,
-                                                  storage.addr_len);
-
-  // May fail on systems that don't support IPv6.
-  if (!result.empty())
-    EXPECT_EQ("[fedc:ba98:7654:3210:fedc:ba98:7654:3210]:361", result);
 }
 
 TEST(NetUtilTest, GetHostName) {
