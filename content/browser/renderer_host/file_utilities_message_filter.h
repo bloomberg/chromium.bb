@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_FILE_UTILITIES_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_FILE_UTILITIES_MESSAGE_FILTER_H_
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace IPC {

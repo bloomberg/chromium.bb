@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/buffer_format_util.h"

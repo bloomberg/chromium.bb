@@ -5,7 +5,9 @@
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 
 #import <objc/runtime.h>
+#include <stddef.h>
 
+#include "base/macros.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac.h"
 

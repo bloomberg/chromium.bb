@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/render_process_host.h"

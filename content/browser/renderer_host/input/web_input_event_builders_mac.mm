@@ -33,6 +33,8 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 
+#include <stdint.h>
+
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"

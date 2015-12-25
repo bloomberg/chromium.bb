@@ -4,8 +4,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"

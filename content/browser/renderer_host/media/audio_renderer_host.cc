@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
@@ -569,8 +571,8 @@ void AudioRendererHost::DoCreateStream(int stream_id,
   }
 
   // Create the shared memory and share with the renderer process.
-  uint32 shared_memory_size = sizeof(media::AudioOutputBufferParameters) +
-                              AudioBus::CalculateMemorySize(params);
+  uint32_t shared_memory_size = sizeof(media::AudioOutputBufferParameters) +
+                                AudioBus::CalculateMemorySize(params);
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(shared_memory_size)) {
     SendErrorMessage(stream_id);

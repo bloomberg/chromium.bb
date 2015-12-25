@@ -5,10 +5,12 @@
 #include "content/browser/renderer_host/pepper/pepper_truetype_font.h"
 
 #include <windows.h>
+#include <stdint.h>
 #include <algorithm>
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"

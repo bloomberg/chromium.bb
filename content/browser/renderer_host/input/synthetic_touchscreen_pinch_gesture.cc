@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 
+#include <stdint.h>
+
 #include <cmath>
 
 #include "base/logging.h"
@@ -136,7 +138,7 @@ void SyntheticTouchscreenPinchGesture::SetupCoordinatesAndStopTime(
 
   max_pointer_delta_0_ = initial_distance_to_anchor - final_distance_to_anchor;
 
-  int64 total_duration_in_us = static_cast<int64>(
+  int64_t total_duration_in_us = static_cast<int64_t>(
       1e6 * (static_cast<double>(std::abs(2 * max_pointer_delta_0_)) /
              params_.relative_pointer_speed_in_pixels_s));
   DCHECK_GT(total_duration_in_us, 0);

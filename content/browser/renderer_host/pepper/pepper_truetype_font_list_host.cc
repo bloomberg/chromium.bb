@@ -4,8 +4,11 @@
 
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list_host.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"

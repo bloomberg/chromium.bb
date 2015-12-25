@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_OVERSCROLL_CONTROLLER_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_OVERSCROLL_CONTROLLER_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"

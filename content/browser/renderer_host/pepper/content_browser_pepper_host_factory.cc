@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 
+#include <stddef.h>
+
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
 #include "content/browser/renderer_host/pepper/pepper_file_io_host.h"

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
@@ -74,7 +75,7 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
 
   // Sends a WebSocketMsg_FlowControl IPC.
   WebSocketHostState SendFlowControl(int routing_id,
-                                     int64 quota) WARN_UNUSED_RESULT;
+                                     int64_t quota) WARN_UNUSED_RESULT;
 
   // Sends a WebSocketMsg_NotifyClosing IPC
   WebSocketHostState NotifyClosingHandshake(int routing_id) WARN_UNUSED_RESULT;
@@ -97,11 +98,11 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
 
   // Sends a WebSocketMsg_DropChannel IPC and deletes and unregisters the
   // channel.
-  WebSocketHostState DoDropChannel(
-      int routing_id,
-      bool was_clean,
-      uint16 code,
-      const std::string& reason) WARN_UNUSED_RESULT;
+  WebSocketHostState DoDropChannel(int routing_id,
+                                   bool was_clean,
+                                   uint16_t code,
+                                   const std::string& reason)
+      WARN_UNUSED_RESULT;
 
   // Returns whether the associated renderer process can read raw cookies.
   bool CanReadRawCookies() const;

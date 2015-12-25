@@ -4,12 +4,15 @@
 
 #include "content/browser/renderer_host/pepper/quota_reservation.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -40,7 +43,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   void ReserveQuota(
       const GURL& origin,
       storage::FileSystemType type,
-      int64 delta,
+      int64_t delta,
       const QuotaReservationManager::ReserveQuotaCallback& callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -49,11 +52,11 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   void ReleaseReservedQuota(const GURL& origin,
                             storage::FileSystemType type,
-                            int64 size) override {}
+                            int64_t size) override {}
 
   void CommitQuotaUsage(const GURL& origin,
                         storage::FileSystemType type,
-                        int64 delta) override {}
+                        int64_t delta) override {}
 
   void IncrementDirtyCount(const GURL& origin,
                            storage::FileSystemType type) override {}
@@ -102,7 +105,7 @@ class QuotaReservationTest : public testing::Test {
         new QuotaReservation(reservation, origin, type));
   }
 
-  void SetFileSize(const base::FilePath::StringType& file_name, int64 size) {
+  void SetFileSize(const base::FilePath::StringType& file_name, int64_t size) {
     base::File file(MakeFilePath(file_name),
                     base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE);
     ASSERT_TRUE(file.IsValid());
@@ -121,9 +124,9 @@ class QuotaReservationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(QuotaReservationTest);
 };
 
-void GotReservedQuota(int64* reserved_quota_ptr,
+void GotReservedQuota(int64_t* reserved_quota_ptr,
                       ppapi::FileGrowthMap* file_growths_ptr,
-                      int64 reserved_quota,
+                      int64_t reserved_quota,
                       const ppapi::FileSizeMap& maximum_written_offsets) {
   *reserved_quota_ptr = reserved_quota;
 
@@ -135,8 +138,8 @@ void GotReservedQuota(int64* reserved_quota_ptr,
 }
 
 void ReserveQuota(scoped_refptr<QuotaReservation> quota_reservation,
-                  int64 amount,
-                  int64* reserved_quota,
+                  int64_t amount,
+                  int64_t* reserved_quota,
                   ppapi::FileGrowthMap* file_growths) {
   quota_reservation->ReserveQuota(
       amount,
@@ -158,17 +161,17 @@ TEST_F(QuotaReservationTest, ReserveQuota) {
       CreateQuotaReservation(reservation, origin, type);
 
   // Reserve quota with no files open.
-  int64 amount = 100;
-  int64 reserved_quota;
+  int64_t amount = 100;
+  int64_t reserved_quota;
   ppapi::FileGrowthMap file_growths;
   ReserveQuota(test, amount, &reserved_quota, &file_growths);
   EXPECT_EQ(amount, reserved_quota);
   EXPECT_EQ(0U, file_growths.size());
 
   // Open a file, refresh the reservation, extend the file, and close it.
-  int64 file_size = 10;
+  int64_t file_size = 10;
   SetFileSize(file1_name, file_size);
-  int64 open_file_size =
+  int64_t open_file_size =
       test->OpenFile(kFile1ID, MakeFileSystemURL(file1_name));
   EXPECT_EQ(file_size, open_file_size);
 
@@ -178,7 +181,7 @@ TEST_F(QuotaReservationTest, ReserveQuota) {
   EXPECT_EQ(1U, file_growths.size());
   EXPECT_EQ(file_size, file_growths[kFile1ID].max_written_offset);
 
-  int64 new_file_size = 30;
+  int64_t new_file_size = 30;
   SetFileSize(file1_name, new_file_size);
 
   EXPECT_EQ(amount, reservation->remaining_quota());
@@ -199,25 +202,25 @@ TEST_F(QuotaReservationTest, MultipleFiles) {
       CreateQuotaReservation(reservation, origin, type);
 
   // Open some files of different sizes.
-  int64 file1_size = 10;
+  int64_t file1_size = 10;
   SetFileSize(file1_name, file1_size);
-  int64 open_file1_size =
+  int64_t open_file1_size =
       test->OpenFile(kFile1ID, MakeFileSystemURL(file1_name));
   EXPECT_EQ(file1_size, open_file1_size);
-  int64 file2_size = 20;
+  int64_t file2_size = 20;
   SetFileSize(file2_name, file2_size);
-  int64 open_file2_size =
+  int64_t open_file2_size =
       test->OpenFile(kFile2ID, MakeFileSystemURL(file2_name));
   EXPECT_EQ(file2_size, open_file2_size);
-  int64 file3_size = 30;
+  int64_t file3_size = 30;
   SetFileSize(file3_name, file3_size);
-  int64 open_file3_size =
+  int64_t open_file3_size =
       test->OpenFile(kFile3ID, MakeFileSystemURL(file3_name));
   EXPECT_EQ(file3_size, open_file3_size);
 
   // Reserve quota.
-  int64 amount = 100;
-  int64 reserved_quota;
+  int64_t amount = 100;
+  int64_t reserved_quota;
   ppapi::FileGrowthMap file_growths;
   file_growths[kFile1ID] = ppapi::FileGrowth(file1_size, 0);  // 3 files open.
   file_growths[kFile2ID] = ppapi::FileGrowth(file2_size, 0);

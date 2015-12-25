@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
@@ -568,7 +569,7 @@ void RenderWidgetHostViewBase::EndFrameSubscription() {
   NOTREACHED();
 }
 
-uint32 RenderWidgetHostViewBase::RendererFrameNumber() {
+uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {
   return renderer_frame_number_;
 }
 

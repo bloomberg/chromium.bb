@@ -172,8 +172,8 @@ void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
                  opener_id, *route_id));
 }
 
-void RenderWidgetHelper::OnCreateWidgetOnUI(int32 opener_id,
-                                            int32 route_id,
+void RenderWidgetHelper::OnCreateWidgetOnUI(int32_t opener_id,
+                                            int32_t route_id,
                                             blink::WebPopupType popup_type) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
@@ -181,8 +181,8 @@ void RenderWidgetHelper::OnCreateWidgetOnUI(int32 opener_id,
     host->CreateNewWidget(route_id, popup_type);
 }
 
-void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int32 opener_id,
-                                                      int32 route_id) {
+void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int32_t opener_id,
+                                                      int32_t route_id) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)

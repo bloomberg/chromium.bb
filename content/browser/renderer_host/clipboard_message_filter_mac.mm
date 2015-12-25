@@ -5,11 +5,12 @@
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #import "ui/base/cocoa/find_pasteboard.h"

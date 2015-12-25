@@ -8,14 +8,15 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/layers/layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -1206,7 +1207,7 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 #endif
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
@@ -1729,7 +1730,7 @@ gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
 }
 
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
-    uint32 index,
+    uint32_t index,
     gfx::Rect* rect) const {
   DCHECK(rect);
   if (index >= composition_character_bounds_.size())

@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <string>
@@ -12,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

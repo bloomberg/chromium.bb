@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
@@ -24,7 +26,7 @@
 
 namespace {
 
-typedef uint16 PacketLength;
+typedef uint16_t PacketLength;
 const int kPacketHeaderSize = sizeof(PacketLength);
 const int kReadBufferSize = 4096;
 const int kPacketLengthOffset = 2;
@@ -349,7 +351,7 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
 void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
                                 const std::vector<char>& data,
                                 const rtc::PacketOptions& options,
-                                uint64 packet_id) {
+                                uint64_t packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was
     // sent by hasn't been processed the renderer.
@@ -504,7 +506,7 @@ P2PSocketHostTcp::~P2PSocketHostTcp() {
 int P2PSocketHostTcp::ProcessInput(char* input, int input_len) {
   if (input_len < kPacketHeaderSize)
     return 0;
-  int packet_size = base::NetToHost16(*reinterpret_cast<uint16*>(input));
+  int packet_size = base::NetToHost16(*reinterpret_cast<uint16_t*>(input));
   if (input_len < packet_size + kPacketHeaderSize)
     return 0;
 
@@ -522,7 +524,7 @@ void P2PSocketHostTcp::DoSend(const net::IPEndPoint& to,
   int size = kPacketHeaderSize + data.size();
   scoped_refptr<net::DrainableIOBuffer> buffer =
       new net::DrainableIOBuffer(new net::IOBuffer(size), size);
-  *reinterpret_cast<uint16*>(buffer->data()) = base::HostToNet16(data.size());
+  *reinterpret_cast<uint16_t*>(buffer->data()) = base::HostToNet16(data.size());
   memcpy(buffer->data() + kPacketHeaderSize, &data[0], data.size());
 
   packet_processing_helpers::ApplyPacketOptions(
@@ -616,11 +618,12 @@ int P2PSocketHostStunTcp::GetExpectedPacketSize(
     const char* data, int len, int* pad_bytes) {
   DCHECK_LE(kTurnChannelDataHeaderSize, len);
   // Both stun and turn had length at offset 2.
-  int packet_size = base::NetToHost16(*reinterpret_cast<const uint16*>(
-      data + kPacketLengthOffset));
+  int packet_size = base::NetToHost16(
+      *reinterpret_cast<const uint16_t*>(data + kPacketLengthOffset));
 
   // Get packet type (STUN or TURN).
-  uint16 msg_type = base::NetToHost16(*reinterpret_cast<const uint16*>(data));
+  uint16_t msg_type =
+      base::NetToHost16(*reinterpret_cast<const uint16_t*>(data));
 
   *pad_bytes = 0;
   // Add heder length to packet length.

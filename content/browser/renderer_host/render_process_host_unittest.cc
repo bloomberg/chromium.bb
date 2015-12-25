@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <limits>
 
+#include "build/build_config.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"

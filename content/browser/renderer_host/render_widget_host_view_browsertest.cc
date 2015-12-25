@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -584,7 +588,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     //      is allowed to transiently fail.  The purpose of these tests is to
     //      confirm correct cropping/scaling behavior; and not that every
     //      readback must succeed.  http://crbug.com/444237
-    uint32 last_frame_number = 0;
+    uint32_t last_frame_number = 0;
     do {
       // Wait for renderer to provide the next frame.
       while (!GetRenderWidgetHost()->ScheduleComposite())

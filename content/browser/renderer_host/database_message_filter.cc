@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/common/database_messages.h"
 #include "content/public/browser/user_metrics.h"
@@ -227,7 +228,7 @@ void DatabaseMessageFilter::DatabaseDeleteFile(
 
 void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
     const base::string16& vfs_file_name,
-    int32* attributes) {
+    int32_t* attributes) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   *attributes = -1;
   base::FilePath db_file =
@@ -238,7 +239,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
 
 void DatabaseMessageFilter::OnDatabaseGetFileSize(
     const base::string16& vfs_file_name,
-    int64* size) {
+    int64_t* size) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   *size = 0;
   base::FilePath db_file =
@@ -257,7 +258,7 @@ void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
   if (!quota_manager) {
     NOTREACHED();  // The system is shutting down, messages are unexpected.
     DatabaseHostMsg_GetSpaceAvailable::WriteReplyParams(
-        reply_msg, static_cast<int64>(0));
+        reply_msg, static_cast<int64_t>(0));
     Send(reply_msg);
     return;
   }
@@ -275,9 +276,9 @@ void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
 void DatabaseMessageFilter::OnDatabaseGetUsageAndQuota(
     IPC::Message* reply_msg,
     storage::QuotaStatusCode status,
-    int64 usage,
-    int64 quota) {
-  int64 available = 0;
+    int64_t usage,
+    int64_t quota) {
+  int64_t available = 0;
   if ((status == storage::kQuotaStatusOk) && (usage < quota))
     available = quota - usage;
   DatabaseHostMsg_GetSpaceAvailable::WriteReplyParams(reply_msg, available);
@@ -285,7 +286,9 @@ void DatabaseMessageFilter::OnDatabaseGetUsageAndQuota(
 }
 
 void DatabaseMessageFilter::OnDatabaseSetFileSize(
-    const base::string16& vfs_file_name, int64 size, bool* success) {
+    const base::string16& vfs_file_name,
+    int64_t size,
+    bool* success) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   *success = false;
   base::FilePath db_file =
@@ -298,7 +301,7 @@ void DatabaseMessageFilter::OnDatabaseOpened(
     const std::string& origin_identifier,
     const base::string16& database_name,
     const base::string16& description,
-    int64 estimated_size) {
+    int64_t estimated_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
@@ -311,7 +314,7 @@ void DatabaseMessageFilter::OnDatabaseOpened(
       "websql.OpenDatabase",
       IsOriginSecure(storage::GetOriginFromIdentifier(origin_identifier)));
 
-  int64 database_size = 0;
+  int64_t database_size = 0;
   db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
                               estimated_size, &database_size);
   database_connections_.AddConnection(origin_identifier, database_name);
@@ -365,7 +368,7 @@ void DatabaseMessageFilter::OnHandleSqliteError(
 void DatabaseMessageFilter::OnDatabaseSizeChanged(
     const std::string& origin_identifier,
     const base::string16& database_name,
-    int64 database_size) {
+    int64_t database_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (database_connections_.IsOriginUsed(origin_identifier)) {
     Send(new DatabaseMsg_UpdateSize(origin_identifier, database_name,

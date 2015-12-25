@@ -6,6 +6,8 @@
 
 #include <dwrite.h>
 #include <shlobj.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <set>
 #include <utility>

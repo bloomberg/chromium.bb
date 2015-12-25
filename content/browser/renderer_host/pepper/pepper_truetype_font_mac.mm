@@ -5,6 +5,8 @@
 #include "content/browser/renderer_host/pepper/pepper_truetype_font.h"
 
 #import <ApplicationServices/ApplicationServices.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <stdio.h>
 
@@ -12,6 +14,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_byteorder.h"

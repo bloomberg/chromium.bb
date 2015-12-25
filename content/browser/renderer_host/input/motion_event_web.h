@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOTION_EVENT_WEB_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOTION_EVENT_WEB_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/gesture_detection/motion_event.h"
@@ -18,7 +22,7 @@ class CONTENT_EXPORT MotionEventWeb : public ui::MotionEvent {
   ~MotionEventWeb() override;
 
   // ui::MotionEvent
-  uint32 GetUniqueEventId() const override;
+  uint32_t GetUniqueEventId() const override;
   Action GetAction() const override;
   int GetActionIndex() const override;
   size_t GetPointerCount() const override;
@@ -41,7 +45,7 @@ class CONTENT_EXPORT MotionEventWeb : public ui::MotionEvent {
   blink::WebTouchEvent event_;
   Action cached_action_;
   int cached_action_index_;
-  const uint32 unique_event_id_;
+  const uint32_t unique_event_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MotionEventWeb);
 };

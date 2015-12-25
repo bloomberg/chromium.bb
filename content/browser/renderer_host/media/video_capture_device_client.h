@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_DEVICE_CLIENT_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_DEVICE_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -40,14 +44,14 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   ~VideoCaptureDeviceClient() override;
 
   // VideoCaptureDevice::Client implementation.
-  void OnIncomingCapturedData(const uint8* data,
+  void OnIncomingCapturedData(const uint8_t* data,
                               int length,
                               const media::VideoCaptureFormat& frame_format,
                               int rotation,
                               const base::TimeTicks& timestamp) override;
-  void OnIncomingCapturedYuvData(const uint8* y_data,
-                                 const uint8* u_data,
-                                 const uint8* v_data,
+  void OnIncomingCapturedYuvData(const uint8_t* y_data,
+                                 const uint8_t* u_data,
+                                 const uint8_t* v_data,
                                  size_t y_stride,
                                  size_t u_stride,
                                  size_t v_stride,
@@ -85,9 +89,9 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   // are destroyed or returned.
   scoped_ptr<Buffer> ReserveI420OutputBuffer(const gfx::Size& dimensions,
                                              media::VideoPixelStorage storage,
-                                             uint8** y_plane_data,
-                                             uint8** u_plane_data,
-                                             uint8** v_plane_data);
+                                             uint8_t** y_plane_data,
+                                             uint8_t** u_plane_data,
+                                             uint8_t** v_plane_data);
 
   // The controller to which we post events.
   const base::WeakPtr<VideoCaptureController> controller_;

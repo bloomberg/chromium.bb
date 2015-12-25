@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_GAMEPAD_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_GAMEPAD_HOST_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/gamepad/gamepad_consumer.h"
 #include "content/common/content_export.h"

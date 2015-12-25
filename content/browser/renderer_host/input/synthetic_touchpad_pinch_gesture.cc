@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
 
 namespace content {
@@ -129,9 +131,9 @@ void SyntheticTouchpadPinchGesture::CalculateEndTime(
   float scale_factor_delta =
       (scale_factor - 1.0f) * kPixelsNeededToDoubleOrHalve;
 
-  int64 total_duration_in_us =
-      static_cast<int64>(1e6 * (static_cast<double>(scale_factor_delta) /
-                                params_.relative_pointer_speed_in_pixels_s));
+  int64_t total_duration_in_us =
+      static_cast<int64_t>(1e6 * (static_cast<double>(scale_factor_delta) /
+                                  params_.relative_pointer_speed_in_pixels_s));
   DCHECK_GT(total_duration_in_us, 0);
   stop_time_ =
       start_time_ + base::TimeDelta::FromMicroseconds(total_duration_in_us);

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"

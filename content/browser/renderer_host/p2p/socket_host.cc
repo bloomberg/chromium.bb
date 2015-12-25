@@ -19,7 +19,7 @@
 
 namespace {
 
-const uint32 kStunMagicCookie = 0x2112A442;
+const uint32_t kStunMagicCookie = 0x2112A442;
 const size_t kMinRtpHeaderLength = 12;
 const size_t kMinRtcpHeaderLength = 8;
 const size_t kRtpExtensionHeaderLength = 4;
@@ -41,7 +41,7 @@ bool IsTurnChannelData(const char* data, size_t length) {
 }
 
 bool IsDtlsPacket(const char* data, size_t length) {
-  const uint8* u = reinterpret_cast<const uint8*>(data);
+  const uint8_t* u = reinterpret_cast<const uint8_t*>(data);
   return (length >= kDtlsRecordHeaderLength && (u[0] > 19 && u[0] < 64));
 }
 
@@ -50,7 +50,7 @@ bool IsRtcpPacket(const char* data, size_t length) {
     return false;
   }
 
-  int type = (static_cast<uint8>(data[1]) & 0x7F);
+  int type = (static_cast<uint8_t>(data[1]) & 0x7F);
   return (type >= 64 && type < 96);
 }
 
@@ -59,7 +59,7 @@ bool IsTurnSendIndicationPacket(const char* data, size_t length) {
     return false;
   }
 
-  uint16 type = rtc::GetBE16(data);
+  uint16_t type = rtc::GetBE16(data);
   return (type == cricket::TURN_SEND_INDICATION);
 }
 
@@ -100,7 +100,7 @@ bool ValidateRtpHeader(const char* rtp, size_t length, size_t* header_length) {
 
   // Getting extension profile length.
   // Length is in 32 bit words.
-  uint16 extension_length_in_32bits = rtc::GetBE16(rtp + 2);
+  uint16_t extension_length_in_32bits = rtc::GetBE16(rtp + 2);
   size_t extension_length = extension_length_in_32bits * 4;
 
   size_t rtp_header_length = extension_length +
@@ -120,7 +120,7 @@ bool ValidateRtpHeader(const char* rtp, size_t length, size_t* header_length) {
 
 void UpdateAbsSendTimeExtensionValue(char* extension_data,
                                      size_t length,
-                                     uint32 abs_send_time) {
+                                     uint32_t abs_send_time) {
   // Absolute send time in RTP streams.
   //
   // The absolute send time is signaled to the receiver in-band using the
@@ -142,18 +142,18 @@ void UpdateAbsSendTimeExtensionValue(char* extension_data,
   }
 
   // Now() has resolution ~1-15ms
-  uint32 now_second = abs_send_time;
+  uint32_t now_second = abs_send_time;
   if (!now_second) {
-    uint64 now_us =
+    uint64_t now_us =
         (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
     // Convert second to 24-bit unsigned with 18 bit fractional part
     now_second =
         ((now_us << 18) / base::Time::kMicrosecondsPerSecond) & 0x00FFFFFF;
   }
   // TODO(mallinath) - Add SetBE24 to byteorder.h in libjingle.
-  extension_data[0] = static_cast<uint8>(now_second >> 16);
-  extension_data[1] = static_cast<uint8>(now_second >> 8);
-  extension_data[2] = static_cast<uint8>(now_second);
+  extension_data[0] = static_cast<uint8_t>(now_second >> 16);
+  extension_data[1] = static_cast<uint8_t>(now_second >> 8);
+  extension_data[2] = static_cast<uint8_t>(now_second);
 }
 
 // Assumes |length| is actual packet length + tag length. Updates HMAC at end of
@@ -218,7 +218,7 @@ namespace packet_processing_helpers {
 bool ApplyPacketOptions(char* data,
                         size_t length,
                         const rtc::PacketOptions& options,
-                        uint32 abs_send_time) {
+                        uint32_t abs_send_time) {
   DCHECK(data != NULL);
   DCHECK(length > 0);
   // if there is no valid |rtp_sendtime_extension_id| and |srtp_auth_key| in
@@ -311,7 +311,7 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
       // is not a multiple of 4 bytes are padded with 1, 2, or 3 bytes of
       // padding so that its value contains a multiple of 4 bytes.  The
       // padding bits are ignored, and may be any value.
-      uint16 attr_type, attr_length;
+      uint16_t attr_type, attr_length;
       const int kAttrHeaderLength = sizeof(attr_type) + sizeof(attr_length);
 
       if (length < rtp_begin + kAttrHeaderLength) {
@@ -372,7 +372,7 @@ bool GetRtpPacketStartPositionAndLength(const char* packet,
 bool UpdateRtpAbsSendTimeExtension(char* rtp,
                                    size_t length,
                                    int extension_id,
-                                   uint32 abs_send_time) {
+                                   uint32_t abs_send_time) {
   //  0                   1                   2                   3
   //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
   // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -397,9 +397,9 @@ bool UpdateRtpAbsSendTimeExtension(char* rtp,
   rtp += header_length_without_extension;
 
   // Getting extension profile ID and length.
-  uint16 profile_id = rtc::GetBE16(rtp);
+  uint16_t profile_id = rtc::GetBE16(rtp);
   // Length is in 32 bit words.
-  uint16 extension_length_in_32bits = rtc::GetBE16(rtp + 2);
+  uint16_t extension_length_in_32bits = rtc::GetBE16(rtp + 2);
   size_t extension_length = extension_length_in_32bits * 4;
 
   rtp += kRtpExtensionHeaderLength;  // Moving past extension header.
@@ -500,17 +500,20 @@ bool P2PSocketHost::GetStunPacketType(
     return false;
   }
 
-  uint32 cookie = base::NetToHost32(*reinterpret_cast<const uint32*>(data + 4));
+  uint32_t cookie =
+      base::NetToHost32(*reinterpret_cast<const uint32_t*>(data + 4));
   if (cookie != kStunMagicCookie) {
     return false;
   }
 
-  uint16 length = base::NetToHost16(*reinterpret_cast<const uint16*>(data + 2));
+  uint16_t length =
+      base::NetToHost16(*reinterpret_cast<const uint16_t*>(data + 2));
   if (length != data_size - kStunHeaderSize) {
     return false;
   }
 
-  int message_type = base::NetToHost16(*reinterpret_cast<const uint16*>(data));
+  int message_type =
+      base::NetToHost16(*reinterpret_cast<const uint16_t*>(data));
 
   // Verify that the type is known:
   switch (message_type) {
@@ -633,7 +636,7 @@ void P2PSocketHost::DumpRtpPacket(const char* packet,
     return;
   }
 
-  scoped_ptr<uint8[]> header_buffer(new uint8[header_length]);
+  scoped_ptr<uint8_t[]> header_buffer(new uint8_t[header_length]);
   memcpy(header_buffer.get(), packet, header_length);
 
   // Posts to the IO thread as the data members should be accessed on the IO
@@ -645,7 +648,7 @@ void P2PSocketHost::DumpRtpPacket(const char* packet,
                  header_length, rtp_packet_length, incoming));
 }
 
-void P2PSocketHost::DumpRtpPacketOnIOThread(scoped_ptr<uint8[]> packet_header,
+void P2PSocketHost::DumpRtpPacketOnIOThread(scoped_ptr<uint8_t[]> packet_header,
                                             size_t header_length,
                                             size_t packet_length,
                                             bool incoming) {
@@ -672,14 +675,14 @@ void P2PSocketHost::IncrementTotalSentPackets() {
   send_packets_total_++;
 }
 
-void P2PSocketHost::IncrementDelayedBytes(uint32 size) {
+void P2PSocketHost::IncrementDelayedBytes(uint32_t size) {
   send_bytes_delayed_cur_ += size;
   if (send_bytes_delayed_cur_ > send_bytes_delayed_max_) {
     send_bytes_delayed_max_ = send_bytes_delayed_cur_;
   }
 }
 
-void P2PSocketHost::DecrementDelayedBytes(uint32 size) {
+void P2PSocketHost::DecrementDelayedBytes(uint32_t size) {
   send_bytes_delayed_cur_ -= size;
   DCHECK_GE(send_bytes_delayed_cur_, 0);
 }

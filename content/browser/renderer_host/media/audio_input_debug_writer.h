@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEBUG_WRITER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEBUG_WRITER_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -43,7 +45,7 @@ class AudioInputDebugWriter : public media::AudioInputWriter {
   base::File file_;
 
   // Intermediate buffer to be written to file. Interleaved 16 bit audio data.
-  scoped_ptr<int16[]> interleaved_data_;
+  scoped_ptr<int16_t[]> interleaved_data_;
   int interleaved_data_size_;
 
   base::WeakPtrFactory<AudioInputDebugWriter> weak_factory_;

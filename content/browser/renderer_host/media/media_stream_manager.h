@@ -31,13 +31,14 @@
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"

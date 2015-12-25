@@ -27,7 +27,10 @@
 #include <map>
 #include <string>
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -101,7 +104,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Called from UI thread from the owner of this object.
   // |user_input_monitor| is used for typing detection and can be NULL.
   AudioInputRendererHost(int render_process_id,
-                         int32 renderer_pid,
+                         int32_t renderer_pid,
                          media::AudioManager* audio_manager,
                          MediaStreamManager* media_stream_manager,
                          AudioMirroringManager* audio_mirroring_manager,
@@ -130,7 +133,7 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Sets the PID renderer. This is used for constructing the debug recording
   // filename.
-  void set_renderer_pid(int32 renderer_pid);
+  void set_renderer_pid(int32_t renderer_pid);
 
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
@@ -240,7 +243,7 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // PID of the render process connected to the RenderProcessHost that owns this
   // instance.
-  int32 renderer_pid_;
+  int32_t renderer_pid_;
 
   // Used to create an AudioInputController.
   media::AudioManager* audio_manager_;

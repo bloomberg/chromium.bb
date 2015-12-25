@@ -6,6 +6,7 @@
 
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
+#include <stdint.h>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -593,9 +594,9 @@ void CompositorImpl::RequestNewOutputSurface() {
 
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
   defined(SYZYASAN) || defined(CYGPROFILE_INSTRUMENTATION)
-  const int64 kGpuChannelTimeoutInSeconds = 40;
+  const int64_t kGpuChannelTimeoutInSeconds = 40;
 #else
-  const int64 kGpuChannelTimeoutInSeconds = 10;
+  const int64_t kGpuChannelTimeoutInSeconds = 10;
 #endif
 
   BrowserGpuChannelHostFactory* factory =

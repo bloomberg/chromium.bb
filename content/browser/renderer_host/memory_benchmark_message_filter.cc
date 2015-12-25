@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/memory_benchmark_message_filter.h"
 
+#include "build/build_config.h"
 #include "content/common/memory_benchmark_messages.h"
 
 #if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))

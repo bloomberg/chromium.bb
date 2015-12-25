@@ -19,6 +19,7 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "build/build_config.h"
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"

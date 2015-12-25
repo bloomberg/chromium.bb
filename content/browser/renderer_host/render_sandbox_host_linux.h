@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/simple_thread.h"
 #include "content/browser/renderer_host/sandbox_ipc_linux.h"

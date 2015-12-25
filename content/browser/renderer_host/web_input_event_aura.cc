@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/web_input_event_aura.h"
 
+#include "build/build_config.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/aura/client/screen_position_client.h"

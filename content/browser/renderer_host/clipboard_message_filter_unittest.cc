@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "base/memory/ref_counted.h"

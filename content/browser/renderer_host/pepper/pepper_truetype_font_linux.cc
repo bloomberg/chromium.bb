@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sys_byteorder.h"

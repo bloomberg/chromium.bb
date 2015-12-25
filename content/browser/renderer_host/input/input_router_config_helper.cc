@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gesture_detection/gesture_detector.h"

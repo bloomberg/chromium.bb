@@ -4,11 +4,14 @@
 
 // Unit test for VideoCaptureController.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -116,7 +119,7 @@ class VideoCaptureControllerTest : public testing::Test {
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
   scoped_refptr<media::VideoFrame> WrapI420Buffer(gfx::Size dimensions,
-                                                  uint8* data) {
+                                                  uint8_t* data) {
     return media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, dimensions, gfx::Rect(dimensions), dimensions,
         data,
@@ -280,7 +283,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 
   // Now, simulate an incoming captured buffer from the capture device. As a
   // side effect this will cause the first buffer to be shared with clients.
-  uint8 buffer_no = 1;
+  uint8_t buffer_no = 1;
   ASSERT_EQ(0.0, device_->GetBufferPoolUtilization());
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer(
       device_->ReserveOutputBuffer(capture_resolution,
@@ -311,7 +314,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
         .Times(1);
   }
   scoped_refptr<media::VideoFrame> video_frame =
-      WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer->data()));
+      WrapI420Buffer(capture_resolution, static_cast<uint8_t*>(buffer->data()));
   ASSERT_FALSE(video_frame->metadata()->HasKey(
       media::VideoFrameMetadata::RESOURCE_UTILIZATION));
   client_a_->resource_utilization_ = 0.5;
@@ -339,8 +342,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                    media::PIXEL_STORAGE_CPU);
   ASSERT_TRUE(buffer2.get());
   memset(buffer2->data(), buffer_no++, buffer2->mapped_size());
-  video_frame =
-      WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer2->data()));
+  video_frame = WrapI420Buffer(capture_resolution,
+                               static_cast<uint8_t*>(buffer2->data()));
   ASSERT_FALSE(video_frame->metadata()->HasKey(
       media::VideoFrameMetadata::RESOURCE_UTILIZATION));
   client_a_->resource_utilization_ = 0.5;
@@ -385,8 +388,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                      media::PIXEL_STORAGE_CPU);
     ASSERT_TRUE(buffer.get());
     memset(buffer->data(), buffer_no++, buffer->mapped_size());
-    video_frame =
-        WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer->data()));
+    video_frame = WrapI420Buffer(capture_resolution,
+                                 static_cast<uint8_t*>(buffer->data()));
     device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
                                           base::TimeTicks());
   }
@@ -433,8 +436,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                    media::PIXEL_STORAGE_CPU);
   ASSERT_TRUE(buffer3.get());
   memset(buffer3->data(), buffer_no++, buffer3->mapped_size());
-  video_frame =
-      WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer3->data()));
+  video_frame = WrapI420Buffer(capture_resolution,
+                               static_cast<uint8_t*>(buffer3->data()));
   device_->OnIncomingCapturedVideoFrame(buffer3.Pass(), video_frame,
                                         base::TimeTicks());
 
@@ -450,8 +453,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   ASSERT_TRUE(buffer4.get());
   memset(buffer4->data(), buffer_no++, buffer4->mapped_size());
-  video_frame =
-      WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer4->data()));
+  video_frame = WrapI420Buffer(capture_resolution,
+                               static_cast<uint8_t*>(buffer4->data()));
   device_->OnIncomingCapturedVideoFrame(buffer4.Pass(), video_frame,
                                         base::TimeTicks());
   // B2 is the only client left, and is the only one that should
@@ -499,7 +502,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
                                    media::PIXEL_STORAGE_CPU));
   ASSERT_TRUE(buffer.get());
   scoped_refptr<media::VideoFrame> video_frame =
-      WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer->data()));
+      WrapI420Buffer(capture_resolution, static_cast<uint8_t*>(buffer->data()));
   device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
                                         base::TimeTicks());
 
@@ -536,7 +539,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   ASSERT_TRUE(buffer.get());
 
   scoped_refptr<media::VideoFrame> video_frame =
-      WrapI420Buffer(dims, static_cast<uint8*>(buffer->data()));
+      WrapI420Buffer(dims, static_cast<uint8_t*>(buffer->data()));
   device_->OnError(FROM_HERE, "Test Error");
   device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
                                         base::TimeTicks());

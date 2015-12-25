@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/common/gpu/client/gpu_jpeg_decode_accelerator_host.h"
 #include "content/public/browser/browser_thread.h"

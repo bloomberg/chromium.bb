@@ -5,12 +5,14 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_SYSTEM_BROWSER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_SYSTEM_BROWSER_HOST_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/pepper/quota_reservation.h"
 #include "content/common/content_export.h"

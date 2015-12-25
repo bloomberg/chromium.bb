@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"

@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
+#include <stdint.h>
+
 #include <deque>
 #include <vector>
 
@@ -95,9 +97,9 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     return buf_len;
   }
 
-  int SetReceiveBufferSize(int32 size) override { return net::OK; }
+  int SetReceiveBufferSize(int32_t size) override { return net::OK; }
 
-  int SetSendBufferSize(int32 size) override { return net::OK; }
+  int SetSendBufferSize(int32_t size) override { return net::OK; }
 
   void ReceivePacket(const net::IPEndPoint& address, std::vector<char> data) {
     if (!recv_callback_.is_null()) {
@@ -129,7 +131,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     return net::ERR_NOT_IMPLEMENTED;
   }
 
-  int SetMulticastInterface(uint32 interface_index) override {
+  int SetMulticastInterface(uint32_t interface_index) override {
     NOTIMPLEMENTED();
     return net::ERR_NOT_IMPLEMENTED;
   }
@@ -170,8 +172,9 @@ namespace content {
 class P2PSocketHostUdpTest : public testing::Test {
  protected:
   void SetUp() override {
-    EXPECT_CALL(sender_, Send(
-        MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
+    EXPECT_CALL(
+        sender_,
+        Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
     socket_host_.reset(new P2PSocketHostUdp(&sender_, 0, &throttler_));
@@ -203,8 +206,9 @@ class P2PSocketHostUdpTest : public testing::Test {
 // Verify that we can send STUN messages before we receive anything
 // from the other side.
 TEST_F(P2PSocketHostUdpTest, SendStunNoAuth) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
@@ -230,8 +234,8 @@ TEST_F(P2PSocketHostUdpTest, SendStunNoAuth) {
 // Verify that no data packets can be sent before STUN binding has
 // finished.
 TEST_F(P2PSocketHostUdpTest, SendDataNoAuth) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
+  EXPECT_CALL(sender_,
+              Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
   rtc::PacketOptions options;
@@ -254,8 +258,9 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunRequest) {
   socket_->ReceivePacket(dest1_, request_packet);
 
   // Now we should be able to send any data to |dest1_|.
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
   rtc::PacketOptions options;
@@ -279,8 +284,9 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponse) {
   socket_->ReceivePacket(dest1_, request_packet);
 
   // Now we should be able to send any data to |dest1_|.
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
   rtc::PacketOptions options;
@@ -307,8 +313,8 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponseDifferentHost) {
   rtc::PacketOptions options;
   std::vector<char> packet;
   CreateRandomPacket(&packet);
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
+  EXPECT_CALL(sender_,
+              Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   socket_host_->Send(dest2_, packet, options, 0);
 }
@@ -316,8 +322,9 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponseDifferentHost) {
 // Verify throttler not allowing unlimited sending of ICE messages to
 // any destination.
 TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimit) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(2)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
@@ -345,8 +352,9 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimitAfterReceive) {
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   socket_->ReceivePacket(dest1_, request_packet);
 
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(4)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 

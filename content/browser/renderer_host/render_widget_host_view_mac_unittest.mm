@@ -5,10 +5,13 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 #include <Cocoa/Cocoa.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
@@ -146,7 +149,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
  public:
   MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                            RenderProcessHost* process,
-                           int32 routing_id)
+                           int32_t routing_id)
       : RenderWidgetHostImpl(delegate, process, routing_id, false) {}
 
   MOCK_METHOD0(Focus, void());
@@ -292,7 +295,7 @@ TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
-  int32 routing_id = process_host->GetNextRoutingID();
+  int32_t routing_id = process_host->GetNextRoutingID();
   // Owned by its |cocoa_view()|.
   RenderWidgetHostImpl* rwh =
       new RenderWidgetHostImpl(&delegate, process_host, routing_id, false);
@@ -326,7 +329,7 @@ TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
-  int32 routing_id = process_host->GetNextRoutingID();
+  int32_t routing_id = process_host->GetNextRoutingID();
   // Owned by its |cocoa_view()|.
   RenderWidgetHostImpl* rwh =
       new RenderWidgetHostImpl(&delegate, process_host, routing_id, false);
@@ -355,7 +358,7 @@ TEST_F(RenderWidgetHostViewMacTest, FilterNonPrintableCharacter) {
       new MockRenderProcessHost(&browser_context);
   process_host->Init();
   MockRenderWidgetHostDelegate delegate;
-  int32 routing_id = process_host->GetNextRoutingID();
+  int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
       new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
@@ -753,7 +756,7 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
       new MockRenderProcessHost(&browser_context);
 
   // Owned by its |cocoa_view()|.
-  int32 routing_id = process_host->GetNextRoutingID();
+  int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* rwh =
       new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, false);
@@ -801,7 +804,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
       new MockRenderProcessHost(&browser_context);
   process_host->Init();
   MockRenderWidgetHostDelegate delegate;
-  int32 routing_id = process_host->GetNextRoutingID();
+  int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
       new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
@@ -842,7 +845,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
       new MockRenderProcessHost(&browser_context);
   process_host->Init();
   MockRenderWidgetHostDelegate delegate;
-  int32 routing_id = process_host->GetNextRoutingID();
+  int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
       new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
@@ -893,7 +896,7 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
-  int32 routing_id = process_host->GetNextRoutingID();
+  int32_t routing_id = process_host->GetNextRoutingID();
 
   // Owned by its |cocoa_view()|.
   MockRenderWidgetHostImpl* rwh =
@@ -936,7 +939,7 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
   MockRenderWidgetHostDelegate delegate;
-  int32 routing_id = process_host->GetNextRoutingID();
+  int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
       new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
@@ -1013,7 +1016,7 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   process_host_ = new MockRenderProcessHost(&browser_context);
   process_host_->Init();
   MockRenderWidgetHostDelegate delegate;
-  int32 routing_id = process_host_->GetNextRoutingID();
+  int32_t routing_id = process_host_->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
       new MockRenderWidgetHostImpl(&delegate, process_host_, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);

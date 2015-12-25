@@ -4,6 +4,7 @@
 
 #include <fcntl.h>
 #include <fontconfig/fontconfig.h>
+#include <stddef.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -119,8 +120,8 @@ namespace content {
 int MatchFontFaceWithFallback(const std::string& face,
                               bool is_bold,
                               bool is_italic,
-                              uint32 charset,
-                              uint32 fallback_family) {
+                              uint32_t charset,
+                              uint32_t fallback_family) {
   FcLangSet* langset = FcLangSetCreate();
   bool is_lgc = MSCharSetToFontconfig(langset, charset);
   FcPattern* pattern = FcPatternCreate();

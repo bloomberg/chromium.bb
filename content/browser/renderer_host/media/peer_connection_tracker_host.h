@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_PEER_CONNECTION_TRACKER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_PEER_CONNECTION_TRACKER_HOST_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -29,7 +32,7 @@ class PeerConnectionTrackerHost : public BrowserMessageFilter,
   bool OnMessageReceived(const IPC::Message& message) override;
   void OverrideThreadForMessage(const IPC::Message& message,
                                 BrowserThread::ID* thread) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelClosing() override;
 
   // base::PowerObserver override.

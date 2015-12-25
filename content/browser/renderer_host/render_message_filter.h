@@ -5,14 +5,14 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -30,6 +30,10 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 #if defined(OS_MACOSX)
 #include <IOSurface/IOSurface.h>
@@ -159,13 +163,13 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created
   // in the renderer on POSIX due to the sandbox.
-  void AllocateSharedMemoryOnFileThread(uint32 buffer_size,
+  void AllocateSharedMemoryOnFileThread(uint32_t buffer_size,
                                         IPC::Message* reply_msg);
-  void OnAllocateSharedMemory(uint32 buffer_size, IPC::Message* reply_msg);
-  void AllocateSharedBitmapOnFileThread(uint32 buffer_size,
+  void OnAllocateSharedMemory(uint32_t buffer_size, IPC::Message* reply_msg);
+  void AllocateSharedBitmapOnFileThread(uint32_t buffer_size,
                                         const cc::SharedBitmapId& id,
                                         IPC::Message* reply_msg);
-  void OnAllocateSharedBitmap(uint32 buffer_size,
+  void OnAllocateSharedBitmap(uint32_t buffer_size,
                               const cc::SharedBitmapId& id,
                               IPC::Message* reply_msg);
   void OnAllocatedSharedBitmap(size_t buffer_size,
@@ -176,10 +180,10 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 
   // Browser side discardable shared memory allocation.
   void AllocateLockedDiscardableSharedMemoryOnFileThread(
-      uint32 size,
+      uint32_t size,
       DiscardableSharedMemoryId id,
       IPC::Message* reply_message);
-  void OnAllocateLockedDiscardableSharedMemory(uint32 size,
+  void OnAllocateLockedDiscardableSharedMemory(uint32_t size,
                                                DiscardableSharedMemoryId id,
                                                IPC::Message* reply_message);
   void DeletedDiscardableSharedMemoryOnFileThread(DiscardableSharedMemoryId id);
@@ -188,8 +192,10 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnCacheableMetadataAvailable(const GURL& url,
                                     base::Time expected_response_time,
                                     const std::vector<char>& data);
-  void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
-                const GURL& url, IPC::Message* reply_msg);
+  void OnKeygen(uint32_t key_size_index,
+                const std::string& challenge_string,
+                const GURL& url,
+                IPC::Message* reply_msg);
   void PostKeygenToWorkerThread(IPC::Message* reply_msg,
                                 scoped_ptr<net::KeygenHandler> keygen_handler);
   void OnKeygenOnWorkerThread(scoped_ptr<net::KeygenHandler> keygen_handler,
@@ -206,8 +212,8 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 #endif
 
   void OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                 uint32 width,
-                                 uint32 height,
+                                 uint32_t width,
+                                 uint32_t height,
                                  gfx::BufferFormat format,
                                  gfx::BufferUsage usage,
                                  IPC::Message* reply);

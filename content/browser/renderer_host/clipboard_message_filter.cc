@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "ipc/ipc_message_macros.h"
@@ -94,7 +95,7 @@ ClipboardMessageFilter::~ClipboardMessageFilter() {
 }
 
 void ClipboardMessageFilter::OnGetSequenceNumber(ui::ClipboardType type,
-                                                 uint64* sequence_number) {
+                                                 uint64_t* sequence_number) {
   *sequence_number = GetClipboard()->GetSequenceNumber(type);
 }
 
@@ -156,8 +157,8 @@ void ClipboardMessageFilter::OnReadText(ui::ClipboardType type,
 void ClipboardMessageFilter::OnReadHTML(ui::ClipboardType type,
                                         base::string16* markup,
                                         GURL* url,
-                                        uint32* fragment_start,
-                                        uint32* fragment_end) {
+                                        uint32_t* fragment_start,
+                                        uint32_t* fragment_end) {
   std::string src_url_str;
   GetClipboard()->ReadHTML(type, markup, &src_url_str, fragment_start,
                            fragment_end);
@@ -186,7 +187,7 @@ void ClipboardMessageFilter::OnReadImage(ui::ClipboardType type,
 void ClipboardMessageFilter::OnReadImageReply(
     const SkBitmap& bitmap, IPC::Message* reply_msg) {
   base::SharedMemoryHandle image_handle = base::SharedMemory::NULLHandle();
-  uint32 image_size = 0;
+  uint32_t image_size = 0;
   if (!bitmap.isNull()) {
     std::vector<unsigned char> png_data;
     if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &png_data)) {

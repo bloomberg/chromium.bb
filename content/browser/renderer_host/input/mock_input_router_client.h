@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ROUTER_CLIENT_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ROUTER_CLIENT_H_
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/common/input/did_overscroll_params.h"

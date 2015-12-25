@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/synthetic_smooth_move_gesture.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -308,7 +310,7 @@ gfx::Vector2dF SyntheticSmoothMoveGesture::GetPositionDeltaAtTime(
 void SyntheticSmoothMoveGesture::ComputeNextMoveSegment() {
   current_move_segment_++;
   DCHECK_LT(current_move_segment_, static_cast<int>(params_.distances.size()));
-  int64 total_duration_in_us = static_cast<int64>(
+  int64_t total_duration_in_us = static_cast<int64_t>(
       1e6 * (params_.distances[current_move_segment_].Length() /
              params_.speed_in_pixels_s));
   DCHECK_GT(total_duration_in_us, 0);

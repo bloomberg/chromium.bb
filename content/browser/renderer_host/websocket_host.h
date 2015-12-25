@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_WEBSOCKET_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_WEBSOCKET_HOST_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -74,9 +77,9 @@ class CONTENT_EXPORT WebSocketHost {
                    WebSocketMessageType type,
                    const std::vector<char>& data);
 
-  void OnFlowControl(int64 quota);
+  void OnFlowControl(int64_t quota);
 
-  void OnDropChannel(bool was_clean, uint16 code, const std::string& reason);
+  void OnDropChannel(bool was_clean, uint16_t code, const std::string& reason);
 
   // The channel we use to send events to the network.
   scoped_ptr<net::WebSocketChannel> channel_;

@@ -5,10 +5,15 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_SYNC_READER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_SYNC_READER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/base/audio_bus.h"
 
@@ -77,7 +82,7 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 
   // The index of the audio buffer we're expecting to be sent from the renderer;
   // used to block with timeout for audio data.
-  uint32 buffer_index_;
+  uint32_t buffer_index_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSyncReader);
 };

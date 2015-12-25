@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_BEGIN_FRAME_OBSERVER_PROXY_H_
 #define CONTENT_BROWSER_RENDERER_HOST_BEGIN_FRAME_OBSERVER_PROXY_H_
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"

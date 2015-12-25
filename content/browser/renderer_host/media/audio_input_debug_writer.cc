@@ -34,7 +34,7 @@ void AudioInputDebugWriter::DoWrite(scoped_ptr<media::AudioBus> data) {
   // Convert to 16 bit audio and write to file.
   int data_size = data->frames() * data->channels();
   if (!interleaved_data_ || interleaved_data_size_ < data_size) {
-    interleaved_data_.reset(new int16[data_size]);
+    interleaved_data_.reset(new int16_t[data_size]);
     interleaved_data_size_ = data_size;
   }
   data->ToInterleaved(data->frames(), sizeof(interleaved_data_[0]),

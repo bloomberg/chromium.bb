@@ -4,9 +4,12 @@
 
 // Unit test for VideoCaptureManager.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -83,7 +86,7 @@ class VideoCaptureManagerTest : public testing::Test {
     video_capture_device_factory_ =
         static_cast<media::FakeVideoCaptureDeviceFactory*>(
             vcm_->video_capture_device_factory());
-    const int32 kNumberOfFakeDevices = 2;
+    const int32_t kNumberOfFakeDevices = 2;
     video_capture_device_factory_->set_number_of_devices(kNumberOfFakeDevices);
     vcm_->Register(listener_.get(), message_loop_->task_runner().get());
     frame_observer_.reset(new MockFrameObserver());

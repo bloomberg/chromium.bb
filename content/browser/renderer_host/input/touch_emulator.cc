@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/touch_emulator.h"
 
+#include "build/build_config.h"
 #include "content/browser/renderer_host/input/motion_event_web.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/input/web_touch_event_traits.h"

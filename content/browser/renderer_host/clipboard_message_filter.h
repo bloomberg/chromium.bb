@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_CLIPBOARD_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_CLIPBOARD_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "build/build_config.h"
 #include "content/common/clipboard_format.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -39,7 +42,7 @@ class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
   ~ClipboardMessageFilter() override;
 
   void OnGetSequenceNumber(const ui::ClipboardType type,
-                           uint64* sequence_number);
+                           uint64_t* sequence_number);
   void OnIsFormatAvailable(ClipboardFormat format,
                            ui::ClipboardType type,
                            bool* result);
@@ -51,8 +54,8 @@ class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
   void OnReadHTML(ui::ClipboardType type,
                   base::string16* markup,
                   GURL* url,
-                  uint32* fragment_start,
-                  uint32* fragment_end);
+                  uint32_t* fragment_start,
+                  uint32_t* fragment_end);
   void OnReadRTF(ui::ClipboardType type, std::string* result);
   void OnReadImage(ui::ClipboardType type, IPC::Message* reply_msg);
   void OnReadImageReply(const SkBitmap& bitmap, IPC::Message* reply_msg);

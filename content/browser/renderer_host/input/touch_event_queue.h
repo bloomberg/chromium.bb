@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_EVENT_QUEUE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_EVENT_QUEUE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
@@ -71,7 +74,7 @@ class CONTENT_EXPORT TouchEventQueue {
   // more gesture events and/or additional queued touch-events to the renderer.
   void ProcessTouchAck(InputEventAckState ack_result,
                        const ui::LatencyInfo& latency_info,
-                       const uint32 unique_touch_event_id);
+                       const uint32_t unique_touch_event_id);
 
   // When GestureScrollBegin is received, we send a touch cancel to renderer,
   // route all the following touch events directly to client, and ignore the
@@ -230,7 +233,7 @@ class CONTENT_EXPORT TouchEventQueue {
   // uncancelable touchmoves which are still waiting for their acks back from
   // render. We do not put them back to the front the touch_event_queue any
   // more.
-  std::deque<uint32> ack_pending_async_touchmove_ids_;
+  std::deque<uint32_t> ack_pending_async_touchmove_ids_;
 
   double last_sent_touch_timestamp_sec_;
 

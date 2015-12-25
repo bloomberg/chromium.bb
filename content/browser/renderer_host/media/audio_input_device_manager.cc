@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_input_ipc.h"

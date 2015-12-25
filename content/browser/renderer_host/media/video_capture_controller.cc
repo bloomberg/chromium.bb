@@ -4,6 +4,9 @@
 
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -12,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_device_client.h"
@@ -367,8 +371,8 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
                 media::VideoFrame::STORAGE_GPU_MEMORY_BUFFERS));
     DCHECK(frame->data(media::VideoFrame::kYPlane) >= buffer->data(0) &&
            (frame->data(media::VideoFrame::kYPlane) <
-                (reinterpret_cast<const uint8*>(buffer->data(0)) +
-                     buffer->mapped_size())))
+            (reinterpret_cast<const uint8_t*>(buffer->data(0)) +
+             buffer->mapped_size())))
         << "VideoFrame does not appear to be backed by Buffer";
 
     for (const auto& client : controller_clients_) {

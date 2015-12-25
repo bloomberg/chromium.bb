@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_CONTENT_BROWSER_PEPPER_HOST_FACTORY_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/socket/tcp_socket.h"

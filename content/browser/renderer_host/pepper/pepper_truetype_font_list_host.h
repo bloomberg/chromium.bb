@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_TRUETYPE_FONT_LIST_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_TRUETYPE_FONT_LIST_HOST_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ppapi/host/resource_host.h"
 
 namespace content {

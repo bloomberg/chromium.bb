@@ -4,6 +4,10 @@
 
 #include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "content/common/font_list.h"

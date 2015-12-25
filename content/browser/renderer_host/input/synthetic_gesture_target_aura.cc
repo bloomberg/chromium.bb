@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/synthetic_gesture_target_aura.h"
 
+#include <stddef.h>
+
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TAP_SUPPRESSION_CONTROLLER_CLIENT_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TAP_SUPPRESSION_CONTROLLER_CLIENT_H_
 
+#include "base/macros.h"
+
 namespace content {
 
 // This class provides an interface for callbacks made by

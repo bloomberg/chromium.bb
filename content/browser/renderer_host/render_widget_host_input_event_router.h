@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 

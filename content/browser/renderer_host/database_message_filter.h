@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_DATABASE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_DATABASE_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -46,11 +48,11 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
                             const bool& sync_dir,
                             IPC::Message* reply_msg);
   void OnDatabaseGetFileAttributes(const base::string16& vfs_file_name,
-                                   int32* attributes);
+                                   int32_t* attributes);
   void OnDatabaseGetFileSize(const base::string16& vfs_file_name,
-                             int64* size);
+                             int64_t* size);
   void OnDatabaseSetFileSize(const base::string16& vfs_file_name,
-                             int64 size,
+                             int64_t size,
                              bool* success);
 
   // Quota message handler (io thread)
@@ -58,14 +60,14 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
                                    IPC::Message* reply_msg);
   void OnDatabaseGetUsageAndQuota(IPC::Message* reply_msg,
                                   storage::QuotaStatusCode status,
-                                  int64 usage,
-                                  int64 quota);
+                                  int64_t usage,
+                                  int64_t quota);
 
   // Database tracker message handlers (file thread)
   void OnDatabaseOpened(const std::string& origin_identifier,
                         const base::string16& database_name,
                         const base::string16& description,
-                        int64 estimated_size);
+                        int64_t estimated_size);
   void OnDatabaseModified(const std::string& origin_identifier,
                           const base::string16& database_name);
   void OnDatabaseClosed(const std::string& origin_identifier,
@@ -77,7 +79,7 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
   // DatabaseTracker::Observer callbacks (file thread)
   void OnDatabaseSizeChanged(const std::string& origin_identifier,
                              const base::string16& database_name,
-                             int64 database_size) override;
+                             int64_t database_size) override;
   void OnDatabaseScheduledForDeletion(
       const std::string& origin_identifier,
       const base::string16& database_name) override;

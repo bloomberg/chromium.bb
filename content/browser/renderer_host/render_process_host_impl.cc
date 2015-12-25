@@ -23,6 +23,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process_handle.h"
@@ -36,6 +37,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/scheduler/common/scheduler_switches.h"
 #include "components/tracing/tracing_switches.h"
@@ -245,11 +247,11 @@ const base::FilePath::CharType kEventLogFileNameAddition[] =
     FILE_PATH_LITERAL("event_log");
 #endif
 
-void CacheShaderInfo(int32 id, base::FilePath path) {
+void CacheShaderInfo(int32_t id, base::FilePath path) {
   ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
 }
 
-void RemoveShaderInfo(int32 id) {
+void RemoveShaderInfo(int32_t id) {
   ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
 }
 
@@ -1148,14 +1150,14 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
     Cleanup();
 }
 
-void RenderProcessHostImpl::AddRoute(int32 routing_id,
+void RenderProcessHostImpl::AddRoute(int32_t routing_id,
                                      IPC::Listener* listener) {
   CHECK(!listeners_.Lookup(routing_id)) << "Found Routing ID Conflict: "
                                         << routing_id;
   listeners_.AddWithID(listener, routing_id);
 }
 
-void RenderProcessHostImpl::RemoveRoute(int32 routing_id) {
+void RenderProcessHostImpl::RemoveRoute(int32_t routing_id) {
   DCHECK(listeners_.Lookup(routing_id) != NULL);
   listeners_.Remove(routing_id);
 
@@ -1708,7 +1710,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
   return listener->OnMessageReceived(msg);
 }
 
-void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
+void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   channel_connected_ = true;
   if (IsReady()) {
     DCHECK(!sent_render_process_ready_);

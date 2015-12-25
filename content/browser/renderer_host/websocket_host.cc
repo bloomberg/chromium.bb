@@ -4,8 +4,8 @@
 
 #include "content/browser/renderer_host/websocket_host.h"
 
-#include "base/basictypes.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -102,9 +102,9 @@ class WebSocketEventHandler : public net::WebSocketEventInterface {
                            WebSocketMessageType type,
                            const std::vector<char>& data) override;
   ChannelState OnClosingHandshake() override;
-  ChannelState OnFlowControl(int64 quota) override;
+  ChannelState OnFlowControl(int64_t quota) override;
   ChannelState OnDropChannel(bool was_clean,
-                             uint16 code,
+                             uint16_t code,
                              const std::string& reason) override;
   ChannelState OnFailChannel(const std::string& message) override;
   ChannelState OnStartOpeningHandshake(
@@ -189,7 +189,7 @@ ChannelState WebSocketEventHandler::OnClosingHandshake() {
   return StateCast(dispatcher_->NotifyClosingHandshake(routing_id_));
 }
 
-ChannelState WebSocketEventHandler::OnFlowControl(int64 quota) {
+ChannelState WebSocketEventHandler::OnFlowControl(int64_t quota) {
   DVLOG(3) << "WebSocketEventHandler::OnFlowControl"
            << " routing_id=" << routing_id_ << " quota=" << quota;
 
@@ -197,7 +197,7 @@ ChannelState WebSocketEventHandler::OnFlowControl(int64 quota) {
 }
 
 ChannelState WebSocketEventHandler::OnDropChannel(bool was_clean,
-                                                  uint16 code,
+                                                  uint16_t code,
                                                   const std::string& reason) {
   DVLOG(3) << "WebSocketEventHandler::OnDropChannel"
            << " routing_id=" << routing_id_ << " was_clean=" << was_clean
@@ -327,7 +327,8 @@ WebSocketHost::WebSocketHost(int routing_id,
 WebSocketHost::~WebSocketHost() {}
 
 void WebSocketHost::GoAway() {
-  OnDropChannel(false, static_cast<uint16>(net::kWebSocketErrorGoingAway), "");
+  OnDropChannel(false, static_cast<uint16_t>(net::kWebSocketErrorGoingAway),
+                "");
 }
 
 bool WebSocketHost::OnMessageReceived(const IPC::Message& message) {
@@ -412,7 +413,7 @@ void WebSocketHost::OnSendFrame(bool fin,
   channel_->SendFrame(fin, MessageTypeToOpCode(type), data);
 }
 
-void WebSocketHost::OnFlowControl(int64 quota) {
+void WebSocketHost::OnFlowControl(int64_t quota) {
   DVLOG(3) << "WebSocketHost::OnFlowControl"
            << " routing_id=" << routing_id_ << " quota=" << quota;
 
@@ -428,7 +429,7 @@ void WebSocketHost::OnFlowControl(int64 quota) {
 }
 
 void WebSocketHost::OnDropChannel(bool was_clean,
-                                  uint16 code,
+                                  uint16_t code,
                                   const std::string& reason) {
   DVLOG(3) << "WebSocketHost::OnDropChannel"
            << " routing_id=" << routing_id_ << " was_clean=" << was_clean

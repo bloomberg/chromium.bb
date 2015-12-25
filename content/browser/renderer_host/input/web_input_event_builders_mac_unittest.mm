@@ -4,9 +4,11 @@
 
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
 
-#import <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"

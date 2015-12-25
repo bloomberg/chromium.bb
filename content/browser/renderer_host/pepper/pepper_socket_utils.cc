@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -33,7 +34,7 @@ SocketPermissionRequest CreateSocketPermissionRequest(
     const PP_NetAddress_Private& net_addr) {
   std::string host =
       ppapi::NetAddressPrivateImpl::DescribeNetAddress(net_addr, false);
-  uint16 port = 0;
+  uint16_t port = 0;
   std::vector<unsigned char> address;
   ppapi::NetAddressPrivateImpl::NetAddressToIPEndPoint(
       net_addr, &address, &port);

@@ -5,6 +5,8 @@
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
@@ -86,7 +88,7 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
  public:
   RenderWidgetHostEditCommandCounter(RenderWidgetHostDelegate* delegate,
                                      RenderProcessHost* process,
-                                     int32 routing_id)
+                                     int32_t routing_id)
       : RenderWidgetHostImpl(delegate, process, routing_id, false),
         edit_command_message_count_(0) {}
 
@@ -124,7 +126,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   supported_factors.push_back(ui::SCALE_FACTOR_100P);
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
 
-  int32 routing_id = process_host.GetNextRoutingID();
+  int32_t routing_id = process_host.GetNextRoutingID();
   RenderWidgetHostEditCommandCounter* render_widget =
       new RenderWidgetHostEditCommandCounter(&delegate, &process_host,
                                              routing_id);

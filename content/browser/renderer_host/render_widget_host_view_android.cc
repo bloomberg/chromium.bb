@@ -7,11 +7,11 @@
 #include <android/bitmap.h>
 
 #include "base/android/build_info.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -296,7 +296,7 @@ gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
 }  // anonymous namespace
 
 RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
-    uint32 output_id,
+    uint32_t output_id,
     scoped_ptr<cc::CompositorFrame> output_frame)
     : output_surface_id(output_id), frame(output_frame.Pass()) {}
 
@@ -950,7 +950,7 @@ RenderWidgetHostViewAndroid::CreateSyntheticGestureTarget() {
 }
 
 void RenderWidgetHostViewAndroid::SendDelegatedFrameAck(
-    uint32 output_surface_id) {
+    uint32_t output_surface_id) {
   DCHECK(host_);
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty())
@@ -962,7 +962,7 @@ void RenderWidgetHostViewAndroid::SendDelegatedFrameAck(
 }
 
 void RenderWidgetHostViewAndroid::SendReturnedDelegatedResources(
-    uint32 output_surface_id) {
+    uint32_t output_surface_id) {
   DCHECK(host_);
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty()) {
@@ -1011,7 +1011,7 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
 }
 
 void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
-    uint32 output_surface_id) {
+    uint32_t output_surface_id) {
   if (output_surface_id == last_output_surface_id_)
     return;
   // Drop the cc::DelegatedFrameResourceCollection so that we will not return
@@ -1083,7 +1083,7 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 }
 
 void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   CheckOutputSurfaceChanged(output_surface_id);
   bool has_content = !texture_size_in_layer_.IsEmpty();
@@ -1120,7 +1120,7 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
 }
 
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
   if (!frame->delegated_frame_data) {
@@ -1160,7 +1160,7 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 }
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   InternalSwapCompositorFrame(output_surface_id, frame.Pass());
 }
@@ -1170,7 +1170,7 @@ void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
 }
 
 void RenderWidgetHostViewAndroid::RetainFrame(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   DCHECK(locks_on_frame_count_);
 
@@ -1457,7 +1457,7 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
   content_view_core_->RemoveLayer(layer_);
 }
 
-void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32 requests) {
+void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32_t requests) {
   bool should_request_vsync = !outstanding_vsync_requests_ && requests;
   outstanding_vsync_requests_ |= requests;
 
@@ -1483,7 +1483,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   content_view_core_window_android_->AddObserver(this);
 
   // Clear existing vsync requests to allow a request to the new window.
-  uint32 outstanding_vsync_requests = outstanding_vsync_requests_;
+  uint32_t outstanding_vsync_requests = outstanding_vsync_requests_;
   outstanding_vsync_requests_ = 0;
   RequestVSyncUpdate(outstanding_vsync_requests);
 }
@@ -1916,7 +1916,7 @@ void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
 
   // This allows for SendBeginFrame and FlushInput to modify
   // outstanding_vsync_requests.
-  uint32 outstanding_vsync_requests = outstanding_vsync_requests_;
+  uint32_t outstanding_vsync_requests = outstanding_vsync_requests_;
   outstanding_vsync_requests_ = 0;
   RequestVSyncUpdate(outstanding_vsync_requests);
 }
@@ -2000,7 +2000,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
 
   scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock(
       new SkAutoLockPixels(*bitmap));
-  uint8* pixels = static_cast<uint8*>(bitmap->getPixels());
+  uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
 
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> release_callback;

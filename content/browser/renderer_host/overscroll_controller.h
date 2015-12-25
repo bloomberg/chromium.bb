@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_OVERSCROLL_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_OVERSCROLL_CONTROLLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace ui {

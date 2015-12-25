@@ -233,7 +233,7 @@ void PepperFileSystemBrowserHost::OpenFileSystemComplete(
     const GURL& root,
     const std::string& /* unused */,
     base::File::Error error) {
-  int32 pp_error = ppapi::FileErrorToPepperError(error);
+  int32_t pp_error = ppapi::FileErrorToPepperError(error);
   if (pp_error == PP_OK) {
     opened_ = true;
     root_url_ = root;
@@ -319,7 +319,7 @@ void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystemComplete(
     ppapi::host::ReplyMessageContext reply_context,
     const std::string& fsid,
     base::File::Error error) {
-  int32 pp_error = ppapi::FileErrorToPepperError(error);
+  int32_t pp_error = ppapi::FileErrorToPepperError(error);
   if (pp_error == PP_OK)
     opened_ = true;
   SendReplyForIsolatedFileSystem(reply_context, fsid, pp_error);

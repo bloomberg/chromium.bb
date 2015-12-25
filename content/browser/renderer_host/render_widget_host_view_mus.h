@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MUS_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MUS_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/window.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"

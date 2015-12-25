@@ -5,6 +5,8 @@
 // MSVC++ requires this to be set before any other includes to get M_PI.
 #define _USE_MATH_DEFINES
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "content/browser/renderer_host/input/motion_event_web.h"

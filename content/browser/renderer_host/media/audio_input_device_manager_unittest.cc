@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/public/common/media_stream_request.h"

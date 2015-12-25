@@ -575,7 +575,7 @@ void PepperTCPSocketMessageFilter::DoBind(
   int pp_result = PP_OK;
   do {
     net::IPAddressNumber address;
-    uint16 port;
+    uint16_t port;
     if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(
             net_addr, &address, &port)) {
       pp_result = PP_ERROR_ADDRESS_INVALID;
@@ -665,7 +665,7 @@ void PepperTCPSocketMessageFilter::DoConnectWithNetAddress(
   state_.SetPendingTransition(TCPSocketState::CONNECT);
 
   net::IPAddressNumber address;
-  uint16 port;
+  uint16_t port;
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(
           net_addr, &address, &port)) {
     state_.CompletePendingTransition(false);

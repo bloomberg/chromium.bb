@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_ACTION_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_ACTION_FILTER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/input/touch_action.h"
 

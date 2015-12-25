@@ -71,7 +71,7 @@ MotionEventWeb::MotionEventWeb(const WebTouchEvent& event)
 
 MotionEventWeb::~MotionEventWeb() {}
 
-uint32 MotionEventWeb::GetUniqueEventId() const {
+uint32_t MotionEventWeb::GetUniqueEventId() const {
   return unique_event_id_;
 }
 

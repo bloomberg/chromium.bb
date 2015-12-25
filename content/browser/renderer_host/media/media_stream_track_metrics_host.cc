@@ -46,7 +46,7 @@ bool MediaStreamTrackMetricsHost::OnMessageReceived(
   return handled;
 }
 
-void MediaStreamTrackMetricsHost::OnAddTrack(uint64 id,
+void MediaStreamTrackMetricsHost::OnAddTrack(uint64_t id,
                                              bool is_audio,
                                              bool is_remote) {
   if (tracks_.find(id) != tracks_.end())
@@ -56,7 +56,7 @@ void MediaStreamTrackMetricsHost::OnAddTrack(uint64 id,
   tracks_[id] = info;
 }
 
-void MediaStreamTrackMetricsHost::OnRemoveTrack(uint64 id) {
+void MediaStreamTrackMetricsHost::OnRemoveTrack(uint64_t id) {
   if (tracks_.find(id) == tracks_.end())
     return;
 

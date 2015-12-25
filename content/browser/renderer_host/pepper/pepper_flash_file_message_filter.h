@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_FILE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_FILE_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "ppapi/c/pp_instance.h"

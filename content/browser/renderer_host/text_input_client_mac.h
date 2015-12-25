@@ -9,6 +9,7 @@
 
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"

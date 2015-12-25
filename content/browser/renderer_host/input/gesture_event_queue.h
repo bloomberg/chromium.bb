@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_QUEUE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_QUEUE_H_
 
+#include <stddef.h>
+
 #include <deque>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"

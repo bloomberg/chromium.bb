@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_
 
-#include "base/basictypes.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"

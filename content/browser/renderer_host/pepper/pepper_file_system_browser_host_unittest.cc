@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_test.h"
 #include "ppapi/c/pp_instance.h"

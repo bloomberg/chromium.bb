@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 #include <IOSurface/IOSurface.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <list>
 #include <map>
 #include <set>
@@ -322,7 +324,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void BeginFrameSubscription(
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
   void EndFrameSubscription() override;
-  void OnSwapCompositorFrame(uint32 output_surface_id,
+  void OnSwapCompositorFrame(uint32_t output_surface_id,
                              scoped_ptr<cc::CompositorFrame> frame) override;
   void ClearCompositorFrame() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(

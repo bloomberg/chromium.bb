@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_EXTERNAL_FILE_REF_BACKEND_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_EXTERNAL_FILE_REF_BACKEND_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"

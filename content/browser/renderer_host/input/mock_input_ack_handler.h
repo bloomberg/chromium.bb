@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ACK_HANDLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ACK_HANDLER_H_
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 

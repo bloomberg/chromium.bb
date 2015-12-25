@@ -15,9 +15,10 @@
 
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"

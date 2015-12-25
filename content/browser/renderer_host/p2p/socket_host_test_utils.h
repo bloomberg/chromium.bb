@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TEST_UTILS_H_
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TEST_UTILS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "content/common/p2p_messages.h"
@@ -16,9 +18,9 @@
 
 const char kTestLocalIpAddress[] = "123.44.22.4";
 const char kTestIpAddress1[] = "123.44.22.31";
-const uint16 kTestPort1 = 234;
+const uint16_t kTestPort1 = 234;
 const char kTestIpAddress2[] = "133.11.22.33";
-const uint16 kTestPort2 = 543;
+const uint16_t kTestPort2 = 543;
 
 class MockIPCSender : public IPC::Sender {
  public:
@@ -47,8 +49,8 @@ class FakeSocket : public net::StreamSocket {
   int Write(net::IOBuffer* buf,
             int buf_len,
             const net::CompletionCallback& callback) override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
   int Connect(const net::CompletionCallback& callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
@@ -96,7 +98,7 @@ void CreateStunRequest(std::vector<char>* packet);
 void CreateStunResponse(std::vector<char>* packet);
 void CreateStunError(std::vector<char>* packet);
 
-net::IPEndPoint ParseAddress(const std::string& ip_str, uint16 port);
+net::IPEndPoint ParseAddress(const std::string& ip_str, uint16_t port);
 
 MATCHER_P(MatchMessage, type, "") {
   return arg->type() == type;

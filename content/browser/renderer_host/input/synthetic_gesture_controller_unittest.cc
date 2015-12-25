@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -415,14 +418,14 @@ class MockSyntheticTapTouchTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(touch_event.type, WebInputEvent::TouchStart);
         position_ = gfx::PointF(touch_event.touches[0].position);
         start_time_ = base::TimeDelta::FromMilliseconds(
-            static_cast<int64>(touch_event.timeStampSeconds * 1000));
+            static_cast<int64_t>(touch_event.timeStampSeconds * 1000));
         state_ = STARTED;
         break;
       case STARTED:
         EXPECT_EQ(touch_event.type, WebInputEvent::TouchEnd);
         EXPECT_EQ(position_, gfx::PointF(touch_event.touches[0].position));
         stop_time_ = base::TimeDelta::FromMilliseconds(
-            static_cast<int64>(touch_event.timeStampSeconds * 1000));
+            static_cast<int64_t>(touch_event.timeStampSeconds * 1000));
         state_ = FINISHED;
         break;
       case FINISHED:
@@ -448,7 +451,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(mouse_event.clickCount, 1);
         position_ = gfx::PointF(mouse_event.x, mouse_event.y);
         start_time_ = base::TimeDelta::FromMilliseconds(
-            static_cast<int64>(mouse_event.timeStampSeconds * 1000));
+            static_cast<int64_t>(mouse_event.timeStampSeconds * 1000));
         state_ = STARTED;
         break;
       case STARTED:
@@ -457,7 +460,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(mouse_event.clickCount, 1);
         EXPECT_EQ(position_, gfx::PointF(mouse_event.x, mouse_event.y));
         stop_time_ = base::TimeDelta::FromMilliseconds(
-            static_cast<int64>(mouse_event.timeStampSeconds * 1000));
+            static_cast<int64_t>(mouse_event.timeStampSeconds * 1000));
         state_ = FINISHED;
         break;
       case FINISHED:

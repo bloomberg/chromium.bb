@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/pepper_host_resolver_message_filter.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"

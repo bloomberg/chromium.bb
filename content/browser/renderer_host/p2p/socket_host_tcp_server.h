@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_SERVER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_SERVER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
@@ -39,7 +42,7 @@ class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
   void Send(const net::IPEndPoint& to,
             const std::vector<char>& data,
             const rtc::PacketOptions& options,
-            uint64 packet_id) override;
+            uint64_t packet_id) override;
   P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address,
       int id) override;

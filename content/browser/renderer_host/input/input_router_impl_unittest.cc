@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
@@ -246,8 +249,8 @@ class InputRouterImplTest : public testing::Test {
     touch_event_.SetTimestamp(timestamp);
   }
 
-  uint32 SendTouchEvent() {
-    uint32 touch_event_id = touch_event_.uniqueTouchEventId;
+  uint32_t SendTouchEvent() {
+    uint32_t touch_event_id = touch_event_.uniqueTouchEventId;
     input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
     touch_event_.ResetPoints();
     return touch_event_id;
@@ -278,7 +281,7 @@ class InputRouterImplTest : public testing::Test {
 
   void SendTouchEventACK(blink::WebInputEvent::Type type,
                          InputEventAckState ack_result,
-                         uint32 touch_event_id) {
+                         uint32_t touch_event_id) {
     DCHECK(WebInputEvent::isTouchEventType(type));
     InputEventAck ack(type, ack_result, touch_event_id);
     input_router_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
@@ -776,14 +779,14 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
   OnHasTouchEventHandlers(true);
 
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id = SendTouchEvent();
+  uint32_t touch_press_event_id = SendTouchEvent();
   EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_FALSE(TouchEventQueueEmpty());
 
   // The second touch should not be sent since one is already in queue.
   MoveTouchPoint(0, 5, 5);
-  uint32 touch_move_event_id = SendTouchEvent();
+  uint32_t touch_move_event_id = SendTouchEvent();
   EXPECT_FALSE(client_->GetAndResetFilterEventCalled());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_FALSE(TouchEventQueueEmpty());
@@ -816,7 +819,7 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
 
   // Send a touch-press event.
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id = SendTouchEvent();
+  uint32_t touch_press_event_id = SendTouchEvent();
   MoveTouchPoint(0, 2, 2);
   MoveTouchPoint(0, 3, 3);
   EXPECT_FALSE(TouchEventQueueEmpty());
@@ -856,7 +859,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   // Press the first finger.
   PressTouchPoint(1, 1);
   SetTouchTimestamp(timestamp);
-  uint32 touch_press_event_id1 = SendTouchEvent();
+  uint32_t touch_press_event_id1 = SendTouchEvent();
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   expected_events.push_back(
       new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), 0, timestamp));
@@ -865,7 +868,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   timestamp += base::TimeDelta::FromSeconds(10);
   MoveTouchPoint(0, 500, 500);
   SetTouchTimestamp(timestamp);
-  uint32 touch_move_event_id1 = SendTouchEvent();
+  uint32_t touch_move_event_id1 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
   expected_events.push_back(new ui::TouchEvent(
       ui::ET_TOUCH_MOVED, gfx::Point(500, 500), 0, timestamp));
@@ -874,7 +877,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   timestamp += base::TimeDelta::FromSeconds(10);
   PressTouchPoint(2, 2);
   SetTouchTimestamp(timestamp);
-  uint32 touch_press_event_id2 = SendTouchEvent();
+  uint32_t touch_press_event_id2 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
   expected_events.push_back(
       new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(2, 2), 1, timestamp));
@@ -884,7 +887,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   MoveTouchPoint(0, 10, 10);
   MoveTouchPoint(1, 20, 20);
   SetTouchTimestamp(timestamp);
-  uint32 touch_move_event_id2 = SendTouchEvent();
+  uint32_t touch_move_event_id2 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
   expected_events.push_back(
       new ui::TouchEvent(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 0, timestamp));
@@ -898,10 +901,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
                                  WebInputEvent::TouchStart,
                                  WebInputEvent::TouchMove };
 
-  uint32 touch_event_ids[] = {touch_press_event_id1,
-                              touch_move_event_id1,
-                              touch_press_event_id2,
-                              touch_move_event_id2};
+  uint32_t touch_event_ids[] = {touch_press_event_id1, touch_move_event_id1,
+                                touch_press_event_id2, touch_move_event_id2};
 
   TouchEventCoordinateSystem coordinate_system = LOCAL_COORDINATES;
 #if !defined(OS_WIN)
@@ -968,7 +969,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
 
   // Precede the TouchCancel with an appropriate TouchStart;
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id = SendTouchEvent();
+  uint32_t touch_press_event_id = SendTouchEvent();
   SendTouchEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_press_event_id);
   ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
@@ -977,7 +978,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
 
   // The TouchCancel ack is always ignored.
   CancelTouchPoint(0);
-  uint32 touch_cancel_event_id = SendTouchEvent();
+  uint32_t touch_cancel_event_id = SendTouchEvent();
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
@@ -1065,7 +1066,7 @@ TEST_F(InputRouterImplTest, MouseTypesIgnoringAck) {
     if (expected_in_flight_event_count) {
       SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-      uint32 expected_ack_count = type == WebInputEvent::MouseMove ? 1 : 0;
+      uint32_t expected_ack_count = type == WebInputEvent::MouseMove ? 1 : 0;
       EXPECT_EQ(expected_ack_count, ack_handler_->GetAndResetAckCount());
       EXPECT_EQ(0, client_->in_flight_event_count());
     }
@@ -1218,7 +1219,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 
   // Verify that the touch ack timeout fires upon the delayed ack.
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id1 = SendTouchEvent();
+  uint32_t touch_press_event_id1 = SendTouchEvent();
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   RunTasksAndWait(base::TimeDelta::FromMilliseconds(kDesktopTimeoutMs + 1));
@@ -1251,22 +1252,22 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   // TOUCH_ACTION_NONE (and no other touch-action) should disable the timeout.
   OnHasTouchEventHandlers(true);
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id2 = SendTouchEvent();
+  uint32_t touch_press_event_id2 = SendTouchEvent();
   OnSetTouchAction(TOUCH_ACTION_PAN_Y);
   EXPECT_TRUE(TouchEventTimeoutEnabled());
   ReleaseTouchPoint(0);
-  uint32 touch_release_event_id2 = SendTouchEvent();
+  uint32_t touch_release_event_id2 = SendTouchEvent();
   SendTouchEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_press_event_id2);
   SendTouchEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_release_event_id2);
 
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id3 = SendTouchEvent();
+  uint32_t touch_press_event_id3 = SendTouchEvent();
   OnSetTouchAction(TOUCH_ACTION_NONE);
   EXPECT_FALSE(TouchEventTimeoutEnabled());
   ReleaseTouchPoint(0);
-  uint32 touch_release_event_id3 = SendTouchEvent();
+  uint32_t touch_release_event_id3 = SendTouchEvent();
   SendTouchEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_press_event_id3);
   SendTouchEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED,
@@ -1291,7 +1292,7 @@ TEST_F(InputRouterImplTest,
 
   // Start a touch sequence.
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id = SendTouchEvent();
+  uint32_t touch_press_event_id = SendTouchEvent();
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // TOUCH_ACTION_NONE should disable the timeout.
@@ -1302,7 +1303,7 @@ TEST_F(InputRouterImplTest,
   EXPECT_FALSE(TouchEventTimeoutEnabled());
 
   MoveTouchPoint(0, 1, 2);
-  uint32 touch_move_event_id = SendTouchEvent();
+  uint32_t touch_move_event_id = SendTouchEvent();
   EXPECT_FALSE(TouchEventTimeoutEnabled());
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
@@ -1316,7 +1317,7 @@ TEST_F(InputRouterImplTest,
 
   // End the touch sequence.
   ReleaseTouchPoint(0);
-  uint32 touch_release_event_id = SendTouchEvent();
+  uint32_t touch_release_event_id = SendTouchEvent();
   SendTouchEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_release_event_id);
   EXPECT_FALSE(TouchEventTimeoutEnabled());
@@ -1342,20 +1343,20 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
 
   // Sequence 1.
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id1 = SendTouchEvent();
+  uint32_t touch_press_event_id1 = SendTouchEvent();
   OnSetTouchAction(TOUCH_ACTION_NONE);
   MoveTouchPoint(0, 50, 50);
-  uint32 touch_move_event_id1 = SendTouchEvent();
+  uint32_t touch_move_event_id1 = SendTouchEvent();
   ReleaseTouchPoint(0);
-  uint32 touch_release_event_id1 = SendTouchEvent();
+  uint32_t touch_release_event_id1 = SendTouchEvent();
 
   // Sequence 2.
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id2 = SendTouchEvent();
+  uint32_t touch_press_event_id2 = SendTouchEvent();
   MoveTouchPoint(0, 50, 50);
-  uint32 touch_move_event_id2 = SendTouchEvent();
+  uint32_t touch_move_event_id2 = SendTouchEvent();
   ReleaseTouchPoint(0);
-  uint32 touch_release_event_id2 = SendTouchEvent();
+  uint32_t touch_release_event_id2 = SendTouchEvent();
 
   SendTouchEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_press_event_id1);
@@ -1400,9 +1401,9 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
 
   // Sequence 1.
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id1 = SendTouchEvent();
+  uint32_t touch_press_event_id1 = SendTouchEvent();
   MoveTouchPoint(0, 50, 50);
-  uint32 touch_move_event_id1 = SendTouchEvent();
+  uint32_t touch_move_event_id1 = SendTouchEvent();
   OnSetTouchAction(TOUCH_ACTION_NONE);
   SendTouchEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_press_event_id1);
@@ -1410,11 +1411,11 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
                     touch_move_event_id1);
 
   ReleaseTouchPoint(0);
-  uint32 touch_release_event_id1 = SendTouchEvent();
+  uint32_t touch_release_event_id1 = SendTouchEvent();
 
   // Sequence 2
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id2 = SendTouchEvent();
+  uint32_t touch_press_event_id2 = SendTouchEvent();
   MoveTouchPoint(0, 50, 50);
   SendTouchEvent();
   ReleaseTouchPoint(0);
@@ -1452,12 +1453,12 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
   // Touch sequence with touch handler.
   OnHasTouchEventHandlers(true);
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id = SendTouchEvent();
+  uint32_t touch_press_event_id = SendTouchEvent();
   MoveTouchPoint(0, 50, 50);
-  uint32 touch_move_event_id = SendTouchEvent();
+  uint32_t touch_move_event_id = SendTouchEvent();
   OnSetTouchAction(TOUCH_ACTION_NONE);
   ReleaseTouchPoint(0);
-  uint32 touch_release_event_id = SendTouchEvent();
+  uint32_t touch_release_event_id = SendTouchEvent();
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Ensure we have touch-action:none, suppressing scroll events.
@@ -1498,17 +1499,17 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
 
   // Sequence 1.
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id1 = SendTouchEvent();
+  uint32_t touch_press_event_id1 = SendTouchEvent();
   OnSetTouchAction(TOUCH_ACTION_NONE);
   SendTouchEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
                     touch_press_event_id1);
 
   ReleaseTouchPoint(0);
-  uint32 touch_release_event_id = SendTouchEvent();
+  uint32_t touch_release_event_id = SendTouchEvent();
 
   // Sequence 2
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id2 = SendTouchEvent();
+  uint32_t touch_press_event_id2 = SendTouchEvent();
 
   // First tap.
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
@@ -1572,7 +1573,7 @@ TEST_F(InputRouterImplTest, InputFlush) {
   // Queue a TouchStart.
   OnHasTouchEventHandlers(true);
   PressTouchPoint(1, 1);
-  uint32 touch_press_event_id = SendTouchEvent();
+  uint32_t touch_press_event_id = SendTouchEvent();
   EXPECT_TRUE(HasPendingEvents());
 
   // DidFlush should be called only after the event is ack'ed.
@@ -1585,7 +1586,7 @@ TEST_F(InputRouterImplTest, InputFlush) {
   // Ensure different types of enqueued events will prevent the DidFlush call
   // until all such events have been fully dispatched.
   MoveTouchPoint(0, 50, 50);
-  uint32 touch_move_event_id = SendTouchEvent();
+  uint32_t touch_move_event_id = SendTouchEvent();
   ASSERT_TRUE(HasPendingEvents());
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
                        blink::WebGestureDeviceTouchscreen);
@@ -1949,7 +1950,7 @@ class InputRouterImplScaleTouchEventTest
   }
 
   void FlushTouchEvent(WebInputEvent::Type type) {
-    uint32 touch_event_id = SendTouchEvent();
+    uint32_t touch_event_id = SendTouchEvent();
     SendTouchEventACK(type, INPUT_EVENT_ACK_STATE_CONSUMED, touch_event_id);
     ASSERT_TRUE(TouchEventQueueEmpty());
     ASSERT_NE(0u, process_->sink().message_count());

@@ -4,6 +4,9 @@
 
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cctype>
 #include <list>
 #include <vector>
@@ -12,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
@@ -21,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
+#include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
@@ -2052,7 +2057,7 @@ std::string MediaStreamManager::GetHMACForMediaDeviceID(
 
   crypto::HMAC hmac(crypto::HMAC::SHA256);
   const size_t digest_length = hmac.DigestLength();
-  std::vector<uint8> digest(digest_length);
+  std::vector<uint8_t> digest(digest_length);
   std::string salt = sc.Run();
   bool result = hmac.Init(security_origin.spec()) &&
                 hmac.Sign(raw_unique_id + salt, &digest[0], digest.size());

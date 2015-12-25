@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_parameters.h"
@@ -36,9 +41,9 @@ const int bits_per_sample = 16;
 #define DATA_ALIGNMENT 16
 static_assert(AudioBus::kChannelAlignment == DATA_ALIGNMENT,
               "Data alignment not same as AudioBus");
-ALIGNAS(DATA_ALIGNMENT) uint8 data[kSegments *
-    (sizeof(media::AudioInputBufferParameters) + frames * channels *
-        sizeof(float))];
+ALIGNAS(DATA_ALIGNMENT)
+uint8_t data[kSegments * (sizeof(media::AudioInputBufferParameters) +
+                          frames * channels * sizeof(float))];
 
 }  // namespace
 
@@ -137,9 +142,8 @@ class AudioInputSyncWriterTest : public testing::Test {
           AudioParameters::AUDIO_FAKE, layout, sampling_frequency_hz,
           bits_per_sample, frames);
 
-    const uint32 segment_size =
-        sizeof(media::AudioInputBufferParameters) +
-        AudioBus::CalculateMemorySize(audio_params);
+    const uint32_t segment_size = sizeof(media::AudioInputBufferParameters) +
+                                  AudioBus::CalculateMemorySize(audio_params);
     size_t data_size = kSegments * segment_size;
     EXPECT_LE(data_size, sizeof(data));
 

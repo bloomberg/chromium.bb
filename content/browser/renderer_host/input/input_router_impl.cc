@@ -515,7 +515,7 @@ void InputRouterImpl::OnDidStopFlinging() {
 void InputRouterImpl::ProcessInputEventAck(WebInputEvent::Type event_type,
                                            InputEventAckState ack_result,
                                            const ui::LatencyInfo& latency_info,
-                                           uint32 unique_touch_event_id,
+                                           uint32_t unique_touch_event_id,
                                            AckSource ack_source) {
   TRACE_EVENT2("input", "InputRouterImpl::ProcessInputEventAck",
                "type", WebInputEventTraits::GetName(event_type),
@@ -630,7 +630,7 @@ void InputRouterImpl::ProcessGestureAck(WebInputEvent::Type type,
 
 void InputRouterImpl::ProcessTouchAck(InputEventAckState ack_result,
                                       const ui::LatencyInfo& latency,
-                                      uint32 unique_touch_event_id) {
+                                      uint32_t unique_touch_event_id) {
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
   touch_event_queue_.ProcessTouchAck(ack_result, latency,
                                      unique_touch_event_id);

@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/content_export.h"

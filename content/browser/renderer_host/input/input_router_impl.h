@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_IMPL_H_
 
+#include <stdint.h>
+
 #include <queue>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
@@ -137,7 +139,7 @@ private:
   void ProcessInputEventAck(blink::WebInputEvent::Type event_type,
                             InputEventAckState ack_result,
                             const ui::LatencyInfo& latency_info,
-                            uint32 unique_touch_event_id,
+                            uint32_t unique_touch_event_id,
                             AckSource ack_source);
 
   // Dispatches the ack'ed event to |ack_handler_|.
@@ -165,7 +167,7 @@ private:
   // dispatch of queued touch events, or the creation of gesture events.
   void ProcessTouchAck(InputEventAckState ack_result,
                        const ui::LatencyInfo& latency,
-                       uint32 unique_touch_event_id);
+                       uint32_t unique_touch_event_id);
 
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input

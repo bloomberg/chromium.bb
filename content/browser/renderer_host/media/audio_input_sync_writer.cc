@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -33,7 +34,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
                                            size_t shared_memory_size,
                                            int shared_memory_segment_count,
                                            const media::AudioParameters& params)
-    : shared_memory_(static_cast<uint8*>(shared_memory)),
+    : shared_memory_(static_cast<uint8_t*>(shared_memory)),
       shared_memory_segment_count_(shared_memory_segment_count),
       current_segment_id_(0),
       creation_time_(base::Time::Now()),
@@ -55,7 +56,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
   DVLOG(1) << "audio_bus_memory_size: " << audio_bus_memory_size_;
 
   // Create vector of audio buses by wrapping existing blocks of memory.
-  uint8* ptr = shared_memory_;
+  uint8_t* ptr = shared_memory_;
   for (int i = 0; i < shared_memory_segment_count; ++i) {
     CHECK_EQ(0U, reinterpret_cast<uintptr_t>(ptr) &
         (AudioBus::kChannelAlignment - 1));
@@ -121,7 +122,7 @@ AudioInputSyncWriter::~AudioInputSyncWriter() {
 void AudioInputSyncWriter::Write(const AudioBus* data,
                                  double volume,
                                  bool key_pressed,
-                                 uint32 hardware_delay_bytes) {
+                                 uint32_t hardware_delay_bytes) {
   ++write_count_;
   CheckTimeSinceLastWrite();
 
@@ -226,11 +227,10 @@ void AudioInputSyncWriter::AddToNativeLog(const std::string& message) {
   MediaStreamManager::SendMessageToNativeLog(message);
 }
 
-bool AudioInputSyncWriter::PushDataToFifo(
-    const AudioBus* data,
-    double volume,
-    bool key_pressed,
-    uint32 hardware_delay_bytes) {
+bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
+                                          double volume,
+                                          bool key_pressed,
+                                          uint32_t hardware_delay_bytes) {
   if (overflow_buses_.size() == kMaxOverflowBusesSize) {
     const std::string error_message = "AISW: No room in fifo.";
     LOG(ERROR) << error_message;
@@ -305,8 +305,8 @@ bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
 void AudioInputSyncWriter::WriteParametersToCurrentSegment(
     double volume,
     bool key_pressed,
-    uint32 hardware_delay_bytes) {
-  uint8* ptr = shared_memory_;
+    uint32_t hardware_delay_bytes) {
+  uint8_t* ptr = shared_memory_;
   ptr += current_segment_id_ * shared_memory_segment_size_;
   AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
   buffer->params.volume = volume;

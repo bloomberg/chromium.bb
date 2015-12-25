@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"

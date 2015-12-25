@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/pepper_network_monitor_host.h"
 
+#include <stddef.h>
+
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"

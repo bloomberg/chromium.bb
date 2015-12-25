@@ -13,6 +13,7 @@
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/media_internals.h"
@@ -113,7 +114,7 @@ AudioInputRendererHost::AudioEntry::~AudioEntry() {
 
 AudioInputRendererHost::AudioInputRendererHost(
     int render_process_id,
-    int32 renderer_pid,
+    int32_t renderer_pid,
     media::AudioManager* audio_manager,
     MediaStreamManager* media_stream_manager,
     AudioMirroringManager* audio_mirroring_manager,
@@ -211,7 +212,7 @@ void AudioInputRendererHost::OnLog(media::AudioInputController* controller,
                                      message));
 }
 
-void AudioInputRendererHost::set_renderer_pid(int32 renderer_pid) {
+void AudioInputRendererHost::set_renderer_pid(int32_t renderer_pid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   renderer_pid_ = renderer_pid;
 }
@@ -409,14 +410,14 @@ void AudioInputRendererHost::DoCreateStream(
   // Create a new AudioEntry structure.
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
-  const uint32 segment_size =
+  const uint32_t segment_size =
       (sizeof(media::AudioInputBufferParameters) +
        media::AudioBus::CalculateMemorySize(audio_params));
   entry->shared_memory_segment_count = config.shared_memory_count;
 
   // Create the shared memory and share it with the renderer process
   // using a new SyncWriter object.
-  base::CheckedNumeric<uint32> size = segment_size;
+  base::CheckedNumeric<uint32_t> size = segment_size;
   size *= entry->shared_memory_segment_count;
   if (!size.IsValid() ||
       !entry->shared_memory.CreateAndMapAnonymous(size.ValueOrDie())) {

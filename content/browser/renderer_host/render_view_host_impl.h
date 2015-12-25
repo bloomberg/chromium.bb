@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -13,8 +16,10 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/site_instance_impl.h"
@@ -99,8 +104,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   RenderViewHostImpl(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
                      RenderWidgetHostDelegate* widget_delegate,
-                     int32 routing_id,
-                     int32 main_frame_routing_id,
+                     int32_t routing_id,
+                     int32_t main_frame_routing_id,
                      bool swapped_out,
                      bool hidden,
                      bool has_initialized_audio_host);
@@ -199,7 +204,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   virtual bool CreateRenderView(
       int opener_frame_route_id,
       int proxy_route_id,
-      int32 max_page_id,
+      int32_t max_page_id,
       const FrameReplicationState& replicated_frame_state,
       bool window_was_created_with_opener);
 
@@ -253,8 +258,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // Notifies the RenderViewHost that its load state changed.
   void LoadStateChanged(const GURL& url,
                         const net::LoadStateWithParam& load_state,
-                        uint64 upload_position,
-                        uint64 upload_size);
+                        uint64_t upload_position,
+                        uint64_t upload_size);
 
   bool SuddenTerminationAllowed() const;
   void set_sudden_termination_allowed(bool enabled) {
@@ -273,11 +278,10 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).
-  void CreateNewWidget(int32 route_id,
-                       blink::WebPopupType popup_type);
+  void CreateNewWidget(int32_t route_id, blink::WebPopupType popup_type);
 
   // Creates a full screen RenderWidget.
-  void CreateNewFullscreenWidget(int32 route_id);
+  void CreateNewFullscreenWidget(int32_t route_id);
 
   void set_main_frame_routing_id(int routing_id) {
     main_frame_routing_id_ = routing_id;
@@ -327,7 +331,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int route_id);
   void OnRenderProcessGone(int status, int error_code);
-  void OnUpdateState(int32 page_id, const PageState& state);
+  void OnUpdateState(int32_t page_id, const PageState& state);
   void OnUpdateTargetURL(const GURL& url);
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);
@@ -367,7 +371,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // TODO(creis): Move to a private namespace on RenderFrameHostImpl.
   // Delay to wait on closing the WebContents for a beforeunload/unload handler
   // to fire.
-  static const int64 kUnloadTimeoutMS;
+  static const int64_t kUnloadTimeoutMS;
 
   // Returns the content specific prefs for this RenderViewHost.
   // TODO(creis): Move most of this method to RenderProcessHost, since it's
@@ -407,7 +411,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // The most recent page ID we've heard from the renderer process.  This is
   // used as context when other session history related IPCs arrive.
   // TODO(creis): Allocate this in WebContents/NavigationController instead.
-  int32 page_id_;
+  int32_t page_id_;
 
   // Tracks whether this RenderViewHost is in an active state.  False if the
   // main frame is pending swap out, pending deletion, or swapped out, because

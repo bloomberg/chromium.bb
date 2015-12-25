@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/websocket_dispatcher_host.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -131,8 +133,8 @@ WebSocketHost* WebSocketDispatcherHost::GetHost(int routing_id) const {
 }
 
 WebSocketHostState WebSocketDispatcherHost::SendOrDrop(IPC::Message* message) {
-  const uint32 message_type = message->type();
-  const int32 message_routing_id = message->routing_id();
+  const uint32_t message_type = message->type();
+  const int32_t message_routing_id = message->routing_id();
   if (!Send(message)) {
     message = NULL;
     DVLOG(1) << "Sending of message type " << message_type
@@ -168,7 +170,7 @@ WebSocketHostState WebSocketDispatcherHost::SendFrame(
 }
 
 WebSocketHostState WebSocketDispatcherHost::SendFlowControl(int routing_id,
-                                                            int64 quota) {
+                                                            int64_t quota) {
   return SendOrDrop(new WebSocketMsg_FlowControl(routing_id, quota));
 }
 
@@ -203,7 +205,7 @@ WebSocketHostState WebSocketDispatcherHost::NotifyFailure(
 WebSocketHostState WebSocketDispatcherHost::DoDropChannel(
     int routing_id,
     bool was_clean,
-    uint16 code,
+    uint16_t code,
     const std::string& reason) {
   if (SendOrDrop(
           new WebSocketMsg_DropChannel(routing_id, was_clean, code, reason)) ==

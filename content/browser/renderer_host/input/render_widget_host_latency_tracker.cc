@@ -4,8 +4,11 @@
 
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 
 using blink::WebGestureEvent;
@@ -21,7 +24,7 @@ namespace {
 void UpdateLatencyCoordinatesImpl(const blink::WebTouchEvent& touch,
                                   LatencyInfo* latency,
                                   float device_scale_factor) {
-  for (uint32 i = 0; i < touch.touchesLength; ++i) {
+  for (uint32_t i = 0; i < touch.touchesLength; ++i) {
     LatencyInfo::InputCoordinate coordinate(
         touch.touches[i].position.x * device_scale_factor,
         touch.touches[i].position.y * device_scale_factor);
@@ -73,7 +76,7 @@ void UpdateLatencyCoordinates(const WebInputEvent& event,
 }
 
 void ComputeInputLatencyHistograms(WebInputEvent::Type type,
-                                   int64 latency_component_id,
+                                   int64_t latency_component_id,
                                    const LatencyInfo& latency) {
   LatencyInfo::LatencyComponent rwh_component;
   if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
@@ -152,7 +155,7 @@ void ComputeInputLatencyHistograms(WebInputEvent::Type type,
 void ComputeScrollLatencyHistograms(
     const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
     const LatencyInfo::LatencyComponent& gpu_swap_end_component,
-    int64 latency_component_id,
+    int64_t latency_component_id,
     const LatencyInfo& latency) {
   DCHECK(!gpu_swap_begin_component.event_time.is_null());
   DCHECK(!gpu_swap_end_component.event_time.is_null());
@@ -256,8 +259,8 @@ void ComputeScrollLatencyHistograms(
 // provided to them by the browser process. This function adds the correct
 // component ID where necessary.
 void AddLatencyInfoComponentIds(LatencyInfo* latency,
-                                int64 latency_component_id) {
-  std::vector<std::pair<ui::LatencyComponentType, int64>> new_components_key;
+                                int64_t latency_component_id) {
+  std::vector<std::pair<ui::LatencyComponentType, int64_t>> new_components_key;
   std::vector<LatencyInfo::LatencyComponent> new_components_value;
   for (const auto& lc : latency->latency_components()) {
     ui::LatencyComponentType component_type = lc.first.first;
@@ -299,7 +302,7 @@ void RenderWidgetHostLatencyTracker::Initialize(int routing_id,
                                                 int process_id) {
   DCHECK_EQ(0, last_event_id_);
   DCHECK_EQ(0, latency_component_id_);
-  last_event_id_ = static_cast<int64>(process_id) << 32;
+  last_event_id_ = static_cast<int64_t>(process_id) << 32;
   latency_component_id_ = routing_id | last_event_id_;
 }
 

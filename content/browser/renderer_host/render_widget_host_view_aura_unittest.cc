@@ -4,13 +4,17 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
@@ -235,7 +239,7 @@ class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
       : WindowEventDispatcher(host),
         processed_touch_event_count_(0) {}
 
-  void ProcessedTouchEvent(uint32 unique_event_id,
+  void ProcessedTouchEvent(uint32_t unique_event_id,
                            aura::Window* window,
                            ui::EventResult result) override {
     WindowEventDispatcher::ProcessedTouchEvent(unique_event_id, window, result);
@@ -396,7 +400,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     sink_ = &process_host_->sink();
 
-    int32 routing_id = process_host_->GetNextRoutingID();
+    int32_t routing_id = process_host_->GetNextRoutingID();
     parent_host_ =
         new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     parent_view_ = new RenderWidgetHostViewAura(parent_host_,
@@ -474,7 +478,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   void SendTouchEventACK(WebInputEvent::Type type,
                          InputEventAckState ack_result,
-                         uint32 event_id) {
+                         uint32_t event_id) {
     DCHECK(WebInputEvent::isTouchEventType(type));
     InputEventAck ack(type, ack_result, event_id);
     InputHostMsg_HandleInputEvent_ACK response(0, ack);
@@ -734,8 +738,8 @@ class RenderWidgetHostViewAuraOverscrollTest
     return overscroll_delegate_.get();
   }
 
-  uint32 SendTouchEvent() {
-    uint32 touch_event_id = touch_event_.uniqueTouchEventId;
+  uint32_t SendTouchEvent() {
+    uint32_t touch_event_id = touch_event_.uniqueTouchEventId;
     widget_host_->ForwardTouchEventWithLatencyInfo(touch_event_,
                                                    ui::LatencyInfo());
     touch_event_.ResetPoints();
@@ -1726,7 +1730,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
       root_window->GetHost()->compositor());
 
   bool has_resize = false;
-  for (uint32 i = 0; i < sink_->message_count(); ++i) {
+  for (uint32_t i = 0; i < sink_->message_count(); ++i) {
     const IPC::Message* msg = sink_->GetMessageAt(i);
     switch (msg->type()) {
       case InputMsg_HandleInputEvent::ID: {
@@ -1913,7 +1917,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
 
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
-    int32 routing_id = process_host_->GetNextRoutingID();
+    int32_t routing_id = process_host_->GetNextRoutingID();
     hosts[i] =
         new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     hosts[i]->Init();
@@ -2077,7 +2081,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
-    int32 routing_id = process_host_->GetNextRoutingID();
+    int32_t routing_id = process_host_->GetNextRoutingID();
     hosts[i] =
         new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     hosts[i]->Init();
@@ -2146,7 +2150,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
 
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
-    int32 routing_id = process_host_->GetNextRoutingID();
+    int32_t routing_id = process_host_->GetNextRoutingID();
     hosts[i] =
         new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     hosts[i]->Init();
@@ -3015,13 +3019,13 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
 
   // The test sends an intermingled sequence of touch and gesture events.
   PressTouchPoint(0, 1);
-  uint32 touch_press_event_id1 = SendTouchEvent();
+  uint32_t touch_press_event_id1 = SendTouchEvent();
   SendTouchEventACK(WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED, touch_press_event_id1);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   MoveTouchPoint(0, 20, 5);
-  uint32 touch_move_event_id1 = SendTouchEvent();
+  uint32_t touch_move_event_id1 = SendTouchEvent();
   SendTouchEventACK(WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED, touch_move_event_id1);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());

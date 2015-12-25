@@ -5,13 +5,18 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_BASE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_BASE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
@@ -92,7 +97,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Return a value that is incremented each time the renderer swaps a new frame
   // to the view.
-  uint32 RendererFrameNumber();
+  uint32_t RendererFrameNumber();
 
   // Called each time the RenderWidgetHost receives a new frame for display from
   // the renderer.
@@ -162,7 +167,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node) {}
 
-  virtual void OnSwapCompositorFrame(uint32 output_surface_id,
+  virtual void OnSwapCompositorFrame(uint32_t output_surface_id,
                                      scoped_ptr<cc::CompositorFrame> frame) {}
 
   // This method exists to allow removing of displayed graphics, after a new
@@ -438,7 +443,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   gfx::Rect current_display_area_;
 
-  uint32 renderer_frame_number_;
+  uint32_t renderer_frame_number_;
 
   base::OneShotTimer flush_input_timer_;
 

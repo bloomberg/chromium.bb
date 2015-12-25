@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_GAMEPAD_BROWSER_MESSAGE_FILTER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "content/browser/gamepad/gamepad_consumer.h"
 #include "content/public/browser/browser_message_filter.h"

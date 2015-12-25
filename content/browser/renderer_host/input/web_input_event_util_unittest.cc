@@ -7,6 +7,8 @@
 #define _USE_MATH_DEFINES
 #endif
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "content/browser/renderer_host/input/web_input_event_util.h"

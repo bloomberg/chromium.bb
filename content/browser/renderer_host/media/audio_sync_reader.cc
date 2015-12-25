@@ -10,6 +10,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/common/content_switches.h"
 #include "media/audio/audio_parameters.h"
@@ -159,7 +160,7 @@ bool AudioSyncReader::WaitUntilDataIsReady() {
   // catch up at some point, which means discarding counter values read from the
   // SyncSocket which don't match our current buffer index.
   size_t bytes_received = 0;
-  uint32 renderer_buffer_index = 0;
+  uint32_t renderer_buffer_index = 0;
   while (timeout.InMicroseconds() > 0) {
     bytes_received = socket_->ReceiveWithTimeout(
         &renderer_buffer_index, sizeof(renderer_buffer_index), timeout);

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
@@ -117,8 +120,10 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   void OnNotifyStreamCreated(
-      int stream_id, base::SharedMemoryHandle handle,
-      base::SyncSocket::TransitDescriptor socket_descriptor, uint32 length) {
+      int stream_id,
+      base::SharedMemoryHandle handle,
+      base::SyncSocket::TransitDescriptor socket_descriptor,
+      uint32_t length) {
     // Maps the shared memory.
     shared_memory_.reset(new base::SharedMemory(handle, false));
     CHECK(shared_memory_->Map(length));
@@ -154,7 +159,7 @@ class MockAudioRendererHost : public AudioRendererHost {
 
   scoped_ptr<base::SharedMemory> shared_memory_;
   scoped_ptr<base::SyncSocket> sync_socket_;
-  uint32 shared_memory_length_;
+  uint32_t shared_memory_length_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererHost);
 };

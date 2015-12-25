@@ -5,14 +5,17 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_POOL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_POOL_H_
 
+#include <stddef.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"

@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -163,7 +164,7 @@ void GetWindowsSpecificPrefs(RendererPreferences* prefs) {
 }  // namespace
 
 // static
-const int64 RenderViewHostImpl::kUnloadTimeoutMS = 1000;
+const int64_t RenderViewHostImpl::kUnloadTimeoutMS = 1000;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, public:
@@ -208,8 +209,8 @@ RenderViewHostImpl::RenderViewHostImpl(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
-    int32 routing_id,
-    int32 main_frame_routing_id,
+    int32_t routing_id,
+    int32_t main_frame_routing_id,
     bool swapped_out,
     bool hidden,
     bool has_initialized_audio_host)
@@ -286,7 +287,7 @@ SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() const {
 bool RenderViewHostImpl::CreateRenderView(
     int opener_frame_route_id,
     int proxy_route_id,
-    int32 max_page_id,
+    int32_t max_page_id,
     const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   TRACE_EVENT0("renderer_host,navigation",
@@ -308,7 +309,7 @@ bool RenderViewHostImpl::CreateRenderView(
 
   // Ensure the RenderView starts with a next_page_id larger than any existing
   // page ID it might be asked to render.
-  int32 next_page_id = 1;
+  int32_t next_page_id = 1;
   if (max_page_id > -1)
     next_page_id = max_page_id + 1;
 
@@ -884,8 +885,8 @@ void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
 void RenderViewHostImpl::LoadStateChanged(
     const GURL& url,
     const net::LoadStateWithParam& load_state,
-    uint64 upload_position,
-    uint64 upload_size) {
+    uint64_t upload_position,
+    uint64_t upload_size) {
   delegate_->LoadStateChanged(url, load_state, upload_position, upload_size);
 }
 
@@ -1010,12 +1011,12 @@ void RenderViewHostImpl::CreateNewWindow(
                              session_storage_namespace);
 }
 
-void RenderViewHostImpl::CreateNewWidget(int32 route_id,
+void RenderViewHostImpl::CreateNewWidget(int32_t route_id,
                                          blink::WebPopupType popup_type) {
   delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, popup_type);
 }
 
-void RenderViewHostImpl::CreateNewFullscreenWidget(int32 route_id) {
+void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t route_id) {
   delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id);
 }
 
@@ -1048,7 +1049,8 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // decoupled.
 }
 
-void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
+void RenderViewHostImpl::OnUpdateState(int32_t page_id,
+                                       const PageState& state) {
   // If the following DCHECK fails, you have encountered a tricky edge-case that
   // has evaded reproduction for a very long time. Please report what you were
   // doing on http://crbug.com/407376, whether or not you can reproduce the

@@ -5,12 +5,16 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_ANDROID_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_ANDROID_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
@@ -26,8 +30,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/window_android_observer.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/geometry/size.h"
@@ -148,7 +152,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       BrowserAccessibilityDelegate* delegate) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  void OnSwapCompositorFrame(uint32 output_surface_id,
+  void OnSwapCompositorFrame(uint32_t output_surface_id,
                              scoped_ptr<cc::CompositorFrame> frame) override;
   void ClearCompositorFrame() override;
   void DidOverscroll(const DidOverscrollParams& params) override;
@@ -262,12 +266,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void RunAckCallbacks(cc::SurfaceDrawStatus status);
 
   void DestroyDelegatedContent();
-  void CheckOutputSurfaceChanged(uint32 output_surface_id);
+  void CheckOutputSurfaceChanged(uint32_t output_surface_id);
   void SubmitCompositorFrame(scoped_ptr<cc::CompositorFrame> frame_data);
-  void SwapDelegatedFrame(uint32 output_surface_id,
+  void SwapDelegatedFrame(uint32_t output_surface_id,
                           scoped_ptr<cc::CompositorFrame> frame_data);
-  void SendDelegatedFrameAck(uint32 output_surface_id);
-  void SendReturnedDelegatedResources(uint32 output_surface_id);
+  void SendDelegatedFrameAck(uint32_t output_surface_id);
+  void SendReturnedDelegatedResources(uint32_t output_surface_id);
 
   void OnFrameMetadataUpdated(
       const cc::CompositorFrameMetadata& frame_metadata);
@@ -308,10 +312,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Drop any incoming frames from the renderer when there are locks on the
   // current frame.
-  void RetainFrame(uint32 output_surface_id,
+  void RetainFrame(uint32_t output_surface_id,
                    scoped_ptr<cc::CompositorFrame> frame);
 
-  void InternalSwapCompositorFrame(uint32 output_surface_id,
+  void InternalSwapCompositorFrame(uint32_t output_surface_id,
                                    scoped_ptr<cc::CompositorFrame> frame);
   void OnLostResources();
 
@@ -320,7 +324,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
     BEGIN_FRAME = 1 << 1,
     PERSISTENT_BEGIN_FRAME = 1 << 2
   };
-  void RequestVSyncUpdate(uint32 requests);
+  void RequestVSyncUpdate(uint32_t requests);
   void StartObservingRootWindow();
   void StopObservingRootWindow();
   void SendBeginFrame(base::TimeTicks frame_time, base::TimeDelta vsync_period);
@@ -335,7 +339,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool use_surfaces_;
 
   // Used to control action dispatch at the next |OnVSync()| call.
-  uint32 outstanding_vsync_requests_;
+  uint32_t outstanding_vsync_requests_;
 
   bool is_showing_;
 
@@ -405,10 +409,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool observing_root_window_;
 
   struct LastFrameInfo {
-    LastFrameInfo(uint32 output_id,
+    LastFrameInfo(uint32_t output_id,
                   scoped_ptr<cc::CompositorFrame> output_frame);
     ~LastFrameInfo();
-    uint32 output_surface_id;
+    uint32_t output_surface_id;
     scoped_ptr<cc::CompositorFrame> frame;
   };
 

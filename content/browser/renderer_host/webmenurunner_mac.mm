@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/webmenurunner_mac.h"
 
+#include <stddef.h>
+
 #include "base/strings/sys_string_conversions.h"
 
 @interface WebMenuRunner (PrivateAPI)

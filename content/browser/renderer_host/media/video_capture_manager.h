@@ -17,6 +17,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -24,6 +25,7 @@
 #include "base/process/process_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"

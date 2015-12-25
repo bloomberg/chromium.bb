@@ -10,7 +10,7 @@
 #include <atlcrack.h>
 #include <oleacc.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"

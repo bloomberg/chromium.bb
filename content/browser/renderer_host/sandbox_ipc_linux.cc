@@ -5,11 +5,12 @@
 #include "content/browser/renderer_host/sandbox_ipc_linux.h"
 
 #include <fcntl.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/linux_util.h"
@@ -286,7 +287,7 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
     const std::vector<base::ScopedFD>& fds) {
   std::string family;
   bool bold, italic;
-  uint16 pixel_size;
+  uint16_t pixel_size;
 
   if (!iter.ReadString(&family) ||
       !iter.ReadBool(&bold) ||
@@ -373,7 +374,7 @@ void SandboxIPCHandler::HandleMatchWithFallback(
     const std::vector<base::ScopedFD>& fds) {
   std::string face;
   bool is_bold, is_italic;
-  uint32 charset, fallback_family;
+  uint32_t charset, fallback_family;
 
   if (!iter.ReadString(&face) || face.empty() ||
       !iter.ReadBool(&is_bold) ||

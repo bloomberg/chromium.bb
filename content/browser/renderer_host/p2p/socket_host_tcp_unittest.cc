@@ -4,8 +4,12 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 
+#include "base/macros.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "net/socket/stream_socket.h"
@@ -26,8 +30,9 @@ class P2PSocketHostTcpTestBase : public testing::Test {
   }
 
   void SetUp() override {
-    EXPECT_CALL(sender_, Send(
-        MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
+    EXPECT_CALL(
+        sender_,
+        Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
     if (socket_type_ == P2P_SOCKET_TCP_CLIENT) {
@@ -53,7 +58,7 @@ class P2PSocketHostTcpTestBase : public testing::Test {
 
   std::string IntToSize(int size) {
     std::string result;
-    uint16 size16 = base::HostToNet16(size);
+    uint16_t size16 = base::HostToNet16(size);
     result.resize(sizeof(size16));
     memcpy(&result[0], &size16, sizeof(size16));
     return result;
@@ -84,8 +89,9 @@ class P2PSocketHostStunTcpTest : public P2PSocketHostTcpTestBase {
 // Verify that we can send STUN message and that they are formatted
 // properly.
 TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
@@ -116,8 +122,9 @@ TEST_F(P2PSocketHostTcpTest, SendStunNoAuth) {
 // Verify that we can receive STUN messages from the socket, and that
 // the messages are parsed properly.
 TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
@@ -164,8 +171,8 @@ TEST_F(P2PSocketHostTcpTest, ReceiveStun) {
 // Verify that we can't send data before we've received STUN response
 // from the other side.
 TEST_F(P2PSocketHostTcpTest, SendDataNoAuth) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
+  EXPECT_CALL(sender_,
+              Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
   rtc::PacketOptions options;
@@ -187,8 +194,9 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
   received_data.append(IntToSize(request_packet.size()));
   received_data.append(request_packet.begin(), request_packet.end());
 
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   EXPECT_CALL(sender_, Send(MatchPacketMessage(request_packet)))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
@@ -213,8 +221,9 @@ TEST_F(P2PSocketHostTcpTest, AsyncWrites) {
 
   socket_->set_async_write(true);
 
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(2)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
@@ -247,8 +256,9 @@ TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
   received_data.append(IntToSize(request_packet.size()));
   received_data.append(request_packet.begin(), request_packet.end());
 
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   EXPECT_CALL(sender_, Send(MatchPacketMessage(request_packet)))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
@@ -260,7 +270,7 @@ TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
   std::vector<char> packet;
   CreateRandomPacket(&packet);
   // Make it a RTP packet.
-  *reinterpret_cast<uint16*>(&*packet.begin()) = base::HostToNet16(0x8000);
+  *reinterpret_cast<uint16_t*>(&*packet.begin()) = base::HostToNet16(0x8000);
   socket_host_->Send(dest_.ip_address, packet, options, 0);
 
   std::string expected_data;
@@ -273,8 +283,9 @@ TEST_F(P2PSocketHostTcpTest, SendDataWithPacketOptions) {
 // Verify that we can send STUN message and that they are formatted
 // properly.
 TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
@@ -302,8 +313,9 @@ TEST_F(P2PSocketHostStunTcpTest, SendStunNoAuth) {
 // Verify that we can receive STUN messages from the socket, and that
 // the messages are parsed properly.
 TEST_F(P2PSocketHostStunTcpTest, ReceiveStun) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(3)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
@@ -347,8 +359,8 @@ TEST_F(P2PSocketHostStunTcpTest, ReceiveStun) {
 // Verify that we can't send data before we've received STUN response
 // from the other side.
 TEST_F(P2PSocketHostStunTcpTest, SendDataNoAuth) {
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnError::ID))))
+  EXPECT_CALL(sender_,
+              Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
   rtc::PacketOptions options;
@@ -365,8 +377,9 @@ TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
 
   socket_->set_async_write(true);
 
-  EXPECT_CALL(sender_, Send(
-      MatchMessage(static_cast<uint32>(P2PMsg_OnSendComplete::ID))))
+  EXPECT_CALL(
+      sender_,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSendComplete::ID))))
       .Times(2)
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 

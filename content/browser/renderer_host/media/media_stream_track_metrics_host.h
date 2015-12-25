@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_TRACK_METRICS_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_TRACK_METRICS_HOST_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -37,8 +39,8 @@ class MediaStreamTrackMetricsHost
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  void OnAddTrack(uint64 id, bool is_audio, bool is_remote);
-  void OnRemoveTrack(uint64 id);
+  void OnAddTrack(uint64_t id, bool is_audio, bool is_remote);
+  void OnRemoveTrack(uint64_t id);
 
   // Information for a track we're keeping in |tracks_|. |is_audio|
   // specifies whether it's an audio or video track, |is_remote|
@@ -54,7 +56,7 @@ class MediaStreamTrackMetricsHost
   void ReportDuration(const TrackInfo& info);
 
   // Values are unique (per renderer) track IDs.
-  typedef std::map<uint64, TrackInfo> TrackMap;
+  typedef std::map<uint64_t, TrackInfo> TrackMap;
   TrackMap tracks_;
 };
 

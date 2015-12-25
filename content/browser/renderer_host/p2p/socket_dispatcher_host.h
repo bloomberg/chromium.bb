@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_DISPATCHER_HOST_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
 #include "content/common/p2p_socket_type.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -71,8 +74,7 @@ class P2PSocketDispatcherHost
   // Handlers for the messages coming from the renderer.
   void OnStartNetworkNotifications();
   void OnStopNetworkNotifications();
-  void OnGetHostAddress(const std::string& host_name,
-                        int32 request_id);
+  void OnGetHostAddress(const std::string& host_name, int32_t request_id);
 
   void OnCreateSocket(P2PSocketType type,
                       int socket_id,
@@ -85,7 +87,7 @@ class P2PSocketDispatcherHost
               const net::IPEndPoint& socket_address,
               const std::vector<char>& data,
               const rtc::PacketOptions& options,
-              uint64 packet_id);
+              uint64_t packet_id);
   void OnSetOption(int socket_id, P2PSocketOption option, int value);
   void OnDestroySocket(int socket_id);
 

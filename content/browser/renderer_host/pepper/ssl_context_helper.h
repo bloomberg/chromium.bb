@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_SSL_CONTEXT_HELPER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_SSL_CONTEXT_HELPER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/ssl/ssl_config_service.h"

@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -361,7 +362,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgJoinGroup(
     return PP_ERROR_FAILED;
 
   net::IPAddressNumber group;
-  uint16 port;
+  uint16_t port;
 
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &group, &port))
     return PP_ERROR_ADDRESS_INVALID;
@@ -382,7 +383,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgLeaveGroup(
     return PP_ERROR_FAILED;
 
   net::IPAddressNumber group;
-  uint16 port;
+  uint16_t port;
 
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &group, &port))
     return PP_ERROR_ADDRESS_INVALID;
@@ -405,7 +406,7 @@ void PepperUDPSocketMessageFilter::DoBind(
       NULL, net::NetLog::Source()));
 
   net::IPAddressNumber address;
-  uint16 port;
+  uint16_t port;
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address, &port)) {
     SendBindError(context, PP_ERROR_ADDRESS_INVALID);
     return;
@@ -585,7 +586,7 @@ void PepperUDPSocketMessageFilter::DoSendTo(
   }
 
   net::IPAddressNumber address;
-  uint16 port;
+  uint16_t port;
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address, &port)) {
     SendSendToError(context, PP_ERROR_ADDRESS_INVALID);
     return;

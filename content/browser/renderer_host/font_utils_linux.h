@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_FONT_UTILS_LINUX_H_
 #define CONTENT_BROWSER_RENDERER_HOST_FONT_UTILS_LINUX_H_
 
+#include <stdint.h>
+
 #include <string>
 
 namespace content {
@@ -12,8 +14,8 @@ namespace content {
 int MatchFontFaceWithFallback(const std::string& face,
                               bool is_bold,
                               bool is_italic,
-                              uint32 charset,
-                              uint32 fallback_family);
+                              uint32_t charset,
+                              uint32_t fallback_family);
 
 }  // namespace content
 

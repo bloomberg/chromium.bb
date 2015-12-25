@@ -5,14 +5,17 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_MESSAGE_FILTER_H_
 
+#include <stddef.h>
+
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 #include "net/base/completion_callback.h"

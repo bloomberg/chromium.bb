@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDERER_FRAME_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDERER_FRAME_MANAGER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"

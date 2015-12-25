@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_RENDER_WIDGET_HOST_LATENCY_TRACKER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_RENDER_WIDGET_HOST_LATENCY_TRACKER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "ui/events/latency_info.h"
@@ -56,11 +58,11 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
 
   // Returns the ID that uniquely describes this component to the latency
   // subsystem.
-  int64 latency_component_id() const { return latency_component_id_; }
+  int64_t latency_component_id() const { return latency_component_id_; }
 
  private:
-  int64 last_event_id_;
-  int64 latency_component_id_;
+  int64_t last_event_id_;
+  int64_t latency_component_id_;
   float device_scale_factor_;
   bool has_seent_first_gesture_scroll_update_;
 

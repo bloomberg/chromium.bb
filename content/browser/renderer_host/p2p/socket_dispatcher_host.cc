@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
@@ -44,10 +46,8 @@ class P2PSocketDispatcherHost::DnsRequest {
  public:
   typedef base::Callback<void(const net::IPAddressList&)> DoneCallback;
 
-  DnsRequest(int32 request_id, net::HostResolver* host_resolver)
-      : request_id_(request_id),
-        resolver_(host_resolver) {
-  }
+  DnsRequest(int32_t request_id, net::HostResolver* host_resolver)
+      : request_id_(request_id), resolver_(host_resolver) {}
 
   void Resolve(const std::string& host_name,
                const DoneCallback& done_callback) {
@@ -80,7 +80,7 @@ class P2PSocketDispatcherHost::DnsRequest {
       OnDone(result);
   }
 
-  int32 request_id() { return request_id_; }
+  int32_t request_id() { return request_id_; }
 
  private:
   void OnDone(int result) {
@@ -100,7 +100,7 @@ class P2PSocketDispatcherHost::DnsRequest {
     done_callback_.Run(list);
   }
 
-  int32 request_id_;
+  int32_t request_id_;
   net::AddressList addresses_;
 
   std::string host_name_;
@@ -228,7 +228,7 @@ void P2PSocketDispatcherHost::OnStopNetworkNotifications() {
 }
 
 void P2PSocketDispatcherHost::OnGetHostAddress(const std::string& host_name,
-                                               int32 request_id) {
+                                               int32_t request_id) {
   DnsRequest* request = new DnsRequest(request_id,
                                        resource_context_->GetHostResolver());
   dns_requests_.insert(request);
@@ -292,7 +292,7 @@ void P2PSocketDispatcherHost::OnSend(int socket_id,
                                      const net::IPEndPoint& socket_address,
                                      const std::vector<char>& data,
                                      const rtc::PacketOptions& options,
-                                     uint64 packet_id) {
+                                     uint64_t packet_id) {
   P2PSocketHost* socket = LookupSocket(socket_id);
   if (!socket) {
     LOG(ERROR) << "Received P2PHostMsg_Send for invalid socket_id.";

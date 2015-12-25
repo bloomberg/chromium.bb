@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
 
+#include <stdint.h>
+
 #include <list>
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
@@ -95,8 +97,9 @@ class P2PSocketHostTcpServerTest : public testing::Test {
         new P2PSocketHostTcpServer(&sender_, 0, P2P_SOCKET_TCP_CLIENT));
     socket_host_->socket_.reset(socket_);
 
-    EXPECT_CALL(sender_, Send(
-        MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
+    EXPECT_CALL(
+        sender_,
+        Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
     P2PHostAndIPEndPoint dest;

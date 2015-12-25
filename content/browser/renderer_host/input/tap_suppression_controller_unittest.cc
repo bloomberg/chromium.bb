@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"

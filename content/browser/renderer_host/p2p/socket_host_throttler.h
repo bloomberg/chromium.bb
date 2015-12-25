@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_THROTTLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_THROTTLER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 

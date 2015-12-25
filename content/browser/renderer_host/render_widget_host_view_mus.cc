@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_mus.h"
 
+#include "build/build_config.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "content/browser/mojo/mojo_shell_client_host.h"

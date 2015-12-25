@@ -41,7 +41,7 @@ void PeerConnectionTrackerHost::OverrideThreadForMessage(
 PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {
 }
 
-void PeerConnectionTrackerHost::OnChannelConnected(int32 peer_pid) {
+void PeerConnectionTrackerHost::OnChannelConnected(int32_t peer_pid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Add PowerMonitor when connected to channel rather than in constructor due
   // to thread safety concerns. Observers of PowerMonitor must be added and

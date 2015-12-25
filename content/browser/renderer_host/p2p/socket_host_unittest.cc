@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/p2p/socket_host.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

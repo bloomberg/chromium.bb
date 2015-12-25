@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_LOOKUP_REQUEST_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"

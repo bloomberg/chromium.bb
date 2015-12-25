@@ -9,6 +9,7 @@
 #include "content/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/child_process_host_impl.h"

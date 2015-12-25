@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
 
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"

@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"

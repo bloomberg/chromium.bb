@@ -5,14 +5,19 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_PROCESS_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_PROCESS_HOST_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
@@ -106,8 +111,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void EnableSendQueue() override;
   bool Init() override;
   int GetNextRoutingID() override;
-  void AddRoute(int32 routing_id, IPC::Listener* listener) override;
-  void RemoveRoute(int32 routing_id) override;
+  void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
+  void RemoveRoute(int32_t routing_id) override;
   void AddObserver(RenderProcessHostObserver* observer) override;
   void RemoveObserver(RenderProcessHostObserver* observer) override;
   void ShutdownForBadMessage() override;
@@ -173,7 +178,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // IPC::Listener via RenderProcessHost.
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
   void OnBadMessageReceived(const IPC::Message& message) override;
 
@@ -280,7 +285,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The count of currently swapped out but pending RenderViews.  We have
   // started to swap these in, so the renderer process should not exit if
   // this count is non-zero.
-  int32 pending_views_;
+  int32_t pending_views_;
 
  private:
   friend class VisitRelayingRenderProcessHost;
@@ -354,7 +359,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be
   // backgrounded.
-  int32 visible_widgets_;
+  int32_t visible_widgets_;
 
   // Whether this process currently has backgrounded priority. Tracked so that
   // UpdateProcessPriority() can avoid redundantly setting the priority.

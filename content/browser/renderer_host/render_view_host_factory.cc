@@ -17,8 +17,8 @@ RenderViewHost* RenderViewHostFactory::Create(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
-    int32 routing_id,
-    int32 main_frame_routing_id,
+    int32_t routing_id,
+    int32_t main_frame_routing_id,
     bool swapped_out,
     bool hidden) {
   // RenderViewHost creation can be either browser-driven (by the user opening a

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -74,7 +77,7 @@ TEST_F(RenderViewHostTest, FilterAbout) {
 
 // Create a full screen popup RenderWidgetHost and View.
 TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
-  int32 routing_id = process()->GetNextRoutingID();
+  int32_t routing_id = process()->GetNextRoutingID();
   test_rvh()->CreateNewFullscreenWidget(routing_id);
 }
 

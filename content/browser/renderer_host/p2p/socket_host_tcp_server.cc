@@ -120,7 +120,7 @@ void P2PSocketHostTcpServer::OnAccepted(int result) {
 void P2PSocketHostTcpServer::Send(const net::IPEndPoint& to,
                                   const std::vector<char>& data,
                                   const rtc::PacketOptions& options,
-                                  uint64 packet_id) {
+                                  uint64_t packet_id) {
   NOTREACHED();
   OnError();
 }

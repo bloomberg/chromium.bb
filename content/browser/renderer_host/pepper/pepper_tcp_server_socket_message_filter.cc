@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
@@ -170,7 +171,7 @@ void PepperTCPServerSocketMessageFilter::DoListen(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::IPAddressNumber address;
-  uint16 port;
+  uint16_t port;
   if (state_ != STATE_BEFORE_LISTENING ||
       !NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address, &port)) {
     SendListenError(context, PP_ERROR_FAILED);

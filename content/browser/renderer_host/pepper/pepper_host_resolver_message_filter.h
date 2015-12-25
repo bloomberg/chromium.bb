@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_HOST_RESOLVER_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_HOST_RESOLVER_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 #include "ppapi/c/pp_instance.h"

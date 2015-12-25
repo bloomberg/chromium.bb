@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/threading/simple_thread.h"

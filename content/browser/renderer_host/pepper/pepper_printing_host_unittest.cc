@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_test.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
@@ -86,7 +89,7 @@ TEST_F(PepperPrintingHostTest, GetDefaultPrintSettings) {
   // Simulate a message being received.
   ppapi::proxy::ResourceMessageCallParams call_params(pp_resource, 1);
   ppapi::host::HostMessageContext context(call_params);
-  int32 result = printing.OnResourceMessageReceived(
+  int32_t result = printing.OnResourceMessageReceived(
       PpapiHostMsg_Printing_GetDefaultPrintSettings(), &context);
   EXPECT_EQ(PP_OK_COMPLETIONPENDING, result);
 

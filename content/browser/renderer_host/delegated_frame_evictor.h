@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_DELEGATED_FRAME_EVICTOR_H_
 #define CONTENT_BROWSER_RENDERER_HOST_DELEGATED_FRAME_EVICTOR_H_
 
+#include "base/macros.h"
 #include "content/browser/renderer_host/renderer_frame_manager.h"
 #include "content/common/content_export.h"
 

@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_INTERNAL_FILE_REF_BACKEND_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_INTERNAL_FILE_REF_BACKEND_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"

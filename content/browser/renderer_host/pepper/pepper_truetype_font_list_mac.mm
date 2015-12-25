@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/proxy/serialized_structs.h"

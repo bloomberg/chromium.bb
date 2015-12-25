@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
@@ -101,7 +102,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // The state for the page changed and should be updated.
   virtual void UpdateState(RenderViewHost* render_view_host,
-                           int32 page_id,
+                           int32_t page_id,
                            const PageState& state) {}
 
   // The destination URL has changed should be updated.
@@ -138,8 +139,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Notification that the RenderViewHost's load state changed.
   virtual void LoadStateChanged(const GURL& url,
                                 const net::LoadStateWithParam& load_state,
-                                uint64 upload_position,
-                                uint64 upload_size) {}
+                                uint64_t upload_position,
+                                uint64_t upload_size) {}
 
   // The page wants the hosting window to activate itself (it called the
   // JavaScript window.focus() method).
@@ -184,13 +185,13 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // happen in response to ShowCreatedWidget.
   // |popup_type| indicates if the widget is a popup and what kind of popup it
   // is (select, autofill...).
-  virtual void CreateNewWidget(int32 render_process_id,
-                               int32 route_id,
+  virtual void CreateNewWidget(int32_t render_process_id,
+                               int32_t route_id,
                                blink::WebPopupType popup_type) {}
 
   // Creates a full screen RenderWidget. Similar to above.
-  virtual void CreateNewFullscreenWidget(int32 render_process_id,
-                                         int32 route_id) {}
+  virtual void CreateNewFullscreenWidget(int32_t render_process_id,
+                                         int32_t route_id) {}
 
   // Show a previously created page with the specified disposition and bounds.
   // The window is identified by the route_id passed to CreateNewWindow.
