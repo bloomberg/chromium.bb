@@ -4,10 +4,11 @@
 
 #include "components/autofill/core/browser/password_generator.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "third_party/fips181/fips181.h"

@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/autofill_download_manager.h"
 
+#include <stddef.h>
+
 #include <list>
 #include <utility>
 

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
 #include "components/autofill/content/common/autofill_messages.h"
@@ -117,7 +120,7 @@ class RequestAutocompleteManagerTest :
   // clears the queue of sent messages.
   bool GetAutocompleteResultMessage(
       blink::WebFormElement::AutocompleteResult* result) {
-    const uint32 kMsgID = AutofillMsg_RequestAutocompleteResult::ID;
+    const uint32_t kMsgID = AutofillMsg_RequestAutocompleteResult::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)

@@ -4,6 +4,9 @@
 
 #include "components/autofill/core/browser/autofill_field.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

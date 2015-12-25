@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_SERVER_FIELD_TYPES_UTIL_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_SERVER_FIELD_TYPES_UTIL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "components/autofill/core/browser/detail_input.h"

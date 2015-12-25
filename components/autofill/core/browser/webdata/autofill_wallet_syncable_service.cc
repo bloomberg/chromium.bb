@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/logging.h"

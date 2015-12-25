@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/gpu_data_manager.h"

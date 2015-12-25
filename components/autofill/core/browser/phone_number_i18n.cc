@@ -4,7 +4,6 @@
 
 #include "components/autofill/core/browser/phone_number_i18n.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

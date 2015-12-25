@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_CRYPTO_RC4_DECRYPTOR_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_CRYPTO_RC4_DECRYPTOR_H_
 
+#include <stdint.h>
+#include <string.h>
+
 #include <string>
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace autofill {
@@ -24,7 +26,7 @@ namespace autofill {
 class RC4Decryptor {
  public:
   explicit RC4Decryptor(wchar_t const* password) {
-    PrepareKey(reinterpret_cast<const uint8 *>(password),
+    PrepareKey(reinterpret_cast<const uint8_t*>(password),
                wcslen(password) * sizeof(wchar_t));
     std::wstring data;
     // First 128 bytes should be spaces.
@@ -40,7 +42,7 @@ class RC4Decryptor {
     memset(buffer.get(), 0, (data.length() + 1) * sizeof(wchar_t));
     memcpy(buffer.get(), data.c_str(), data_size);
 
-    RunInternal(reinterpret_cast<uint8 *>(buffer.get()), data_size);
+    RunInternal(reinterpret_cast<uint8_t*>(buffer.get()), data_size);
 
     std::wstring result(buffer.get());
 
@@ -52,26 +54,26 @@ class RC4Decryptor {
  private:
   static const int kKeyDataSize = 256;
   struct Rc4Key {
-    uint8 state[kKeyDataSize];
-    uint8 x;
-    uint8 y;
+    uint8_t state[kKeyDataSize];
+    uint8_t x;
+    uint8_t y;
   };
 
-  void SwapByte(uint8* byte1, uint8* byte2) {
-    uint8 temp = *byte1;
+  void SwapByte(uint8_t* byte1, uint8_t* byte2) {
+    uint8_t temp = *byte1;
     *byte1 = *byte2;
     *byte2 = temp;
   }
 
-  void PrepareKey(const uint8 *key_data, int key_data_len) {
-    uint8 index1 = 0;
-    uint8 index2 = 0;
-    uint8* state;
+  void PrepareKey(const uint8_t* key_data, int key_data_len) {
+    uint8_t index1 = 0;
+    uint8_t index2 = 0;
+    uint8_t* state;
     short counter;
 
     state = &key_.state[0];
     for (counter = 0; counter < kKeyDataSize; ++counter)
-      state[counter] = static_cast<uint8>(counter);
+      state[counter] = static_cast<uint8_t>(counter);
 
     key_.x = key_.y = 0;
 
@@ -82,10 +84,10 @@ class RC4Decryptor {
     }
   }
 
-  void RunInternal(uint8 *buffer, int buffer_len) {
-    uint8 x, y;
-    uint8 xor_index = 0;
-    uint8* state;
+  void RunInternal(uint8_t* buffer, int buffer_len) {
+    uint8_t x, y;
+    uint8_t xor_index = 0;
+    uint8_t* state;
     int counter;
 
     x = key_.x;

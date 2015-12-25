@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 
 namespace autofill {

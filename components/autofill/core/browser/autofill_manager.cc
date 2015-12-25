@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <limits>
@@ -28,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_model.h"

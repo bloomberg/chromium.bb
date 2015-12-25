@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_FIELD_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_FIELD_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_field_data.h"

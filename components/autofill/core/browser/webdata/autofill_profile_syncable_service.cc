@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 
+#include <stddef.h>
+
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"

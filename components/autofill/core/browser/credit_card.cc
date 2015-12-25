@@ -5,14 +5,15 @@
 #include "components/autofill/core/browser/credit_card.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <ostream>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"

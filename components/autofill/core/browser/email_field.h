@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_EMAIL_FIELD_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_EMAIL_FIELD_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/browser/form_field.h"
 

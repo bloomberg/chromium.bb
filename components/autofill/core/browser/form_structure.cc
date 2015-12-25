@@ -4,10 +4,11 @@
 
 #include "components/autofill/core/browser/form_structure.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -91,7 +92,7 @@ std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
   const size_t kNumBytes = (MAX_VALID_FIELD_TYPE + 0x7) / 8;
 
   // Pack the types in |available_field_types| into |bit_field|.
-  std::vector<uint8> bit_field(kNumBytes, 0);
+  std::vector<uint8_t> bit_field(kNumBytes, 0);
   for (const auto& field_type : available_field_types) {
     // Set the appropriate bit in the field.  The bit we set is the one
     // |field_type| % 8 from the left of the byte.
@@ -1060,14 +1061,14 @@ std::string FormStructure::Hash64Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
   DCHECK_EQ(base::kSHA1Length, hash_bin.length());
 
-  uint64 hash64 = (((static_cast<uint64>(hash_bin[0])) & 0xFF) << 56) |
-                  (((static_cast<uint64>(hash_bin[1])) & 0xFF) << 48) |
-                  (((static_cast<uint64>(hash_bin[2])) & 0xFF) << 40) |
-                  (((static_cast<uint64>(hash_bin[3])) & 0xFF) << 32) |
-                  (((static_cast<uint64>(hash_bin[4])) & 0xFF) << 24) |
-                  (((static_cast<uint64>(hash_bin[5])) & 0xFF) << 16) |
-                  (((static_cast<uint64>(hash_bin[6])) & 0xFF) << 8) |
-                   ((static_cast<uint64>(hash_bin[7])) & 0xFF);
+  uint64_t hash64 = (((static_cast<uint64_t>(hash_bin[0])) & 0xFF) << 56) |
+                    (((static_cast<uint64_t>(hash_bin[1])) & 0xFF) << 48) |
+                    (((static_cast<uint64_t>(hash_bin[2])) & 0xFF) << 40) |
+                    (((static_cast<uint64_t>(hash_bin[3])) & 0xFF) << 32) |
+                    (((static_cast<uint64_t>(hash_bin[4])) & 0xFF) << 24) |
+                    (((static_cast<uint64_t>(hash_bin[5])) & 0xFF) << 16) |
+                    (((static_cast<uint64_t>(hash_bin[6])) & 0xFF) << 8) |
+                    ((static_cast<uint64_t>(hash_bin[7])) & 0xFF);
 
   return base::Uint64ToString(hash64);
 }

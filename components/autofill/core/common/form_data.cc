@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/common/form_data.h"
 
+#include <stddef.h>
+
 #include <tuple>
 
 #include "base/base64.h"

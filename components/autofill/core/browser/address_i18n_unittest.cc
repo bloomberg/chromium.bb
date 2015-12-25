@@ -4,10 +4,13 @@
 
 #include "components/autofill/core/browser/address_i18n.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"

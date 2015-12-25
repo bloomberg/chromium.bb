@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_FULL_WALLET_H_
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_FULL_WALLET_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
@@ -66,7 +68,7 @@ class FullWallet {
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
 
-  void set_one_time_pad(const std::vector<uint8>& one_time_pad) {
+  void set_one_time_pad(const std::vector<uint8_t>& one_time_pad) {
     one_time_pad_ = one_time_pad;
   }
 
@@ -118,7 +120,7 @@ class FullWallet {
   scoped_ptr<Address> shipping_address_;
 
   // The one time pad used for FullWallet encryption.
-  std::vector<uint8> one_time_pad_;
+  std::vector<uint8_t> one_time_pad_;
 
   DISALLOW_COPY_AND_ASSIGN(FullWallet);
 };

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 
 class PasswordManagerClient;

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_UTIL_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_UTIL_H_
 
+#include <stddef.h>
+
 #include "base/strings/string16.h"
 
 namespace autofill {

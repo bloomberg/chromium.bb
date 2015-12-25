@@ -10,11 +10,11 @@
 #include <ostream>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_util.h"

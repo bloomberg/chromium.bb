@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/autofill_field.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
@@ -403,10 +405,9 @@ std::string Hash32Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
   DCHECK_EQ(base::kSHA1Length, hash_bin.length());
 
-  uint32 hash32 = ((hash_bin[0] & 0xFF) << 24) |
-                  ((hash_bin[1] & 0xFF) << 16) |
-                  ((hash_bin[2] & 0xFF) << 8) |
-                   (hash_bin[3] & 0xFF);
+  uint32_t hash32 = ((hash_bin[0] & 0xFF) << 24) |
+                    ((hash_bin[1] & 0xFF) << 16) | ((hash_bin[2] & 0xFF) << 8) |
+                    (hash_bin[3] & 0xFF);
 
   return base::UintToString(hash32);
 }

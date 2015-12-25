@@ -4,7 +4,10 @@
 
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"

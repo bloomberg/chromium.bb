@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/renderer/autofill_agent.h"
 
+#include <stddef.h>
+
 #include <tuple>
 
 #include "base/auto_reset.h"
@@ -17,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/page_click_tracker.h"

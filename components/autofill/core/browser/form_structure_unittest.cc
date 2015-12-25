@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/form_structure.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"

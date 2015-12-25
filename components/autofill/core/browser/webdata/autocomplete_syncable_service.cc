@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 
+#include <stdint.h>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

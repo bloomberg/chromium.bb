@@ -5,13 +5,14 @@
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
 
 #include <stddef.h>
+#include <stdint.h>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -147,7 +148,7 @@ bool ImportSingleFormGroup(const RegKey& key,
 
   bool has_non_empty_fields = false;
 
-  for (uint32 i = 0; i < key.GetValueCount(); ++i) {
+  for (uint32_t i = 0; i < key.GetValueCount(); ++i) {
     std::wstring value_name;
     if (key.GetValueNameAt(i, &value_name) != ERROR_SUCCESS)
       continue;

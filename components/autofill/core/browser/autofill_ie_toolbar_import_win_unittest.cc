@@ -4,7 +4,9 @@
 
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "components/autofill/core/browser/autofill_profile.h"

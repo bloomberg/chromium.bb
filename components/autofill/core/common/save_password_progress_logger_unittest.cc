@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/common/save_password_progress_logger.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/bind.h"

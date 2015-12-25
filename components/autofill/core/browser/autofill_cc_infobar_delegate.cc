@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"

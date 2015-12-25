@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_GENERATION_AGENT_H_
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_GENERATION_AGENT_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_frame_observer.h"

@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 
+#include <stdint.h>
+
 #include "components/autofill/content/common/autofill_messages.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +28,7 @@ class TestLogger : public RendererSavePasswordProgressLogger {
   // fills the output parameter with the value of the message's parameter, and
   // clears the queue of sent messages.
   bool GetLogMessage(std::string* log) {
-    const uint32 kMsgID = AutofillHostMsg_RecordSavePasswordProgress::ID;
+    const uint32_t kMsgID = AutofillHostMsg_RecordSavePasswordProgress::ID;
     const IPC::Message* message = sink_.GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;

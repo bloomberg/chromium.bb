@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -182,7 +184,7 @@ void FullWallet::DecryptCardInfo() {
 
   DCHECK_EQ(kEncryptedRestSize, encrypted_rest_.size());
 
-  std::vector<uint8> operating_data;
+  std::vector<uint8_t> operating_data;
   // Convert |encrypted_rest_| to bytes so we can decrypt it with |otp|.
   if (!base::HexStringToBytes(encrypted_rest_, &operating_data)) {
     DLOG(ERROR) << "Failed to parse encrypted rest";
@@ -193,18 +195,18 @@ void FullWallet::DecryptCardInfo() {
   // otherwise something has gone wrong and we can't decrypt the data.
   DCHECK_EQ(one_time_pad_.size(), operating_data.size());
 
-  std::vector<uint8> results;
+  std::vector<uint8_t> results;
   // XOR |otp| with the encrypted data to decrypt.
   for (size_t i = 0; i < one_time_pad_.size(); ++i)
     results.push_back(one_time_pad_[i] ^ operating_data[i]);
 
-  // There is no uint8* to int64 so convert the decrypted data to hex and then
-  // parse the hex to an int64 before getting the int64 as a string.
+  // There is no uint8_t* to int64_t so convert the decrypted data to hex and
+  // then parse the hex to an int64_t before getting the int64_t as a string.
   std::string hex_decrypted = base::HexEncode(&(results[0]), results.size());
 
-  int64 decrypted;
+  int64_t decrypted;
   if (!base::HexStringToInt64(hex_decrypted, &decrypted)) {
-    DLOG(ERROR) << "Failed to parse decrypted data in hex to int64";
+    DLOG(ERROR) << "Failed to parse decrypted data in hex to int64_t";
     return;
   }
   std::string card_info = base::Int64ToString(decrypted);

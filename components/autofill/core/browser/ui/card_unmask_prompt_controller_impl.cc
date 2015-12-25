@@ -4,11 +4,14 @@
 
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"

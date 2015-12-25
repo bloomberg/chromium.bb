@@ -4,7 +4,10 @@
 
 #include "components/autofill/core/browser/autofill_data_model.h"
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

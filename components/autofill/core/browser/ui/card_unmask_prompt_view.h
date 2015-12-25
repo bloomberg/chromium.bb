@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_VIEW_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_VIEW_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 namespace autofill {

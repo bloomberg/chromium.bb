@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "components/autofill/core/browser/autofill_client.h"

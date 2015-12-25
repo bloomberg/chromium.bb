@@ -4,10 +4,13 @@
 
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/i18n/case_conversion.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"

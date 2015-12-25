@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_SCANNER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_SCANNER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 namespace autofill {

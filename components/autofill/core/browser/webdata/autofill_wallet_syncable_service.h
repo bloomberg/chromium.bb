@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WALLET_SYNCABLE_SERVICE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_WALLET_SYNCABLE_SERVICE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "sync/api/syncable_service.h"

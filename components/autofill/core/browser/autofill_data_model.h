@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_DATA_MODEL_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_DATA_MODEL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/string16.h"

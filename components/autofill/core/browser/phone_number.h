@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

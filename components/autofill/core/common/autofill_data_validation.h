@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_DATA_VALIDATION_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_DATA_VALIDATION_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

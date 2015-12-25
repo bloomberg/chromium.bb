@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
 
+#include <stddef.h>
+
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/form_structure.h"

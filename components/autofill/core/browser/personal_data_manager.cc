@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/personal_data_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/i18n/case_conversion.h"
@@ -13,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill-inl.h"
 #include "components/autofill/core/browser/autofill_country.h"

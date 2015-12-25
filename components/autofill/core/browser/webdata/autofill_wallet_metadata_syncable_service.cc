@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/containers/scoped_ptr_hash_map.h"

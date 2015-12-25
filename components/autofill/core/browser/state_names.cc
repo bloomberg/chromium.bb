@@ -4,7 +4,9 @@
 
 #include "components/autofill/core/browser/state_names.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 

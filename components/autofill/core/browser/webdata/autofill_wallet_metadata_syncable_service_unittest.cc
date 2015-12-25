@@ -4,12 +4,15 @@
 
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -177,8 +180,8 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest, NoMetadataToReturn) {
 }
 
 AutofillProfile BuildAddress(const std::string& server_id,
-                             int64 use_count,
-                             int64 use_date) {
+                             int64_t use_count,
+                             int64_t use_date) {
   AutofillProfile profile(AutofillProfile::SERVER_PROFILE, server_id);
   profile.set_use_count(use_count);
   profile.set_use_date(base::Time::FromInternalValue(use_date));
@@ -186,8 +189,8 @@ AutofillProfile BuildAddress(const std::string& server_id,
 }
 
 CreditCard BuildCard(const std::string& server_id,
-                     int64 use_count,
-                     int64 use_date) {
+                     int64_t use_count,
+                     int64_t use_date) {
   CreditCard card(CreditCard::MASKED_SERVER_CARD, server_id);
   card.set_use_count(use_count);
   card.set_use_date(base::Time::FromInternalValue(use_date));
@@ -559,8 +562,8 @@ syncer::SyncChange BuildChange(
     const std::string& sync_tag,
     sync_pb::WalletMetadataSpecifics::Type metadata_type,
     const std::string& server_id,
-    int64 use_count,
-    int64 use_date) {
+    int64_t use_count,
+    int64_t use_date) {
   sync_pb::EntitySpecifics entity;
   entity.mutable_wallet_metadata()->set_type(metadata_type);
   entity.mutable_wallet_metadata()->set_id(server_id);

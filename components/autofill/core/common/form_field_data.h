@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_FORM_FIELD_DATA_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_FORM_FIELD_DATA_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/i18n/rtl.h"

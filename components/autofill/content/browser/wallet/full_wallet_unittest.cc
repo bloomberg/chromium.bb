@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,7 +32,7 @@ class FullWalletTest : public testing::Test {
 TEST_F(FullWalletTest, RestLengthCorrectDecryptionTest) {
   FullWallet full_wallet(12, 2012, "528512", "5ec4feecf9d6", GetTestAddress(),
                          GetTestShippingAddress());
-  std::vector<uint8> one_time_pad;
+  std::vector<uint8_t> one_time_pad;
   EXPECT_TRUE(base::HexStringToBytes("5F04A8704183", &one_time_pad));
   full_wallet.set_one_time_pad(one_time_pad);
   EXPECT_EQ(ASCIIToUTF16("5285121925598459"),
@@ -42,7 +45,7 @@ TEST_F(FullWalletTest, RestLengthCorrectDecryptionTest) {
 TEST_F(FullWalletTest, RestLengthUnderDecryptionTest) {
   FullWallet full_wallet(12, 2012, "528512", "4c567667e6", GetTestAddress(),
                          GetTestShippingAddress());
-  std::vector<uint8> one_time_pad;
+  std::vector<uint8_t> one_time_pad;
   EXPECT_TRUE(base::HexStringToBytes("063AD35324BF", &one_time_pad));
   full_wallet.set_one_time_pad(one_time_pad);
   EXPECT_EQ(ASCIIToUTF16("5285127106109719"),
@@ -68,7 +71,7 @@ TEST_F(FullWalletTest, GetCreditCardInfo) {
             full_wallet.GetInfo(
                 "", AutofillType(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR)));
 
-  std::vector<uint8> one_time_pad;
+  std::vector<uint8_t> one_time_pad;
   EXPECT_TRUE(base::HexStringToBytes("075DA779F98B", &one_time_pad));
   full_wallet.set_one_time_pad(one_time_pad);
   EXPECT_EQ(ASCIIToUTF16("MasterCard"),

@@ -5,6 +5,7 @@
 #include "components/autofill/content/renderer/form_cache.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"

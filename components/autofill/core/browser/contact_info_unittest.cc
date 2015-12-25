@@ -4,8 +4,10 @@
 
 #include "components/autofill/core/browser/contact_info.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

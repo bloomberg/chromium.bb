@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CC_INFOBAR_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CC_INFOBAR_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
