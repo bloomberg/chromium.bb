@@ -15,6 +15,9 @@
 PROGNAME=$(basename "$0")
 PROGDIR=$(dirname "$0")
 
+# Force locale to C to allow recognizing output from subprocesses.
+LC_ALL=C
+
 # Location of Chromium-top-level sources.
 CHROMIUM_SRC=$(cd "$PROGDIR"/../.. >/dev/null && pwd 2>/dev/null)
 
