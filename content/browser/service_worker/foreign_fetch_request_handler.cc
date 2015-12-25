@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/foreign_fetch_request_handler.h"
 
+#include "base/macros.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/resource_request_body.h"

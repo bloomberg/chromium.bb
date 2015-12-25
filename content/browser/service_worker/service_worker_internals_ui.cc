@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_internals_ui.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -64,7 +66,7 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
 void CallServiceWorkerVersionMethodWithVersionID(
     ServiceWorkerInternalsUI::ServiceWorkerVersionMethod method,
     scoped_refptr<ServiceWorkerContextWrapper> context,
-    int64 version_id,
+    int64_t version_id,
     const ServiceWorkerInternalsUI::StatusCallback& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -89,7 +91,7 @@ void CallServiceWorkerVersionMethodWithVersionID(
 
 void DispatchPushEventWithVersionID(
     scoped_refptr<ServiceWorkerContextWrapper> context,
-    int64 version_id,
+    int64_t version_id,
     const ServiceWorkerInternalsUI::StatusCallback& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -251,14 +253,14 @@ class ServiceWorkerInternalsUI::PartitionObserver
       : partition_id_(partition_id), web_ui_(web_ui) {}
   ~PartitionObserver() override {}
   // ServiceWorkerContextObserver overrides:
-  void OnRunningStateChanged(int64 version_id,
+  void OnRunningStateChanged(int64_t version_id,
                              ServiceWorkerVersion::RunningStatus) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunction(
         "serviceworker.onRunningStateChanged", FundamentalValue(partition_id_),
         StringValue(base::Int64ToString(version_id)));
   }
-  void OnVersionStateChanged(int64 version_id,
+  void OnVersionStateChanged(int64_t version_id,
                              ServiceWorkerVersion::Status) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunction(
@@ -266,7 +268,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
         FundamentalValue(partition_id_),
         StringValue(base::Int64ToString(version_id)));
   }
-  void OnErrorReported(int64 version_id,
+  void OnErrorReported(int64_t version_id,
                        int process_id,
                        int thread_id,
                        const ErrorInfo& info) override {
@@ -285,7 +287,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
     web_ui_->CallJavascriptFunction("serviceworker.onErrorReported",
                                     args.get());
   }
-  void OnReportConsoleMessage(int64 version_id,
+  void OnReportConsoleMessage(int64_t version_id,
                               int process_id,
                               int thread_id,
                               const ConsoleMessage& message) override {
@@ -305,13 +307,13 @@ class ServiceWorkerInternalsUI::PartitionObserver
     web_ui_->CallJavascriptFunction("serviceworker.onConsoleMessageReported",
                                     args.get());
   }
-  void OnRegistrationStored(int64 registration_id,
+  void OnRegistrationStored(int64_t registration_id,
                             const GURL& pattern) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunction("serviceworker.onRegistrationStored",
                                     StringValue(pattern.spec()));
   }
-  void OnRegistrationDeleted(int64 registration_id,
+  void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override {
     web_ui_->CallJavascriptFunction("serviceworker.onRegistrationDeleted",
                                     StringValue(pattern.spec()));
@@ -491,7 +493,7 @@ void ServiceWorkerInternalsUI::CallServiceWorkerVersionMethod(
   int partition_id;
   scoped_refptr<ServiceWorkerContextWrapper> context;
   std::string version_id_string;
-  int64 version_id = 0;
+  int64_t version_id = 0;
   if (!args->GetInteger(0, &callback_id) ||
       !args->GetDictionary(1, &cmd_args) ||
       !cmd_args->GetInteger("partition_id", &partition_id) ||
@@ -512,7 +514,7 @@ void ServiceWorkerInternalsUI::DispatchPushEvent(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
   int partition_id;
-  int64 version_id = 0;
+  int64_t version_id = 0;
   std::string version_id_string;
   const DictionaryValue* cmd_args = NULL;
   scoped_refptr<ServiceWorkerContextWrapper> context;

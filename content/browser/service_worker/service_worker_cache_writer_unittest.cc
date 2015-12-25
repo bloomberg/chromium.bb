@@ -4,10 +4,13 @@
 
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 
+#include <stddef.h>
+
 #include <list>
 #include <queue>
 #include <string>
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/trace_event/trace_event.h"
@@ -48,7 +49,7 @@ void RegisterToWorkerDevToolsManagerOnUI(
     int process_id,
     const ServiceWorkerContextCore* service_worker_context,
     const base::WeakPtr<ServiceWorkerContextCore>& service_worker_context_weak,
-    int64 service_worker_version_id,
+    int64_t service_worker_version_id,
     const GURL& url,
     const base::Callback<void(int worker_devtools_agent_route_id,
                               bool wait_for_debugger)>& callback) {
@@ -139,7 +140,7 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
     registry_->RemoveWorker(process_id_, embedded_worker_id_);
 }
 
-void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
+void EmbeddedWorkerInstance::Start(int64_t service_worker_version_id,
                                    const GURL& scope,
                                    const GURL& script_url,
                                    const StatusCallback& callback) {
@@ -281,7 +282,7 @@ void EmbeddedWorkerInstance::ProcessAllocated(
     OnStartFailed(callback, status);
     return;
   }
-  const int64 service_worker_version_id = params->service_worker_version_id;
+  const int64_t service_worker_version_id = params->service_worker_version_id;
   process_id_ = process_id;
   GURL script_url(params->script_url);
 

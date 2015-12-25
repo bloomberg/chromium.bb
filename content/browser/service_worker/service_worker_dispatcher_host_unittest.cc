@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
@@ -81,62 +83,62 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     return helper_->context_wrapper();
   }
 
-  void SendRegister(int64 provider_id, GURL pattern, GURL worker_url) {
+  void SendRegister(int64_t provider_id, GURL pattern, GURL worker_url) {
     dispatcher_host_->OnMessageReceived(
         ServiceWorkerHostMsg_RegisterServiceWorker(
             -1, -1, provider_id, pattern, worker_url));
     base::RunLoop().RunUntilIdle();
   }
 
-  void Register(int64 provider_id,
+  void Register(int64_t provider_id,
                 GURL pattern,
                 GURL worker_url,
-                uint32 expected_message) {
+                uint32_t expected_message) {
     SendRegister(provider_id, pattern, worker_url);
     EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
         expected_message));
     dispatcher_host_->ipc_sink()->ClearMessages();
   }
 
-  void SendUnregister(int64 provider_id, int64 registration_id) {
+  void SendUnregister(int64_t provider_id, int64_t registration_id) {
     dispatcher_host_->OnMessageReceived(
         ServiceWorkerHostMsg_UnregisterServiceWorker(-1, -1, provider_id,
                                                      registration_id));
     base::RunLoop().RunUntilIdle();
   }
 
-  void Unregister(int64 provider_id,
-                  int64 registration_id,
-                  uint32 expected_message) {
+  void Unregister(int64_t provider_id,
+                  int64_t registration_id,
+                  uint32_t expected_message) {
     SendUnregister(provider_id, registration_id);
     EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
         expected_message));
     dispatcher_host_->ipc_sink()->ClearMessages();
   }
 
-  void SendGetRegistration(int64 provider_id, GURL document_url) {
+  void SendGetRegistration(int64_t provider_id, GURL document_url) {
     dispatcher_host_->OnMessageReceived(
         ServiceWorkerHostMsg_GetRegistration(
             -1, -1, provider_id, document_url));
     base::RunLoop().RunUntilIdle();
   }
 
-  void GetRegistration(int64 provider_id,
+  void GetRegistration(int64_t provider_id,
                        GURL document_url,
-                       uint32 expected_message) {
+                       uint32_t expected_message) {
     SendGetRegistration(provider_id, document_url);
     EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
         expected_message));
     dispatcher_host_->ipc_sink()->ClearMessages();
   }
 
-  void SendGetRegistrations(int64 provider_id) {
+  void SendGetRegistrations(int64_t provider_id) {
     dispatcher_host_->OnMessageReceived(
         ServiceWorkerHostMsg_GetRegistrations(-1, -1, provider_id));
     base::RunLoop().RunUntilIdle();
   }
 
-  void GetRegistrations(int64 provider_id, uint32 expected_message) {
+  void GetRegistrations(int64_t provider_id, uint32_t expected_message) {
     SendGetRegistrations(provider_id);
     EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
         expected_message));
@@ -175,7 +177,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&test_browser_client);
 
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -193,7 +195,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
 
   // Add a registration into a live registration map so that Unregister() can
   // find it.
-  const int64 kRegistrationId = 999;  // Dummy value
+  const int64_t kRegistrationId = 999;  // Dummy value
   scoped_refptr<ServiceWorkerRegistration> registration(
       new ServiceWorkerRegistration(GURL("https://www.example.com/"),
                                     kRegistrationId, context()->AsWeakPtr()));
@@ -204,7 +206,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_HTTPS) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -217,7 +219,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_HTTPS) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureTransportLocalhost) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("http://127.0.0.3:81/foo"));
@@ -230,7 +232,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureTransportLocalhost) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScopeShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -242,7 +244,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScopeShouldFail) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScriptShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -253,7 +255,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_InvalidScriptShouldFail) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureOriginShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("http://www.example.com/foo"));
@@ -266,7 +268,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_NonSecureOriginShouldFail) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_CrossOriginShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -310,7 +312,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_CrossOriginShouldFail) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, Register_BadCharactersShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/"));
@@ -343,7 +345,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, Register_BadCharactersShouldFail) {
 
 TEST_F(ServiceWorkerDispatcherHostTest,
        Register_FileSystemDocumentShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("filesystem:https://www.example.com/temporary/a"));
@@ -367,7 +369,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
 
 TEST_F(ServiceWorkerDispatcherHostTest,
        Register_FileSystemScriptOrScopeShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/temporary/"));
@@ -434,7 +436,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_SameOrigin) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -446,7 +448,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_SameOrigin) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_CrossOriginShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -458,7 +460,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_CrossOriginShouldFail) {
 
 TEST_F(ServiceWorkerDispatcherHostTest,
        GetRegistration_InvalidScopeShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -470,7 +472,7 @@ TEST_F(ServiceWorkerDispatcherHostTest,
 
 TEST_F(ServiceWorkerDispatcherHostTest,
        GetRegistration_NonSecureOriginShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("http://www.example.com/foo"));
@@ -492,7 +494,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_EarlyContextDeletion) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, GetRegistrations_SecureOrigin) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("https://www.example.com/foo"));
@@ -503,7 +505,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistrations_SecureOrigin) {
 
 TEST_F(ServiceWorkerDispatcherHostTest,
        GetRegistrations_NonSecureOriginShouldFail) {
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   scoped_ptr<ServiceWorkerProviderHost> host(
       CreateServiceWorkerProviderHost(kProviderId));
   host->SetDocumentUrl(GURL("http://www.example.com/foo"));
@@ -526,7 +528,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   int process_id = helper_->mock_render_process_id();
 
   // Add a provider and worker.
-  const int64 kProviderId = 99;  // Dummy value
+  const int64_t kProviderId = 99;  // Dummy value
   dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_ProviderCreated(
       kProviderId, MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_WINDOW));
 

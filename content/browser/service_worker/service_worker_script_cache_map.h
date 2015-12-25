@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_CACHE_MAP_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_CACHE_MAP_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/content_export.h"
@@ -27,13 +30,13 @@ class ServiceWorkerResponseMetadataWriter;
 // for a particular version's implicit script resources.
 class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
  public:
-  int64 LookupResourceId(const GURL& url);
+  int64_t LookupResourceId(const GURL& url);
 
   // Used during the initial run of a new version to build the map
   // of resources ids.
-  void NotifyStartedCaching(const GURL& url, int64 resource_id);
+  void NotifyStartedCaching(const GURL& url, int64_t resource_id);
   void NotifyFinishedCaching(const GURL& url,
-                             int64 size_bytes,
+                             int64_t size_bytes,
                              const net::URLRequestStatus& status,
                              const std::string& status_message);
 

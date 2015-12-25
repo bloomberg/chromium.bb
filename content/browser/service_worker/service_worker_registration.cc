@@ -25,7 +25,7 @@ ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     const GURL& pattern,
-    int64 registration_id,
+    int64_t registration_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : pattern_(pattern),
       registration_id_(registration_id),

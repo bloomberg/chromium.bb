@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_client_navigation_utils.h"
 
+#include "base/macros.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"

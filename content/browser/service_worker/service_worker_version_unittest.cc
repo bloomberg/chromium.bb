@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -253,7 +255,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
   ~MessageReceiverDisallowStart() override {}
 
   void OnStartWorker(int embedded_worker_id,
-                     int64 service_worker_version_id,
+                     int64_t service_worker_version_id,
                      const GURL& scope,
                      const GURL& script_url) override {
     // Do nothing.

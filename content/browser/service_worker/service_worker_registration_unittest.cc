@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_registration.h"
 
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -87,15 +89,15 @@ class ServiceWorkerRegistrationTest : public testing::Test {
 TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   const GURL kScope("http://www.example.not/");
   const GURL kScript("http://www.example.not/service_worker.js");
-  int64 kRegistrationId = 1L;
+  int64_t kRegistrationId = 1L;
   scoped_refptr<ServiceWorkerRegistration> registration =
       new ServiceWorkerRegistration(
           kScope,
           kRegistrationId,
           context_ptr_);
 
-  const int64 version_1_id = 1L;
-  const int64 version_2_id = 2L;
+  const int64_t version_1_id = 1L;
+  const int64_t version_2_id = 2L;
   scoped_refptr<ServiceWorkerVersion> version_1 = new ServiceWorkerVersion(
       registration.get(), kScript, version_1_id, context_ptr_);
   scoped_refptr<ServiceWorkerVersion> version_2 = new ServiceWorkerVersion(
@@ -156,7 +158,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
 
 TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   const GURL kScope("http://www.example.not/");
-  int64 kRegistrationId = 1L;
+  int64_t kRegistrationId = 1L;
   scoped_refptr<ServiceWorkerRegistration> registration =
       new ServiceWorkerRegistration(
           kScope,

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -108,7 +110,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
       embedded_worker_registry()->CreateWorker();
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
 
-  const int64 service_worker_version_id = 55L;
+  const int64_t service_worker_version_id = 55L;
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -154,7 +156,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
       embedded_worker_registry()->CreateWorker();
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
 
-  const int64 service_worker_version_id = 55L;
+  const int64_t service_worker_version_id = 55L;
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -202,8 +204,8 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   scoped_ptr<EmbeddedWorkerInstance> worker2 =
       embedded_worker_registry()->CreateWorker();
 
-  const int64 version_id1 = 55L;
-  const int64 version_id2 = 56L;
+  const int64_t version_id1 = 55L;
+  const int64_t version_id2 = 56L;
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
   int process_id = helper_->mock_render_process_id();
@@ -300,7 +302,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringStart) {
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, Detach) {
-  const int64 version_id = 55L;
+  const int64_t version_id = 55L;
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
   scoped_ptr<EmbeddedWorkerInstance> worker =
@@ -333,7 +335,7 @@ TEST_F(EmbeddedWorkerInstanceTest, Detach) {
 TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   helper_.reset(new FailToSendIPCHelper());
 
-  const int64 version_id = 55L;
+  const int64_t version_id = 55L;
   const GURL pattern("http://example.com/");
   const GURL url("http://example.com/worker.js");
 

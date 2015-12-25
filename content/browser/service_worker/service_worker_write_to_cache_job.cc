@@ -59,8 +59,8 @@ ServiceWorkerWriteToCacheJob::ServiceWorkerWriteToCacheJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerVersion* version,
     int extra_load_flags,
-    int64 resource_id,
-    int64 incumbent_resource_id)
+    int64_t resource_id,
+    int64_t incumbent_resource_id)
     : net::URLRequestJob(request, network_delegate),
       resource_type_(resource_type),
       context_(context),

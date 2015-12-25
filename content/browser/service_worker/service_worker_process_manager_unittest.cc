@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/public/test/mock_render_process_host.h"

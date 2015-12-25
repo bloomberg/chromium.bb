@@ -28,7 +28,7 @@ ServiceWorkerReadFromCacheJob::ServiceWorkerReadFromCacheJob(
     ResourceType resource_type,
     base::WeakPtr<ServiceWorkerContextCore> context,
     const scoped_refptr<ServiceWorkerVersion>& version,
-    int64 resource_id)
+    int64_t resource_id)
     : net::URLRequestJob(request, network_delegate),
       resource_type_(resource_type),
       resource_id_(resource_id),

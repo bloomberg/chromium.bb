@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -490,7 +492,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
 // Responds to fetch events with a blob.
 class BlobResponder : public EmbeddedWorkerTestHelper {
  public:
-  BlobResponder(const std::string& blob_uuid, uint64 blob_size)
+  BlobResponder(const std::string& blob_uuid, uint64_t blob_size)
       : EmbeddedWorkerTestHelper(base::FilePath()),
         blob_uuid_(blob_uuid),
         blob_size_(blob_size) {}
@@ -510,7 +512,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
   }
 
   std::string blob_uuid_;
-  uint64 blob_size_;
+  uint64_t blob_size_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlobResponder);

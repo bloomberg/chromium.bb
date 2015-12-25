@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DATABASE_TASK_MANAGER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DATABASE_TASK_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 

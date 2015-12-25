@@ -5,16 +5,18 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -127,14 +129,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
     virtual ~Listener() {}
   };
 
-  ServiceWorkerVersion(
-      ServiceWorkerRegistration* registration,
-      const GURL& script_url,
-      int64 version_id,
-      base::WeakPtr<ServiceWorkerContextCore> context);
+  ServiceWorkerVersion(ServiceWorkerRegistration* registration,
+                       const GURL& script_url,
+                       int64_t version_id,
+                       base::WeakPtr<ServiceWorkerContextCore> context);
 
-  int64 version_id() const { return version_id_; }
-  int64 registration_id() const { return registration_id_; }
+  int64_t version_id() const { return version_id_; }
+  int64_t registration_id() const { return registration_id_; }
   const GURL& script_url() const { return script_url_; }
   const GURL& scope() const { return scope_; }
   RunningStatus running_status() const {
@@ -486,9 +487,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             const ServiceWorkerClientInfo& client_info);
 
   void OnSetCachedMetadata(const GURL& url, const std::vector<char>& data);
-  void OnSetCachedMetadataFinished(int64 callback_id, int result);
+  void OnSetCachedMetadataFinished(int64_t callback_id, int result);
   void OnClearCachedMetadata(const GURL& url);
-  void OnClearCachedMetadataFinished(int64 callback_id, int result);
+  void OnClearCachedMetadataFinished(int64_t callback_id, int result);
 
   void OnPostMessageToClient(
       const std::string& client_uuid,
@@ -597,8 +598,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // event ended).
   void OnBeginEvent();
 
-  const int64 version_id_;
-  const int64 registration_id_;
+  const int64_t version_id_;
+  const int64_t registration_id_;
   const GURL script_url_;
   const GURL scope_;
   std::vector<GURL> foreign_fetch_scopes_;

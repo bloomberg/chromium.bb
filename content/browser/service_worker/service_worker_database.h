@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DATABASE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DATABASE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -54,14 +56,14 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   struct CONTENT_EXPORT RegistrationData {
     // These values are immutable for the life of a registration.
-    int64 registration_id;
+    int64_t registration_id;
     GURL scope;
 
     // Versions are first stored once they successfully install and become
     // the waiting version. Then transition to the active version. The stored
     // version may be in the ACTIVATED state or in the INSTALLED state.
     GURL script;
-    int64 version_id;
+    int64_t version_id;
     bool is_active;
     bool has_fetch_handler;
     base::Time last_update_check;
@@ -75,24 +77,23 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   };
 
   struct ResourceRecord {
-    int64 resource_id;
+    int64_t resource_id;
     GURL url;
     // Signed so we can store -1 to specify an unknown or error state.  When
     // stored to the database, this value should always be >= 0.
-    int64 size_bytes;
+    int64_t size_bytes;
 
     ResourceRecord() : resource_id(-1), size_bytes(0) {}
-    ResourceRecord(int64 id, GURL url, int64 size_bytes)
+    ResourceRecord(int64_t id, GURL url, int64_t size_bytes)
         : resource_id(id), url(url), size_bytes(size_bytes) {}
   };
 
   // Reads next available ids from the database. Returns OK if they are
   // successfully read. Fills the arguments with an initial value and returns
   // OK if they are not found in the database. Otherwise, returns an error.
-  Status GetNextAvailableIds(
-      int64* next_avail_registration_id,
-      int64* next_avail_version_id,
-      int64* next_avail_resource_id);
+  Status GetNextAvailableIds(int64_t* next_avail_registration_id,
+                             int64_t* next_avail_version_id,
+                             int64_t* next_avail_resource_id);
 
   // Reads origins that have one or more than one registration from the
   // database. Returns OK if they are successfully read or not found.
@@ -123,16 +124,15 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Reads a registration for |registration_id| and resource records associated
   // with it from the database. Returns OK if they are successfully read.
   // Otherwise, returns an error.
-  Status ReadRegistration(
-      int64 registration_id,
-      const GURL& origin,
-      RegistrationData* registration,
-      std::vector<ResourceRecord>* resources);
+  Status ReadRegistration(int64_t registration_id,
+                          const GURL& origin,
+                          RegistrationData* registration,
+                          std::vector<ResourceRecord>* resources);
 
   // Looks up the origin for the registration with |registration_id|. Returns OK
   // if a registration was found and read successfully. Otherwise, returns an
   // error.
-  Status ReadRegistrationOrigin(int64 registration_id, GURL* origin);
+  Status ReadRegistrationOrigin(int64_t registration_id, GURL* origin);
 
   // Writes |registration| and |resources| into the database and does following
   // things:
@@ -146,20 +146,17 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   Status WriteRegistration(const RegistrationData& registration,
                            const std::vector<ResourceRecord>& resources,
                            RegistrationData* deleted_version,
-                           std::vector<int64>* newly_purgeable_resources);
+                           std::vector<int64_t>* newly_purgeable_resources);
 
   // Updates a registration for |registration_id| to an active state. Returns OK
   // if it's successfully updated. Otherwise, returns an error.
-  Status UpdateVersionToActive(
-      int64 registration_id,
-      const GURL& origin);
+  Status UpdateVersionToActive(int64_t registration_id, const GURL& origin);
 
   // Updates last check time of a registration for |registration_id| by |time|.
   // Returns OK if it's successfully updated. Otherwise, returns an error.
-  Status UpdateLastCheckTime(
-      int64 registration_id,
-      const GURL& origin,
-      const base::Time& time);
+  Status UpdateLastCheckTime(int64_t registration_id,
+                             const GURL& origin,
+                             const base::Time& time);
 
   // Deletes a registration for |registration_id| and moves resource records
   // associated with it into the purgeable list. If deletion occurred, sets
@@ -167,20 +164,20 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // |newly_purgeable_resources| to its resources; otherwise, sets |version_id|
   // to -1. Returns OK if it's successfully deleted or not found in the
   // database. Otherwise, returns an error.
-  Status DeleteRegistration(int64 registration_id,
+  Status DeleteRegistration(int64_t registration_id,
                             const GURL& origin,
                             RegistrationData* deleted_version,
-                            std::vector<int64>* newly_purgeable_resources);
+                            std::vector<int64_t>* newly_purgeable_resources);
 
   // Reads user data for |registration_id| and |user_data_name| from the
   // database.
-  Status ReadUserData(int64 registration_id,
+  Status ReadUserData(int64_t registration_id,
                       const std::string& user_data_name,
                       std::string* user_data);
 
   // Writes |user_data| into the database. Returns NOT_FOUND if the registration
   // specified by |registration_id| does not exist in the database.
-  Status WriteUserData(int64 registration_id,
+  Status WriteUserData(int64_t registration_id,
                        const GURL& origin,
                        const std::string& user_data_name,
                        const std::string& user_data);
@@ -188,14 +185,14 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Deletes user data for |registration_id| and |user_data_name| from the
   // database. Returns OK if it's successfully deleted or not found in the
   // database.
-  Status DeleteUserData(int64 registration_id,
+  Status DeleteUserData(int64_t registration_id,
                         const std::string& user_data_name);
 
   // Reads user data for all registrations that have data with |user_data_name|
   // from the database. Returns OK if they are successfully read or not found.
   Status ReadUserDataForAllRegistrations(
       const std::string& user_data_name,
-      std::vector<std::pair<int64, std::string>>* user_data);
+      std::vector<std::pair<int64_t, std::string>>* user_data);
 
   // Resources should belong to one of following resource lists: uncommitted,
   // committed and purgeable.
@@ -208,31 +205,32 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   // Reads resource ids from the uncommitted list. Returns OK on success.
   // Otherwise clears |ids| and returns an error.
-  Status GetUncommittedResourceIds(std::set<int64>* ids);
+  Status GetUncommittedResourceIds(std::set<int64_t>* ids);
 
   // Writes resource ids into the uncommitted list. Returns OK on success.
   // Otherwise writes nothing and returns an error.
-  Status WriteUncommittedResourceIds(const std::set<int64>& ids);
+  Status WriteUncommittedResourceIds(const std::set<int64_t>& ids);
 
   // Reads resource ids from the purgeable list. Returns OK on success.
   // Otherwise clears |ids| and returns an error.
-  Status GetPurgeableResourceIds(std::set<int64>* ids);
+  Status GetPurgeableResourceIds(std::set<int64_t>* ids);
 
   // Deletes resource ids from the purgeable list. Returns OK on success.
   // Otherwise deletes nothing and returns an error.
-  Status ClearPurgeableResourceIds(const std::set<int64>& ids);
+  Status ClearPurgeableResourceIds(const std::set<int64_t>& ids);
 
   // Writes resource ids into the purgeable list and removes them from the
   // uncommitted list. Returns OK on success. Otherwise writes nothing and
   // returns an error.
-  Status PurgeUncommittedResourceIds(const std::set<int64>& ids);
+  Status PurgeUncommittedResourceIds(const std::set<int64_t>& ids);
 
   // Deletes all data for |origins|, namely, unique origin, registrations and
   // resource records. Resources are moved to the purgeable list. Returns OK if
   // they are successfully deleted or not found in the database. Otherwise,
   // returns an error.
-  Status DeleteAllDataForOrigins(const std::set<GURL>& origins,
-                                 std::vector<int64>* newly_purgeable_resources);
+  Status DeleteAllDataForOrigins(
+      const std::set<GURL>& origins,
+      std::vector<int64_t>* newly_purgeable_resources);
 
   // Completely deletes the contents of the database.
   // Be careful using this function.
@@ -257,63 +255,53 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Reads the next available id for |id_key|. Returns OK if it's successfully
   // read. Fills |next_avail_id| with an initial value and returns OK if it's
   // not found in the database. Otherwise, returns an error.
-  Status ReadNextAvailableId(
-      const char* id_key,
-      int64* next_avail_id);
+  Status ReadNextAvailableId(const char* id_key, int64_t* next_avail_id);
 
   // Reads registration data for |registration_id| from the database. Returns OK
   // if successfully reads. Otherwise, returns an error.
-  Status ReadRegistrationData(
-      int64 registration_id,
-      const GURL& origin,
-      RegistrationData* registration);
+  Status ReadRegistrationData(int64_t registration_id,
+                              const GURL& origin,
+                              RegistrationData* registration);
 
   // Reads resource records for |version_id| from the database. Returns OK if
   // it's successfully read or not found in the database. Otherwise, returns an
   // error.
-  Status ReadResourceRecords(
-      int64 version_id,
-      std::vector<ResourceRecord>* resources);
+  Status ReadResourceRecords(int64_t version_id,
+                             std::vector<ResourceRecord>* resources);
 
   // Deletes resource records for |version_id| from the database. Returns OK if
   // they are successfully deleted or not found in the database. Otherwise,
   // returns an error.
-  Status DeleteResourceRecords(
-      int64 version_id,
-      std::vector<int64>* newly_purgeable_resources,
-      leveldb::WriteBatch* batch);
+  Status DeleteResourceRecords(int64_t version_id,
+                               std::vector<int64_t>* newly_purgeable_resources,
+                               leveldb::WriteBatch* batch);
 
   // Reads resource ids for |id_key_prefix| from the database. Returns OK if
   // it's successfully read or not found in the database. Otherwise, returns an
   // error.
-  Status ReadResourceIds(
-      const char* id_key_prefix,
-      std::set<int64>* ids);
+  Status ReadResourceIds(const char* id_key_prefix, std::set<int64_t>* ids);
 
   // Write resource ids for |id_key_prefix| into the database. Returns OK on
   // success. Otherwise, returns writes nothing and returns an error.
-  Status WriteResourceIdsInBatch(
-      const char* id_key_prefix,
-      const std::set<int64>& ids,
-      leveldb::WriteBatch* batch);
+  Status WriteResourceIdsInBatch(const char* id_key_prefix,
+                                 const std::set<int64_t>& ids,
+                                 leveldb::WriteBatch* batch);
 
   // Deletes resource ids for |id_key_prefix| from the database. Returns OK if
   // it's successfully deleted or not found in the database. Otherwise, returns
   // an error.
-  Status DeleteResourceIdsInBatch(
-      const char* id_key_prefix,
-      const std::set<int64>& ids,
-      leveldb::WriteBatch* batch);
+  Status DeleteResourceIdsInBatch(const char* id_key_prefix,
+                                  const std::set<int64_t>& ids,
+                                  leveldb::WriteBatch* batch);
 
   // Deletes all user data for |registration_id| from the database. Returns OK
   // if they are successfully deleted or not found in the database.
-  Status DeleteUserDataForRegistration(
-      int64 registration_id,
-      leveldb::WriteBatch* batch);
+  Status DeleteUserDataForRegistration(int64_t registration_id,
+                                       leveldb::WriteBatch* batch);
 
   // Reads the current schema version from the database. If the database hasn't
   // been written anything yet, sets |db_version| to 0 and returns OK.
-  Status ReadDatabaseVersion(int64* db_version);
+  Status ReadDatabaseVersion(int64_t* db_version);
 
   // Writes a batch into the database.
   // NOTE: You must call this when you want to put something into the database
@@ -322,15 +310,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   // Bumps the next available id if |used_id| is greater than or equal to the
   // cached one.
-  void BumpNextRegistrationIdIfNeeded(
-      int64 used_id,
-      leveldb::WriteBatch* batch);
-  void BumpNextResourceIdIfNeeded(
-      int64 used_id,
-      leveldb::WriteBatch* batch);
-  void BumpNextVersionIdIfNeeded(
-      int64 used_id,
-      leveldb::WriteBatch* batch);
+  void BumpNextRegistrationIdIfNeeded(int64_t used_id,
+                                      leveldb::WriteBatch* batch);
+  void BumpNextResourceIdIfNeeded(int64_t used_id, leveldb::WriteBatch* batch);
+  void BumpNextVersionIdIfNeeded(int64_t used_id, leveldb::WriteBatch* batch);
 
   bool IsOpen();
 
@@ -351,9 +334,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   scoped_ptr<leveldb::Env> env_;
   scoped_ptr<leveldb::DB> db_;
 
-  int64 next_avail_registration_id_;
-  int64 next_avail_resource_id_;
-  int64 next_avail_version_id_;
+  int64_t next_avail_registration_id_;
+  int64_t next_avail_resource_id_;
+  int64_t next_avail_version_id_;
 
   enum State {
     UNINITIALIZED,

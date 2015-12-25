@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_METRICS_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_METRICS_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/service_worker/service_worker_types.h"

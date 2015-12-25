@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_READ_FROM_CACHE_JOB_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_READ_FROM_CACHE_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -33,7 +36,7 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
       ResourceType resource_type,
       base::WeakPtr<ServiceWorkerContextCore> context,
       const scoped_refptr<ServiceWorkerVersion>& version,
-      int64 resource_id);
+      int64_t resource_id);
   ~ServiceWorkerReadFromCacheJob() override;
 
  private:
@@ -66,7 +69,7 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
   void Done(const net::URLRequestStatus& status);
 
   const ResourceType resource_type_;
-  const int64 resource_id_;
+  const int64_t resource_id_;
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerVersion> version_;

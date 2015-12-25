@@ -5,12 +5,15 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CORE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CORE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
@@ -60,10 +63,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const std::string& status_message,
-                              int64 registration_id)> RegistrationCallback;
+                              int64_t registration_id)> RegistrationCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const std::string& status_message,
-                              int64 registration_id)> UpdateCallback;
+                              int64_t registration_id)> UpdateCallback;
   typedef base::Callback<
       void(ServiceWorkerStatusCode status)> UnregistrationCallback;
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
@@ -213,17 +216,17 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // This class maintains collections of live instances, this class
   // does not own these object or influence their lifetime.
-  ServiceWorkerRegistration* GetLiveRegistration(int64 registration_id);
+  ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
   void AddLiveRegistration(ServiceWorkerRegistration* registration);
-  void RemoveLiveRegistration(int64 registration_id);
-  const std::map<int64, ServiceWorkerRegistration*>& GetLiveRegistrations()
+  void RemoveLiveRegistration(int64_t registration_id);
+  const std::map<int64_t, ServiceWorkerRegistration*>& GetLiveRegistrations()
       const {
     return live_registrations_;
   }
-  ServiceWorkerVersion* GetLiveVersion(int64 version_id);
+  ServiceWorkerVersion* GetLiveVersion(int64_t version_id);
   void AddLiveVersion(ServiceWorkerVersion* version);
-  void RemoveLiveVersion(int64 registration_id);
-  const std::map<int64, ServiceWorkerVersion*>& GetLiveVersions() const {
+  void RemoveLiveVersion(int64_t registration_id);
+  const std::map<int64_t, ServiceWorkerVersion*>& GetLiveVersions() const {
     return live_versions_;
   }
 
@@ -242,7 +245,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // ProtectVersion holds a reference to |version| until UnprotectVersion is
   // called.
   void ProtectVersion(const scoped_refptr<ServiceWorkerVersion>& version);
-  void UnprotectVersion(int64 version_id);
+  void UnprotectVersion(int64_t version_id);
 
   // Returns new context-local unique ID.
   int GetNewServiceWorkerHandleId();
@@ -278,8 +281,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   }
 
  private:
-  typedef std::map<int64, ServiceWorkerRegistration*> RegistrationsMap;
-  typedef std::map<int64, ServiceWorkerVersion*> VersionMap;
+  typedef std::map<int64_t, ServiceWorkerRegistration*> RegistrationsMap;
+  typedef std::map<int64_t, ServiceWorkerVersion*> VersionMap;
 
   ProviderMap* GetProviderMapForProcess(int process_id) {
     return providers_->Lookup(process_id);
@@ -298,7 +301,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   void UnregistrationComplete(const GURL& pattern,
                               const UnregistrationCallback& callback,
-                              int64 registration_id,
+                              int64_t registration_id,
                               ServiceWorkerStatusCode status);
 
   void DidGetAllRegistrationsForUnregisterForOrigin(
@@ -324,9 +327,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   scoped_ptr<ServiceWorkerStorage> storage_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
-  std::map<int64, ServiceWorkerRegistration*> live_registrations_;
-  std::map<int64, ServiceWorkerVersion*> live_versions_;
-  std::map<int64, scoped_refptr<ServiceWorkerVersion>> protected_versions_;
+  std::map<int64_t, ServiceWorkerRegistration*> live_registrations_;
+  std::map<int64_t, ServiceWorkerVersion*> live_versions_;
+  std::map<int64_t, scoped_refptr<ServiceWorkerVersion>> protected_versions_;
 
   // PlzNavigate
   // Map of ServiceWorkerNavigationHandleCores used for navigation requests.

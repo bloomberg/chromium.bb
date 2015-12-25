@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UNREGISTER_JOB_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UNREGISTER_JOB_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -27,7 +30,7 @@ class ServiceWorkerStorage;
 // ServiceWorkerRegistration itself.
 class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
  public:
-  typedef base::Callback<void(int64 registration_id,
+  typedef base::Callback<void(int64_t registration_id,
                               ServiceWorkerStatusCode status)>
       UnregistrationCallback;
 
@@ -49,9 +52,10 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   void OnRegistrationFound(
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
-  void Complete(int64 registration_id, ServiceWorkerStatusCode status);
-  void CompleteInternal(int64 registration_id, ServiceWorkerStatusCode status);
-  void ResolvePromise(int64 registration_id, ServiceWorkerStatusCode status);
+  void Complete(int64_t registration_id, ServiceWorkerStatusCode status);
+  void CompleteInternal(int64_t registration_id,
+                        ServiceWorkerStatusCode status);
+  void ResolvePromise(int64_t registration_id, ServiceWorkerStatusCode status);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   const GURL pattern_;

@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_version.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <string>
@@ -11,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -378,7 +381,7 @@ class ServiceWorkerVersion::PingController {
 ServiceWorkerVersion::ServiceWorkerVersion(
     ServiceWorkerRegistration* registration,
     const GURL& script_url,
-    int64 version_id,
+    int64_t version_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : version_id_(version_id),
       registration_id_(registration->id()),
@@ -1464,7 +1467,7 @@ void ServiceWorkerVersion::OnOpenWindowFinished(
 
 void ServiceWorkerVersion::OnSetCachedMetadata(const GURL& url,
                                                const std::vector<char>& data) {
-  int64 callback_id = base::TimeTicks::Now().ToInternalValue();
+  int64_t callback_id = base::TimeTicks::Now().ToInternalValue();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::OnSetCachedMetadata",
                            callback_id, "URL", url.spec());
@@ -1473,7 +1476,7 @@ void ServiceWorkerVersion::OnSetCachedMetadata(const GURL& url,
                             weak_factory_.GetWeakPtr(), callback_id));
 }
 
-void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64 callback_id,
+void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
                                                        int result) {
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerVersion::OnSetCachedMetadata",
@@ -1482,7 +1485,7 @@ void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64 callback_id,
 }
 
 void ServiceWorkerVersion::OnClearCachedMetadata(const GURL& url) {
-  int64 callback_id = base::TimeTicks::Now().ToInternalValue();
+  int64_t callback_id = base::TimeTicks::Now().ToInternalValue();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::OnClearCachedMetadata",
                            callback_id, "URL", url.spec());
@@ -1491,7 +1494,7 @@ void ServiceWorkerVersion::OnClearCachedMetadata(const GURL& url) {
                       weak_factory_.GetWeakPtr(), callback_id));
 }
 
-void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64 callback_id,
+void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
                                                          int result) {
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerVersion::OnClearCachedMetadata",

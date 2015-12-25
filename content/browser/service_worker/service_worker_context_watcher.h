@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_WATCHER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_WATCHER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
@@ -27,8 +29,8 @@ class ServiceWorkerContextWatcher
       WorkerRegistrationUpdatedCallback;
   typedef base::Callback<void(const std::vector<ServiceWorkerVersionInfo>&)>
       WorkerVersionUpdatedCallback;
-  typedef base::Callback<void(int64 /* registration_id */,
-                              int64 /* version_id */,
+  typedef base::Callback<void(int64_t /* registration_id */,
+                              int64_t /* version_id */,
                               const ErrorInfo&)> WorkerErrorReportedCallback;
 
   ServiceWorkerContextWatcher(
@@ -50,54 +52,56 @@ class ServiceWorkerContextWatcher
 
   void StoreRegistrationInfo(
       const ServiceWorkerRegistrationInfo& registration,
-      base::ScopedPtrHashMap<int64, scoped_ptr<ServiceWorkerRegistrationInfo>>*
+      base::ScopedPtrHashMap<int64_t,
+                             scoped_ptr<ServiceWorkerRegistrationInfo>>*
           info_map);
   void StoreVersionInfo(const ServiceWorkerVersionInfo& version);
 
   void SendRegistrationInfo(
-      int64 registration_id,
+      int64_t registration_id,
       const GURL& pattern,
       ServiceWorkerRegistrationInfo::DeleteFlag delete_flag);
   void SendVersionInfo(const ServiceWorkerVersionInfo& version);
 
   // ServiceWorkerContextObserver implements
-  void OnNewLiveRegistration(int64 registration_id,
+  void OnNewLiveRegistration(int64_t registration_id,
                              const GURL& pattern) override;
-  void OnNewLiveVersion(int64 version_id,
-                        int64 registration_id,
+  void OnNewLiveVersion(int64_t version_id,
+                        int64_t registration_id,
                         const GURL& script_url) override;
   void OnRunningStateChanged(
-      int64 version_id,
+      int64_t version_id,
       content::ServiceWorkerVersion::RunningStatus running_status) override;
   void OnVersionStateChanged(
-      int64 version_id,
+      int64_t version_id,
       content::ServiceWorkerVersion::Status status) override;
   void OnMainScriptHttpResponseInfoSet(
-      int64 version_id,
+      int64_t version_id,
       base::Time script_response_time,
       base::Time script_last_modified) override;
-  void OnErrorReported(int64 version_id,
+  void OnErrorReported(int64_t version_id,
                        int process_id,
                        int thread_id,
                        const ErrorInfo& info) override;
-  void OnReportConsoleMessage(int64 version_id,
+  void OnReportConsoleMessage(int64_t version_id,
                               int process_id,
                               int thread_id,
                               const ConsoleMessage& message) override;
-  void OnControlleeAdded(int64 version_id,
+  void OnControlleeAdded(int64_t version_id,
                          const std::string& uuid,
                          int process_id,
                          int route_id,
                          ServiceWorkerProviderType type) override;
-  void OnControlleeRemoved(int64 version_id, const std::string& uuid) override;
-  void OnRegistrationStored(int64 registration_id,
+  void OnControlleeRemoved(int64_t version_id,
+                           const std::string& uuid) override;
+  void OnRegistrationStored(int64_t registration_id,
                             const GURL& pattern) override;
-  void OnRegistrationDeleted(int64 registration_id,
+  void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override;
-  void OnForceUpdateOnPageLoadChanged(int64 registration_id,
+  void OnForceUpdateOnPageLoadChanged(int64_t registration_id,
                                       bool force_update_on_page_load) override;
 
-  base::ScopedPtrHashMap<int64, scoped_ptr<ServiceWorkerVersionInfo>>
+  base::ScopedPtrHashMap<int64_t, scoped_ptr<ServiceWorkerVersionInfo>>
       version_info_map_;
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   WorkerRegistrationUpdatedCallback registration_callback_;

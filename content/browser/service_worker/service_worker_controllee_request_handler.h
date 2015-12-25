@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTROLLEE_REQUEST_HANDLER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTROLLEE_REQUEST_HANDLER_H_
 
+#include <stdint.h>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -75,7 +77,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       const scoped_refptr<ServiceWorkerRegistration>& original_registration,
       ServiceWorkerStatusCode status,
       const std::string& status_message,
-      int64 registration_id);
+      int64_t registration_id);
   void OnUpdatedVersionStatusChanged(
       const scoped_refptr<ServiceWorkerRegistration>& registration,
       const scoped_refptr<ServiceWorkerVersion>& version);

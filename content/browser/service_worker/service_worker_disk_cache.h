@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISK_CACHE_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISK_CACHE_H_
 
+#include <stdint.h>
+
 #include "content/browser/appcache/appcache_disk_cache.h"
 #include "content/common/content_export.h"
 
@@ -27,7 +29,7 @@ class CONTENT_EXPORT ServiceWorkerResponseReader
  protected:
   // Should only be constructed by the storage class.
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseReader(int64 resource_id,
+  ServiceWorkerResponseReader(int64_t resource_id,
                               ServiceWorkerDiskCache* disk_cache);
 };
 
@@ -36,7 +38,7 @@ class CONTENT_EXPORT ServiceWorkerResponseWriter
  protected:
   // Should only be constructed by the storage class.
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseWriter(int64 resource_id,
+  ServiceWorkerResponseWriter(int64_t resource_id,
                               ServiceWorkerDiskCache* disk_cache);
 };
 
@@ -45,7 +47,7 @@ class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
  protected:
   // Should only be constructed by the storage class.
   friend class ServiceWorkerStorage;
-  ServiceWorkerResponseMetadataWriter(int64 resource_id,
+  ServiceWorkerResponseMetadataWriter(int64_t resource_id,
                                       ServiceWorkerDiskCache* disk_cache);
 };
 

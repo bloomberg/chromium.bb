@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -82,7 +85,7 @@ ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
 
 void SaveUnregistrationCallback(ServiceWorkerStatusCode expected_status,
                                 bool* called,
-                                int64 registration_id,
+                                int64_t registration_id,
                                 ServiceWorkerStatusCode status) {
   EXPECT_EQ(expected_status, status);
   *called = true;
@@ -354,7 +357,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
   FailToStartWorkerTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
   void OnStartWorker(int embedded_worker_id,
-                     int64 service_worker_version_id,
+                     int64_t service_worker_version_id,
                      const GURL& scope,
                      const GURL& script_url) override {
     EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
@@ -721,10 +724,11 @@ void OnIOComplete(int* rv_out, int rv) {
   *rv_out = rv;
 }
 
-void WriteResponse(
-    ServiceWorkerStorage* storage, int64 id,
-    const std::string& headers,
-    IOBuffer* body, int length) {
+void WriteResponse(ServiceWorkerStorage* storage,
+                   int64_t id,
+                   const std::string& headers,
+                   IOBuffer* body,
+                   int length) {
   scoped_ptr<ServiceWorkerResponseWriter> writer =
       storage->CreateResponseWriter(id);
 
@@ -748,9 +752,9 @@ void WriteResponse(
   EXPECT_EQ(length, rv);
 }
 
-void WriteStringResponse(
-    ServiceWorkerStorage* storage, int64 id,
-    const std::string& body) {
+void WriteStringResponse(ServiceWorkerStorage* storage,
+                         int64_t id,
+                         const std::string& body) {
   scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(body.data()));
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
   std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
@@ -763,13 +767,13 @@ class UpdateJobTestHelper
       public ServiceWorkerVersion::Listener {
  public:
   struct AttributeChangeLogEntry {
-    int64 registration_id;
+    int64_t registration_id;
     ChangedVersionAttributesMask mask;
     ServiceWorkerRegistrationInfo info;
   };
 
   struct StateChangeLogEntry {
-    int64 version_id;
+    int64_t version_id;
     ServiceWorkerVersion::Status status;
   };
 
@@ -805,11 +809,11 @@ class UpdateJobTestHelper
 
   // EmbeddedWorkerTestHelper overrides
   void OnStartWorker(int embedded_worker_id,
-                     int64 version_id,
+                     int64_t version_id,
                      const GURL& scope,
                      const GURL& script) override {
     const std::string kMockScriptBody = "mock_script";
-    const uint64 kMockScriptSize = 19284;
+    const uint64_t kMockScriptSize = 19284;
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ServiceWorkerRegistration* registration =
         context()->GetLiveRegistration(version->registration_id());
@@ -821,7 +825,7 @@ class UpdateJobTestHelper
 
     if (!is_update) {
       // Spoof caching the script for the initial version.
-      int64 resource_id = storage()->NewResourceId();
+      int64_t resource_id = storage()->NewResourceId();
       version->script_cache_map()->NotifyStartedCaching(script, resource_id);
       WriteStringResponse(storage(), resource_id, kMockScriptBody);
       version->script_cache_map()->NotifyFinishedCaching(
@@ -834,7 +838,7 @@ class UpdateJobTestHelper
       }
 
       // Spoof caching the script for the new version.
-      int64 resource_id = storage()->NewResourceId();
+      int64_t resource_id = storage()->NewResourceId();
       version->script_cache_map()->NotifyStartedCaching(script, resource_id);
       WriteStringResponse(storage(), resource_id, "mock_different_script");
       version->script_cache_map()->NotifyFinishedCaching(
@@ -888,7 +892,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
   ~EvictIncumbentVersionHelper() override {}
 
   void OnStartWorker(int embedded_worker_id,
-                     int64 version_id,
+                     int64_t version_id,
                      const GURL& scope,
                      const GURL& script) override {
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);

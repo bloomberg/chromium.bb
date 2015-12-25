@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -181,7 +186,7 @@ class WorkerActivatedObserver
     RunOnIOThread(base::Bind(&WorkerActivatedObserver::InitOnIOThread, this));
   }
   // ServiceWorkerContextObserver overrides.
-  void OnVersionStateChanged(int64 version_id,
+  void OnVersionStateChanged(int64_t version_id,
                              ServiceWorkerVersion::Status) override {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);
@@ -541,7 +546,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(expected_status, status);
   }
 
-  void StoreRegistration(int64 version_id,
+  void StoreRegistration(int64_t version_id,
                          ServiceWorkerStatusCode expected_status) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
@@ -557,7 +562,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                              this, status));
   }
 
-  void FindRegistrationForId(int64 id,
+  void FindRegistrationForId(int64_t id,
                              const GURL& origin,
                              ServiceWorkerStatusCode expected_status) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -573,7 +578,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   void FindRegistrationForIdOnIOThread(const base::Closure& done,
                                        ServiceWorkerStatusCode* result,
-                                       int64 id,
+                                       int64_t id,
                                        const GURL& origin) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     wrapper()->context()->storage()->FindRegistrationForId(
@@ -588,7 +593,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         registration_.get(), version_.get(), status);
   }
 
-  void RemoveLiveRegistrationOnIOThread(int64 id) {
+  void RemoveLiveRegistrationOnIOThread(int64_t id) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     wrapper()->context()->RemoveLiveRegistration(id);
   }
@@ -609,7 +614,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   void StoreOnIOThread(const base::Closure& done,
                        ServiceWorkerStatusCode* result,
-                       int64 version_id) {
+                       int64_t version_id) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ServiceWorkerVersion* version =
         wrapper()->context()->GetLiveVersion(version_id);

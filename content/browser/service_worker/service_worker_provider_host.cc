@@ -216,7 +216,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
       notify_controllerchange));
 }
 
-bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
+bool ServiceWorkerProviderHost::SetHostedVersionId(int64_t version_id) {
   if (!context_)
     return true;  // System is shutting down.
   if (active_version())
@@ -323,7 +323,7 @@ void ServiceWorkerProviderHost::RemoveMatchingRegistration(
 
 void ServiceWorkerProviderHost::AddAllMatchingRegistrations() {
   DCHECK(context_);
-  const std::map<int64, ServiceWorkerRegistration*>& registrations =
+  const std::map<int64_t, ServiceWorkerRegistration*>& registrations =
       context_->GetLiveRegistrations();
   for (const auto& key_registration : registrations) {
     ServiceWorkerRegistration* registration = key_registration.second;

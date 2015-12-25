@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_process_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 

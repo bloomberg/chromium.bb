@@ -111,7 +111,7 @@ void EmbeddedWorkerTestHelper::ShutdownContext() {
 }
 
 void EmbeddedWorkerTestHelper::OnStartWorker(int embedded_worker_id,
-                                             int64 service_worker_version_id,
+                                             int64_t service_worker_version_id,
                                              const GURL& scope,
                                              const GURL& script_url) {
   embedded_worker_id_service_worker_version_id_map_[embedded_worker_id] =
@@ -197,7 +197,7 @@ void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptCached(
     int embedded_worker_id) {
-  int64 version_id =
+  int64_t version_id =
       embedded_worker_id_service_worker_version_id_map_[embedded_worker_id];
   ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
   if (!version || version->script_cache_map()->size())

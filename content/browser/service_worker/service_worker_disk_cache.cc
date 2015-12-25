@@ -10,17 +10,17 @@ ServiceWorkerDiskCache::ServiceWorkerDiskCache()
     : AppCacheDiskCache(true /* use_simple_cache */) {}
 
 ServiceWorkerResponseReader::ServiceWorkerResponseReader(
-    int64 resource_id,
+    int64_t resource_id,
     ServiceWorkerDiskCache* disk_cache)
     : AppCacheResponseReader(resource_id, 0, disk_cache) {}
 
 ServiceWorkerResponseWriter::ServiceWorkerResponseWriter(
-    int64 resource_id,
+    int64_t resource_id,
     ServiceWorkerDiskCache* disk_cache)
     : AppCacheResponseWriter(resource_id, 0, disk_cache) {}
 
 ServiceWorkerResponseMetadataWriter::ServiceWorkerResponseMetadataWriter(
-    int64 resource_id,
+    int64_t resource_id,
     ServiceWorkerDiskCache* disk_cache)
     : AppCacheResponseMetadataWriter(resource_id, 0, disk_cache) {}
 

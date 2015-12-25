@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -50,10 +52,10 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   };
 
   ServiceWorkerRegistration(const GURL& pattern,
-                            int64 registration_id,
+                            int64_t registration_id,
                             base::WeakPtr<ServiceWorkerContextCore> context);
 
-  int64 id() const { return registration_id_; }
+  int64_t id() const { return registration_id_; }
   const GURL& pattern() const { return pattern_; }
 
   bool is_deleted() const { return is_deleted_; }
@@ -168,7 +170,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
                          ServiceWorkerStatusCode status);
 
   const GURL pattern_;
-  const int64 registration_id_;
+  const int64_t registration_id_;
   bool is_deleted_;
   bool is_uninstalling_;
   bool is_uninstalled_;

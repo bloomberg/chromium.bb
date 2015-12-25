@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_register_job.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/location.h"
@@ -274,7 +276,7 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
 void ServiceWorkerRegisterJob::RegisterAndContinue() {
   SetPhase(REGISTER);
 
-  int64 registration_id = context_->storage()->NewRegistrationId();
+  int64_t registration_id = context_->storage()->NewRegistrationId();
   if (registration_id == kInvalidServiceWorkerRegistrationId) {
     Complete(SERVICE_WORKER_ERROR_ABORT);
     return;
@@ -331,7 +333,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
   SetPhase(UPDATE);
   context_->storage()->NotifyInstallingRegistration(registration());
 
-  int64 version_id = context_->storage()->NewVersionId();
+  int64_t version_id = context_->storage()->NewVersionId();
   if (version_id == kInvalidServiceWorkerVersionId) {
     Complete(SERVICE_WORKER_ERROR_ABORT);
     return;

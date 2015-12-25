@@ -36,8 +36,8 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     ServiceWorkerVersion::RunningStatus running_status,
     ServiceWorkerVersion::Status status,
     const GURL& script_url,
-    int64 registration_id,
-    int64 version_id,
+    int64_t registration_id,
+    int64_t version_id,
     int process_id,
     int thread_id,
     int devtools_agent_route_id)
@@ -48,8 +48,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
       version_id(version_id),
       process_id(process_id),
       thread_id(thread_id),
-      devtools_agent_route_id(devtools_agent_route_id) {
-}
+      devtools_agent_route_id(devtools_agent_route_id) {}
 
 ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}
 
@@ -61,7 +60,7 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo()
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
-    int64 registration_id,
+    int64_t registration_id,
     DeleteFlag delete_flag)
     : pattern(pattern),
       registration_id(registration_id),
@@ -71,7 +70,7 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
-    int64 registration_id,
+    int64_t registration_id,
     DeleteFlag delete_flag,
     ForceUpdateOnPageLoad force_update_on_page_load,
     const ServiceWorkerVersionInfo& active_version,

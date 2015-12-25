@@ -298,7 +298,7 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     const scoped_refptr<ServiceWorkerRegistration>& original_registration,
     ServiceWorkerStatusCode status,
     const std::string& status_message,
-    int64 registration_id) {
+    int64_t registration_id) {
   DCHECK(force_update_started_);
 
   // The job may have been canceled and then destroyed before this was invoked.

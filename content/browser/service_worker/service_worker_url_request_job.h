@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_URL_REQUEST_JOB_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_URL_REQUEST_JOB_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -182,7 +185,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   // Creates BlobDataHandle of the request body from |body_|. This handle
   // |request_body_blob_data_handle_| will be deleted when
   // ServiceWorkerURLRequestJob is deleted.
-  bool CreateRequestBodyBlob(std::string* blob_uuid, uint64* blob_size);
+  bool CreateRequestBodyBlob(std::string* blob_uuid, uint64_t* blob_size);
 
   // For FORWARD_TO_SERVICE_WORKER case.
   void DidPrepareFetchEvent();

@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"

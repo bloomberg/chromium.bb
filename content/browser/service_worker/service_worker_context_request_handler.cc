@@ -60,7 +60,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
         context_->GetLiveRegistration(version_->registration_id());
     DCHECK(registration);  // We're registering or updating so must be there.
 
-    int64 resource_id = context_->storage()->NewResourceId();
+    int64_t resource_id = context_->storage()->NewResourceId();
     if (resource_id == kInvalidServiceWorkerResourceId)
       return NULL;
 
@@ -78,7 +78,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     ServiceWorkerVersion* stored_version = registration->waiting_version()
                                                ? registration->waiting_version()
                                                : registration->active_version();
-    int64 incumbent_resource_id = kInvalidServiceWorkerResourceId;
+    int64_t incumbent_resource_id = kInvalidServiceWorkerResourceId;
     if (stored_version && stored_version->script_url() == request->url()) {
       incumbent_resource_id =
           stored_version->script_cache_map()->LookupResourceId(request->url());
@@ -88,7 +88,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
         extra_load_flags, resource_id, incumbent_resource_id);
   }
 
-  int64 resource_id = kInvalidServiceWorkerResourceId;
+  int64_t resource_id = kInvalidServiceWorkerResourceId;
   if (ShouldReadFromScriptCache(request->url(), &resource_id)) {
     return new ServiceWorkerReadFromCacheJob(request, network_delegate,
                                              resource_type_, context_, version_,
@@ -121,7 +121,7 @@ bool ServiceWorkerContextRequestHandler::ShouldAddToScriptCache(
 
 bool ServiceWorkerContextRequestHandler::ShouldReadFromScriptCache(
     const GURL& url,
-    int64* resource_id_out) {
+    int64_t* resource_id_out) {
   // We don't read from the script cache until the version is INSTALLED.
   if (version_->status() == ServiceWorkerVersion::NEW ||
       version_->status() == ServiceWorkerVersion::INSTALLING)

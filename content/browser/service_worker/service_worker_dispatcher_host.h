@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_HOST_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -63,7 +66,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       scoped_ptr<ServiceWorkerRegistrationHandle> handle);
 
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
-                                               int64 version_id);
+                                               int64_t version_id);
 
   // Returns the existing registration handle whose reference count is
   // incremented or a newly created one if it doesn't exist.
@@ -92,11 +95,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnUpdateServiceWorker(int thread_id,
                              int request_id,
                              int provider_id,
-                             int64 registration_id);
+                             int64_t registration_id);
   void OnUnregisterServiceWorker(int thread_id,
                                  int request_id,
                                  int provider_id,
-                                 int64 registration_id);
+                                 int64_t registration_id);
   void OnGetRegistration(int thread_id,
                          int request_id,
                          int provider_id,
@@ -109,7 +112,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                          int route_id,
                          ServiceWorkerProviderType provider_type);
   void OnProviderDestroyed(int provider_id);
-  void OnSetHostedVersionId(int provider_id, int64 version_id);
+  void OnSetHostedVersionId(int provider_id, int64_t version_id);
   void OnWorkerReadyForInspection(int embedded_worker_id);
   void OnWorkerScriptLoaded(int embedded_worker_id);
   void OnWorkerThreadStarted(int embedded_worker_id,
@@ -139,7 +142,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,
-      int64 registration_handle_id);
+      int64_t registration_handle_id);
 
   void GetRegistrationObjectInfoAndVersionAttributes(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
@@ -153,14 +156,14 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                             int request_id,
                             ServiceWorkerStatusCode status,
                             const std::string& status_message,
-                            int64 registration_id);
+                            int64_t registration_id);
 
   void UpdateComplete(int thread_id,
                       int provider_id,
                       int request_id,
                       ServiceWorkerStatusCode status,
                       const std::string& status_message,
-                      int64 registration_id);
+                      int64_t registration_id);
 
   void UnregistrationComplete(int thread_id,
                               int request_id,

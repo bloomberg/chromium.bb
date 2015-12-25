@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_TEST_HELPER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_TEST_HELPER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
@@ -88,7 +91,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // - OnStopWorker calls SimulateWorkerStoped
   // - OnSendMessageToWorker calls the message's respective On*Event handler
   virtual void OnStartWorker(int embedded_worker_id,
-                             int64 service_worker_version_id,
+                             int64_t service_worker_version_id,
                              const GURL& scope,
                              const GURL& script_url);
   virtual void OnStopWorker(int embedded_worker_id);
@@ -147,7 +150,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   int next_thread_id_;
   int mock_render_process_id_;
 
-  std::map<int, int64> embedded_worker_id_service_worker_version_id_map_;
+  std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;

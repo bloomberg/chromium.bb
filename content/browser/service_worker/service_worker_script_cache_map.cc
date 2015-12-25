@@ -24,15 +24,15 @@ ServiceWorkerScriptCacheMap::ServiceWorkerScriptCacheMap(
 ServiceWorkerScriptCacheMap::~ServiceWorkerScriptCacheMap() {
 }
 
-int64 ServiceWorkerScriptCacheMap::LookupResourceId(const GURL& url) {
+int64_t ServiceWorkerScriptCacheMap::LookupResourceId(const GURL& url) {
   ResourceMap::const_iterator found = resource_map_.find(url);
   if (found == resource_map_.end())
     return kInvalidServiceWorkerResourceId;
   return found->second.resource_id;
 }
 
-void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
-    const GURL& url, int64 resource_id) {
+void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
+                                                       int64_t resource_id) {
   DCHECK_EQ(kInvalidServiceWorkerResourceId, LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING)
@@ -46,7 +46,7 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
 
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     const GURL& url,
-    int64 size_bytes,
+    int64_t size_bytes,
     const net::URLRequestStatus& status,
     const std::string& status_message) {
   DCHECK_NE(kInvalidServiceWorkerResourceId, LookupResourceId(url));

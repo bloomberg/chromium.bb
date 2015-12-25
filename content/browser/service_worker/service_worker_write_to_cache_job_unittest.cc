@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -424,7 +428,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   GURL script_url_;
 
   int next_provider_id_ = 1;
-  int64 next_version_id_ = 1L;
+  int64_t next_version_id_ = 1L;
 };
 
 TEST_F(ServiceWorkerWriteToCacheJobTest, Normal) {

@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>

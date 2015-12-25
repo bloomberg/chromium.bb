@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
 
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -45,39 +47,40 @@ class ServiceWorkerContextObserver {
     const int line_number;
     const GURL source_url;
   };
-  virtual void OnNewLiveRegistration(int64 registration_id,
+  virtual void OnNewLiveRegistration(int64_t registration_id,
                                      const GURL& pattern) {}
-  virtual void OnNewLiveVersion(int64 version_id,
-                                int64 registration_id,
+  virtual void OnNewLiveVersion(int64_t version_id,
+                                int64_t registration_id,
                                 const GURL& script_url) {}
   virtual void OnRunningStateChanged(
-      int64 version_id,
+      int64_t version_id,
       ServiceWorkerVersion::RunningStatus running_status) {}
-  virtual void OnVersionStateChanged(int64 version_id,
+  virtual void OnVersionStateChanged(int64_t version_id,
                                      ServiceWorkerVersion::Status status) {}
   virtual void OnMainScriptHttpResponseInfoSet(
-      int64 version_id,
+      int64_t version_id,
       base::Time script_response_time,
       base::Time script_last_modified) {}
-  virtual void OnErrorReported(int64 version_id,
+  virtual void OnErrorReported(int64_t version_id,
                                int process_id,
                                int thread_id,
                                const ErrorInfo& info) {}
-  virtual void OnReportConsoleMessage(int64 version_id,
+  virtual void OnReportConsoleMessage(int64_t version_id,
                                       int process_id,
                                       int thread_id,
                                       const ConsoleMessage& message) {}
-  virtual void OnControlleeAdded(int64 version_id,
+  virtual void OnControlleeAdded(int64_t version_id,
                                  const std::string& uuid,
                                  int process_id,
                                  int route_id,
                                  ServiceWorkerProviderType type) {}
-  virtual void OnControlleeRemoved(int64 version_id, const std::string& uuid) {}
-  virtual void OnRegistrationStored(int64 registration_id,
+  virtual void OnControlleeRemoved(int64_t version_id,
+                                   const std::string& uuid) {}
+  virtual void OnRegistrationStored(int64_t registration_id,
                                     const GURL& pattern) {}
-  virtual void OnRegistrationDeleted(int64 registration_id,
+  virtual void OnRegistrationDeleted(int64_t registration_id,
                                      const GURL& pattern) {}
-  virtual void OnForceUpdateOnPageLoadChanged(int64 registration_id,
+  virtual void OnForceUpdateOnPageLoadChanged(int64_t registration_id,
                                               bool force_update_on_page_load) {}
 
   // Notified when the storage corruption recovery is completed and all stored

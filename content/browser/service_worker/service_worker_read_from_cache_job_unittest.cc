@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_read_from_cache_job.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -23,11 +26,11 @@ namespace content {
 
 namespace {
 
-const int64 kRegistrationId = 1;
-const int64 kVersionId = 2;
-const int64 kMainScriptResourceId = 10;
-const int64 kImportedScriptResourceId = 11;
-const int64 kResourceSize = 100;
+const int64_t kRegistrationId = 1;
+const int64_t kVersionId = 2;
+const int64_t kMainScriptResourceId = 10;
+const int64_t kImportedScriptResourceId = 11;
+const int64_t kResourceSize = 100;
 
 void DidStoreRegistration(ServiceWorkerStatusCode* status_out,
                           const base::Closure& quit_closure,
@@ -88,7 +91,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     ASSERT_TRUE(WriteResource(imported_script_.resource_id));
   }
 
-  bool WriteResource(int64 resource_id) {
+  bool WriteResource(int64_t resource_id) {
     const char kHttpHeaders[] = "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
     const char kHttpBody[] = "Hello";
     const int length = arraysize(kHttpBody);
@@ -210,7 +213,7 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
   scoped_ptr<net::URLRequest> request = url_request_context_->CreateRequest(
       GURL("http://example.com/nonexistent"), net::DEFAULT_PRIORITY,
       &delegate_);
-  const int64 kNonexistentResourceId = 100;
+  const int64_t kNonexistentResourceId = 100;
   scoped_ptr<ServiceWorkerReadFromCacheJob> job(
       new ServiceWorkerReadFromCacheJob(
           request.get(), nullptr /* NetworkDelegate */,

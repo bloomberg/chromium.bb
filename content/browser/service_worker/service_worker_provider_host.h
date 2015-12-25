@@ -5,10 +5,14 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_HOST_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_HOST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -131,7 +135,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Returns false if the version is not in the expected STARTING in our
   // process state. That would be indicative of a bad IPC message.
-  bool SetHostedVersionId(int64 versions_id);
+  bool SetHostedVersionId(int64_t versions_id);
 
   // Returns a handler for a request, the handler may return NULL if
   // the request doesn't require special handling.
