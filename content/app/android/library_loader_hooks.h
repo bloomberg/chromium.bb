@@ -7,7 +7,6 @@
 
 #include <jni.h>
 
-#include "base/basictypes.h"
 
 namespace content {
 

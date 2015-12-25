@@ -40,7 +40,7 @@ int DatabaseUtil::DatabaseDeleteFile(
 long DatabaseUtil::DatabaseGetFileAttributes(
     const WebString& vfs_file_name,
     IPC::SyncMessageFilter* sync_message_filter) {
-  int32 rv = -1;
+  int32_t rv = -1;
   sync_message_filter->Send(
       new DatabaseHostMsg_GetFileAttributes(vfs_file_name, &rv));
   return rv;
@@ -49,7 +49,7 @@ long DatabaseUtil::DatabaseGetFileAttributes(
 long long DatabaseUtil::DatabaseGetFileSize(
     const WebString& vfs_file_name,
     IPC::SyncMessageFilter* sync_message_filter) {
-  int64 rv = 0LL;
+  int64_t rv = 0LL;
   sync_message_filter->Send(
       new DatabaseHostMsg_GetFileSize(vfs_file_name, &rv));
   return rv;
@@ -58,7 +58,7 @@ long long DatabaseUtil::DatabaseGetFileSize(
 long long DatabaseUtil::DatabaseGetSpaceAvailable(
     const WebString& origin_identifier,
     IPC::SyncMessageFilter* sync_message_filter) {
-  int64 rv = 0LL;
+  int64_t rv = 0LL;
   sync_message_filter->Send(
       new DatabaseHostMsg_GetSpaceAvailable(origin_identifier.utf8(), &rv));
   return rv;
@@ -66,7 +66,7 @@ long long DatabaseUtil::DatabaseGetSpaceAvailable(
 
 bool DatabaseUtil::DatabaseSetFileSize(
     const WebString& vfs_file_name,
-    int64 size,
+    int64_t size,
     IPC::SyncMessageFilter* sync_message_filter) {
   bool rv = false;
   sync_message_filter->Send(

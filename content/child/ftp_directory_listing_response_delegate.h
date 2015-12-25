@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 namespace blink {

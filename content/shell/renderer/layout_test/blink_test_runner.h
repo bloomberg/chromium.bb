@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/web_test_delegate.h"

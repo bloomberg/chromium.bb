@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/pepper_internal_file_ref_backend.h"
 
+#include <string.h>
+
 #include <string>
 
 #include "base/callback.h"

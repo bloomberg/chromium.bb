@@ -11,6 +11,7 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/posix/global_descriptors.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/android/surface_texture_manager.h"

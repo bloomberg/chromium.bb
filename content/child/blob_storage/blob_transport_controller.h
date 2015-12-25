@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_BLOB_STORAGE_BLOB_TRANSPORT_CONTROLLER_H_
 #define CONTENT_CHILD_BLOB_STORAGE_BLOB_TRANSPORT_CONTROLLER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

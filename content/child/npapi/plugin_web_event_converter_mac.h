@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_NPAPI_PLUGIN_WEB_EVENT_CONVERTER_MAC_H_
 #define CONTENT_CHILD_NPAPI_PLUGIN_WEB_EVENT_CONVERTER_MAC_H_
 
+#include "base/macros.h"
 #include "third_party/npapi/bindings/npapi.h"
 
 namespace blink {

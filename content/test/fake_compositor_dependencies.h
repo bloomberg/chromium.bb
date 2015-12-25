@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H_
 #define CONTENT_TEST_FAKE_COMPOSITOR_DEPENDENCIES_H_
 
+#include "base/macros.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ipc/ipc_listener.h"
 
 namespace content {
@@ -35,7 +35,7 @@ class WebSocketDispatcher : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
-  WebSocketBridge* GetBridge(int channel_id, uint32 type);
+  WebSocketBridge* GetBridge(int channel_id, uint32_t type);
 
   std::map<int, WebSocketBridge*> bridges_;
   int channel_id_max_;

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"

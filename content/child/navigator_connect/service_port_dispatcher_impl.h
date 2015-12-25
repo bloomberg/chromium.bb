@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_NAVIGATOR_CONNECT_SERVICE_PORT_DISPATCHER_IMPL_H_
 #define CONTENT_CHILD_NAVIGATOR_CONNECT_SERVICE_PORT_DISPATCHER_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_port_service.mojom.h"

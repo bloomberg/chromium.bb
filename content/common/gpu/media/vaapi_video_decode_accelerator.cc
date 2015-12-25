@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 
+#include <string.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"

@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_ACCESSIBILITY_BROWSER_TEST_UTILS_H_
 #define CONTENT_TEST_ACCESSIBILITY_BROWSER_TEST_UTILS_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "ui/accessibility/ax_node_data.h"

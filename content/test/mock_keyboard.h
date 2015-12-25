@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include "content/test/mock_keyboard_driver_win.h"

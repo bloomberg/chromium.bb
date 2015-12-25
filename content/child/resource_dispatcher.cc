@@ -6,7 +6,6 @@
 
 #include "content/child/resource_dispatcher.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -18,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_scheduling_filter.h"
@@ -135,8 +135,9 @@ ResourceDispatcher::GetPendingRequestInfo(int request_id) {
   return &(it->second);
 }
 
-void ResourceDispatcher::OnUploadProgress(int request_id, int64 position,
-                                          int64 size) {
+void ResourceDispatcher::OnUploadProgress(int request_id,
+                                          int64_t position,
+                                          int64_t size) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -723,8 +724,8 @@ base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(
   // TimeTicks::Now() returned to WebKit. Is it worth trying to cache that?
   // Until then, |response_start| is used as it is the most recent value
   // returned for this request.
-  int64 result = std::max(browser_completion_time.ToInternalValue(),
-                          request_info.response_start.ToInternalValue());
+  int64_t result = std::max(browser_completion_time.ToInternalValue(),
+                            request_info.response_start.ToInternalValue());
   result = std::min(result, request_info.completion_time.ToInternalValue());
   return base::TimeTicks::FromInternalValue(result);
 }

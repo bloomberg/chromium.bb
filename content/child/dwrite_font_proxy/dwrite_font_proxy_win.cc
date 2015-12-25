@@ -4,6 +4,9 @@
 
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/debug/crash_logging.h"

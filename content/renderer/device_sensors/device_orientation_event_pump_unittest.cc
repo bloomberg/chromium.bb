@@ -4,6 +4,8 @@
 
 #include "device_orientation_event_pump.h"
 
+#include <string.h>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"

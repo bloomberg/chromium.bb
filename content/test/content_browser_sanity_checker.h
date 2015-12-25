@@ -5,8 +5,8 @@
 #ifndef CONTENT_TEST_CONTENT_BROWSER_SANITY_CHECKER_H_
 #define CONTENT_TEST_CONTENT_BROWSER_SANITY_CHECKER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 
 namespace content {
 

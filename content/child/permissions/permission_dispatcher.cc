@@ -4,6 +4,8 @@
 
 #include "content/child/permissions/permission_dispatcher.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "content/public/child/worker_thread.h"
 #include "content/public/common/service_registry.h"

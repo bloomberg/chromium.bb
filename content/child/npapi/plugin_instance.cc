@@ -4,6 +4,8 @@
 
 #include "content/child/npapi/plugin_instance.h"
 
+#include <string.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -279,11 +281,12 @@ void PluginInstance::OnPluginThreadAsyncCall(void (*func)(void*),
     func(user_data);
 }
 
-uint32 PluginInstance::ScheduleTimer(uint32 interval,
-                                     NPBool repeat,
-                                     void (*func)(NPP id, uint32 timer_id)) {
+uint32_t PluginInstance::ScheduleTimer(uint32_t interval,
+                                       NPBool repeat,
+                                       void (*func)(NPP id,
+                                                    uint32_t timer_id)) {
   // Use next timer id.
-  uint32 timer_id;
+  uint32_t timer_id;
   timer_id = next_timer_id_;
   ++next_timer_id_;
   DCHECK(next_timer_id_ != 0);
@@ -302,7 +305,7 @@ uint32 PluginInstance::ScheduleTimer(uint32 interval,
   return timer_id;
 }
 
-void PluginInstance::UnscheduleTimer(uint32 timer_id) {
+void PluginInstance::UnscheduleTimer(uint32_t timer_id) {
   // Remove info about the timer.
   TimerMap::iterator it = timers_.find(timer_id);
   if (it != timers_.end())
@@ -316,9 +319,9 @@ NPError PluginInstance::PopUpContextMenu(NPMenu* menu) {
 }
 #endif
 
-void PluginInstance::OnTimerCall(void (*func)(NPP id, uint32 timer_id),
+void PluginInstance::OnTimerCall(void (*func)(NPP id, uint32_t timer_id),
                                  NPP id,
-                                 uint32 timer_id) {
+                                 uint32_t timer_id) {
   // Do not invoke callback if the timer has been unscheduled.
   TimerMap::iterator it = timers_.find(timer_id);
   if (it == timers_.end())

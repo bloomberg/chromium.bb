@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_FILEAPI_WEBFILEWRITER_IMPL_H_
 #define CONTENT_CHILD_FILEAPI_WEBFILEWRITER_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -31,10 +33,10 @@ class WebFileWriterImpl : public WebFileWriterBase,
 
  protected:
   // WebFileWriterBase overrides
-  void DoTruncate(const GURL& path, int64 offset) override;
+  void DoTruncate(const GURL& path, int64_t offset) override;
   void DoWrite(const GURL& path,
                const std::string& blob_id,
-               int64 offset) override;
+               int64_t offset) override;
   void DoCancel() override;
 
  private:

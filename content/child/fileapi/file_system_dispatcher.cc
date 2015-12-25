@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/fileapi/file_system_messages.h"
@@ -111,7 +112,7 @@ class FileSystemDispatcher::CallbackDispatcher {
     resolve_callback_.Run(info, file_path, is_directory);
   }
 
-  void DidWrite(int64 bytes, bool complete) {
+  void DidWrite(int64_t bytes, bool complete) {
     write_callback_.Run(bytes, complete);
   }
 
@@ -268,11 +269,10 @@ void FileSystemDispatcher::ReadDirectory(
       new FileSystemHostMsg_ReadDirectory(request_id, path));
 }
 
-void FileSystemDispatcher::Truncate(
-    const GURL& path,
-    int64 offset,
-    int* request_id_out,
-    const StatusCallback& callback) {
+void FileSystemDispatcher::Truncate(const GURL& path,
+                                    int64_t offset,
+                                    int* request_id_out,
+                                    const StatusCallback& callback) {
   int request_id = dispatchers_.Add(CallbackDispatcher::Create(callback));
   ChildThreadImpl::current()->Send(
       new FileSystemHostMsg_Truncate(request_id, path, offset));
@@ -281,13 +281,12 @@ void FileSystemDispatcher::Truncate(
     *request_id_out = request_id;
 }
 
-void FileSystemDispatcher::Write(
-    const GURL& path,
-    const std::string& blob_id,
-    int64 offset,
-    int* request_id_out,
-    const WriteCallback& success_callback,
-    const StatusCallback& error_callback) {
+void FileSystemDispatcher::Write(const GURL& path,
+                                 const std::string& blob_id,
+                                 int64_t offset,
+                                 int* request_id_out,
+                                 const WriteCallback& success_callback,
+                                 const StatusCallback& error_callback) {
   int request_id = dispatchers_.Add(
       CallbackDispatcher::Create(success_callback, error_callback));
   ChildThreadImpl::current()->Send(
@@ -391,8 +390,9 @@ void FileSystemDispatcher::OnDidFail(
   dispatchers_.Remove(request_id);
 }
 
-void FileSystemDispatcher::OnDidWrite(
-    int request_id, int64 bytes, bool complete) {
+void FileSystemDispatcher::OnDidWrite(int request_id,
+                                      int64_t bytes,
+                                      bool complete) {
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
   dispatcher->DidWrite(bytes, complete);

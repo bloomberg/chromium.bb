@@ -85,8 +85,8 @@ void WebBlobRegistryImpl::registerBlobData(const blink::WebString& uuid,
         // We only support filesystem URL as of now.
         DCHECK(GURL(data_item.fileSystemURL).SchemeIsFileSystem());
         builder->appendFileSystemURL(data_item.fileSystemURL,
-                                     static_cast<uint64>(data_item.offset),
-                                     static_cast<uint64>(data_item.length),
+                                     static_cast<uint64_t>(data_item.offset),
+                                     static_cast<uint64_t>(data_item.length),
                                      data_item.expectedModificationTime);
         break;
       default:
@@ -238,7 +238,7 @@ void WebBlobRegistryImpl::BuilderImpl::build() {
     // object is the only item in the 'blob'.  If we use that file blob to
     // create another blob, it is sent here as a 'file' item and not a blob,
     // and the correct size is populated.
-    // static_cast<uint64>(-1) == kuint64max, which is what DataElement uses
+    // static_cast<uint64_t>(-1) == kuint64max, which is what DataElement uses
     // to specificy "use the whole file".
     switch (item.type) {
       case DataElement::TYPE_BYTES:

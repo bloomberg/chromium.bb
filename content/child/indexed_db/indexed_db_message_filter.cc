@@ -45,10 +45,10 @@ void IndexedDBMessageFilter::OnStaleMessageReceived(const IPC::Message& msg) {
 }
 
 void IndexedDBMessageFilter::OnStaleSuccessIDBDatabase(
-    int32 ipc_thread_id,
-    int32 ipc_callbacks_id,
-    int32 ipc_database_callbacks_id,
-    int32 ipc_database_id,
+    int32_t ipc_thread_id,
+    int32_t ipc_callbacks_id,
+    int32_t ipc_database_callbacks_id,
+    int32_t ipc_database_id,
     const IndexedDBDatabaseMetadata& idb_metadata) {
   if (ipc_database_id == kNoDatabase)
     return;

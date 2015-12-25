@@ -5,6 +5,9 @@
 #ifndef CONTENT_TEST_FILEAPI_TEST_FILE_SET_H_
 #define CONTENT_TEST_FILEAPI_TEST_FILE_SET_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/files/file_path.h"
@@ -20,7 +23,7 @@ namespace content {
 struct FileSystemTestCaseRecord {
   bool is_directory;
   const base::FilePath::CharType path[64];
-  int64 data_file_size;
+  int64_t data_file_size;
 };
 
 extern const FileSystemTestCaseRecord kRegularFileSystemTestCases[];

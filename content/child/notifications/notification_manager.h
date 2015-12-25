@@ -5,11 +5,15 @@
 #ifndef CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
 #define CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/child/notifications/notification_dispatcher.h"
@@ -96,7 +100,7 @@ class NotificationManager : public blink::WebNotificationManager,
   void DisplayPersistentNotification(
       const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       scoped_ptr<blink::WebNotificationShowCallbacks> callbacks,
       const SkBitmap& icon);
 

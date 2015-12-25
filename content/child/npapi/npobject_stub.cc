@@ -4,6 +4,7 @@
 
 #include "content/child/npapi/npobject_stub.h"
 
+#include "build/build_config.h"
 #include "content/child/npapi/np_channel_base.h"
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/plugin_messages.h"

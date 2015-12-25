@@ -4,6 +4,9 @@
 
 #include "content/child/ftp_directory_listing_response_delegate.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/i18n/icu_encoding_detection.h"
@@ -99,7 +102,7 @@ void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
       continue;
 
     bool is_directory = (entry.type == FtpDirectoryListingEntry::DIRECTORY);
-    int64 size = entry.size;
+    int64_t size = entry.size;
     if (entry.type != FtpDirectoryListingEntry::FILE)
       size = 0;
     SendDataToClient(net::GetDirectoryListingEntry(

@@ -5,7 +5,10 @@
 #ifndef CONTENT_PLUGIN_PLUGIN_THREAD_H_
 #define CONTENT_PLUGIN_PLUGIN_THREAD_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
@@ -40,11 +43,11 @@ class PluginThread : public ChildThreadImpl {
 
   // Callback for when a channel has been created.
   void OnCreateChannel(int renderer_id, bool incognito);
-  void OnPluginMessage(const std::vector<uint8> &data);
+  void OnPluginMessage(const std::vector<uint8_t>& data);
   void OnNotifyRenderersOfPendingShutdown();
 #if defined(OS_MACOSX)
   void OnAppActivated();
-  void OnPluginFocusNotify(uint32 instance_id);
+  void OnPluginFocusNotify(uint32_t instance_id);
 #endif
 
   // The plugin module which is preloaded in Init

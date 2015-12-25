@@ -5,6 +5,8 @@
 #ifndef CONTENT_TEST_DWRITE_FONT_FAKE_SENDER_WIN_H_
 #define CONTENT_TEST_DWRITE_FONT_FAKE_SENDER_WIN_H_
 
+#include <stddef.h>
+#include <stdint.h>
 #include <wrl.h>
 
 #include <utility>
@@ -106,7 +108,7 @@ class FakeFontCollection : public base::RefCounted<FakeFontCollection> {
     void OnGetFamilyNames(
         uint32_t family_index,
         std::vector<std::pair<base::string16, base::string16>>* family_names);
-    void OnGetFontFiles(uint32 family_index,
+    void OnGetFontFiles(uint32_t family_index,
                         std::vector<base::string16>* file_paths_);
 
    private:
@@ -140,7 +142,7 @@ class FakeFontCollection : public base::RefCounted<FakeFontCollection> {
       uint32_t family_index,
       std::vector<std::pair<base::string16, base::string16>>* family_names);
 
-  void OnGetFontFiles(uint32 family_index,
+  void OnGetFontFiles(uint32_t family_index,
                       std::vector<base::string16>* file_paths);
 
   std::unique_ptr<ReplySender> GetReplySender();

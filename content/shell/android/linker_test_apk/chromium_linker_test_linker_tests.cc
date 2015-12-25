@@ -9,13 +9,14 @@
 
 #include "content/shell/android/linker_test_apk/chromium_linker_test_linker_tests.h"
 
-#include <sys/mman.h>
 #include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <sys/mman.h>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -106,12 +107,12 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
     void* region_end = reinterpret_cast<void*>(region.end);
 
     // Check that it is mapped read-only.
-    const uint8 expected_flags = MappedMemoryRegion::READ;
-    const uint8 expected_mask = MappedMemoryRegion::READ |
-                                MappedMemoryRegion::WRITE |
-                                MappedMemoryRegion::EXECUTE;
+    const uint8_t expected_flags = MappedMemoryRegion::READ;
+    const uint8_t expected_mask = MappedMemoryRegion::READ |
+                                  MappedMemoryRegion::WRITE |
+                                  MappedMemoryRegion::EXECUTE;
 
-    uint8 region_flags = region.permissions & expected_mask;
+    uint8_t region_flags = region.permissions & expected_mask;
     if (region_flags != expected_flags) {
       LOG(ERROR)
           << prefix

@@ -4,6 +4,8 @@
 
 #include "content/child/background_sync/background_sync_provider.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,7 +27,7 @@ namespace {
 
 // Returns the id of the given |service_worker_registration|, which
 // is only available on the implementation of the interface.
-int64 GetServiceWorkerRegistrationId(
+int64_t GetServiceWorkerRegistrationId(
     blink::WebServiceWorkerRegistration* service_worker_registration) {
   return static_cast<WebServiceWorkerRegistrationImpl*>(
              service_worker_registration)->registration_id();
@@ -89,7 +91,7 @@ void BackgroundSyncProvider::registerBackgroundSync(
   DCHECK(options);
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
-  int64 service_worker_registration_id =
+  int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   scoped_ptr<const blink::WebSyncRegistration> optionsPtr(options);
   scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacksPtr(callbacks);
@@ -109,7 +111,7 @@ void BackgroundSyncProvider::unregisterBackgroundSync(
     blink::WebSyncUnregistrationCallbacks* callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
-  int64 service_worker_registration_id =
+  int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   scoped_ptr<blink::WebSyncUnregistrationCallbacks> callbacksPtr(callbacks);
 
@@ -128,7 +130,7 @@ void BackgroundSyncProvider::getRegistration(
     blink::WebSyncRegistrationCallbacks* callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
-  int64 service_worker_registration_id =
+  int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacksPtr(callbacks);
 
@@ -147,7 +149,7 @@ void BackgroundSyncProvider::getRegistrations(
     blink::WebSyncGetRegistrationsCallbacks* callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
-  int64 service_worker_registration_id =
+  int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacksPtr(callbacks);
 
@@ -166,7 +168,7 @@ void BackgroundSyncProvider::getPermissionStatus(
     blink::WebSyncGetPermissionStatusCallbacks* callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
-  int64 service_worker_registration_id =
+  int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   scoped_ptr<blink::WebSyncGetPermissionStatusCallbacks> callbacksPtr(
       callbacks);

@@ -4,6 +4,8 @@
 
 #include "content/ppapi_plugin/ppapi_thread.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/command_line.h"
@@ -21,6 +23,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/child/browser_font_resource_trusted.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_process.h"
@@ -170,7 +173,7 @@ bool PpapiThread::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PpapiThread::OnChannelConnected(int32 peer_pid) {
+void PpapiThread::OnChannelConnected(int32_t peer_pid) {
   ChildThreadImpl::OnChannelConnected(peer_pid);
 #if defined(OS_WIN)
   if (is_broker_)
@@ -262,14 +265,14 @@ PP_Resource PpapiThread::CreateBrowserFont(
         connection, instance, desc, prefs))->GetReference();
 }
 
-uint32 PpapiThread::Register(
+uint32_t PpapiThread::Register(
     ppapi::proxy::PluginDispatcher* plugin_dispatcher) {
   if (!plugin_dispatcher ||
-      plugin_dispatchers_.size() >= std::numeric_limits<uint32>::max()) {
+      plugin_dispatchers_.size() >= std::numeric_limits<uint32_t>::max()) {
     return 0;
   }
 
-  uint32 id = 0;
+  uint32_t id = 0;
   do {
     // Although it is unlikely, make sure that we won't cause any trouble when
     // the counter overflows.
@@ -280,7 +283,7 @@ uint32 PpapiThread::Register(
   return id;
 }
 
-void PpapiThread::Unregister(uint32 plugin_dispatcher_id) {
+void PpapiThread::Unregister(uint32_t plugin_dispatcher_id) {
   plugin_dispatchers_.erase(plugin_dispatcher_id);
 }
 

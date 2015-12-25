@@ -4,6 +4,7 @@
 
 #include "content/child/shared_memory_data_consumer_handle.h"
 
+#include <stddef.h>
 #include <string.h>
 #include <string>
 #include <vector>
@@ -11,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"

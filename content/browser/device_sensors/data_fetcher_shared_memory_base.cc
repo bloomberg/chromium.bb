@@ -5,6 +5,7 @@
 #include "content/browser/device_sensors/data_fetcher_shared_memory_base.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include "base/bind.h"
 #include "base/location.h"

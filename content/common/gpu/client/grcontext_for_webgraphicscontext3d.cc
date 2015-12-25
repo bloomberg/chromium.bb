@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/grcontext_for_webgraphicscontext3d.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"

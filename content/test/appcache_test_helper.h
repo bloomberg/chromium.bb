@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/macros.h"
 #include "content/browser/appcache/appcache_storage.h"
 
 namespace content {

@@ -5,6 +5,7 @@
 #ifndef CONTENT_UTILITY_WEBTHREAD_IMPL_FOR_UTILITY_THREAD_H_
 #define CONTENT_UTILITY_WEBTHREAD_IMPL_FOR_UTILITY_THREAD_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/scheduler/child/webthread_base.h"
 

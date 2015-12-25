@@ -4,6 +4,9 @@
 
 #include "content/child/npapi/webplugin_delegate_impl.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -12,6 +15,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -925,7 +929,7 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
   }
 
   LRESULT result;
-  uint32 old_message = delegate->last_message_;
+  uint32_t old_message = delegate->last_message_;
   delegate->last_message_ = message;
 
   static UINT custom_msg = RegisterWindowMessage(kPaintMessageName);
@@ -945,7 +949,7 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     // The plugin window might have non-client area.   If we don't pass in
     // RDW_FRAME then the children don't receive WM_NCPAINT messages while
     // scrolling, which causes painting problems (http://b/issue?id=923945).
-    uint32 flags = RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME;
+    uint32_t flags = RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME;
 
     // If a plugin (like Google Earth or Java) has child windows that are hosted
     // in a different process, then RedrawWindow with UPDATENOW will
@@ -1093,7 +1097,7 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
 static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
                                      NPEvent* np_event) {
   np_event->lParam =
-      static_cast<uint32>(MAKELPARAM(event.windowX, event.windowY));
+      static_cast<uint32_t>(MAKELPARAM(event.windowX, event.windowY));
   np_event->wParam = 0;
 
   if (event.modifiers & WebInputEvent::ControlKey)

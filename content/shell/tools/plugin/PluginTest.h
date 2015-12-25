@@ -32,6 +32,8 @@
 
 #include <assert.h>
 #include <bindings/npfunctions.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 

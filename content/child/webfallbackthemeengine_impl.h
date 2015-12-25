@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
 #define CONTENT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebFallbackThemeEngine.h"
 

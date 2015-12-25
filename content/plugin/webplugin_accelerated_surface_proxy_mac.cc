@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <OpenGL/OpenGL.h>
+#include <stdint.h>
 
 #include "content/plugin/webplugin_accelerated_surface_proxy_mac.h"
 
@@ -53,7 +54,7 @@ void WebPluginAcceleratedSurfaceProxy::SetSize(const gfx::Size& size) {
   if (!surface_)
     return;
 
-  uint32 io_surface_id = surface_->SetSurfaceSize(size);
+  uint32_t io_surface_id = surface_->SetSurfaceSize(size);
   // If allocation fails for some reason, still inform the plugin proxy.
   plugin_proxy_->AcceleratedPluginAllocatedIOSurface(
       size.width(), size.height(), io_surface_id);

@@ -6,7 +6,9 @@
 #define CONTENT_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/shell/common/shell_content_client.h"
 

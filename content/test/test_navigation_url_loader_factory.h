@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_TEST_NAVIGATION_URL_LOADER_FACTORY_H_
 #define CONTENT_TEST_TEST_NAVIGATION_URL_LOADER_FACTORY_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/loader/navigation_url_loader_factory.h"
 

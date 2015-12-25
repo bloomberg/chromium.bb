@@ -4,6 +4,7 @@
 
 #include "content/shell/app/shell_content_main.h"
 
+#include "build/build_config.h"
 #include "content/public/app/content_main.h"
 #include "content/shell/app/shell_main_delegate.h"
 

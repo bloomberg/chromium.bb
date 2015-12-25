@@ -302,12 +302,12 @@ void TestWebContents::CreateNewWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {}
 
-void TestWebContents::CreateNewWidget(int32 render_process_id,
-                                      int32 route_id,
+void TestWebContents::CreateNewWidget(int32_t render_process_id,
+                                      int32_t route_id,
                                       blink::WebPopupType popup_type) {}
 
-void TestWebContents::CreateNewFullscreenWidget(int32 render_process_id,
-                                                int32 route_id) {}
+void TestWebContents::CreateNewFullscreenWidget(int32_t render_process_id,
+                                                int32_t route_id) {}
 
 void TestWebContents::ShowCreatedWindow(int route_id,
                                         WindowOpenDisposition disposition,

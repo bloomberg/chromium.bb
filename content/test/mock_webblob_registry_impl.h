@@ -5,6 +5,8 @@
 #ifndef CONTENT_TEST_MOCK_WEBBLOB_REGISTRY_IMPL_H_
 #define CONTENT_TEST_MOCK_WEBBLOB_REGISTRY_IMPL_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 

@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
 
 #include <windows.h>
+#include <string.h>
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"

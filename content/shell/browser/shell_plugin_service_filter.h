@@ -5,8 +5,8 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_PLUGIN_SERVICE_FILTER_H_
 #define CONTENT_SHELL_BROWSER_SHELL_PLUGIN_SERVICE_FILTER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/plugin_service_filter.h"
 
 namespace content {

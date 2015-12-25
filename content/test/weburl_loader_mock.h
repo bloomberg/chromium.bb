@@ -5,7 +5,7 @@
 #ifndef CONTENT_TEST_WEBURL_LOADER_MOCK_H_
 #define CONTENT_TEST_WEBURL_LOADER_MOCK_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"

@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/pepper_external_file_ref_backend.h"
 
+#include <string.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "content/browser/child_process_security_policy_impl.h"

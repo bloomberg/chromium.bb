@@ -32,14 +32,14 @@ bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 void DBMessageFilter::OnDatabaseUpdateSize(const std::string& origin_identifier,
                                            const base::string16& database_name,
-                                           int64 database_size) {
+                                           int64_t database_size) {
   blink::WebDatabase::updateDatabaseSize(
       WebString::fromUTF8(origin_identifier), database_name, database_size);
 }
 
 void DBMessageFilter::OnDatabaseUpdateSpaceAvailable(
     const std::string& origin_identifier,
-    int64 space_available) {
+    int64_t space_available) {
   blink::WebDatabase::updateSpaceAvailable(
       WebString::fromUTF8(origin_identifier), space_available);
 }

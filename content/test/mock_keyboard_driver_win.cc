@@ -4,8 +4,11 @@
 
 #include "content/test/mock_keyboard_driver_win.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <string.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "content/test/mock_keyboard.h"
 
 namespace content {

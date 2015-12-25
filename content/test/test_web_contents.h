@@ -5,6 +5,8 @@
 #ifndef CONTENT_TEST_TEST_WEB_CONTENTS_H_
 #define CONTENT_TEST_TEST_WEB_CONTENTS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -122,11 +124,11 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       int32_t main_frame_widget_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) override;
-  void CreateNewWidget(int32 render_process_id,
-                       int32 route_id,
+  void CreateNewWidget(int32_t render_process_id,
+                       int32_t route_id,
                        blink::WebPopupType popup_type) override;
-  void CreateNewFullscreenWidget(int32 render_process_id,
-                                 int32 route_id) override;
+  void CreateNewFullscreenWidget(int32_t render_process_id,
+                                 int32_t route_id) override;
   void ShowCreatedWindow(int route_id,
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,

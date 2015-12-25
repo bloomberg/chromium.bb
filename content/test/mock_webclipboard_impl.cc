@@ -4,10 +4,13 @@
 
 #include "content/test/mock_webclipboard_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/renderer/clipboard_utils.h"
 #include "third_party/WebKit/public/platform/WebCommon.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"

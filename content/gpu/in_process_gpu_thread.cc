@@ -5,6 +5,7 @@
 #include "content/gpu/in_process_gpu_thread.h"
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"

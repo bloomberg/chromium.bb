@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"

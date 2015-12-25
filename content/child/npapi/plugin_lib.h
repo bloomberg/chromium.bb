@@ -5,10 +5,12 @@
 #ifndef CONTENT_CHILD_NPAPI_PLUGIN_LIB_H_
 #define CONTENT_CHILD_NPAPI_PLUGIN_LIB_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
@@ -74,7 +76,7 @@ class CONTENT_EXPORT PluginLib : public base::RefCounted<PluginLib> {
   void NP_Shutdown(void);
 
   // NPAPI method to clear locally stored data (LSO's or "Flash cookies").
-  NPError NP_ClearSiteData(const char* site, uint64 flags, uint64 max_age);
+  NPError NP_ClearSiteData(const char* site, uint64_t flags, uint64_t max_age);
 
   // NPAPI method to get a NULL-terminated list of all sites under which data
   // is stored.

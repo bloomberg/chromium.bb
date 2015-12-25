@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 
+#include <string.h>
+
 #include <string>
 #include <utility>
 #include <vector>

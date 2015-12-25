@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "components/test_runner/test_info_extractor.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/url_constants.h"

@@ -7,6 +7,8 @@
 #include "base/base_paths.h"
 #include "base/base_switches.h"
 #include "base/logging.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_content_client_initializer.h"

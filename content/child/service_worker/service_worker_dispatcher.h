@@ -5,10 +5,13 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_H_
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/public/child/worker_thread.h"
@@ -79,12 +82,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       WebServiceWorkerRegistrationCallbacks* callbacks);
   // Corresponds to ServiceWorkerRegistration.update().
   void UpdateServiceWorker(int provider_id,
-                           int64 registration_id,
+                           int64_t registration_id,
                            WebServiceWorkerUpdateCallbacks* callbacks);
   // Corresponds to ServiceWorkerRegistration.unregister().
   void UnregisterServiceWorker(
       int provider_id,
-      int64 registration_id,
+      int64_t registration_id,
       WebServiceWorkerUnregistrationCallbacks* callbacks);
   // Corresponds to navigator.serviceWorker.getRegistration().
   void GetRegistration(int provider_id,

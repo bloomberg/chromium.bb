@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
 #if defined(OS_MACOSX)

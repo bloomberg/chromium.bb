@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_TEST_RENDER_FRAME_H_
 #define CONTENT_TEST_TEST_RENDER_FRAME_H_
 
+#include "base/macros.h"
 #include "content/renderer/render_frame_impl.h"
 
 namespace blink {

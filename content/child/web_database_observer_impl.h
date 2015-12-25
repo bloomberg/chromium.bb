@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_WEB_DATABASE_OBSERVER_IMPL_H_
 #define CONTENT_CHILD_WEB_DATABASE_OBSERVER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "storage/common/database/database_connections.h"

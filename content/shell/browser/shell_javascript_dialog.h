@@ -5,6 +5,8 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_JAVASCRIPT_DIALOG_H_
 #define CONTENT_SHELL_BROWSER_SHELL_JAVASCRIPT_DIALOG_H_
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
 #if defined(OS_MACOSX)

@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -188,7 +189,7 @@ gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
 }
 
 void TestRenderWidgetHostView::OnSwapCompositorFrame(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   did_swap_compositor_frame_ = true;
 }
@@ -215,8 +216,8 @@ TestRenderViewHost::TestRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
-    int32 routing_id,
-    int32 main_frame_routing_id,
+    int32_t routing_id,
+    int32_t main_frame_routing_id,
     bool swapped_out)
     : RenderViewHostImpl(instance,
                          delegate,
@@ -243,7 +244,7 @@ bool TestRenderViewHost::CreateTestRenderView(
     const base::string16& frame_name,
     int opener_frame_route_id,
     int proxy_route_id,
-    int32 max_page_id,
+    int32_t max_page_id,
     bool window_was_created_with_opener) {
   FrameReplicationState replicated_state;
   replicated_state.name = base::UTF16ToUTF8(frame_name);
@@ -254,7 +255,7 @@ bool TestRenderViewHost::CreateTestRenderView(
 bool TestRenderViewHost::CreateRenderView(
     int opener_frame_route_id,
     int proxy_route_id,
-    int32 max_page_id,
+    int32_t max_page_id,
     const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());

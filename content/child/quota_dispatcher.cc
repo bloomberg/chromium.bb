@@ -4,8 +4,8 @@
 
 #include "content/child/quota_dispatcher.h"
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/threading/thread_local.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
@@ -36,10 +36,10 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
       : callbacks_(callback) {}
   ~WebStorageQuotaDispatcherCallback() override {}
 
-  void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) override {
+  void DidQueryStorageUsageAndQuota(int64_t usage, int64_t quota) override {
     callbacks_.didQueryStorageUsageAndQuota(usage, quota);
   }
-  void DidGrantStorageQuota(int64 usage, int64 granted_quota) override {
+  void DidGrantStorageQuota(int64_t usage, int64_t granted_quota) override {
     callbacks_.didGrantStorageQuota(usage, granted_quota);
   }
   void DidFail(storage::QuotaStatusCode error) override {
@@ -116,12 +116,11 @@ void QuotaDispatcher::QueryStorageUsageAndQuota(
       request_id, origin_url, type));
 }
 
-void QuotaDispatcher::RequestStorageQuota(
-    int render_view_id,
-    const GURL& origin_url,
-    StorageType type,
-    uint64 requested_size,
-    Callback* callback) {
+void QuotaDispatcher::RequestStorageQuota(int render_view_id,
+                                          const GURL& origin_url,
+                                          StorageType type,
+                                          uint64_t requested_size,
+                                          Callback* callback) {
   DCHECK(callback);
   DCHECK(CurrentWorkerId() == 0);
   int request_id = quota_message_filter_->GenerateRequestID(CurrentWorkerId());
@@ -145,20 +144,18 @@ QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(
   return new WebStorageQuotaDispatcherCallback(callbacks);
 }
 
-void QuotaDispatcher::DidGrantStorageQuota(
-    int request_id,
-    int64 current_usage,
-    int64 granted_quota) {
+void QuotaDispatcher::DidGrantStorageQuota(int request_id,
+                                           int64_t current_usage,
+                                           int64_t granted_quota) {
   Callback* callback = pending_quota_callbacks_.Lookup(request_id);
   DCHECK(callback);
   callback->DidGrantStorageQuota(current_usage, granted_quota);
   pending_quota_callbacks_.Remove(request_id);
 }
 
-void QuotaDispatcher::DidQueryStorageUsageAndQuota(
-    int request_id,
-    int64 current_usage,
-    int64 current_quota) {
+void QuotaDispatcher::DidQueryStorageUsageAndQuota(int request_id,
+                                                   int64_t current_usage,
+                                                   int64_t current_quota) {
   Callback* callback = pending_quota_callbacks_.Lookup(request_id);
   DCHECK(callback);
   callback->DidQueryStorageUsageAndQuota(current_usage, current_quota);

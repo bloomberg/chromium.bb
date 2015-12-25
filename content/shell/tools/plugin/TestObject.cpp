@@ -29,10 +29,11 @@
 
 #include "content/shell/tools/plugin/test_object.h"
 
-#include "PluginObject.h"
-
-#include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "PluginObject.h"
 
 static bool testEnumerate(NPObject* npobj,
                           NPIdentifier** value,

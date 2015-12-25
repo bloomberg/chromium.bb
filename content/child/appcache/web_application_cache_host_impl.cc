@@ -4,6 +4,8 @@
 
 #include "content/child/appcache/web_application_cache_host_impl.h"
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/strings/string_util.h"

@@ -4,6 +4,8 @@
 
 #include "content/renderer/vr/vr_type_converters.h"
 
+#include <string.h>
+
 #include <algorithm>
 
 using content::VRVector3Ptr;

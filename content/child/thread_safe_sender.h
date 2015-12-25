@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_THREAD_SAFE_SENDER_H_
 #define CONTENT_CHILD_THREAD_SAFE_SENDER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"

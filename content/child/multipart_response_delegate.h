@@ -51,7 +51,11 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
@@ -88,11 +92,10 @@ class CONTENT_EXPORT MultipartResponseDelegate {
   // Returns the lower and higher content ranges from an individual multipart
   // in a multipart response.
   // Returns true on success.
-  static bool ReadContentRanges(
-      const blink::WebURLResponse& response,
-      int64* content_range_lower_bound,
-      int64* content_range_upper_bound,
-      int64* content_range_instance_size);
+  static bool ReadContentRanges(const blink::WebURLResponse& response,
+                                int64_t* content_range_lower_bound,
+                                int64_t* content_range_upper_bound,
+                                int64_t* content_range_instance_size);
 
  private:
   friend class MultipartResponseDelegateTester;  // For unittests.

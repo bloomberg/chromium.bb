@@ -15,6 +15,7 @@
 #include <mferror.h>
 #include <ntverp.h>
 #include <stddef.h>
+#include <string.h>
 #include <wmcodecdsp.h>
 
 #include "base/base_paths_win.h"

@@ -5,10 +5,7 @@
 #include "content/gpu/gpu_watchdog_thread.h"
 
 #include <errno.h>
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,12 +13,17 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace content {
 namespace {
@@ -396,7 +398,7 @@ base::TimeDelta GpuWatchdogThread::GetWatchedThreadTime() {
   // returns to user level or where user level code
   // calls into kernel level repeatedly, giving up its quanta before it is
   // tracked, for example a loop that repeatedly Sleeps.
-  return base::TimeDelta::FromMilliseconds(static_cast<int64>(
+  return base::TimeDelta::FromMilliseconds(static_cast<int64_t>(
       (user_time64.QuadPart + kernel_time64.QuadPart) / 10000));
 }
 #endif

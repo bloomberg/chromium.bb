@@ -4,6 +4,8 @@
 
 #include "content/child/web_url_loader_impl.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
@@ -14,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/mime_util/mime_util.h"
 #include "components/scheduler/child/web_task_runner_impl.h"
 #include "content/child/child_thread_impl.h"
@@ -271,7 +274,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   void SetWebTaskRunner(scoped_ptr<blink::WebTaskRunner> task_runner);
 
   // RequestPeer methods:
-  void OnUploadProgress(uint64 position, uint64 size) override;
+  void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const ResourceResponseInfo& info) override;
   void OnReceivedResponse(const ResourceResponseInfo& info) override;
@@ -283,7 +286,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
                           bool stale_copy_in_cache,
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
-                          int64 total_transfer_size) override;
+                          int64_t total_transfer_size) override;
   void OnReceivedCompletedResponse(const ResourceResponseInfo& info,
                                    scoped_ptr<ReceivedData> data,
                                    int error_code,
@@ -291,7 +294,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
                                    bool stale_copy_in_cache,
                                    const std::string& security_info,
                                    const base::TimeTicks& completion_time,
-                                   int64 total_transfer_size) override;
+                                   int64_t total_transfer_size) override;
 
  private:
   friend class base::RefCounted<Context>;
@@ -520,7 +523,8 @@ void WebURLLoaderImpl::Context::SetWebTaskRunner(
   web_task_runner_ = web_task_runner.Pass();
 }
 
-void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
+void WebURLLoaderImpl::Context::OnUploadProgress(uint64_t position,
+                                                 uint64_t size) {
   if (client_)
     client_->didSendData(loader_, position, size);
 }
@@ -713,7 +717,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time,
-    int64 total_transfer_size) {
+    int64_t total_transfer_size) {
   // The WebURLLoaderImpl may be deleted in any of the calls to the client or
   // the delegates below (As they also may call in to the client).  Keep |this|
   // alive in that case, to avoid a crash.  If that happens, the request will be
@@ -754,7 +758,7 @@ void WebURLLoaderImpl::Context::OnReceivedCompletedResponse(
     bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time,
-    int64 total_transfer_size) {
+    int64_t total_transfer_size) {
   scoped_refptr<Context> protect(this);
 
   OnReceivedResponse(info);

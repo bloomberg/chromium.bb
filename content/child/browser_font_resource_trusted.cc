@@ -4,6 +4,9 @@
 
 #include "content/child/browser_font_resource_trusted.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/web_preferences.h"

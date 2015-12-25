@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/test_runner/test_preferences.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"

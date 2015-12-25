@@ -25,7 +25,7 @@ void AppCacheBackendProxy::SetSpawningHostId(int host_id,
 void AppCacheBackendProxy::SelectCache(
     int host_id,
     const GURL& document_url,
-    const int64 cache_document_was_loaded_from,
+    const int64_t cache_document_was_loaded_from,
     const GURL& manifest_url) {
   sender_->Send(new AppCacheHostMsg_SelectCache(
                                     host_id, document_url,
@@ -40,15 +40,16 @@ void AppCacheBackendProxy::SelectCacheForWorker(
                                     parent_host_id));
 }
 
-void AppCacheBackendProxy::SelectCacheForSharedWorker(
-    int host_id, int64 appcache_id) {
+void AppCacheBackendProxy::SelectCacheForSharedWorker(int host_id,
+                                                      int64_t appcache_id) {
   sender_->Send(new AppCacheHostMsg_SelectCacheForSharedWorker(
                                     host_id, appcache_id));
 }
 
 void AppCacheBackendProxy::MarkAsForeignEntry(
-    int host_id, const GURL& document_url,
-    int64 cache_document_was_loaded_from) {
+    int host_id,
+    const GURL& document_url,
+    int64_t cache_document_was_loaded_from) {
   sender_->Send(new AppCacheHostMsg_MarkAsForeignEntry(
                                     host_id, document_url,
                                     cache_document_was_loaded_from));

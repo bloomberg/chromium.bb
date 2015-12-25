@@ -4,10 +4,13 @@
 
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
@@ -31,13 +34,11 @@ std::string ConvertPluginDataPath(const base::FilePath& plugin_data_path) {
 struct GetPermissionSettingsContext {
   GetPermissionSettingsContext(
       const base::WeakPtr<BrokerProcessDispatcher> in_dispatcher,
-      uint32 in_request_id)
-      : dispatcher(in_dispatcher),
-        request_id(in_request_id) {
-  }
+      uint32_t in_request_id)
+      : dispatcher(in_dispatcher), request_id(in_request_id) {}
 
   base::WeakPtr<BrokerProcessDispatcher> dispatcher;
-  uint32 request_id;
+  uint32_t request_id;
 };
 
 void GetPermissionSettingsCallback(
@@ -122,7 +123,7 @@ bool BrokerProcessDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void BrokerProcessDispatcher::OnGetPermissionSettingsCompleted(
-    uint32 request_id,
+    uint32_t request_id,
     bool success,
     PP_Flash_BrowserOperations_Permission default_permission,
     const ppapi::FlashSiteSettings& sites) {
@@ -131,7 +132,7 @@ void BrokerProcessDispatcher::OnGetPermissionSettingsCompleted(
 }
 
 void BrokerProcessDispatcher::OnGetSitesWithData(
-    uint32 request_id,
+    uint32_t request_id,
     const base::FilePath& plugin_data_path) {
   std::vector<std::string> sites;
   GetSitesWithData(plugin_data_path, &sites);
@@ -139,24 +140,24 @@ void BrokerProcessDispatcher::OnGetSitesWithData(
 }
 
 void BrokerProcessDispatcher::OnClearSiteData(
-    uint32 request_id,
+    uint32_t request_id,
     const base::FilePath& plugin_data_path,
     const std::string& site,
-    uint64 flags,
-    uint64 max_age) {
+    uint64_t flags,
+    uint64_t max_age) {
   Send(new PpapiHostMsg_ClearSiteDataResult(
       request_id, ClearSiteData(plugin_data_path, site, flags, max_age)));
 }
 
 void BrokerProcessDispatcher::OnDeauthorizeContentLicenses(
-    uint32 request_id,
+    uint32_t request_id,
     const base::FilePath& plugin_data_path) {
   Send(new PpapiHostMsg_DeauthorizeContentLicensesResult(
       request_id, DeauthorizeContentLicenses(plugin_data_path)));
 }
 
 void BrokerProcessDispatcher::OnGetPermissionSettings(
-    uint32 request_id,
+    uint32_t request_id,
     const base::FilePath& plugin_data_path,
     PP_Flash_BrowserOperations_SettingType setting_type) {
   if (flash_browser_operations_1_3_) {
@@ -186,7 +187,7 @@ void BrokerProcessDispatcher::OnGetPermissionSettings(
 }
 
 void BrokerProcessDispatcher::OnSetDefaultPermission(
-    uint32 request_id,
+    uint32_t request_id,
     const base::FilePath& plugin_data_path,
     PP_Flash_BrowserOperations_SettingType setting_type,
     PP_Flash_BrowserOperations_Permission permission,
@@ -198,7 +199,7 @@ void BrokerProcessDispatcher::OnSetDefaultPermission(
 }
 
 void BrokerProcessDispatcher::OnSetSitePermission(
-    uint32 request_id,
+    uint32_t request_id,
     const base::FilePath& plugin_data_path,
     PP_Flash_BrowserOperations_SettingType setting_type,
     const ppapi::FlashSiteSettings& sites) {
@@ -226,8 +227,8 @@ void BrokerProcessDispatcher::GetSitesWithData(
 bool BrokerProcessDispatcher::ClearSiteData(
     const base::FilePath& plugin_data_path,
     const std::string& site,
-    uint64 flags,
-    uint64 max_age) {
+    uint64_t flags,
+    uint64_t max_age) {
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
   if (flash_browser_operations_1_3_) {
     flash_browser_operations_1_3_->ClearSiteData(

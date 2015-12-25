@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "content/child/npapi/npobject_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"

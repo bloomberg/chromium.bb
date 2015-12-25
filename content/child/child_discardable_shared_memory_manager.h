@@ -5,6 +5,9 @@
 #ifndef CONTENT_CHILD_CHILD_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
 #define CONTENT_CHILD_CHILD_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"

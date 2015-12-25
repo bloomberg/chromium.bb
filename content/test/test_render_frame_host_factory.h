@@ -5,8 +5,10 @@
 #ifndef CONTENT_TEST_TEST_RENDER_FRAME_HOST_FACTORY_H_
 #define CONTENT_TEST_TEST_RENDER_FRAME_HOST_FACTORY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 
@@ -31,8 +33,8 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
       RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
-      int32 routing_id,
-      int32 widget_routing_id,
+      int32_t routing_id,
+      int32_t widget_routing_id,
       int flags) override;
 
  private:

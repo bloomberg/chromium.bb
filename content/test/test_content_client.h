@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/common/content_client.h"
 #include "ui/base/resource/data_pack.h"
 

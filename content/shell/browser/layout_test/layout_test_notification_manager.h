@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"

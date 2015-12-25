@@ -4,6 +4,8 @@
 
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>

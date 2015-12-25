@@ -5,8 +5,12 @@
 #ifndef CONTENT_CHILD_SHARED_MEMORY_RECEIVED_DATA_FACTORY_H_
 #define CONTENT_CHILD_SHARED_MEMORY_RECEIVED_DATA_FACTORY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

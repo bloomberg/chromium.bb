@@ -4,6 +4,8 @@
 
 #include "content/child/npapi/webplugin_delegate_impl.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -12,6 +14,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/plugin_lib.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"

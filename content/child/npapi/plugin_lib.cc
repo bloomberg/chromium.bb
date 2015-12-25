@@ -4,12 +4,16 @@
 
 #include "content/child/npapi/plugin_lib.h"
 
+#include <stddef.h>
+#include <string.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/common/plugin_list.h"
@@ -125,8 +129,8 @@ void PluginLib::NP_Shutdown(void) {
 }
 
 NPError PluginLib::NP_ClearSiteData(const char* site,
-                                    uint64 flags,
-                                    uint64 max_age) {
+                                    uint64_t flags,
+                                    uint64_t max_age) {
   DCHECK(initialized_);
   if (plugin_funcs_.clearsitedata)
     return plugin_funcs_.clearsitedata(site, flags, max_age);

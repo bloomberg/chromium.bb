@@ -499,9 +499,9 @@ void WebPluginProxy::AcceleratedPluginEnabledRendering() {
   Send(new PluginHostMsg_AcceleratedPluginEnabledRendering(route_id_));
 }
 
-void WebPluginProxy::AcceleratedPluginAllocatedIOSurface(int32 width,
-                                                         int32 height,
-                                                         uint32 surface_id) {
+void WebPluginProxy::AcceleratedPluginAllocatedIOSurface(int32_t width,
+                                                         int32_t height,
+                                                         uint32_t surface_id) {
   Send(new PluginHostMsg_AcceleratedPluginAllocatedIOSurface(
       route_id_, width, height, surface_id));
 }

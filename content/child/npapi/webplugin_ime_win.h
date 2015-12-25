@@ -5,10 +5,11 @@
 #ifndef CONTENT_CHILD_NPAPI_WEBPLUGIN_IME_WIN_H_
 #define CONTENT_CHILD_NPAPI_WEBPLUGIN_IME_WIN_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/geometry/rect.h"
@@ -149,10 +150,10 @@ class WebPluginIMEWin {
   std::string composition_attributes_;
 
   // The return value for GCS_COMPCLAUSE.
-  std::vector<uint32> composition_clauses_;
+  std::vector<uint32_t> composition_clauses_;
 
   // The return value for GCS_RESULTCLAUSE.
-  uint32 result_clauses_[2];
+  uint32_t result_clauses_[2];
 
   // The return value for GCS_CURSORPOS.
   int cursor_position_;

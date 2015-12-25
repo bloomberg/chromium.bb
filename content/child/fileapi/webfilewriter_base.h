@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_FILEAPI_WEBFILEWRITER_BASE_H_
 #define CONTENT_CHILD_FILEAPI_WEBFILEWRITER_BASE_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebFileWriter.h"
@@ -32,17 +34,17 @@ class CONTENT_EXPORT WebFileWriterBase
   // This calls DidSucceed() or DidFail() based on the value of |error_code|.
   void DidFinish(base::File::Error error_code);
 
-  void DidWrite(int64 bytes, bool complete);
+  void DidWrite(int64_t bytes, bool complete);
   void DidSucceed();
   void DidFail(base::File::Error error_code);
 
   // Derived classes must provide these methods to asynchronously perform
   // the requested operation, and they must call the appropiate DidSomething
   // method upon completion and as progress is made in the Write case.
-  virtual void DoTruncate(const GURL& path, int64 offset) = 0;
+  virtual void DoTruncate(const GURL& path, int64_t offset) = 0;
   virtual void DoWrite(const GURL& path,
                        const std::string& blob_id,
-                       int64 offset) = 0;
+                       int64_t offset) = 0;
   virtual void DoCancel() = 0;
 
  private:

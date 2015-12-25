@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "content/child/worker_thread_message_filter.h"
 #include "content/common/content_export.h"
 

@@ -45,8 +45,8 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
                                          RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
-                                         int32 routing_id,
-                                         int32 widget_routing_id,
+                                         int32_t routing_id,
+                                         int32_t widget_routing_id,
                                          int flags)
     : RenderFrameHostImpl(site_instance,
                           render_view_host,
@@ -395,7 +395,7 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   url_loader->CallOnResponseStarted(response, MakeEmptyStream());
 }
 
-int32 TestRenderFrameHost::ComputeNextPageID() {
+int32_t TestRenderFrameHost::ComputeNextPageID() {
   const NavigationEntryImpl* entry = static_cast<NavigationEntryImpl*>(
       frame_tree_node()->navigator()->GetController()->GetPendingEntry());
   DCHECK(!(entry && entry->site_instance()) ||

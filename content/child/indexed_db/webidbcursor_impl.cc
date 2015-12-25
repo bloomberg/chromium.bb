@@ -4,6 +4,8 @@
 
 #include "content/child/indexed_db/webidbcursor_impl.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -21,8 +23,8 @@ using blink::WebIDBValue;
 
 namespace content {
 
-WebIDBCursorImpl::WebIDBCursorImpl(int32 ipc_cursor_id,
-                                   int64 transaction_id,
+WebIDBCursorImpl::WebIDBCursorImpl(int32_t ipc_cursor_id,
+                                   int64_t transaction_id,
                                    ThreadSafeSender* thread_safe_sender)
     : ipc_cursor_id_(ipc_cursor_id),
       transaction_id_(transaction_id),

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "base/threading/simple_thread.h"
 #include "content/public/common/child_process_host.h"

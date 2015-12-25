@@ -5,9 +5,12 @@
 #ifndef CONTENT_CHILD_RESOURCE_SCHEDULING_FILTER_H_
 #define CONTENT_CHILD_RESOURCE_SCHEDULING_FILTER_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
@@ -32,7 +35,7 @@ class CONTENT_EXPORT ResourceSchedulingFilter : public IPC::MessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   bool GetSupportedMessageClasses(
-      std::vector<uint32>* supported_message_classes) const override;
+      std::vector<uint32_t>* supported_message_classes) const override;
 
   // Sets the task runner associated with request messages with |id|.
   void SetRequestIdTaskRunner(

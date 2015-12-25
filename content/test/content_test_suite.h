@@ -6,6 +6,8 @@
 #define CONTENT_TEST_CONTENT_TEST_SUITE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/test/content_test_suite_base.h"
 
 #if defined(OS_WIN)

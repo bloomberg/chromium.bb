@@ -10,6 +10,8 @@
 #ifndef CONTENT_TEST_MOCK_WEBCLIPBOARD_IMPL_H_
 #define CONTENT_TEST_MOCK_WEBCLIPBOARD_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/strings/nullable_string16.h"

@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/rtc_video_encoder.h"
 
+#include <string.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"

@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_GEOFENCING_WEB_GEOFENCING_PROVIDER_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGeofencingProvider.h"

@@ -5,7 +5,7 @@
 #ifndef CONTENT_CHILD_CHILD_PROCESS_H_
 #define CONTENT_CHILD_CHILD_PROCESS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"

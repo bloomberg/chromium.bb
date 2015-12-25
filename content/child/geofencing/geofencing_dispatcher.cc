@@ -4,6 +4,9 @@
 
 #include "content/child/geofencing/geofencing_dispatcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -69,7 +72,7 @@ void GeofencingDispatcher::RegisterRegion(
   int request_id = region_registration_requests_.Add(callbacks);
   // TODO(mek): Immediately reject requests lacking a service worker
   // registration, without bouncing through browser process.
-  int64 serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
+  int64_t serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
   if (service_worker_registration) {
     serviceworker_registration_id =
         static_cast<WebServiceWorkerRegistrationImpl*>(
@@ -90,7 +93,7 @@ void GeofencingDispatcher::UnregisterRegion(
   int request_id = region_unregistration_requests_.Add(callbacks);
   // TODO(mek): Immediately reject requests lacking a service worker
   // registration, without bouncing through browser process.
-  int64 serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
+  int64_t serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
   if (service_worker_registration) {
     serviceworker_registration_id =
         static_cast<WebServiceWorkerRegistrationImpl*>(
@@ -109,7 +112,7 @@ void GeofencingDispatcher::GetRegisteredRegions(
   int request_id = get_registered_regions_requests_.Add(callbacks);
   // TODO(mek): Immediately reject requests lacking a service worker
   // registration, without bouncing through browser process.
-  int64 serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
+  int64_t serviceworker_registration_id = kInvalidServiceWorkerRegistrationId;
   if (service_worker_registration) {
     serviceworker_registration_id =
         static_cast<WebServiceWorkerRegistrationImpl*>(

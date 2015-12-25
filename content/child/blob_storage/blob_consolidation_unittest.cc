@@ -4,6 +4,8 @@
 
 #include "content/child/blob_storage/blob_consolidation.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

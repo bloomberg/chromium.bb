@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_sender.h"
 

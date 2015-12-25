@@ -5,6 +5,7 @@
 #include "content/test/web_contents_observer_sanity_checker.h"
 
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/navigation_handle.h"

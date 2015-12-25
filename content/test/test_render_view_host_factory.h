@@ -5,8 +5,10 @@
 #ifndef CONTENT_TEST_TEST_RENDER_VIEW_HOST_FACTORY_H_
 #define CONTENT_TEST_TEST_RENDER_VIEW_HOST_FACTORY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 
 namespace content {
@@ -31,8 +33,8 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,
-      int32 routing_id,
-      int32 main_frame_routing_id,
+      int32_t routing_id,
+      int32_t main_frame_routing_id,
       bool swapped_out) override;
 
  private:

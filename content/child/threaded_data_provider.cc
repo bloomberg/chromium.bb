@@ -4,6 +4,8 @@
 
 #include "content/child/threaded_data_provider.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"

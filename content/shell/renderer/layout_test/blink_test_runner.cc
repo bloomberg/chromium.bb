@@ -4,6 +4,8 @@
 
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <clocale>
 #include <cmath>
@@ -14,6 +16,7 @@
 #include "base/debug/debugger.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -23,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/gamepad_controller.h"

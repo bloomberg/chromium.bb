@@ -8,6 +8,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "blink/public/resources/grit/blink_image_resources.h"
+#include "build/build_config.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/content_switches.h"

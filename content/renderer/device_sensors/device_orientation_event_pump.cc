@@ -4,6 +4,8 @@
 
 #include "device_orientation_event_pump.h"
 
+#include <string.h>
+
 #include <cmath>
 
 #include "content/common/device_sensors/device_orientation_messages.h"

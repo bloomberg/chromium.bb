@@ -4,6 +4,8 @@
 
 #include "content/child/webmessageportchannel_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "content/child/child_process.h"

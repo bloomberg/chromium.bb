@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_MOCK_RENDER_PROCESS_H_
 #define CONTENT_TEST_MOCK_RENDER_PROCESS_H_
 
+#include "base/macros.h"
 #include "content/renderer/render_process.h"
 
 namespace content {

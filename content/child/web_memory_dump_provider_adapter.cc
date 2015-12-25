@@ -4,6 +4,8 @@
 
 #include "content/child/web_memory_dump_provider_adapter.h"
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"

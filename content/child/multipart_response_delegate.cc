@@ -5,6 +5,7 @@
 #include "content/child/multipart_response_delegate.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -315,10 +316,9 @@ bool MultipartResponseDelegate::ReadMultipartBoundary(
 
 bool MultipartResponseDelegate::ReadContentRanges(
     const WebURLResponse& response,
-    int64* content_range_lower_bound,
-    int64* content_range_upper_bound,
-    int64* content_range_instance_size) {
-
+    int64_t* content_range_lower_bound,
+    int64_t* content_range_upper_bound,
+    int64_t* content_range_instance_size) {
   std::string content_range = response.httpHeaderField("Content-Range").utf8();
   if (content_range.empty()) {
     content_range = response.httpHeaderField("Range").utf8();

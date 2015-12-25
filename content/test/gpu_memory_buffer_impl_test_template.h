@@ -8,6 +8,9 @@
 #ifndef CONTENT_TEST_GPU_MEMORY_BUFFER_IMPL_TEST_TEMPLATE_H_
 #define CONTENT_TEST_GPU_MEMORY_BUFFER_IMPL_TEST_TEMPLATE_H_
 
+#include <stddef.h>
+#include <string.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 

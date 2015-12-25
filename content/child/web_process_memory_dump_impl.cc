@@ -4,6 +4,8 @@
 
 #include "content/child/web_process_memory_dump_impl.h"
 
+#include <stddef.h>
+
 #include "base/memory/discardable_memory.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "content/child/web_memory_allocator_dump_impl.h"

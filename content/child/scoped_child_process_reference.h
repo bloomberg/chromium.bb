@@ -5,7 +5,7 @@
 #ifndef CONTENT_CHILD_SCOPED_CHILD_PROCESS_REFERENCE_H_
 #define CONTENT_CHILD_SCOPED_CHILD_PROCESS_REFERENCE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 class TimeDelta;
@@ -29,6 +29,7 @@ class ScopedChildProcessReference {
 
  private:
   bool has_reference_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedChildProcessReference);
 };
 

@@ -7,9 +7,12 @@
 #ifndef CONTENT_CHILD_NPAPI_PLUGIN_HOST_H_
 #define CONTENT_CHILD_NPAPI_PLUGIN_HOST_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/nphostapi.h"
@@ -36,8 +39,8 @@ class PluginHost : public base::RefCounted<PluginHost> {
   // to the stream.  NPAPI post data include headers + data combined.
   // This function parses it out and adds it to the stream in a WebKit
   // style.
-  static bool SetPostData(const char *buf,
-                          uint32 length,
+  static bool SetPostData(const char* buf,
+                          uint32_t length,
                           std::vector<std::string>* names,
                           std::vector<std::string>* values,
                           std::vector<char>* body);

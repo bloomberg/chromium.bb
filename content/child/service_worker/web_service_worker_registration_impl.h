@@ -5,9 +5,12 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_WEB_SERVICE_WORKER_REGISTRATION_IMPL_H_
 #define CONTENT_CHILD_SERVICE_WORKER_WEB_SERVICE_WORKER_REGISTRATION_IMPL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
@@ -52,7 +55,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   void unregister(blink::WebServiceWorkerProvider* provider,
                   WebServiceWorkerUnregistrationCallbacks* callbacks) override;
 
-  int64 registration_id() const;
+  int64_t registration_id() const;
 
   using WebServiceWorkerRegistrationHandle =
       blink::WebServiceWorkerRegistration::Handle;

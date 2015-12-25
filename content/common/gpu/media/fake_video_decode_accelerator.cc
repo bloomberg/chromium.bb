@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/fake_video_decode_accelerator.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include "base/bind.h"
 #include "base/location.h"

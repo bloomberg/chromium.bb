@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/vaapi_wrapper.h"
 
 #include <dlfcn.h>
+#include <string.h>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"

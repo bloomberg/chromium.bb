@@ -6,6 +6,7 @@
 #define CONTENT_TEST_FAKE_PLUGIN_SERVICE_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/plugin_service.h"
 
 namespace content {

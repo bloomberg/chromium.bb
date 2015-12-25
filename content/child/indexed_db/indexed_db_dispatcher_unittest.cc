@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -81,9 +85,9 @@ TEST_F(IndexedDBDispatcherTest, ValueSizeTest) {
   const std::vector<char> data(kMaxValueSizeForTesting + 1);
   const WebData value(&data.front(), data.size());
   const WebVector<WebBlobInfo> web_blob_info;
-  const int32 ipc_dummy_id = -1;
-  const int64 transaction_id = 1;
-  const int64 object_store_id = 2;
+  const int32_t ipc_dummy_id = -1;
+  const int64_t transaction_id = 1;
+  const int64_t object_store_id = 2;
 
   StrictMock<MockWebIDBCallbacks> callbacks;
   EXPECT_CALL(callbacks, onError(_)).Times(1);
@@ -115,9 +119,9 @@ TEST_F(IndexedDBDispatcherTest, KeyAndValueSizeTest) {
   const IndexedDBKey key(
       base::string16(kKeySize / sizeof(base::string16::value_type), 'x'));
 
-  const int32 ipc_dummy_id = -1;
-  const int64 transaction_id = 1;
-  const int64 object_store_id = 2;
+  const int32_t ipc_dummy_id = -1;
+  const int64_t transaction_id = 1;
+  const int64_t object_store_id = 2;
 
   StrictMock<MockWebIDBCallbacks> callbacks;
   EXPECT_CALL(callbacks, onError(_)).Times(1);
@@ -137,10 +141,10 @@ TEST_F(IndexedDBDispatcherTest, KeyAndValueSizeTest) {
 }
 
 TEST_F(IndexedDBDispatcherTest, CursorTransactionId) {
-  const int32 ipc_database_id = -1;
-  const int64 transaction_id = 1234;
-  const int64 object_store_id = 2;
-  const int32 index_id = 3;
+  const int32_t ipc_database_id = -1;
+  const int64_t transaction_id = 1234;
+  const int64_t object_store_id = 2;
+  const int32_t index_id = 3;
   const blink::WebIDBCursorDirection direction =
       blink::WebIDBCursorDirectionNext;
   const bool key_only = false;
@@ -171,7 +175,8 @@ TEST_F(IndexedDBDispatcherTest, CursorTransactionId) {
     EXPECT_EQ(1UL, dispatcher.cursor_transaction_ids_.size());
     EXPECT_FALSE(cursor.get());
 
-    int32 ipc_callbacks_id = dispatcher.cursor_transaction_ids_.begin()->first;
+    int32_t ipc_callbacks_id =
+        dispatcher.cursor_transaction_ids_.begin()->first;
 
     IndexedDBMsg_CallbacksSuccessIDBCursor_Params params;
     params.ipc_thread_id = dispatcher.CurrentWorkerId();
@@ -209,7 +214,8 @@ TEST_F(IndexedDBDispatcherTest, CursorTransactionId) {
     // Verify that the transaction id was captured.
     EXPECT_EQ(1UL, dispatcher.cursor_transaction_ids_.size());
 
-    int32 ipc_callbacks_id = dispatcher.cursor_transaction_ids_.begin()->first;
+    int32_t ipc_callbacks_id =
+        dispatcher.cursor_transaction_ids_.begin()->first;
 
     // Now simululate a "null cursor" response.
     IndexedDBMsg_CallbacksSuccessValue_Params params;
@@ -226,8 +232,8 @@ namespace {
 
 class MockCursor : public WebIDBCursorImpl {
  public:
-  MockCursor(int32 ipc_cursor_id,
-             int64 transaction_id,
+  MockCursor(int32_t ipc_cursor_id,
+             int64_t transaction_id,
              ThreadSafeSender* thread_safe_sender)
       : WebIDBCursorImpl(ipc_cursor_id, transaction_id, thread_safe_sender),
         reset_count_(0) {}
@@ -249,9 +255,9 @@ TEST_F(IndexedDBDispatcherTest, CursorReset) {
   scoped_ptr<WebIDBCursor> cursor;
   MockDispatcher dispatcher(thread_safe_sender_.get());
 
-  const int32 ipc_database_id = 0;
-  const int32 object_store_id = 0;
-  const int32 index_id = 0;
+  const int32_t ipc_database_id = 0;
+  const int32_t object_store_id = 0;
+  const int32_t index_id = 0;
   const bool key_only = false;
   const int cursor1_ipc_id = 1;
   const int cursor2_ipc_id = 2;

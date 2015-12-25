@@ -5,11 +5,13 @@
 #ifndef CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_
 #define CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/scoped_native_library.h"
@@ -70,7 +72,7 @@ class PpapiThread : public ChildThreadImpl,
   // ChildThread overrides.
   bool Send(IPC::Message* msg) override;
   bool OnControlMessageReceived(const IPC::Message& msg) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
 
   // PluginDispatcher::PluginDelegate implementation.
   std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
@@ -83,8 +85,8 @@ class PpapiThread : public ChildThreadImpl,
   base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
       const base::SharedMemoryHandle& handle,
       base::ProcessId remote_pid) override;
-  uint32 Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) override;
-  void Unregister(uint32 plugin_dispatcher_id) override;
+  uint32_t Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) override;
+  void Unregister(uint32_t plugin_dispatcher_id) override;
 
   // PluginProxyDelegate.
   // SendToBrowser() is intended to be safe to use on another thread so
@@ -157,8 +159,8 @@ class PpapiThread : public ChildThreadImpl,
   std::set<PP_Instance> globally_seen_instance_ids_;
 
   // The PluginDispatcher instances contained in the map are not owned by it.
-  std::map<uint32, ppapi::proxy::PluginDispatcher*> plugin_dispatchers_;
-  uint32 next_plugin_dispatcher_id_;
+  std::map<uint32_t, ppapi::proxy::PluginDispatcher*> plugin_dispatchers_;
+  uint32_t next_plugin_dispatcher_id_;
 
   // The BlinkPlatformImpl implementation.
   scoped_ptr<PpapiBlinkPlatformImpl> blink_platform_impl_;

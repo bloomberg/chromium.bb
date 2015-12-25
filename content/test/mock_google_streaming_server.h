@@ -6,6 +6,7 @@
 #define CONTENT_TEST_MOCK_GOOGLE_STREAMING_SERVER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 

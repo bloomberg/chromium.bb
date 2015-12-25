@@ -4,6 +4,8 @@
 
 #include "content/child/notifications/notification_data_conversions.h"
 
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"

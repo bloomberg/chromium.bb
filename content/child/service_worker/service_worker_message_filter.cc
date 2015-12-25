@@ -4,6 +4,8 @@
 
 #include "content/child/service_worker/service_worker_message_filter.h"
 
+#include <stddef.h>
+
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"

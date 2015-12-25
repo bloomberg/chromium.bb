@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/task_runner.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"

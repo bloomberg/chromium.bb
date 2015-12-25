@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
+#include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/metrics/histogram.h"

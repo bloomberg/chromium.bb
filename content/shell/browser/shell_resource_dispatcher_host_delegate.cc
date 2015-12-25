@@ -5,6 +5,7 @@
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/shell/browser/shell_login_dialog.h"
 #include "content/shell/common/shell_switches.h"
 

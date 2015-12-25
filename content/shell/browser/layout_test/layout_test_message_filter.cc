@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/layout_test/layout_test_message_filter.h"
 
+#include <stddef.h>
+
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/child_process_security_policy.h"

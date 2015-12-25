@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 
 namespace content {

@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_REQUEST_EXTRA_DATA_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"

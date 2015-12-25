@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 
+#include <string.h>
+
 #include <vector>
 
 #include "base/callback_helpers.h"

@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_BROWSER_CONTEXT_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/shell/browser/shell_browser_context.h"
 
 namespace net {

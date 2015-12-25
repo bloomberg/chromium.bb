@@ -4,8 +4,10 @@
 
 #include "content/child/notifications/notification_data_conversions.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/platform_notification_data.h"
 #include "testing/gmock/include/gmock/gmock.h"

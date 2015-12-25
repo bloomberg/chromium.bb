@@ -4,6 +4,8 @@
 
 #include "content/child/shared_memory_received_data_factory.h"
 
+#include <stddef.h>
+
 #include "base/tuple.h"
 #include "content/common/resource_messages.h"
 #include "ipc/ipc_message.h"

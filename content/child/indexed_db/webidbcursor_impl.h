@@ -5,10 +5,11 @@
 #ifndef CONTENT_CHILD_INDEXED_DB_WEBIDBCURSOR_IMPL_H_
 #define CONTENT_CHILD_INDEXED_DB_WEBIDBCURSOR_IMPL_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -25,8 +26,8 @@ class ThreadSafeSender;
 class CONTENT_EXPORT WebIDBCursorImpl
     : NON_EXPORTED_BASE(public blink::WebIDBCursor) {
  public:
-  WebIDBCursorImpl(int32 ipc_cursor_id,
-                   int64 transaction_id,
+  WebIDBCursorImpl(int32_t ipc_cursor_id,
+                   int64_t transaction_id,
                    ThreadSafeSender* thread_safe_sender);
   ~WebIDBCursorImpl() override;
 
@@ -48,7 +49,7 @@ class CONTENT_EXPORT WebIDBCursorImpl
   // This method is virtual so it can be overridden in unit tests.
   virtual void ResetPrefetchCache();
 
-  int64 transaction_id() const { return transaction_id_; }
+  int64_t transaction_id() const { return transaction_id_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);
@@ -62,8 +63,8 @@ class CONTENT_EXPORT WebIDBCursorImpl
   enum { kMinPrefetchAmount = 5 };
   enum { kMaxPrefetchAmount = 100 };
 
-  int32 ipc_cursor_id_;
-  int64 transaction_id_;
+  int32_t ipc_cursor_id_;
+  int64_t transaction_id_;
 
   // Prefetch cache.
   std::deque<IndexedDBKey> prefetch_keys_;

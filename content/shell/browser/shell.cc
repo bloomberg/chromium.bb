@@ -4,15 +4,19 @@
 
 #include "content/shell/browser/shell.h"
 
+#include <stddef.h>
+
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -360,9 +364,9 @@ scoped_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
 }
 
 bool Shell::AddMessageToConsole(WebContents* source,
-                                int32 level,
+                                int32_t level,
                                 const base::string16& message,
-                                int32 line_no,
+                                int32_t line_no,
                                 const base::string16& source_id) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRunLayoutTest);

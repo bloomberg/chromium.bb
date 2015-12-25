@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_APPCACHE_APPCACHE_BACKEND_PROXY_H_
 #define CONTENT_CHILD_APPCACHE_APPCACHE_BACKEND_PROXY_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "content/common/appcache_interfaces.h"
@@ -25,15 +27,15 @@ class AppCacheBackendProxy : public AppCacheBackend {
   void SetSpawningHostId(int host_id, int spawning_host_id) override;
   void SelectCache(int host_id,
                    const GURL& document_url,
-                   const int64 cache_document_was_loaded_from,
+                   const int64_t cache_document_was_loaded_from,
                    const GURL& manifest_url) override;
   void SelectCacheForWorker(int host_id,
                             int parent_process_id,
                             int parent_host_id) override;
-  void SelectCacheForSharedWorker(int host_id, int64 appcache_id) override;
+  void SelectCacheForSharedWorker(int host_id, int64_t appcache_id) override;
   void MarkAsForeignEntry(int host_id,
                           const GURL& document_url,
-                          int64 cache_document_was_loaded_from) override;
+                          int64_t cache_document_was_loaded_from) override;
   AppCacheStatus GetStatus(int host_id) override;
   bool StartUpdate(int host_id) override;
   bool SwapCache(int host_id) override;

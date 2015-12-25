@@ -4,6 +4,8 @@
 
 #include "content/ppapi_plugin/ppapi_blink_platform_impl.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/logging.h"

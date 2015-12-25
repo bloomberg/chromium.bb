@@ -27,6 +27,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
+
 #include "PluginTest.h"
 
 class NPRuntimeCallsWithNullNPP : public PluginTest {

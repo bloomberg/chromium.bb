@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_POWER_MONITOR_BROADCAST_SOURCE_H_
 #define CONTENT_CHILD_POWER_MONITOR_BROADCAST_SOURCE_H_
 
+#include "base/macros.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel.h"

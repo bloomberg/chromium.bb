@@ -6,6 +6,7 @@
 #define CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_MAC_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/child/npapi/webplugin_accelerated_surface_mac.h"
 #include "ui/gl/gpu_preference.h"
 

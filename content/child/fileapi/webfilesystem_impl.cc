@@ -4,9 +4,12 @@
 
 #include "content/child/fileapi/webfilesystem_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"

@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/media/rendering_helper.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <numeric>
 #include <vector>

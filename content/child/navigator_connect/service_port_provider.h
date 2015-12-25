@@ -5,8 +5,11 @@
 #ifndef CONTENT_CHILD_NAVIGATOR_CONNECT_SERVICE_PORT_PROVIDER_H_
 #define CONTENT_CHILD_NAVIGATOR_CONNECT_SERVICE_PORT_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/worker_thread_registry.h"
 #include "content/common/service_port_service.mojom.h"

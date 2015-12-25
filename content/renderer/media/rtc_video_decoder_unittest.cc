@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <string.h>
 
 #include "base/bind.h"
 #include "base/location.h"

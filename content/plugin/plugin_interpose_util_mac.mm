@@ -6,6 +6,7 @@
 
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
+#include <stdint.h>
 
 #include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/common/plugin_process_messages.h"
@@ -32,7 +33,8 @@ void SwitchToPluginProcess() {
 
 // Sends a message to the browser process to inform it that the given window
 // has been shown.
-void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
+void NotifyBrowserOfPluginShowWindow(uint32_t window_id,
+                                     CGRect bounds,
                                      bool modal) {
   PluginThread* plugin_thread = PluginThread::current();
   if (plugin_thread) {
@@ -46,7 +48,7 @@ void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
 // Sends a message to the browser process to inform it that the given window
 // has been hidden, and switches focus back to the browser process if there are
 // no remaining plugin windows.
-void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds) {
+void NotifyBrowserOfPluginHideWindow(uint32_t window_id, CGRect bounds) {
   PluginThread* plugin_thread = PluginThread::current();
   if (plugin_thread) {
     gfx::Rect window_bounds(bounds);
@@ -65,7 +67,7 @@ void NotifyPluginOfSetCursorVisibility(bool visibility) {
 }
 
 struct WindowInfo {
-  uint32 window_id;
+  uint32_t window_id;
   CGRect bounds;
   WindowInfo(NSWindow* window) {
     NSInteger window_num = [window windowNumber];

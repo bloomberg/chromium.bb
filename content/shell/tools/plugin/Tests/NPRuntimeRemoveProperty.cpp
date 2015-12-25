@@ -27,9 +27,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "PluginTest.h"
-
+#include <stdint.h>
 #include <string.h>
+
+#include "PluginTest.h"
 
 using namespace std;
 

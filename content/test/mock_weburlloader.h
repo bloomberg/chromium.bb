@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_MOCK_WEBURLLOADER_H_
 #define CONTENT_TEST_MOCK_WEBURLLOADER_H_
 
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 

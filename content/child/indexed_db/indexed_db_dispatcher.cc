@@ -171,14 +171,14 @@ bool IndexedDBDispatcher::Send(IPC::Message* msg) {
 void IndexedDBDispatcher::RequestIDBCursorAdvance(
     unsigned long count,
     WebIDBCallbacks* callbacks_ptr,
-    int32 ipc_cursor_id,
-    int64 transaction_id) {
+    int32_t ipc_cursor_id,
+    int64_t transaction_id) {
   // Reset all cursor prefetch caches except for this cursor.
   ResetCursorPrefetchCaches(transaction_id, ipc_cursor_id);
 
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  int32 ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
+  int32_t ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_CursorAdvance(
       ipc_cursor_id, CurrentWorkerId(), ipc_callbacks_id, count));
 }
@@ -187,14 +187,14 @@ void IndexedDBDispatcher::RequestIDBCursorContinue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     WebIDBCallbacks* callbacks_ptr,
-    int32 ipc_cursor_id,
-    int64 transaction_id) {
+    int32_t ipc_cursor_id,
+    int64_t transaction_id) {
   // Reset all cursor prefetch caches except for this cursor.
   ResetCursorPrefetchCaches(transaction_id, ipc_cursor_id);
 
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  int32 ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
+  int32_t ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_CursorContinue(
       ipc_cursor_id, CurrentWorkerId(), ipc_callbacks_id, key, primary_key));
 }
@@ -202,25 +202,25 @@ void IndexedDBDispatcher::RequestIDBCursorContinue(
 void IndexedDBDispatcher::RequestIDBCursorPrefetch(
     int n,
     WebIDBCallbacks* callbacks_ptr,
-    int32 ipc_cursor_id) {
+    int32_t ipc_cursor_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  int32 ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
+  int32_t ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_CursorPrefetch(
       ipc_cursor_id, CurrentWorkerId(), ipc_callbacks_id, n));
 }
 
 void IndexedDBDispatcher::RequestIDBCursorPrefetchReset(int used_prefetches,
                                                         int unused_prefetches,
-                                                        int32 ipc_cursor_id) {
+                                                        int32_t ipc_cursor_id) {
   Send(new IndexedDBHostMsg_CursorPrefetchReset(
       ipc_cursor_id, used_prefetches, unused_prefetches));
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryOpen(
     const base::string16& name,
-    int64 version,
-    int64 transaction_id,
+    int64_t version,
+    int64_t transaction_id,
     WebIDBCallbacks* callbacks_ptr,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
     const std::string& database_identifier) {
@@ -267,8 +267,8 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseClose(
-    int32 ipc_database_id,
-    int32 ipc_database_callbacks_id) {
+    int32_t ipc_database_id,
+    int32_t ipc_database_callbacks_id) {
   Send(new IndexedDBHostMsg_DatabaseClose(ipc_database_id));
   // There won't be pending database callbacks if the transaction was aborted in
   // the initial upgradeneeded event handler.
@@ -277,13 +277,13 @@ void IndexedDBDispatcher::RequestIDBDatabaseClose(
 }
 
 void IndexedDBDispatcher::NotifyIDBDatabaseVersionChangeIgnored(
-    int32 ipc_database_id) {
+    int32_t ipc_database_id) {
   Send(new IndexedDBHostMsg_DatabaseVersionChangeIgnored(ipc_database_id));
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseCreateTransaction(
-    int32 ipc_database_id,
-    int64 transaction_id,
+    int32_t ipc_database_id,
+    int64_t transaction_id,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
     WebVector<long long> object_store_ids,
     blink::WebIDBTransactionMode mode) {
@@ -304,10 +304,10 @@ void IndexedDBDispatcher::RequestIDBDatabaseCreateTransaction(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseGet(
-    int32 ipc_database_id,
-    int64 transaction_id,
-    int64 object_store_id,
-    int64 index_id,
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const IndexedDBKeyRange& key_range,
     bool key_only,
     WebIDBCallbacks* callbacks) {
@@ -324,13 +324,13 @@ void IndexedDBDispatcher::RequestIDBDatabaseGet(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseGetAll(
-    int32 ipc_database_id,
-    int64 transaction_id,
-    int64 object_store_id,
-    int64 index_id,
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const IndexedDBKeyRange& key_range,
     bool key_only,
-    int64 max_count,
+    int64_t max_count,
     WebIDBCallbacks* callbacks) {
   ResetCursorPrefetchCaches(transaction_id, kAllCursors);
   IndexedDBHostMsg_DatabaseGetAll_Params params;
@@ -346,16 +346,16 @@ void IndexedDBDispatcher::RequestIDBDatabaseGetAll(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabasePut(
-    int32 ipc_database_id,
-    int64 transaction_id,
-    int64 object_store_id,
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    int64_t object_store_id,
     const WebData& value,
     const blink::WebVector<WebBlobInfo>& web_blob_info,
     const IndexedDBKey& key,
     blink::WebIDBPutMode put_mode,
     WebIDBCallbacks* callbacks,
     const WebVector<long long>& index_ids,
-    const WebVector<WebVector<WebIDBKey> >& index_keys) {
+    const WebVector<WebVector<WebIDBKey>>& index_keys) {
   if (value.size() + key.size_estimate() > max_put_value_size_) {
     callbacks->onError(WebIDBDatabaseError(
         blink::WebIDBDatabaseExceptionUnknownError,
@@ -410,10 +410,10 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseOpenCursor(
-    int32 ipc_database_id,
-    int64 transaction_id,
-    int64 object_store_id,
-    int64 index_id,
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const IndexedDBKeyRange& key_range,
     blink::WebIDBCursorDirection direction,
     bool key_only,
@@ -438,10 +438,10 @@ void IndexedDBDispatcher::RequestIDBDatabaseOpenCursor(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseCount(
-    int32 ipc_database_id,
-    int64 transaction_id,
-    int64 object_store_id,
-    int64 index_id,
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const IndexedDBKeyRange& key_range,
     WebIDBCallbacks* callbacks) {
   ResetCursorPrefetchCaches(transaction_id, kAllCursors);
@@ -456,9 +456,9 @@ void IndexedDBDispatcher::RequestIDBDatabaseCount(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseDeleteRange(
-    int32 ipc_database_id,
-    int64 transaction_id,
-    int64 object_store_id,
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    int64_t object_store_id,
     const IndexedDBKeyRange& key_range,
     WebIDBCallbacks* callbacks) {
   ResetCursorPrefetchCaches(transaction_id, kAllCursors);
@@ -472,13 +472,13 @@ void IndexedDBDispatcher::RequestIDBDatabaseDeleteRange(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseClear(
-    int32 ipc_database_id,
-    int64 transaction_id,
-    int64 object_store_id,
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    int64_t object_store_id,
     WebIDBCallbacks* callbacks_ptr) {
   ResetCursorPrefetchCaches(transaction_id, kAllCursors);
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-  int32 ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
+  int32_t ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   Send(new IndexedDBHostMsg_DatabaseClear(CurrentWorkerId(),
                                           ipc_callbacks_id,
                                           ipc_database_id,
@@ -486,20 +486,20 @@ void IndexedDBDispatcher::RequestIDBDatabaseClear(
                                           object_store_id));
 }
 
-void IndexedDBDispatcher::CursorDestroyed(int32 ipc_cursor_id) {
+void IndexedDBDispatcher::CursorDestroyed(int32_t ipc_cursor_id) {
   cursors_.erase(ipc_cursor_id);
 }
 
-void IndexedDBDispatcher::DatabaseDestroyed(int32 ipc_database_id) {
+void IndexedDBDispatcher::DatabaseDestroyed(int32_t ipc_database_id) {
   DCHECK_EQ(databases_.count(ipc_database_id), 1u);
   databases_.erase(ipc_database_id);
 }
 
 void IndexedDBDispatcher::OnSuccessIDBDatabase(
-    int32 ipc_thread_id,
-    int32 ipc_callbacks_id,
-    int32 ipc_database_callbacks_id,
-    int32 ipc_object_id,
+    int32_t ipc_thread_id,
+    int32_t ipc_callbacks_id,
+    int32_t ipc_database_callbacks_id,
+    int32_t ipc_object_id,
     const IndexedDBDatabaseMetadata& idb_metadata) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
@@ -521,8 +521,8 @@ void IndexedDBDispatcher::OnSuccessIDBDatabase(
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
-void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32 ipc_thread_id,
-                                                int32 ipc_callbacks_id,
+void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32_t ipc_thread_id,
+                                                int32_t ipc_callbacks_id,
                                                 const IndexedDBKey& key) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
@@ -533,8 +533,8 @@ void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32 ipc_thread_id,
 }
 
 void IndexedDBDispatcher::OnSuccessStringList(
-    int32 ipc_thread_id,
-    int32 ipc_callbacks_id,
+    int32_t ipc_thread_id,
+    int32_t ipc_callbacks_id,
     const std::vector<base::string16>& value) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
@@ -579,7 +579,7 @@ static void PrepareReturnWebValue(const IndexedDBMsg_ReturnValue& value,
 void IndexedDBDispatcher::OnSuccessArray(
     const IndexedDBMsg_CallbacksSuccessArray_Params& p) {
   DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
-  int32 ipc_callbacks_id = p.ipc_callbacks_id;
+  int32_t ipc_callbacks_id = p.ipc_callbacks_id;
   blink::WebVector<WebIDBValue> web_values(p.values.size());
   for (size_t i = 0; i < p.values.size(); ++i)
     PrepareReturnWebValue(p.values[i], &web_values[i]);
@@ -607,9 +607,9 @@ void IndexedDBDispatcher::OnSuccessValue(
   pending_callbacks_.Remove(params.ipc_callbacks_id);
 }
 
-void IndexedDBDispatcher::OnSuccessInteger(int32 ipc_thread_id,
-                                           int32 ipc_callbacks_id,
-                                           int64 value) {
+void IndexedDBDispatcher::OnSuccessInteger(int32_t ipc_thread_id,
+                                           int32_t ipc_callbacks_id,
+                                           int64_t value) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   if (!callbacks)
@@ -618,8 +618,8 @@ void IndexedDBDispatcher::OnSuccessInteger(int32 ipc_thread_id,
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
-void IndexedDBDispatcher::OnSuccessUndefined(int32 ipc_thread_id,
-                                             int32 ipc_callbacks_id) {
+void IndexedDBDispatcher::OnSuccessUndefined(int32_t ipc_thread_id,
+                                             int32_t ipc_callbacks_id) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   if (!callbacks)
@@ -631,8 +631,8 @@ void IndexedDBDispatcher::OnSuccessUndefined(int32 ipc_thread_id,
 void IndexedDBDispatcher::OnSuccessOpenCursor(
     const IndexedDBMsg_CallbacksSuccessIDBCursor_Params& p) {
   DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
-  int32 ipc_callbacks_id = p.ipc_callbacks_id;
-  int32 ipc_object_id = p.ipc_cursor_id;
+  int32_t ipc_callbacks_id = p.ipc_callbacks_id;
+  int32_t ipc_object_id = p.ipc_cursor_id;
   const IndexedDBKey& key = p.key;
   const IndexedDBKey& primary_key = p.primary_key;
   WebIDBValue web_value;
@@ -640,7 +640,7 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
 
   DCHECK(cursor_transaction_ids_.find(ipc_callbacks_id) !=
          cursor_transaction_ids_.end());
-  int64 transaction_id = cursor_transaction_ids_[ipc_callbacks_id];
+  int64_t transaction_id = cursor_transaction_ids_[ipc_callbacks_id];
   cursor_transaction_ids_.erase(ipc_callbacks_id);
 
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
@@ -659,8 +659,8 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
 void IndexedDBDispatcher::OnSuccessCursorContinue(
     const IndexedDBMsg_CallbacksSuccessCursorContinue_Params& p) {
   DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
-  int32 ipc_callbacks_id = p.ipc_callbacks_id;
-  int32 ipc_cursor_id = p.ipc_cursor_id;
+  int32_t ipc_callbacks_id = p.ipc_callbacks_id;
+  int32_t ipc_cursor_id = p.ipc_cursor_id;
   const IndexedDBKey& key = p.key;
   const IndexedDBKey& primary_key = p.primary_key;
 
@@ -682,12 +682,12 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
 void IndexedDBDispatcher::OnSuccessCursorPrefetch(
     const IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params& p) {
   DCHECK_EQ(p.ipc_thread_id, CurrentWorkerId());
-  int32 ipc_callbacks_id = p.ipc_callbacks_id;
-  int32 ipc_cursor_id = p.ipc_cursor_id;
+  int32_t ipc_callbacks_id = p.ipc_callbacks_id;
+  int32_t ipc_cursor_id = p.ipc_cursor_id;
   std::vector<WebIDBValue> values(p.values.size());
   for (size_t i = 0; i < p.values.size(); ++i)
     PrepareWebValue(p.values[i], &values[i]);
-  std::map<int32, WebIDBCursorImpl*>::const_iterator cur_iter =
+  std::map<int32_t, WebIDBCursorImpl*>::const_iterator cur_iter =
       cursors_.find(ipc_cursor_id);
   if (cur_iter == cursors_.end())
     return;
@@ -700,9 +700,9 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
-void IndexedDBDispatcher::OnIntBlocked(int32 ipc_thread_id,
-                                       int32 ipc_callbacks_id,
-                                       int64 existing_version) {
+void IndexedDBDispatcher::OnIntBlocked(int32_t ipc_thread_id,
+                                       int32_t ipc_callbacks_id,
+                                       int64_t existing_version) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   DCHECK(callbacks);
@@ -728,8 +728,8 @@ void IndexedDBDispatcher::OnUpgradeNeeded(
       WebString::fromUTF8(p.data_loss_message));
 }
 
-void IndexedDBDispatcher::OnError(int32 ipc_thread_id,
-                                  int32 ipc_callbacks_id,
+void IndexedDBDispatcher::OnError(int32_t ipc_thread_id,
+                                  int32_t ipc_callbacks_id,
                                   int code,
                                   const base::string16& message) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
@@ -744,9 +744,9 @@ void IndexedDBDispatcher::OnError(int32 ipc_thread_id,
   cursor_transaction_ids_.erase(ipc_callbacks_id);
 }
 
-void IndexedDBDispatcher::OnAbort(int32 ipc_thread_id,
-                                  int32 ipc_database_callbacks_id,
-                                  int64 transaction_id,
+void IndexedDBDispatcher::OnAbort(int32_t ipc_thread_id,
+                                  int32_t ipc_database_callbacks_id,
+                                  int64_t transaction_id,
                                   int code,
                                   const base::string16& message) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
@@ -760,9 +760,9 @@ void IndexedDBDispatcher::OnAbort(int32 ipc_thread_id,
     callbacks->onAbort(transaction_id, WebIDBDatabaseError(code, message));
 }
 
-void IndexedDBDispatcher::OnComplete(int32 ipc_thread_id,
-                                     int32 ipc_database_callbacks_id,
-                                     int64 transaction_id) {
+void IndexedDBDispatcher::OnComplete(int32_t ipc_thread_id,
+                                     int32_t ipc_database_callbacks_id,
+                                     int64_t transaction_id) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBDatabaseCallbacks* callbacks =
       pending_database_callbacks_.Lookup(ipc_database_callbacks_id);
@@ -771,8 +771,8 @@ void IndexedDBDispatcher::OnComplete(int32 ipc_thread_id,
   callbacks->onComplete(transaction_id);
 }
 
-void IndexedDBDispatcher::OnForcedClose(int32 ipc_thread_id,
-                                        int32 ipc_database_callbacks_id) {
+void IndexedDBDispatcher::OnForcedClose(int32_t ipc_thread_id,
+                                        int32_t ipc_database_callbacks_id) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBDatabaseCallbacks* callbacks =
       pending_database_callbacks_.Lookup(ipc_database_callbacks_id);
@@ -781,10 +781,10 @@ void IndexedDBDispatcher::OnForcedClose(int32 ipc_thread_id,
   callbacks->onForcedClose();
 }
 
-void IndexedDBDispatcher::OnIntVersionChange(int32 ipc_thread_id,
-                                             int32 ipc_database_callbacks_id,
-                                             int64 old_version,
-                                             int64 new_version) {
+void IndexedDBDispatcher::OnIntVersionChange(int32_t ipc_thread_id,
+                                             int32_t ipc_database_callbacks_id,
+                                             int64_t old_version,
+                                             int64_t new_version) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBDatabaseCallbacks* callbacks =
       pending_database_callbacks_.Lookup(ipc_database_callbacks_id);
@@ -796,9 +796,9 @@ void IndexedDBDispatcher::OnIntVersionChange(int32 ipc_thread_id,
 }
 
 void IndexedDBDispatcher::ResetCursorPrefetchCaches(
-    int64 transaction_id,
-    int32 ipc_exception_cursor_id) {
-  typedef std::map<int32, WebIDBCursorImpl*>::iterator Iterator;
+    int64_t transaction_id,
+    int32_t ipc_exception_cursor_id) {
+  typedef std::map<int32_t, WebIDBCursorImpl*>::iterator Iterator;
   for (Iterator i = cursors_.begin(); i != cursors_.end(); ++i) {
     if (i->first == ipc_exception_cursor_id ||
         i->second->transaction_id() != transaction_id)

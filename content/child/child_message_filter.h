@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_CHILD_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_CHILD_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_sender.h"
 

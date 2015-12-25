@@ -4,6 +4,7 @@
 
 #include "content/child/webfallbackthemeengine_impl.h"
 
+#include "base/macros.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"

@@ -55,7 +55,7 @@ bool WebSocketDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return bridge->OnMessageReceived(msg);
 }
 
-WebSocketBridge* WebSocketDispatcher::GetBridge(int channel_id, uint32 type) {
+WebSocketBridge* WebSocketDispatcher::GetBridge(int channel_id, uint32_t type) {
   std::map<int, WebSocketBridge*>::iterator iter = bridges_.find(channel_id);
   if (iter == bridges_.end()) {
     DVLOG(1) << "No bridge for channel_id=" << channel_id

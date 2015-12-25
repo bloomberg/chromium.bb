@@ -70,7 +70,7 @@ void WebFileWriterBase::DidFinish(base::File::Error error_code) {
     DidFail(error_code);
 }
 
-void WebFileWriterBase::DidWrite(int64 bytes, bool complete) {
+void WebFileWriterBase::DidWrite(int64_t bytes, bool complete) {
   DCHECK(kOperationWrite == operation_);
   switch (cancel_state_) {
     case kCancelNotInProgress:

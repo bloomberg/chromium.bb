@@ -4,6 +4,10 @@
 
 #include "content/child/site_isolation_stats_gatherer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -38,8 +42,8 @@ void IncrementHistogramCount(const std::string& name) {
 }
 
 void IncrementHistogramEnum(const std::string& name,
-                            uint32 sample,
-                            uint32 boundary_value) {
+                            uint32_t sample,
+                            uint32_t boundary_value) {
   // The default value of min, max, bucket_count are copied from histogram.h.
   base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
       name, 1, boundary_value, boundary_value + 1,

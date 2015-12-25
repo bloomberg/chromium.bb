@@ -5,9 +5,12 @@
 #ifndef CONTENT_CHILD_NPAPI_WEBPLUGIN_DELEGATE_IMPL_H_
 #define CONTENT_CHILD_NPAPI_WEBPLUGIN_DELEGATE_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -267,7 +270,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   WNDPROC plugin_wnd_proc_;
 
   // Used to throttle WM_USER+1 messages in Flash.
-  uint32 last_message_;
+  uint32_t last_message_;
   bool is_calling_wndproc;
 
   // An IME emulator used by a windowless plugin to retrieve IME data through

@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "content/public/renderer/video_frame_provider.h"
 #include "ui/gfx/geometry/size.h"

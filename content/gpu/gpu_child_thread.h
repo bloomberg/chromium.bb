@@ -5,11 +5,13 @@
 #ifndef CONTENT_GPU_GPU_CHILD_THREAD_H_
 #define CONTENT_GPU_GPU_CHILD_THREAD_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -75,7 +77,7 @@ class GpuChildThread : public ChildThreadImpl {
   void OnFinalize();
   void OnCollectGraphicsInfo();
   void OnGetVideoMemoryUsageStats();
-  void OnSetVideoMemoryWindowCount(uint32 window_count);
+  void OnSetVideoMemoryWindowCount(uint32_t window_count);
 
   void OnClean();
   void OnCrash();

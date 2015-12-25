@@ -4,9 +4,7 @@
 
 #include "content/child/child_process.h"
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-#include <signal.h>  // For SigUSR1Handler below.
-#endif
+#include <string.h>
 
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
@@ -16,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
+#include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 
 #if defined(OS_ANDROID)
@@ -23,6 +22,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
+#include <signal.h>
 static void SigUSR1Handler(int signal) { }
 #endif
 

@@ -4,6 +4,7 @@
 
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 
+#include "base/macros.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
@@ -138,7 +139,7 @@ void WebServiceWorkerRegistrationImpl::unregister(
                                       registration_id(), callbacks);
 }
 
-int64 WebServiceWorkerRegistrationImpl::registration_id() const {
+int64_t WebServiceWorkerRegistrationImpl::registration_id() const {
   return handle_ref_->registration_id();
 }
 

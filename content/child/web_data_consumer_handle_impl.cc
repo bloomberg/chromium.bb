@@ -4,9 +4,12 @@
 
 #include "content/child/web_data_consumer_handle_impl.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/public/c/system/types.h"
 
 namespace content {

@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"

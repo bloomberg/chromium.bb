@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/stream_texture_android.h"
 
+#include <string.h>
+
 #include "base/bind.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/common/gpu/gpu_channel.h"

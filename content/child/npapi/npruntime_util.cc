@@ -4,6 +4,9 @@
 
 #include "content/child/npapi/npruntime_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/pickle.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 

@@ -5,12 +5,14 @@
 #ifndef CONTENT_TEST_IMAGE_DECODER_TEST_H_
 #define CONTENT_TEST_IMAGE_DECODER_TEST_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,7 +63,7 @@ class ImageDecoderTest : public testing::Test {
   // files to test based on file size.
   // If just the MD5 sum is wanted, this skips chunking.
   void TestDecoding(ImageDecoderTestFileSelection file_selection,
-                    const int64 threshold);
+                    const int64_t threshold);
 
   void TestDecoding()  {
     TestDecoding(TEST_ALL, 0);

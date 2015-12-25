@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -55,7 +58,7 @@ class TestRequestPeer : public RequestPeer {
 
   void set_request_id(int request_id) { request_id_ = request_id; }
 
-  void OnUploadProgress(uint64 position, uint64 size) override {}
+  void OnUploadProgress(uint64_t position, uint64_t size) override {}
 
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const ResourceResponseInfo& info) override {
@@ -89,7 +92,7 @@ class TestRequestPeer : public RequestPeer {
                           bool stale_copy_in_cache,
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
-                          int64 total_transfer_size) override {
+                          int64_t total_transfer_size) override {
     EXPECT_TRUE(received_response_);
     EXPECT_FALSE(complete_);
     complete_ = true;
@@ -102,7 +105,7 @@ class TestRequestPeer : public RequestPeer {
                                    bool stale_copy_in_cache,
                                    const std::string& security_info,
                                    const base::TimeTicks& completion_time,
-                                   int64 total_transfer_size) override {
+                                   int64_t total_transfer_size) override {
     bool cancel_on_receive_response = cancel_on_receive_response_;
     OnReceivedResponse(info);
     if (cancel_on_receive_response)
@@ -739,7 +742,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
   }
 
   // RequestPeer methods.
-  void OnUploadProgress(uint64 position, uint64 size) override {}
+  void OnUploadProgress(uint64_t position, uint64_t size) override {}
 
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const ResourceResponseInfo& info) override {
@@ -759,7 +762,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
                           bool stale_copy_in_cache,
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
-                          int64 total_transfer_size) override {}
+                          int64_t total_transfer_size) override {}
 
   void OnReceivedCompletedResponse(const ResourceResponseInfo& info,
                                    scoped_ptr<ReceivedData> data,
@@ -768,7 +771,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
                                    bool stale_copy_in_cache,
                                    const std::string& security_info,
                                    const base::TimeTicks& completion_time,
-                                   int64 total_transfer_size) override {}
+                                   int64_t total_transfer_size) override {}
 
   const ResourceResponseInfo& response_info() const { return response_info_; }
 

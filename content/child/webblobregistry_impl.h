@@ -5,6 +5,9 @@
 #ifndef CONTENT_CHILD_WEBBLOBREGISTRY_IMPL_H_
 #define CONTENT_CHILD_WEBBLOBREGISTRY_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

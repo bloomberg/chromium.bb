@@ -4,6 +4,8 @@
 
 #include "content/test/ppapi_unittest.h"
 
+#include <stdint.h>
+
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"

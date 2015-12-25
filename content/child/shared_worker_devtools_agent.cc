@@ -4,6 +4,8 @@
 
 #include "content/child/shared_worker_devtools_agent.h"
 
+#include <stddef.h>
+
 #include "content/child/child_thread_impl.h"
 #include "content/common/devtools_messages.h"
 #include "ipc/ipc_channel.h"

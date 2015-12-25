@@ -4,6 +4,8 @@
 
 #include "content/browser/browser_thread_impl.h"
 
+#include <string.h>
+
 #include <string>
 
 #include "base/atomicops.h"

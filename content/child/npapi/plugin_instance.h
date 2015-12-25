@@ -8,14 +8,17 @@
 #ifndef CONTENT_CHILD_NPAPI_PLUGIN_INSTANCE_H_
 #define CONTENT_CHILD_NPAPI_PLUGIN_INSTANCE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <stack>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "ui/gfx/geometry/point.h"
@@ -141,11 +144,11 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void PluginThreadAsyncCall(void (*func)(void *),
                              void* userData);
 
-  uint32 ScheduleTimer(uint32 interval,
-                       NPBool repeat,
-                       void (*func)(NPP id, uint32 timer_id));
+  uint32_t ScheduleTimer(uint32_t interval,
+                         NPBool repeat,
+                         void (*func)(NPP id, uint32_t timer_id));
 
-  void UnscheduleTimer(uint32 timer_id);
+  void UnscheduleTimer(uint32_t timer_id);
 
   bool ConvertPoint(double source_x, double source_y,
                     NPCoordinateSpace source_space,
@@ -200,8 +203,9 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   ~PluginInstance();
   void OnPluginThreadAsyncCall(void (*func)(void *), void* userData);
-  void OnTimerCall(void (*func)(NPP id, uint32 timer_id),
-                   NPP id, uint32 timer_id);
+  void OnTimerCall(void (*func)(NPP id, uint32_t timer_id),
+                   NPP id,
+                   uint32_t timer_id);
 
   // This is a hack to get the real player plugin to work with chrome
   // The real player plugin dll(nppl3260) when loaded by firefox is loaded via
@@ -223,7 +227,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // TODO(iyengar) : Disassemble the Realplayer ndata structure and look into
   // the possiblity of conforming to it (http://b/issue?id=936667). We
   // could also log a bug with Real, which would save the effort.
-  uint8                                    zero_padding_[96];
+  uint8_t zero_padding_[96];
   scoped_refptr<PluginLib>                 plugin_;
   NPP                                      npp_;
   scoped_refptr<PluginHost>                host_;
@@ -256,14 +260,14 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   std::vector<base::FilePath> files_created_;
 
   // Next unusued timer id.
-  uint32 next_timer_id_;
+  uint32_t next_timer_id_;
 
   // Map of timer id to settings for timer.
   struct TimerInfo {
-    uint32 interval;
+    uint32_t interval;
     bool repeat;
   };
-  typedef std::map<uint32, TimerInfo> TimerMap;
+  typedef std::map<uint32_t, TimerInfo> TimerMap;
   TimerMap timers_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);

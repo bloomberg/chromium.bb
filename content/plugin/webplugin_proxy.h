@@ -5,20 +5,23 @@
 #ifndef CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_
 #define CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "content/child/npapi/webplugin.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "url/gurl.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
+#include "url/gurl.h"
 
 #if defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
@@ -89,9 +92,9 @@ class WebPluginProxy : public WebPlugin,
   WebPluginAcceleratedSurface* GetAcceleratedSurface(
       gfx::GpuPreference gpu_preference) override;
   void AcceleratedPluginEnabledRendering() override;
-  void AcceleratedPluginAllocatedIOSurface(int32 width,
-                                           int32 height,
-                                           uint32 surface_id) override;
+  void AcceleratedPluginAllocatedIOSurface(int32_t width,
+                                           int32_t height,
+                                           uint32_t surface_id) override;
   void AcceleratedPluginSwappedIOSurface() override;
 #endif
 

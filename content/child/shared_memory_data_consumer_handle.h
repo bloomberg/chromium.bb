@@ -5,7 +5,10 @@
 #ifndef CONTENT_CHILD_SHARED_MEMORY_DATA_CONSUMER_HANDLE_H_
 #define CONTENT_CHILD_SHARED_MEMORY_DATA_CONSUMER_HANDLE_H_
 
+#include <stddef.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"

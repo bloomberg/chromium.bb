@@ -5,7 +5,8 @@
 #ifndef CONTENT_CHILD_INDEXED_DB_WEBIDBDATABASE_IMPL_H_
 #define CONTENT_CHILD_INDEXED_DB_WEBIDBDATABASE_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabase.h"
@@ -23,8 +24,8 @@ class ThreadSafeSender;
 
 class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
-  WebIDBDatabaseImpl(int32 ipc_database_id,
-                     int32 ipc_database_callbacks_id,
+  WebIDBDatabaseImpl(int32_t ipc_database_id,
+                     int32_t ipc_database_callbacks_id,
                      ThreadSafeSender* thread_safe_sender);
   ~WebIDBDatabaseImpl() override;
 
@@ -110,8 +111,8 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
       const blink::WebVector<blink::WebString>& uuids) override;
 
  private:
-  int32 ipc_database_id_;
-  int32 ipc_database_callbacks_id_;
+  int32_t ipc_database_id_;
+  int32_t ipc_database_callbacks_id_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 };
 

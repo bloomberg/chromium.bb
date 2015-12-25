@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_WORKER_THREAD_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_WORKER_THREAD_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "content/child/child_message_filter.h"
 
 namespace base {

@@ -8,6 +8,8 @@
 #ifndef CONTENT_CHILD_NPAPI_NPOBJECT_PROXY_H_
 #define CONTENT_CHILD_NPAPI_NPOBJECT_PROXY_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "content/child/npapi/npobject_base.h"
 #include "ipc/ipc_listener.h"

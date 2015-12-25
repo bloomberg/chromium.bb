@@ -4,6 +4,9 @@
 
 #include "content/child/web_data_consumer_handle_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include "base/bind.h"

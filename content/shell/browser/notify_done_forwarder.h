@@ -5,7 +5,7 @@
 #ifndef CONTENT_SHELL_BROWSER_NOTIFY_DONE_FORWARDER_H_
 #define CONTENT_SHELL_BROWSER_NOTIFY_DONE_FORWARDER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 

@@ -4,6 +4,8 @@
 
 #include "content/child/service_worker/service_worker_dispatcher.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -131,7 +133,7 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
 
 void ServiceWorkerDispatcher::UpdateServiceWorker(
     int provider_id,
-    int64 registration_id,
+    int64_t registration_id,
     WebServiceWorkerUpdateCallbacks* callbacks) {
   DCHECK(callbacks);
   int request_id = pending_update_callbacks_.Add(callbacks);
@@ -141,7 +143,7 @@ void ServiceWorkerDispatcher::UpdateServiceWorker(
 
 void ServiceWorkerDispatcher::UnregisterServiceWorker(
     int provider_id,
-    int64 registration_id,
+    int64_t registration_id,
     WebServiceWorkerUnregistrationCallbacks* callbacks) {
   DCHECK(callbacks);
   int request_id = pending_unregistration_callbacks_.Add(callbacks);

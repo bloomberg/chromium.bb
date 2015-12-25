@@ -4,6 +4,7 @@
 
 #include "content/child/webthemeengine_impl_default.h"
 
+#include "build/build_config.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -20,16 +21,16 @@ namespace {
 #if defined(OS_WIN)
 // The scrollbar metrics default to 17 dips which is the default value on
 // Windows in most cases.
-int32 g_vertical_scroll_bar_width = 17;
+int32_t g_vertical_scroll_bar_width = 17;
 
 // The height of a horizontal scroll bar in dips.
-int32 g_horizontal_scroll_bar_height = 17;
+int32_t g_horizontal_scroll_bar_height = 17;
 
 // The height of the arrow bitmap on a vertical scroll bar in dips.
-int32 g_vertical_arrow_bitmap_height = 17;
+int32_t g_vertical_arrow_bitmap_height = 17;
 
 // The width of the arrow bitmap on a horizontal scroll bar in dips.
-int32 g_horizontal_arrow_bitmap_width = 17;
+int32_t g_horizontal_arrow_bitmap_width = 17;
 #endif
 
 }  // namespace
@@ -235,10 +236,10 @@ void WebThemeEngineImpl::paintStateTransition(blink::WebCanvas* canvas,
 #if defined(OS_WIN)
 // static
 void WebThemeEngineImpl::cacheScrollBarMetrics(
-    int32 vertical_scroll_bar_width,
-    int32 horizontal_scroll_bar_height,
-    int32 vertical_arrow_bitmap_height,
-    int32 horizontal_arrow_bitmap_width) {
+    int32_t vertical_scroll_bar_width,
+    int32_t horizontal_scroll_bar_height,
+    int32_t vertical_arrow_bitmap_height,
+    int32_t horizontal_arrow_bitmap_width) {
   g_vertical_scroll_bar_width = vertical_scroll_bar_width;
   g_horizontal_scroll_bar_height = horizontal_scroll_bar_height;
   g_vertical_arrow_bitmap_height = vertical_arrow_bitmap_height;

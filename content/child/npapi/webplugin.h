@@ -5,10 +5,12 @@
 #ifndef CONTENT_CHILD_NPAPI_WEBPLUGIN_H_
 #define CONTENT_CHILD_NPAPI_WEBPLUGIN_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gpu_preference.h"
@@ -119,9 +121,9 @@ class WebPlugin {
   // Core Animation plugin support. CA plugins always render through
   // the compositor.
   virtual void AcceleratedPluginEnabledRendering() = 0;
-  virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
-                                                   int32 height,
-                                                   uint32 surface_id) = 0;
+  virtual void AcceleratedPluginAllocatedIOSurface(int32_t width,
+                                                   int32_t height,
+                                                   uint32_t surface_id) = 0;
   virtual void AcceleratedPluginSwappedIOSurface() = 0;
 #endif
 };

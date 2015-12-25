@@ -5,6 +5,7 @@
 #include "content/test/mock_keyboard.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace content {
 

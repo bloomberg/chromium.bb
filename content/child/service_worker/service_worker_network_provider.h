@@ -5,7 +5,10 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_H_
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
@@ -60,7 +63,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
   // This method is called for a provider that's associated with a
   // running service worker script. The version_id indicates which
   // ServiceWorkerVersion should be used.
-  void SetServiceWorkerVersionId(int64 version_id);
+  void SetServiceWorkerVersionId(int64_t version_id);
 
   bool IsControlledByServiceWorker() const;
 

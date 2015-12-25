@@ -5,6 +5,9 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_HANDLE_REFERENCE_H_
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_HANDLE_REFERENCE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -37,7 +40,7 @@ class ServiceWorkerRegistrationHandleReference {
   const ServiceWorkerRegistrationObjectInfo& info() const { return info_; }
   int handle_id() const { return info_.handle_id; }
   GURL scope() const { return info_.scope; }
-  int64 registration_id() const { return info_.registration_id; }
+  int64_t registration_id() const { return info_.registration_id; }
 
  private:
   ServiceWorkerRegistrationHandleReference(

@@ -4,6 +4,9 @@
 
 #include "content/child/v8_value_converter_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 #include <string>
 
@@ -236,7 +239,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Array(
     CHECK(!child_v8.IsEmpty());
 
     v8::TryCatch try_catch(isolate);
-    result->Set(static_cast<uint32>(i), child_v8);
+    result->Set(static_cast<uint32_t>(i), child_v8);
     if (try_catch.HasCaught())
       LOG(ERROR) << "Setter for index " << i << " threw an exception.";
   }
@@ -395,7 +398,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
   base::ListValue* result = new base::ListValue();
 
   // Only fields with integer keys are carried over to the ListValue.
-  for (uint32 i = 0; i < val->Length(); ++i) {
+  for (uint32_t i = 0; i < val->Length(); ++i) {
     v8::TryCatch try_catch(isolate);
     v8::Local<v8::Value> child_v8 = val->Get(i);
     if (try_catch.HasCaught()) {
@@ -496,7 +499,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   v8::Local<v8::Array> property_names(val->GetOwnPropertyNames());
 
-  for (uint32 i = 0; i < property_names->Length(); ++i) {
+  for (uint32_t i = 0; i < property_names->Length(); ++i) {
     v8::Local<v8::Value> key(property_names->Get(i));
 
     // Extend this test to cover more types as necessary and if sensible.

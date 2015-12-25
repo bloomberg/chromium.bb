@@ -4,6 +4,8 @@
 
 #include "content/test/content_browser_test_utils_internal.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <set>

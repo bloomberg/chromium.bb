@@ -4,6 +4,8 @@
 
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 
 namespace content {

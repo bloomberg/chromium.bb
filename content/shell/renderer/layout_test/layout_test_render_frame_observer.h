@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_RENDER_FRAME_OBSERVER_H_
 
+#include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 
 namespace content {

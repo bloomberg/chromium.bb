@@ -4,7 +4,9 @@
 
 #include "content/public/app/content_main_runner.h"
 
+#include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <string>
 
@@ -17,6 +19,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/statistics_recorder.h"
@@ -30,6 +33,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/tracing/trace_config_file.h"
 #include "components/tracing/trace_to_console.h"
 #include "components/tracing/tracing_switches.h"

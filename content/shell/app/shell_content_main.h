@@ -5,7 +5,7 @@
 #ifndef CONTENT_SHELL_APP_SHELL_CONTENT_MAIN_H_
 #define CONTENT_SHELL_APP_SHELL_CONTENT_MAIN_H_
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 extern "C" {

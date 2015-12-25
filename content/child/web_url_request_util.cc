@@ -4,6 +4,7 @@
 
 #include "content/child/web_url_request_util.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>

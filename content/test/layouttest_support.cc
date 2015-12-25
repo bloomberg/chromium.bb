@@ -4,9 +4,12 @@
 
 #include "content/public/test/layouttest_support.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_proxy.h"

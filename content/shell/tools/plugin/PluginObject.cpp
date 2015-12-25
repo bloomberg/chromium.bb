@@ -31,13 +31,16 @@
 
 #include "PluginObject.h"
 
-#include "PluginTest.h"
-#include "content/shell/tools/plugin/test_object.h"
-#include "base/strings/string_util.h"
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "PluginTest.h"
+#include "base/strings/string_util.h"
+#include "content/shell/tools/plugin/test_object.h"
 
 // Helper function which takes in the plugin window object for logging to the
 // console object.

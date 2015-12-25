@@ -5,12 +5,14 @@
 #ifndef CONTENT_CHILD_FILEAPI_FILE_SYSTEM_DISPATCHER_H_
 #define CONTENT_CHILD_FILEAPI_FILE_SYSTEM_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
@@ -51,9 +53,7 @@ class FileSystemDispatcher : public IPC::Listener {
   typedef base::Callback<void(const storage::FileSystemInfo& info,
                               const base::FilePath& file_path,
                               bool is_directory)> ResolveURLCallback;
-  typedef base::Callback<void(
-      int64 bytes,
-      bool complete)> WriteCallback;
+  typedef base::Callback<void(int64_t bytes, bool complete)> WriteCallback;
   typedef base::Callback<void(base::PlatformFile file,
                               int file_open_id,
                               storage::QuotaLimitType quota_policy)>
@@ -101,12 +101,12 @@ class FileSystemDispatcher : public IPC::Listener {
                      const ReadDirectoryCallback& success_callback,
                      const StatusCallback& error_callback);
   void Truncate(const GURL& path,
-                int64 offset,
+                int64_t offset,
                 int* request_id_out,
                 const StatusCallback& callback);
   void Write(const GURL& path,
              const std::string& blob_id,
-             int64 offset,
+             int64_t offset,
              int* request_id_out,
              const WriteCallback& success_callback,
              const StatusCallback& error_callback);
@@ -145,7 +145,7 @@ class FileSystemDispatcher : public IPC::Listener {
                           const std::vector<storage::DirectoryEntry>& entries,
                           bool has_more);
   void OnDidFail(int request_id, base::File::Error error_code);
-  void OnDidWrite(int request_id, int64 bytes, bool complete);
+  void OnDidWrite(int request_id, int64_t bytes, bool complete);
 
   IDMap<CallbackDispatcher, IDMapOwnPointer> dispatchers_;
 

@@ -4,6 +4,8 @@
 
 #include "content/gpu/gpu_child_thread.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/threading/worker_pool.h"

@@ -4,6 +4,9 @@
 
 #include "content/child/blob_storage/blob_transport_controller.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/shared_memory.h"
 #include "content/child/blob_storage/blob_consolidation.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"

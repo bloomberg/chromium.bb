@@ -5,6 +5,7 @@
 #include "content/renderer/devtools/v8_sampling_profiler.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include "base/format_macros.h"
 #include "base/location.h"

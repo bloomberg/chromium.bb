@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <string.h>
 
 #include "base/logging.h"
 #include "content/child/npapi/plugin_web_event_converter_mac.h"

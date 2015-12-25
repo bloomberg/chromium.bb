@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/shell_platform_data_aura.h"
 
+#include "base/macros.h"
 #include "content/shell/browser/shell.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"

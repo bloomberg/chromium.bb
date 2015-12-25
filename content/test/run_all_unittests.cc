@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_io_thread.h"
+#include "build/build_config.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "content/test/content_test_suite.h"

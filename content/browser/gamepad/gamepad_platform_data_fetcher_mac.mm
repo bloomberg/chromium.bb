@@ -5,6 +5,7 @@
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_mac.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"

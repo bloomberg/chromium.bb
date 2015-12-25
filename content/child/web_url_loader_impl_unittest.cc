@@ -4,6 +4,7 @@
 
 #include "content/child/web_url_loader_impl.h"
 
+#include <stdint.h>
 #include <string.h>
 #include <vector>
 

@@ -4,6 +4,10 @@
 
 #include "content/child/npapi/npobject_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "base/strings/string_util.h"
 #include "content/child/npapi/np_channel_base.h"
 #include "content/child/npapi/npobject_proxy.h"

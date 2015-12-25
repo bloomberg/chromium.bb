@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <linux/videodev2.h>
+#include <string.h>
 #include <sys/mman.h>
 
 #include "base/big_endian.h"

@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
@@ -80,7 +84,7 @@ class V8ValueConverterImplTest : public testing::Test {
     return std::string(*utf8, utf8.length());
   }
 
-  std::string GetString(base::ListValue* value, uint32 index) {
+  std::string GetString(base::ListValue* value, uint32_t index) {
     std::string temp;
     if (!value->GetString(static_cast<size_t>(index), &temp)) {
       ADD_FAILURE();
@@ -89,7 +93,7 @@ class V8ValueConverterImplTest : public testing::Test {
     return temp;
   }
 
-  std::string GetString(v8::Local<v8::Array> value, uint32 index) {
+  std::string GetString(v8::Local<v8::Array> value, uint32_t index) {
     v8::Local<v8::String> temp = value->Get(index).As<v8::String>();
     if (temp.IsEmpty()) {
       ADD_FAILURE();
@@ -118,7 +122,7 @@ class V8ValueConverterImplTest : public testing::Test {
     return child->IsNull();
   }
 
-  bool IsNull(base::ListValue* value, uint32 index) {
+  bool IsNull(base::ListValue* value, uint32_t index) {
     base::Value* child = NULL;
     if (!value->Get(static_cast<size_t>(index), &child)) {
       ADD_FAILURE();
@@ -127,7 +131,7 @@ class V8ValueConverterImplTest : public testing::Test {
     return child->GetType() == base::Value::TYPE_NULL;
   }
 
-  bool IsNull(v8::Local<v8::Array> value, uint32 index) {
+  bool IsNull(v8::Local<v8::Array> value, uint32_t index) {
     v8::Local<v8::Value> child = value->Get(index);
     if (child.IsEmpty()) {
       ADD_FAILURE();

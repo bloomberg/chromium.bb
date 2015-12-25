@@ -19,7 +19,7 @@ WebMemoryAllocatorDumpImpl::~WebMemoryAllocatorDumpImpl() {
 
 void WebMemoryAllocatorDumpImpl::addScalar(const char* name,
                                            const char* units,
-                                           uint64 value) {
+                                           uint64_t value) {
   memory_allocator_dump_->AddScalar(name, units, value);
 }
 

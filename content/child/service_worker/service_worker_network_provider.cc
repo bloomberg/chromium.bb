@@ -136,7 +136,7 @@ ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
 }
 
 void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
-    int64 version_id) {
+    int64_t version_id) {
   DCHECK_NE(kInvalidServiceWorkerProviderId, provider_id_);
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.

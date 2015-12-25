@@ -4,9 +4,12 @@
 
 #include "content/child/child_shared_bitmap_manager.h"
 
+#include <stddef.h>
+
 #include "base/debug/alias.h"
 #include "base/process/memory.h"
 #include "base/process/process_metrics.h"
+#include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/child_process_messages.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,7 +23,7 @@ class ChildSharedBitmap : public SharedMemoryBitmap {
   ChildSharedBitmap(scoped_refptr<ThreadSafeSender> sender,
                     base::SharedMemory* shared_memory,
                     const cc::SharedBitmapId& id)
-      : SharedMemoryBitmap(static_cast<uint8*>(shared_memory->memory()),
+      : SharedMemoryBitmap(static_cast<uint8_t*>(shared_memory->memory()),
                            id,
                            shared_memory),
         sender_(sender) {}
@@ -67,11 +70,10 @@ void CollectMemoryUsageAndDie(const gfx::Size& size, size_t alloc_size) {
 
 }  // namespace
 
-SharedMemoryBitmap::SharedMemoryBitmap(uint8* pixels,
+SharedMemoryBitmap::SharedMemoryBitmap(uint8_t* pixels,
                                        const cc::SharedBitmapId& id,
                                        base::SharedMemory* shared_memory)
-    : SharedBitmap(pixels, id), shared_memory_(shared_memory) {
-}
+    : SharedBitmap(pixels, id), shared_memory_(shared_memory) {}
 
 ChildSharedBitmapManager::ChildSharedBitmapManager(
     scoped_refptr<ThreadSafeSender> sender)

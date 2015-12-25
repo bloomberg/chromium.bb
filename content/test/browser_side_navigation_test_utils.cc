@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/public/browser/browser_thread.h"

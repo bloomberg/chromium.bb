@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_RENDERER_SHELL_RENDER_VIEW_OBSERVER_H_
 #define CONTENT_SHELL_RENDERER_SHELL_RENDER_VIEW_OBSERVER_H_
 
+#include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace blink {

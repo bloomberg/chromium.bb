@@ -5,7 +5,7 @@
 #ifndef CONTENT_TEST_PPAPI_UNITTEST_H_
 #define CONTENT_TEST_PPAPI_UNITTEST_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"

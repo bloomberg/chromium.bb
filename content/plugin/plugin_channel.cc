@@ -4,6 +4,8 @@
 
 #include "content/plugin/plugin_channel.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/process/process_handle.h"
@@ -304,8 +306,8 @@ void PluginChannel::OnGenerateRouteID(int* route_id) {
 }
 
 void PluginChannel::OnClearSiteData(const std::string& site,
-                                    uint64 flags,
-                                    uint64 max_age) {
+                                    uint64_t flags,
+                                    uint64_t max_age) {
   bool success = false;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath path = command_line->GetSwitchValuePath(switches::kPluginPath);

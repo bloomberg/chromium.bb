@@ -5,6 +5,9 @@
 #ifndef CONTENT_CHILD_CHILD_SHARED_BITMAP_MANAGER_H_
 #define CONTENT_CHILD_CHILD_SHARED_BITMAP_MANAGER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
@@ -18,7 +21,7 @@ class SharedMemoryBitmap : public cc::SharedBitmap {
   base::SharedMemory* shared_memory() { return shared_memory_; }
 
  protected:
-  SharedMemoryBitmap(uint8* pixels,
+  SharedMemoryBitmap(uint8_t* pixels,
                      const cc::SharedBitmapId& id,
                      base::SharedMemory* shared_memory);
 

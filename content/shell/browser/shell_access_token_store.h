@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_ACCESS_TOKEN_STORE_H_
 #define CONTENT_SHELL_BROWSER_SHELL_ACCESS_TOKEN_STORE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/access_token_store.h"
 #include "net/url_request/url_request_context_getter.h"

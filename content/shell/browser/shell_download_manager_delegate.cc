@@ -13,8 +13,10 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -102,7 +104,7 @@ bool ShellDownloadManagerDelegate::ShouldOpenDownload(
 
 void ShellDownloadManagerDelegate::GetNextId(
     const DownloadIdCallback& callback) {
-  static uint32 next_id = DownloadItem::kInvalidId + 1;
+  static uint32_t next_id = DownloadItem::kInvalidId + 1;
   callback.Run(next_id++);
 }
 
@@ -131,7 +133,7 @@ void ShellDownloadManagerDelegate::GenerateFilename(
 }
 
 void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
-    uint32 download_id,
+    uint32_t download_id,
     const DownloadTargetCallback& callback,
     const base::FilePath& suggested_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -147,7 +149,7 @@ void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
 }
 
 void ShellDownloadManagerDelegate::ChooseDownloadPath(
-    uint32 download_id,
+    uint32_t download_id,
     const DownloadTargetCallback& callback,
     const base::FilePath& suggested_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

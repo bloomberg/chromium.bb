@@ -4,7 +4,8 @@
 
 #include "content/child/npapi/webplugin_delegate_impl.h"
 
-#include "base/basictypes.h"
+#include <string.h>
+
 #include "base/logging.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/webplugin.h"

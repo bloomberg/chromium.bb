@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/vaapi_jpeg_decoder.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include "base/logging.h"
 #include "base/macros.h"

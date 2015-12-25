@@ -5,9 +5,12 @@
 #ifndef CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_IMAGE_LOADER_H_
 #define CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_IMAGE_LOADER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"

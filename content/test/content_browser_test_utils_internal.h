@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "url/gurl.h"
 

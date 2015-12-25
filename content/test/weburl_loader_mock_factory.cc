@@ -4,9 +4,12 @@
 
 #include "content/test/weburl_loader_mock_factory.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/test/weburl_loader_mock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -169,7 +172,7 @@ bool WebURLLoaderMockFactory::ReadFile(const base::FilePath& file_path,
   if (file_path.empty())
     return true;
 
-  int64 file_size = 0;
+  int64_t file_size = 0;
   if (!base::GetFileSize(file_path, &file_size))
     return false;
 

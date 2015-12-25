@@ -4,6 +4,8 @@
 //
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include "build/build_config.h"
 #include "content/child/plugin_param_traits.h"
 #include "content/common/content_export.h"
@@ -38,8 +40,8 @@ IPC_STRUCT_BEGIN(PluginMsg_DidReceiveResponseParams)
   IPC_STRUCT_MEMBER(unsigned long, id)
   IPC_STRUCT_MEMBER(std::string, mime_type)
   IPC_STRUCT_MEMBER(std::string, headers)
-  IPC_STRUCT_MEMBER(uint32, expected_length)
-  IPC_STRUCT_MEMBER(uint32, last_modified)
+  IPC_STRUCT_MEMBER(uint32_t, expected_length)
+  IPC_STRUCT_MEMBER(uint32_t, last_modified)
   IPC_STRUCT_MEMBER(bool, request_is_seekable)
 IPC_STRUCT_END()
 
@@ -280,9 +282,9 @@ IPC_MESSAGE_ROUTED0(PluginHostMsg_AcceleratedPluginEnabledRendering)
 // IOSurface allocated by this plugin must be implicitly released by
 // the receipt of this message.
 IPC_MESSAGE_ROUTED3(PluginHostMsg_AcceleratedPluginAllocatedIOSurface,
-                    int32 /* width */,
-                    int32 /* height */,
-                    uint32 /* surface_id */)
+                    int32_t /* width */,
+                    int32_t /* height */,
+                    uint32_t /* surface_id */)
 
 // Notifies the renderer process that the plugin produced a new frame
 // of content into its IOSurface, and therefore that the compositor

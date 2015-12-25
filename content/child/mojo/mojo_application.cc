@@ -4,6 +4,7 @@
 
 #include "content/child/mojo/mojo_application.h"
 
+#include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/application_setup.mojom.h"
 #include "content/common/mojo/channel_init.h"

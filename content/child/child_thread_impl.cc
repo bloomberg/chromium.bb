@@ -9,13 +9,13 @@
 #include <string>
 
 #include "base/base_switches.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/profiler.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
 #include "base/process/process.h"
@@ -28,6 +28,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 #include "components/tracing/child_trace_message_filter.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
@@ -558,7 +559,7 @@ void ChildThreadImpl::Shutdown() {
   WebFileSystemImpl::DeleteThreadSpecificInstance();
 }
 
-void ChildThreadImpl::OnChannelConnected(int32 peer_pid) {
+void ChildThreadImpl::OnChannelConnected(int32_t peer_pid) {
   channel_connected_factory_.InvalidateWeakPtrs();
 }
 

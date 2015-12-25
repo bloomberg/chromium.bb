@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_video_source_host.h"
 
+#include <string.h>
+
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/public/renderer/renderer_ppapi_host.h"

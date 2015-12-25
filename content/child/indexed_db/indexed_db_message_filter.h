@@ -5,7 +5,9 @@
 #ifndef CONTENT_CHILD_INDEXED_DB_INDEXED_DB_MESSAGE_FILTER_H_
 #define CONTENT_CHILD_INDEXED_DB_INDEXED_DB_MESSAGE_FILTER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/worker_thread_message_filter.h"
 
@@ -31,10 +33,10 @@ class IndexedDBMessageFilter : public WorkerThreadMessageFilter {
   // ChildMessageFilter:
   void OnStaleMessageReceived(const IPC::Message& msg) override;
 
-  void OnStaleSuccessIDBDatabase(int32 ipc_thread_id,
-                                 int32 ipc_callbacks_id,
-                                 int32 ipc_database_callbacks_id,
-                                 int32 ipc_object_id,
+  void OnStaleSuccessIDBDatabase(int32_t ipc_thread_id,
+                                 int32_t ipc_callbacks_id,
+                                 int32_t ipc_database_callbacks_id,
+                                 int32_t ipc_object_id,
                                  const IndexedDBDatabaseMetadata&);
   void OnStaleUpgradeNeeded(const IndexedDBMsg_CallbacksUpgradeNeeded_Params&);
 

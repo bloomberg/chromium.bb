@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 

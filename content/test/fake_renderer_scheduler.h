@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_FAKE_RENDERER_SCHEDULER_H_
 #define CONTENT_TEST_FAKE_RENDERER_SCHEDULER_H_
 
+#include "base/macros.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 
 namespace content {

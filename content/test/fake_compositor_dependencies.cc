@@ -4,6 +4,8 @@
 
 #include "content/test/fake_compositor_dependencies.h"
 
+#include <stddef.h>
+
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/test/fake_external_begin_frame_source.h"

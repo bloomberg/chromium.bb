@@ -27,13 +27,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "PluginObject.h"
+#include <string.h>
+#include <stdint.h>
 
-#include "PluginTest.h"
-#include "base/strings/string_util.h"
 #include <cstdlib>
 #include <cstring>
 #include <string>
+
+#include "PluginObject.h"
+#include "PluginTest.h"
+#include "base/strings/string_util.h"
 
 #ifdef XP_UNIX
 #include <X11/Xlib.h>

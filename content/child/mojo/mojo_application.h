@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 #define CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 
+#include "base/macros.h"
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "ipc/ipc_platform_file.h"

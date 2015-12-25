@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_PLATFORM_DATA_AURA_H_
 #define CONTENT_SHELL_BROWSER_SHELL_PLATFORM_DATA_AURA_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_tree_host.h"
 

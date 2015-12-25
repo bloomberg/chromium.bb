@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/referrer.h"

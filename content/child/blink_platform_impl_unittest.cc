@@ -4,6 +4,8 @@
 
 #include "content/child/blink_platform_impl.h"
 
+#include <stdint.h>
+
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "net/base/ip_address_number.h"
@@ -51,7 +53,7 @@ TEST(BlinkPlatformTest, IsReservedIPAddress) {
   EXPECT_FALSE(platform_impl.isReservedIPAddress("127.0.0.1.example.com"));
 
   // Moar IPv4
-  uint8 address[4] = {0, 0, 0, 1};
+  uint8_t address[4] = {0, 0, 0, 1};
   for (int i = 0; i < 256; i++) {
     address[0] = i;
     std::string addressString =
@@ -83,7 +85,7 @@ TEST(BlinkPlatformTest, castWebSecurityOrigin) {
     const char* origin;
     const char* scheme;
     const char* host;
-    uint16 port;
+    uint16_t port;
   } cases[] = {
       {"http://example.com", "http", "example.com", 80},
       {"http://example.com:80", "http", "example.com", 80},

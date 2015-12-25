@@ -5,6 +5,7 @@
 // Unit test for VideoCaptureController.
 
 #include <stdint.h>
+#include <string.h>
 
 #include <string>
 

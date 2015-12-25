@@ -4,14 +4,17 @@
 
 #include "content/child/content_child_helpers.h"
 
-#if defined(OS_LINUX)
-#include <malloc.h>
-#endif
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_metrics.h"
+#include "build/build_config.h"
 #include "v8/include/v8.h"
+
+#if defined(OS_LINUX)
+#include <malloc.h>
+#endif
 
 namespace content {
 

@@ -5,6 +5,8 @@
 #ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_PERMISSION_MANAGER_H_
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_PERMISSION_MANAGER_H_
 
+#include <stddef.h>
+
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/id_map.h"

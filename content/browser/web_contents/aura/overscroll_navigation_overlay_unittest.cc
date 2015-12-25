@@ -4,6 +4,8 @@
 
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 
+#include <string.h>
+
 #include <vector>
 
 #include "base/macros.h"

@@ -5,11 +5,13 @@
 #ifndef CONTENT_TEST_TEST_RENDER_VIEW_HOST_H_
 #define CONTENT_TEST_TEST_RENDER_VIEW_HOST_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -88,7 +90,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool IsSpeaking() const override;
   void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
-  void OnSwapCompositorFrame(uint32 output_surface_id,
+  void OnSwapCompositorFrame(uint32_t output_surface_id,
                              scoped_ptr<cc::CompositorFrame> frame) override;
   void ClearCompositorFrame() override {}
 
@@ -203,8 +205,8 @@ class TestRenderViewHost
   TestRenderViewHost(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
                      RenderWidgetHostDelegate* widget_delegate,
-                     int32 routing_id,
-                     int32 main_frame_routing_id,
+                     int32_t routing_id,
+                     int32_t main_frame_routing_id,
                      bool swapped_out);
   ~TestRenderViewHost() override;
 
@@ -234,14 +236,14 @@ class TestRenderViewHost
   bool CreateTestRenderView(const base::string16& frame_name,
                             int opener_frame_route_id,
                             int proxy_route_id,
-                            int32 max_page_id,
+                            int32_t max_page_id,
                             bool window_was_created_with_opener) override;
 
   // RenderViewHost overrides --------------------------------------------------
 
   bool CreateRenderView(int opener_frame_route_id,
                         int proxy_route_id,
-                        int32 max_page_id,
+                        int32_t max_page_id,
                         const FrameReplicationState& replicated_frame_state,
                         bool window_was_created_with_opener) override;
 

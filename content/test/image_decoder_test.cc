@@ -4,6 +4,8 @@
 
 #include "content/test/image_decoder_test.h"
 
+#include <stddef.h>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -13,6 +15,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -29,11 +32,11 @@ const int kFirstFrameIndex = 0;
 // on |file_selection| and the |threshold| for the file size.
 bool ShouldSkipFile(const base::FilePath& path,
                     ImageDecoderTestFileSelection file_selection,
-                    const int64 threshold) {
+                    const int64_t threshold) {
   if (file_selection == TEST_ALL)
     return false;
 
-  int64 image_size = 0;
+  int64_t image_size = 0;
   base::GetFileSize(path, &image_size);
   return (file_selection == TEST_SMALLER) == (image_size > threshold);
 }
@@ -150,7 +153,7 @@ bool ImageDecoderTest::ShouldImageFail(const base::FilePath& path) const {
 
 void ImageDecoderTest::TestDecoding(
     ImageDecoderTestFileSelection file_selection,
-    const int64 threshold) {
+    const int64_t threshold) {
   if (data_dir_.empty())
     return;
   const std::vector<base::FilePath> image_files(GetImageFiles());
