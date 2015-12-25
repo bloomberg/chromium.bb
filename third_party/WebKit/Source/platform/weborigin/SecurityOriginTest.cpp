@@ -48,7 +48,7 @@ TEST_F(SecurityOriginTest, InvalidPortsCreateUniqueOrigins)
 {
     int ports[] = { -100, -1, MaxAllowedPort + 1, 1000000 };
 
-    for (size_t i = 0; i < arraysize(ports); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(ports); ++i) {
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create("http", "example.com", ports[i]);
         EXPECT_TRUE(origin->isUnique()) << "Port " << ports[i] << " should have generated a unique origin.";
     }
@@ -58,7 +58,7 @@ TEST_F(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins)
 {
     int ports[] = { 0, 80, 443, 5000, MaxAllowedPort };
 
-    for (size_t i = 0; i < arraysize(ports); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(ports); ++i) {
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create("http", "example.com", ports[i]);
         EXPECT_FALSE(origin->isUnique()) << "Port " << ports[i] << " should not have generated a unique origin.";
     }
@@ -153,7 +153,7 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy)
         { false, "filesystem:ftp://evil:99/foo" },
     };
 
-    for (size_t i = 0; i < arraysize(inputs); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(inputs); ++i) {
         SCOPED_TRACE(i);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(inputs[i].url);
         String errorMessage;
@@ -306,7 +306,7 @@ TEST_F(SecurityOriginTest, CanAccess)
         { true, true, "https://name_foobar.com", "https://name_foobar.com" },
     };
 
-    for (size_t i = 0; i < arraysize(tests); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
         RefPtr<SecurityOrigin> origin1 = SecurityOrigin::createFromString(tests[i].origin1);
         RefPtr<SecurityOrigin> origin2 = SecurityOrigin::createFromString(tests[i].origin2);
         EXPECT_EQ(tests[i].canAccess, origin1->canAccess(origin2.get()));
@@ -332,7 +332,7 @@ TEST_F(SecurityOriginTest, CanRequest)
         { false, false, "https://name_foobar.com", "https://bazbar.com" },
     };
 
-    for (size_t i = 0; i < arraysize(tests); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
         RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(tests[i].origin);
         blink::KURL url(blink::ParsedURLString, tests[i].url);
         EXPECT_EQ(tests[i].canRequest, origin->canRequest(url));

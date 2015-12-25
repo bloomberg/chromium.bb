@@ -59,7 +59,7 @@ TEST(DatabaseIdentifierTest, CreateIdentifierFromSecurityOrigin)
         {"non-standard", "foobar.com", 0, "non-standard__0"},
     };
 
-    for (size_t i = 0; i < arraysize(cases); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); ++i) {
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create(cases[i].protocol, cases[i].host, cases[i].port);
         String identifier = createDatabaseIdentifierFromSecurityOrigin(origin.get());
         EXPECT_EQ(cases[i].expectedIdentifier, identifier) << "test case " << origin->toString();
@@ -181,7 +181,7 @@ TEST(DatabaseIdentifierTest, CreateIdentifierAllHostChars)
         {"x\x80x", "__0", false},
     };
 
-    for (size_t i = 0; i < arraysize(cases); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); ++i) {
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create("http", cases[i].hostname, 80);
         String identifier = createDatabaseIdentifierFromSecurityOrigin(origin.get());
         EXPECT_EQ(cases[i].expected, identifier) << "test case " << i << ": \"" << cases[i].hostname << "\"";
@@ -218,7 +218,7 @@ TEST(DatabaseIdentifierTest, CreateSecurityOriginFromIdentifier)
         {"http_escaped%3Dfun.com_0", "http", "escaped%3dfun.com", 0, "http://escaped%3dfun.com", false},
     };
 
-    for (size_t i = 0; i < arraysize(validCases); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(validCases); ++i) {
         RefPtr<SecurityOrigin> origin = createSecurityOriginFromDatabaseIdentifier(validCases[i].identifier);
         EXPECT_EQ(validCases[i].expectedProtocol, origin->protocol()) << "test case " << i;
         EXPECT_EQ(validCases[i].expectedHost, origin->host()) << "test case " << i;
@@ -244,7 +244,7 @@ TEST(DatabaseIdentifierTest, CreateSecurityOriginFromIdentifier)
         "http_not_canonical_escape%3d_0",
     };
 
-    for (size_t i = 0; i < arraysize(bogusIdentifiers); ++i) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(bogusIdentifiers); ++i) {
         RefPtr<SecurityOrigin> origin = createSecurityOriginFromDatabaseIdentifier(bogusIdentifiers[i]);
         EXPECT_EQ("null", origin->toString()) << "test case " << i;
         EXPECT_EQ(true, origin->isUnique()) << "test case " << i;

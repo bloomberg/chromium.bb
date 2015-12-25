@@ -975,7 +975,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     setupFlags();
 
 #define ADD_VALUES_TO_SET(set, values) \
-    for (size_t i = 0; i < arraysize(values); ++i) {   \
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(values); ++i) {   \
         set.insert(values[i]);                         \
     }
 

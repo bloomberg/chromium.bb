@@ -128,7 +128,7 @@ public:
     {
     }
 
-    uint8* pixels() override
+    uint8_t* pixels() override
     {
         return nullptr;
     }

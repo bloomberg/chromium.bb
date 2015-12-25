@@ -6,6 +6,8 @@
 #define CONTENT_SHELL_APP_SHELL_CRASH_REPORTER_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 
 namespace content {

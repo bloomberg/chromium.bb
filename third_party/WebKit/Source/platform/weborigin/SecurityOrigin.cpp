@@ -410,7 +410,7 @@ bool SecurityOrigin::isLocalhost() const
     // Test if m_host matches 127.0.0.1/8
     ASSERT(m_host.containsOnlyASCII());
     CString hostAscii = m_host.ascii();
-    Vector<uint8, 4> ipNumber;
+    Vector<uint8_t, 4> ipNumber;
     ipNumber.resize(4);
 
     int numComponents;

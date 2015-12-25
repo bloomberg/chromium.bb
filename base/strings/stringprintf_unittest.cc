@@ -5,8 +5,10 @@
 #include "base/strings/stringprintf.h"
 
 #include <errno.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

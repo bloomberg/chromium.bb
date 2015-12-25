@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/private/ppb_char_set_shared.h"
 
+#include <string.h>
+
 #include <algorithm>
 
 #include "base/i18n/icu_string_conversions.h"

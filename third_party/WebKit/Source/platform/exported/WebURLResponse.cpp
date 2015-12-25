@@ -160,7 +160,7 @@ void WebURLResponse::setHTTPLoadInfo(const WebHTTPLoadInfo& value)
 
 void WebURLResponse::setResponseTime(long long responseTime)
 {
-    m_private->m_resourceResponse->setResponseTime(static_cast<int64>(responseTime));
+    m_private->m_resourceResponse->setResponseTime(static_cast<int64_t>(responseTime));
 }
 
 WebString WebURLResponse::mimeType() const

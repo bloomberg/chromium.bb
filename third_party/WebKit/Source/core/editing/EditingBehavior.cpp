@@ -192,11 +192,11 @@ const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
         keyDownCommandsMap = new HashMap<int, const char*>;
         keyPressCommandsMap = new HashMap<int, const char*>;
 
-        for (unsigned i = 0; i < arraysize(keyDownEntries); i++) {
+        for (unsigned i = 0; i < WTF_ARRAY_LENGTH(keyDownEntries); i++) {
             keyDownCommandsMap->set(keyDownEntries[i].modifiers << 16 | keyDownEntries[i].virtualKey, keyDownEntries[i].name);
         }
 
-        for (unsigned i = 0; i < arraysize(keyPressEntries); i++) {
+        for (unsigned i = 0; i < WTF_ARRAY_LENGTH(keyPressEntries); i++) {
             keyPressCommandsMap->set(keyPressEntries[i].modifiers << 16 | keyPressEntries[i].charCode, keyPressEntries[i].name);
         }
     }

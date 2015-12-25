@@ -9,6 +9,9 @@
 
 #include <limits>
 
+#include "base/macros.h"
+#include "build/build_config.h"
+
 #if !defined(NDEBUG)
 // In debug builds, we use RAW_CHECK() to print useful error messages, if
 // SafeSPrintf() is called with broken arguments.

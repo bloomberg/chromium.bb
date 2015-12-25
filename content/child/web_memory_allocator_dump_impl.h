@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_WEB_MEMORY_ALLOCATOR_DUMP_IMPL_H_
 #define CONTENT_CHILD_WEB_MEMORY_ALLOCATOR_DUMP_IMPL_H_
 
+#include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebMemoryAllocatorDump.h"
 
 namespace base {

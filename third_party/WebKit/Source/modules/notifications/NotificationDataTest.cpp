@@ -49,7 +49,7 @@ private:
 TEST_F(NotificationDataTest, ReflectProperties)
 {
     Vector<unsigned> vibrationPattern;
-    for (size_t i = 0; i < arraysize(kNotificationVibration); ++i)
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNotificationVibration); ++i)
         vibrationPattern.append(kNotificationVibration[i]);
 
     UnsignedLongOrUnsignedLongSequence vibrationSequence;
@@ -102,7 +102,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
 TEST_F(NotificationDataTest, SilentNotificationWithVibration)
 {
     Vector<unsigned> vibrationPattern;
-    for (size_t i = 0; i < arraysize(kNotificationVibration); ++i)
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNotificationVibration); ++i)
         vibrationPattern.append(kNotificationVibration[i]);
 
     UnsignedLongOrUnsignedLongSequence vibrationSequence;
@@ -134,7 +134,7 @@ TEST_F(NotificationDataTest, InvalidIconUrl)
 TEST_F(NotificationDataTest, VibrationNormalization)
 {
     Vector<unsigned> unnormalizedPattern;
-    for (size_t i = 0; i < arraysize(kNotificationVibrationUnnormalized); ++i)
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNotificationVibrationUnnormalized); ++i)
         unnormalizedPattern.append(kNotificationVibrationUnnormalized[i]);
 
     UnsignedLongOrUnsignedLongSequence vibrationSequence;
@@ -148,7 +148,7 @@ TEST_F(NotificationDataTest, VibrationNormalization)
     EXPECT_FALSE(exceptionState.hadException());
 
     Vector<int> normalizedPattern;
-    for (size_t i = 0; i < arraysize(kNotificationVibrationNormalized); ++i)
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNotificationVibrationNormalized); ++i)
         normalizedPattern.append(kNotificationVibrationNormalized[i]);
 
     ASSERT_EQ(normalizedPattern.size(), notificationData.vibrate.size());

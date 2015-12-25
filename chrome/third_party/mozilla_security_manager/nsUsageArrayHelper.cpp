@@ -37,6 +37,7 @@
 
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
 
+#include "base/macros.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

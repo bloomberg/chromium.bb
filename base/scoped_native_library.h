@@ -6,6 +6,7 @@
 #define BASE_SCOPED_NATIVE_LIBRARY_H_
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/native_library.h"
 
 namespace base {

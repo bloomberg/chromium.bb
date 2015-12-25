@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_INDEXED_DB_MOCK_WEBIDBCALLBACKS_H_
 #define CONTENT_CHILD_INDEXED_DB_MOCK_WEBIDBCALLBACKS_H_
 
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"

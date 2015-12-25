@@ -58,7 +58,7 @@ void RegistryEntry::AddToWorkItemList(HKEY root, WorkItemList* items) const {
   }
 }
 
-bool RegistryEntry::ExistsInRegistry(uint32 look_for_in) const {
+bool RegistryEntry::ExistsInRegistry(uint32_t look_for_in) const {
   DCHECK(look_for_in);
 
   RegistryStatus status = DOES_NOT_EXIST;
@@ -69,7 +69,7 @@ bool RegistryEntry::ExistsInRegistry(uint32 look_for_in) const {
   return status == SAME_VALUE;
 }
 
-bool RegistryEntry::KeyExistsInRegistry(uint32 look_for_in) const {
+bool RegistryEntry::KeyExistsInRegistry(uint32_t look_for_in) const {
   DCHECK(look_for_in);
 
   RegistryStatus status = DOES_NOT_EXIST;

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARKS_TRACKER_H_
 #define COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARKS_TRACKER_H_
 
+#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"

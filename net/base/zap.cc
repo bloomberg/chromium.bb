@@ -4,6 +4,8 @@
 
 #include "net/base/zap.h"
 
+#include <string.h>
+
 namespace net {
 
 void ZapBuf(void* buf, size_t buf_len) {

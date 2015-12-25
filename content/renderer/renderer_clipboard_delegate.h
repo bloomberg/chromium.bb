@@ -6,10 +6,12 @@
 #define CONTENT_RENDERER_RENDERER_CLIPBOARD_DELEGATE_H_
 
 #include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"

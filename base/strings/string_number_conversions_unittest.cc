@@ -5,6 +5,7 @@
 #include "base/strings/string_number_conversions.h"
 
 #include <errno.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -12,6 +13,7 @@
 #include <limits>
 
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,7 +67,7 @@ TEST(StringNumberConversionsTest, IntToString) {
 
 TEST(StringNumberConversionsTest, Uint64ToString) {
   static const struct {
-    uint64 input;
+    uint64_t input;
     std::string output;
   } cases[] = {
       {0, "0"},
@@ -296,7 +298,7 @@ TEST(StringNumberConversionsTest, StringToInt64) {
 TEST(StringNumberConversionsTest, StringToUint64) {
   static const struct {
     std::string input;
-    uint64 output;
+    uint64_t output;
     bool success;
   } cases[] = {
       {"0", 0, true},
@@ -335,7 +337,7 @@ TEST(StringNumberConversionsTest, StringToUint64) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    uint64 output = 0;
+    uint64_t output = 0;
     EXPECT_EQ(cases[i].success, StringToUint64(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
 
@@ -350,7 +352,7 @@ TEST(StringNumberConversionsTest, StringToUint64) {
   // interpreted as junk after the number.
   const char input[] = "6\06";
   std::string input_string(input, arraysize(input) - 1);
-  uint64 output;
+  uint64_t output;
   EXPECT_FALSE(StringToUint64(input_string, &output));
   EXPECT_EQ(6U, output);
 
@@ -608,7 +610,7 @@ TEST(StringNumberConversionsTest, HexStringToInt64) {
 TEST(StringNumberConversionsTest, HexStringToUInt64) {
   static const struct {
     std::string input;
-    uint64 output;
+    uint64_t output;
     bool success;
   } cases[] = {
       {"0", 0, true},
@@ -654,7 +656,7 @@ TEST(StringNumberConversionsTest, HexStringToUInt64) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    uint64 output = 0;
+    uint64_t output = 0;
     EXPECT_EQ(cases[i].success, HexStringToUInt64(cases[i].input, &output));
     EXPECT_EQ(cases[i].output, output);
   }
@@ -663,7 +665,7 @@ TEST(StringNumberConversionsTest, HexStringToUInt64) {
   // interpreted as junk after the number.
   const char input[] = "0xc0ffee\0" "9";
   std::string input_string(input, arraysize(input) - 1);
-  uint64 output;
+  uint64_t output;
   EXPECT_FALSE(HexStringToUInt64(input_string, &output));
   EXPECT_EQ(0xc0ffeeU, output);
 }

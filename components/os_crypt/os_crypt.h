@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 // The OSCrypt class gives access to simple encryption and decryption of

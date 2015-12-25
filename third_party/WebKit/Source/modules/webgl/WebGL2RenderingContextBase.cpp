@@ -112,10 +112,10 @@ const GLenum kCompressedTextureFormatsETC2EAC[] = {
 WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : WebGLRenderingContextBase(passedCanvas, context, requestedAttributes)
 {
-    m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + arraysize(kSupportedInternalFormatsStorage));
-    m_supportedInternalFormatsStorage.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + arraysize(kCompressedTextureFormatsETC2EAC));
-    m_compressedTextureFormatsETC2EAC.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + arraysize(kCompressedTextureFormatsETC2EAC));
-    m_compressedTextureFormats.append(kCompressedTextureFormatsETC2EAC, arraysize(kCompressedTextureFormatsETC2EAC));
+    m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
+    m_supportedInternalFormatsStorage.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + WTF_ARRAY_LENGTH(kCompressedTextureFormatsETC2EAC));
+    m_compressedTextureFormatsETC2EAC.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + WTF_ARRAY_LENGTH(kCompressedTextureFormatsETC2EAC));
+    m_compressedTextureFormats.append(kCompressedTextureFormatsETC2EAC, WTF_ARRAY_LENGTH(kCompressedTextureFormatsETC2EAC));
 }
 
 WebGL2RenderingContextBase::~WebGL2RenderingContextBase()

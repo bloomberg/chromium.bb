@@ -609,7 +609,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
         DepthStencilTestCase(true, true, true, 1, "both"),
     };
 
-    for (size_t i = 0; i < arraysize(cases); i++) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
         SCOPED_TRACE(cases[i].testCaseName);
         OwnPtr<DepthStencilTrackingContext> context = adoptPtr(new DepthStencilTrackingContext);
         DepthStencilTrackingContext* trackingContext = context.get();

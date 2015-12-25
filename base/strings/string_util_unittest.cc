@@ -6,10 +6,12 @@
 
 #include <math.h>
 #include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -549,7 +551,7 @@ TEST(StringUtilTest, LowerCaseEqualsASCII) {
 
 TEST(StringUtilTest, FormatBytesUnlocalized) {
   static const struct {
-    int64 bytes;
+    int64_t bytes;
     const char* expected;
   } cases[] = {
     // Expected behavior: we show one post-decimal digit when we have

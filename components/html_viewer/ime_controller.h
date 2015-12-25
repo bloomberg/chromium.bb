@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_IME_CONTROLLER_H_
 #define COMPONENTS_HTML_VIEWER_IME_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "third_party/WebKit/public/web/WebTextInputInfo.h"
 
 namespace blink {

@@ -110,7 +110,7 @@ static bool sanityCheckMutableProperties(uint32_t properties)
 {
     // Ensures that we only have bits set for valid mutable properties.
     uint32_t sanityCheckProperties = properties;
-    for (unsigned i = 0; i < arraysize(allowedProperties); ++i) {
+    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(allowedProperties); ++i) {
         sanityCheckProperties &= ~static_cast<uint32_t>(allowedProperties[i].property);
     }
     return !sanityCheckProperties;

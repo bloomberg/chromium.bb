@@ -73,7 +73,7 @@ TEST(KURLTest, SameGetters)
         {"javascript:hello!//world", "javascript", "", 0, "", 0, "world", 0, 0, false},
     };
 
-    for (size_t i = 0; i < arraysize(cases); i++) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
         // UTF-8
         KURL kurl(ParsedURLString, cases[i].url);
 
@@ -125,7 +125,7 @@ TEST(KURLTest, DISABLED_DifferentGetters)
         {"http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http", "www.google.com", 0, "", 0,  "blah", "bar=baz", "\xce\xb1\xce\xb2"},
     };
 
-    for (size_t i = 0; i < arraysize(cases); i++) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
         KURL kurl(ParsedURLString, cases[i].url);
 
         EXPECT_EQ(cases[i].protocol, kurl.protocol());
@@ -236,7 +236,7 @@ TEST(KURLTest, Setters)
         },
     };
 
-    for (size_t i = 0; i < arraysize(cases); i++) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
         KURL kurl(ParsedURLString, cases[i].url);
 
         kurl.setProtocol(cases[i].protocol);
@@ -285,7 +285,7 @@ TEST(KURLTest, Decode)
         {"%e4%bd%a0%e5%a5%bd", "\xe4\xbd\xa0\xe5\xa5\xbd"},
     };
 
-    for (size_t i = 0; i < arraysize(decodeCases); i++) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(decodeCases); i++) {
         String input(decodeCases[i].input);
         String str = decodeURLEscapeSequences(input);
         EXPECT_STREQ(decodeCases[i].output, str.utf8().data());
@@ -328,7 +328,7 @@ TEST(KURLTest, Encode)
           "pqrstuvwxyz%7B%7C%7D~%7F"},
     };
 
-    for (size_t i = 0; i < arraysize(encode_cases); i++) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(encode_cases); i++) {
         String input(encode_cases[i].input);
         String expectedOutput(encode_cases[i].output);
         String output = encodeWithURLEscapeSequences(input);
@@ -755,7 +755,7 @@ TEST(KURLTest, strippedForUseAsReferrer)
         {"https://www.google.com/#", "https://www.google.com/"},
     };
 
-    for (size_t i = 0; i < arraysize(referrerCases); i++) {
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(referrerCases); i++) {
         KURL kurl(ParsedURLString, referrerCases[i].input);
         String referrer = kurl.strippedForUseAsReferrer();
         EXPECT_STREQ(referrerCases[i].output, referrer.utf8().data());

@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_UTIL_REGISTRY_ENTRY_H_
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -84,13 +85,13 @@ class RegistryEntry {
   // registrations outside of HKCR on versions of Windows prior to Win8,
   // Chrome's values go in HKLM. This function will make unnecessary (but
   // harmless) queries into HKCU in that case.
-  bool ExistsInRegistry(uint32 look_for_in) const;
+  bool ExistsInRegistry(uint32_t look_for_in) const;
 
   // Checks if the current registry entry exists in \|key_path_|\|name_|,
   // regardless of value. Same lookup rules as ExistsInRegistry.
   // Unlike ExistsInRegistry, this returns true if some other value is present
   // with the same key.
-  bool KeyExistsInRegistry(uint32 look_for_in) const;
+  bool KeyExistsInRegistry(uint32_t look_for_in) const;
 
   const base::string16& key_path() const { return key_path_; }
 

@@ -948,12 +948,12 @@ void DrawingBuffer::readBackFramebuffer(unsigned char* pixels, int width, int he
 void DrawingBuffer::flipVertically(uint8_t* framebuffer, int width, int height)
 {
     m_scanline.resize(width * 4);
-    uint8* scanline = &m_scanline[0];
+    uint8_t* scanline = &m_scanline[0];
     unsigned rowBytes = width * 4;
     unsigned count = height / 2;
     for (unsigned i = 0; i < count; i++) {
-        uint8* rowA = framebuffer + i * rowBytes;
-        uint8* rowB = framebuffer + (height - i - 1) * rowBytes;
+        uint8_t* rowA = framebuffer + i * rowBytes;
+        uint8_t* rowB = framebuffer + (height - i - 1) * rowBytes;
         memcpy(scanline, rowB, rowBytes);
         memcpy(rowB, rowA, rowBytes);
         memcpy(rowA, scanline, rowBytes);

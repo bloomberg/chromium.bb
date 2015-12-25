@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace dom_distiller {
