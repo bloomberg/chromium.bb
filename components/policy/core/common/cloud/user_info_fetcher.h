@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_USER_INFO_FETCHER_H_
 
 #include <string>
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/policy/policy_export.h"
 #include "net/url_request/url_fetcher_delegate.h"

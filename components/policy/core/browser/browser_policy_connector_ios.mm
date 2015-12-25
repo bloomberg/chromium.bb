@@ -4,6 +4,9 @@
 
 #include "components/policy/core/browser/browser_policy_connector_ios.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -34,9 +37,9 @@ class DeviceManagementServiceConfiguration
     std::string os_name = base::SysInfo::OperatingSystemName();
     std::string os_hardware = base::SysInfo::OperatingSystemArchitecture();
     std::string os_version("-");
-    int32 os_major_version = 0;
-    int32 os_minor_version = 0;
-    int32 os_bugfix_version = 0;
+    int32_t os_major_version = 0;
+    int32_t os_minor_version = 0;
+    int32_t os_bugfix_version = 0;
     base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                  &os_minor_version,
                                                  &os_bugfix_version);
@@ -80,7 +83,7 @@ void BrowserPolicyConnectorIOS::Init(
       new DeviceManagementService(configuration.Pass()));
 
   // Delay initialization of the cloud policy requests by 5 seconds.
-  const int64 kServiceInitializationStartupDelay = 5000;
+  const int64_t kServiceInitializationStartupDelay = 5000;
   device_management_service->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 

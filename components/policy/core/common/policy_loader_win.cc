@@ -9,6 +9,7 @@
 #include <ntdsapi.h>  // For Ds[Un]Bind
 #include <rpc.h>      // For struct GUID
 #include <shlwapi.h>  // For PathIsUNC()
+#include <stddef.h>
 #include <userenv.h>  // For GPO functions
 
 #include <string>
@@ -21,13 +22,13 @@
 // ntdsapi.dll is required for Ds[Un]Bind calls.
 #pragma comment(lib, "ntdsapi.lib")
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"

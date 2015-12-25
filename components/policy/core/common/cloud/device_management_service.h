@@ -5,14 +5,16 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_DEVICE_MANAGEMENT_SERVICE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_DEVICE_MANAGEMENT_SERVICE_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
@@ -142,7 +144,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
 
   // Schedules a task to run |Initialize| after |delay_milliseconds| had passed.
-  void ScheduleInitialization(int64 delay_milliseconds);
+  void ScheduleInitialization(int64_t delay_milliseconds);
 
   // Makes the service stop all requests.
   void Shutdown();

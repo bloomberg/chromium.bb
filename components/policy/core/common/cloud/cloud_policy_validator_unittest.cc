@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -71,7 +75,7 @@ class CloudPolicyValidatorTest : public testing::Test {
 
   scoped_ptr<UserCloudPolicyValidator> CreateValidator(
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response) {
-    std::vector<uint8> public_key_bytes;
+    std::vector<uint8_t> public_key_bytes;
     EXPECT_TRUE(
         PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(
             &public_key_bytes));

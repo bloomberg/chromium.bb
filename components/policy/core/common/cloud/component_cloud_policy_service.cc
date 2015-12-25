@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -11,6 +13,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_creator.h"
 
@@ -16,7 +18,7 @@ namespace policy {
 namespace {
 
 // Signing key test data in DER-encoded PKCS8 format.
-const uint8 kSigningKey[] = {
+const uint8_t kSigningKey[] = {
     0x30, 0x82, 0x01, 0x55, 0x02, 0x01, 0x00, 0x30, 0x0d, 0x06, 0x09, 0x2a,
     0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x04, 0x82,
     0x01, 0x3f, 0x30, 0x82, 0x01, 0x3b, 0x02, 0x01, 0x00, 0x02, 0x41, 0x00,
@@ -49,7 +51,7 @@ const uint8 kSigningKey[] = {
 };
 
 // SHA256 signature of kSigningKey for "example.com" domain.
-const uint8 kSigningKeySignature[] = {
+const uint8_t kSigningKeySignature[] = {
     0x97, 0xEB, 0x13, 0xE6, 0x6C, 0xE2, 0x7A, 0x2F, 0xC6, 0x6E, 0x68, 0x8F,
     0xED, 0x5B, 0x51, 0x08, 0x27, 0xF0, 0xA5, 0x97, 0x20, 0xEE, 0xE2, 0x9B,
     0x5B, 0x63, 0xA5, 0x9C, 0xAE, 0x41, 0xFD, 0x34, 0xC4, 0x2E, 0xEB, 0x63,
@@ -75,7 +77,7 @@ const uint8 kSigningKeySignature[] = {
 };
 
 // New signing key test data in DER-encoded PKCS8 format.
-const uint8 kNewSigningKey[] = {
+const uint8_t kNewSigningKey[] = {
     0x30, 0x82, 0x01, 0x54, 0x02, 0x01, 0x00, 0x30, 0x0d, 0x06, 0x09, 0x2a,
     0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x04, 0x82,
     0x01, 0x3e, 0x30, 0x82, 0x01, 0x3a, 0x02, 0x01, 0x00, 0x02, 0x41, 0x00,
@@ -108,7 +110,7 @@ const uint8 kNewSigningKey[] = {
 };
 
 // SHA256 signature of kNewSigningKey for "example.com" domain.
-const uint8 kNewSigningKeySignature[] = {
+const uint8_t kNewSigningKeySignature[] = {
     0x70, 0xED, 0x27, 0x42, 0x34, 0x69, 0xB6, 0x47, 0x9E, 0x7C, 0xA0, 0xF0,
     0xE5, 0x0A, 0x49, 0x49, 0x00, 0xDA, 0xBC, 0x70, 0x01, 0xC5, 0x4B, 0xDB,
     0x47, 0xD5, 0xAF, 0xA1, 0xAD, 0xB7, 0xE4, 0xE1, 0xBD, 0x5A, 0x1C, 0x35,
@@ -141,7 +143,7 @@ const char PolicyBuilder::kFakeDomain[] = "example.com";
 const char PolicyBuilder::kFakeMachineName[] = "machine-name";
 const char PolicyBuilder::kFakePolicyType[] = "policy type";
 const int PolicyBuilder::kFakePublicKeyVersion = 17;
-const int64 PolicyBuilder::kFakeTimestamp = 365LL * 24 * 60 * 60 * 1000;
+const int64_t PolicyBuilder::kFakeTimestamp = 365LL * 24 * 60 * 60 * 1000;
 const char PolicyBuilder::kFakeToken[] = "token";
 const char PolicyBuilder::kFakeUsername[] = "username@example.com";
 const char PolicyBuilder::kFakeServiceAccountIdentity[] = "robot4test@g.com";
@@ -174,7 +176,7 @@ void PolicyBuilder::SetSigningKey(const crypto::RSAPrivateKey& key) {
 }
 
 void PolicyBuilder::SetDefaultSigningKey() {
-  std::vector<uint8> key(kSigningKey, kSigningKey + arraysize(kSigningKey));
+  std::vector<uint8_t> key(kSigningKey, kSigningKey + arraysize(kSigningKey));
   raw_signing_key_.swap(key);
 }
 
@@ -190,15 +192,14 @@ scoped_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetNewSigningKey() {
 }
 
 void PolicyBuilder::SetDefaultNewSigningKey() {
-  std::vector<uint8> key(kNewSigningKey,
-                         kNewSigningKey + arraysize(kNewSigningKey));
+  std::vector<uint8_t> key(kNewSigningKey,
+                           kNewSigningKey + arraysize(kNewSigningKey));
   raw_new_signing_key_.swap(key);
   raw_new_signing_key_signature_ = GetTestOtherSigningKeySignature();
 }
 
 void PolicyBuilder::SetDefaultInitialSigningKey() {
-  std::vector<uint8> key(kSigningKey,
-                         kSigningKey + arraysize(kSigningKey));
+  std::vector<uint8_t> key(kSigningKey, kSigningKey + arraysize(kSigningKey));
   raw_new_signing_key_.swap(key);
   raw_new_signing_key_signature_ = GetTestSigningKeySignature();
   UnsetSigningKey();
@@ -214,7 +215,7 @@ void PolicyBuilder::Build() {
   scoped_ptr<crypto::RSAPrivateKey> policy_signing_key = GetNewSigningKey();
   if (policy_signing_key) {
     // Add the new public key.
-    std::vector<uint8> raw_new_public_signing_key;
+    std::vector<uint8_t> raw_new_public_signing_key;
     CHECK(policy_signing_key->ExportPublicKey(&raw_new_public_signing_key));
     policy_.set_new_public_key(raw_new_public_signing_key.data(),
                                raw_new_public_signing_key.size());
@@ -264,15 +265,15 @@ scoped_ptr<em::PolicyFetchResponse> PolicyBuilder::GetCopy() {
 
 // static
 scoped_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestSigningKey() {
-  std::vector<uint8> raw_signing_key(
-      kSigningKey, kSigningKey + arraysize(kSigningKey));
+  std::vector<uint8_t> raw_signing_key(kSigningKey,
+                                       kSigningKey + arraysize(kSigningKey));
   return scoped_ptr<crypto::RSAPrivateKey>(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key));
 }
 
 // static
 scoped_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestOtherSigningKey() {
-  std::vector<uint8> raw_new_signing_key(
+  std::vector<uint8_t> raw_new_signing_key(
       kNewSigningKey, kNewSigningKey + arraysize(kNewSigningKey));
   return scoped_ptr<crypto::RSAPrivateKey>(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_new_signing_key));
@@ -296,9 +297,9 @@ void PolicyBuilder::SignData(const std::string& data,
   scoped_ptr<crypto::SignatureCreator> signature_creator(
       crypto::SignatureCreator::Create(key,
                                        crypto::SignatureCreator::SHA1));
-  signature_creator->Update(reinterpret_cast<const uint8*>(data.c_str()),
+  signature_creator->Update(reinterpret_cast<const uint8_t*>(data.c_str()),
                             data.size());
-  std::vector<uint8> signature_bytes;
+  std::vector<uint8_t> signature_bytes;
   CHECK(signature_creator->Final(&signature_bytes));
   signature->assign(reinterpret_cast<const char*>(signature_bytes.data()),
                     signature_bytes.size());

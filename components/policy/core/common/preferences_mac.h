@@ -7,7 +7,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/policy/policy_export.h"
 
 // Wraps a small part of the CFPreferences API surface in a very thin layer, to

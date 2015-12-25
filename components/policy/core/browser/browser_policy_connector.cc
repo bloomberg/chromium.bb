@@ -4,11 +4,14 @@
 
 #include "components/policy/core/browser/browser_policy_connector.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -117,7 +120,7 @@ void BrowserPolicyConnector::Shutdown() {
 }
 
 void BrowserPolicyConnector::ScheduleServiceInitialization(
-    int64 delay_milliseconds) {
+    int64_t delay_milliseconds) {
   // Skip device initialization if the BrowserPolicyConnector was never
   // initialized (unit tests).
   if (device_management_service_)

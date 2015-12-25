@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_POLICY_HANDLER_H_
 #define COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_POLICY_HANDLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/policy_export.h"
 

@@ -23,7 +23,7 @@ CloudPolicyStore::~CloudPolicyStore() {
 
 void CloudPolicyStore::Store(
     const enterprise_management::PolicyFetchResponse& policy,
-    int64 invalidation_version) {
+    int64_t invalidation_version) {
   invalidation_version_ = invalidation_version;
   Store(policy);
 }

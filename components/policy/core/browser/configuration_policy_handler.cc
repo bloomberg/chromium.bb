@@ -4,11 +4,14 @@
 
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"

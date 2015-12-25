@@ -5,13 +5,16 @@
 #ifndef COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_MANAGER_H_
 #define COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -78,7 +81,7 @@ class POLICY_EXPORT URLBlacklist {
                                  std::string* scheme,
                                  std::string* host,
                                  bool* match_subdomains,
-                                 uint16* port,
+                                 uint16_t* port,
                                  std::string* path,
                                  std::string* query);
 
@@ -92,7 +95,7 @@ class POLICY_EXPORT URLBlacklist {
       const std::string& scheme,
       const std::string& host,
       bool match_subdomains,
-      uint16 port,
+      uint16_t port,
       const std::string& path,
       const std::string& query,
       bool allow);

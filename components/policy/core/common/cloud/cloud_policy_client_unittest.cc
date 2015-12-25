@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
@@ -12,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -484,7 +486,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithMetaData) {
 TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidation) {
   Register();
 
-  int64 previous_version = client_->fetched_invalidation_version();
+  int64_t previous_version = client_->fetched_invalidation_version();
   client_->SetInvalidationInfo(12345, "12345");
   EXPECT_EQ(previous_version, client_->fetched_invalidation_version());
   em::PolicyFetchRequest* policy_fetch_request =
@@ -502,7 +504,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidation) {
 TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidationNoPayload) {
   Register();
 
-  int64 previous_version = client_->fetched_invalidation_version();
+  int64_t previous_version = client_->fetched_invalidation_version();
   client_->SetInvalidationInfo(-12345, std::string());
   EXPECT_EQ(previous_version, client_->fetched_invalidation_version());
 

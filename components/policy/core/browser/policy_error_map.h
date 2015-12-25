@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_POLICY_CORE_BROWSER_POLICY_ERROR_MAP_H_
 #define COMPONENTS_POLICY_CORE_BROWSER_POLICY_ERROR_MAP_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "components/policy/policy_export.h"

@@ -7,7 +7,7 @@
 
 #include <bitset>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/policy/policy_export.h"
 
 namespace base {

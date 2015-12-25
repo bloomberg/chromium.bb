@@ -133,9 +133,8 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
                  base::Unretained(this)));
 }
 
-void CloudPolicyClient::SetInvalidationInfo(
-    int64 version,
-    const std::string& payload) {
+void CloudPolicyClient::SetInvalidationInfo(int64_t version,
+                                            const std::string& payload) {
   invalidation_version_ = version;
   invalidation_payload_ = payload;
 }

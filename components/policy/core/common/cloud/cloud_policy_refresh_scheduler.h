@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_REFRESH_SCHEDULER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_REFRESH_SCHEDULER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -28,14 +30,14 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // Refresh constants.
-  static const int64 kDefaultRefreshDelayMs;
-  static const int64 kUnmanagedRefreshDelayMs;
-  static const int64 kWithInvalidationsRefreshDelayMs;
-  static const int64 kInitialErrorRetryDelayMs;
+  static const int64_t kDefaultRefreshDelayMs;
+  static const int64_t kUnmanagedRefreshDelayMs;
+  static const int64_t kWithInvalidationsRefreshDelayMs;
+  static const int64_t kInitialErrorRetryDelayMs;
 
   // Refresh delay bounds.
-  static const int64 kRefreshDelayMinMs;
-  static const int64 kRefreshDelayMaxMs;
+  static const int64_t kRefreshDelayMinMs;
+  static const int64_t kRefreshDelayMaxMs;
 
   // |client| and |store| pointers must stay valid throughout the
   // lifetime of CloudPolicyRefreshScheduler.
@@ -46,10 +48,10 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   ~CloudPolicyRefreshScheduler() override;
 
   base::Time last_refresh() const { return last_refresh_; }
-  int64 refresh_delay() const { return refresh_delay_ms_; }
+  int64_t refresh_delay() const { return refresh_delay_ms_; }
 
   // Sets the refresh delay to |refresh_delay| (subject to min/max clamping).
-  void SetRefreshDelay(int64 refresh_delay);
+  void SetRefreshDelay(int64_t refresh_delay);
 
   // Requests a policy refresh to be performed soon.
   void RefreshSoon();
@@ -114,10 +116,10 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   base::Time last_refresh_;
 
   // Error retry delay in milliseconds.
-  int64 error_retry_delay_ms_;
+  int64_t error_retry_delay_ms_;
 
   // The refresh delay.
-  int64 refresh_delay_ms_;
+  int64_t refresh_delay_ms_;
 
   // Whether the invalidations service is available and receiving notifications
   // of policy updates.

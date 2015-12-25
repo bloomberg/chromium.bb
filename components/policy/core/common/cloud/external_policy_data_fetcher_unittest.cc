@@ -4,9 +4,12 @@
 
 #include "components/policy/core/common/cloud/external_policy_data_fetcher.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "net/base/net_errors.h"
@@ -26,7 +29,7 @@ const char* kExternalPolicyDataURLs[] = {
     "http://localhost/data_2"
 };
 
-const int64 kExternalPolicyDataMaxSize = 5 * 1024 * 1024;  // 5 MB.
+const int64_t kExternalPolicyDataMaxSize = 5 * 1024 * 1024;  // 5 MB.
 
 const char* kExternalPolicyDataPayload = "External policy data";
 

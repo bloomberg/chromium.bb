@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_EXTERNAL_POLICY_DATA_FETCHER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_EXTERNAL_POLICY_DATA_FETCHER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -83,7 +85,7 @@ class POLICY_EXPORT ExternalPolicyDataFetcher {
   // StartJob() again. Returns an opaque job identifier. Ownership of the job
   // identifier is retained by |this|.
   Job* StartJob(const GURL& url,
-                int64 max_size,
+                int64_t max_size,
                 const FetchCallback& callback);
 
   // Cancel the fetch job identified by |job|. The job is canceled silently,
@@ -158,8 +160,8 @@ class POLICY_EXPORT ExternalPolicyDataFetcherBackend
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override;
+                                  int64_t current,
+                                  int64_t total) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

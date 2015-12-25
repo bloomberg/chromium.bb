@@ -4,9 +4,9 @@
 
 #include <UIKit/UIKit.h>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"

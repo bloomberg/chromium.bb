@@ -4,6 +4,9 @@
 
 #include "components/policy/core/common/cloud/external_policy_data_updater.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -38,7 +41,7 @@ const char* kExternalPolicyDataURLs[] = {"http://example.com/data_1",
                                          "http://example.com/data_3"};
 const char* kExternalPolicyDataPayload = "External policy data";
 
-const int64 kExternalPolicyDataMaxSize = 5 * 1024 * 1024;  // 5 MB.
+const int64_t kExternalPolicyDataMaxSize = 5 * 1024 * 1024;  // 5 MB.
 
 class MockFetchSuccessCallbackListener {
  public:

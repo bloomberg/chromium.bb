@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_STORE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_STORE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -88,9 +90,8 @@ class POLICY_EXPORT CloudPolicyStore {
   // Errors generate OnStoreError() notifications.
   // |invalidation_version| is the invalidation version of the policy to be
   // stored.
-  void Store(
-      const enterprise_management::PolicyFetchResponse& policy,
-      int64 invalidation_version);
+  void Store(const enterprise_management::PolicyFetchResponse& policy,
+             int64_t invalidation_version);
 
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) = 0;
@@ -109,9 +110,7 @@ class POLICY_EXPORT CloudPolicyStore {
 
   // The invalidation version of the last policy stored. This value can be read
   // by observers to determine which version of the policy is now available.
-  int64 invalidation_version() {
-    return invalidation_version_;
-  }
+  int64_t invalidation_version() { return invalidation_version_; }
 
   // Indicate that external data referenced by policies in this store is managed
   // by |external_data_manager|. The |external_data_manager| will be notified
@@ -148,7 +147,7 @@ class POLICY_EXPORT CloudPolicyStore {
   CloudPolicyValidatorBase::Status validation_status_;
 
   // The invalidation version of the last policy stored.
-  int64 invalidation_version_;
+  int64_t invalidation_version_;
 
  private:
   // Whether the store has completed asynchronous initialization, which is

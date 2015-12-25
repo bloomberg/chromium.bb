@@ -5,14 +5,16 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CLIENT_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -108,7 +110,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // Sets information about a policy invalidation. Subsequent fetch operations
   // will use the given info, and callers can use fetched_invalidation_version
   // to determine which version of policy was fetched.
-  void SetInvalidationInfo(int64 version, const std::string& payload);
+  void SetInvalidationInfo(int64_t version, const std::string& payload);
 
   // Requests a policy fetch. The client being registered is a prerequisite to
   // this operation and this call will CHECK if the client is not in registered
@@ -251,7 +253,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // Returns the invalidation version that was used for the last FetchPolicy.
   // Observers can call this method from their OnPolicyFetched method to
   // determine which at which invalidation version the policy was fetched.
-  int64 fetched_invalidation_version() const {
+  int64_t fetched_invalidation_version() const {
     return fetched_invalidation_version_;
   }
 
@@ -365,11 +367,11 @@ class POLICY_EXPORT CloudPolicyClient {
   std::string robot_api_auth_code_;
 
   // Information for the latest policy invalidation received.
-  int64 invalidation_version_;
+  int64_t invalidation_version_;
   std::string invalidation_payload_;
 
   // The invalidation version used for the most recent fetch operation.
-  int64 fetched_invalidation_version_;
+  int64_t fetched_invalidation_version_;
 
   // Used for issuing requests to the cloud.
   DeviceManagementService* service_;

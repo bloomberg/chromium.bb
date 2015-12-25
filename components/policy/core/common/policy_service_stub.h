@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_SERVICE_STUB_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_SERVICE_STUB_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_export.h"

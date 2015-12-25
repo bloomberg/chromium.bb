@@ -4,6 +4,9 @@
 
 #include "components/policy/core/common/cloud/component_cloud_policy_updater.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -24,10 +27,10 @@ namespace {
 const size_t kPolicyProtoMaxSize = 16 * 1024;
 
 // The maximum size of the downloaded policy data.
-const int64 kPolicyDataMaxSize = 5 * 1024 * 1024;
+const int64_t kPolicyDataMaxSize = 5 * 1024 * 1024;
 
 // Tha maximum number of policy data fetches to run in parallel.
-const int64 kMaxParallelPolicyDataFetches = 2;
+const int64_t kMaxParallelPolicyDataFetches = 2;
 
 }  // namespace
 

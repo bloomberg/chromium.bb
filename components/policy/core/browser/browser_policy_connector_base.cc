@@ -4,6 +4,8 @@
 
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"

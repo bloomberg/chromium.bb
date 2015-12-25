@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_POLICY_CORE_BROWSER_BROWSER_POLICY_CONNECTOR_H_
 #define COMPONENTS_POLICY_CORE_BROWSER_BROWSER_POLICY_CONNECTOR_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/policy/policy_export.h"
 
@@ -40,7 +43,7 @@ class POLICY_EXPORT BrowserPolicyConnector : public BrowserPolicyConnectorBase {
 
   // Schedules initialization of the cloud policy backend services, if the
   // services are already constructed.
-  void ScheduleServiceInitialization(int64 delay_milliseconds);
+  void ScheduleServiceInitialization(int64_t delay_milliseconds);
 
   DeviceManagementService* device_management_service() {
     return device_management_service_.get();

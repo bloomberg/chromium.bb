@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -23,9 +26,9 @@ namespace policy {
 
 namespace {
 
-const int64 kPolicyRefreshRate = 4 * 60 * 60 * 1000;
+const int64_t kPolicyRefreshRate = 4 * 60 * 60 * 1000;
 
-const int64 kInitialCacheAgeMinutes = 1;
+const int64_t kInitialCacheAgeMinutes = 1;
 
 }  // namespace
 
@@ -72,7 +75,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
         pending_tasks.empty() ? base::TimeDelta() : pending_tasks.back().delay;
   }
 
-  void CheckTiming(int64 expected_delay_ms) const {
+  void CheckTiming(int64_t expected_delay_ms) const {
     CheckTimingWithAge(base::TimeDelta::FromMilliseconds(expected_delay_ms),
                        base::TimeDelta());
   }
@@ -377,7 +380,7 @@ TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnIPAddressChanged) {
 
 struct ClientErrorTestParam {
   DeviceManagementStatus client_error;
-  int64 expected_delay_ms;
+  int64_t expected_delay_ms;
   int backoff_factor;
 };
 
@@ -420,7 +423,7 @@ TEST_P(CloudPolicyRefreshSchedulerClientErrorTest, OnClientError) {
   task_runner_->ClearPendingTasks();
 
   // See whether the error triggers the right refresh delay.
-  int64 expected_delay_ms = GetParam().expected_delay_ms;
+  int64_t expected_delay_ms = GetParam().expected_delay_ms;
   client_.NotifyClientError();
   if (expected_delay_ms >= 0) {
     CheckTiming(expected_delay_ms);

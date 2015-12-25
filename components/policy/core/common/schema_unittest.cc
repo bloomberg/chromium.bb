@@ -4,6 +4,9 @@
 
 #include "components/policy/core/common/schema.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "components/policy/core/common/schema_internal.h"

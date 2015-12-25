@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/cloud/external_policy_data_fetcher.h"
@@ -162,9 +163,8 @@ ExternalPolicyDataUpdater::Request::Request() {
 
 ExternalPolicyDataUpdater::Request::Request(const std::string& url,
                                             const std::string& hash,
-                                            int64 max_size)
-    : url(url), hash(hash), max_size(max_size) {
-}
+                                            int64_t max_size)
+    : url(url), hash(hash), max_size(max_size) {}
 
 bool ExternalPolicyDataUpdater::Request::operator==(
     const Request& other) const {

@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_EXTERNAL_POLICY_DATA_UPDATER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_EXTERNAL_POLICY_DATA_UPDATER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -37,13 +40,13 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
   struct POLICY_EXPORT Request {
    public:
     Request();
-    Request(const std::string& url, const std::string& hash, int64 max_size);
+    Request(const std::string& url, const std::string& hash, int64_t max_size);
 
     bool operator==(const Request& other) const;
 
     std::string url;
     std::string hash;
-    int64 max_size;
+    int64_t max_size;
   };
 
   // This callback is invoked when a fetch has successfully retrieved |data|

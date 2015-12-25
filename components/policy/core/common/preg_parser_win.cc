@@ -5,17 +5,19 @@
 #include "components/policy/core/common/preg_parser_win.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -32,7 +34,7 @@ const char kPRegFileHeader[8] =
     { 'P', 'R', 'e', 'g', '\x01', '\x00', '\x00', '\x00' };
 
 // Maximum PReg file size we're willing to accept.
-const int64 kMaxPRegFileSize = 1024 * 1024 * 16;
+const int64_t kMaxPRegFileSize = 1024 * 1024 * 16;
 
 // Constants for PReg file delimiters.
 const base::char16 kDelimBracketOpen = L'[';
@@ -53,7 +55,7 @@ const char kActionTriggerSoft[] = "soft";
 
 // Returns the character at |cursor| and increments it, unless the end is here
 // in which case -1 is returned.
-int NextChar(const uint8** cursor, const uint8* end) {
+int NextChar(const uint8_t** cursor, const uint8_t* end) {
   // Only read the character if a full base::char16 is available.
   if (*cursor + sizeof(base::char16) > end)
     return -1;
@@ -64,14 +66,14 @@ int NextChar(const uint8** cursor, const uint8* end) {
 }
 
 // Reads a fixed-size field from a PReg file.
-bool ReadFieldBinary(const uint8** cursor,
-                     const uint8* end,
-                     uint32 size,
-                     uint8* data) {
+bool ReadFieldBinary(const uint8_t** cursor,
+                     const uint8_t* end,
+                     uint32_t size,
+                     uint8_t* data) {
   if (size == 0)
     return true;
 
-  const uint8* field_end = *cursor + size;
+  const uint8_t* field_end = *cursor + size;
   if (field_end <= *cursor || field_end > end)
     return false;
   std::copy(*cursor, field_end, data);
@@ -79,10 +81,10 @@ bool ReadFieldBinary(const uint8** cursor,
   return true;
 }
 
-bool ReadField32(const uint8** cursor, const uint8* end, uint32* data) {
-  uint32 value = 0;
-  if (!ReadFieldBinary(cursor, end, sizeof(uint32),
-                       reinterpret_cast<uint8*>(&value))) {
+bool ReadField32(const uint8_t** cursor, const uint8_t* end, uint32_t* data) {
+  uint32_t value = 0;
+  if (!ReadFieldBinary(cursor, end, sizeof(uint32_t),
+                       reinterpret_cast<uint8_t*>(&value))) {
     return false;
   }
   *data = base::ByteSwapToLE32(value);
@@ -90,8 +92,8 @@ bool ReadField32(const uint8** cursor, const uint8* end, uint32* data) {
 }
 
 // Reads a string field from a file.
-bool ReadFieldString(const uint8** cursor,
-                     const uint8* end,
+bool ReadFieldString(const uint8_t** cursor,
+                     const uint8_t* end,
                      base::string16* str) {
   int current = -1;
   while ((current = NextChar(cursor, end)) > 0x0000)
@@ -100,7 +102,7 @@ bool ReadFieldString(const uint8** cursor,
   return current == L'\0';
 }
 
-std::string DecodePRegStringValue(const std::vector<uint8>& data) {
+std::string DecodePRegStringValue(const std::vector<uint8_t>& data) {
   size_t len = data.size() / sizeof(base::char16);
   if (len <= 0)
     return std::string();
@@ -113,9 +115,9 @@ std::string DecodePRegStringValue(const std::vector<uint8>& data) {
   return base::UTF16ToUTF8(result);
 }
 
-// Decodes a value from a PReg file given as a uint8 vector.
-bool DecodePRegValue(uint32 type,
-                     const std::vector<uint8>& data,
+// Decodes a value from a PReg file given as a uint8_t vector.
+bool DecodePRegValue(uint32_t type,
+                     const std::vector<uint8_t>& data,
                      scoped_ptr<base::Value>* value) {
   switch (type) {
     case REG_SZ:
@@ -124,8 +126,8 @@ bool DecodePRegValue(uint32 type,
       return true;
     case REG_DWORD_LITTLE_ENDIAN:
     case REG_DWORD_BIG_ENDIAN:
-      if (data.size() == sizeof(uint32)) {
-        uint32 val = *reinterpret_cast<const uint32*>(data.data());
+      if (data.size() == sizeof(uint32_t)) {
+        uint32_t val = *reinterpret_cast<const uint32_t*>(data.data());
         if (type == REG_DWORD_BIG_ENDIAN)
           val = base::NetToHost32(val);
         else
@@ -154,8 +156,8 @@ bool DecodePRegValue(uint32 type,
 // relevant policy for Chromium.
 void HandleRecord(const base::string16& key_name,
                   const base::string16& value,
-                  uint32 type,
-                  const std::vector<uint8>& data,
+                  uint32_t type,
+                  const std::vector<uint8_t>& data,
                   RegistryDict* dict) {
   // Locate/create the dictionary to place the value in.
   std::vector<base::string16> path;
@@ -248,8 +250,8 @@ bool ReadFile(const base::FilePath& file_path,
   // Parse file contents, which is UCS-2 and little-endian. The latter I
   // couldn't find documentation on, but the example I saw were all
   // little-endian. It'd be interesting to check on big-endian hardware.
-  const uint8* cursor = mapped_file.data() + kHeaderSize;
-  const uint8* end = mapped_file.data() + mapped_file.length();
+  const uint8_t* cursor = mapped_file.data() + kHeaderSize;
+  const uint8_t* end = mapped_file.data() + mapped_file.length();
   while (true) {
     if (cursor == end)
       return true;
@@ -260,9 +262,9 @@ bool ReadFile(const base::FilePath& file_path,
     // Read the record fields.
     base::string16 key_name;
     base::string16 value;
-    uint32 type = 0;
-    uint32 size = 0;
-    std::vector<uint8> data;
+    uint32_t type = 0;
+    uint32_t size = 0;
+    std::vector<uint8_t> data;
 
     if (!ReadFieldString(&cursor, end, &key_name))
       break;
@@ -306,7 +308,8 @@ bool ReadFile(const base::FilePath& file_path,
   }
 
   LOG(ERROR) << "Error parsing " << file_path.value() << " at offset "
-             << reinterpret_cast<const uint8*>(cursor - 1) - mapped_file.data();
+             << reinterpret_cast<const uint8_t*>(cursor - 1) -
+                    mapped_file.data();
   status->Add(POLICY_LOAD_STATUS_PARSE_ERROR);
   return false;
 }

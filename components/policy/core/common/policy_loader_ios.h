@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_IOS_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_IOS_H_
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/async_policy_loader.h"

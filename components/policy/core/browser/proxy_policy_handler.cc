@@ -4,7 +4,10 @@
 
 #include "components/policy/core/browser/proxy_policy_handler.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"

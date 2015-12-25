@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/policy_bundle.h"
 
 #if defined(OS_IOS) || defined(OS_MACOSX)

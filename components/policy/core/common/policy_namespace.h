@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_NAMESPACE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_NAMESPACE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

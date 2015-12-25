@@ -4,13 +4,17 @@
 
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 
+#include <stddef.h>
+
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_verifier.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -26,17 +30,15 @@ namespace {
 const int kTimestampGraceIntervalHours = 2;
 
 // DER-encoded ASN.1 object identifier for the SHA1-RSA signature algorithm.
-const uint8 kSHA1SignatureAlgorithm[] = {
-    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-    0xf7, 0x0d, 0x01, 0x01, 0x05, 0x05, 0x00
-};
+const uint8_t kSHA1SignatureAlgorithm[] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
+                                           0x86, 0x48, 0x86, 0xf7, 0x0d,
+                                           0x01, 0x01, 0x05, 0x05, 0x00};
 
 // DER-encoded ASN.1 object identifier for the SHA256-RSA signature algorithm
 // (source: http://tools.ietf.org/html/rfc5754 section 3.2).
-const uint8 kSHA256SignatureAlgorithm[] = {
-    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-    0xf7, 0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00
-};
+const uint8_t kSHA256SignatureAlgorithm[] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
+                                             0x86, 0x48, 0x86, 0xf7, 0x0d,
+                                             0x01, 0x01, 0x0b, 0x05, 0x00};
 
 static_assert(sizeof(kSHA256SignatureAlgorithm) ==
               sizeof(kSHA1SignatureAlgorithm),
@@ -523,7 +525,7 @@ bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
                                                const std::string& signature,
                                                SignatureType signature_type) {
   crypto::SignatureVerifier verifier;
-  const uint8* algorithm = NULL;
+  const uint8_t* algorithm = NULL;
   switch (signature_type) {
     case SHA1:
       algorithm = kSHA1SignatureAlgorithm;
@@ -536,15 +538,14 @@ bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
       return false;
   }
 
-  if (!verifier.VerifyInit(algorithm, kSignatureAlgorithmSize,
-                           reinterpret_cast<const uint8*>(signature.c_str()),
-                           signature.size(),
-                           reinterpret_cast<const uint8*>(key.c_str()),
-                           key.size())) {
+  if (!verifier.VerifyInit(
+          algorithm, kSignatureAlgorithmSize,
+          reinterpret_cast<const uint8_t*>(signature.c_str()), signature.size(),
+          reinterpret_cast<const uint8_t*>(key.c_str()), key.size())) {
     DLOG(ERROR) << "Invalid verification signature/key format";
     return false;
   }
-  verifier.VerifyUpdate(reinterpret_cast<const uint8*>(data.c_str()),
+  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(data.c_str()),
                         data.size());
   return verifier.VerifyFinal();
 }

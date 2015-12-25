@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/config_dir_policy_loader.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <string>
@@ -15,6 +17,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"

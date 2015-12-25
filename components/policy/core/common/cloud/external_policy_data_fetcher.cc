@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -55,11 +56,11 @@ void DoNothing(ExternalPolicyDataFetcher::Job* job) {
 
 struct ExternalPolicyDataFetcher::Job {
   Job(const GURL& url,
-      int64 max_size,
+      int64_t max_size,
       const ExternalPolicyDataFetcherBackend::FetchCallback& callback);
 
   const GURL url;
-  const int64 max_size;
+  const int64_t max_size;
   const ExternalPolicyDataFetcherBackend::FetchCallback callback;
 
  private:
@@ -68,12 +69,9 @@ struct ExternalPolicyDataFetcher::Job {
 
 ExternalPolicyDataFetcher::Job::Job(
     const GURL& url,
-    int64 max_size,
+    int64_t max_size,
     const ExternalPolicyDataFetcherBackend::FetchCallback& callback)
-    : url(url),
-      max_size(max_size),
-      callback(callback) {
-}
+    : url(url), max_size(max_size), callback(callback) {}
 
 ExternalPolicyDataFetcher::ExternalPolicyDataFetcher(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -93,7 +91,7 @@ ExternalPolicyDataFetcher::~ExternalPolicyDataFetcher() {
 
 ExternalPolicyDataFetcher::Job* ExternalPolicyDataFetcher::StartJob(
     const GURL& url,
-    int64 max_size,
+    int64_t max_size,
     const FetchCallback& callback) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   Job* job = new Job(
@@ -233,7 +231,7 @@ void ExternalPolicyDataFetcherBackend::OnURLFetchComplete(
   } else {
     data.reset(new std::string);
     source->GetResponseAsString(data.get());
-    if (static_cast<int64>(data->size()) > it->second->max_size) {
+    if (static_cast<int64_t>(data->size()) > it->second->max_size) {
       // Received |data| exceeds maximum allowed size.
       data.reset();
       result = ExternalPolicyDataFetcher::MAX_SIZE_EXCEEDED;
@@ -248,8 +246,8 @@ void ExternalPolicyDataFetcherBackend::OnURLFetchComplete(
 
 void ExternalPolicyDataFetcherBackend::OnURLFetchDownloadProgress(
     const net::URLFetcher* source,
-    int64 current,
-    int64 total) {
+    int64_t current,
+    int64_t total) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   JobMap::iterator it = job_map_.find(const_cast<net::URLFetcher*>(source));
   DCHECK(it != job_map_.end());

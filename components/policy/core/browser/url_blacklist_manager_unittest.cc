@@ -4,11 +4,13 @@
 
 #include "components/policy/core/browser/url_blacklist_manager.h"
 
+#include <stdint.h>
+
 #include <ostream>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
@@ -107,11 +109,18 @@ class URLBlacklistManagerTest : public testing::Test {
 // Parameters for the FilterToComponents test.
 struct FilterTestParams {
  public:
-  FilterTestParams(const std::string& filter, const std::string& scheme,
-                   const std::string& host, bool match_subdomains, uint16 port,
+  FilterTestParams(const std::string& filter,
+                   const std::string& scheme,
+                   const std::string& host,
+                   bool match_subdomains,
+                   uint16_t port,
                    const std::string& path)
-      : filter_(filter), scheme_(scheme), host_(host),
-        match_subdomains_(match_subdomains), port_(port), path_(path) {}
+      : filter_(filter),
+        scheme_(scheme),
+        host_(host),
+        match_subdomains_(match_subdomains),
+        port_(port),
+        path_(path) {}
 
   FilterTestParams(const FilterTestParams& params)
       : filter_(params.filter_), scheme_(params.scheme_), host_(params.host_),
@@ -132,7 +141,7 @@ struct FilterTestParams {
   const std::string& scheme() const { return scheme_; }
   const std::string& host() const { return host_; }
   bool match_subdomains() const { return match_subdomains_; }
-  uint16 port() const { return port_; }
+  uint16_t port() const { return port_; }
   const std::string& path() const { return path_; }
 
  private:
@@ -140,7 +149,7 @@ struct FilterTestParams {
   std::string scheme_;
   std::string host_;
   bool match_subdomains_;
-  uint16 port_;
+  uint16_t port_;
   std::string path_;
 };
 
@@ -166,7 +175,7 @@ TEST_P(URLBlacklistFilterToComponentsTest, FilterToComponents) {
   std::string scheme;
   std::string host;
   bool match_subdomains = true;
-  uint16 port = 42;
+  uint16_t port = 42;
   std::string path;
 
   URLBlacklist::FilterToComponents(GetSegmentURLCallback(),

@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_DETAILS_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_DETAILS_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "components/policy/policy_export.h"
 #include "policy/risk_tag.h"

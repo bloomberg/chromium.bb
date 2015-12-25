@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"

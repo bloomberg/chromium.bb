@@ -5,16 +5,19 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_VALIDATOR_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_VALIDATOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/policy/policy_export.h"
 #include "policy/proto/cloud_policy.pb.h"
 
@@ -282,8 +285,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   google::protobuf::MessageLite* payload_;
 
   int validation_flags_;
-  int64 timestamp_not_before_;
-  int64 timestamp_not_after_;
+  int64_t timestamp_not_before_;
+  int64_t timestamp_not_after_;
   ValidateTimestampOption timestamp_option_;
   ValidateDMTokenOption dm_token_option_;
   std::string user_;

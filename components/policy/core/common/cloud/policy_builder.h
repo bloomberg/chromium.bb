@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_POLICY_BUILDER_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_POLICY_BUILDER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "crypto/rsa_private_key.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -32,7 +35,7 @@ class PolicyBuilder {
   static const char kFakeMachineName[];
   static const char kFakePolicyType[];
   static const int kFakePublicKeyVersion;
-  static const int64 kFakeTimestamp;
+  static const int64_t kFakeTimestamp;
   static const char kFakeToken[];
   static const char kFakeUsername[];
   static const char kFakeServiceAccountIdentity[];
@@ -89,8 +92,8 @@ class PolicyBuilder {
   static std::string GetTestSigningKeySignature();
   static std::string GetTestOtherSigningKeySignature();
 
-  std::vector<uint8> raw_signing_key() { return raw_signing_key_; }
-  std::vector<uint8> raw_new_signing_key() { return raw_new_signing_key_; }
+  std::vector<uint8_t> raw_signing_key() { return raw_signing_key_; }
+  std::vector<uint8_t> raw_new_signing_key() { return raw_new_signing_key_; }
 
  private:
   // Produces |key|'s signature over |data| and stores it in |signature|.
@@ -108,8 +111,8 @@ class PolicyBuilder {
   // for signing the policy and don't have to coincide with the user's known
   // keys. Instead, we store the private keys as raw bytes. Where needed, a
   // temporary RSAPrivateKey is created.
-  std::vector<uint8> raw_signing_key_;
-  std::vector<uint8> raw_new_signing_key_;
+  std::vector<uint8_t> raw_signing_key_;
+  std::vector<uint8_t> raw_new_signing_key_;
   std::string raw_new_signing_key_signature_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBuilder);

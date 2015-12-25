@@ -5,6 +5,8 @@
 #include "components/policy/core/common/policy_loader_win.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <userenv.h>
 
 #include <algorithm>
@@ -19,6 +21,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -255,8 +258,8 @@ class PRegTestHarness : public PolicyProviderTestHarness,
   static PolicyProviderTestHarness* Create();
 
  private:
-  // Helper to append a base::string16 to an uint8 buffer.
-  static void AppendChars(std::vector<uint8>* buffer,
+  // Helper to append a base::string16 to an uint8_t buffer.
+  static void AppendChars(std::vector<uint8_t>* buffer,
                           const base::string16& chars);
 
   // Appends a record with the given fields to the PReg file.
@@ -264,7 +267,7 @@ class PRegTestHarness : public PolicyProviderTestHarness,
                               const std::string& key,
                               DWORD type,
                               DWORD size,
-                              uint8* data);
+                              uint8_t* data);
 
   // Appends the given DWORD |value| for |path| + |key| to the PReg file.
   void AppendDWORDToPRegFile(const base::string16& path,
@@ -559,7 +562,7 @@ PolicyProviderTestHarness* PRegTestHarness::Create() {
 }
 
 // static
-void PRegTestHarness::AppendChars(std::vector<uint8>* buffer,
+void PRegTestHarness::AppendChars(std::vector<uint8_t>* buffer,
                                   const base::string16& chars) {
   for (base::string16::const_iterator c(chars.begin()); c != chars.end(); ++c) {
     buffer->push_back(*c & 0xff);
@@ -571,19 +574,19 @@ void PRegTestHarness::AppendRecordToPRegFile(const base::string16& path,
                                              const std::string& key,
                                              DWORD type,
                                              DWORD size,
-                                             uint8* data) {
-  std::vector<uint8> buffer;
+                                             uint8_t* data) {
+  std::vector<uint8_t> buffer;
   AppendChars(&buffer, L"[");
   AppendChars(&buffer, path);
   AppendChars(&buffer, base::string16(L"\0;", 2));
   AppendChars(&buffer, UTF8ToUTF16(key));
   AppendChars(&buffer, base::string16(L"\0;", 2));
   type = base::ByteSwapToLE32(type);
-  uint8* type_data = reinterpret_cast<uint8*>(&type);
+  uint8_t* type_data = reinterpret_cast<uint8_t*>(&type);
   buffer.insert(buffer.end(), type_data, type_data + sizeof(DWORD));
   AppendChars(&buffer, L";");
   size = base::ByteSwapToLE32(size);
-  uint8* size_data = reinterpret_cast<uint8*>(&size);
+  uint8_t* size_data = reinterpret_cast<uint8_t*>(&size);
   buffer.insert(buffer.end(), size_data, size_data + sizeof(DWORD));
   AppendChars(&buffer, L";");
   buffer.insert(buffer.end(), data, data + size);
@@ -599,7 +602,7 @@ void PRegTestHarness::AppendDWORDToPRegFile(const base::string16& path,
                                             DWORD value) {
   value = base::ByteSwapToLE32(value);
   AppendRecordToPRegFile(path, key, REG_DWORD, sizeof(DWORD),
-                         reinterpret_cast<uint8*>(&value));
+                         reinterpret_cast<uint8_t*>(&value));
 }
 
 void PRegTestHarness::AppendStringToPRegFile(const base::string16& path,
@@ -612,7 +615,7 @@ void PRegTestHarness::AppendStringToPRegFile(const base::string16& path,
   data.push_back(base::ByteSwapToLE16(L'\0'));
 
   AppendRecordToPRegFile(path, key, REG_SZ, data.size() * sizeof(base::char16),
-                         reinterpret_cast<uint8*>(data.data()));
+                         reinterpret_cast<uint8_t*>(data.data()));
 }
 
 void PRegTestHarness::AppendPolicyToPRegFile(const base::string16& path,

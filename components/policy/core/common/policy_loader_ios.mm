@@ -5,6 +5,7 @@
 #include "components/policy/core/common/policy_loader_ios.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"

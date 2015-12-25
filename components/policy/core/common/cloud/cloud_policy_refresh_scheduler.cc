@@ -11,46 +11,47 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace policy {
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 
-const int64 CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
+const int64_t CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
     24 * 60 * 60 * 1000;  // 1 day.
-const int64 CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
+const int64_t CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
     24 * 60 * 60 * 1000;  // 1 day.
 // Delay for periodic refreshes when the invalidations service is available,
 // in milliseconds.
 // TODO(joaodasilva): increase this value once we're confident that the
 // invalidations channel works as expected.
-const int64 CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs =
+const int64_t CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs =
     24 * 60 * 60 * 1000;  // 1 day.
-const int64 CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
+const int64_t CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
     5 * 60 * 1000;  // 5 minutes.
-const int64 CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
+const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
     30 * 60 * 1000;  // 30 minutes.
-const int64 CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
+const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
     7 * 24 * 60 * 60 * 1000;  // 1 week.
 
 #else
 
-const int64 CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
+const int64_t CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
     3 * 60 * 60 * 1000;  // 3 hours.
-const int64 CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
+const int64_t CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
     24 * 60 * 60 * 1000;  // 1 day.
 // Delay for periodic refreshes when the invalidations service is available,
 // in milliseconds.
 // TODO(joaodasilva): increase this value once we're confident that the
 // invalidations channel works as expected.
-const int64 CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs =
+const int64_t CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs =
     3 * 60 * 60 * 1000;  // 3 hours.
-const int64 CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
+const int64_t CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
     5 * 60 * 1000;  // 5 minutes.
-const int64 CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
+const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
     30 * 60 * 1000;  // 30 minutes.
-const int64 CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
+const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
     24 * 60 * 60 * 1000;  // 1 day.
 
 #endif
@@ -80,7 +81,7 @@ CloudPolicyRefreshScheduler::~CloudPolicyRefreshScheduler() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void CloudPolicyRefreshScheduler::SetRefreshDelay(int64 refresh_delay) {
+void CloudPolicyRefreshScheduler::SetRefreshDelay(int64_t refresh_delay) {
   refresh_delay_ms_ = std::min(std::max(refresh_delay, kRefreshDelayMinMs),
                                kRefreshDelayMaxMs);
   ScheduleRefresh();
@@ -230,9 +231,9 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
 
   // If policy invalidations are available then periodic updates are done at
   // a much lower rate; otherwise use the |refresh_delay_ms_| value.
-  int64 refresh_delay_ms =
-      invalidations_available_ ? kWithInvalidationsRefreshDelayMs
-                               : refresh_delay_ms_;
+  int64_t refresh_delay_ms = invalidations_available_
+                                 ? kWithInvalidationsRefreshDelayMs
+                                 : refresh_delay_ms_;
 
   // If there is a registration, go by the client's status. That will tell us
   // what the appropriate refresh delay should be.
