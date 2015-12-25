@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -35,7 +37,7 @@ class CONTENT_EXPORT AppCacheInterceptor : public net::URLRequestInterceptor {
   // May be called after response headers are complete to retrieve extra
   // info about the response.
   static void GetExtraResponseInfo(net::URLRequest* request,
-                                   int64* cache_id,
+                                   int64_t* cache_id,
                                    GURL* manifest_url);
 
   // Methods to support cross site navigations.

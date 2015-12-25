@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_WIFI_POLLING_POLICY_H_
 #define CONTENT_BROWSER_GEOLOCATION_WIFI_POLLING_POLICY_H_
 
+#include "base/macros.h"
+
 namespace content {
 
 // Allows sharing and mocking of the update polling policy function.

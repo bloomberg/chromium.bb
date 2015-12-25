@@ -4,6 +4,9 @@
 
 #include "content/browser/loader/resource_loader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -492,7 +495,7 @@ class ResourceContextStub : public MockResourceContext {
 // progress reporting.
 class NonChunkedUploadDataStream : public net::UploadDataStream {
  public:
-  explicit NonChunkedUploadDataStream(uint64 size)
+  explicit NonChunkedUploadDataStream(uint64_t size)
       : net::UploadDataStream(false, 0), stream_(0), size_(size) {}
 
   void AppendData(const char* data) {
@@ -516,7 +519,7 @@ class NonChunkedUploadDataStream : public net::UploadDataStream {
   void ResetInternal() override { stream_.Reset(); }
 
   net::ChunkedUploadDataStream stream_;
-  uint64 size_;
+  uint64_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(NonChunkedUploadDataStream);
 };

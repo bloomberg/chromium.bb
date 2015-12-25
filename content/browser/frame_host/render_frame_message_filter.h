@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "content/common/frame_replication_state.h"
@@ -123,16 +125,16 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
                                    IPC::Message* reply_msg);
   void OnDidCreateOutOfProcessPepperInstance(
       int plugin_child_id,
-      int32 pp_instance,
+      int32_t pp_instance,
       PepperRendererInstanceData instance_data,
       bool is_external);
   void OnDidDeleteOutOfProcessPepperInstance(int plugin_child_id,
-                                             int32 pp_instance,
+                                             int32_t pp_instance,
                                              bool is_external);
   void OnOpenChannelToPpapiBroker(int routing_id,
                                   const base::FilePath& path);
   void OnPluginInstanceThrottleStateChange(int plugin_child_id,
-                                           int32 pp_instance,
+                                           int32_t pp_instance,
                                            bool is_throttled);
 #endif  // ENABLE_PLUGINS
 

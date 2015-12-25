@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_INTERNALS_UI_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_INTERNALS_UI_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_interrupt_reasons.h"

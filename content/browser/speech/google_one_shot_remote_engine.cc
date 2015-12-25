@@ -4,6 +4,9 @@
 
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/json/json_reader.h"
@@ -247,7 +250,7 @@ void GoogleOneShotRemoteEngine::AudioChunksEnded() {
   size_t sample_count =
       config_.audio_sample_rate * kAudioPacketIntervalMs / 1000;
   scoped_refptr<AudioChunk> dummy_chunk(new AudioChunk(
-      sample_count * sizeof(int16), encoder_->GetBitsPerSample() / 8));
+      sample_count * sizeof(int16_t), encoder_->GetBitsPerSample() / 8));
   encoder_->Encode(*dummy_chunk.get());
   encoder_->Flush();
   scoped_refptr<AudioChunk> encoded_dummy_data(

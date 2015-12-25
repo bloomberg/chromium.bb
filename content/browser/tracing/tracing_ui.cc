@@ -4,6 +4,8 @@
 
 #include "content/browser/tracing/tracing_ui.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -376,7 +378,7 @@ void TracingUI::DoUploadInternal(const std::string& file_contents,
   // TODO(mmandlis): Add support for stopping the upload in progress.
 }
 
-void TracingUI::OnTraceUploadProgress(int64 current, int64 total) {
+void TracingUI::OnTraceUploadProgress(int64_t current, int64_t total) {
   DCHECK(current <= total);
   int percent = (current / total) * 100;
   web_ui()->CallJavascriptFunction(

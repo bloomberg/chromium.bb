@@ -4,11 +4,14 @@
 
 #include "content/browser/frame_host/navigation_entry_impl.h"
 
+#include <stddef.h>
+
 #include <queue>
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params.h"
@@ -303,7 +306,7 @@ void NavigationEntryImpl::SetPageID(int page_id) {
   page_id_ = page_id;
 }
 
-int32 NavigationEntryImpl::GetPageID() const {
+int32_t NavigationEntryImpl::GetPageID() const {
   return page_id_;
 }
 
@@ -392,11 +395,11 @@ bool NavigationEntryImpl::GetHasPostData() const {
   return has_post_data_;
 }
 
-void NavigationEntryImpl::SetPostID(int64 post_id) {
+void NavigationEntryImpl::SetPostID(int64_t post_id) {
   post_id_ = post_id;
 }
 
-int64 NavigationEntryImpl::GetPostID() const {
+int64_t NavigationEntryImpl::GetPostID() const {
   return post_id_;
 }
 
@@ -671,8 +674,8 @@ void NavigationEntryImpl::ResetForCommit() {
 void NavigationEntryImpl::AddOrUpdateFrameEntry(
     FrameTreeNode* frame_tree_node,
     const std::string& frame_unique_name,
-    int64 item_sequence_number,
-    int64 document_sequence_number,
+    int64_t item_sequence_number,
+    int64_t document_sequence_number,
     SiteInstanceImpl* site_instance,
     const GURL& url,
     const Referrer& referrer,

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_CROSS_PROCESS_FRAME_CONNECTOR_H_
 #define CONTENT_BROWSER_FRAME_HOST_CROSS_PROCESS_FRAME_CONNECTOR_H_
 
+#include <stdint.h>
+
 #include "cc/output/compositor_frame.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -86,7 +88,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   void RenderProcessGone();
 
   virtual void ChildFrameCompositorFrameSwapped(
-      uint32 output_surface_id,
+      uint32_t output_surface_id,
       int host_id,
       int route_id,
       scoped_ptr<cc::CompositorFrame> frame);

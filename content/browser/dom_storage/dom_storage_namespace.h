@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_NAMESPACE_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_NAMESPACE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -42,12 +43,12 @@ class CONTENT_EXPORT DOMStorageNamespace
 
   // Constructor for a SessionStorage namespace with a non-zero id and an
   // optional backing on disk via |session_storage_database| (may be NULL).
-  DOMStorageNamespace(int64 namespace_id,
+  DOMStorageNamespace(int64_t namespace_id,
                       const std::string& persistent_namespace_id,
                       SessionStorageDatabase* session_storage_database,
                       DOMStorageTaskRunner* task_runner);
 
-  int64 namespace_id() const { return namespace_id_; }
+  int64_t namespace_id() const { return namespace_id_; }
   const std::string& persistent_namespace_id() const {
     return persistent_namespace_id_;
   }
@@ -64,7 +65,7 @@ class CONTENT_EXPORT DOMStorageNamespace
   // Creates a clone of |this| namespace including
   // shallow copies of all contained areas.
   // Should only be called for session storage namespaces.
-  DOMStorageNamespace* Clone(int64 clone_namespace_id,
+  DOMStorageNamespace* Clone(int64_t clone_namespace_id,
                              const std::string& clone_persistent_namespace_id);
 
   void DeleteLocalStorageOrigin(const GURL& origin);
@@ -94,7 +95,7 @@ class CONTENT_EXPORT DOMStorageNamespace
   // Returns a pointer to the area holder in our map or NULL.
   AreaHolder* GetAreaHolder(const GURL& origin);
 
-  int64 namespace_id_;
+  int64_t namespace_id_;
   std::string persistent_namespace_id_;
   base::FilePath directory_;
   AreaMap areas_;

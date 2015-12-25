@@ -21,7 +21,7 @@ namespace content {
 namespace {
 
 void RegisterRegionResult(GeofencingRegistrationDelegate* delegate,
-                          int64 geofencing_registration_id,
+                          int64_t geofencing_registration_id,
                           GeofencingStatus status) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -99,10 +99,10 @@ bool MockGeofencingService::IsServiceAvailable() {
   return available_;
 }
 
-int64 MockGeofencingService::RegisterRegion(
+int64_t MockGeofencingService::RegisterRegion(
     const blink::WebCircularGeofencingRegion& region,
     GeofencingRegistrationDelegate* delegate) {
-  int64 id = next_id_++;
+  int64_t id = next_id_++;
   Registration& registration = registrations_[id];
   registration.region = region;
   registration.delegate = delegate;
@@ -118,7 +118,8 @@ int64 MockGeofencingService::RegisterRegion(
   return id;
 }
 
-void MockGeofencingService::UnregisterRegion(int64 geofencing_registration_id) {
+void MockGeofencingService::UnregisterRegion(
+    int64_t geofencing_registration_id) {
   registrations_.erase(geofencing_registration_id);
 }
 

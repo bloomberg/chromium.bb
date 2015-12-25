@@ -4,6 +4,8 @@
 
 #include "content/browser/notifications/notification_database_data_conversions.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/notifications/notification_database_data.pb.h"

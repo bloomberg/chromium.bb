@@ -6,8 +6,11 @@
 
 #include "content/browser/device_monitor_udev.h"
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/browser/udev_linux.h"
 #include "content/public/browser/browser_thread.h"

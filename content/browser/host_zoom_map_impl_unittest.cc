@@ -4,6 +4,9 @@
 
 #include "content/browser/host_zoom_map_impl.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_thread.h"

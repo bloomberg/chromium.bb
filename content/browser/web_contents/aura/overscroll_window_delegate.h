@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_AURA_OVERSCROLL_WINDOW_DELEGATE_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 #include "content/browser/web_contents/web_contents_impl.h"

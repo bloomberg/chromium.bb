@@ -6,10 +6,10 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "content/public/browser/browser_thread.h"

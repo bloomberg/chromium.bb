@@ -4,9 +4,9 @@
 
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"

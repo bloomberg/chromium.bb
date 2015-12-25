@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
@@ -46,7 +49,8 @@ class DOMStorageMessageFilter
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message Handlers.
-  void OnOpenStorageArea(int connection_id, int64 namespace_id,
+  void OnOpenStorageArea(int connection_id,
+                         int64_t namespace_id,
                          const GURL& origin);
   void OnCloseStorageArea(int connection_id);
   void OnLoadStorageArea(int connection_id, DOMStorageValuesMap* map);

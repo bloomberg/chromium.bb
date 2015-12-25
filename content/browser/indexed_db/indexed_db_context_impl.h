@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CONTEXT_IMPL_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CONTEXT_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -13,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
@@ -66,7 +70,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // IndexedDBContext implementation:
   base::SequencedTaskRunner* TaskRunner() const override;
   std::vector<IndexedDBInfo> GetAllOriginsInfo() override;
-  int64 GetOriginDiskUsage(const GURL& origin_url) override;
+  int64_t GetOriginDiskUsage(const GURL& origin_url) override;
   void DeleteForOrigin(const GURL& origin_url) override;
   void CopyOriginData(const GURL& origin_url,
                       IndexedDBContext* dest_context) override;
@@ -79,7 +83,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void ConnectionClosed(const GURL& origin_url, IndexedDBConnection* db);
   void TransactionComplete(const GURL& origin_url);
   void DatabaseDeleted(const GURL& origin_url);
-  bool WouldBeOverQuota(const GURL& origin_url, int64 additional_bytes);
+  bool WouldBeOverQuota(const GURL& origin_url, int64_t additional_bytes);
   bool IsOverQuota(const GURL& origin_url);
 
   storage::QuotaManagerProxy* quota_manager_proxy();
@@ -120,20 +124,20 @@ class CONTENT_EXPORT IndexedDBContextImpl
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ForceCloseOpenDatabasesOnDelete);
   friend class IndexedDBQuotaClientTest;
 
-  typedef std::map<GURL, int64> OriginToSizeMap;
+  typedef std::map<GURL, int64_t> OriginToSizeMap;
   class IndexedDBGetUsageAndQuotaCallback;
 
   base::FilePath GetBlobPath(const std::string& origin_id) const;
   base::FilePath GetLevelDBPath(const GURL& origin_url) const;
   base::FilePath GetLevelDBPath(const std::string& origin_id) const;
-  int64 ReadUsageFromDisk(const GURL& origin_url) const;
+  int64_t ReadUsageFromDisk(const GURL& origin_url) const;
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
   void GotUsageAndQuota(const GURL& origin_url,
                         storage::QuotaStatusCode,
-                        int64 usage,
-                        int64 quota);
-  void GotUpdatedQuota(const GURL& origin_url, int64 usage, int64 quota);
+                        int64_t usage,
+                        int64_t quota);
+  void GotUpdatedQuota(const GURL& origin_url, int64_t usage, int64_t quota);
   void QueryAvailableQuota(const GURL& origin_url);
 
   std::set<GURL>* GetOriginSet();

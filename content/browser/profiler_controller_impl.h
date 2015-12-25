@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_PROFILER_CONTROLLER_IMPL_H_
 #define CONTENT_BROWSER_PROFILER_CONTROLLER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "content/common/content_export.h"

@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/appcache_internals_ui.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -42,8 +44,8 @@ const char kFunctionOnAppCacheDetailsReady[] =
 const char kFunctionOnFileDetailsReady[] = "appcache.onFileDetailsReady";
 const char kFunctionOnFileDetailsFailed[] = "appcache.onFileDetailsFailed";
 
-int64 ToInt64(const std::string& str) {
-  int64 i = 0;
+int64_t ToInt64(const std::string& str) {
+  int64_t i = 0;
   base::StringToInt64(str.c_str(), &i);
   return i;
 }
@@ -271,7 +273,7 @@ void AppCacheInternalsUI::Proxy::HandleFileDetailsRequest() {
 
 void AppCacheInternalsUI::Proxy::OnResponseInfoLoaded(
     AppCacheResponseInfo* response,
-    int64 response_id) {
+    int64_t response_id) {
   if (shutdown_called_)
     return;
   if (!appcache_service_)
@@ -280,8 +282,8 @@ void AppCacheInternalsUI::Proxy::OnResponseInfoLoaded(
   response_enquiries_.pop_front();
   if (response) {
     scoped_refptr<AppCacheResponseInfo> response_info = response;
-    const int64 kLimit = 100 * 1000;
-    int64 amount_to_read =
+    const int64_t kLimit = 100 * 1000;
+    int64_t amount_to_read =
         std::min(kLimit, response_info->response_data_size());
     scoped_refptr<net::IOBuffer> response_data(new net::IOBuffer(
         base::CheckedNumeric<size_t>(amount_to_read).ValueOrDie()));

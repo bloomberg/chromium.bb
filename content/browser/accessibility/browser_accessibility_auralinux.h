@@ -8,6 +8,7 @@
 #include <atk/atk.h>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 
 namespace content {

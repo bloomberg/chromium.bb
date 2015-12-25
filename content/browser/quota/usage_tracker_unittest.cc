@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -25,19 +28,17 @@ namespace content {
 namespace {
 
 void DidGetGlobalUsage(bool* done,
-                       int64* usage_out,
-                       int64* unlimited_usage_out,
-                       int64 usage,
-                       int64 unlimited_usage) {
+                       int64_t* usage_out,
+                       int64_t* unlimited_usage_out,
+                       int64_t usage,
+                       int64_t unlimited_usage) {
   EXPECT_FALSE(*done);
   *done = true;
   *usage_out = usage;
   *unlimited_usage_out = unlimited_usage;
 }
 
-void DidGetUsage(bool* done,
-                 int64* usage_out,
-                 int64 usage) {
+void DidGetUsage(bool* done, int64_t* usage_out, int64_t usage) {
   EXPECT_FALSE(*done);
   *done = true;
   *usage_out = usage;
@@ -58,7 +59,7 @@ class MockQuotaClient : public QuotaClient {
                       StorageType type,
                       const GetUsageCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
-    int64 usage = GetUsage(origin);
+    int64_t usage = GetUsage(origin);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, usage));
   }
@@ -102,23 +103,23 @@ class MockQuotaClient : public QuotaClient {
     return type == storage::kStorageTypeTemporary;
   }
 
-  int64 GetUsage(const GURL& origin) {
+  int64_t GetUsage(const GURL& origin) {
     UsageMap::const_iterator found = usage_map_.find(origin);
     if (found == usage_map_.end())
       return 0;
     return found->second;
   }
 
-  void SetUsage(const GURL& origin, int64 usage) {
+  void SetUsage(const GURL& origin, int64_t usage) {
     usage_map_[origin] = usage;
   }
 
-  int64 UpdateUsage(const GURL& origin, int64 delta) {
+  int64_t UpdateUsage(const GURL& origin, int64_t delta) {
     return usage_map_[origin] += delta;
   }
 
  private:
-  typedef std::map<GURL, int64> UsageMap;
+  typedef std::map<GURL, int64_t> UsageMap;
 
   UsageMap usage_map_;
 
@@ -139,17 +140,17 @@ class UsageTrackerTest : public testing::Test {
     return &usage_tracker_;
   }
 
-  void UpdateUsage(const GURL& origin, int64 delta) {
+  void UpdateUsage(const GURL& origin, int64_t delta) {
     quota_client_.UpdateUsage(origin, delta);
     usage_tracker_.UpdateUsageCache(quota_client_.id(), origin, delta);
     base::RunLoop().RunUntilIdle();
   }
 
-  void UpdateUsageWithoutNotification(const GURL& origin, int64 delta) {
+  void UpdateUsageWithoutNotification(const GURL& origin, int64_t delta) {
     quota_client_.UpdateUsage(origin, delta);
   }
 
-  void GetGlobalLimitedUsage(int64* limited_usage) {
+  void GetGlobalLimitedUsage(int64_t* limited_usage) {
     bool done = false;
     usage_tracker_.GetGlobalLimitedUsage(base::Bind(
         &DidGetUsage, &done, limited_usage));
@@ -158,7 +159,7 @@ class UsageTrackerTest : public testing::Test {
     EXPECT_TRUE(done);
   }
 
-  void GetGlobalUsage(int64* usage, int64* unlimited_usage) {
+  void GetGlobalUsage(int64_t* usage, int64_t* unlimited_usage) {
     bool done = false;
     usage_tracker_.GetGlobalUsage(base::Bind(
         &DidGetGlobalUsage,
@@ -168,7 +169,7 @@ class UsageTrackerTest : public testing::Test {
     EXPECT_TRUE(done);
   }
 
-  void GetHostUsage(const std::string& host, int64* usage) {
+  void GetHostUsage(const std::string& host, int64_t* usage) {
     bool done = false;
     usage_tracker_.GetHostUsage(host, base::Bind(&DidGetUsage, &done, usage));
     base::RunLoop().RunUntilIdle();
@@ -214,9 +215,9 @@ class UsageTrackerTest : public testing::Test {
 };
 
 TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
-  int64 usage = 0;
-  int64 unlimited_usage = 0;
-  int64 host_usage = 0;
+  int64_t usage = 0;
+  int64_t unlimited_usage = 0;
+  int64_t host_usage = 0;
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(0, usage);
   EXPECT_EQ(0, unlimited_usage);
@@ -247,9 +248,9 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
 }
 
 TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
-  int64 usage = 0;
-  int64 unlimited_usage = 0;
-  int64 host_usage = 0;
+  int64_t usage = 0;
+  int64_t unlimited_usage = 0;
+  int64_t host_usage = 0;
 
   const GURL origin("http://example.com");
   const std::string host(net::GetHostOrSpecFromURL(origin));
@@ -313,9 +314,9 @@ TEST_F(UsageTrackerTest, LimitedGlobalUsageTest) {
   UpdateUsageWithoutNotification(kNonCached, 4);
   UpdateUsageWithoutNotification(kNonCachedUnlimited, 8);
 
-  int64 limited_usage = 0;
-  int64 total_usage = 0;
-  int64 unlimited_usage = 0;
+  int64_t limited_usage = 0;
+  int64_t total_usage = 0;
+  int64_t unlimited_usage = 0;
 
   GetGlobalLimitedUsage(&limited_usage);
   GetGlobalUsage(&total_usage, &unlimited_usage);

@@ -5,8 +5,10 @@
 #include "content/browser/frame_host/render_frame_message_filter.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -579,7 +581,7 @@ void RenderFrameMessageFilter::OnOpenChannelToPepperPlugin(
 
 void RenderFrameMessageFilter::OnDidCreateOutOfProcessPepperInstance(
     int plugin_child_id,
-    int32 pp_instance,
+    int32_t pp_instance,
     PepperRendererInstanceData instance_data,
     bool is_external) {
   // It's important that we supply the render process ID ourselves based on the
@@ -605,7 +607,7 @@ void RenderFrameMessageFilter::OnDidCreateOutOfProcessPepperInstance(
 
 void RenderFrameMessageFilter::OnDidDeleteOutOfProcessPepperInstance(
     int plugin_child_id,
-    int32 pp_instance,
+    int32_t pp_instance,
     bool is_external) {
   if (is_external) {
     // We provide the BrowserPpapiHost to the embedder, so it's safe to cast.
@@ -631,7 +633,7 @@ void RenderFrameMessageFilter::OnOpenChannelToPpapiBroker(
 
 void RenderFrameMessageFilter::OnPluginInstanceThrottleStateChange(
     int plugin_child_id,
-    int32 pp_instance,
+    int32_t pp_instance,
     bool is_throttled) {
   // Feature is only implemented for non-external Plugins.
   PpapiPluginProcessHost::OnPluginInstanceThrottleStateChange(

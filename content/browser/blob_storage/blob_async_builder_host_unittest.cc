@@ -4,6 +4,9 @@
 
 #include "storage/browser/blob/blob_async_builder_host.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"

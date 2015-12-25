@@ -12,7 +12,7 @@
 namespace content {
 
 DownloadCreateInfo::DownloadCreateInfo(const base::Time& start_time,
-                                       int64 total_bytes,
+                                       int64_t total_bytes,
                                        const net::BoundNetLog& bound_net_log,
                                        scoped_ptr<DownloadSaveInfo> save_info)
     : start_time(start_time),

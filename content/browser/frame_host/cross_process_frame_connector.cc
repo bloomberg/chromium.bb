@@ -75,7 +75,7 @@ void CrossProcessFrameConnector::RenderProcessGone() {
 }
 
 void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     int host_id,
     int route_id,
     scoped_ptr<cc::CompositorFrame> frame) {

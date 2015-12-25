@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_FACTORY_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_FACTORY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
@@ -33,8 +35,8 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
-      int32 routing_id,
-      int32 widget_routing_id,
+      int32_t routing_id,
+      int32_t widget_routing_id,
       int flags);
 
   // Returns true if there is currently a globally-registered factory.
@@ -53,8 +55,8 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
-      int32 routing_id,
-      int32 widget_routing_id,
+      int32_t routing_id,
+      int32_t widget_routing_id,
       int flags) = 0;
 
   // Registers a factory to be called when new RenderFrameHostImpls are created.

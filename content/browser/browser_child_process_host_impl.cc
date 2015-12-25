@@ -11,10 +11,12 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -281,7 +283,7 @@ bool BrowserChildProcessHostImpl::OnMessageReceived(
   return delegate_->OnMessageReceived(message);
 }
 
-void BrowserChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
+void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   is_channel_connected_ = true;

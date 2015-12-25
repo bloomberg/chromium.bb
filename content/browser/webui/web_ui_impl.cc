@@ -4,6 +4,8 @@
 
 #include "content/browser/webui/web_ui_impl.h"
 
+#include <stddef.h>
+
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"

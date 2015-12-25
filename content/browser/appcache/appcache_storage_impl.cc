@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/appcache_storage_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 #include <limits>

@@ -14,6 +14,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -34,7 +35,7 @@ namespace content {
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 
 struct BrowserGpuChannelHostFactory::CreateRequest {
-  CreateRequest(int32 route_id)
+  CreateRequest(int32_t route_id)
       : event(true, false),
         gpu_host_id(0),
         route_id(route_id),
@@ -42,7 +43,7 @@ struct BrowserGpuChannelHostFactory::CreateRequest {
   ~CreateRequest() {}
   base::WaitableEvent event;
   int gpu_host_id;
-  int32 route_id;
+  int32_t route_id;
   CreateCommandBufferResult result;
 };
 
@@ -292,7 +293,7 @@ BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
 
 void BrowserGpuChannelHostFactory::CreateViewCommandBufferOnIO(
     CreateRequest* request,
-    int32 surface_id,
+    int32_t surface_id,
     const GPUCreateCommandBufferConfig& init_params) {
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
   if (!host) {
@@ -320,9 +321,9 @@ void BrowserGpuChannelHostFactory::CommandBufferCreatedOnIO(
 }
 
 CreateCommandBufferResult BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
-      int32 surface_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32 route_id) {
+    int32_t surface_id,
+    const GPUCreateCommandBufferConfig& init_params,
+    int32_t route_id) {
   CreateRequest request(route_id);
   GetIOThreadTaskRunner()->PostTask(
       FROM_HERE,

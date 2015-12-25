@@ -4,7 +4,10 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/accessibility_messages.h"
 #include "ui/accessibility/ax_tree_serializer.h"
@@ -54,7 +57,7 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node11 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node12 /* = ui::AXNodeData() */) {
   CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
-  int32 no_id = empty_data.id;
+  int32_t no_id = empty_data.id;
 
   ui::AXTreeUpdate update;
   update.nodes.push_back(node1);
@@ -197,7 +200,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromAXNode(
   return GetFromID(node->id());
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetFromID(int32 id) const {
+BrowserAccessibility* BrowserAccessibilityManager::GetFromID(int32_t id) const {
   const auto iter = id_wrapper_map_.find(id);
   if (iter != id_wrapper_map_.end())
     return iter->second;
@@ -287,7 +290,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   bool should_send_initial_focus = false;
 
   // Process all changes to the accessibility tree first.
-  for (uint32 index = 0; index < details.size(); ++index) {
+  for (uint32_t index = 0; index < details.size(); ++index) {
     const AXEventNotificationDetails& detail = details[index];
     if (!tree_->Unserialize(detail.update)) {
       if (delegate_) {
@@ -310,7 +313,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetFromAXNode(focus_));
 
   // Now iterate over the events again and fire the events.
-  for (uint32 index = 0; index < details.size(); index++) {
+  for (uint32_t index = 0; index < details.size(); index++) {
     const AXEventNotificationDetails& detail = details[index];
 
     // Find the node corresponding to the id that's the target of the

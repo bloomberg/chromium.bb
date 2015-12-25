@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/browser_thread.h"

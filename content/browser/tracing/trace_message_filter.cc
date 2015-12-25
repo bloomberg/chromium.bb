@@ -132,7 +132,7 @@ void TraceMessageFilter::SendProcessMemoryDumpRequest(
 }
 
 // Called by TracingControllerImpl, which handles the multiprocess coordination.
-void TraceMessageFilter::SendGlobalMemoryDumpResponse(uint64 dump_guid,
+void TraceMessageFilter::SendGlobalMemoryDumpResponse(uint64_t dump_guid,
                                                       bool success) {
   Send(new TracingMsg_GlobalMemoryDumpResponse(dump_guid, success));
 }
@@ -202,7 +202,7 @@ void TraceMessageFilter::OnGlobalMemoryDumpRequest(
       base::Bind(&TraceMessageFilter::SendGlobalMemoryDumpResponse, this));
 }
 
-void TraceMessageFilter::OnProcessMemoryDumpResponse(uint64 dump_guid,
+void TraceMessageFilter::OnProcessMemoryDumpResponse(uint64_t dump_guid,
                                                      bool success) {
   TracingControllerImpl::GetInstance()->OnProcessMemoryDumpResponse(
       this, dump_guid, success);

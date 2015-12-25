@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_GPU_GPU_PROCESS_HOST_H_
 #define CONTENT_BROWSER_GPU_GPU_PROCESS_HOST_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <set>
@@ -12,9 +14,11 @@
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
@@ -136,7 +140,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                              gfx::BufferFormat format,
                              gfx::BufferUsage usage,
                              int client_id,
-                             int32 surface_id,
+                             int32_t surface_id,
                              const CreateGpuMemoryBufferCallback& callback);
 
   // Tells the GPU process to create a new GPU memory buffer from an existing
@@ -185,7 +189,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // BrowserChildProcessHostDelegate implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed() override;
   void OnProcessCrashed(int exit_code) override;
@@ -206,9 +210,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnAcceleratedSurfaceBuffersSwapped(const IPC::Message& message);
 #endif
 
-  void CreateChannelCache(int32 client_id);
-  void OnDestroyChannel(int32 client_id);
-  void OnCacheShader(int32 client_id, const std::string& key,
+  void CreateChannelCache(int32_t client_id);
+  void OnDestroyChannel(int32_t client_id);
+  void OnCacheShader(int32_t client_id,
+                     const std::string& key,
                      const std::string& shader);
 
   bool LaunchGpuProcess(const std::string& channel_id);
@@ -284,7 +289,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool uma_memory_stats_received_;
   GPUMemoryUmaStats uma_memory_stats_;
 
-  typedef std::map<int32, scoped_refptr<ShaderDiskCache> >
+  typedef std::map<int32_t, scoped_refptr<ShaderDiskCache>>
       ClientIdToShaderCacheMap;
   ClientIdToShaderCacheMap client_id_to_shader_cache_;
 

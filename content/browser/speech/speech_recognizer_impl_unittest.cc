@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "content/browser/browser_thread_impl.h"
@@ -164,7 +167,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   void FillPacketWithTestWaveform() {
     // Fill the input with a simple pattern, a 125Hz sawtooth waveform.
     for (size_t i = 0; i < audio_packet_.size(); ++i)
-      audio_packet_[i] = static_cast<uint8>(i);
+      audio_packet_[i] = static_cast<uint8_t>(i);
     CopyPacketToAudioBus();
   }
 
@@ -193,7 +196,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   SpeechRecognitionErrorCode error_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   TestAudioInputControllerFactory audio_input_controller_factory_;
-  std::vector<uint8> audio_packet_;
+  std::vector<uint8_t> audio_packet_;
   scoped_ptr<media::AudioBus> audio_bus_;
   int bytes_per_sample_;
   float volume_;

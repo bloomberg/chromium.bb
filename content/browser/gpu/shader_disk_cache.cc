@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/shader_disk_cache.h"
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -426,16 +427,16 @@ ShaderCacheFactory::ShaderCacheFactory() {
 ShaderCacheFactory::~ShaderCacheFactory() {
 }
 
-void ShaderCacheFactory::SetCacheInfo(int32 client_id,
+void ShaderCacheFactory::SetCacheInfo(int32_t client_id,
                                       const base::FilePath& path) {
   client_id_to_path_map_[client_id] = path;
 }
 
-void ShaderCacheFactory::RemoveCacheInfo(int32 client_id) {
+void ShaderCacheFactory::RemoveCacheInfo(int32_t client_id) {
   client_id_to_path_map_.erase(client_id);
 }
 
-scoped_refptr<ShaderDiskCache> ShaderCacheFactory::Get(int32 client_id) {
+scoped_refptr<ShaderDiskCache> ShaderCacheFactory::Get(int32_t client_id) {
   ClientIdToPathMap::iterator iter =
       client_id_to_path_map_.find(client_id);
   if (iter == client_id_to_path_map_.end())
@@ -569,7 +570,7 @@ int ShaderDiskCache::Clear(
   return rv;
 }
 
-int32 ShaderDiskCache::Size() {
+int32_t ShaderDiskCache::Size() {
   if (!cache_available_)
     return -1;
   return backend_->GetEntryCount();

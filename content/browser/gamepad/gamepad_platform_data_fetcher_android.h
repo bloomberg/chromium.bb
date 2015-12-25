@@ -11,6 +11,7 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
+#include "base/macros.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_provider.h"
 #include "content/browser/gamepad/gamepad_standard_mappings.h"

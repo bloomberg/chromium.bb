@@ -12,13 +12,15 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_DISPATCHER_HOST_IMPL_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_DISPATCHER_HOST_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -100,7 +102,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool prefer_cache,
       bool do_not_prompt_for_login,
       scoped_ptr<DownloadSaveInfo> save_info,
-      uint32 download_id,
+      uint32_t download_id,
       const DownloadStartedCallback& started_callback) override;
   void ClearLoginDelegateForRequest(net::URLRequest* request) override;
   void BlockRequestsForRoute(int child_id, int route_id) override;
@@ -240,7 +242,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       net::URLRequest* request,
       bool is_content_initiated,
       bool must_download,
-      uint32 id,
+      uint32_t id,
       scoped_ptr<DownloadSaveInfo> save_info,
       const DownloadUrlParameters::OnStartedCallback& started_cb);
 
@@ -311,8 +313,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   struct LoadInfo {
     GURL url;
     net::LoadStateWithParam load_state;
-    uint64 upload_position;
-    uint64 upload_size;
+    uint64_t upload_position;
+    uint64_t upload_size;
   };
 
   // Map from ProcessID+RouteID pair to the "most interesting" LoadState.

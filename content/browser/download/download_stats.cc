@@ -4,6 +4,7 @@
 
 #include "content/browser/download/download_stats.h"
 
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
@@ -342,10 +343,11 @@ void RecordDownloadSource(DownloadSource source) {
       "Download.Sources", source, DOWNLOAD_SOURCE_LAST_ENTRY);
 }
 
-void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len) {
+void RecordDownloadCompleted(const base::TimeTicks& start,
+                             int64_t download_len) {
   RecordDownloadCount(COMPLETED_COUNT);
   UMA_HISTOGRAM_LONG_TIMES("Download.Time", (base::TimeTicks::Now() - start));
-  int64 max = 1024 * 1024 * 1024;  // One Terabyte.
+  int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
   download_len /= 1024;  // In Kilobytes
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize",
                               download_len,
@@ -355,8 +357,8 @@ void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len) {
 }
 
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
-                               int64 received,
-                               int64 total) {
+                               int64_t received,
+                               int64_t total) {
   RecordDownloadCount(INTERRUPTED_COUNT);
   UMA_HISTOGRAM_CUSTOM_ENUMERATION(
       "Download.InterruptedReason",
@@ -367,11 +369,11 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   // The maximum should be 2^kBuckets, to have the logarithmic bucket
   // boundaries fall on powers of 2.
   static const int kBuckets = 30;
-  static const int64 kMaxKb = 1 << kBuckets;  // One Terabyte, in Kilobytes.
-  int64 delta_bytes = total - received;
+  static const int64_t kMaxKb = 1 << kBuckets;  // One Terabyte, in Kilobytes.
+  int64_t delta_bytes = total - received;
   bool unknown_size = total <= 0;
-  int64 received_kb = received / 1024;
-  int64 total_kb = total / 1024;
+  int64_t received_kb = received / 1024;
+  int64_t total_kb = total / 1024;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedReceivedSizeK",
                               received_kb,
                               1,
@@ -462,9 +464,9 @@ void RecordDownloadWriteLoopCount(int count) {
 }
 
 void RecordAcceptsRanges(const std::string& accepts_ranges,
-                         int64 download_len,
+                         int64_t download_len,
                          bool has_strong_validator) {
-  int64 max = 1024 * 1024 * 1024;  // One Terabyte.
+  int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
   download_len /= 1024;  // In Kilobytes
   static const int kBuckets = 50;
 

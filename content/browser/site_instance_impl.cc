@@ -20,7 +20,7 @@ namespace content {
 
 const RenderProcessHostFactory*
     SiteInstanceImpl::g_render_process_host_factory_ = NULL;
-int32 SiteInstanceImpl::next_site_instance_id_ = 1;
+int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
 SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
     : id_(next_site_instance_id_++),
@@ -45,7 +45,7 @@ SiteInstanceImpl::~SiteInstanceImpl() {
         static_cast<SiteInstance*>(this));
 }
 
-int32 SiteInstanceImpl::GetId() {
+int32_t SiteInstanceImpl::GetId() {
   return id_;
 }
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/endpointer/endpointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,11 +23,13 @@ namespace content {
 class FrameProcessor {
  public:
   // Process a single frame of test audio samples.
-  virtual EpStatus ProcessFrame(int64 time, int16* samples, int frame_size) = 0;
+  virtual EpStatus ProcessFrame(int64_t time,
+                                int16_t* samples,
+                                int frame_size) = 0;
 };
 
 void RunEndpointerEventsTest(FrameProcessor* processor) {
-  int16 samples[kFrameSize];
+  int16_t samples[kFrameSize];
 
   // We will create a white noise signal of 150 frames. The frames from 50 to
   // 100 will have more power, and the endpointer should fire on those frames.
@@ -34,7 +38,7 @@ void RunEndpointerEventsTest(FrameProcessor* processor) {
   // Create a random sequence of samples.
   srand(1);
   float gain = 0.0;
-  int64 time = 0;
+  int64_t time = 0;
   for (int frame_count = 0; frame_count < kNumFrames; ++frame_count) {
     // The frames from 50 to 100 will have more power, and the endpointer
     // should detect those frames as speech.
@@ -47,11 +51,11 @@ void RunEndpointerEventsTest(FrameProcessor* processor) {
     for (int i = 0; i < kFrameSize; ++i) {
       float randNum = static_cast<float>(rand() - (RAND_MAX / 2)) /
           static_cast<float>(RAND_MAX);
-      samples[i] = static_cast<int16>(gain * randNum);
+      samples[i] = static_cast<int16_t>(gain * randNum);
     }
 
     EpStatus ep_status = processor->ProcessFrame(time, samples, kFrameSize);
-    time += static_cast<int64>(kFrameSize * (1e6 / kSampleRate));
+    time += static_cast<int64_t>(kFrameSize * (1e6 / kSampleRate));
 
     // Log the status.
     if (20 == frame_count)
@@ -73,9 +77,11 @@ class EnergyEndpointerFrameProcessor : public FrameProcessor {
   explicit EnergyEndpointerFrameProcessor(EnergyEndpointer* endpointer)
       : endpointer_(endpointer) {}
 
-  EpStatus ProcessFrame(int64 time, int16* samples, int frame_size) override {
+  EpStatus ProcessFrame(int64_t time,
+                        int16_t* samples,
+                        int frame_size) override {
     endpointer_->ProcessAudioFrame(time, samples, kFrameSize, NULL);
-    int64 ep_time;
+    int64_t ep_time;
     return endpointer_->Status(&ep_time);
   }
 
@@ -116,11 +122,13 @@ class EndpointerFrameProcessor : public FrameProcessor {
   explicit EndpointerFrameProcessor(Endpointer* endpointer)
       : endpointer_(endpointer) {}
 
-  EpStatus ProcessFrame(int64 time, int16* samples, int frame_size) override {
+  EpStatus ProcessFrame(int64_t time,
+                        int16_t* samples,
+                        int frame_size) override {
     scoped_refptr<AudioChunk> frame(
-        new AudioChunk(reinterpret_cast<uint8*>(samples), kFrameSize * 2, 2));
+        new AudioChunk(reinterpret_cast<uint8_t*>(samples), kFrameSize * 2, 2));
     endpointer_->ProcessAudio(*frame.get(), NULL);
-    int64 ep_time;
+    int64_t ep_time;
     return endpointer_->Status(&ep_time);
   }
 
@@ -132,10 +140,10 @@ TEST(EndpointerTest, TestEmbeddedEndpointerEvents) {
   const int kSampleRate = 8000;  // 8 k samples per second for AMR encoding.
 
   Endpointer endpointer(kSampleRate);
-  const int64 kMillisecondsPerMicrosecond = 1000;
-  const int64 short_timeout = 300 * kMillisecondsPerMicrosecond;
+  const int64_t kMillisecondsPerMicrosecond = 1000;
+  const int64_t short_timeout = 300 * kMillisecondsPerMicrosecond;
   endpointer.set_speech_input_possibly_complete_silence_length(short_timeout);
-  const int64 long_timeout = 500 * kMillisecondsPerMicrosecond;
+  const int64_t long_timeout = 500 * kMillisecondsPerMicrosecond;
   endpointer.set_speech_input_complete_silence_length(long_timeout);
   endpointer.StartSession();
 

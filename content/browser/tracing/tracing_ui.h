@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_TRACING_TRACING_UI_H_
 #define CONTENT_BROWSER_TRACING_TRACING_UI_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/trace_uploader.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -22,7 +25,7 @@ class CONTENT_EXPORT TracingUI : public WebUIController {
   explicit TracingUI(WebUI* web_ui);
   ~TracingUI() override;
   void OnMonitoringStateChanged(bool is_monitoring);
-  void OnTraceUploadProgress(int64 current, int64 total);
+  void OnTraceUploadProgress(int64_t current, int64_t total);
   void OnTraceUploadComplete(bool success, const std::string& feedback);
 
  private:

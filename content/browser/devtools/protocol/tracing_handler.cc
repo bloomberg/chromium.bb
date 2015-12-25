@@ -224,7 +224,7 @@ Response TracingHandler::RequestMemoryDump(DevToolsCommandId command_id) {
 }
 
 void TracingHandler::OnMemoryDumpFinished(DevToolsCommandId command_id,
-                                          uint64 dump_guid,
+                                          uint64_t dump_guid,
                                           bool success) {
   client_->SendRequestMemoryDumpResponse(
       command_id,

@@ -31,9 +31,12 @@
 
 #include "content/browser/appcache/appcache_manifest_parser.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "url/gurl.h"
 

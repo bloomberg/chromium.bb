@@ -118,7 +118,7 @@ DOMStorageArea::DOMStorageArea(const GURL& origin,
   }
 }
 
-DOMStorageArea::DOMStorageArea(int64 namespace_id,
+DOMStorageArea::DOMStorageArea(int64_t namespace_id,
                                const std::string& persistent_namespace_id,
                                const GURL& origin,
                                SessionStorageDatabase* session_storage_backing,
@@ -247,7 +247,7 @@ void DOMStorageArea::FastClear() {
 }
 
 DOMStorageArea* DOMStorageArea::ShallowCopy(
-    int64 destination_namespace_id,
+    int64_t destination_namespace_id,
     const std::string& destination_persistent_namespace_id) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
   DCHECK_NE(kLocalStorageNamespaceId, destination_namespace_id);

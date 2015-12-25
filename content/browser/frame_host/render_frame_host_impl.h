@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -12,9 +15,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/site_instance_impl.h"
@@ -529,8 +534,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       RenderWidgetHostDelegate* rwh_delegate,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
-                      int32 routing_id,
-                      int32 widget_routing_id,
+                      int32_t routing_id,
+                      int32_t widget_routing_id,
                       int flags);
 
  private:
@@ -540,9 +545,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
 
   // IPC Message handlers.
-  void OnAddMessageToConsole(int32 level,
+  void OnAddMessageToConsole(int32_t level,
                              const base::string16& message,
-                             int32 line_no,
+                             int32_t line_no,
                              const base::string16& source_id);
   void OnDetach();
   void OnFrameFocused();
@@ -571,7 +576,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnRenderProcessGone(int status, int error_code);
   void OnContextMenu(const ContextMenuParams& params);
   void OnJavaScriptExecuteResponse(int id, const base::ListValue& result);
-  void OnVisualStateResponse(uint64 id);
+  void OnVisualStateResponse(uint64_t id);
   void OnRunJavaScriptMessage(const base::string16& message,
                               const base::string16& default_prompt,
                               const GURL& frame_url,
@@ -585,14 +590,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                           size_t start_offset,
                                           size_t end_offset);
   void OnDidAccessInitialDocument();
-  void OnDidChangeOpener(int32 opener_routing_id);
+  void OnDidChangeOpener(int32_t opener_routing_id);
   void OnDidChangeName(const std::string& name);
   void OnEnforceStrictMixedContentChecking();
-  void OnDidAssignPageId(int32 page_id);
-  void OnDidChangeSandboxFlags(int32 frame_routing_id,
+  void OnDidAssignPageId(int32_t page_id);
+  void OnDidChangeSandboxFlags(int32_t frame_routing_id,
                                blink::WebSandboxFlags flags);
   void OnDidChangeFrameOwnerProperties(
-      int32 frame_routing_id,
+      int32_t frame_routing_id,
       const blink::WebFrameOwnerProperties& frame_owner_properties);
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
@@ -684,8 +689,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // immediate child of this FrameTreeNode.  |child_frame_routing_id| is
   // considered untrusted, so the renderer process is killed if it refers to a
   // FrameTreeNode that is not a child of this node.
-  FrameTreeNode* FindAndVerifyChild(
-      int32 child_frame_routing_id, bad_message::BadMessageReason reason);
+  FrameTreeNode* FindAndVerifyChild(int32_t child_frame_routing_id,
+                                    bad_message::BadMessageReason reason);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
@@ -737,7 +742,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The mapping of pending JavaScript calls created by
   // ExecuteJavaScript and their corresponding callbacks.
   std::map<int, JavaScriptResultCallback> javascript_callbacks_;
-  std::map<uint64, VisualStateCallback> visual_state_callbacks_;
+  std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;
 
   // RenderFrameHosts that need management of the rendering and input events
   // for their frame subtrees require RenderWidgetHosts. This typically

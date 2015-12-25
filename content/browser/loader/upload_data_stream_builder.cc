@@ -4,11 +4,14 @@
 
 #include "content/browser/loader/upload_data_stream_builder.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 #include "content/common/resource_request_body.h"

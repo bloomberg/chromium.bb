@@ -4,12 +4,15 @@
 
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 #include <set>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"

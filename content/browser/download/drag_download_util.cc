@@ -4,6 +4,8 @@
 
 #include "content/browser/download/drag_download_util.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -14,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 

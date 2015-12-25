@@ -5,6 +5,8 @@
 #include "content/browser/compositor/software_output_device_mac.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/mac/foundation_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"

@@ -5,13 +5,15 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DISPATCHER_HOST_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -61,14 +63,14 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
       const content::IndexedDBDatabaseMetadata& metadata);
 
   // BrowserMessageFilter implementation.
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelClosing() override;
   void OnDestruct() const override;
   base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void FinishTransaction(int64 host_transaction_id, bool committed);
+  void FinishTransaction(int64_t host_transaction_id, bool committed);
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* Context() { return indexed_db_context_.get(); }
@@ -78,24 +80,26 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // IndexedDBCallbacks call these methods to add the results into the
   // applicable map.  See below for more details.
-  int32 Add(IndexedDBCursor* cursor);
-  int32 Add(IndexedDBConnection* connection,
-            int32 ipc_thread_id,
-            const GURL& origin_url);
+  int32_t Add(IndexedDBCursor* cursor);
+  int32_t Add(IndexedDBConnection* connection,
+              int32_t ipc_thread_id,
+              const GURL& origin_url);
 
-  void RegisterTransactionId(int64 host_transaction_id, const GURL& origin_url);
+  void RegisterTransactionId(int64_t host_transaction_id,
+                             const GURL& origin_url);
 
-  IndexedDBCursor* GetCursorFromId(int32 ipc_cursor_id);
+  IndexedDBCursor* GetCursorFromId(int32_t ipc_cursor_id);
 
   // These are called to map a 32-bit front-end (renderer-specific) transaction
   // id to and from a back-end ("host") transaction id that encodes the process
   // id in the high 32 bits. The mapping is host-specific and ids are validated.
-  int64 HostTransactionId(int64 transaction_id);
-  int64 RendererTransactionId(int64 host_transaction_id);
+  int64_t HostTransactionId(int64_t transaction_id);
+  int64_t RendererTransactionId(int64_t host_transaction_id);
 
   // These are called to decode a host transaction ID, for diagnostic purposes.
-  static uint32 TransactionIdToRendererTransactionId(int64 host_transaction_id);
-  static uint32 TransactionIdToProcessId(int64 host_transaction_id);
+  static uint32_t TransactionIdToRendererTransactionId(
+      int64_t host_transaction_id);
+  static uint32_t TransactionIdToProcessId(int64_t host_transaction_id);
 
   std::string HoldBlobData(const IndexedDBBlobInfo& blob_info);
 
@@ -107,16 +111,16 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // Used in nested classes.
   typedef std::map<std::string, std::pair<storage::BlobDataHandle*, int>>
       BlobDataHandleMap;
-  typedef std::map<int64, int64> TransactionIDToDatabaseIDMap;
-  typedef std::map<int64, uint64> TransactionIDToSizeMap;
-  typedef std::map<int64, GURL> TransactionIDToURLMap;
-  typedef std::map<int32, GURL> WebIDBObjectIDToURLMap;
+  typedef std::map<int64_t, int64_t> TransactionIDToDatabaseIDMap;
+  typedef std::map<int64_t, uint64_t> TransactionIDToSizeMap;
+  typedef std::map<int64_t, GURL> TransactionIDToURLMap;
+  typedef std::map<int32_t, GURL> WebIDBObjectIDToURLMap;
 
   // IDMap for RefCounted types
   template <typename RefCountedType>
   class RefIDMap {
    public:
-    typedef int32 KeyType;
+    typedef int32_t KeyType;
 
     RefIDMap() {}
     ~RefIDMap() {}
@@ -154,14 +158,14 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     void OnCreateObjectStore(
         const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params);
-    void OnDeleteObjectStore(int32 ipc_database_id,
-                             int64 transaction_id,
-                             int64 object_store_id);
+    void OnDeleteObjectStore(int32_t ipc_database_id,
+                             int64_t transaction_id,
+                             int64_t object_store_id);
     void OnCreateTransaction(
         const IndexedDBHostMsg_DatabaseCreateTransaction_Params&);
-    void OnClose(int32 ipc_database_id);
-    void OnVersionChangeIgnored(int32 ipc_database_id);
-    void OnDestroyed(int32 ipc_database_id);
+    void OnClose(int32_t ipc_database_id);
+    void OnVersionChangeIgnored(int32_t ipc_database_id);
+    void OnDestroyed(int32_t ipc_database_id);
 
     void OnGet(const IndexedDBHostMsg_DatabaseGet_Params& params);
     void OnGetAll(const IndexedDBHostMsg_DatabaseGetAll_Params& params);
@@ -172,28 +176,28 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                std::vector<storage::BlobDataHandle*> handles);
     void OnSetIndexKeys(
         const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params);
-    void OnSetIndexesReady(int32 ipc_database_id,
-                           int64 transaction_id,
-                           int64 object_store_id,
-                           const std::vector<int64>& ids);
+    void OnSetIndexesReady(int32_t ipc_database_id,
+                           int64_t transaction_id,
+                           int64_t object_store_id,
+                           const std::vector<int64_t>& ids);
     void OnOpenCursor(const IndexedDBHostMsg_DatabaseOpenCursor_Params& params);
     void OnCount(const IndexedDBHostMsg_DatabaseCount_Params& params);
     void OnDeleteRange(
         const IndexedDBHostMsg_DatabaseDeleteRange_Params& params);
-    void OnClear(int32 ipc_thread_id,
-                 int32 ipc_callbacks_id,
-                 int32 ipc_database_id,
-                 int64 transaction_id,
-                 int64 object_store_id);
+    void OnClear(int32_t ipc_thread_id,
+                 int32_t ipc_callbacks_id,
+                 int32_t ipc_database_id,
+                 int64_t transaction_id,
+                 int64_t object_store_id);
     void OnCreateIndex(
         const IndexedDBHostMsg_DatabaseCreateIndex_Params& params);
-    void OnDeleteIndex(int32 ipc_database_id,
-                       int64 transaction_id,
-                       int64 object_store_id,
-                       int64 index_id);
+    void OnDeleteIndex(int32_t ipc_database_id,
+                       int64_t transaction_id,
+                       int64_t object_store_id,
+                       int64_t index_id);
 
-    void OnAbort(int32 ipc_database_id, int64 transaction_id);
-    void OnCommit(int32 ipc_database_id, int64 transaction_id);
+    void OnAbort(int32_t ipc_database_id, int64_t transaction_id);
+    void OnCommit(int32_t ipc_database_id, int64_t transaction_id);
     IndexedDBDispatcherHost* parent_;
     IDMap<IndexedDBConnection, IDMapOwnPointer> map_;
     WebIDBObjectIDToURLMap database_url_map_;
@@ -212,23 +216,23 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     bool OnMessageReceived(const IPC::Message& message);
 
-    void OnAdvance(int32 ipc_object_store_id,
-                   int32 ipc_thread_id,
-                   int32 ipc_callbacks_id,
-                   uint32 count);
-    void OnContinue(int32 ipc_object_store_id,
-                    int32 ipc_thread_id,
-                    int32 ipc_callbacks_id,
+    void OnAdvance(int32_t ipc_object_store_id,
+                   int32_t ipc_thread_id,
+                   int32_t ipc_callbacks_id,
+                   uint32_t count);
+    void OnContinue(int32_t ipc_object_store_id,
+                    int32_t ipc_thread_id,
+                    int32_t ipc_callbacks_id,
                     const IndexedDBKey& key,
                     const IndexedDBKey& primary_key);
-    void OnPrefetch(int32 ipc_cursor_id,
-                    int32 ipc_thread_id,
-                    int32 ipc_callbacks_id,
+    void OnPrefetch(int32_t ipc_cursor_id,
+                    int32_t ipc_thread_id,
+                    int32_t ipc_callbacks_id,
                     int n);
-    void OnPrefetchReset(int32 ipc_cursor_id,
+    void OnPrefetchReset(int32_t ipc_cursor_id,
                          int used_prefetches,
                          int unused_prefetches);
-    void OnDestroyed(int32 ipc_cursor_id);
+    void OnDestroyed(int32_t ipc_cursor_id);
 
     IndexedDBDispatcherHost* parent_;
     RefIDMap<IndexedDBCursor> map_;
@@ -242,13 +246,13 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // Helper templates.
   template <class ReturnType>
   ReturnType* GetOrTerminateProcess(IDMap<ReturnType, IDMapOwnPointer>* map,
-                                    int32 ipc_return_object_id);
+                                    int32_t ipc_return_object_id);
   template <class ReturnType>
   ReturnType* GetOrTerminateProcess(RefIDMap<ReturnType>* map,
-                                    int32 ipc_return_object_id);
+                                    int32_t ipc_return_object_id);
 
   template <typename MapType>
-  void DestroyObject(MapType* map, int32 ipc_object_id);
+  void DestroyObject(MapType* map, int32_t ipc_object_id);
 
   // Message processing. Most of the work is delegated to the dispatcher hosts
   // below.

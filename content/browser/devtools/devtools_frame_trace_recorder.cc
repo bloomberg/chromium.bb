@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

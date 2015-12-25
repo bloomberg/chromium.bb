@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATION_REQUEST_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATION_REQUEST_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"

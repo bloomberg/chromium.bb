@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/public/platform/modules/vr/WebVR.h"
 
 #if defined(OS_ANDROID)

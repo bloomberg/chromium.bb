@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -63,7 +65,7 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
             shell()->web_contents()->GetBrowserContext())->GetQuotaManager());
   }
 
-  static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
+  static void SetTempQuota(int64_t bytes, scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,

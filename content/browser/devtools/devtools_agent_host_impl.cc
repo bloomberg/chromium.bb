@@ -7,7 +7,6 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"

@@ -1447,7 +1447,8 @@ bool AppCacheUpdateJob::MaybeLoadFromNewestCache(const GURL& url,
 }
 
 void AppCacheUpdateJob::OnResponseInfoLoaded(
-    AppCacheResponseInfo* response_info, int64 response_id) {
+    AppCacheResponseInfo* response_info,
+    int64_t response_id) {
   const net::HttpResponseInfo* http_info = response_info ?
       response_info->http_response_info() : NULL;
 

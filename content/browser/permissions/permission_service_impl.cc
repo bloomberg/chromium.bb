@@ -4,6 +4,8 @@
 
 #include "content/browser/permissions/permission_service_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_manager.h"

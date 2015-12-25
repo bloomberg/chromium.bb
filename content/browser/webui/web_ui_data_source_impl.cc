@@ -4,9 +4,12 @@
 
 #include "content/browser/webui/web_ui_data_source_impl.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "content/grit/content_resources.h"

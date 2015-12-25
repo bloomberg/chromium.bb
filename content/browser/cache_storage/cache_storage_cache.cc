@@ -4,11 +4,14 @@
 
 #include "content/browser/cache_storage/cache_storage_cache.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/barrier_closure.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -423,7 +426,7 @@ void CacheStorageCache::Close(const base::Closure& callback) {
                                            pending_callback));
 }
 
-int64 CacheStorageCache::MemoryBackedSize() const {
+int64_t CacheStorageCache::MemoryBackedSize() const {
   if (backend_state_ != BACKEND_OPEN || !memory_only_)
     return 0;
 
@@ -431,7 +434,7 @@ int64 CacheStorageCache::MemoryBackedSize() const {
       backend_->CreateIterator();
   disk_cache::Entry* entry = nullptr;
 
-  int64 sum = 0;
+  int64_t sum = 0;
 
   std::vector<disk_cache::Entry*> entries;
   int rv = net::OK;

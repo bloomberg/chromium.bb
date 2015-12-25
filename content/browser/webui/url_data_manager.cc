@@ -4,6 +4,8 @@
 
 #include "content/browser/webui/url_data_manager.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"

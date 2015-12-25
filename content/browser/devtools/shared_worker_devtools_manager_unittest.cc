@@ -4,6 +4,9 @@
 
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

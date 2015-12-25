@@ -7,7 +7,9 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/stl_util.h"
+
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;

@@ -5,12 +5,15 @@
 #ifndef CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_IMPL_H_
 #define CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_IMPL_H_
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -69,7 +72,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   void OnChildDisconnected() override;
   const base::Process& GetProcess() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
   void OnBadMessageReceived(const IPC::Message& message) override;
 

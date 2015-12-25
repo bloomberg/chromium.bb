@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_STORAGE_H_
 #define CONTENT_BROWSER_APPCACHE_MOCK_APPCACHE_STORAGE_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <vector>
@@ -12,6 +14,7 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache.h"
@@ -50,7 +53,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   ~MockAppCacheStorage() override;
 
   void GetAllInfo(Delegate* delegate) override;
-  void LoadCache(int64 id, Delegate* delegate) override;
+  void LoadCache(int64_t id, Delegate* delegate) override;
   void LoadOrCreateGroup(const GURL& manifest_url, Delegate* delegate) override;
   void StoreGroupAndNewestCache(AppCacheGroup* group,
                                 AppCache* newest_cache,
@@ -63,23 +66,23 @@ class MockAppCacheStorage : public AppCacheStorage {
                                  AppCacheEntry* found_entry,
                                  AppCacheEntry* found_fallback_entry,
                                  bool* found_network_namespace) override;
-  void MarkEntryAsForeign(const GURL& entry_url, int64 cache_id) override;
+  void MarkEntryAsForeign(const GURL& entry_url, int64_t cache_id) override;
   void MakeGroupObsolete(AppCacheGroup* group,
                          Delegate* delegate,
                          int response_code) override;
   void StoreEvictionTimes(AppCacheGroup* group) override;
   AppCacheResponseReader* CreateResponseReader(const GURL& manifest_url,
-                                               int64 group_id,
-                                               int64 response_id) override;
+                                               int64_t group_id,
+                                               int64_t response_id) override;
   AppCacheResponseWriter* CreateResponseWriter(const GURL& manifest_url,
-                                               int64 group_id) override;
+                                               int64_t group_id) override;
   AppCacheResponseMetadataWriter* CreateResponseMetadataWriter(
-      int64 group_id,
-      int64 response_id) override;
+      int64_t group_id,
+      int64_t response_id) override;
   void DoomResponses(const GURL& manifest_url,
-                     const std::vector<int64>& response_ids) override;
+                     const std::vector<int64_t>& response_ids) override;
   void DeleteResponses(const GURL& manifest_url,
-                       const std::vector<int64>& response_ids) override;
+                       const std::vector<int64_t>& response_ids) override;
 
  private:
   friend class AppCacheRequestHandlerTest;
@@ -87,15 +90,15 @@ class MockAppCacheStorage : public AppCacheStorage {
   friend class AppCacheUpdateJobTest;
   friend class MockAppCacheStorageTest;
 
-  typedef base::hash_map<int64, scoped_refptr<AppCache> > StoredCacheMap;
+  typedef base::hash_map<int64_t, scoped_refptr<AppCache>> StoredCacheMap;
   typedef std::map<GURL, scoped_refptr<AppCacheGroup> > StoredGroupMap;
-  typedef std::set<int64> DoomedResponseIds;
-  typedef std::map<int64, std::pair<base::Time, base::Time>>
+  typedef std::set<int64_t> DoomedResponseIds;
+  typedef std::map<int64_t, std::pair<base::Time, base::Time>>
       StoredEvictionTimesMap;
 
   void ProcessGetAllInfo(scoped_refptr<DelegateReference> delegate_ref);
-  void ProcessLoadCache(
-      int64 id, scoped_refptr<DelegateReference> delegate_ref);
+  void ProcessLoadCache(int64_t id,
+                        scoped_refptr<DelegateReference> delegate_ref);
   void ProcessLoadOrCreateGroup(
       const GURL& manifest_url, scoped_refptr<DelegateReference> delegate_ref);
   void ProcessStoreGroupAndNewestCache(
@@ -156,13 +159,12 @@ class MockAppCacheStorage : public AppCacheStorage {
   // provided values will be return on the next call to
   // the corresponding Find method, subsequent calls are
   // unaffected.
-  void SimulateFindMainResource(
-      const AppCacheEntry& entry,
-      const GURL& fallback_url,
-      const AppCacheEntry& fallback_entry,
-      int64 cache_id,
-      int64 group_id,
-      const GURL& manifest_url) {
+  void SimulateFindMainResource(const AppCacheEntry& entry,
+                                const GURL& fallback_url,
+                                const AppCacheEntry& fallback_entry,
+                                int64_t cache_id,
+                                int64_t group_id,
+                                const GURL& manifest_url) {
     simulate_find_main_resource_ = true;
     simulate_find_sub_resource_ = false;
     simulated_found_entry_ = entry;
@@ -209,8 +211,8 @@ class MockAppCacheStorage : public AppCacheStorage {
   bool simulate_find_sub_resource_;
   AppCacheEntry simulated_found_entry_;
   AppCacheEntry simulated_found_fallback_entry_;
-  int64 simulated_found_cache_id_;
-  int64 simulated_found_group_id_;
+  int64_t simulated_found_cache_id_;
+  int64_t simulated_found_group_id_;
   GURL simulated_found_fallback_url_;
   GURL simulated_found_manifest_url_;
   bool simulated_found_network_namespace_;

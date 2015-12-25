@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_SESSION_STORAGE_DATABASE_H_
 #define CONTENT_BROWSER_DOM_STORAGE_SESSION_STORAGE_DATABASE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -158,7 +161,7 @@ class CONTENT_EXPORT SessionStorageDatabase :
                         const DOMStorageValuesMap& values,
                         leveldb::WriteBatch* batch);
 
-  bool GetMapRefCount(const std::string& map_id, int64* ref_count);
+  bool GetMapRefCount(const std::string& map_id, int64_t* ref_count);
   bool IncreaseMapRefCount(const std::string& map_id,
                            leveldb::WriteBatch* batch);
   // Decreases the ref count of a map by |decrease|. If the ref count goes to 0,

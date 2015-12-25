@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_NET_QUOTA_POLICY_COOKIE_STORE_H_
 #define CONTENT_BROWSER_NET_QUOTA_POLICY_COOKIE_STORE_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "net/cookies/cookie_monster.h"

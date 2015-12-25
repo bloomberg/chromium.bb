@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"

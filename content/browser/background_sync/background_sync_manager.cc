@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "content/browser/background_sync/background_sync_metrics.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_power_observer.h"
@@ -166,7 +167,7 @@ BackgroundSyncManager::RegistrationKey::RegistrationKey(
 }
 
 void BackgroundSyncManager::Register(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
     bool requested_from_service_worker,
     const StatusAndRegistrationCallback& callback) {
@@ -194,7 +195,7 @@ void BackgroundSyncManager::Register(
 }
 
 void BackgroundSyncManager::GetRegistration(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const std::string& sync_registration_tag,
     SyncPeriodicity periodicity,
     const StatusAndRegistrationCallback& callback) {
@@ -214,7 +215,7 @@ void BackgroundSyncManager::GetRegistration(
 }
 
 void BackgroundSyncManager::GetRegistrations(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     SyncPeriodicity periodicity,
     const StatusAndRegistrationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -251,7 +252,7 @@ BackgroundSyncManager::DuplicateRegistrationHandle(
   return CreateRegistrationHandle(ref_registration->get());
 }
 
-void BackgroundSyncManager::OnRegistrationDeleted(int64 sw_registration_id,
+void BackgroundSyncManager::OnRegistrationDeleted(int64_t sw_registration_id,
                                                   const GURL& pattern) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -351,7 +352,7 @@ void BackgroundSyncManager::InitDidGetControllerParameters(
 
 void BackgroundSyncManager::InitDidGetDataFromBackend(
     const base::Closure& callback,
-    const std::vector<std::pair<int64, std::string>>& user_data,
+    const std::vector<std::pair<int64_t, std::string>>& user_data,
     ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -362,7 +363,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
   }
 
   bool corruption_detected = false;
-  for (const std::pair<int64, std::string>& data : user_data) {
+  for (const std::pair<int64_t, std::string>& data : user_data) {
     BackgroundSyncRegistrationsProto registrations_proto;
     if (registrations_proto.ParseFromString(data.second)) {
       BackgroundSyncRegistrations* registrations =
@@ -419,7 +420,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 }
 
 void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -441,7 +442,7 @@ void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
 }
 
 void BackgroundSyncManager::RegisterDidCheckIfMainFrame(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
     const StatusAndRegistrationCallback& callback,
     bool has_main_frame_client) {
@@ -457,7 +458,7 @@ void BackgroundSyncManager::RegisterDidCheckIfMainFrame(
 }
 
 void BackgroundSyncManager::RegisterImpl(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -578,7 +579,7 @@ void BackgroundSyncManager::DisableAndClearManager(
 
 void BackgroundSyncManager::DisableAndClearDidGetRegistrations(
     const base::Closure& callback,
-    const std::vector<std::pair<int64, std::string>>& user_data,
+    const std::vector<std::pair<int64_t, std::string>>& user_data,
     ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -611,7 +612,7 @@ void BackgroundSyncManager::DisableAndClearManagerClearedOne(
 
 BackgroundSyncManager::RefCountedRegistration*
 BackgroundSyncManager::LookupActiveRegistration(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const RegistrationKey& registration_key) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -633,7 +634,7 @@ BackgroundSyncManager::LookupActiveRegistration(
 }
 
 void BackgroundSyncManager::StoreRegistrations(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const ServiceWorkerStorage::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -669,7 +670,7 @@ void BackgroundSyncManager::StoreRegistrations(
 }
 
 void BackgroundSyncManager::RegisterDidStore(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const scoped_refptr<RefCountedRegistration>& new_registration_ref,
     const StatusAndRegistrationCallback& callback,
     ServiceWorkerStatusCode status) {
@@ -718,7 +719,7 @@ void BackgroundSyncManager::RegisterDidStore(
 }
 
 void BackgroundSyncManager::RemoveActiveRegistration(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const RegistrationKey& registration_key) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(LookupActiveRegistration(sw_registration_id, registration_key));
@@ -730,7 +731,7 @@ void BackgroundSyncManager::RemoveActiveRegistration(
 }
 
 void BackgroundSyncManager::AddActiveRegistration(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const GURL& origin,
     const scoped_refptr<RefCountedRegistration>& sync_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -745,7 +746,7 @@ void BackgroundSyncManager::AddActiveRegistration(
 }
 
 void BackgroundSyncManager::StoreDataInBackend(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const GURL& origin,
     const std::string& backend_key,
     const std::string& data,
@@ -829,7 +830,7 @@ void BackgroundSyncManager::ReleaseRegistrationHandle(
 }
 
 void BackgroundSyncManager::Unregister(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     BackgroundSyncRegistrationHandle::HandleId handle_id,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -854,7 +855,7 @@ void BackgroundSyncManager::Unregister(
 }
 
 void BackgroundSyncManager::UnregisterImpl(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const RegistrationKey& registration_key,
     BackgroundSyncRegistration::RegistrationId sync_registration_id,
     SyncPeriodicity periodicity,
@@ -891,7 +892,7 @@ void BackgroundSyncManager::UnregisterImpl(
                                 sw_registration_id, periodicity, callback));
 }
 
-void BackgroundSyncManager::UnregisterDidStore(int64 sw_registration_id,
+void BackgroundSyncManager::UnregisterDidStore(int64_t sw_registration_id,
                                                SyncPeriodicity periodicity,
                                                const StatusCallback& callback,
                                                ServiceWorkerStatusCode status) {
@@ -979,7 +980,7 @@ void BackgroundSyncManager::NotifyWhenFinishedInvokeCallback(
 }
 
 void BackgroundSyncManager::GetRegistrationImpl(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const RegistrationKey& registration_key,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1003,7 +1004,7 @@ void BackgroundSyncManager::GetRegistrationImpl(
 }
 
 void BackgroundSyncManager::GetRegistrationsImpl(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     SyncPeriodicity periodicity,
     const StatusAndRegistrationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1136,10 +1137,10 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
   }
 
   // Find the registrations that are ready to run.
-  std::vector<std::pair<int64, RegistrationKey>> sw_id_and_keys_to_fire;
+  std::vector<std::pair<int64_t, RegistrationKey>> sw_id_and_keys_to_fire;
 
   for (auto& sw_id_and_registrations : active_registrations_) {
-    const int64 service_worker_id = sw_id_and_registrations.first;
+    const int64_t service_worker_id = sw_id_and_registrations.first;
     for (auto& key_and_registration :
          sw_id_and_registrations.second.registration_map) {
       BackgroundSyncRegistration* registration =
@@ -1178,7 +1179,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
                                       sw_id_and_keys_to_fire.size()));
 
   for (const auto& sw_id_and_key : sw_id_and_keys_to_fire) {
-    int64 service_worker_id = sw_id_and_key.first;
+    int64_t service_worker_id = sw_id_and_key.first;
     const RefCountedRegistration* registration =
         LookupActiveRegistration(service_worker_id, sw_id_and_key.second);
     DCHECK(registration);
@@ -1258,7 +1259,7 @@ void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
 // while the event is firing.
 void BackgroundSyncManager::EventComplete(
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
-    int64 service_worker_id,
+    int64_t service_worker_id,
     scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle,
     const base::Closure& callback,
     ServiceWorkerStatusCode status_code) {
@@ -1273,7 +1274,7 @@ void BackgroundSyncManager::EventComplete(
 }
 
 void BackgroundSyncManager::EventCompleteImpl(
-    int64 service_worker_id,
+    int64_t service_worker_id,
     scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle,
     ServiceWorkerStatusCode status_code,
     const base::Closure& callback) {
@@ -1357,7 +1358,7 @@ void BackgroundSyncManager::EventCompleteImpl(
 }
 
 void BackgroundSyncManager::EventCompleteDidStore(
-    int64 service_worker_id,
+    int64_t service_worker_id,
     const base::Closure& callback,
     ServiceWorkerStatusCode status_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1394,7 +1395,7 @@ void BackgroundSyncManager::OnAllSyncEventsCompleted(
 }
 
 void BackgroundSyncManager::OnRegistrationDeletedImpl(
-    int64 sw_registration_id,
+    int64_t sw_registration_id,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

@@ -52,7 +52,7 @@ void SaveItem::Start() {
 
 // If we've received more data than we were expecting (bad server info?),
 // revert to 'unknown size mode'.
-void SaveItem::UpdateSize(int64 bytes_so_far) {
+void SaveItem::UpdateSize(int64_t bytes_so_far) {
   received_bytes_ = bytes_so_far;
   if (received_bytes_ >= total_bytes_)
     total_bytes_ = 0;
@@ -61,7 +61,7 @@ void SaveItem::UpdateSize(int64 bytes_so_far) {
 // Updates from the file thread may have been posted while this saving job
 // was being canceled in the UI thread, so we'll accept them unless we're
 // complete.
-void SaveItem::Update(int64 bytes_so_far) {
+void SaveItem::Update(int64_t bytes_so_far) {
   if (state_ != IN_PROGRESS) {
     NOTREACHED();
     return;
@@ -86,7 +86,7 @@ void SaveItem::Cancel() {
 }
 
 // Set finish state for a save item
-void SaveItem::Finish(int64 size, bool is_success) {
+void SaveItem::Finish(int64_t size, bool is_success) {
   DCHECK(has_final_name() || !is_success_);
   state_ = COMPLETE;
   is_success_ = is_success;
@@ -122,7 +122,7 @@ void SaveItem::Rename(const base::FilePath& full_path) {
   has_final_name_ = true;
 }
 
-void SaveItem::SetTotalBytes(int64 total_bytes) {
+void SaveItem::SetTotalBytes(int64_t total_bytes) {
   DCHECK_EQ(0, total_bytes_);
   total_bytes_ = total_bytes;
 }

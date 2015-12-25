@@ -54,8 +54,8 @@ DOMStorageSession* DOMStorageSession::Clone() {
 
 // static
 DOMStorageSession* DOMStorageSession::CloneFrom(DOMStorageContextImpl* context,
-                                                int64 namepace_id_to_clone) {
-  int64 clone_id = context->AllocateSessionId();
+                                                int64_t namepace_id_to_clone) {
+  int64_t clone_id = context->AllocateSessionId();
   std::string persistent_clone_id = context->AllocatePersistentSessionId();
   context->task_runner()->PostTask(
       FROM_HERE,
@@ -65,7 +65,7 @@ DOMStorageSession* DOMStorageSession::CloneFrom(DOMStorageContextImpl* context,
 }
 
 DOMStorageSession::DOMStorageSession(DOMStorageContextImpl* context,
-                                     int64 namespace_id,
+                                     int64_t namespace_id,
                                      const std::string& persistent_namespace_id)
     : context_(context),
       namespace_id_(namespace_id),

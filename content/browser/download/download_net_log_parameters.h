@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_NET_LOG_PARAMETERS_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_NET_LOG_PARAMETERS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "content/public/browser/download_item.h"
@@ -46,7 +49,7 @@ scoped_ptr<base::Value> ItemRenamedNetLogCallback(
 // Returns NetLog parameters when a DownloadItem is interrupted.
 scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
     DownloadInterruptReason reason,
-    int64 bytes_so_far,
+    int64_t bytes_so_far,
     const std::string* hash_state,
     net::NetLogCaptureMode capture_mode);
 
@@ -54,13 +57,13 @@ scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
 scoped_ptr<base::Value> ItemResumingNetLogCallback(
     bool user_initiated,
     DownloadInterruptReason reason,
-    int64 bytes_so_far,
+    int64_t bytes_so_far,
     const std::string* hash_state,
     net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadItem is completing.
 scoped_ptr<base::Value> ItemCompletingNetLogCallback(
-    int64 bytes_so_far,
+    int64_t bytes_so_far,
     const std::string* final_hash,
     net::NetLogCaptureMode capture_mode);
 
@@ -71,14 +74,14 @@ scoped_ptr<base::Value> ItemFinishedNetLogCallback(
 
 // Returns NetLog parameters when a DownloadItem is canceled.
 scoped_ptr<base::Value> ItemCanceledNetLogCallback(
-    int64 bytes_so_far,
+    int64_t bytes_so_far,
     const std::string* hash_state,
     net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadFile is opened.
 scoped_ptr<base::Value> FileOpenedNetLogCallback(
     const base::FilePath* file_name,
-    int64 start_offset,
+    int64_t start_offset,
     net::NetLogCaptureMode capture_mode);
 
 // Returns NetLog parameters when a DownloadFile is opened.

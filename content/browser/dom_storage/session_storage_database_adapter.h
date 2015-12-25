@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_SESSION_STORAGE_DATABASE_ADAPTER_H_
 #define CONTENT_BROWSER_DOM_STORAGE_SESSION_STORAGE_DATABASE_ADAPTER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/dom_storage/dom_storage_database_adapter.h"
 #include "url/gurl.h"

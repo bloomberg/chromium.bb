@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_GEOFENCING_GEOFENCING_MANAGER_H_
 #define CONTENT_BROWSER_GEOFENCING_GEOFENCING_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -68,7 +70,7 @@ class CONTENT_EXPORT GeofencingManager
   // (or in progress of being registered) region will fail.
   // TODO(mek): Behavior when using an already used ID might need to be revised
   //     depending on what the actual spec ends up saying about this.
-  void RegisterRegion(int64 service_worker_registration_id,
+  void RegisterRegion(int64_t service_worker_registration_id,
                       const std::string& region_id,
                       const blink::WebCircularGeofencingRegion& region,
                       const StatusCallback& callback);
@@ -79,7 +81,7 @@ class CONTENT_EXPORT GeofencingManager
   // (RegisterRegion hasn't called its callback yet) will fail.
   // TODO(mek): Maybe better behavior would be to allow unregistering still
   //     in-progress registrations.
-  void UnregisterRegion(int64 service_worker_registration_id,
+  void UnregisterRegion(int64_t service_worker_registration_id,
                         const std::string& region_id,
                         const StatusCallback& callback);
 
@@ -90,7 +92,7 @@ class CONTENT_EXPORT GeofencingManager
   // has been called already (so it doesn't include still in progress
   // registrations).
   GeofencingStatus GetRegisteredRegions(
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       std::map<std::string, blink::WebCircularGeofencingRegion>* result);
 
   // Enables or disables mock geofencing service.
@@ -117,54 +119,54 @@ class CONTENT_EXPORT GeofencingManager
   void ShutdownOnIO();
 
   // ServiceWorkerContextObserver implementation.
-  void OnRegistrationDeleted(int64 service_worker_registration_id,
+  void OnRegistrationDeleted(int64_t service_worker_registration_id,
                              const GURL& pattern) override;
 
   // GeofencingRegistrationDelegate implementation.
-  void RegistrationFinished(int64 geofencing_registration_id,
+  void RegistrationFinished(int64_t geofencing_registration_id,
                             GeofencingStatus status) override;
-  void RegionEntered(int64 geofencing_registration_id) override;
-  void RegionExited(int64 geofencing_registration_id) override;
+  void RegionEntered(int64_t geofencing_registration_id) override;
+  void RegionExited(int64_t geofencing_registration_id) override;
 
   // Looks up a particular geofence registration. Returns nullptr if no
   // registration with the given IDs exists.
-  Registration* FindRegistration(int64 service_worker_registration_id,
+  Registration* FindRegistration(int64_t service_worker_registration_id,
                                  const std::string& region_id);
 
   // Looks up a particular geofence registration. Returns nullptr if no
   // registration with the given ID exists.
-  Registration* FindRegistrationById(int64 geofencing_registration_id);
+  Registration* FindRegistrationById(int64_t geofencing_registration_id);
 
   // Registers a new registration, returning a reference to the newly inserted
   // object. Assumes no registration with the same IDs currently exists.
   Registration& AddRegistration(
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const GURL& service_worker_origin,
       const std::string& region_id,
       const blink::WebCircularGeofencingRegion& region,
       const StatusCallback& callback,
-      int64 geofencing_registration_id);
+      int64_t geofencing_registration_id);
 
   // Clears a registration.
   void ClearRegistration(Registration* registration);
 
   // Unregisters and clears all registrations associated with a specific
   // service worker.
-  void CleanUpForServiceWorker(int64 service_worker_registration_id);
+  void CleanUpForServiceWorker(int64_t service_worker_registration_id);
 
   // Starts dispatching a particular geofencing |event_type| for the geofence
   // registration with the given ID. This first looks up the Service Worker
   // Registration the geofence is associated with, and then attempts to deliver
   // the event to that service worker.
   void DispatchGeofencingEvent(blink::WebGeofencingEventType event_type,
-                               int64 geofencing_registration_id);
+                               int64_t geofencing_registration_id);
 
   // Delivers an event to the specified service worker for the given geofence.
   // If the geofence registration id is no longer valid, this method does
   // nothing. This assumes the |service_worker_registration| is the service
   // worker the geofence registration is associated with.
   void DeliverGeofencingEvent(blink::WebGeofencingEventType event_type,
-                              int64 geofencing_registration_id,
+                              int64_t geofencing_registration_id,
                               ServiceWorkerStatusCode service_worker_status,
                               const scoped_refptr<ServiceWorkerRegistration>&
                                   service_worker_registration);
@@ -179,12 +181,12 @@ class CONTENT_EXPORT GeofencingManager
   typedef std::map<std::string, Registration> RegionIdRegistrationMap;
   // Map of service worker registration id to the regions registered by that
   // service worker.
-  typedef std::map<int64, RegionIdRegistrationMap>
+  typedef std::map<int64_t, RegionIdRegistrationMap>
       ServiceWorkerRegistrationsMap;
   ServiceWorkerRegistrationsMap registrations_;
 
   // Map of all registered regions by geofencing_registration_id.
-  typedef std::map<int64, RegionIdRegistrationMap::iterator>
+  typedef std::map<int64_t, RegionIdRegistrationMap::iterator>
       RegistrationIdRegistrationMap;
   RegistrationIdRegistrationMap registrations_by_id_;
 

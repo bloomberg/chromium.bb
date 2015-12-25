@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
 
+#include <stddef.h>
+
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"

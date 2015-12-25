@@ -55,7 +55,7 @@ void AppCacheInterceptor::SetExtraRequestInfo(
 }
 
 void AppCacheInterceptor::GetExtraResponseInfo(net::URLRequest* request,
-                                               int64* cache_id,
+                                               int64_t* cache_id,
                                                GURL* manifest_url) {
   DCHECK(*cache_id == kAppCacheNoCacheId);
   DCHECK(manifest_url->is_empty());

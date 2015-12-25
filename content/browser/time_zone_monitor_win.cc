@@ -6,9 +6,9 @@
 
 #include <windows.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 

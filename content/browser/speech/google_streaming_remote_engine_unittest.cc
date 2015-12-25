@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/big_endian.h"
@@ -593,7 +596,7 @@ std::string GoogleStreamingRemoteEngineTest::SerializeProtobufResponse(
 
   // Prepend 4 byte prefix length indication to the protobuf message as
   // envisaged by the google streaming recognition webservice protocol.
-  uint32 prefix = HostToNet32(checked_cast<uint32>(msg_string.size()));
+  uint32_t prefix = HostToNet32(checked_cast<uint32_t>(msg_string.size()));
   msg_string.insert(0, reinterpret_cast<char*>(&prefix), sizeof(prefix));
 
   return msg_string;

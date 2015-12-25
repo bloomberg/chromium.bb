@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_CONTEXT_H_
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_CONTEXT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
 

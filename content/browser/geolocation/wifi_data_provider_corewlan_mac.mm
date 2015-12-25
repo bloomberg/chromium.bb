@@ -8,9 +8,11 @@
 
 #include <dlfcn.h>
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
 
@@ -152,8 +154,8 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
       AccessPointData access_point_data;
       NSData* mac = [network bssidData];
       DCHECK([mac length] == 6);
-      access_point_data.mac_address = MacAddressAsString16(
-          static_cast<const uint8*>([mac bytes]));
+      access_point_data.mac_address =
+          MacAddressAsString16(static_cast<const uint8_t*>([mac bytes]));
       access_point_data.radio_signal_strength = [[network rssi] intValue];
       access_point_data.channel = [[network channel] intValue];
       access_point_data.signal_to_noise =

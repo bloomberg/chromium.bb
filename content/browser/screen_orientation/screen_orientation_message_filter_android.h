@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_MESSAGE_FILTER_ANDROID_H_
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_MESSAGE_FILTER_ANDROID_H_
 
+#include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {

@@ -5,6 +5,7 @@
 #include "content/browser/compositor/image_transport_factory.h"
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "cc/output/context_provider.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/public/browser/gpu_data_manager.h"

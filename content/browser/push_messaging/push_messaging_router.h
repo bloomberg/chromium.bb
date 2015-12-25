@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_ROUTER_H_
 #define CONTENT_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_ROUTER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -27,7 +30,7 @@ class PushMessagingRouter {
   static void DeliverMessage(
       BrowserContext* browser_context,
       const GURL& origin,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const std::string& data,
       const DeliverMessageCallback& deliver_message_callback);
 
@@ -36,7 +39,7 @@ class PushMessagingRouter {
   // dispatched. Must be called on the IO thread.
   static void FindServiceWorkerRegistration(
       const GURL& origin,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const std::string& data,
       const DeliverMessageCallback& deliver_message_callback,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);

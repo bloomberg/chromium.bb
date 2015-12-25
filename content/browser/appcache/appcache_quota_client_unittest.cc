@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -36,9 +38,9 @@ class AppCacheQuotaClientTest : public testing::Test {
         num_delete_origins_completions_(0),
         weak_factory_(this) {}
 
-  int64 GetOriginUsage(storage::QuotaClient* client,
-                       const GURL& origin,
-                       storage::StorageType type) {
+  int64_t GetOriginUsage(storage::QuotaClient* client,
+                         const GURL& origin,
+                         storage::StorageType type) {
     usage_ = -1;
     AsyncGetOriginUsage(client, origin, type);
     base::RunLoop().RunUntilIdle();
@@ -106,7 +108,7 @@ class AppCacheQuotaClientTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void SetUsageMapEntry(const GURL& origin, int64 usage) {
+  void SetUsageMapEntry(const GURL& origin, int64_t usage) {
     mock_service_.storage()->usage_map_[origin] = usage;
   }
 
@@ -127,7 +129,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
  protected:
-  void OnGetOriginUsageComplete(int64 usage) {
+  void OnGetOriginUsageComplete(int64_t usage) {
     ++num_get_origin_usage_completions_;
     usage_ = usage;
   }
@@ -143,7 +145,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  int64 usage_;
+  int64_t usage_;
   std::set<GURL> origins_;
   storage::QuotaStatusCode delete_status_;
   int num_get_origin_usage_completions_;

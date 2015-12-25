@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/geofencing/geofencing_manager.h"
@@ -20,8 +22,8 @@ typedef std::map<std::string, WebCircularGeofencingRegion> RegionMap;
 namespace {
 
 static const char* kTestRegionId = "region-id";
-static const int64 kTestGeofencingRegistrationId = 42;
-static const int64 kTestGeofencingRegistrationId2 = 43;
+static const int64_t kTestGeofencingRegistrationId = 42;
+static const int64_t kTestGeofencingRegistrationId2 = 43;
 
 bool RegionsMatch(const WebCircularGeofencingRegion& expected,
                   const WebCircularGeofencingRegion& arg) {
@@ -44,9 +46,9 @@ class TestGeofencingService : public GeofencingService {
   }
 
   MOCK_METHOD2(RegisterRegion,
-               int64(const WebCircularGeofencingRegion& region,
-                     GeofencingRegistrationDelegate* delegate));
-  MOCK_METHOD1(UnregisterRegion, void(int64 geofencing_registration_id));
+               int64_t(const WebCircularGeofencingRegion& region,
+                       GeofencingRegistrationDelegate* delegate));
+  MOCK_METHOD1(UnregisterRegion, void(int64_t geofencing_registration_id));
 
  private:
   bool is_available_;
@@ -88,10 +90,10 @@ class StatusCatcher {
 };
 
 void SaveResponseCallback(bool* called,
-                          int64* store_registration_id,
+                          int64_t* store_registration_id,
                           ServiceWorkerStatusCode status,
                           const std::string& status_message,
-                          int64 registration_id) {
+                          int64_t registration_id) {
   EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   *called = true;
   *store_registration_id = registration_id;
@@ -99,7 +101,7 @@ void SaveResponseCallback(bool* called,
 
 ServiceWorkerContextCore::RegistrationCallback MakeRegisteredCallback(
     bool* called,
-    int64* store_registration_id) {
+    int64_t* store_registration_id) {
   return base::Bind(&SaveResponseCallback, called, store_registration_id);
 }
 
@@ -147,7 +149,7 @@ class GeofencingManagerTest : public testing::Test {
       const std::string& name) {
     GURL pattern("http://www.example.com/" + name);
     GURL script_url("http://www.example.com/service_worker.js");
-    int64 registration_id = kInvalidServiceWorkerRegistrationId;
+    int64_t registration_id = kInvalidServiceWorkerRegistrationId;
     bool called = false;
     helper_->context()->RegisterServiceWorker(
         pattern, script_url, nullptr,
@@ -176,7 +178,7 @@ class GeofencingManagerTest : public testing::Test {
   }
 
   GeofencingStatus RegisterRegionSync(
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const std::string& id,
       const WebCircularGeofencingRegion& region) {
     StatusCatcher result;
@@ -189,11 +191,11 @@ class GeofencingManagerTest : public testing::Test {
   }
 
   GeofencingStatus RegisterRegionSyncWithServiceResult(
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const std::string& id,
       const WebCircularGeofencingRegion& region,
       GeofencingStatus service_status,
-      int64 geofencing_registration_id) {
+      int64_t geofencing_registration_id) {
     StatusCatcher result;
     GeofencingRegistrationDelegate* delegate = 0;
     EXPECT_CALL(
@@ -211,10 +213,11 @@ class GeofencingManagerTest : public testing::Test {
     return result.Wait();
   }
 
-  GeofencingStatus UnregisterRegionSync(int64 service_worker_registration_id,
-                                        const std::string& id,
-                                        bool should_call_service,
-                                        int64 geofencing_registration_id = 0) {
+  GeofencingStatus UnregisterRegionSync(
+      int64_t service_worker_registration_id,
+      const std::string& id,
+      bool should_call_service,
+      int64_t geofencing_registration_id = 0) {
     StatusCatcher result;
     if (should_call_service) {
       EXPECT_CALL(*service_, UnregisterRegion(geofencing_registration_id));
@@ -226,7 +229,7 @@ class GeofencingManagerTest : public testing::Test {
     return result.Wait();
   }
 
-  void VerifyRegions(int64 service_worker_registration_id,
+  void VerifyRegions(int64_t service_worker_registration_id,
                      const RegionMap& expected_regions) {
     RegionMap regions;
     EXPECT_EQ(GEOFENCING_STATUS_OK,

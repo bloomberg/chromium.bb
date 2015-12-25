@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_PROVIDER_H_
 #define CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_PROVIDER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

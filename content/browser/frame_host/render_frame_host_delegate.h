@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/i18n/rtl.h"
+#include "build/build_config.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
@@ -50,9 +52,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual const GURL& GetMainFrameLastCommittedURL() const;
 
   // A message was added to to the console.
-  virtual bool AddMessageToConsole(int32 level,
+  virtual bool AddMessageToConsole(int32_t level,
                                    const base::string16& message,
-                                   int32 line_no,
+                                   int32_t line_no,
                                    const base::string16& source_id);
 
   // Informs the delegate whenever a RenderFrameHost is created.
@@ -101,7 +103,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The page's title was changed and should be updated. Only called for the
   // top-level frame.
   virtual void UpdateTitle(RenderFrameHost* render_frame_host,
-                           int32 page_id,
+                           int32_t page_id,
                            const base::string16& title,
                            base::i18n::TextDirection title_direction) {}
 

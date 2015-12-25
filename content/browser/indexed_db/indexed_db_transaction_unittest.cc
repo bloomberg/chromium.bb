@@ -4,8 +4,11 @@
 
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
@@ -79,8 +82,8 @@ class IndexedDBTransactionTestMode
 };
 
 TEST_F(IndexedDBTransactionTest, Timeout) {
-  const int64 id = 0;
-  const std::set<int64> scope;
+  const int64_t id = 0;
+  const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
@@ -123,8 +126,8 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
 }
 
 TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
-  const int64 id = 0;
-  const std::set<int64> scope;
+  const int64_t id = 0;
+  const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
@@ -155,8 +158,8 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
 }
 
 TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
-  const int64 id = 0;
-  const std::set<int64> scope;
+  const int64_t id = 0;
+  const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
@@ -217,8 +220,8 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
 }
 
 TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
-  const int64 id = 0;
-  const std::set<int64> scope;
+  const int64_t id = 0;
+  const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
@@ -278,8 +281,8 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
 }
 
 TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
-  const int64 id = 0;
-  const std::set<int64> scope;
+  const int64_t id = 0;
+  const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,
@@ -308,8 +311,8 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
 }
 
 TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
-  const int64 id = 0;
-  const std::set<int64> scope;
+  const int64_t id = 0;
+  const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id,

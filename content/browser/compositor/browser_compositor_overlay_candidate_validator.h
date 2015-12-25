@@ -7,6 +7,7 @@
 
 #include "cc/output/overlay_candidate_validator.h"
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace content {

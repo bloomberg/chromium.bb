@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 
+#include <stdint.h>
+
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -26,7 +28,7 @@ bool g_has_shut_down = false;
 // The number of placeholder objects allocated. If this reaches zero, then
 // the BrowserCompositorMac being held on to for recycling,
 // |g_recyclable_browser_compositor|, will be freed.
-uint32 g_placeholder_count = 0;
+uint32_t g_placeholder_count = 0;
 
 // A spare BrowserCompositorMac kept around for recycling.
 base::LazyInstance<scoped_ptr<BrowserCompositorMac>>

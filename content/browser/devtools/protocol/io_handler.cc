@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/protocol/io_handler.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/bind.h"

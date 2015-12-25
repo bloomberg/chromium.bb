@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"
@@ -25,8 +27,8 @@ storage::QuotaStatusCode DeleteOriginDataOnIndexedDBThread(
   return storage::kQuotaStatusOk;
 }
 
-int64 GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
-                                      const GURL& origin) {
+int64_t GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
+                                        const GURL& origin) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   return context->GetOriginDiskUsage(origin);
 }

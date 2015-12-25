@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/common/resource_type.h"
 #include "net/cert/cert_status_flags.h"

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_LOADER_THROTTLING_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_THROTTLING_RESOURCE_HANDLER_H_
 
+#include <stddef.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "content/browser/loader/layered_resource_handler.h"

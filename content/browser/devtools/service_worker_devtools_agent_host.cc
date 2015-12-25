@@ -21,7 +21,7 @@ void StatusNoOp(ServiceWorkerStatusCode status) {}
 
 void TerminateServiceWorkerOnIO(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
-    int64 version_id) {
+    int64_t version_id) {
   if (ServiceWorkerContextCore* context = context_weak.get()) {
     if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
       version->StopWorker(base::Bind(&StatusNoOp));
@@ -30,7 +30,7 @@ void TerminateServiceWorkerOnIO(
 
 void UnregisterServiceWorkerOnIO(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
-    int64 version_id) {
+    int64_t version_id) {
   if (ServiceWorkerContextCore* context = context_weak.get()) {
     if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id)) {
         version->StopWorker(base::Bind(&StatusNoOp));
@@ -42,7 +42,7 @@ void UnregisterServiceWorkerOnIO(
 
 void SetDevToolsAttachedOnIO(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
-    int64 version_id,
+    int64_t version_id,
     bool attached) {
   if (ServiceWorkerContextCore* context = context_weak.get()) {
     if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
@@ -105,7 +105,7 @@ void ServiceWorkerDevToolsAgentHost::OnAttachedStateChanged(bool attached) {
                   attached));
 }
 
-int64 ServiceWorkerDevToolsAgentHost::service_worker_version_id() const {
+int64_t ServiceWorkerDevToolsAgentHost::service_worker_version_id() const {
   return service_worker_->version_id();
 }
 

@@ -4,9 +4,12 @@
 
 #include "content/browser/background_sync/background_sync_manager.h"
 
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
@@ -42,10 +45,10 @@ const char kScript1[] = "https://example.com/a/script.js";
 const char kScript2[] = "https://example.com/b/script.js";
 
 void RegisterServiceWorkerCallback(bool* called,
-                                   int64* store_registration_id,
+                                   int64_t* store_registration_id,
                                    ServiceWorkerStatusCode status,
                                    const std::string& status_message,
-                                   int64 registration_id) {
+                                   int64_t registration_id) {
   EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   *called = true;
   *store_registration_id = registration_id;
@@ -170,7 +173,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   void DoInit() { Init(); }
 
   void StoreDataInBackendContinue(
-      int64 sw_registration_id,
+      int64_t sw_registration_id,
       const GURL& origin,
       const std::string& key,
       const std::string& data,
@@ -217,7 +220,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
  protected:
   void StoreDataInBackend(
-      int64 sw_registration_id,
+      int64_t sw_registration_id,
       const GURL& origin,
       const std::string& key,
       const std::string& data,
@@ -246,7 +249,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
     if (corrupt_backend_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(callback, std::vector<std::pair<int64, std::string>>(),
+          base::Bind(callback, std::vector<std::pair<int64_t, std::string>>(),
                      SERVICE_WORKER_ERROR_FAILED));
       return;
     }
@@ -482,7 +485,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   bool RegisterWithServiceWorkerId(
-      int64 sw_registration_id,
+      int64_t sw_registration_id,
       const BackgroundSyncRegistrationOptions& options) {
     bool was_called = false;
     background_sync_manager_->Register(
@@ -495,7 +498,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   bool RegisterFromDocumentWithServiceWorkerId(
-      int64 sw_registration_id,
+      int64_t sw_registration_id,
       const BackgroundSyncRegistrationOptions& options) {
     bool was_called = false;
     background_sync_manager_->Register(
@@ -513,7 +516,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   bool UnregisterWithServiceWorkerId(
-      int64 sw_registration_id,
+      int64_t sw_registration_id,
       BackgroundSyncRegistrationHandle* registration_handle) {
     bool was_called = false;
     registration_handle->Unregister(
@@ -555,7 +558,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   bool GetRegistrationWithServiceWorkerId(
-      int64 sw_registration_id,
+      int64_t sw_registration_id,
       const BackgroundSyncRegistrationOptions& registration_options) {
     bool was_called = false;
     background_sync_manager_->GetRegistration(
@@ -579,7 +582,7 @@ class BackgroundSyncManagerTest : public testing::Test {
                                               periodicity);
   }
 
-  bool GetRegistrationWithServiceWorkerId(int64 sw_registration_id,
+  bool GetRegistrationWithServiceWorkerId(int64_t sw_registration_id,
                                           SyncPeriodicity periodicity) {
     bool was_called = false;
     background_sync_manager_->GetRegistrations(
@@ -596,7 +599,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     callback_sw_status_code_ = result;
   }
 
-  void UnregisterServiceWorker(uint64 sw_registration_id) {
+  void UnregisterServiceWorker(uint64_t sw_registration_id) {
     bool called = false;
     helper_->context()->UnregisterServiceWorker(
         PatternForSWId(sw_registration_id),
@@ -605,7 +608,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     EXPECT_TRUE(called);
   }
 
-  GURL PatternForSWId(int64 sw_id) {
+  GURL PatternForSWId(int64_t sw_id) {
     EXPECT_TRUE(sw_id == sw_registration_id_1_ ||
                 sw_id == sw_registration_id_2_);
     return sw_id == sw_registration_id_1_ ? GURL(kPattern1) : GURL(kPattern2);
@@ -670,8 +673,8 @@ class BackgroundSyncManagerTest : public testing::Test {
   TestBackgroundSyncController* test_controller_;
   base::SimpleTestClock* test_clock_ = nullptr;
 
-  int64 sw_registration_id_1_;
-  int64 sw_registration_id_2_;
+  int64_t sw_registration_id_1_;
+  int64_t sw_registration_id_2_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_1_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_2_;
 

@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "content/common/content_export.h"
 #include "ui/events/latency_info.h"

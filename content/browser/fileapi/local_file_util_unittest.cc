@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
@@ -89,7 +93,7 @@ class LocalFileUtilTest : public testing::Test {
     return base::DirectoryExists(LocalPath(file_name));
   }
 
-  int64 GetSize(const char *file_name) {
+  int64_t GetSize(const char* file_name) {
     base::File::Info info;
     base::GetFileInfo(LocalPath(file_name), &info);
     return info.size;

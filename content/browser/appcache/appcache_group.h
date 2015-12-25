@@ -5,12 +5,15 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_GROUP_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_GROUP_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <utility>
 #include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -51,15 +54,16 @@ class CONTENT_EXPORT AppCacheGroup
     DOWNLOADING,
   };
 
-  AppCacheGroup(AppCacheStorage* storage, const GURL& manifest_url,
-                int64 group_id);
+  AppCacheGroup(AppCacheStorage* storage,
+                const GURL& manifest_url,
+                int64_t group_id);
 
   // Adds/removes an update observer, the AppCacheGroup does not take
   // ownership of the observer.
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
 
-  int64 group_id() const { return group_id_; }
+  int64_t group_id() const { return group_id_; }
   const GURL& manifest_url() const { return manifest_url_; }
   base::Time creation_time() const { return creation_time_; }
   void set_creation_time(base::Time time) { creation_time_ = time; }
@@ -86,7 +90,7 @@ class CONTENT_EXPORT AppCacheGroup
   void RemoveCache(AppCache* cache);
   bool HasCache() const { return newest_complete_cache_ != NULL; }
 
-  void AddNewlyDeletableResponseIds(std::vector<int64>* response_ids);
+  void AddNewlyDeletableResponseIds(std::vector<int64_t>* response_ids);
 
   UpdateAppCacheStatus update_status() const { return update_status_; }
 
@@ -141,13 +145,13 @@ class CONTENT_EXPORT AppCacheGroup
   void ScheduleUpdateRestart(int delay_ms);
   void HostDestructionImminent(AppCacheHost* host);
 
-  const int64 group_id_;
+  const int64_t group_id_;
   const GURL manifest_url_;
   base::Time creation_time_;
   UpdateAppCacheStatus update_status_;
   bool is_obsolete_;
   bool is_being_deleted_;
-  std::vector<int64> newly_deletable_response_ids_;
+  std::vector<int64_t> newly_deletable_response_ids_;
 
   // Most update checks respect the cache control headers of the manifest
   // resource, but we bypass the http cache for a "full" update check after 24

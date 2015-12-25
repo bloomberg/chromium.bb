@@ -4,7 +4,6 @@
 
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 
-#include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"

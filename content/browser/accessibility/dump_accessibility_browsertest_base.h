@@ -7,6 +7,7 @@
 
 #include "base/debug/leak_annotations.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/public/test/content_browser_test.h"
 

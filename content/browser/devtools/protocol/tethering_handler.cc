@@ -156,7 +156,7 @@ class SocketPump {
 
 class BoundSocket {
  public:
-  typedef base::Callback<void(uint16, const std::string&)> AcceptedCallback;
+  typedef base::Callback<void(uint16_t, const std::string&)> AcceptedCallback;
 
   BoundSocket(AcceptedCallback accepted_callback,
               const CreateServerSocketCallback& socket_callback)
@@ -169,7 +169,7 @@ class BoundSocket {
   virtual ~BoundSocket() {
   }
 
-  bool Listen(uint16 port) {
+  bool Listen(uint16_t port) {
     port_ = port;
     net::IPAddressNumber ip_number;
     if (!net::ParseIPLiteralToNumber(kLocalhost, &ip_number))
@@ -224,7 +224,7 @@ class BoundSocket {
   CreateServerSocketCallback socket_callback_;
   scoped_ptr<net::ServerSocket> socket_;
   scoped_ptr<net::StreamSocket> accept_socket_;
-  uint16 port_;
+  uint16_t port_;
 };
 
 }  // namespace
@@ -238,9 +238,9 @@ class TetheringHandler::TetheringImpl {
       const CreateServerSocketCallback& socket_callback);
   ~TetheringImpl();
 
-  void Bind(DevToolsCommandId command_id, uint16 port);
-  void Unbind(DevToolsCommandId command_id, uint16 port);
-  void Accepted(uint16 port, const std::string& name);
+  void Bind(DevToolsCommandId command_id, uint16_t port);
+  void Unbind(DevToolsCommandId command_id, uint16_t port);
+  void Accepted(uint16_t port, const std::string& name);
 
  private:
   void SendInternalError(DevToolsCommandId command_id,
@@ -249,7 +249,7 @@ class TetheringHandler::TetheringImpl {
   base::WeakPtr<TetheringHandler> handler_;
   CreateServerSocketCallback socket_callback_;
 
-  typedef std::map<uint16, BoundSocket*> BoundSockets;
+  typedef std::map<uint16_t, BoundSocket*> BoundSockets;
   BoundSockets bound_sockets_;
 };
 
@@ -264,8 +264,8 @@ TetheringHandler::TetheringImpl::~TetheringImpl() {
   STLDeleteValues(&bound_sockets_);
 }
 
-void TetheringHandler::TetheringImpl::Bind(
-    DevToolsCommandId command_id, uint16 port) {
+void TetheringHandler::TetheringImpl::Bind(DevToolsCommandId command_id,
+                                           uint16_t port) {
   if (bound_sockets_.find(port) != bound_sockets_.end()) {
     SendInternalError(command_id, "Port already bound");
     return;
@@ -287,9 +287,8 @@ void TetheringHandler::TetheringImpl::Bind(
       base::Bind(&TetheringHandler::SendBindSuccess, handler_, command_id));
 }
 
-void TetheringHandler::TetheringImpl::Unbind(
-    DevToolsCommandId command_id, uint16 port) {
-
+void TetheringHandler::TetheringImpl::Unbind(DevToolsCommandId command_id,
+                                             uint16_t port) {
   BoundSockets::iterator it = bound_sockets_.find(port);
   if (it == bound_sockets_.end()) {
     SendInternalError(command_id, "Port is not bound");
@@ -304,8 +303,8 @@ void TetheringHandler::TetheringImpl::Unbind(
       base::Bind(&TetheringHandler::SendUnbindSuccess, handler_, command_id));
 }
 
-void TetheringHandler::TetheringImpl::Accepted(
-    uint16 port, const std::string& name) {
+void TetheringHandler::TetheringImpl::Accepted(uint16_t port,
+                                               const std::string& name) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -348,7 +347,7 @@ void TetheringHandler::SetClient(scoped_ptr<Client> client) {
   client_.swap(client);
 }
 
-void TetheringHandler::Accepted(uint16 port, const std::string& name) {
+void TetheringHandler::Accepted(uint16_t port, const std::string& name) {
   client_->Accepted(AcceptedParams::Create()->set_port(port)
                                             ->set_connection_id(name));
 }

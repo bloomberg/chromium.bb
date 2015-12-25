@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_LOADER_ASYNC_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_ASYNC_RESOURCE_HANDLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "content/browser/loader/resource_handler.h"
@@ -78,7 +81,7 @@ class AsyncResourceHandler : public ResourceHandler,
   bool sent_received_response_msg_;
   bool sent_first_data_msg_;
 
-  uint64 last_upload_position_;
+  uint64_t last_upload_position_;
   bool waiting_for_upload_progress_ack_;
   base::TimeTicks last_upload_ticks_;
   base::RepeatingTimer progress_timer_;

@@ -136,7 +136,7 @@ void NotificationMessageFilter::OnShowPlatformNotification(
 
 void NotificationMessageFilter::OnShowPersistentNotification(
     int request_id,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const GURL& origin,
     const SkBitmap& icon,
     const PlatformNotificationData& notification_data) {

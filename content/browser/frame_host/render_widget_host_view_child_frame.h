@@ -5,9 +5,14 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -105,7 +110,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
-  void OnSwapCompositorFrame(uint32 output_surface_id,
+  void OnSwapCompositorFrame(uint32_t output_surface_id,
                              scoped_ptr<cc::CompositorFrame> frame) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
@@ -161,7 +166,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // Declared 'public' instead of 'protected' here to allow derived classes
   // to Bind() to it.
-  void SurfaceDrawn(uint32 output_surface_id, cc::SurfaceDrawStatus drawn);
+  void SurfaceDrawn(uint32_t output_surface_id, cc::SurfaceDrawStatus drawn);
 
  protected:
   friend class RenderWidgetHostView;
@@ -185,11 +190,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
   scoped_ptr<cc::SurfaceFactory> surface_factory_;
   cc::SurfaceId surface_id_;
-  uint32 next_surface_sequence_;
-  uint32 last_output_surface_id_;
+  uint32_t next_surface_sequence_;
+  uint32_t last_output_surface_id_;
   gfx::Size current_surface_size_;
   float current_surface_scale_factor_;
-  uint32 ack_pending_count_;
+  uint32_t ack_pending_count_;
   cc::ReturnedResourceArray surface_returned_resources_;
 
   // frame_connector_ provides a platform abstraction. Messages

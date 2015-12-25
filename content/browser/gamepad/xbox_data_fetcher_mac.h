@@ -7,13 +7,15 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_ioplugininterface.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 class XboxController {
@@ -116,8 +118,8 @@ class XboxController {
   // aren't correctly framed. The 360 controller frames its packets with a 2
   // byte header (type, total length) so we can reframe the packet data
   // ourselves.
-  uint16 read_buffer_size_;
-  scoped_ptr<uint8[]> read_buffer_;
+  uint16_t read_buffer_size_;
+  scoped_ptr<uint8_t[]> read_buffer_;
 
   // The pattern that the LEDs on the device are currently displaying, or
   // LED_NUM_PATTERNS if unknown.
@@ -162,7 +164,7 @@ class XboxDataFetcher : public XboxController::Delegate {
   static void DeviceRemoved(void* context, io_iterator_t iterator);
   void AddController(XboxController* controller);
   void RemoveController(XboxController* controller);
-  void RemoveControllerByLocationID(uint32 id);
+  void RemoveControllerByLocationID(uint32_t id);
   void XboxControllerGotData(XboxController* controller,
                              const XboxController::Data& data) override;
   void XboxControllerError(XboxController* controller) override;

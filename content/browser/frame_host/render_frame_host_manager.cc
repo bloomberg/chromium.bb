@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/render_frame_host_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -89,7 +91,7 @@ bool OpenerForFrameTreeNode(
 class RenderFrameHostManager::RenderFrameProxyHostMap
     : public RenderProcessHostObserver {
  public:
-  using MapType = base::hash_map<int32, RenderFrameProxyHost*>;
+  using MapType = base::hash_map<int32_t, RenderFrameProxyHost*>;
 
   RenderFrameProxyHostMap(RenderFrameHostManager* manager);
   ~RenderFrameProxyHostMap() override;
@@ -102,14 +104,14 @@ class RenderFrameHostManager::RenderFrameProxyHostMap
 
   // Returns the proxy with the specified ID, or nullptr if there is no such
   // one.
-  RenderFrameProxyHost* Get(int32 id);
+  RenderFrameProxyHost* Get(int32_t id);
 
   // Adds the specified proxy with the specified ID. It is an error (and fatal)
   // to add more than one proxy with the specified ID.
-  void Add(int32 id, scoped_ptr<RenderFrameProxyHost> proxy);
+  void Add(int32_t id, scoped_ptr<RenderFrameProxyHost> proxy);
 
   // Removes the proxy with the specified site instance ID.
-  void Remove(int32 id);
+  void Remove(int32_t id);
 
   // Removes all proxies.
   void Clear();
@@ -134,7 +136,7 @@ RenderFrameHostManager::RenderFrameProxyHostMap::~RenderFrameProxyHostMap() {
 }
 
 RenderFrameProxyHost* RenderFrameHostManager::RenderFrameProxyHostMap::Get(
-    int32 id) {
+    int32_t id) {
   auto it = map_.find(id);
   if (it != map_.end())
     return it->second;
@@ -142,7 +144,7 @@ RenderFrameProxyHost* RenderFrameHostManager::RenderFrameProxyHostMap::Get(
 }
 
 void RenderFrameHostManager::RenderFrameProxyHostMap::Add(
-    int32 id,
+    int32_t id,
     scoped_ptr<RenderFrameProxyHost> proxy) {
   CHECK_EQ(0u, map_.count(id)) << "Inserting a duplicate item.";
 
@@ -159,7 +161,7 @@ void RenderFrameHostManager::RenderFrameProxyHostMap::Add(
   map_[id] = proxy.release();
 }
 
-void RenderFrameHostManager::RenderFrameProxyHostMap::Remove(int32 id) {
+void RenderFrameHostManager::RenderFrameProxyHostMap::Remove(int32_t id) {
   auto it = map_.find(id);
   if (it == map_.end())
     return;
@@ -259,9 +261,9 @@ RenderFrameHostManager::~RenderFrameHostManager() {
 }
 
 void RenderFrameHostManager::Init(SiteInstance* site_instance,
-                                  int32 view_routing_id,
-                                  int32 frame_routing_id,
-                                  int32 widget_routing_id) {
+                                  int32_t view_routing_id,
+                                  int32_t frame_routing_id,
+                                  int32_t widget_routing_id) {
   DCHECK(site_instance);
   // TODO(avi): While RenderViewHostImpl is-a RenderWidgetHostImpl, this must
   // hold true to avoid having two RenderWidgetHosts for the top-level frame.
@@ -837,7 +839,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
 
   // If the old RFH is not live, just return as there is no further work to do.
   // It will be deleted and there will be no proxy created.
-  int32 old_site_instance_id =
+  int32_t old_site_instance_id =
       old_render_frame_host->GetSiteInstance()->GetId();
   if (!old_render_frame_host->IsRenderFrameLive()) {
     ShutdownProxiesIfLastActiveFrameInSiteInstance(old_render_frame_host.get());
@@ -1202,7 +1204,7 @@ RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
 
 // static
 bool RenderFrameHostManager::ClearProxiesInSiteInstance(
-    int32 site_instance_id,
+    int32_t site_instance_id,
     FrameTreeNode* node) {
   RenderFrameProxyHost* proxy =
       node->render_manager()->proxy_hosts_->Get(site_instance_id);
@@ -1226,8 +1228,9 @@ bool RenderFrameHostManager::ClearProxiesInSiteInstance(
 }
 
 // static.
-bool RenderFrameHostManager::ResetProxiesInSiteInstance(int32 site_instance_id,
-                                                        FrameTreeNode* node) {
+bool RenderFrameHostManager::ResetProxiesInSiteInstance(
+    int32_t site_instance_id,
+    FrameTreeNode* node) {
   RenderFrameProxyHost* proxy =
       node->render_manager()->proxy_hosts_->Get(site_instance_id);
   if (proxy)
@@ -1732,9 +1735,9 @@ void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
     SiteInstance* site_instance,
-    int32 view_routing_id,
-    int32 frame_routing_id,
-    int32 widget_routing_id,
+    int32_t view_routing_id,
+    int32_t frame_routing_id,
+    int32_t widget_routing_id,
     int flags) {
   if (frame_routing_id == MSG_ROUTING_NONE)
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
@@ -1852,7 +1855,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   } else {
     // Create a new RenderFrameHost if we don't find an existing one.
 
-    int32 widget_routing_id = MSG_ROUTING_NONE;
+    int32_t widget_routing_id = MSG_ROUTING_NONE;
 
     // A RenderFrame in a different process from its parent RenderFrame
     // requires a RenderWidget for input/layout/painting.
@@ -2279,7 +2282,7 @@ void RenderFrameHostManager::ShutdownProxiesIfLastActiveFrameInSiteInstance(
   // After |render_frame_host| goes away, there will be no active frames left in
   // its SiteInstance, so we can delete all proxies created in that SiteInstance
   // on behalf of frames anywhere in the BrowsingInstance.
-  int32 site_instance_id = render_frame_host->GetSiteInstance()->GetId();
+  int32_t site_instance_id = render_frame_host->GetSiteInstance()->GetId();
 
   // First remove any proxies for this SiteInstance from our own list.
   ClearProxiesInSiteInstance(site_instance_id, frame_tree_node_);

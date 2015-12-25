@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_URL_REQUEST_JOB_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_URL_REQUEST_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -49,8 +51,10 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   // Informs the job of what response it should deliver. Only one of these
   // methods should be called, and only once per job. A job will sit idle and
   // wait indefinitely until one of the deliver methods is called.
-  void DeliverAppCachedResponse(const GURL& manifest_url, int64 group_id,
-                                int64 cache_id, const AppCacheEntry& entry,
+  void DeliverAppCachedResponse(const GURL& manifest_url,
+                                int64_t group_id,
+                                int64_t cache_id,
+                                const AppCacheEntry& entry,
                                 bool is_fallback);
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
@@ -75,8 +79,8 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   // that this job has been instructed to deliver. These are only
   // valid to call if is_delivering_appcache_response.
   const GURL& manifest_url() const { return manifest_url_; }
-  int64 group_id() const { return group_id_; }
-  int64 cache_id() const { return cache_id_; }
+  int64_t group_id() const { return group_id_; }
+  int64_t cache_id() const { return cache_id_; }
   const AppCacheEntry& entry() const { return entry_; }
 
   // net::URLRequestJob's Kill method is made public so the users of this
@@ -132,8 +136,8 @@ class CONTENT_EXPORT AppCacheURLRequestJob
 
   // AppCacheStorage::Delegate methods
   void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
-                            int64 response_id) override;
-  void OnCacheLoaded(AppCache* cache, int64 cache_id) override;
+                            int64_t response_id) override;
+  void OnCacheLoaded(AppCache* cache, int64_t cache_id) override;
 
   const net::HttpResponseInfo* http_info() const;
   bool is_range_request() const { return range_requested_.IsValid(); }
@@ -168,8 +172,8 @@ class CONTENT_EXPORT AppCacheURLRequestJob
   bool has_been_killed_;
   DeliveryType delivery_type_;
   GURL manifest_url_;
-  int64 group_id_;
-  int64 cache_id_;
+  int64_t group_id_;
+  int64_t cache_id_;
   AppCacheEntry entry_;
   bool is_fallback_;
   bool is_main_resource_;  // Used for histogram logging.

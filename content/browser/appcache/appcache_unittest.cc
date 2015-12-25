@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/mock_appcache_service.h"
@@ -62,8 +65,8 @@ TEST(AppCacheTest, AddModifyRemoveEntry) {
   EXPECT_EQ(0L, cache->cache_size());
 
   const GURL kFooUrl("http://foo.com");
-  const int64 kFooResponseId = 1;
-  const int64 kFooSize = 100;
+  const int64_t kFooResponseId = 1;
+  const int64_t kFooSize = 100;
   AppCacheEntry entry1(AppCacheEntry::MASTER, kFooResponseId, kFooSize);
   cache->AddEntry(kFooUrl, entry1);
   EXPECT_EQ(entry1.types(), cache->GetEntry(kFooUrl)->types());
@@ -71,8 +74,8 @@ TEST(AppCacheTest, AddModifyRemoveEntry) {
   EXPECT_EQ(kFooSize, cache->cache_size());
 
   const GURL kBarUrl("http://bar.com");
-  const int64 kBarResponseId = 2;
-  const int64 kBarSize = 200;
+  const int64_t kBarResponseId = 2;
+  const int64_t kBarSize = 200;
   AppCacheEntry entry2(AppCacheEntry::FALLBACK, kBarResponseId, kBarSize);
   EXPECT_TRUE(cache->AddOrModifyEntry(kBarUrl, entry2));
   EXPECT_EQ(entry2.types(), cache->GetEntry(kBarUrl)->types());
@@ -165,12 +168,12 @@ TEST(AppCacheTest, FindResponseForRequest) {
   const GURL kOnlineNamespaceWithinOtherNamespaces(
       "http://blah/fallback_namespace/intercept_namespace/1/online");
 
-  const int64 kFallbackResponseId1 = 1;
-  const int64 kFallbackResponseId2 = 2;
-  const int64 kManifestResponseId = 3;
-  const int64 kForeignExplicitResponseId = 4;
-  const int64 kExplicitInOnlineNamespaceResponseId = 5;
-  const int64 kInterceptResponseId = 6;
+  const int64_t kFallbackResponseId1 = 1;
+  const int64_t kFallbackResponseId2 = 2;
+  const int64_t kManifestResponseId = 3;
+  const int64_t kForeignExplicitResponseId = 4;
+  const int64_t kExplicitInOnlineNamespaceResponseId = 5;
+  const int64_t kInterceptResponseId = 6;
 
   AppCacheManifest manifest;
   manifest.online_whitelist_namespaces.push_back(
@@ -362,7 +365,7 @@ TEST(AppCacheTest, FindInterceptPatternResponseForRequest) {
   const GURL kInterceptPatternNamespace(
       kInterceptNamespaceBase.Resolve("*.hit*"));
   const GURL kInterceptNamespaceEntry("http://blah/intercept_resource");
-  const int64 kInterceptResponseId = 1;
+  const int64_t kInterceptResponseId = 1;
   AppCacheManifest manifest;
   manifest.intercept_namespaces.push_back(
       AppCacheNamespace(APPCACHE_INTERCEPT_NAMESPACE,
@@ -433,7 +436,7 @@ TEST(AppCacheTest, FindFallbackPatternResponseForRequest) {
   const GURL kFallbackPatternNamespace(
       kFallbackNamespaceBase.Resolve("*.hit*"));
   const GURL kFallbackNamespaceEntry("http://blah/fallback_resource");
-  const int64 kFallbackResponseId = 1;
+  const int64_t kFallbackResponseId = 1;
   AppCacheManifest manifest;
   manifest.fallback_namespaces.push_back(
       AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE, kFallbackPatternNamespace,
@@ -541,8 +544,8 @@ TEST(AppCacheTest, FindNetworkNamespacePatternResponseForRequest) {
 
 TEST(AppCacheTest, ToFromDatabaseRecords) {
   // Setup a cache with some entries.
-  const int64 kCacheId = 1234;
-  const int64 kGroupId = 4321;
+  const int64_t kCacheId = 1234;
+  const int64_t kGroupId = 4321;
   const GURL kManifestUrl("http://foo.com/manifest");
   const GURL kInterceptUrl("http://foo.com/intercept.html");
   const GURL kFallbackUrl("http://foo.com/fallback.html");

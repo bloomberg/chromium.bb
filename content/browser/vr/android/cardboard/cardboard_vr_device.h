@@ -8,7 +8,7 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/browser/vr/vr_device.h"
 
 namespace content {

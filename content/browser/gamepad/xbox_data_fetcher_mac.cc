@@ -69,17 +69,17 @@ struct Xbox360ButtonData {
   bool x : 1;
   bool y : 1;
 
-  uint8 trigger_left;
-  uint8 trigger_right;
+  uint8_t trigger_left;
+  uint8_t trigger_right;
 
-  int16 stick_left_x;
-  int16 stick_left_y;
-  int16 stick_right_x;
-  int16 stick_right_y;
+  int16_t stick_left_x;
+  int16_t stick_left_y;
+  int16_t stick_right_x;
+  int16_t stick_right_y;
 
   // Always 0.
-  uint32 dummy2;
-  uint16 dummy3;
+  uint32_t dummy2;
+  uint16_t dummy3;
 };
 
 struct XboxOneButtonData {
@@ -103,13 +103,13 @@ struct XboxOneButtonData {
   bool stick_left_click  : 1;
   bool stick_right_click : 1;
 
-  uint16 trigger_left;
-  uint16 trigger_right;
+  uint16_t trigger_left;
+  uint16_t trigger_right;
 
-  int16 stick_left_x;
-  int16 stick_left_y;
-  int16 stick_right_x;
-  int16 stick_right_y;
+  int16_t stick_left_x;
+  int16_t stick_left_y;
+  int16_t stick_right_x;
+  int16_t stick_right_y;
 };
 #pragma pack(pop)
 
@@ -118,17 +118,17 @@ static_assert(sizeof(XboxOneButtonData) == 14, "xbox button data wrong size");
 
 // From MSDN:
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ee417001(v=vs.85).aspx#dead_zone
-const int16 kLeftThumbDeadzone = 7849;
-const int16 kRightThumbDeadzone = 8689;
-const uint8 kXbox360TriggerDeadzone = 30;
-const uint16 kXboxOneTriggerMax = 1023;
-const uint16 kXboxOneTriggerDeadzone = 120;
+const int16_t kLeftThumbDeadzone = 7849;
+const int16_t kRightThumbDeadzone = 8689;
+const uint8_t kXbox360TriggerDeadzone = 30;
+const uint16_t kXboxOneTriggerMax = 1023;
+const uint16_t kXboxOneTriggerDeadzone = 120;
 
-void NormalizeAxis(int16 x,
-                       int16 y,
-                       int16 deadzone,
-                       float* x_out,
-                       float* y_out) {
+void NormalizeAxis(int16_t x,
+                   int16_t y,
+                   int16_t deadzone,
+                   float* x_out,
+                   float* y_out) {
   float x_val = x;
   float y_val = y;
 
@@ -157,13 +157,15 @@ void NormalizeAxis(int16 x,
   }
 }
 
-float NormalizeTrigger(uint8 value) {
-  return value < kXbox360TriggerDeadzone ? 0 :
-      static_cast<float>(value - kXbox360TriggerDeadzone) /
-          (std::numeric_limits<uint8>::max() - kXbox360TriggerDeadzone);
+float NormalizeTrigger(uint8_t value) {
+  return value < kXbox360TriggerDeadzone
+             ? 0
+             : static_cast<float>(value - kXbox360TriggerDeadzone) /
+                   (std::numeric_limits<uint8_t>::max() -
+                    kXbox360TriggerDeadzone);
 }
 
-float NormalizeXboxOneTrigger(uint16 value) {
+float NormalizeXboxOneTrigger(uint16_t value) {
   return value < kXboxOneTriggerDeadzone ? 0 :
       static_cast<float>(value - kXboxOneTriggerDeadzone) /
           (kXboxOneTriggerMax - kXboxOneTriggerDeadzone);
@@ -398,17 +400,17 @@ bool XboxController::OpenDevice(io_service_t service) {
 
   // The interface should have two pipes. Pipe 1 with direction kUSBIn and pipe
   // 2 with direction kUSBOut. Both pipes should have type kUSBInterrupt.
-  uint8 num_endpoints;
+  uint8_t num_endpoints;
   kr = (*interface_)->GetNumEndpoints(interface_, &num_endpoints);
   if (kr != KERN_SUCCESS || num_endpoints < 2)
     return false;
 
   for (int i = 1; i <= 2; i++) {
-    uint8 direction;
-    uint8 number;
-    uint8 transfer_type;
-    uint16 max_packet_size;
-    uint8 interval;
+    uint8_t direction;
+    uint8_t number;
+    uint8_t transfer_type;
+    uint16_t max_packet_size;
+    uint8_t interval;
 
     kr = (*interface_)->GetPipeProperties(interface_,
                                           i,
@@ -423,7 +425,7 @@ bool XboxController::OpenDevice(io_service_t service) {
     if (i == read_endpoint_) {
       if (direction != kUSBIn)
         return false;
-      read_buffer_.reset(new uint8[max_packet_size]);
+      read_buffer_.reset(new uint8_t[max_packet_size]);
       read_buffer_size_ = max_packet_size;
       QueueRead();
     } else if (i == control_endpoint_) {
@@ -521,13 +523,13 @@ void XboxController::ProcessXbox360Packet(size_t length) {
     IOError();
     return;
   }
-  uint8* buffer = read_buffer_.get();
+  uint8_t* buffer = read_buffer_.get();
 
   if (buffer[1] != length)
     // Length in packet doesn't match length reported by USB.
     return;
 
-  uint8 type = buffer[0];
+  uint8_t type = buffer[0];
   buffer += 2;
   length -= 2;
   switch (type) {
@@ -562,9 +564,9 @@ void XboxController::ProcessXboxOnePacket(size_t length) {
     IOError();
     return;
   }
-  uint8* buffer = read_buffer_.get();
+  uint8_t* buffer = read_buffer_.get();
 
-  uint8 type = buffer[0];
+  uint8_t type = buffer[0];
   buffer += 4;
   length -= 4;
   switch (type) {
@@ -783,7 +785,7 @@ void XboxDataFetcher::RemoveController(XboxController* controller) {
   delete controller;
 }
 
-void XboxDataFetcher::RemoveControllerByLocationID(uint32 location_id) {
+void XboxDataFetcher::RemoveControllerByLocationID(uint32_t location_id) {
   XboxController* controller = NULL;
   for (std::set<XboxController*>::iterator i = controllers_.begin();
        i != controllers_.end();

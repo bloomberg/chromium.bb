@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -79,7 +82,7 @@ void OneShotPendingDidGetSWRegistration(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   ASSERT_EQ(SERVICE_WORKER_OK, status);
-  int64 service_worker_id = registration->id();
+  int64_t service_worker_id = registration->id();
   BackgroundSyncManager* sync_manager = sync_context->background_sync_manager();
   sync_manager->GetRegistration(
       service_worker_id, tag, SYNC_ONE_SHOT,
@@ -244,9 +247,10 @@ void BackgroundSyncBrowserTest::ClearStoragePartitionData() {
   // for service workers, for all origins, for an unbounded time range.
   StoragePartition* storage = GetStorage();
 
-  uint32 storage_partition_mask =
+  uint32_t storage_partition_mask =
       StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
-  uint32 quota_storage_mask = StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL;
+  uint32_t quota_storage_mask =
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL;
   const GURL& delete_origin = GURL();
   const base::Time delete_begin = base::Time();
   base::Time delete_end = base::Time::Max();

@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_ERROR_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_ERROR_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -14,18 +15,18 @@ namespace content {
 class IndexedDBDatabaseError {
  public:
   IndexedDBDatabaseError();
-  explicit IndexedDBDatabaseError(uint16 code);
-  IndexedDBDatabaseError(uint16 code, const char* message);
-  IndexedDBDatabaseError(uint16 code, const base::string16& message);
+  explicit IndexedDBDatabaseError(uint16_t code);
+  IndexedDBDatabaseError(uint16_t code, const char* message);
+  IndexedDBDatabaseError(uint16_t code, const base::string16& message);
   ~IndexedDBDatabaseError();
 
   IndexedDBDatabaseError& operator=(const IndexedDBDatabaseError& rhs);
 
-  uint16 code() const { return code_; }
+  uint16_t code() const { return code_; }
   const base::string16& message() const { return message_; }
 
  private:
-  uint16 code_ = 0;
+  uint16_t code_ = 0;
   base::string16 message_;
 };
 

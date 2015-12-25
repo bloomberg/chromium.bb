@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_H_
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
@@ -94,7 +97,7 @@ class CONTENT_EXPORT CacheStorage {
 
   // The size of all of the origin's contents in memory. Returns 0 if the cache
   // backend is not a memory backend. Runs synchronously.
-  int64 MemoryBackedSize() const;
+  int64_t MemoryBackedSize() const;
 
   // The functions below are for tests to verify that the operations run
   // serially.

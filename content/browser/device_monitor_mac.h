@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
 #define CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_checker.h"
 

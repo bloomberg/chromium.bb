@@ -4,6 +4,8 @@
 
 #include "content/browser/cache_storage/cache_storage.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
@@ -571,13 +573,13 @@ void CacheStorage::CloseAllCaches(const base::Closure& callback) {
                                            pending_callback));
 }
 
-int64 CacheStorage::MemoryBackedSize() const {
+int64_t CacheStorage::MemoryBackedSize() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!initialized_ || !memory_only_)
     return 0;
 
-  int64 sum = 0;
+  int64_t sum = 0;
   for (auto& key_value : cache_map_) {
     if (key_value.second)
       sum += key_value.second->MemoryBackedSize();

@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TRANSACTION_COORDINATOR_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TRANSACTION_COORDINATOR_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/list_set.h"
@@ -41,7 +44,7 @@ class IndexedDBTransactionCoordinator {
 
   void ProcessQueuedTransactions();
   bool CanStartTransaction(IndexedDBTransaction* const transaction,
-                           const std::set<int64>& locked_scope) const;
+                           const std::set<int64_t>& locked_scope) const;
 
   // Transactions in different states are grouped below.
   // list_set is used to provide stable ordering; required by spec

@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -23,7 +25,7 @@ using base::ASCIIToUTF16;
 
 namespace content {
 
-const int64 kBackingStoreGracePeriodMs = 2000;
+const int64_t kBackingStoreGracePeriodMs = 2000;
 
 IndexedDBFactoryImpl::IndexedDBFactoryImpl(IndexedDBContextImpl* context)
     : context_(context) {
@@ -270,7 +272,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     return;
   }
   if (!ContainsValue(names, name)) {
-    const int64 version = 0;
+    const int64_t version = 0;
     callbacks->OnSuccess(version);
     backing_store = NULL;
     ReleaseBackingStore(origin_url, false /* immediate */);

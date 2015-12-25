@@ -4,6 +4,9 @@
 
 #include "content/browser/frame_host/frame_tree.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/frame_host/navigator_impl.h"

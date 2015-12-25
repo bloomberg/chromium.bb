@@ -287,7 +287,7 @@ int IndexedDBContextImpl::GetOriginBlobFileCount(const GURL& origin_url) {
   return count;
 }
 
-int64 IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
+int64_t IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return 0;
@@ -464,7 +464,7 @@ void IndexedDBContextImpl::DatabaseDeleted(const GURL& origin_url) {
 }
 
 bool IndexedDBContextImpl::WouldBeOverQuota(const GURL& origin_url,
-                                            int64 additional_bytes) {
+                                            int64_t additional_bytes) {
   if (space_available_map_.find(origin_url) == space_available_map_.end()) {
     // We haven't heard back from the QuotaManager yet, just let it through.
     return false;
@@ -523,10 +523,10 @@ base::FilePath IndexedDBContextImpl::GetLevelDBPath(
       .AddExtension(kLevelDBExtension);
 }
 
-int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
+int64_t IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
-  int64 total_size = 0;
+  int64_t total_size = 0;
   for (const base::FilePath& path : GetStoragePaths(origin_url))
     total_size += base::ComputeDirectorySize(path);
   return total_size;
@@ -540,9 +540,9 @@ void IndexedDBContextImpl::EnsureDiskUsageCacheInitialized(
 
 void IndexedDBContextImpl::QueryDiskAndUpdateQuotaUsage(
     const GURL& origin_url) {
-  int64 former_disk_usage = origin_size_map_[origin_url];
-  int64 current_disk_usage = ReadUsageFromDisk(origin_url);
-  int64 difference = current_disk_usage - former_disk_usage;
+  int64_t former_disk_usage = origin_size_map_[origin_url];
+  int64_t current_disk_usage = ReadUsageFromDisk(origin_url);
+  int64_t difference = current_disk_usage - former_disk_usage;
   if (difference) {
     origin_size_map_[origin_url] = current_disk_usage;
     // quota_manager_proxy() is NULL in unit tests.
@@ -558,8 +558,8 @@ void IndexedDBContextImpl::QueryDiskAndUpdateQuotaUsage(
 
 void IndexedDBContextImpl::GotUsageAndQuota(const GURL& origin_url,
                                             storage::QuotaStatusCode status,
-                                            int64 usage,
-                                            int64 quota) {
+                                            int64_t usage,
+                                            int64_t quota) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(status == storage::kQuotaStatusOk ||
          status == storage::kQuotaErrorAbort)
@@ -577,8 +577,8 @@ void IndexedDBContextImpl::GotUsageAndQuota(const GURL& origin_url,
 }
 
 void IndexedDBContextImpl::GotUpdatedQuota(const GURL& origin_url,
-                                           int64 usage,
-                                           int64 quota) {
+                                           int64_t usage,
+                                           int64_t quota) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   space_available_map_[origin_url] = quota - usage;
 }

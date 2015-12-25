@@ -4,7 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
@@ -87,7 +86,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   // taking a snapshot of the database, which does not include uncommitted
   // data. ("Version change" transactions are exclusive, but handled by the
   // connection sequencing in IndexedDBDatabase.)
-  std::set<int64> locked_scope;
+  std::set<int64_t> locked_scope;
   for (const auto& transaction : started_transactions_) {
     if (transaction->mode() == blink::WebIDBTransactionModeReadWrite) {
       // Started read/write transactions have exclusive access to the object
@@ -136,7 +135,7 @@ static bool DoSetsIntersect(const std::set<T>& set1,
 
 bool IndexedDBTransactionCoordinator::CanStartTransaction(
     IndexedDBTransaction* const transaction,
-    const std::set<int64>& locked_scope) const {
+    const std::set<int64_t>& locked_scope) const {
   DCHECK(queued_transactions_.count(transaction));
   switch (transaction->mode()) {
     case blink::WebIDBTransactionModeVersionChange:

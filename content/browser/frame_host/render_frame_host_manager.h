@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_MANAGER_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_MANAGER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -199,9 +201,9 @@ class CONTENT_EXPORT RenderFrameHostManager {
 
   // For arguments, see WebContentsImpl constructor.
   void Init(SiteInstance* site_instance,
-            int32 view_routing_id,
-            int32 frame_routing_id,
-            int32 widget_routing_id);
+            int32_t view_routing_id,
+            int32_t frame_routing_id,
+            int32_t widget_routing_id);
 
   // Returns the currently active RenderFrameHost.
   //
@@ -519,11 +521,11 @@ class CONTENT_EXPORT RenderFrameHostManager {
 
   // Used with FrameTree::ForEach to erase RenderFrameProxyHosts from a
   // FrameTreeNode's RenderFrameHostManager.
-  static bool ClearProxiesInSiteInstance(int32 site_instance_id,
+  static bool ClearProxiesInSiteInstance(int32_t site_instance_id,
                                          FrameTreeNode* node);
   // Used with FrameTree::ForEach to reset initialized state of
   // RenderFrameProxyHosts from a FrameTreeNode's RenderFrameHostManager.
-  static bool ResetProxiesInSiteInstance(int32 site_instance_id,
+  static bool ResetProxiesInSiteInstance(int32_t site_instance_id,
                                          FrameTreeNode* node);
 
   // Returns whether this tab should transition to a new renderer for
@@ -630,11 +632,12 @@ class CONTENT_EXPORT RenderFrameHostManager {
                                        FrameTreeNode* skip_this_node);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
-  scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,
-                                                        int32 view_routing_id,
-                                                        int32 frame_routing_id,
-                                                        int32 widget_routing_id,
-                                                        int flags);
+  scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
+      SiteInstance* instance,
+      int32_t view_routing_id,
+      int32_t frame_routing_id,
+      int32_t widget_routing_id,
+      int flags);
 
   // PlzNavigate
   // Create and initialize a speculative RenderFrameHost for an ongoing

@@ -5,10 +5,14 @@
 #ifndef CONTENT_BROWSER_GPU_BROWSER_GPU_MEMORY_BUFFER_MANAGER_H_
 #define CONTENT_BROWSER_GPU_BROWSER_GPU_MEMORY_BUFFER_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -53,8 +57,8 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   static bool IsNativeGpuMemoryBuffersEnabled();
 
-  static uint32 GetImageTextureTarget(gfx::BufferFormat format,
-                                      gfx::BufferUsage usage);
+  static uint32_t GetImageTextureTarget(gfx::BufferFormat format,
+                                        gfx::BufferUsage usage);
 
   // Overridden from gpu::GpuMemoryBufferManager:
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
@@ -78,7 +82,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
       const gfx::Size& size,
       gfx::BufferFormat format,
-      int32 surface_id);
+      int32_t surface_id);
 
   void AllocateGpuMemoryBufferForChildProcess(
       gfx::GpuMemoryBufferId id,
@@ -138,7 +142,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      int32 surface_id);
+      int32_t surface_id);
 
   // Functions that handle synchronous buffer creation requests.
   void HandleCreateGpuMemoryBufferOnIO(CreateGpuMemoryBufferRequest* request);

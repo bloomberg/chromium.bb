@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_RESIZE_LOCK_H_
 #define CONTENT_BROWSER_COMPOSITOR_RESIZE_LOCK_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
 

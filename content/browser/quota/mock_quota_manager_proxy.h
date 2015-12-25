@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
 #define CONTENT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_PROXY_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/browser/quota/mock_quota_manager.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager_proxy.h"

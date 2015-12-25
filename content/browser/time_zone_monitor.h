@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_TIME_ZONE_MONITOR_H_
 #define CONTENT_BROWSER_TIME_ZONE_MONITOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace content {

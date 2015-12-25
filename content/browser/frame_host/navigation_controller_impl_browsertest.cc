@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
@@ -2624,8 +2627,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   FrameNavigationEntry* frame_entry =
       controller.GetLastCommittedEntry()->GetFrameEntry(root);
-  int64 isn_1 = frame_entry->item_sequence_number();
-  int64 dsn_1 = frame_entry->document_sequence_number();
+  int64_t isn_1 = frame_entry->item_sequence_number();
+  int64_t dsn_1 = frame_entry->document_sequence_number();
   EXPECT_NE(-1, isn_1);
   EXPECT_NE(-1, dsn_1);
 
@@ -2635,8 +2638,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   frame_entry = controller.GetLastCommittedEntry()->GetFrameEntry(root);
-  int64 isn_2 = frame_entry->item_sequence_number();
-  int64 dsn_2 = frame_entry->document_sequence_number();
+  int64_t isn_2 = frame_entry->item_sequence_number();
+  int64_t dsn_2 = frame_entry->document_sequence_number();
   EXPECT_NE(-1, isn_2);
   EXPECT_NE(isn_1, isn_2);
   EXPECT_EQ(dsn_1, dsn_2);
@@ -2664,8 +2667,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameTreeNode* subframe = root->child_at(0);
   FrameNavigationEntry* subframe_entry =
       controller.GetLastCommittedEntry()->GetFrameEntry(subframe);
-  int64 isn_3 = subframe_entry->item_sequence_number();
-  int64 dsn_3 = subframe_entry->document_sequence_number();
+  int64_t isn_3 = subframe_entry->item_sequence_number();
+  int64_t dsn_3 = subframe_entry->document_sequence_number();
   EXPECT_NE(-1, isn_2);
   EXPECT_NE(isn_2, isn_3);
   EXPECT_NE(dsn_2, dsn_3);
@@ -2675,8 +2678,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   subframe_entry = controller.GetLastCommittedEntry()->GetFrameEntry(subframe);
-  int64 isn_4 = subframe_entry->item_sequence_number();
-  int64 dsn_4 = subframe_entry->document_sequence_number();
+  int64_t isn_4 = subframe_entry->item_sequence_number();
+  int64_t dsn_4 = subframe_entry->document_sequence_number();
   EXPECT_NE(-1, isn_4);
   EXPECT_NE(isn_3, isn_4);
   EXPECT_EQ(dsn_3, dsn_4);

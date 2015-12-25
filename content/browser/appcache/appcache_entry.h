@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_ENTRY_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_ENTRY_H_
 
+#include <stdint.h>
+
 #include "content/common/appcache_interfaces.h"
 
 namespace content {
@@ -33,11 +35,13 @@ class AppCacheEntry {
   explicit AppCacheEntry(int type)
     : types_(type), response_id_(kAppCacheNoResponseId), response_size_(0) {}
 
-  AppCacheEntry(int type, int64 response_id)
-    : types_(type), response_id_(response_id), response_size_(0) {}
+  AppCacheEntry(int type, int64_t response_id)
+      : types_(type), response_id_(response_id), response_size_(0) {}
 
-  AppCacheEntry(int type, int64 response_id, int64 response_size)
-    : types_(type), response_id_(response_id), response_size_(response_size) {}
+  AppCacheEntry(int type, int64_t response_id, int64_t response_size)
+      : types_(type),
+        response_id_(response_id),
+        response_size_(response_size) {}
 
   int types() const { return types_; }
   void add_types(int added_types) { types_ |= added_types; }
@@ -49,17 +53,17 @@ class AppCacheEntry {
   bool IsIntercept() const { return (types_ & INTERCEPT) != 0; }
   bool IsExecutable() const { return (types_ & EXECUTABLE) != 0; }
 
-  int64 response_id() const { return response_id_; }
-  void set_response_id(int64 id) { response_id_ = id; }
+  int64_t response_id() const { return response_id_; }
+  void set_response_id(int64_t id) { response_id_ = id; }
   bool has_response_id() const { return response_id_ != kAppCacheNoResponseId; }
 
-  int64 response_size() const { return response_size_; }
-  void set_response_size(int64 size) { response_size_ = size; }
+  int64_t response_size() const { return response_size_; }
+  void set_response_size(int64_t size) { response_size_ = size; }
 
  private:
   int types_;
-  int64 response_id_;
-  int64 response_size_;
+  int64_t response_id_;
+  int64_t response_size_;
 };
 
 }  // namespace content

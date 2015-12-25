@@ -7,7 +7,7 @@
 namespace {
 const int kDefaultConfigSampleRate = 8000;
 const int kDefaultConfigBitsPerSample = 16;
-const uint32 kDefaultMaxHypotheses = 1;
+const uint32_t kDefaultMaxHypotheses = 1;
 }  // namespace
 
 namespace content {

@@ -8,6 +8,7 @@
 #include <IOSurface/IOSurface.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "cc/output/software_output_device.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/vsync_provider.h"

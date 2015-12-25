@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_SCHEDULER_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_SCHEDULER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
@@ -218,7 +221,7 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   };
   class Client;
 
-  typedef int64 ClientId;
+  typedef int64_t ClientId;
   typedef std::map<ClientId, Client*> ClientMap;
   typedef std::set<ScheduledResourceRequest*> RequestSet;
 

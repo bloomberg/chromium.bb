@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <stack>
 #include <utility>
 
@@ -11,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pickle.h"
@@ -129,14 +132,14 @@ class AppCacheURLRequestJobTest : public testing::Test {
     }
 
     void OnResponseInfoLoaded(AppCacheResponseInfo* info,
-                              int64 response_id) override {
+                              int64_t response_id) override {
       loaded_info_ = info;
       loaded_info_id_ = response_id;
       test_->ScheduleNextTask();
     }
 
     scoped_refptr<AppCacheResponseInfo> loaded_info_;
-    int64 loaded_info_id_;
+    int64_t loaded_info_id_;
     AppCacheURLRequestJobTest* test_;
   };
 
@@ -494,8 +497,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
                                         nullptr, false,
                                         base::Bind(&ExpectNotRestarted)));
     const GURL kManifestUrl("http://blah/");
-    const int64 kCacheId(1);
-    const int64 kGroupId(1);
+    const int64_t kCacheId(1);
+    const int64_t kGroupId(1);
     const AppCacheEntry kEntry(AppCacheEntry::EXPLICIT, 1);
     job->DeliverAppCachedResponse(kManifestUrl, kCacheId, kGroupId,
                                   kEntry, false);
@@ -764,7 +767,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
         url_request_delegate_->received_info_.headers.get();
     EXPECT_EQ(206, headers->response_code());
     EXPECT_EQ(3, headers->GetContentLength());
-    int64 range_start, range_end, object_size;
+    int64_t range_start, range_end, object_size;
     EXPECT_TRUE(
         headers->GetContentRange(&range_start, &range_end, &object_size));
     EXPECT_EQ(1, range_start);
@@ -839,7 +842,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   int expected_read_result_;
   int reader_deletion_count_down_;
 
-  int64 written_response_id_;
+  int64_t written_response_id_;
   scoped_ptr<AppCacheResponseWriter> writer_;
   scoped_refptr<HttpResponseInfoIOBuffer> write_info_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;

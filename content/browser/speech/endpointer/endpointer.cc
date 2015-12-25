@@ -26,9 +26,9 @@ Endpointer::Endpointer(int sample_rate)
   frame_size_ = static_cast<int>(sample_rate / static_cast<float>(kFrameRate));
 
   speech_input_minimum_length_us_ =
-      static_cast<int64>(1.7 * Time::kMicrosecondsPerSecond);
+      static_cast<int64_t>(1.7 * Time::kMicrosecondsPerSecond);
   speech_input_complete_silence_length_us_ =
-      static_cast<int64>(0.5 * Time::kMicrosecondsPerSecond);
+      static_cast<int64_t>(0.5 * Time::kMicrosecondsPerSecond);
   long_speech_input_complete_silence_length_us_ = -1;
   long_speech_length_us_ = -1;
   speech_input_possibly_complete_silence_length_us_ =
@@ -85,12 +85,12 @@ void Endpointer::SetUserInputMode() {
   energy_endpointer_.SetUserInputMode();
 }
 
-EpStatus Endpointer::Status(int64 *time) {
+EpStatus Endpointer::Status(int64_t* time) {
   return energy_endpointer_.Status(time);
 }
 
 EpStatus Endpointer::ProcessAudio(const AudioChunk& raw_audio, float* rms_out) {
-  const int16* audio_data = raw_audio.SamplesData16();
+  const int16_t* audio_data = raw_audio.SamplesData16();
   const int num_samples = raw_audio.NumSamples();
   EpStatus ep_status = EP_PRE_SPEECH;
 
@@ -109,7 +109,7 @@ EpStatus Endpointer::ProcessAudio(const AudioChunk& raw_audio, float* rms_out) {
                          sample_rate_;
 
     // Get the status of the endpointer.
-    int64 ep_time;
+    int64_t ep_time;
     ep_status = energy_endpointer_.Status(&ep_time);
 
     // Handle state changes.
@@ -144,7 +144,7 @@ EpStatus Endpointer::ProcessAudio(const AudioChunk& raw_audio, float* rms_out) {
         bool has_stepped_silence =
             (long_speech_length_us_ > 0) &&
             (long_speech_input_complete_silence_length_us_ > 0);
-        int64 requested_silence_length;
+        int64_t requested_silence_length;
         if (has_stepped_silence &&
             (ep_time - speech_start_time_us_) > long_speech_length_us_) {
           requested_silence_length =

@@ -5,6 +5,7 @@
 #include "content/browser/geolocation/wifi_data_provider_common_win.h"
 
 #include <assert.h>
+#include <stdint.h>
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
@@ -30,9 +31,10 @@ int GetDataFromBssIdList(const NDIS_802_11_BSSID_LIST& bss_id_list,
                          WifiData::AccessPointDataSet* data) {
   // Walk through the BSS IDs.
   int found = 0;
-  const uint8 *iterator = reinterpret_cast<const uint8*>(&bss_id_list.Bssid[0]);
-  const uint8 *end_of_buffer =
-      reinterpret_cast<const uint8*>(&bss_id_list) + list_size;
+  const uint8_t* iterator =
+      reinterpret_cast<const uint8_t*>(&bss_id_list.Bssid[0]);
+  const uint8_t* end_of_buffer =
+      reinterpret_cast<const uint8_t*>(&bss_id_list) + list_size;
   for (int i = 0; i < static_cast<int>(bss_id_list.NumberOfItems); ++i) {
     const NDIS_WLAN_BSSID *bss_id =
         reinterpret_cast<const NDIS_WLAN_BSSID*>(iterator);

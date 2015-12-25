@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/mock_appcache_storage.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -54,7 +56,7 @@ void MockAppCacheStorage::GetAllInfo(Delegate* delegate) {
                  make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
-void MockAppCacheStorage::LoadCache(int64 id, Delegate* delegate) {
+void MockAppCacheStorage::LoadCache(int64_t id, Delegate* delegate) {
   DCHECK(delegate);
   AppCache* cache = working_set_.GetCache(id);
   if (ShouldCacheLoadAppearAsync(cache)) {
@@ -130,8 +132,8 @@ void MockAppCacheStorage::FindResponseForSubRequest(
       found_network_namespace);
 }
 
-void MockAppCacheStorage::MarkEntryAsForeign(
-    const GURL& entry_url, int64 cache_id) {
+void MockAppCacheStorage::MarkEntryAsForeign(const GURL& entry_url,
+                                             int64_t cache_id) {
   AppCache* cache = working_set_.GetCache(cache_id);
   if (cache) {
     AppCacheEntry* entry = cache->GetEntry(entry_url);
@@ -162,34 +164,39 @@ void MockAppCacheStorage::StoreEvictionTimes(AppCacheGroup* group) {
 }
 
 AppCacheResponseReader* MockAppCacheStorage::CreateResponseReader(
-    const GURL& manifest_url, int64 group_id, int64 response_id) {
+    const GURL& manifest_url,
+    int64_t group_id,
+    int64_t response_id) {
   if (simulated_reader_)
     return simulated_reader_.release();
   return new AppCacheResponseReader(response_id, group_id, disk_cache());
 }
 
 AppCacheResponseWriter* MockAppCacheStorage::CreateResponseWriter(
-    const GURL& manifest_url, int64 group_id) {
+    const GURL& manifest_url,
+    int64_t group_id) {
   return new AppCacheResponseWriter(NewResponseId(),  group_id, disk_cache());
 }
 
 AppCacheResponseMetadataWriter*
-MockAppCacheStorage::CreateResponseMetadataWriter(int64 group_id,
-                                                  int64 response_id) {
+MockAppCacheStorage::CreateResponseMetadataWriter(int64_t group_id,
+                                                  int64_t response_id) {
   return new AppCacheResponseMetadataWriter(response_id, group_id,
                                             disk_cache());
 }
 
 void MockAppCacheStorage::DoomResponses(
-    const GURL& manifest_url, const std::vector<int64>& response_ids) {
+    const GURL& manifest_url,
+    const std::vector<int64_t>& response_ids) {
   DeleteResponses(manifest_url, response_ids);
 }
 
 void MockAppCacheStorage::DeleteResponses(
-    const GURL& manifest_url, const std::vector<int64>& response_ids) {
+    const GURL& manifest_url,
+    const std::vector<int64_t>& response_ids) {
   // We don't bother with actually removing responses from the disk-cache,
   // just keep track of which ids have been doomed or deleted
-  std::vector<int64>::const_iterator it = response_ids.begin();
+  std::vector<int64_t>::const_iterator it = response_ids.begin();
   while (it != response_ids.end()) {
     doomed_response_ids_.insert(*it);
     ++it;
@@ -203,7 +210,8 @@ void MockAppCacheStorage::ProcessGetAllInfo(
 }
 
 void MockAppCacheStorage::ProcessLoadCache(
-    int64 id, scoped_refptr<DelegateReference> delegate_ref) {
+    int64_t id,
+    scoped_refptr<DelegateReference> delegate_ref) {
   AppCache* cache = working_set_.GetCache(id);
   if (delegate_ref->delegate)
     delegate_ref->delegate->OnCacheLoaded(cache, id);
@@ -256,8 +264,8 @@ namespace {
 struct FoundCandidate {
   GURL namespace_entry_url;
   AppCacheEntry entry;
-  int64 cache_id;
-  int64 group_id;
+  int64_t cache_id;
+  int64_t group_id;
   GURL manifest_url;
   bool is_cache_in_use;
 
@@ -479,7 +487,7 @@ void MockAppCacheStorage::RunOnePendingTask() {
 }
 
 void MockAppCacheStorage::AddStoredCache(AppCache* cache) {
-  int64 cache_id = cache->cache_id();
+  int64_t cache_id = cache->cache_id();
   if (stored_caches_.find(cache_id) == stored_caches_.end()) {
     stored_caches_.insert(
         StoredCacheMap::value_type(cache_id, make_scoped_refptr(cache)));

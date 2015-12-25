@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/frame_tree.h"
 
+#include <stddef.h>
+
 #include <queue>
 #include <utility>
 
@@ -316,11 +318,12 @@ void FrameTree::SetFrameRemoveListener(
   on_frame_removed_ = on_frame_removed;
 }
 
-RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
-                                                    int32 routing_id,
-                                                    int32 main_frame_routing_id,
-                                                    bool swapped_out,
-                                                    bool hidden) {
+RenderViewHostImpl* FrameTree::CreateRenderViewHost(
+    SiteInstance* site_instance,
+    int32_t routing_id,
+    int32_t main_frame_routing_id,
+    bool swapped_out,
+    bool hidden) {
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
   if (iter != render_view_host_map_.end()) {
@@ -367,7 +370,7 @@ void FrameTree::AddRenderViewHostRef(RenderViewHostImpl* render_view_host) {
 
 void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* render_view_host) {
   SiteInstance* site_instance = render_view_host->GetSiteInstance();
-  int32 site_instance_id = site_instance->GetId();
+  int32_t site_instance_id = site_instance->GetId();
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance_id);
   if (iter != render_view_host_map_.end() && iter->second == render_view_host) {

@@ -4,6 +4,8 @@
 
 #include "content/browser/storage_partition_impl.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 
@@ -201,7 +203,7 @@ void ClearSessionStorageOnUIThread(
 }  // namespace
 
 // Static.
-int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
+int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
   int quota_client_mask = 0;
 
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS)
@@ -224,16 +226,15 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
 //
 // Most of the operations in this class are done on IO thread.
 struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
-  QuotaManagedDataDeletionHelper(uint32 remove_mask,
-                                 uint32 quota_storage_remove_mask,
+  QuotaManagedDataDeletionHelper(uint32_t remove_mask,
+                                 uint32_t quota_storage_remove_mask,
                                  const GURL& storage_origin,
                                  const base::Closure& callback)
       : remove_mask(remove_mask),
         quota_storage_remove_mask(quota_storage_remove_mask),
         storage_origin(storage_origin),
         callback(callback),
-        task_count(0) {
-  }
+        task_count(0) {}
 
   void IncrementTaskCountOnIO();
   void DecrementTaskCountOnIO();
@@ -255,8 +256,8 @@ struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
       storage::StorageType quota_storage_type);
 
   // All of these data are accessed on IO thread.
-  uint32 remove_mask;
-  uint32 quota_storage_remove_mask;
+  uint32_t remove_mask;
+  uint32_t quota_storage_remove_mask;
   GURL storage_origin;
   const base::Closure callback;
   int task_count;
@@ -273,14 +274,13 @@ struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
 // forwarded and updated on each (sub) deletion's callback. The instance is
 // finally destroyed when deletion completes (and |callback| is invoked).
 struct StoragePartitionImpl::DataDeletionHelper {
-  DataDeletionHelper(uint32 remove_mask,
-                     uint32 quota_storage_remove_mask,
+  DataDeletionHelper(uint32_t remove_mask,
+                     uint32_t quota_storage_remove_mask,
                      const base::Closure& callback)
-                     : remove_mask(remove_mask),
-                       quota_storage_remove_mask(quota_storage_remove_mask),
-                       callback(callback),
-                       task_count(0) {
-  }
+      : remove_mask(remove_mask),
+        quota_storage_remove_mask(quota_storage_remove_mask),
+        callback(callback),
+        task_count(0) {}
 
   void IncrementTaskCountOnUI();
   void DecrementTaskCountOnUI();
@@ -306,8 +306,8 @@ struct StoragePartitionImpl::DataDeletionHelper {
       const StoragePartition::OriginMatcherFunction& origin_matcher,
       const base::Closure& callback);
 
-  uint32 remove_mask;
-  uint32 quota_storage_remove_mask;
+  uint32_t remove_mask;
+  uint32_t quota_storage_remove_mask;
 
   // Accessed on UI thread.
   const base::Closure callback;
@@ -592,8 +592,8 @@ BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
 }
 
 void StoragePartitionImpl::ClearDataImpl(
-    uint32 remove_mask,
-    uint32 quota_storage_remove_mask,
+    uint32_t remove_mask,
+    uint32_t quota_storage_remove_mask,
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
     net::URLRequestContextGetter* rq_context,
@@ -850,8 +850,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
 }
 
 void StoragePartitionImpl::ClearDataForOrigin(
-    uint32 remove_mask,
-    uint32 quota_storage_remove_mask,
+    uint32_t remove_mask,
+    uint32_t quota_storage_remove_mask,
     const GURL& storage_origin,
     net::URLRequestContextGetter* request_context_getter,
     const base::Closure& callback) {
@@ -867,8 +867,8 @@ void StoragePartitionImpl::ClearDataForOrigin(
 }
 
 void StoragePartitionImpl::ClearData(
-    uint32 remove_mask,
-    uint32 quota_storage_remove_mask,
+    uint32_t remove_mask,
+    uint32_t quota_storage_remove_mask,
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
     const base::Time begin,

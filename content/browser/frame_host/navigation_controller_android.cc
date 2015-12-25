@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/navigation_controller_android.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -225,7 +227,7 @@ void NavigationControllerAndroid::LoadUrl(
     params.extra_headers = ConvertJavaStringToUTF8(env, extra_headers);
 
   if (post_data) {
-    std::vector<uint8> http_body_vector;
+    std::vector<uint8_t> http_body_vector;
     base::android::JavaByteArrayToByteVector(env, post_data, &http_body_vector);
     params.browser_initiated_post_data =
         base::RefCountedBytes::TakeVector(&http_body_vector);

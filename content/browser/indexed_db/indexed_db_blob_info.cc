@@ -16,19 +16,17 @@ IndexedDBBlobInfo::IndexedDBBlobInfo()
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const std::string& uuid,
                                      const base::string16& type,
-                                     int64 size)
+                                     int64_t size)
     : is_file_(false),
       uuid_(uuid),
       type_(type),
       size_(size),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {
-}
+      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
-                                     int64 size,
-                                     int64 key)
-    : is_file_(false), type_(type), size_(size), key_(key) {
-}
+                                     int64_t size,
+                                     int64_t key)
+    : is_file_(false), type_(type), size_(size), key_(key) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const std::string& uuid,
                                      const base::FilePath& file_path,
@@ -43,11 +41,14 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(const std::string& uuid,
       key_(DatabaseMetaDataKey::kInvalidBlobKey) {
 }
 
-IndexedDBBlobInfo::IndexedDBBlobInfo(int64 key,
+IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t key,
                                      const base::string16& type,
                                      const base::string16& file_name)
-    : is_file_(true), type_(type), size_(-1), file_name_(file_name), key_(key) {
-}
+    : is_file_(true),
+      type_(type),
+      size_(-1),
+      file_name_(file_name),
+      key_(key) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const IndexedDBBlobInfo& other) = default;
 
@@ -56,7 +57,7 @@ IndexedDBBlobInfo::~IndexedDBBlobInfo() = default;
 IndexedDBBlobInfo& IndexedDBBlobInfo::operator=(
     const IndexedDBBlobInfo& other) = default;
 
-void IndexedDBBlobInfo::set_size(int64 size) {
+void IndexedDBBlobInfo::set_size(int64_t size) {
   DCHECK_EQ(-1, size_);
   size_ = size;
 }
@@ -78,7 +79,7 @@ void IndexedDBBlobInfo::set_last_modified(const base::Time& time) {
   last_modified_ = time;
 }
 
-void IndexedDBBlobInfo::set_key(int64 key) {
+void IndexedDBBlobInfo::set_key(int64_t key) {
   DCHECK_EQ(DatabaseMetaDataKey::kInvalidBlobKey, key_);
   key_ = key;
 }

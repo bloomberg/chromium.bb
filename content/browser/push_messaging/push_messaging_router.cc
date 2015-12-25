@@ -33,7 +33,7 @@ void RunDeliverCallback(
 void PushMessagingRouter::DeliverMessage(
     BrowserContext* browser_context,
     const GURL& origin,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& data,
     const DeliverMessageCallback& deliver_message_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -52,7 +52,7 @@ void PushMessagingRouter::DeliverMessage(
 // static
 void PushMessagingRouter::FindServiceWorkerRegistration(
     const GURL& origin,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& data,
     const DeliverMessageCallback& deliver_message_callback,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {

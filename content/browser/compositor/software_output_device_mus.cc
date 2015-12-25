@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/software_output_device_mus.h"
 
+#include <stddef.h>
+
 #include "components/bitmap_uploader/bitmap_uploader.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/view_prop.h"

@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -133,7 +137,7 @@ namespace content {
 // function.
 TEST(TimeSmoother, Basic) {
   NavigationControllerImpl::TimeSmoother smoother;
-  for (int64 i = 1; i < 1000; ++i) {
+  for (int64_t i = 1; i < 1000; ++i) {
     base::Time t = base::Time::FromInternalValue(i);
     EXPECT_EQ(t, smoother.GetSmoothedTime(t));
   }
@@ -145,7 +149,7 @@ TEST(TimeSmoother, SingleDuplicate) {
   NavigationControllerImpl::TimeSmoother smoother;
   base::Time t = base::Time::FromInternalValue(1);
   EXPECT_EQ(t, smoother.GetSmoothedTime(t));
-  for (int64 i = 1; i < 1000; ++i) {
+  for (int64_t i = 1; i < 1000; ++i) {
     base::Time expected_t = base::Time::FromInternalValue(i + 1);
     t = base::Time::FromInternalValue(i);
     EXPECT_EQ(expected_t, smoother.GetSmoothedTime(t));
@@ -155,14 +159,14 @@ TEST(TimeSmoother, SingleDuplicate) {
 // With k duplicates and timestamps thereafter increasing by one
 // microsecond, the smoothed time should always be k behind.
 TEST(TimeSmoother, ManyDuplicates) {
-  const int64 kNumDuplicates = 100;
+  const int64_t kNumDuplicates = 100;
   NavigationControllerImpl::TimeSmoother smoother;
   base::Time t = base::Time::FromInternalValue(1);
-  for (int64 i = 0; i < kNumDuplicates; ++i) {
+  for (int64_t i = 0; i < kNumDuplicates; ++i) {
     base::Time expected_t = base::Time::FromInternalValue(i + 1);
     EXPECT_EQ(expected_t, smoother.GetSmoothedTime(t));
   }
-  for (int64 i = 1; i < 1000; ++i) {
+  for (int64_t i = 1; i < 1000; ++i) {
     base::Time expected_t =
         base::Time::FromInternalValue(i + kNumDuplicates);
     t = base::Time::FromInternalValue(i);
@@ -173,10 +177,10 @@ TEST(TimeSmoother, ManyDuplicates) {
 // If the clock jumps far back enough after a run of duplicates, it
 // should immediately jump to that value.
 TEST(TimeSmoother, ClockBackwardsJump) {
-  const int64 kNumDuplicates = 100;
+  const int64_t kNumDuplicates = 100;
   NavigationControllerImpl::TimeSmoother smoother;
   base::Time t = base::Time::FromInternalValue(1000);
-  for (int64 i = 0; i < kNumDuplicates; ++i) {
+  for (int64_t i = 0; i < kNumDuplicates; ++i) {
     base::Time expected_t = base::Time::FromInternalValue(i + 1000);
     EXPECT_EQ(expected_t, smoother.GetSmoothedTime(t));
   }

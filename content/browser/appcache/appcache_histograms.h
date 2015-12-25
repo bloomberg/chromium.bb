@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_HISTOGRAMS_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_HISTOGRAMS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/browser/appcache/appcache_update_job.h"
 
 namespace base {

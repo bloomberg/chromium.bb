@@ -4,9 +4,7 @@
 
 #include "content/browser/plugin_process_host.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include <stddef.h>
 
 #include <utility>
 #include <vector>
@@ -17,11 +15,13 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -44,6 +44,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -298,7 +302,7 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PluginProcessHost::OnChannelConnected(int32 peer_pid) {
+void PluginProcessHost::OnChannelConnected(int32_t peer_pid) {
   for (size_t i = 0; i < pending_requests_.size(); ++i) {
     RequestPluginChannel(pending_requests_[i]);
   }

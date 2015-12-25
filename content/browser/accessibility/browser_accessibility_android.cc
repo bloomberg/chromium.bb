@@ -372,7 +372,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   if (text.empty() &&
       (HasOnlyStaticTextChildren() ||
        (IsFocusable() && HasOnlyTextAndImageChildren()))) {
-    for (uint32 i = 0; i < InternalChildCount(); i++) {
+    for (uint32_t i = 0; i < InternalChildCount(); i++) {
       BrowserAccessibility* child = InternalGetChild(i);
       text += static_cast<BrowserAccessibilityAndroid*>(child)->GetText();
     }
@@ -772,8 +772,8 @@ float BrowserAccessibilityAndroid::RangeCurrentValue() const {
 
 void BrowserAccessibilityAndroid::GetGranularityBoundaries(
     int granularity,
-    std::vector<int32>* starts,
-    std::vector<int32>* ends,
+    std::vector<int32_t>* starts,
+    std::vector<int32_t>* ends,
     int offset) {
   switch (granularity) {
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_LINE:
@@ -788,8 +788,8 @@ void BrowserAccessibilityAndroid::GetGranularityBoundaries(
 }
 
 void BrowserAccessibilityAndroid::GetLineBoundaries(
-    std::vector<int32>* line_starts,
-    std::vector<int32>* line_ends,
+    std::vector<int32_t>* line_starts,
+    std::vector<int32_t>* line_ends,
     int offset) {
   // If this node has no children, treat it as all one line.
   if (GetText().size() > 0 && !InternalChildCount()) {
@@ -801,7 +801,7 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
   // inline text boxes if possible.
   if (GetRole() == ui::AX_ROLE_STATIC_TEXT) {
     int last_y = 0;
-    for (uint32 i = 0; i < InternalChildCount(); i++) {
+    for (uint32_t i = 0; i < InternalChildCount(); i++) {
       BrowserAccessibilityAndroid* child =
           static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
       CHECK_EQ(ui::AX_ROLE_INLINE_TEXT_BOX, child->GetRole());
@@ -822,7 +822,7 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
   }
 
   // Otherwise, call GetLineBoundaries recursively on the children.
-  for (uint32 i = 0; i < InternalChildCount(); i++) {
+  for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibilityAndroid* child =
         static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
     child->GetLineBoundaries(line_starts, line_ends, offset);
@@ -831,14 +831,14 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
 }
 
 void BrowserAccessibilityAndroid::GetWordBoundaries(
-    std::vector<int32>* word_starts,
-    std::vector<int32>* word_ends,
+    std::vector<int32_t>* word_starts,
+    std::vector<int32_t>* word_ends,
     int offset) {
   if (GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX) {
-    const std::vector<int32>& starts = GetIntListAttribute(
-        ui::AX_ATTR_WORD_STARTS);
-    const std::vector<int32>& ends = GetIntListAttribute(
-        ui::AX_ATTR_WORD_ENDS);
+    const std::vector<int32_t>& starts =
+        GetIntListAttribute(ui::AX_ATTR_WORD_STARTS);
+    const std::vector<int32_t>& ends =
+        GetIntListAttribute(ui::AX_ATTR_WORD_ENDS);
     for (size_t i = 0; i < starts.size(); ++i) {
       word_starts->push_back(offset + starts[i]);
       word_ends->push_back(offset + ends[i]);
@@ -847,7 +847,7 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
   }
 
   base::string16 concatenated_text;
-  for (uint32 i = 0; i < InternalChildCount(); i++) {
+  for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibilityAndroid* child =
         static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
     base::string16 child_text = child->GetText();
@@ -858,7 +858,7 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
   if (text.empty() || concatenated_text == text) {
     // Great - this node is just the concatenation of its children, so
     // we can get the word boundaries recursively.
-    for (uint32 i = 0; i < InternalChildCount(); i++) {
+    for (uint32_t i = 0; i < InternalChildCount(); i++) {
       BrowserAccessibilityAndroid* child =
           static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
       child->GetWordBoundaries(word_starts, word_ends, offset);
@@ -883,7 +883,7 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
 bool BrowserAccessibilityAndroid::HasFocusableChild() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  for (uint32 i = 0; i < InternalChildCount(); i++) {
+  for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibility* child = InternalGetChild(i);
     if (child->HasState(ui::AX_STATE_FOCUSABLE))
       return true;
@@ -896,7 +896,7 @@ bool BrowserAccessibilityAndroid::HasFocusableChild() const {
 bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  for (uint32 i = 0; i < InternalChildCount(); i++) {
+  for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibility* child = InternalGetChild(i);
     if (child->GetRole() != ui::AX_ROLE_STATIC_TEXT)
       return false;
@@ -907,7 +907,7 @@ bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
 bool BrowserAccessibilityAndroid::HasOnlyTextAndImageChildren() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  for (uint32 i = 0; i < InternalChildCount(); i++) {
+  for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibility* child = InternalGetChild(i);
     if (child->GetRole() != ui::AX_ROLE_STATIC_TEXT &&
         child->GetRole() != ui::AX_ROLE_IMAGE) {
@@ -964,7 +964,7 @@ void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(
 
 int BrowserAccessibilityAndroid::CountChildrenWithRole(ui::AXRole role) const {
   int count = 0;
-  for (uint32 i = 0; i < PlatformChildCount(); i++) {
+  for (uint32_t i = 0; i < PlatformChildCount(); i++) {
     if (PlatformGetChild(i)->GetRole() == role)
       count++;
   }

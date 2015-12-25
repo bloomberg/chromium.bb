@@ -4,6 +4,9 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/command_line.h"
@@ -268,7 +271,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
       break;
     case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED: {
       // Fire the event on the object where the focus of the selection is.
-      int32 focus_id = GetTreeData().sel_focus_object_id;
+      int32_t focus_id = GetTreeData().sel_focus_object_id;
       BrowserAccessibility* focus_object = GetFromID(focus_id);
       if (focus_object)
         node = focus_object;

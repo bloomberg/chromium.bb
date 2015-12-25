@@ -4,6 +4,7 @@
 
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 
+#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_ui.h"
 #include "content/browser/appcache/appcache_internals_ui.h"
 #include "content/browser/gpu/gpu_internals_ui.h"

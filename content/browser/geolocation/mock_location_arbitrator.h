@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_MOCK_LOCATION_ARBITRATOR_H_
 #define CONTENT_BROWSER_GEOLOCATION_MOCK_LOCATION_ARBITRATOR_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/browser/geolocation/location_arbitrator.h"
 
 namespace content {

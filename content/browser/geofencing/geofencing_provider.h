@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_GEOFENCING_GEOFENCING_PROVIDER_H_
 #define CONTENT_BROWSER_GEOFENCING_GEOFENCING_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "content/common/geofencing_types.h"
 
@@ -30,13 +31,13 @@ class GeofencingProvider {
   // implemented yet.
   // Implementations of RegisterRegion must asynchronously call the |callback|
   // to indicate success or failure.
-  virtual void RegisterRegion(int64 geofencing_registration_id,
+  virtual void RegisterRegion(int64_t geofencing_registration_id,
                               const blink::WebCircularGeofencingRegion& region,
                               const StatusCallback& callback) = 0;
 
   // Called by |GeofencingService| to unregister an existing registration. Will
   // only be called once for each registration.
-  virtual void UnregisterRegion(int64 geofencing_registration_id) = 0;
+  virtual void UnregisterRegion(int64_t geofencing_registration_id) = 0;
 };
 
 }  // namespace content

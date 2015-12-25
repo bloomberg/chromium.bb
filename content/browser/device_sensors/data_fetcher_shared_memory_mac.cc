@@ -4,6 +4,8 @@
 
 #include "content/browser/device_sensors/data_fetcher_shared_memory.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "content/browser/device_sensors/ambient_light_mac.h"

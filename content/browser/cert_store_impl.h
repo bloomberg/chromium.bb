@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_CERT_STORE_IMPL_H_
 #define CONTENT_BROWSER_CERT_STORE_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/browser/renderer_data_memoizing_store.h"
 #include "content/public/browser/cert_store.h"

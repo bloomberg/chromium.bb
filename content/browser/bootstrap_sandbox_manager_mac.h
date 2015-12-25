@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BOOTSTRAP_SANDBOX_MANAGER_MAC_H_
 #define CONTENT_BROWSER_BOOTSTRAP_SANDBOX_MANAGER_MAC_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/browser_child_process_observer.h"

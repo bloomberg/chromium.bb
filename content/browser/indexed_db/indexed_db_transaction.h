@@ -5,12 +5,14 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TRANSACTION_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_TRANSACTION_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <set>
 #include <stack>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -47,7 +49,7 @@ class CONTENT_EXPORT IndexedDBTransaction
   void Start();
 
   blink::WebIDBTransactionMode mode() const { return mode_; }
-  const std::set<int64>& scope() const { return object_store_ids_; }
+  const std::set<int64_t>& scope() const { return object_store_ids_; }
 
   void ScheduleTask(Operation task) {
     ScheduleTask(blink::WebIDBTaskTypeNormal, task);
@@ -64,7 +66,7 @@ class CONTENT_EXPORT IndexedDBTransaction
   IndexedDBBackingStore::Transaction* BackingStoreTransaction() {
     return transaction_.get();
   }
-  int64 id() const { return id_; }
+  int64_t id() const { return id_; }
 
   IndexedDBDatabase* database() const { return database_.get(); }
   IndexedDBDatabaseCallbacks* connection() const { return callbacks_.get(); }
@@ -85,9 +87,9 @@ class CONTENT_EXPORT IndexedDBTransaction
   // Test classes may derive, but most creation should be done via
   // IndexedDBClassFactory.
   IndexedDBTransaction(
-      int64 id,
+      int64_t id,
       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-      const std::set<int64>& object_store_ids,
+      const std::set<int64_t>& object_store_ids,
       blink::WebIDBTransactionMode mode,
       IndexedDBDatabase* db,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
@@ -121,8 +123,8 @@ class CONTENT_EXPORT IndexedDBTransaction
   leveldb::Status CommitPhaseTwo();
   void Timeout();
 
-  const int64 id_;
-  const std::set<int64> object_store_ids_;
+  const int64_t id_;
+  const std::set<int64_t> object_store_ids_;
   const blink::WebIDBTransactionMode mode_;
 
   bool used_;

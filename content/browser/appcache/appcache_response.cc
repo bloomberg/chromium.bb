@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/appcache_response.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"

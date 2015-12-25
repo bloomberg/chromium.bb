@@ -5,19 +5,20 @@
 #include "content/browser/power_save_blocker_impl.h"
 
 #include <X11/Xlib.h>
+#include <stdint.h>
 #include <X11/extensions/dpms.h>
 // Xlib #defines Status, but we can't have that for some of our headers.
 #ifdef Status
 #undef Status
 #endif
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"

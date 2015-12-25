@@ -4,9 +4,13 @@
 
 #include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/test/async_file_test_helper.h"

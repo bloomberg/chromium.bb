@@ -77,7 +77,7 @@ scoped_ptr<UrlDownloader> UrlDownloader::BeginDownload(
     const Referrer& referrer,
     bool prefer_cache,
     scoped_ptr<DownloadSaveInfo> save_info,
-    uint32 download_id,
+    uint32_t download_id,
     const DownloadUrlParameters::OnStartedCallback& started_callback) {
   if (!referrer.url.is_valid())
     request->SetReferrer(std::string());
@@ -116,7 +116,7 @@ UrlDownloader::UrlDownloader(
     scoped_ptr<net::URLRequest> request,
     base::WeakPtr<DownloadManagerImpl> manager,
     scoped_ptr<DownloadSaveInfo> save_info,
-    uint32 download_id,
+    uint32_t download_id,
     const DownloadUrlParameters::OnStartedCallback& on_started_callback)
     : request_(std::move(request)),
       manager_(manager),

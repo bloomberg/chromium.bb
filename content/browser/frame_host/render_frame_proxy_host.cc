@@ -25,7 +25,7 @@ namespace content {
 namespace {
 
 // The (process id, routing id) pair that identifies one RenderFrameProxy.
-typedef std::pair<int32, int32> RenderFrameProxyHostID;
+typedef std::pair<int32_t, int32_t> RenderFrameProxyHostID;
 typedef base::hash_map<RenderFrameProxyHostID, RenderFrameProxyHost*>
     RoutingIDFrameProxyMap;
 base::LazyInstance<RoutingIDFrameProxyMap> g_routing_id_frame_proxy_map =
@@ -322,7 +322,7 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
   }
 }
 
-void RenderFrameProxyHost::OnDidChangeOpener(int32 opener_routing_id) {
+void RenderFrameProxyHost::OnDidChangeOpener(int32_t opener_routing_id) {
   frame_tree_node_->render_manager()->DidChangeOpener(opener_routing_id,
                                                       GetSiteInstance());
 }

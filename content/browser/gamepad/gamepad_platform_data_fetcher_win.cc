@@ -4,6 +4,8 @@
 
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_win.h"
 
+#include <stddef.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"

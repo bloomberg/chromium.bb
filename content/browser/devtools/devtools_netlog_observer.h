@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_NETLOG_OBSERVER_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_NETLOG_OBSERVER_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/common/resource_devtools_info.h"
 #include "net/log/net_log.h"
@@ -48,9 +51,10 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
   DevToolsNetLogObserver();
   ~DevToolsNetLogObserver() override;
 
-  ResourceInfo* GetResourceInfo(uint32 id);
+  ResourceInfo* GetResourceInfo(uint32_t id);
 
-  typedef base::hash_map<uint32, scoped_refptr<ResourceInfo> > RequestToInfoMap;
+  typedef base::hash_map<uint32_t, scoped_refptr<ResourceInfo>>
+      RequestToInfoMap;
   RequestToInfoMap request_to_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetLogObserver);

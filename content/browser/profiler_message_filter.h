@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_PROFILER_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_PROFILER_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/process_type.h"
 
@@ -22,7 +25,7 @@ class ProfilerMessageFilter : public BrowserMessageFilter {
   explicit ProfilerMessageFilter(content::ProcessType process_type);
 
   // BrowserMessageFilter implementation.
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

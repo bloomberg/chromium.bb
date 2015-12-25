@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_MOCK_BROWSERTEST_INDEXED_DB_CLASS_FACTORY_H_
 #define CONTENT_BROWSER_INDEXED_DB_MOCK_BROWSERTEST_INDEXED_DB_CLASS_FACTORY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -44,9 +46,9 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
       IndexedDBFactory* factory,
       const IndexedDBDatabase::Identifier& unique_identifier) override;
   IndexedDBTransaction* CreateIndexedDBTransaction(
-      int64 id,
+      int64_t id,
       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-      const std::set<int64>& scope,
+      const std::set<int64_t>& scope,
       blink::WebIDBTransactionMode mode,
       IndexedDBDatabase* db,
       IndexedDBBackingStore::Transaction* backing_store_transaction) override;

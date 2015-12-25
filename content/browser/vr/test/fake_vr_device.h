@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_VR_TEST_FAKE_VR_DEVICE_H_
 #define CONTENT_BROWSER_VR_TEST_FAKE_VR_DEVICE_H_
 
+#include "base/macros.h"
 #include "content/browser/vr/vr_device.h"
 #include "content/browser/vr/vr_device_provider.h"
 

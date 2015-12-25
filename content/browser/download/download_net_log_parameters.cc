@@ -4,9 +4,9 @@
 
 #include "content/browser/download/download_net_log_parameters.h"
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -86,7 +86,7 @@ scoped_ptr<base::Value> ItemRenamedNetLogCallback(
 
 scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
     DownloadInterruptReason reason,
-    int64 bytes_so_far,
+    int64_t bytes_so_far,
     const std::string* hash_state,
     net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -102,7 +102,7 @@ scoped_ptr<base::Value> ItemInterruptedNetLogCallback(
 scoped_ptr<base::Value> ItemResumingNetLogCallback(
     bool user_initiated,
     DownloadInterruptReason reason,
-    int64 bytes_so_far,
+    int64_t bytes_so_far,
     const std::string* hash_state,
     net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -117,7 +117,7 @@ scoped_ptr<base::Value> ItemResumingNetLogCallback(
 }
 
 scoped_ptr<base::Value> ItemCompletingNetLogCallback(
-    int64 bytes_so_far,
+    int64_t bytes_so_far,
     const std::string* final_hash,
     net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -140,7 +140,7 @@ scoped_ptr<base::Value> ItemFinishedNetLogCallback(
 }
 
 scoped_ptr<base::Value> ItemCanceledNetLogCallback(
-    int64 bytes_so_far,
+    int64_t bytes_so_far,
     const std::string* hash_state,
     net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -154,7 +154,7 @@ scoped_ptr<base::Value> ItemCanceledNetLogCallback(
 
 scoped_ptr<base::Value> FileOpenedNetLogCallback(
     const base::FilePath* file_name,
-    int64 start_offset,
+    int64_t start_offset,
     net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 

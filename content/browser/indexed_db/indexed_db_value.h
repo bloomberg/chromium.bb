@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_VALUE_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_VALUE_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>

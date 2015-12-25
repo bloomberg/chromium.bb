@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_SESSION_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_SESSION_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
@@ -30,7 +32,7 @@ class CONTENT_EXPORT DOMStorageSession
   DOMStorageSession(DOMStorageContextImpl* context,
                     const std::string& persistent_namespace_id);
 
-  int64 namespace_id() const { return namespace_id_; }
+  int64_t namespace_id() const { return namespace_id_; }
   const std::string& persistent_namespace_id() const {
     return persistent_namespace_id_;
   }
@@ -42,18 +44,18 @@ class CONTENT_EXPORT DOMStorageSession
   // Constructs a |DOMStorageSession| by cloning
   // |namespace_id_to_clone|. Allocates new IDs for it.
   static DOMStorageSession* CloneFrom(DOMStorageContextImpl* context,
-                                      int64 namepace_id_to_clone);
+                                      int64_t namepace_id_to_clone);
 
  private:
   friend class base::RefCountedThreadSafe<DOMStorageSession>;
 
   DOMStorageSession(DOMStorageContextImpl* context,
-                    int64 namespace_id,
+                    int64_t namespace_id,
                     const std::string& persistent_namespace_id);
   ~DOMStorageSession();
 
   scoped_refptr<DOMStorageContextImpl> context_;
-  int64 namespace_id_;
+  int64_t namespace_id_;
   std::string persistent_namespace_id_;
   bool should_persist_;
 

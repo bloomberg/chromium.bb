@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/color_picker.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/cursors/webcursor.h"

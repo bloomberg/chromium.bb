@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_MOCK_INDEXED_DB_DATABASE_CALLBACKS_H_
 #define CONTENT_BROWSER_INDEXED_DB_MOCK_INDEXED_DB_DATABASE_CALLBACKS_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 
@@ -14,11 +17,11 @@ class MockIndexedDBDatabaseCallbacks : public IndexedDBDatabaseCallbacks {
  public:
   MockIndexedDBDatabaseCallbacks();
 
-  void OnVersionChange(int64 old_version, int64 new_version) override {}
+  void OnVersionChange(int64_t old_version, int64_t new_version) override {}
   void OnForcedClose() override;
-  void OnAbort(int64 transaction_id,
+  void OnAbort(int64_t transaction_id,
                const IndexedDBDatabaseError& error) override;
-  void OnComplete(int64 transaction_id) override {}
+  void OnComplete(int64_t transaction_id) override {}
 
   bool abort_called() const { return abort_called_; }
   bool forced_close_called() const { return forced_close_called_; }

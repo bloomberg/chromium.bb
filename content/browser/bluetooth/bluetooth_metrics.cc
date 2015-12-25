@@ -4,6 +4,8 @@
 
 #include "content/browser/bluetooth/bluetooth_metrics.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include "base/hash.h"
@@ -18,7 +20,7 @@ namespace {
 // TODO(ortuno): Remove once we have a macro to histogram strings.
 // http://crbug.com/520284
 int HashUUID(const std::string& uuid) {
-  uint32 data = base::SuperFastHash(uuid.data(), uuid.size());
+  uint32_t data = base::SuperFastHash(uuid.data(), uuid.size());
 
   // Strip off the signed bit because UMA doesn't support negative values,
   // but takes a signed int as input.

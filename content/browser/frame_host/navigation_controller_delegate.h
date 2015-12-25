@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATION_CONTROLLER_DELEGATE_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATION_CONTROLLER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -38,8 +40,8 @@ class NavigationControllerDelegate {
   virtual const std::string& GetContentsMimeType() const = 0;
   virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
   virtual void Stop() = 0;
-  virtual int32 GetMaxPageID() = 0;
-  virtual int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
+  virtual int32_t GetMaxPageID() = 0;
+  virtual int32_t GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
   virtual bool IsLoading() const = 0;
   virtual bool IsBeingDestroyed() const = 0;
   virtual bool CanOverscrollContent() const = 0;
@@ -53,9 +55,9 @@ class NavigationControllerDelegate {
   virtual void SetHistoryOffsetAndLength(int history_offset,
                                          int history_length) = 0;
   virtual void CopyMaxPageIDsFrom(WebContents* web_contents) = 0;
-  virtual void UpdateMaxPageID(int32 page_id) = 0;
+  virtual void UpdateMaxPageID(int32_t page_id) = 0;
   virtual void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
-                                              int32 page_id) = 0;
+                                              int32_t page_id) = 0;
   virtual void ActivateAndShowRepostFormWarningDialog() = 0;
   virtual bool HasAccessedInitialDocument() = 0;
 

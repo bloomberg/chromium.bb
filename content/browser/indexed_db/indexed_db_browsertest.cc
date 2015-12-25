@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -10,10 +13,12 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/thread_test_helper.h"
+#include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -120,7 +125,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
             shell()->web_contents()->GetBrowserContext())->GetQuotaManager());
   }
 
-  static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
+  static void SetTempQuota(int64_t bytes, scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -135,7 +140,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     ASSERT_TRUE(helper->Run());
   }
 
-  virtual int64 RequestDiskUsage() {
+  virtual int64_t RequestDiskUsage() {
     PostTaskAndReplyWithResult(
         GetContext()->TaskRunner(),
         FROM_HERE,
@@ -176,13 +181,11 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     return GetTestClassFactory();
   }
 
-  virtual void DidGetDiskUsage(int64 bytes) {
-    disk_usage_ = bytes;
-  }
+  virtual void DidGetDiskUsage(int64_t bytes) { disk_usage_ = bytes; }
 
   virtual void DidGetBlobFileCount(int count) { blob_file_count_ = count; }
 
-  int64 disk_usage_;
+  int64_t disk_usage_;
   int blob_file_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTest);
@@ -352,10 +355,10 @@ class IndexedDBBrowserTestWithVersion123456Schema : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion123456Schema,
                        DestroyTest) {
-  int64 original_size = RequestDiskUsage();
+  int64_t original_size = RequestDiskUsage();
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64 new_size = RequestDiskUsage();
+  int64_t new_size = RequestDiskUsage();
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -367,10 +370,10 @@ class IndexedDBBrowserTestWithVersion987654SSVData : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion987654SSVData,
                        DestroyTest) {
-  int64 original_size = RequestDiskUsage();
+  int64_t original_size = RequestDiskUsage();
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64 new_size = RequestDiskUsage();
+  int64_t new_size = RequestDiskUsage();
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -382,10 +385,10 @@ class IndexedDBBrowserTestWithCorruptLevelDB : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCorruptLevelDB,
                        DestroyTest) {
-  int64 original_size = RequestDiskUsage();
+  int64_t original_size = RequestDiskUsage();
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64 new_size = RequestDiskUsage();
+  int64_t new_size = RequestDiskUsage();
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -397,10 +400,10 @@ class IndexedDBBrowserTestWithMissingSSTFile : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithMissingSSTFile,
                        DestroyTest) {
-  int64 original_size = RequestDiskUsage();
+  int64_t original_size = RequestDiskUsage();
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_missing_table.html"));
-  int64 new_size = RequestDiskUsage();
+  int64_t new_size = RequestDiskUsage();
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -412,14 +415,14 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   base::FilePath log_file(FILE_PATH_LITERAL("LOG"));
   base::FilePath log_file_path =
       GetContext()->data_path().Append(leveldb_dir).Append(log_file);
-  int64 size;
+  int64_t size;
   EXPECT_TRUE(base::GetFileSize(log_file_path, &size));
   EXPECT_GT(size, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "fill_up_5k.html"));
-  int64 size = RequestDiskUsage();
+  int64_t size = RequestDiskUsage();
   const int kQuotaKilobytes = 2;
   EXPECT_GT(size, kQuotaKilobytes * 1024);
   SetQuota(kQuotaKilobytes);
@@ -481,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BlobsCountAgainstQuota) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
   SimpleTest(GetTestUrl("indexeddb", "write_20mb_blob.html"));
-  int64 size = RequestDiskUsage();
+  int64_t size = RequestDiskUsage();
   // This assertion assumes that we do not compress blobs.
   EXPECT_GT(size, 20 << 20 /* 20 MB */);
   GetContext()->TaskRunner()->PostTask(
@@ -551,7 +554,7 @@ static void CorruptIndexedDBDatabase(
         idb_data_path, recursive, base::FileEnumerator::FILES);
     for (base::FilePath idb_file = enumerator.Next(); !idb_file.empty();
          idb_file = enumerator.Next()) {
-      int64 size(0);
+      int64_t size(0);
       GetFileSize(idb_file, &size);
 
       if (idb_file.Extension() == FILE_PATH_LITERAL(".ldb")) {
@@ -724,11 +727,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
                        DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");
   SimpleTest(GURL(test_url.spec() + "#fill"));
-  int64 after_filling = RequestDiskUsage();
+  int64_t after_filling = RequestDiskUsage();
   EXPECT_GT(after_filling, 0);
 
   SimpleTest(GURL(test_url.spec() + "#purge"));
-  int64 after_deleting = RequestDiskUsage();
+  int64_t after_deleting = RequestDiskUsage();
   EXPECT_LT(after_deleting, after_filling);
 
   // The above tests verify basic assertions - that filling writes data and

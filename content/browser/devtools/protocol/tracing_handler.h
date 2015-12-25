@@ -5,9 +5,13 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_TRACING_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_TRACING_HANDLER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
@@ -58,7 +62,7 @@ class TracingHandler {
   void OnCategoriesReceived(DevToolsCommandId command_id,
                             const std::set<std::string>& category_set);
   void OnMemoryDumpFinished(DevToolsCommandId command_id,
-                            uint64 dump_guid,
+                            uint64_t dump_guid,
                             bool success);
 
   void SetupTimer(double usage_reporting_interval);

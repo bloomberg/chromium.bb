@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_GEOFENCING_GEOFENCING_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_GEOFENCING_GEOFENCING_DISPATCHER_HOST_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/common/geofencing_types.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -31,14 +34,14 @@ class GeofencingDispatcherHost : public BrowserMessageFilter {
                         int request_id,
                         const std::string& region_id,
                         const blink::WebCircularGeofencingRegion& region,
-                        int64 service_worker_registration_id);
+                        int64_t service_worker_registration_id);
   void OnUnregisterRegion(int thread_id,
                           int request_id,
                           const std::string& region_id,
-                          int64 service_worker_registration_id);
+                          int64_t service_worker_registration_id);
   void OnGetRegisteredRegions(int thread_id,
                               int request_id,
-                              int64 service_worker_registration_id);
+                              int64_t service_worker_registration_id);
 
   void RegisterRegionCompleted(int thread_id,
                                int request_id,

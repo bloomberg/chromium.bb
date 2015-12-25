@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_STORAGE_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_STORAGE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 

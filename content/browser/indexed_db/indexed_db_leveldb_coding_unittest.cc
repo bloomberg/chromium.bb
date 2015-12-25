@@ -4,10 +4,13 @@
 
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -169,7 +172,7 @@ TEST(IndexedDBLevelDBCodingTest, MinIDBKey) {
   EXPECT_LT(CompareKeys(min_key, date_key), 0);
 }
 
-static std::string WrappedEncodeInt(int64 value) {
+static std::string WrappedEncodeInt(int64_t value) {
   std::string buffer;
   EncodeInt(value, &buffer);
   return buffer;
@@ -213,7 +216,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeBool) {
 }
 
 TEST(IndexedDBLevelDBCodingTest, DecodeInt) {
-  std::vector<int64> test_cases;
+  std::vector<int64_t> test_cases;
   test_cases.push_back(0);
   test_cases.push_back(1);
   test_cases.push_back(255);
@@ -227,11 +230,11 @@ TEST(IndexedDBLevelDBCodingTest, DecodeInt) {
 #endif
 
   for (size_t i = 0; i < test_cases.size(); ++i) {
-    int64 n = test_cases[i];
+    int64_t n = test_cases[i];
     std::string v = WrappedEncodeInt(n);
     ASSERT_GT(v.size(), 0u);
     StringPiece slice(v);
-    int64 value;
+    int64_t value;
     EXPECT_TRUE(DecodeInt(&slice, &value));
     EXPECT_EQ(n, value);
     EXPECT_TRUE(slice.empty());
@@ -245,12 +248,12 @@ TEST(IndexedDBLevelDBCodingTest, DecodeInt) {
   }
   {
     StringPiece slice;
-    int64 value;
+    int64_t value;
     EXPECT_FALSE(DecodeInt(&slice, &value));
   }
 }
 
-static std::string WrappedEncodeVarInt(int64 value) {
+static std::string WrappedEncodeVarInt(int64_t value) {
   std::string buffer;
   EncodeVarInt(value, &buffer);
   return buffer;
@@ -270,7 +273,7 @@ TEST(IndexedDBLevelDBCodingTest, EncodeVarInt) {
 }
 
 TEST(IndexedDBLevelDBCodingTest, DecodeVarInt) {
-  std::vector<int64> test_cases;
+  std::vector<int64_t> test_cases;
   test_cases.push_back(0);
   test_cases.push_back(1);
   test_cases.push_back(255);
@@ -284,11 +287,11 @@ TEST(IndexedDBLevelDBCodingTest, DecodeVarInt) {
 #endif
 
   for (size_t i = 0; i < test_cases.size(); ++i) {
-    int64 n = test_cases[i];
+    int64_t n = test_cases[i];
     std::string v = WrappedEncodeVarInt(n);
     ASSERT_GT(v.size(), 0u);
     StringPiece slice(v);
-    int64 res;
+    int64_t res;
     EXPECT_TRUE(DecodeVarInt(&slice, &res));
     EXPECT_EQ(n, res);
     EXPECT_TRUE(slice.empty());
@@ -949,8 +952,8 @@ TEST(IndexedDBLevelDBCodingTest, ComparisonTest) {
   keys.push_back(IndexDataKey::Encode(1, 1, 30, MaxIDBKey(), MaxIDBKey(), 1));
   keys.push_back(IndexDataKey::Encode(1, 1, 31, MinIDBKey(), MinIDBKey(), 0));
   keys.push_back(IndexDataKey::Encode(1, 2, 30, MinIDBKey(), MinIDBKey(), 0));
-  keys.push_back(
-      IndexDataKey::EncodeMaxKey(1, 2, std::numeric_limits<int32>::max() - 1));
+  keys.push_back(IndexDataKey::EncodeMaxKey(
+      1, 2, std::numeric_limits<int32_t>::max() - 1));
 
   for (size_t i = 0; i < keys.size(); ++i) {
     EXPECT_EQ(Compare(keys[i], keys[i], false), 0);
@@ -972,7 +975,7 @@ TEST(IndexedDBLevelDBCodingTest, EncodeVarIntVSEncodeByteTest) {
     unsigned char n = test_cases[i];
 
     std::string a = WrappedEncodeByte(n);
-    std::string b = WrappedEncodeVarInt(static_cast<int64>(n));
+    std::string b = WrappedEncodeVarInt(static_cast<int64_t>(n));
 
     EXPECT_EQ(a.size(), b.size());
     EXPECT_EQ(*a.begin(), *b.begin());

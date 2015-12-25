@@ -430,7 +430,8 @@ bool NavigationControllerImpl::IsInitialBlankNavigation() const {
 }
 
 NavigationEntryImpl* NavigationControllerImpl::GetEntryWithPageID(
-  SiteInstance* instance, int32 page_id) const {
+    SiteInstance* instance,
+    int32_t page_id) const {
   int index = GetEntryIndexWithPageID(instance, page_id);
   return (index != -1) ? entries_[index].get() : nullptr;
 }
@@ -1491,7 +1492,7 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   // new and existing navigations in the tab's current SiteInstances are
   // identified properly.
   NavigationEntryImpl* last_committed = GetLastCommittedEntry();
-  int32 site_max_page_id =
+  int32_t site_max_page_id =
       delegate_->GetMaxPageIDForSiteInstance(last_committed->site_instance());
   delegate_->CopyMaxPageIDsFrom(source->delegate()->GetWebContents());
   delegate_->UpdateMaxPageIDForSiteInstance(last_committed->site_instance(),
@@ -1563,11 +1564,11 @@ void NavigationControllerImpl::SetSessionStorageNamespace(
   CHECK(successful_insert) << "Cannot replace existing SessionStorageNamespace";
 }
 
-void NavigationControllerImpl::SetMaxRestoredPageID(int32 max_id) {
+void NavigationControllerImpl::SetMaxRestoredPageID(int32_t max_id) {
   max_restored_page_id_ = max_id;
 }
 
-int32 NavigationControllerImpl::GetMaxRestoredPageID() const {
+int32_t NavigationControllerImpl::GetMaxRestoredPageID() const {
   return max_restored_page_id_;
 }
 
@@ -1680,7 +1681,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
 
   // When replacing, don't prune the forward history.
   if (replace && current_size > 0) {
-    int32 page_id = entry->GetPageID();
+    int32_t page_id = entry->GetPageID();
 
     entries_[last_committed_entry_index_] = entry.Pass();
 
@@ -1709,7 +1710,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
 
   PruneOldestEntryIfFull();
 
-  int32 page_id = entry->GetPageID();
+  int32_t page_id = entry->GetPageID();
   entries_.push_back(entry.Pass());
   last_committed_entry_index_ = static_cast<int>(entries_.size()) - 1;
 
@@ -1950,7 +1951,7 @@ void NavigationControllerImpl::FinishRestore(int selected_index,
   DCHECK(selected_index >= 0 && selected_index < GetEntryCount());
   ConfigureEntriesForRestore(&entries_, type);
 
-  SetMaxRestoredPageID(static_cast<int32>(GetEntryCount()));
+  SetMaxRestoredPageID(static_cast<int32_t>(GetEntryCount()));
 
   last_committed_entry_index_ = selected_index;
 }
@@ -1990,8 +1991,8 @@ void NavigationControllerImpl::DiscardTransientEntry() {
   transient_entry_index_ = -1;
 }
 
-int NavigationControllerImpl::GetEntryIndexWithPageID(
-    SiteInstance* instance, int32 page_id) const {
+int NavigationControllerImpl::GetEntryIndexWithPageID(SiteInstance* instance,
+                                                      int32_t page_id) const {
   for (int i = static_cast<int>(entries_.size()) - 1; i >= 0; --i) {
     if ((entries_[i]->site_instance() == instance) &&
         (entries_[i]->GetPageID() == page_id))

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -55,7 +58,7 @@ class RegistryTestMockFactory : public MockIndexedDBFactory {
 
 class MockIDBBackingStore : public IndexedDBFakeBackingStore {
  public:
-  typedef std::pair<int64, int64> KeyPair;
+  typedef std::pair<int64_t, int64_t> KeyPair;
   typedef std::set<KeyPair> KeyPairSet;
 
   MockIDBBackingStore(IndexedDBFactory* factory,
@@ -63,14 +66,14 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
       : IndexedDBFakeBackingStore(factory, task_runner),
         duplicate_calls_(false) {}
 
-  void ReportBlobUnused(int64 database_id, int64 blob_key) override {
+  void ReportBlobUnused(int64_t database_id, int64_t blob_key) override {
     unused_blobs_.insert(std::make_pair(database_id, blob_key));
   }
 
   bool CheckUnusedBlobsEmpty() const {
     return !duplicate_calls_ && !unused_blobs_.size();
   }
-  bool CheckSingleUnusedBlob(int64 database_id, int64 blob_key) const {
+  bool CheckSingleUnusedBlob(int64_t database_id, int64_t blob_key) const {
     return !duplicate_calls_ && unused_blobs_.size() == 1 &&
            unused_blobs_.count(std::make_pair(database_id, blob_key));
   }
@@ -93,10 +96,10 @@ class IndexedDBActiveBlobRegistryTest : public testing::Test {
   typedef storage::ShareableFileReference::FinalReleaseCallback
       ReleaseCallback;
 
-  static const int64 kDatabaseId0 = 7;
-  static const int64 kDatabaseId1 = 12;
-  static const int64 kBlobKey0 = 77;
-  static const int64 kBlobKey1 = 14;
+  static const int64_t kDatabaseId0 = 7;
+  static const int64_t kDatabaseId1 = 12;
+  static const int64_t kBlobKey0 = 77;
+  static const int64_t kBlobKey1 = 14;
 
   IndexedDBActiveBlobRegistryTest()
       : task_runner_(new base::TestSimpleTaskRunner),

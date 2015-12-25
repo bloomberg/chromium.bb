@@ -5,7 +5,6 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/common/url_constants.h"

@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/blob_storage_host.h"
@@ -53,9 +55,8 @@ namespace content {
 
 namespace {
 
-const uint32 kFilteredMessageClasses[] = {
-  BlobMsgStart,
-  FileSystemMsgStart,
+const uint32_t kFilteredMessageClasses[] = {
+    BlobMsgStart, FileSystemMsgStart,
 };
 
 void RevokeFilePermission(int child_id, const base::FilePath& path) {
@@ -106,7 +107,7 @@ FileAPIMessageFilter::FileAPIMessageFilter(
   DCHECK(stream_context);
 }
 
-void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
+void FileAPIMessageFilter::OnChannelConnected(int32_t peer_pid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (request_context_getter_.get()) {
@@ -386,11 +387,10 @@ void FileAPIMessageFilter::OnReadDirectory(
                       this, request_id));
 }
 
-void FileAPIMessageFilter::OnWrite(
-    int request_id,
-    const GURL& path,
-    const std::string& blob_uuid,
-    int64 offset) {
+void FileAPIMessageFilter::OnWrite(int request_id,
+                                   const GURL& path,
+                                   const std::string& blob_uuid,
+                                   int64_t offset) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!request_context_) {
     // We can't write w/o a request context, trying to do so will crash.
@@ -415,10 +415,9 @@ void FileAPIMessageFilter::OnWrite(
       base::Bind(&FileAPIMessageFilter::DidWrite, this, request_id));
 }
 
-void FileAPIMessageFilter::OnTruncate(
-    int request_id,
-    const GURL& path,
-    int64 length) {
+void FileAPIMessageFilter::OnTruncate(int request_id,
+                                      const GURL& path,
+                                      int64_t length) {
   FileSystemURL url(context_->CrackURL(path));
   if (!ValidateFileSystemURL(request_id, url))
     return;
@@ -758,7 +757,7 @@ void FileAPIMessageFilter::DidReadDirectory(
 
 void FileAPIMessageFilter::DidWrite(int request_id,
                                     base::File::Error result,
-                                    int64 bytes,
+                                    int64_t bytes,
                                     bool complete) {
   if (result == base::File::FILE_OK) {
     Send(new FileSystemMsg_DidWrite(request_id, bytes, complete));

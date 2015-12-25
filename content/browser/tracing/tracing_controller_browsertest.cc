@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/test/browser_test_utils.h"
@@ -132,7 +135,7 @@ class TracingControllerTest : public ContentBrowserTest {
                                             const base::FilePath& file_path) {
     disable_recording_done_callback_count_++;
     EXPECT_TRUE(PathExists(file_path));
-    int64 file_size;
+    int64_t file_size;
     base::GetFileSize(file_path, &file_size);
     EXPECT_TRUE(file_size > 0);
     quit_callback.Run();
@@ -153,7 +156,7 @@ class TracingControllerTest : public ContentBrowserTest {
       base::Closure quit_callback, const base::FilePath& file_path) {
     capture_monitoring_snapshot_done_callback_count_++;
     EXPECT_TRUE(PathExists(file_path));
-    int64 file_size;
+    int64_t file_size;
     base::GetFileSize(file_path, &file_size);
     EXPECT_TRUE(file_size > 0);
     quit_callback.Run();

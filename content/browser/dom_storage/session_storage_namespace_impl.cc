@@ -15,17 +15,17 @@ SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
 }
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageContextWrapper* context, int64 namepace_id_to_clone)
+    DOMStorageContextWrapper* context,
+    int64_t namepace_id_to_clone)
     : session_(DOMStorageSession::CloneFrom(context->context(),
-                                            namepace_id_to_clone)) {
-}
+                                            namepace_id_to_clone)) {}
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
     DOMStorageContextWrapper* context, const std::string& persistent_id)
     : session_(new DOMStorageSession(context->context(), persistent_id)) {
 }
 
-int64 SessionStorageNamespaceImpl::id() const {
+int64_t SessionStorageNamespaceImpl::id() const {
   return session_->namespace_id();
 }
 

@@ -72,7 +72,7 @@ bool SaveFile::InProgress() const {
   return file_.in_progress();
 }
 
-int64 SaveFile::BytesSoFar() const {
+int64_t SaveFile::BytesSoFar() const {
   return file_.bytes_so_far();
 }
 

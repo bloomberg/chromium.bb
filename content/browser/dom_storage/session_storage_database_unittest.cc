@@ -5,6 +5,9 @@
 
 #include "content/browser/dom_storage/session_storage_database.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <string>
@@ -12,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -37,10 +41,8 @@ class SessionStorageDatabaseTest : public testing::Test {
                              std::string* namespace_id);
   static bool IsNamespaceOriginKey(const std::string& key,
                                    std::string* namespace_id);
-  static bool IsMapRefCountKey(const std::string& key,
-                               int64* map_id);
-  static bool IsMapValueKey(const std::string& key,
-                            int64* map_id);
+  static bool IsMapRefCountKey(const std::string& key, int64_t* map_id);
+  static bool IsMapValueKey(const std::string& key, int64_t* map_id);
   void ResetDatabase();
   void ReadData(DataMap* data) const;
   void CheckDatabaseConsistency() const;
@@ -58,7 +60,7 @@ class SessionStorageDatabaseTest : public testing::Test {
       const std::set<GURL>& expected_origins) const;
   std::string GetMapForArea(const std::string& namespace_id,
                             const GURL& origin) const;
-  int64 GetMapRefCount(const std::string& map_id) const;
+  int64_t GetMapRefCount(const std::string& map_id) const;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SessionStorageDatabase> db_;
@@ -148,7 +150,7 @@ bool SessionStorageDatabaseTest::IsNamespaceOriginKey(
 
 // static
 bool SessionStorageDatabaseTest::IsMapRefCountKey(const std::string& key,
-                                                  int64* map_id) {
+                                                  int64_t* map_id) {
   std::string map_prefix = "map-";
   if (key.find(map_prefix) != 0)
     return false;
@@ -165,7 +167,7 @@ bool SessionStorageDatabaseTest::IsMapRefCountKey(const std::string& key,
 
 // static
 bool SessionStorageDatabaseTest::IsMapValueKey(const std::string& key,
-                                               int64* map_id) {
+                                               int64_t* map_id) {
   std::string map_prefix = "map-";
   if (key.find(map_prefix) != 0)
     return false;
@@ -214,8 +216,8 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
   // Iterate the "namespace-" keys.
   std::set<std::string> found_namespace_ids;
   std::set<std::string> namespaces_with_areas;
-  std::map<int64, int64> expected_map_refcounts;
-  int64 max_map_id = -1;
+  std::map<int64_t, int64_t> expected_map_refcounts;
+  int64_t max_map_id = -1;
 
   for (DataMap::const_iterator it = data.begin(); it != data.end(); ++it) {
     std::string namespace_id;
@@ -229,7 +231,7 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
       ASSERT_TRUE(found_namespace_ids.find(namespace_id) !=
                   found_namespace_ids.end());
       namespaces_with_areas.insert(namespace_id);
-      int64 map_id;
+      int64_t map_id;
       bool conversion_ok = base::StringToInt64(it->second, &map_id);
       ASSERT_TRUE(conversion_ok);
       ASSERT_GE(map_id, 0);
@@ -245,7 +247,7 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
   if (max_map_id != -1) {
     // The database contains maps.
     ASSERT_TRUE(data.find(next_map_id_key) != data.end());
-    int64 next_map_id;
+    int64_t next_map_id;
     bool conversion_ok =
         base::StringToInt64(data[next_map_id_key], &next_map_id);
     ASSERT_TRUE(conversion_ok);
@@ -253,11 +255,11 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
   }
 
   // Iterate the "map-" keys.
-  std::set<int64> found_map_ids;
+  std::set<int64_t> found_map_ids;
   for (DataMap::const_iterator it = data.begin(); it != data.end(); ++it) {
-    int64 map_id;
+    int64_t map_id;
     if (IsMapRefCountKey(it->first, &map_id)) {
-      int64 ref_count;
+      int64_t ref_count;
       bool conversion_ok = base::StringToInt64(it->second, &ref_count);
       ASSERT_TRUE(conversion_ok);
       // Check that the map is not stale.
@@ -299,7 +301,7 @@ void SessionStorageDatabaseTest::DumpData() const {
   scoped_ptr<leveldb::Iterator> it(
       db_->db_->NewIterator(leveldb::ReadOptions()));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
-    int64 dummy_map_id;
+    int64_t dummy_map_id;
     if (IsMapValueKey(it->key().ToString(), &dummy_map_id)) {
       // Convert the value back to base::string16.
       base::string16 value;
@@ -374,9 +376,9 @@ std::string SessionStorageDatabaseTest::GetMapForArea(
   return map_id;
 }
 
-int64 SessionStorageDatabaseTest::GetMapRefCount(
+int64_t SessionStorageDatabaseTest::GetMapRefCount(
     const std::string& map_id) const {
-  int64 ref_count;
+  int64_t ref_count;
   EXPECT_TRUE(db_->GetMapRefCount(map_id, &ref_count));
   return ref_count;
 }

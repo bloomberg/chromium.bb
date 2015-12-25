@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_TRACING_TRACE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_TRACING_TRACE_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -54,9 +57,9 @@ class TraceMessageFilter : public BrowserMessageFilter {
   void OnMonitoringTraceDataCollected(const std::string& data);
   void OnGlobalMemoryDumpRequest(
       const base::trace_event::MemoryDumpRequestArgs& args);
-  void OnProcessMemoryDumpResponse(uint64 dump_guid, bool success);
+  void OnProcessMemoryDumpResponse(uint64_t dump_guid, bool success);
 
-  void SendGlobalMemoryDumpResponse(uint64 dump_guid, bool success);
+  void SendGlobalMemoryDumpResponse(uint64_t dump_guid, bool success);
   void OnTriggerBackgroundTrace(const std::string& histogram_name);
   void OnAbortBackgroundTrace();
 
@@ -64,7 +67,7 @@ class TraceMessageFilter : public BrowserMessageFilter {
   bool has_child_;
 
   // Hash of id of the child process.
-  uint64 tracing_process_id_;
+  uint64_t tracing_process_id_;
 
   // Awaiting ack for previously sent SendEndTracing
   bool is_awaiting_end_ack_;

@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/threading/worker_pool.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"

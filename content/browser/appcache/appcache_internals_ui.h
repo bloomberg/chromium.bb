@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_INTERNALS_UI_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_INTERNALS_UI_H_
 
+#include <stdint.h>
+
 #include <list>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -40,8 +43,8 @@ class AppCacheInternalsUI : public WebUIController {
 
     struct ResponseEnquiry {
       std::string manifest_url;
-      int64 group_id;
-      int64 response_id;
+      int64_t group_id;
+      int64_t response_id;
     };
 
    private:
@@ -64,7 +67,7 @@ class AppCacheInternalsUI : public WebUIController {
     void OnGroupLoaded(AppCacheGroup* appcache_group,
                        const GURL& manifest_gurl) override;
     void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
-                              int64 response_id) override;
+                              int64_t response_id) override;
     void OnResponseDataReadComplete(
         const ResponseEnquiry& response_enquiry,
         scoped_refptr<AppCacheResponseInfo> response_info,

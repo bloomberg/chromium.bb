@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/devtools_frontend_host_impl.h"
 
+#include <stddef.h>
+
 #include "content/browser/bad_message.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/navigation_entry.h"

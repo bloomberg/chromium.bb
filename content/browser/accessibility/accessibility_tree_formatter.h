@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -114,10 +117,10 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // Overridden by platform subclasses.
   //
 
-  virtual uint32 ChildCount(const BrowserAccessibility& node) const;
+  virtual uint32_t ChildCount(const BrowserAccessibility& node) const;
 
-  virtual BrowserAccessibility* GetChild(
-      const BrowserAccessibility& node, uint32 i) const;
+  virtual BrowserAccessibility* GetChild(const BrowserAccessibility& node,
+                                         uint32_t i) const;
 
   // Add the attributes for each node into the given dict.
   virtual void AddProperties(const BrowserAccessibility& node,

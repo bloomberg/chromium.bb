@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
 #define CONTENT_BROWSER_FILEAPI_SANDBOX_DATABASE_TEST_HELPER_H_
 
-#include <cstddef>
+#include <stddef.h>
 
 #include "third_party/leveldatabase/src/db/filename.h"
 

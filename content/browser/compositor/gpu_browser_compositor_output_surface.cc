@@ -4,6 +4,7 @@
 
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 
+#include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"

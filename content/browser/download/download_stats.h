@@ -7,9 +7,11 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -127,12 +129,13 @@ void RecordDownloadCount(DownloadCountTypes type);
 void RecordDownloadSource(DownloadSource source);
 
 // Record COMPLETED_COUNT and how long the download took.
-void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len);
+void RecordDownloadCompleted(const base::TimeTicks& start,
+                             int64_t download_len);
 
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
-                               int64 received,
-                               int64 total);
+                               int64_t received,
+                               int64_t total);
 
 // Record that a download has been classified as malicious.
 void RecordMaliciousDownloadClassified(DownloadDangerType danger_type);
@@ -177,7 +180,7 @@ void RecordOpen(const base::Time& end, bool first);
 // support and ETag indicates downloads that are candidates for partial
 // resumption.
 void RecordAcceptsRanges(const std::string& accepts_ranges,
-                         int64 download_len,
+                         int64_t download_len,
                          bool has_strong_validator);
 
 // Record the number of downloads removed by ClearAll.

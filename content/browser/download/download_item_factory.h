@@ -9,6 +9,8 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_FACTORY_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_FACTORY_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -39,7 +41,7 @@ public:
 
   virtual DownloadItemImpl* CreatePersistedItem(
       DownloadItemImplDelegate* delegate,
-      uint32 download_id,
+      uint32_t download_id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
@@ -50,8 +52,8 @@ public:
       const base::Time& end_time,
       const std::string& etag,
       const std::string& last_modified,
-      int64 received_bytes,
-      int64 total_bytes,
+      int64_t received_bytes,
+      int64_t total_bytes,
       DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
@@ -60,13 +62,13 @@ public:
 
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
-      uint32 download_id,
+      uint32_t download_id,
       const DownloadCreateInfo& info,
       const net::BoundNetLog& bound_net_log) = 0;
 
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
-      uint32 download_id,
+      uint32_t download_id,
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,

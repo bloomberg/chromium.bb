@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
@@ -24,7 +25,9 @@ const GURL& RenderFrameHostDelegate::GetMainFrameLastCommittedURL() const {
 }
 
 bool RenderFrameHostDelegate::AddMessageToConsole(
-    int32 level, const base::string16& message, int32 line_no,
+    int32_t level,
+    const base::string16& message,
+    int32_t line_no,
     const base::string16& source_id) {
   return false;
 }

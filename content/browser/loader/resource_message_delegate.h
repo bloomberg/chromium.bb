@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_DELEGATE_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_MESSAGE_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 

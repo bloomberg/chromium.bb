@@ -4,6 +4,8 @@
 
 #include "storage/browser/blob/blob_storage_context.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <string>
 

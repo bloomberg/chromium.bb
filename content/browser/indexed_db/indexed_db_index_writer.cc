@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -31,9 +33,9 @@ IndexWriter::~IndexWriter() {}
 bool IndexWriter::VerifyIndexKeys(
     IndexedDBBackingStore* backing_store,
     IndexedDBBackingStore::Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id,
-    int64 index_id,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
     bool* can_add_keys,
     const IndexedDBKey& primary_key,
     base::string16* error_message) const {
@@ -68,9 +70,9 @@ void IndexWriter::WriteIndexKeys(
     const IndexedDBBackingStore::RecordIdentifier& record_identifier,
     IndexedDBBackingStore* backing_store,
     IndexedDBBackingStore::Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id) const {
-  int64 index_id = index_metadata_.id;
+    int64_t database_id,
+    int64_t object_store_id) const {
+  int64_t index_id = index_metadata_.id;
   DCHECK_EQ(index_id, index_keys_.first);
   for (size_t i = 0; i < index_keys_.second.size(); ++i) {
     leveldb::Status s =
@@ -89,9 +91,9 @@ void IndexWriter::WriteIndexKeys(
 bool IndexWriter::AddingKeyAllowed(
     IndexedDBBackingStore* backing_store,
     IndexedDBBackingStore::Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id,
-    int64 index_id,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const IndexedDBKey& index_key,
     const IndexedDBKey& primary_key,
     bool* allowed) const {
@@ -121,7 +123,7 @@ bool IndexWriter::AddingKeyAllowed(
 bool MakeIndexWriters(
     IndexedDBTransaction* transaction,
     IndexedDBBackingStore* backing_store,
-    int64 database_id,
+    int64_t database_id,
     const IndexedDBObjectStoreMetadata& object_store,
     const IndexedDBKey& primary_key,  // makes a copy
     bool key_was_generated,

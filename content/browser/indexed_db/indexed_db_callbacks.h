@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CALLBACKS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -34,21 +36,21 @@ class CONTENT_EXPORT IndexedDBCallbacks
  public:
   // Simple payload responses
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id);
+                     int32_t ipc_thread_id,
+                     int32_t ipc_callbacks_id);
 
   // IndexedDBCursor responses
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id,
-                     int32 ipc_cursor_id);
+                     int32_t ipc_thread_id,
+                     int32_t ipc_callbacks_id,
+                     int32_t ipc_cursor_id);
 
   // IndexedDBDatabase responses
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id,
-                     int32 ipc_database_callbacks_id,
-                     int64 host_transaction_id,
+                     int32_t ipc_thread_id,
+                     int32_t ipc_callbacks_id,
+                     int32_t ipc_database_callbacks_id,
+                     int64_t host_transaction_id,
                      const GURL& origin_url);
 
   virtual void OnError(const IndexedDBDatabaseError& error);
@@ -57,13 +59,13 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnSuccess(const std::vector<base::string16>& string);
 
   // IndexedDBFactory::Open / DeleteDatabase
-  virtual void OnBlocked(int64 existing_version);
+  virtual void OnBlocked(int64_t existing_version);
 
   // IndexedDBFactory::Open
   virtual void OnDataLoss(blink::WebIDBDataLoss data_loss,
                           std::string data_loss_message);
   virtual void OnUpgradeNeeded(
-      int64 old_version,
+      int64_t old_version,
       scoped_ptr<IndexedDBConnection> connection,
       const content::IndexedDBDatabaseMetadata& metadata);
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
@@ -99,7 +101,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   // IndexedDBDatabase::Count
   // IndexedDBFactory::DeleteDatabase
-  virtual void OnSuccess(int64 value);
+  virtual void OnSuccess(int64_t value);
 
   // IndexedDBDatabase::Delete
   // IndexedDBCursor::Continue / Advance (when complete)
@@ -120,17 +122,17 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   // Originally from IndexedDBCallbacks:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int32 ipc_callbacks_id_;
-  int32 ipc_thread_id_;
+  int32_t ipc_callbacks_id_;
+  int32_t ipc_thread_id_;
 
   // IndexedDBCursor callbacks ------------------------
-  int32 ipc_cursor_id_;
+  int32_t ipc_cursor_id_;
 
   // IndexedDBDatabase callbacks ------------------------
-  int64 host_transaction_id_;
+  int64_t host_transaction_id_;
   GURL origin_url_;
-  int32 ipc_database_id_;
-  int32 ipc_database_callbacks_id_;
+  int32_t ipc_database_id_;
+  int32_t ipc_database_callbacks_id_;
 
   // Stored in OnDataLoss, merged with OnUpgradeNeeded response.
   blink::WebIDBDataLoss data_loss_;

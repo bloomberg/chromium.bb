@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #if defined(OS_WIN)
@@ -41,7 +45,7 @@ class CountedBrowserAccessibility : public BrowserAccessibility {
   // http://crbug.com/235508
   // TODO(dmazzoni): Fix this properly.
   static const size_t kDataSize = sizeof(int) + sizeof(BrowserAccessibility);
-  uint8 padding_[sizeof(BrowserAccessibilityWin) - kDataSize];
+  uint8_t padding_[sizeof(BrowserAccessibilityWin) - kDataSize];
 #endif
 };
 
@@ -645,7 +649,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   inline_text1.location = gfx::Rect(100, 100, 29, 9);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                                ui::AX_TEXT_DIRECTION_LTR);
-  std::vector<int32> character_offsets1;
+  std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(6);   // 0
   character_offsets1.push_back(11);  // 1
   character_offsets1.push_back(16);  // 2
@@ -664,7 +668,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   inline_text2.location = gfx::Rect(100, 109, 28, 9);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                                ui::AX_TEXT_DIRECTION_LTR);
-  std::vector<int32> character_offsets2;
+  std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(5);
   character_offsets2.push_back(10);
   character_offsets2.push_back(15);
@@ -740,7 +744,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   inline_text1.location = gfx::Rect(100, 100, 30, 20);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                                ui::AX_TEXT_DIRECTION_LTR);
-  std::vector<int32> character_offsets1;
+  std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(10);  // 0
   character_offsets1.push_back(20);  // 1
   character_offsets1.push_back(30);  // 2
@@ -755,7 +759,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   inline_text2.location = gfx::Rect(130, 100, 30, 20);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                                ui::AX_TEXT_DIRECTION_RTL);
-  std::vector<int32> character_offsets2;
+  std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(10);
   character_offsets2.push_back(20);
   character_offsets2.push_back(30);
@@ -815,7 +819,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
   inline_text.location = gfx::Rect(100, 100, 16, 9);
   inline_text.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                               ui::AX_TEXT_DIRECTION_LTR);
-  std::vector<int32> character_offsets1;
+  std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(6);   // 0
   character_offsets1.push_back(11);  // 1
   character_offsets1.push_back(16);  // 2
@@ -888,7 +892,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
   inline_text1.location = gfx::Rect(100, 100, 40, 20);
   inline_text1.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                                ui::AX_TEXT_DIRECTION_LTR);
-  std::vector<int32> character_offsets1;
+  std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(20);  // 0
   character_offsets1.push_back(40);  // 1
   inline_text1.AddIntListAttribute(
@@ -901,7 +905,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
   inline_text2.location = gfx::Rect(160, 100, 40, 20);
   inline_text2.AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
                                ui::AX_TEXT_DIRECTION_LTR);
-  std::vector<int32> character_offsets2;
+  std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(20);  // 0
   character_offsets2.push_back(40);  // 1
   inline_text2.AddIntListAttribute(

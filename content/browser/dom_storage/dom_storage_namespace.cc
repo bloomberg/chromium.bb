@@ -4,7 +4,6 @@
 
 #include "content/browser/dom_storage/dom_storage_namespace.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -24,7 +23,7 @@ DOMStorageNamespace::DOMStorageNamespace(
 }
 
 DOMStorageNamespace::DOMStorageNamespace(
-    int64 namespace_id,
+    int64_t namespace_id,
     const std::string& persistent_namespace_id,
     SessionStorageDatabase* session_storage_database,
     DOMStorageTaskRunner* task_runner)
@@ -72,7 +71,7 @@ DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(const GURL& origin) {
 }
 
 DOMStorageNamespace* DOMStorageNamespace::Clone(
-    int64 clone_namespace_id,
+    int64_t clone_namespace_id,
     const std::string& clone_persistent_namespace_id) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
   DCHECK_NE(kLocalStorageNamespaceId, clone_namespace_id);

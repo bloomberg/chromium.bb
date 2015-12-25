@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_CLIENT_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/values.h"
 
 namespace content {

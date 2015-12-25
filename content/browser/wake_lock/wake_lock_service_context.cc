@@ -5,6 +5,7 @@
 #include "content/browser/wake_lock/wake_lock_service_context.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/power_save_blocker.h"

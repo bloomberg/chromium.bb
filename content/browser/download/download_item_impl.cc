@@ -25,7 +25,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -97,7 +96,7 @@ bool IsDownloadResumptionEnabled() {
 
 }  // namespace
 
-const uint32 DownloadItem::kInvalidId = 0;
+const uint32_t DownloadItem::kInvalidId = 0;
 
 const char DownloadItem::kEmptyFileHash[] = "";
 
@@ -106,7 +105,7 @@ const int DownloadItemImpl::kMaxAutoResumeAttempts = 5;
 
 // Constructor for reading from the history service.
 DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                                   uint32 download_id,
+                                   uint32_t download_id,
                                    const base::FilePath& current_path,
                                    const base::FilePath& target_path,
                                    const std::vector<GURL>& url_chain,
@@ -117,8 +116,8 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    const base::Time& end_time,
                                    const std::string& etag,
                                    const std::string& last_modified,
-                                   int64 received_bytes,
-                                   int64 total_bytes,
+                                   int64_t received_bytes,
+                                   int64_t total_bytes,
                                    DownloadItem::DownloadState state,
                                    DownloadDangerType danger_type,
                                    DownloadInterruptReason interrupt_reason,
@@ -165,16 +164,15 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
 }
 
 // Constructing for a regular download:
-DownloadItemImpl::DownloadItemImpl(
-    DownloadItemImplDelegate* delegate,
-    uint32 download_id,
-    const DownloadCreateInfo& info,
-    const net::BoundNetLog& bound_net_log)
+DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
+                                   uint32_t download_id,
+                                   const DownloadCreateInfo& info,
+                                   const net::BoundNetLog& bound_net_log)
     : is_save_package_download_(false),
       download_id_(download_id),
-      target_disposition_(
-          (info.save_info->prompt_for_save_location) ?
-              TARGET_DISPOSITION_PROMPT : TARGET_DISPOSITION_OVERWRITE),
+      target_disposition_((info.save_info->prompt_for_save_location)
+                              ? TARGET_DISPOSITION_PROMPT
+                              : TARGET_DISPOSITION_OVERWRITE),
       url_chain_(info.url_chain),
       referrer_url_(info.referrer_url),
       tab_url_(info.tab_url),
@@ -226,7 +224,7 @@ DownloadItemImpl::DownloadItemImpl(
 // Constructing for the "Save Page As..." feature:
 DownloadItemImpl::DownloadItemImpl(
     DownloadItemImplDelegate* delegate,
-    uint32 download_id,
+    uint32_t download_id,
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
@@ -475,7 +473,7 @@ void DownloadItemImpl::ShowDownloadInShell() {
   delegate_->ShowDownloadInShell(this);
 }
 
-uint32 DownloadItemImpl::GetId() const {
+uint32_t DownloadItemImpl::GetId() const {
   return download_id_;
 }
 
@@ -679,7 +677,7 @@ bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
   if (total_bytes_ <= 0)
     return false;  // We never received the content_length for this download.
 
-  int64 speed = CurrentSpeed();
+  int64_t speed = CurrentSpeed();
   if (speed == 0)
     return false;
 
@@ -688,7 +686,7 @@ bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
   return true;
 }
 
-int64 DownloadItemImpl::CurrentSpeed() const {
+int64_t DownloadItemImpl::CurrentSpeed() const {
   if (is_paused_)
     return 0;
   return bytes_per_sec_;
@@ -707,11 +705,11 @@ bool DownloadItemImpl::AllDataSaved() const {
   return all_data_saved_;
 }
 
-int64 DownloadItemImpl::GetTotalBytes() const {
+int64_t DownloadItemImpl::GetTotalBytes() const {
   return total_bytes_;
 }
 
-int64 DownloadItemImpl::GetReceivedBytes() const {
+int64_t DownloadItemImpl::GetReceivedBytes() const {
   return received_bytes_;
 }
 
@@ -989,7 +987,7 @@ const net::BoundNetLog& DownloadItemImpl::GetBoundNetLog() const {
   return bound_net_log_;
 }
 
-void DownloadItemImpl::SetTotalBytes(int64 total_bytes) {
+void DownloadItemImpl::SetTotalBytes(int64_t total_bytes) {
   total_bytes_ = total_bytes;
 }
 
@@ -1016,8 +1014,8 @@ void DownloadItemImpl::MarkAsComplete() {
   TransitionTo(COMPLETE_INTERNAL, UPDATE_OBSERVERS);
 }
 
-void DownloadItemImpl::DestinationUpdate(int64 bytes_so_far,
-                                         int64 bytes_per_sec,
+void DownloadItemImpl::DestinationUpdate(int64_t bytes_so_far,
+                                         int64_t bytes_per_sec,
                                          const std::string& hash_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << __FUNCTION__ << " so_far=" << bytes_so_far

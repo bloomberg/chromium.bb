@@ -5,13 +5,16 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -39,13 +42,13 @@ class CONTENT_EXPORT IndexedDBDatabase
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBDatabase>) {
  public:
   // An index and corresponding set of keys
-  typedef std::pair<int64, std::vector<IndexedDBKey> > IndexKeys;
+  typedef std::pair<int64_t, std::vector<IndexedDBKey>> IndexKeys;
 
   // Identifier is pair of (origin url, database name).
   typedef std::pair<GURL, base::string16> Identifier;
 
-  static const int64 kInvalidId = 0;
-  static const int64 kMinimumIndexId = 30;
+  static const int64_t kInvalidId = 0;
+  static const int64_t kMinimumIndexId = 30;
 
   static scoped_refptr<IndexedDBDatabase> Create(
       const base::string16& name,
@@ -57,30 +60,30 @@ class CONTENT_EXPORT IndexedDBDatabase
   const Identifier& identifier() const { return identifier_; }
   IndexedDBBackingStore* backing_store() { return backing_store_.get(); }
 
-  int64 id() const { return metadata_.id; }
+  int64_t id() const { return metadata_.id; }
   const base::string16& name() const { return metadata_.name; }
 
   void AddObjectStore(const IndexedDBObjectStoreMetadata& metadata,
-                      int64 new_max_object_store_id);
-  void RemoveObjectStore(int64 object_store_id);
-  void AddIndex(int64 object_store_id,
+                      int64_t new_max_object_store_id);
+  void RemoveObjectStore(int64_t object_store_id);
+  void AddIndex(int64_t object_store_id,
                 const IndexedDBIndexMetadata& metadata,
-                int64 new_max_index_id);
-  void RemoveIndex(int64 object_store_id, int64 index_id);
+                int64_t new_max_index_id);
+  void RemoveIndex(int64_t object_store_id, int64_t index_id);
 
   void OpenConnection(const IndexedDBPendingConnection& connection);
   void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks);
   const IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 
-  void CreateObjectStore(int64 transaction_id,
-                         int64 object_store_id,
+  void CreateObjectStore(int64_t transaction_id,
+                         int64_t object_store_id,
                          const base::string16& name,
                          const IndexedDBKeyPath& key_path,
                          bool auto_increment);
-  void DeleteObjectStore(int64 transaction_id, int64 object_store_id);
-  void CreateTransaction(int64 transaction_id,
+  void DeleteObjectStore(int64_t transaction_id, int64_t object_store_id);
+  void CreateTransaction(int64_t transaction_id,
                          IndexedDBConnection* connection,
-                         const std::vector<int64>& object_store_ids,
+                         const std::vector<int64_t>& object_store_ids,
                          blink::WebIDBTransactionMode mode);
   void Close(IndexedDBConnection* connection, bool forced);
   void ForceClose();
@@ -90,18 +93,20 @@ class CONTENT_EXPORT IndexedDBDatabase
   // pending connection.
   void VersionChangeIgnored();
 
-  void Commit(int64 transaction_id);
-  void Abort(int64 transaction_id);
-  void Abort(int64 transaction_id, const IndexedDBDatabaseError& error);
+  void Commit(int64_t transaction_id);
+  void Abort(int64_t transaction_id);
+  void Abort(int64_t transaction_id, const IndexedDBDatabaseError& error);
 
-  void CreateIndex(int64 transaction_id,
-                   int64 object_store_id,
-                   int64 index_id,
+  void CreateIndex(int64_t transaction_id,
+                   int64_t object_store_id,
+                   int64_t index_id,
                    const base::string16& name,
                    const IndexedDBKeyPath& key_path,
                    bool unique,
                    bool multi_entry);
-  void DeleteIndex(int64 transaction_id, int64 object_store_id, int64 index_id);
+  void DeleteIndex(int64_t transaction_id,
+                   int64_t object_store_id,
+                   int64_t index_id);
 
   IndexedDBTransactionCoordinator& transaction_coordinator() {
     return transaction_coordinator_;
@@ -116,53 +121,53 @@ class CONTENT_EXPORT IndexedDBDatabase
   // Called by transactions to report failure committing to the backing store.
   void TransactionCommitFailed(const leveldb::Status& status);
 
-  void Get(int64 transaction_id,
-           int64 object_store_id,
-           int64 index_id,
+  void Get(int64_t transaction_id,
+           int64_t object_store_id,
+           int64_t index_id,
            scoped_ptr<IndexedDBKeyRange> key_range,
            bool key_only,
            scoped_refptr<IndexedDBCallbacks> callbacks);
-  void GetAll(int64 transaction_id,
-              int64 object_store_id,
-              int64 index_id,
+  void GetAll(int64_t transaction_id,
+              int64_t object_store_id,
+              int64_t index_id,
               scoped_ptr<IndexedDBKeyRange> key_range,
               bool key_only,
-              int64 max_count,
+              int64_t max_count,
               scoped_refptr<IndexedDBCallbacks> callbacks);
-  void Put(int64 transaction_id,
-           int64 object_store_id,
+  void Put(int64_t transaction_id,
+           int64_t object_store_id,
            IndexedDBValue* value,
            ScopedVector<storage::BlobDataHandle>* handles,
            scoped_ptr<IndexedDBKey> key,
            blink::WebIDBPutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,
            const std::vector<IndexKeys>& index_keys);
-  void SetIndexKeys(int64 transaction_id,
-                    int64 object_store_id,
+  void SetIndexKeys(int64_t transaction_id,
+                    int64_t object_store_id,
                     scoped_ptr<IndexedDBKey> primary_key,
                     const std::vector<IndexKeys>& index_keys);
-  void SetIndexesReady(int64 transaction_id,
-                       int64 object_store_id,
-                       const std::vector<int64>& index_ids);
-  void OpenCursor(int64 transaction_id,
-                  int64 object_store_id,
-                  int64 index_id,
+  void SetIndexesReady(int64_t transaction_id,
+                       int64_t object_store_id,
+                       const std::vector<int64_t>& index_ids);
+  void OpenCursor(int64_t transaction_id,
+                  int64_t object_store_id,
+                  int64_t index_id,
                   scoped_ptr<IndexedDBKeyRange> key_range,
                   blink::WebIDBCursorDirection,
                   bool key_only,
                   blink::WebIDBTaskType task_type,
                   scoped_refptr<IndexedDBCallbacks> callbacks);
-  void Count(int64 transaction_id,
-             int64 object_store_id,
-             int64 index_id,
+  void Count(int64_t transaction_id,
+             int64_t object_store_id,
+             int64_t index_id,
              scoped_ptr<IndexedDBKeyRange> key_range,
              scoped_refptr<IndexedDBCallbacks> callbacks);
-  void DeleteRange(int64 transaction_id,
-                   int64 object_store_id,
+  void DeleteRange(int64_t transaction_id,
+                   int64_t object_store_id,
                    scoped_ptr<IndexedDBKeyRange> key_range,
                    scoped_refptr<IndexedDBCallbacks> callbacks);
-  void Clear(int64 transaction_id,
-             int64 object_store_id,
+  void Clear(int64_t transaction_id,
+             int64_t object_store_id,
              scoped_refptr<IndexedDBCallbacks> callbacks);
 
   // Number of connections that have progressed passed initial open call.
@@ -177,41 +182,40 @@ class CONTENT_EXPORT IndexedDBDatabase
   size_t PendingDeleteCount() const;
 
   // Asynchronous tasks scheduled within transactions:
-  void CreateObjectStoreAbortOperation(int64 object_store_id,
+  void CreateObjectStoreAbortOperation(int64_t object_store_id,
                                        IndexedDBTransaction* transaction);
-  void DeleteObjectStoreOperation(
-      int64 object_store_id,
-      IndexedDBTransaction* transaction);
+  void DeleteObjectStoreOperation(int64_t object_store_id,
+                                  IndexedDBTransaction* transaction);
   void DeleteObjectStoreAbortOperation(
       const IndexedDBObjectStoreMetadata& object_store_metadata,
       IndexedDBTransaction* transaction);
-  void VersionChangeOperation(int64 version,
+  void VersionChangeOperation(int64_t version,
                               scoped_refptr<IndexedDBCallbacks> callbacks,
                               scoped_ptr<IndexedDBConnection> connection,
                               IndexedDBTransaction* transaction);
   void VersionChangeAbortOperation(const base::string16& previous_version,
-                                   int64 previous_int_version,
+                                   int64_t previous_int_version,
                                    IndexedDBTransaction* transaction);
-  void DeleteIndexOperation(int64 object_store_id,
-                            int64 index_id,
+  void DeleteIndexOperation(int64_t object_store_id,
+                            int64_t index_id,
                             IndexedDBTransaction* transaction);
-  void CreateIndexAbortOperation(int64 object_store_id,
-                                 int64 index_id,
+  void CreateIndexAbortOperation(int64_t object_store_id,
+                                 int64_t index_id,
                                  IndexedDBTransaction* transaction);
-  void DeleteIndexAbortOperation(int64 object_store_id,
+  void DeleteIndexAbortOperation(int64_t object_store_id,
                                  const IndexedDBIndexMetadata& index_metadata,
                                  IndexedDBTransaction* transaction);
-  void GetOperation(int64 object_store_id,
-                    int64 index_id,
+  void GetOperation(int64_t object_store_id,
+                    int64_t index_id,
                     scoped_ptr<IndexedDBKeyRange> key_range,
                     indexed_db::CursorType cursor_type,
                     scoped_refptr<IndexedDBCallbacks> callbacks,
                     IndexedDBTransaction* transaction);
-  void GetAllOperation(int64 object_store_id,
-                       int64 index_id,
+  void GetAllOperation(int64_t object_store_id,
+                       int64_t index_id,
                        scoped_ptr<IndexedDBKeyRange> key_range,
                        indexed_db::CursorType cursor_type,
-                       int64 max_count,
+                       int64_t max_count,
                        scoped_refptr<IndexedDBCallbacks> callbacks,
                        IndexedDBTransaction* transaction);
   struct PutOperationParams;
@@ -222,16 +226,16 @@ class CONTENT_EXPORT IndexedDBDatabase
   struct OpenCursorOperationParams;
   void OpenCursorOperation(scoped_ptr<OpenCursorOperationParams> params,
                            IndexedDBTransaction* transaction);
-  void CountOperation(int64 object_store_id,
-                      int64 index_id,
+  void CountOperation(int64_t object_store_id,
+                      int64_t index_id,
                       scoped_ptr<IndexedDBKeyRange> key_range,
                       scoped_refptr<IndexedDBCallbacks> callbacks,
                       IndexedDBTransaction* transaction);
-  void DeleteRangeOperation(int64 object_store_id,
+  void DeleteRangeOperation(int64_t object_store_id,
                             scoped_ptr<IndexedDBKeyRange> key_range,
                             scoped_refptr<IndexedDBCallbacks> callbacks,
                             IndexedDBTransaction* transaction);
-  void ClearOperation(int64 object_store_id,
+  void ClearOperation(int64_t object_store_id,
                       scoped_refptr<IndexedDBCallbacks> callbacks,
                       IndexedDBTransaction* transaction);
 
@@ -253,7 +257,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   class PendingSuccessCall;
   class PendingUpgradeCall;
 
-  typedef std::map<int64, IndexedDBTransaction*> TransactionMap;
+  typedef std::map<int64_t, IndexedDBTransaction*> TransactionMap;
   typedef std::list<IndexedDBPendingConnection> PendingOpenCallList;
   typedef std::list<PendingDeleteCall*> PendingDeleteCallList;
   typedef list_set<IndexedDBConnection*> ConnectionSet;
@@ -262,13 +266,13 @@ class CONTENT_EXPORT IndexedDBDatabase
   leveldb::Status OpenInternal();
   void RunVersionChangeTransaction(scoped_refptr<IndexedDBCallbacks> callbacks,
                                    scoped_ptr<IndexedDBConnection> connection,
-                                   int64 transaction_id,
-                                   int64 requested_version);
+                                   int64_t transaction_id,
+                                   int64_t requested_version);
   void RunVersionChangeTransactionFinal(
       scoped_refptr<IndexedDBCallbacks> callbacks,
       scoped_ptr<IndexedDBConnection> connection,
-      int64 transaction_id,
-      int64 requested_version);
+      int64_t transaction_id,
+      int64_t requested_version);
   void ProcessPendingCalls();
 
   bool IsDeleteDatabaseBlocked() const;
@@ -278,15 +282,15 @@ class CONTENT_EXPORT IndexedDBDatabase
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       int child_process_id);
 
-  IndexedDBTransaction* GetTransaction(int64 transaction_id) const;
+  IndexedDBTransaction* GetTransaction(int64_t transaction_id) const;
 
-  bool ValidateObjectStoreId(int64 object_store_id) const;
-  bool ValidateObjectStoreIdAndIndexId(int64 object_store_id,
-                                       int64 index_id) const;
-  bool ValidateObjectStoreIdAndOptionalIndexId(int64 object_store_id,
-                                               int64 index_id) const;
-  bool ValidateObjectStoreIdAndNewIndexId(int64 object_store_id,
-                                          int64 index_id) const;
+  bool ValidateObjectStoreId(int64_t object_store_id) const;
+  bool ValidateObjectStoreIdAndIndexId(int64_t object_store_id,
+                                       int64_t index_id) const;
+  bool ValidateObjectStoreIdAndOptionalIndexId(int64_t object_store_id,
+                                               int64_t index_id) const;
+  bool ValidateObjectStoreIdAndNewIndexId(int64_t object_store_id,
+                                          int64_t index_id) const;
 
   scoped_refptr<IndexedDBBackingStore> backing_store_;
   IndexedDBDatabaseMetadata metadata_;

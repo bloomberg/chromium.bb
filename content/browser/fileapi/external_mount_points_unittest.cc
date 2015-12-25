@@ -4,9 +4,12 @@
 
 #include "storage/browser/fileapi/external_mount_points.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "testing/gtest/include/gtest/gtest.h"

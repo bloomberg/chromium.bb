@@ -5,10 +5,14 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_AREA_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_AREA_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/nullable_string16.h"
@@ -47,14 +51,14 @@ class CONTENT_EXPORT DOMStorageArea
                  DOMStorageTaskRunner* task_runner);
 
   // Session storage. Backed on disk if |session_storage_backing| is not NULL.
-  DOMStorageArea(int64 namespace_id,
+  DOMStorageArea(int64_t namespace_id,
                  const std::string& persistent_namespace_id,
                  const GURL& origin,
                  SessionStorageDatabase* session_storage_backing,
                  DOMStorageTaskRunner* task_runner);
 
   const GURL& origin() const { return origin_; }
-  int64 namespace_id() const { return namespace_id_; }
+  int64_t namespace_id() const { return namespace_id_; }
 
   // Writes a copy of the current set of values in the area to the |map|.
   void ExtractValues(DOMStorageValuesMap* map);
@@ -69,7 +73,7 @@ class CONTENT_EXPORT DOMStorageArea
   void FastClear();
 
   DOMStorageArea* ShallowCopy(
-      int64 destination_namespace_id,
+      int64_t destination_namespace_id,
       const std::string& destination_persistent_namespace_id);
 
   bool HasUncommittedChanges() const;
@@ -161,7 +165,7 @@ class CONTENT_EXPORT DOMStorageArea
 
   static bool s_aggressive_flushing_enabled_;
 
-  int64 namespace_id_;
+  int64_t namespace_id_;
   std::string persistent_namespace_id_;
   GURL origin_;
   base::FilePath directory_;

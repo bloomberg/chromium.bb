@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/bind.h"
@@ -135,9 +137,9 @@ class DatabaseQuotaClientTest : public testing::Test {
         weak_factory_(this) {
   }
 
-  int64 GetOriginUsage(storage::QuotaClient* client,
-                       const GURL& origin,
-                       storage::StorageType type) {
+  int64_t GetOriginUsage(storage::QuotaClient* client,
+                         const GURL& origin,
+                         storage::StorageType type) {
     usage_ = 0;
     client->GetOriginUsage(
         origin, type,
@@ -186,9 +188,7 @@ class DatabaseQuotaClientTest : public testing::Test {
 
 
  private:
-  void OnGetOriginUsageComplete(int64 usage) {
-    usage_ = usage;
-  }
+  void OnGetOriginUsageComplete(int64_t usage) { usage_ = usage; }
 
   void OnGetOriginsComplete(const std::set<GURL>& origins) {
     origins_ = origins;
@@ -199,7 +199,7 @@ class DatabaseQuotaClientTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  int64 usage_;
+  int64_t usage_;
   std::set<GURL> origins_;
   storage::QuotaStatusCode delete_status_;
   scoped_refptr<MockDatabaseTracker> mock_tracker_;

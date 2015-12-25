@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/mojo/mojo_shell_client_host.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"

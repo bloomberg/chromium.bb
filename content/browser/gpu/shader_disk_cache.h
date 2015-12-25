@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_GPU_SHADER_DISK_CACHE_H_
 #define CONTENT_BROWSER_GPU_SHADER_DISK_CACHE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
@@ -55,7 +58,7 @@ class CONTENT_EXPORT ShaderDiskCache
   int SetAvailableCallback(const net::CompletionCallback& callback);
 
   // Returns the number of elements currently in the cache.
-  int32 Size();
+  int32_t Size();
 
   // Set a callback notification for when all current entries have been
   // written to the cache.
@@ -111,13 +114,13 @@ class CONTENT_EXPORT ShaderCacheFactory {
                    const base::Closure& callback);
 
   // Retrieve the shader disk cache for the provided |client_id|.
-  scoped_refptr<ShaderDiskCache> Get(int32 client_id);
+  scoped_refptr<ShaderDiskCache> Get(int32_t client_id);
 
   // Set the |path| to be used for the disk cache for |client_id|.
-  void SetCacheInfo(int32 client_id, const base::FilePath& path);
+  void SetCacheInfo(int32_t client_id, const base::FilePath& path);
 
   // Remove the path mapping for |client_id|.
-  void RemoveCacheInfo(int32 client_id);
+  void RemoveCacheInfo(int32_t client_id);
 
   // Set the provided |cache| into the cache map for the given |path|.
   void AddToCache(const base::FilePath& path, ShaderDiskCache* cache);
@@ -138,7 +141,7 @@ class CONTENT_EXPORT ShaderCacheFactory {
   typedef std::map<base::FilePath, ShaderDiskCache*> ShaderCacheMap;
   ShaderCacheMap shader_cache_map_;
 
-  typedef std::map<int32, base::FilePath> ClientIdToPathMap;
+  typedef std::map<int32_t, base::FilePath> ClientIdToPathMap;
   ClientIdToPathMap client_id_to_path_map_;
 
   typedef std::queue<scoped_refptr<ShaderClearHelper> > ShaderClearQueue;

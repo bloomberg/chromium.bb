@@ -4,6 +4,7 @@
 
 #include "content/browser/download/file_metadata_linux.h"
 
+#include <stddef.h>
 #include <sys/types.h>
 #include <sys/xattr.h>
 

@@ -5,6 +5,7 @@
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 
 #include <oleacc.h>
+#include <stdint.h>
 
 #include <string>
 
@@ -65,7 +66,7 @@ std::string BstrToUTF8(BSTR bstr) {
   return base::UTF16ToUTF8(str16);
 }
 
-std::string AccessibilityEventToStringUTF8(int32 event_id) {
+std::string AccessibilityEventToStringUTF8(int32_t event_id) {
   return base::UTF16ToUTF8(AccessibilityEventToString(event_id));
 }
 

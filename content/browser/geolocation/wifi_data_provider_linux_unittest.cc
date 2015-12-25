@@ -4,6 +4,9 @@
 
 #include "content/browser/geolocation/wifi_data_provider_linux.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -186,7 +189,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
         dbus::MessageWriter writer(response.get());
 
         if (property_name == "Ssid") {
-          const uint8 kSsid[] = {0x74, 0x65, 0x73, 0x74};  // "test"
+          const uint8_t kSsid[] = {0x74, 0x65, 0x73, 0x74};  // "test"
           dbus::MessageWriter variant_writer(response.get());
           writer.OpenVariant("ay", &variant_writer);
           variant_writer.AppendArrayOfBytes(kSsid, arraysize(kSsid));
@@ -197,11 +200,11 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
           writer.AppendVariantOfString(kMacAddress);
         } else if (property_name == "Strength") {
           // This will be converted to -50.
-          const uint8 kStrength = 100;
+          const uint8_t kStrength = 100;
           writer.AppendVariantOfByte(kStrength);
         } else if (property_name == "Frequency") {
           // This will be converted to channel 4.
-          const uint32 kFrequency = 2427;
+          const uint32_t kFrequency = 2427;
           writer.AppendVariantOfUint32(kFrequency);
         }
         return response.release();

@@ -5,6 +5,7 @@
 #include "content/browser/time_zone_monitor.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "third_party/icu/source/common/unicode/unistr.h"

@@ -4,12 +4,15 @@
 
 #include "storage/browser/fileapi/quota/quota_reservation_manager.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -28,17 +31,17 @@ namespace {
 
 const char kOrigin[] = "http://example.com";
 const storage::FileSystemType kType = kFileSystemTypeTemporary;
-const int64 kInitialFileSize = 1;
+const int64_t kInitialFileSize = 1;
 
 typedef QuotaReservationManager::ReserveQuotaCallback ReserveQuotaCallback;
 
-int64 GetFileSize(const base::FilePath& path) {
-  int64 size = 0;
+int64_t GetFileSize(const base::FilePath& path) {
+  int64_t size = 0;
   base::GetFileSize(path, &size);
   return size;
 }
 
-void SetFileSize(const base::FilePath& path, int64 size) {
+void SetFileSize(const base::FilePath& path, int64_t size) {
   base::File file(path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE);
   ASSERT_TRUE(file.IsValid());
   ASSERT_TRUE(file.SetLength(size));
@@ -53,7 +56,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   void ReserveQuota(const GURL& origin,
                     storage::FileSystemType type,
-                    int64 delta,
+                    int64_t delta,
                     const ReserveQuotaCallback& callback) override {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
@@ -65,7 +68,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   void ReleaseReservedQuota(const GURL& origin,
                             storage::FileSystemType type,
-                            int64 size) override {
+                            int64_t size) override {
     EXPECT_LE(0, size);
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
@@ -74,7 +77,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   void CommitQuotaUsage(const GURL& origin,
                         storage::FileSystemType type,
-                        int64 delta) override {
+                        int64_t delta) override {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
     on_disk_usage_ += delta;
@@ -86,12 +89,12 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   void DecrementDirtyCount(const GURL& origin,
                            storage::FileSystemType type) override {}
 
-  int64 on_memory_usage() { return on_memory_usage_; }
-  int64 on_disk_usage() { return on_disk_usage_; }
+  int64_t on_memory_usage() { return on_memory_usage_; }
+  int64_t on_disk_usage() { return on_disk_usage_; }
 
  private:
-  int64 on_memory_usage_;
-  int64 on_disk_usage_;
+  int64_t on_memory_usage_;
+  int64_t on_disk_usage_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBackend);
 };
@@ -111,8 +114,8 @@ class FakeWriter {
       EXPECT_FALSE(dirty_);
   }
 
-  int64 Truncate(int64 length) {
-    int64 consumed = 0;
+  int64_t Truncate(int64_t length) {
+    int64_t consumed = 0;
 
     if (max_written_offset_ < length) {
       consumed = length - max_written_offset_;
@@ -122,10 +125,10 @@ class FakeWriter {
     return consumed;
   }
 
-  int64 Write(int64 max_offset) {
+  int64_t Write(int64_t max_offset) {
     dirty_ = true;
 
-    int64 consumed = 0;
+    int64_t consumed = 0;
     if (max_written_offset_ < max_offset) {
       consumed = max_offset - max_written_offset_;
       max_written_offset_ = max_offset;
@@ -135,7 +138,7 @@ class FakeWriter {
     return consumed;
   }
 
-  int64 Append(int64 amount) {
+  int64_t Append(int64_t amount) {
     dirty_ = true;
     append_mode_write_amount_ += amount;
     SetFileSize(path_, GetFileSize(path_) + amount);
@@ -157,8 +160,8 @@ class FakeWriter {
  private:
   scoped_ptr<OpenFileHandle> handle_;
   base::FilePath path_;
-  int64 max_written_offset_;
-  int64 append_mode_write_amount_;
+  int64_t max_written_offset_;
+  int64_t append_mode_write_amount_;
   bool dirty_;
 };
 
@@ -168,7 +171,7 @@ void ExpectSuccess(bool* done, base::File::Error error) {
   EXPECT_EQ(base::File::FILE_OK, error);
 }
 
-void RefreshReservation(QuotaReservation* reservation, int64 size) {
+void RefreshReservation(QuotaReservation* reservation, int64_t size) {
   DCHECK(reservation);
 
   bool done = false;
@@ -222,7 +225,7 @@ TEST_F(QuotaReservationManagerTest, BasicTest) {
 
   {
     RefreshReservation(reservation.get(), 10 + 20 + 3);
-    int64 cached_reserved_quota = reservation->remaining_quota();
+    int64_t cached_reserved_quota = reservation->remaining_quota();
     FakeWriter writer(reservation->GetOpenFileHandle(file_path()));
 
     cached_reserved_quota -= writer.Write(kInitialFileSize + 10);
@@ -263,7 +266,7 @@ TEST_F(QuotaReservationManagerTest, MultipleWriter) {
 
   {
     RefreshReservation(reservation.get(), 10 + 20 + 30 + 40 + 5);
-    int64 cached_reserved_quota = reservation->remaining_quota();
+    int64_t cached_reserved_quota = reservation->remaining_quota();
     FakeWriter writer1(reservation->GetOpenFileHandle(file_path()));
     FakeWriter writer2(reservation->GetOpenFileHandle(file_path()));
     FakeWriter writer3(reservation->GetOpenFileHandle(file_path()));
@@ -295,12 +298,12 @@ TEST_F(QuotaReservationManagerTest, MultipleClient) {
   scoped_refptr<QuotaReservation> reservation1 =
       reservation_manager()->CreateReservation(GURL(kOrigin), kType);
   RefreshReservation(reservation1.get(), 10);
-  int64 cached_reserved_quota1 = reservation1->remaining_quota();
+  int64_t cached_reserved_quota1 = reservation1->remaining_quota();
 
   scoped_refptr<QuotaReservation> reservation2 =
       reservation_manager()->CreateReservation(GURL(kOrigin), kType);
   RefreshReservation(reservation2.get(), 20);
-  int64 cached_reserved_quota2 = reservation2->remaining_quota();
+  int64_t cached_reserved_quota2 = reservation2->remaining_quota();
 
   scoped_ptr<FakeWriter> writer1(
       new FakeWriter(reservation1->GetOpenFileHandle(file_path())));

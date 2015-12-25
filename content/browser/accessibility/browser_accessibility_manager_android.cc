@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/android/jni_android.h"
@@ -700,12 +702,15 @@ jboolean BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
 }
 
 bool BrowserAccessibilityManagerAndroid::NextAtGranularity(
-    int32 granularity, int32 cursor_index,
-    BrowserAccessibilityAndroid* node, int32* start_index, int32* end_index) {
+    int32_t granularity,
+    int32_t cursor_index,
+    BrowserAccessibilityAndroid* node,
+    int32_t* start_index,
+    int32_t* end_index) {
   switch (granularity) {
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_CHARACTER: {
       base::string16 text = node->GetText();
-      if (cursor_index >= static_cast<int32>(text.length()))
+      if (cursor_index >= static_cast<int32_t>(text.length()))
         return false;
       base::i18n::UTF16CharIterator iter(text.data(), text.size());
       while (!iter.end() && iter.array_pos() <= cursor_index)
@@ -716,8 +721,8 @@ bool BrowserAccessibilityManagerAndroid::NextAtGranularity(
     }
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_WORD:
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_LINE: {
-      std::vector<int32> starts;
-      std::vector<int32> ends;
+      std::vector<int32_t> starts;
+      std::vector<int32_t> ends;
       node->GetGranularityBoundaries(granularity, &starts, &ends, 0);
       if (starts.size() == 0)
         return false;
@@ -741,8 +746,11 @@ bool BrowserAccessibilityManagerAndroid::NextAtGranularity(
 }
 
 bool BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
-    int32 granularity, int32 cursor_index,
-    BrowserAccessibilityAndroid* node, int32* start_index, int32* end_index) {
+    int32_t granularity,
+    int32_t cursor_index,
+    BrowserAccessibilityAndroid* node,
+    int32_t* start_index,
+    int32_t* end_index) {
   switch (granularity) {
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_CHARACTER: {
       if (cursor_index <= 0)
@@ -760,8 +768,8 @@ bool BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
     }
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_WORD:
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_LINE: {
-      std::vector<int32> starts;
-      std::vector<int32> ends;
+      std::vector<int32_t> starts;
+      std::vector<int32_t> ends;
       node->GetGranularityBoundaries(granularity, &starts, &ends, 0);
       if (starts.size() == 0)
         return false;

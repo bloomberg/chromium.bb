@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
@@ -48,7 +51,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate);
 
-  void GetExtraResponseInfo(int64* cache_id, GURL* manifest_url);
+  void GetExtraResponseInfo(int64_t* cache_id, GURL* manifest_url);
 
   // Methods to support cross site navigations.
   void PrepareForCrossSiteTransfer(int old_process_id);
@@ -72,8 +75,10 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // Helpers to instruct a waiting job with what response to
   // deliver for the request we're handling.
-  void DeliverAppCachedResponse(const AppCacheEntry& entry, int64 cache_id,
-                                int64 group_id, const GURL& manifest_url,
+  void DeliverAppCachedResponse(const AppCacheEntry& entry,
+                                int64_t cache_id,
+                                int64_t group_id,
+                                const GURL& manifest_url,
                                 bool is_fallback,
                                 const GURL& namespace_entry_url);
   void DeliverNetworkResponse();
@@ -108,8 +113,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
                            const AppCacheEntry& entry,
                            const GURL& fallback_url,
                            const AppCacheEntry& fallback_entry,
-                           int64 cache_id,
-                           int64 group_id,
+                           int64_t cache_id,
+                           int64_t group_id,
                            const GURL& mainfest_url) override;
 
   // Sub-resource loading -------------------------------------
@@ -139,8 +144,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // Info about the type of response we found for delivery.
   // These are relevant for both main and subresource requests.
-  int64 found_group_id_;
-  int64 found_cache_id_;
+  int64_t found_group_id_;
+  int64_t found_cache_id_;
   AppCacheEntry found_entry_;
   AppCacheEntry found_fallback_entry_;
   GURL found_namespace_entry_url_;

@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/aura/shadow_layer_delegate.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"

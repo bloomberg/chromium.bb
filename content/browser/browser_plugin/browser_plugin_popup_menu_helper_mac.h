@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_POPUP_MENU_HELPER_MAC_H_
 #define CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_POPUP_MENU_HELPER_MAC_H_
 
+#include "base/macros.h"
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 
 namespace content {

@@ -40,7 +40,7 @@ class AppCacheGroup::HostObserver : public AppCacheHost::Observer {
 
 AppCacheGroup::AppCacheGroup(AppCacheStorage* storage,
                              const GURL& manifest_url,
-                             int64 group_id)
+                             int64_t group_id)
     : group_id_(group_id),
       manifest_url_(manifest_url),
       update_status_(IDLE),
@@ -137,7 +137,7 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
 }
 
 void AppCacheGroup::AddNewlyDeletableResponseIds(
-    std::vector<int64>* response_ids) {
+    std::vector<int64_t>* response_ids) {
   if (is_being_deleted() || (!is_obsolete() && old_caches_.empty())) {
     storage_->DeleteResponses(manifest_url_, *response_ids);
     response_ids->clear();

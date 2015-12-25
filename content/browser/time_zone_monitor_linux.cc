@@ -4,16 +4,18 @@
 
 #include "content/browser/time_zone_monitor.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 
 #if !defined(OS_CHROMEOS)

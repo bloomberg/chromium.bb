@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <iterator>
 #include <set>
@@ -10,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "sql/connection.h"
@@ -87,7 +91,7 @@ class QuotaDatabaseTest : public testing::Test {
     const int kQuota1 = 13579;
     const int kQuota2 = kQuota1 + 1024;
 
-    int64 quota = -1;
+    int64_t quota = -1;
     EXPECT_FALSE(db.GetHostQuota(kHost, kStorageTypeTemporary, &quota));
     EXPECT_FALSE(db.GetHostQuota(kHost, kStorageTypePersistent, &quota));
 
@@ -116,9 +120,9 @@ class QuotaDatabaseTest : public testing::Test {
     const char* kTempQuotaKey = QuotaDatabase::kTemporaryQuotaOverrideKey;
     const char* kAvailSpaceKey = QuotaDatabase::kDesiredAvailableSpaceKey;
 
-    int64 value = 0;
-    const int64 kValue1 = 456;
-    const int64 kValue2 = 123000;
+    int64_t value = 0;
+    const int64_t kValue1 = 456;
+    const int64_t kValue2 = 123000;
     EXPECT_FALSE(db.GetQuotaConfigValue(kTempQuotaKey, &value));
     EXPECT_FALSE(db.GetQuotaConfigValue(kAvailSpaceKey, &value));
 

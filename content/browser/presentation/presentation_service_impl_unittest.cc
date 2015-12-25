@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -661,8 +664,8 @@ TEST_F(PresentationServiceImplTest, SendStringMessage) {
 
 TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
   // Test Array buffer data.
-  const uint8 buffer[] = {0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48};
-  std::vector<uint8> data;
+  const uint8_t buffer[] = {0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48};
+  std::vector<uint8_t> data;
   data.assign(buffer, buffer + sizeof(buffer));
 
   presentation::PresentationSessionInfoPtr session(
@@ -673,7 +676,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
       presentation::SessionMessage::New());
   message_request->type = presentation::PresentationMessageType::
                           PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
-  message_request->data = mojo::Array<uint8>::From(data);
+  message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       session.Pass(), message_request.Pass(),
       base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
@@ -705,9 +708,9 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
   // Create buffer with size exceeding the limit.
   // Use same size as in content::kMaxPresentationSessionMessageSize.
   const size_t kMaxBufferSizeInBytes = 64 * 1024;  // 64 KB.
-  uint8 buffer[kMaxBufferSizeInBytes+1];
+  uint8_t buffer[kMaxBufferSizeInBytes + 1];
   memset(buffer, 0, kMaxBufferSizeInBytes+1);
-  std::vector<uint8> data;
+  std::vector<uint8_t> data;
   data.assign(buffer, buffer + sizeof(buffer));
 
   presentation::PresentationSessionInfoPtr session(
@@ -718,7 +721,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
       presentation::SessionMessage::New());
   message_request->type = presentation::PresentationMessageType::
                           PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
-  message_request->data = mojo::Array<uint8>::From(data);
+  message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       session.Pass(), message_request.Pass(),
       base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
@@ -738,8 +741,8 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
 }
 
 TEST_F(PresentationServiceImplTest, SendBlobData) {
-  const uint8 buffer[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
-  std::vector<uint8> data;
+  const uint8_t buffer[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+  std::vector<uint8_t> data;
   data.assign(buffer, buffer + sizeof(buffer));
 
   presentation::PresentationSessionInfoPtr session(
@@ -750,7 +753,7 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
       presentation::SessionMessage::New());
   message_request->type =
       presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB;
-  message_request->data = mojo::Array<uint8>::From(data);
+  message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       session.Pass(), message_request.Pass(),
       base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,

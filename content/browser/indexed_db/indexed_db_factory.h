@@ -5,13 +5,15 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_FACTORY_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_FACTORY_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"

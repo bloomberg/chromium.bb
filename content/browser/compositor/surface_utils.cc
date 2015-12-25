@@ -4,6 +4,7 @@
 
 #include "content/browser/compositor/surface_utils.h"
 
+#include "build/build_config.h"
 #include "cc/surfaces/surface_id_allocator.h"
 
 #if defined(OS_ANDROID) && !defined(USE_AURA)

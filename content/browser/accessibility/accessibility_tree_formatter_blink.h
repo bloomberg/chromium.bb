@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_BLINK_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_BLINK_H_
 
+#include <stdint.h>
+
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 
 namespace content {
@@ -20,9 +22,9 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBlink
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
-  uint32 ChildCount(const BrowserAccessibility& node) const override;
-  BrowserAccessibility* GetChild(
-      const BrowserAccessibility& node, uint32 i) const override;
+  uint32_t ChildCount(const BrowserAccessibility& node) const override;
+  BrowserAccessibility* GetChild(const BrowserAccessibility& node,
+                                 uint32_t i) const override;
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) override;
   base::string16 ToString(const base::DictionaryValue& node) override;

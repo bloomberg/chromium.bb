@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -105,7 +106,7 @@ int g_next_javascript_callback_id = 1;
 bool g_allow_injecting_javascript = false;
 
 // The (process id, routing id) pair that identifies one RenderFrame.
-typedef std::pair<int32, int32> RenderFrameHostID;
+typedef std::pair<int32_t, int32_t> RenderFrameHostID;
 typedef base::hash_map<RenderFrameHostID, RenderFrameHostImpl*>
     RoutingIDFrameMap;
 base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
@@ -176,8 +177,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                          RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
-                                         int32 routing_id,
-                                         int32 widget_routing_id,
+                                         int32_t routing_id,
+                                         int32_t widget_routing_id,
                                          int flags)
     : render_view_host_(render_view_host),
       delegate_(delegate),
@@ -768,9 +769,9 @@ void RenderFrameHostImpl::Init() {
 }
 
 void RenderFrameHostImpl::OnAddMessageToConsole(
-    int32 level,
+    int32_t level,
     const base::string16& message,
-    int32 line_no,
+    int32_t line_no,
     const base::string16& source_id) {
   if (delegate_->AddMessageToConsole(level, message, line_no, source_id))
     return;
@@ -778,7 +779,7 @@ void RenderFrameHostImpl::OnAddMessageToConsole(
   // Pass through log level only on WebUI pages to limit console spew.
   const bool is_web_ui =
       HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL());
-  const int32 resolved_level = is_web_ui ? level : ::logging::LOG_INFO;
+  const int32_t resolved_level = is_web_ui ? level : ::logging::LOG_INFO;
 
   // LogMessages can be persisted so this shouldn't be logged in incognito mode.
   // This rule is not applied to WebUI pages, because source code of WebUI is a
@@ -1334,7 +1335,7 @@ void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
   }
 }
 
-void RenderFrameHostImpl::OnVisualStateResponse(uint64 id) {
+void RenderFrameHostImpl::OnVisualStateResponse(uint64_t id) {
   auto it = visual_state_callbacks_.find(id);
   if (it != visual_state_callbacks_.end()) {
     it->second.Run(true);
@@ -1382,7 +1383,7 @@ void RenderFrameHostImpl::OnDidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
 }
 
-void RenderFrameHostImpl::OnDidChangeOpener(int32 opener_routing_id) {
+void RenderFrameHostImpl::OnDidChangeOpener(int32_t opener_routing_id) {
   frame_tree_node_->render_manager()->DidChangeOpener(opener_routing_id,
                                                       GetSiteInstance());
 }
@@ -1399,14 +1400,14 @@ void RenderFrameHostImpl::OnEnforceStrictMixedContentChecking() {
   frame_tree_node()->SetEnforceStrictMixedContentChecking(true);
 }
 
-void RenderFrameHostImpl::OnDidAssignPageId(int32 page_id) {
+void RenderFrameHostImpl::OnDidAssignPageId(int32_t page_id) {
   // Update the RVH's current page ID so that future IPCs from the renderer
   // correspond to the new page.
   render_view_host_->page_id_ = page_id;
 }
 
 FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
-    int32 child_frame_routing_id,
+    int32_t child_frame_routing_id,
     bad_message::BadMessageReason reason) {
   FrameTreeNode* child = frame_tree_node()->frame_tree()->FindByRoutingID(
       GetProcess()->GetID(), child_frame_routing_id);
@@ -1420,7 +1421,7 @@ FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
 }
 
 void RenderFrameHostImpl::OnDidChangeSandboxFlags(
-    int32 frame_routing_id,
+    int32_t frame_routing_id,
     blink::WebSandboxFlags flags) {
   // Ensure that a frame can only update sandbox flags for its immediate
   // children.  If this is not the case, the renderer is considered malicious
@@ -1445,7 +1446,7 @@ void RenderFrameHostImpl::OnDidChangeSandboxFlags(
 }
 
 void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
-    int32 frame_routing_id,
+    int32_t frame_routing_id,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   FrameTreeNode* child = FindAndVerifyChild(
       frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
@@ -2284,8 +2285,8 @@ void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
 
 void RenderFrameHostImpl::InsertVisualStateCallback(
     const VisualStateCallback& callback) {
-  static uint64 next_id = 1;
-  uint64 key = next_id++;
+  static uint64_t next_id = 1;
+  uint64_t key = next_id++;
   Send(new FrameMsg_VisualStateRequest(routing_id_, key));
   visual_state_callbacks_.insert(std::make_pair(key, callback));
 }
@@ -2491,7 +2492,7 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
   // instance IDs to generic attributes with global AXTreeIDs.
   for (auto iter : src.content_int_attributes) {
     AXContentIntAttribute attr = iter.first;
-    int32 value = iter.second;
+    int32_t value = iter.second;
     switch (attr) {
       case AX_CONTENT_ATTR_CHILD_ROUTING_ID:
         dst->int_attributes.push_back(std::make_pair(

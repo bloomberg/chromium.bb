@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_URL_DOWNLOADER_H_
 #define CONTENT_BROWSER_DOWNLOAD_URL_DOWNLOADER_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/download/download_request_core.h"
@@ -23,7 +25,7 @@ class UrlDownloader : public net::URLRequest::Delegate {
       scoped_ptr<net::URLRequest> request,
       base::WeakPtr<DownloadManagerImpl> manager,
       scoped_ptr<DownloadSaveInfo> save_info,
-      uint32 download_id,
+      uint32_t download_id,
       const DownloadUrlParameters::OnStartedCallback& on_started_callback);
   ~UrlDownloader() override;
 
@@ -33,7 +35,7 @@ class UrlDownloader : public net::URLRequest::Delegate {
       const Referrer& referrer,
       bool prefer_cache,
       scoped_ptr<DownloadSaveInfo> save_info,
-      uint32 download_id,
+      uint32_t download_id,
       const DownloadUrlParameters::OnStartedCallback& started_callback);
 
   // URLRequest::Delegate:
@@ -60,7 +62,7 @@ class UrlDownloader : public net::URLRequest::Delegate {
 
   scoped_ptr<net::URLRequest> request_;
   base::WeakPtr<DownloadManagerImpl> manager_;
-  uint32 download_id_;
+  uint32_t download_id_;
   DownloadUrlParameters::OnStartedCallback on_started_callback_;
 
   DownloadRequestCore handler_;

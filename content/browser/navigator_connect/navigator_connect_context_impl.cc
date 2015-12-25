@@ -4,6 +4,8 @@
 
 #include "content/browser/navigator_connect/navigator_connect_context_impl.h"
 
+#include <stdint.h>
+
 #include "content/browser/message_port_service.h"
 #include "content/browser/navigator_connect/service_port_service_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -30,7 +32,7 @@ struct NavigatorConnectContextImpl::Port {
 
   // If this port is associated with a service worker, these fields store that
   // information.
-  int64 service_worker_registration_id = kInvalidServiceWorkerRegistrationId;
+  int64_t service_worker_registration_id = kInvalidServiceWorkerRegistrationId;
   GURL service_worker_registration_origin;
 };
 

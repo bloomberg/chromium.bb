@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_UPDATE_JOB_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_UPDATE_JOB_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <set>
@@ -12,6 +15,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -63,7 +67,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
   typedef std::vector<AppCacheHost*> PendingHosts;
   typedef std::map<GURL, PendingHosts> PendingMasters;
   typedef std::map<GURL, URLFetcher*> PendingUrlFetches;
-  typedef std::map<int64, GURL> LoadingResponses;
+  typedef std::map<int64_t, GURL> LoadingResponses;
 
   static const int kRerunDelayMs = 1000;
 
@@ -166,7 +170,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   // Methods for AppCacheStorage::Delegate.
   void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
-                            int64 response_id) override;
+                            int64_t response_id) override;
   void OnGroupAndNewestCacheStored(AppCacheGroup* group,
                                    AppCache* newest_cache,
                                    bool success,
@@ -325,14 +329,14 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   // Response ids stored by this update job, used to cleanup in
   // error conditions.
-  std::vector<int64> stored_response_ids_;
+  std::vector<int64_t> stored_response_ids_;
 
   // In some cases we fetch the same resource multiple times, and then
   // have to delete the duplicates upon successful update. These ids
   // are also in the stored_response_ids_ collection so we only schedule
   // these for deletion on success.
   // TODO(michaeln): Rework when we no longer fetches master entries directly.
-  std::vector<int64> duplicate_response_ids_;
+  std::vector<int64_t> duplicate_response_ids_;
 
   // Whether we've stored the resulting group/cache yet.
   StoredState stored_state_;

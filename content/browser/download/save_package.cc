@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -18,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
@@ -64,21 +66,21 @@ const char kDefaultSaveName[] = "saved_resource";
 
 // Maximum number of file ordinal number. I think it's big enough for resolving
 // name-conflict files which has same base file name.
-const int32 kMaxFileOrdinalNumber = 9999;
+const int32_t kMaxFileOrdinalNumber = 9999;
 
 // Maximum length for file path. Since Windows have MAX_PATH limitation for
 // file path, we need to make sure length of file path of every saved file
 // is less than MAX_PATH
 #if defined(OS_WIN)
-const uint32 kMaxFilePathLength = MAX_PATH - 1;
+const uint32_t kMaxFilePathLength = MAX_PATH - 1;
 #elif defined(OS_POSIX)
-const uint32 kMaxFilePathLength = PATH_MAX - 1;
+const uint32_t kMaxFilePathLength = PATH_MAX - 1;
 #endif
 
 // Maximum length for file ordinal number part. Since we only support the
 // maximum 9999 for ordinal number, which means maximum file ordinal number part
 // should be "(9998)", so the value is 6.
-const uint32 kMaxFileOrdinalNumberPartLength = 6;
+const uint32_t kMaxFileOrdinalNumberPartLength = 6;
 
 // Strip current ordinal number, if any. Should only be used on pure
 // file names, i.e. those stripped of their extensions.
@@ -361,7 +363,7 @@ void SavePackage::InitWithDownloadItem(
   }
 }
 
-void SavePackage::OnMHTMLGenerated(int64 size) {
+void SavePackage::OnMHTMLGenerated(int64_t size) {
   if (size <= 0) {
     Cancel(false);
     return;
@@ -394,12 +396,12 @@ void SavePackage::OnMHTMLGenerated(int64 size) {
 // On POSIX, the length of |pure_file_name| + |file_name_ext| is further
 // restricted by NAME_MAX. The maximum allowed path looks like:
 // '/path/to/save_dir' + '/' + NAME_MAX.
-uint32 SavePackage::GetMaxPathLengthForDirectory(
+uint32_t SavePackage::GetMaxPathLengthForDirectory(
     const base::FilePath& base_dir) {
 #if defined(OS_POSIX)
-  return std::min(kMaxFilePathLength,
-                  static_cast<uint32>(base_dir.value().length()) +
-                  NAME_MAX + 1);
+  return std::min(
+      kMaxFilePathLength,
+      static_cast<uint32_t>(base_dir.value().length()) + NAME_MAX + 1);
 #else
   return kMaxFilePathLength;
 #endif
@@ -425,7 +427,7 @@ uint32 SavePackage::GetMaxPathLengthForDirectory(
 bool SavePackage::GetSafePureFileName(
     const base::FilePath& dir_path,
     const base::FilePath::StringType& file_name_ext,
-    uint32 max_file_path_len,
+    uint32_t max_file_path_len,
     base::FilePath::StringType* pure_file_name) {
   DCHECK(!pure_file_name->empty());
   int available_length = static_cast<int>(max_file_path_len -
@@ -476,7 +478,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
   }
 
   // Need to make sure the suggested file name is not too long.
-  uint32 max_path = GetMaxPathLengthForDirectory(saved_main_directory_path_);
+  uint32_t max_path = GetMaxPathLengthForDirectory(saved_main_directory_path_);
 
   // Get safe pure file name.
   if (!GetSafePureFileName(saved_main_directory_path_, file_name_ext,
@@ -503,7 +505,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
       return false;
 
     // Prepare the new ordinal number.
-    uint32 ordinal_number;
+    uint32_t ordinal_number;
     FileNameCountMap::iterator it = file_name_count_map_.find(base_file_name);
     if (it == file_name_count_map_.end()) {
       // First base-name-conflict resolving, use 1 as initial ordinal number.
@@ -625,7 +627,7 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   }
 }
 
-SaveItem* SavePackage::LookupSaveItemInProcess(int32 save_item_id) {
+SaveItem* SavePackage::LookupSaveItemInProcess(int32_t save_item_id) {
   auto it = in_progress_items_.find(save_item_id);
   if (it != in_progress_items_.end()) {
     SaveItem* save_item = it->second;
@@ -655,8 +657,8 @@ void SavePackage::PutInProgressItemToSavedMap(SaveItem* save_item) {
 }
 
 // Called for updating saving state.
-bool SavePackage::UpdateSaveProgress(int32 save_item_id,
-                                     int64 size,
+bool SavePackage::UpdateSaveProgress(int32_t save_item_id,
+                                     int64_t size,
                                      bool write_success) {
   // Because we might have canceled this saving job before,
   // so we might not find corresponding SaveItem.
@@ -794,8 +796,8 @@ void SavePackage::Finish() {
 }
 
 // Called for updating end state.
-void SavePackage::SaveFinished(int32 save_item_id,
-                               int64 size,
+void SavePackage::SaveFinished(int32_t save_item_id,
+                               int64_t size,
                                bool is_success) {
   // Because we might have canceled this saving job before,
   // so we might not find corresponding SaveItem. Just ignore it.
@@ -884,9 +886,9 @@ int SavePackage::PercentComplete() {
     return completed_count() / all_save_items_count_;
 }
 
-int64 SavePackage::CurrentSpeed() const {
+int64_t SavePackage::CurrentSpeed() const {
   base::TimeDelta diff = base::TimeTicks::Now() - start_tick_;
-  int64 diff_ms = diff.InMilliseconds();
+  int64_t diff_ms = diff.InMilliseconds();
   return diff_ms == 0 ? 0 : completed_count() * 1000 / diff_ms;
 }
 
@@ -1353,7 +1355,7 @@ const base::FilePath::CharType* SavePackage::ExtensionForMimeType(
 #elif defined(OS_WIN)
   base::FilePath::StringType mime_type(base::UTF8ToWide(contents_mime_type));
 #endif  // OS_WIN
-  for (uint32 i = 0; i < arraysize(extensions); ++i) {
+  for (uint32_t i = 0; i < arraysize(extensions); ++i) {
     if (mime_type == extensions[i].mime_type)
       return extensions[i].suggested_extension;
   }
@@ -1412,7 +1414,7 @@ void SavePackage::CreateDirectoryOnFileThread(
   base::FilePath::StringType file_name_ext = suggested_filename.Extension();
 
   // Need to make sure the suggested file name is not too long.
-  uint32 max_path = GetMaxPathLengthForDirectory(save_dir);
+  uint32_t max_path = GetMaxPathLengthForDirectory(save_dir);
 
   if (GetSafePureFileName(save_dir, file_name_ext, max_path, &pure_file_name)) {
     save_dir = save_dir.Append(pure_file_name + file_name_ext);

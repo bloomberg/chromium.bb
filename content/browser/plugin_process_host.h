@@ -7,14 +7,16 @@
 
 #include "build/build_config.h"
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
@@ -88,7 +90,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   void ForceShutdown();
 
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   // Tells the plugin process to create a new channel for communication with a
@@ -141,9 +143,10 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
 #endif
 
 #if defined(OS_MACOSX)
-  void OnPluginShowWindow(uint32 window_id, gfx::Rect window_rect,
+  void OnPluginShowWindow(uint32_t window_id,
+                          gfx::Rect window_rect,
                           bool modal);
-  void OnPluginHideWindow(uint32 window_id, gfx::Rect window_rect);
+  void OnPluginHideWindow(uint32_t window_id, gfx::Rect window_rect);
   void OnPluginSetCursorVisibility(bool visible);
 #endif
 
@@ -178,11 +181,11 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
 #endif
 #if defined(OS_MACOSX)
   // Tracks plugin windows currently visible.
-  std::set<uint32> plugin_visible_windows_set_;
+  std::set<uint32_t> plugin_visible_windows_set_;
   // Tracks full screen windows currently visible.
-  std::set<uint32> plugin_fullscreen_windows_set_;
+  std::set<uint32_t> plugin_fullscreen_windows_set_;
   // Tracks modal windows currently visible.
-  std::set<uint32> plugin_modal_windows_set_;
+  std::set<uint32_t> plugin_modal_windows_set_;
   // Tracks the current visibility of the cursor.
   bool plugin_cursor_visible_;
 #endif

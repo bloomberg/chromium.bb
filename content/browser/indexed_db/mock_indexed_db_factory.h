@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_MOCK_INDEXED_DB_FACTORY_H_
 #define CONTENT_BROWSER_INDEXED_DB_MOCK_INDEXED_DB_FACTORY_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_SITE_INSTANCE_IMPL_H_
 #define CONTENT_BROWSER_SITE_INSTANCE_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -19,7 +23,7 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
                                         public RenderProcessHostObserver {
  public:
   // SiteInstance interface overrides.
-  int32 GetId() override;
+  int32_t GetId() override;
   bool HasProcess() const override;
   RenderProcessHost* GetProcess() override;
   BrowserContext* GetBrowserContext() const override;
@@ -117,10 +121,10 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   static const RenderProcessHostFactory* g_render_process_host_factory_;
 
   // The next available SiteInstance ID.
-  static int32 next_site_instance_id_;
+  static int32_t next_site_instance_id_;
 
   // A unique ID for this SiteInstance.
-  int32 id_;
+  int32_t id_;
 
   // The number of active frames in this SiteInstance.
   size_t active_frame_count_;

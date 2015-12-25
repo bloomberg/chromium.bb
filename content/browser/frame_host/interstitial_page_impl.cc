@@ -9,11 +9,13 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/interstitial_page_navigator_impl.h"
@@ -390,7 +392,7 @@ void InterstitialPageImpl::RenderFrameCreated(
 
 void InterstitialPageImpl::UpdateTitle(
     RenderFrameHost* render_frame_host,
-    int32 page_id,
+    int32_t page_id,
     const base::string16& title,
     base::i18n::TextDirection title_direction) {
   if (!enabled())
@@ -609,8 +611,8 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   RenderWidgetHostImpl::From(render_view_host_->GetWidget())->SetView(view);
   render_view_host_->AllowBindings(BINDINGS_POLICY_DOM_AUTOMATION);
 
-  int32 max_page_id = web_contents()->
-      GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
+  int32_t max_page_id = web_contents()->GetMaxPageIDForSiteInstance(
+      render_view_host_->GetSiteInstance());
   render_view_host_->CreateRenderView(MSG_ROUTING_NONE,
                                       MSG_ROUTING_NONE,
                                       max_page_id,
@@ -763,14 +765,14 @@ void InterstitialPageImpl::CreateNewWindow(
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";
 }
 
-void InterstitialPageImpl::CreateNewWidget(int32 render_process_id,
-                                           int32 route_id,
+void InterstitialPageImpl::CreateNewWidget(int32_t render_process_id,
+                                           int32_t route_id,
                                            blink::WebPopupType popup_type) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
 }
 
-void InterstitialPageImpl::CreateNewFullscreenWidget(int32 render_process_id,
-                                                     int32 route_id) {
+void InterstitialPageImpl::CreateNewFullscreenWidget(int32_t render_process_id,
+                                                     int32_t route_id) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
 }

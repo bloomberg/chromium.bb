@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_AURALINUX_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_AURALINUX_H_
 
+#include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 struct ViewHostMsg_AccessibilityNotification_Params;

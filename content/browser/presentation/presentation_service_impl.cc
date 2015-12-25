@@ -4,6 +4,9 @@
 
 #include "content/browser/presentation/presentation_service_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>

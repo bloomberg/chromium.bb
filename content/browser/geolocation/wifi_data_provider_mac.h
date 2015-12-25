@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_MAC_H_
 #define CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_MAC_H_
 
+#include "base/macros.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
 namespace content {

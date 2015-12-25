@@ -4,11 +4,12 @@
 
 #include "content/browser/gpu/gpu_surface_tracker.h"
 
+#include "base/logging.h"
+#include "build/build_config.h"
+
 #if defined(OS_ANDROID)
 #include <android/native_window_jni.h>
 #endif  // defined(OS_ANDROID)
-
-#include "base/logging.h"
 
 namespace content {
 

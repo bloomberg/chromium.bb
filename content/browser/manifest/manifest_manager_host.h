@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {

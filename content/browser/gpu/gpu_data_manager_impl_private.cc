@@ -15,6 +15,7 @@
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -111,7 +112,7 @@ int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
 void UpdateStats(const gpu::GPUInfo& gpu_info,
                  const gpu::GpuBlacklist* blacklist,
                  const std::set<int>& blacklisted_features) {
-  uint32 max_entry_id = blacklist->max_entry_id();
+  uint32_t max_entry_id = blacklist->max_entry_id();
   if (max_entry_id == 0) {
     // GPU Blacklist was not loaded.  No need to go further.
     return;
@@ -129,7 +130,7 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
       0, max_entry_id + 1);
 
   if (blacklisted_features.size() != 0) {
-    std::vector<uint32> flag_entries;
+    std::vector<uint32_t> flag_entries;
     blacklist->GetDecisionEntries(&flag_entries, disabled);
     DCHECK_GT(flag_entries.size(), 0u);
     for (size_t i = 0; i < flag_entries.size(); ++i) {
@@ -140,10 +141,10 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
 
   // This counts how many users are affected by a disabled entry - this allows
   // us to understand the impact of an entry before enable it.
-  std::vector<uint32> flag_disabled_entries;
+  std::vector<uint32_t> flag_disabled_entries;
   disabled = true;
   blacklist->GetDecisionEntries(&flag_disabled_entries, disabled);
-  for (uint32 disabled_entry : flag_disabled_entries) {
+  for (uint32_t disabled_entry : flag_disabled_entries) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerDisabledEntry",
         disabled_entry, max_entry_id + 1);
   }
@@ -234,7 +235,7 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
   // Gpu change.
   bool gpu_changed = false;
   if (flags & kCGDisplayAddFlag) {
-    uint32 vendor_id, device_id;
+    uint32_t vendor_id, device_id;
     if (gpu::CollectGpuID(&vendor_id, &device_id) == gpu::kCollectInfoSuccess) {
       gpu_changed = manager->UpdateActiveGpu(vendor_id, device_id);
     }
@@ -247,7 +248,7 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
 
 // Block all domains' use of 3D APIs for this many milliseconds if
 // approaching a threshold where system stability might be compromised.
-const int64 kBlockAllDomainsMs = 10000;
+const int64_t kBlockAllDomainsMs = 10000;
 const int kNumResetsWithinDuration = 1;
 
 // Enums for UMA histograms.
@@ -874,8 +875,8 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
       new GpuMsg_GpuSwitched);
 }
 
-bool GpuDataManagerImplPrivate::UpdateActiveGpu(
-    uint32 vendor_id, uint32 device_id) {
+bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
+                                                uint32_t device_id) {
   if (gpu_info_.gpu.vendor_id == vendor_id &&
       gpu_info_.gpu.device_id == device_id) {
     // The primary GPU is active.
@@ -1066,7 +1067,7 @@ void GpuDataManagerImplPrivate::UpdateGpuSwitchingManager(
     const gpu::GPUInfo& gpu_info) {
   // The vendor IDs might be 0 on non-PCI devices (like Android), but
   // the length of the vector is all we care about in most cases.
-  std::vector<uint32> vendor_ids;
+  std::vector<uint32_t> vendor_ids;
   vendor_ids.push_back(gpu_info.gpu.vendor_id);
   for (const auto& device : gpu_info.secondary_gpus) {
     vendor_ids.push_back(device.vendor_id);
@@ -1206,7 +1207,7 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(
   return GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED;
 }
 
-int64 GpuDataManagerImplPrivate::GetBlockAllDomainsDurationInMs() const {
+int64_t GpuDataManagerImplPrivate::GetBlockAllDomainsDurationInMs() const {
   return kBlockAllDomainsMs;
 }
 

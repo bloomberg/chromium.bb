@@ -88,7 +88,7 @@ bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DOMStorageMessageFilter::OnOpenStorageArea(int connection_id,
-                                                int64 namespace_id,
+                                                int64_t namespace_id,
                                                 const GURL& origin) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!host_->OpenStorageArea(connection_id, namespace_id, origin)) {

@@ -4,6 +4,7 @@
 
 #include "content/browser/geolocation/wifi_data.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>

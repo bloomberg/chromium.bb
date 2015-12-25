@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_INERTIAL_SENSOR_SERVICE_H_
 #define CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_INERTIAL_SENSOR_SERVICE_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"

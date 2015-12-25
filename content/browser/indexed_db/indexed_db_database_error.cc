@@ -6,19 +6,17 @@
 
 namespace content {
 
-IndexedDBDatabaseError::IndexedDBDatabaseError(uint16 code) : code_(code) {
-}
+IndexedDBDatabaseError::IndexedDBDatabaseError(uint16_t code) : code_(code) {}
 
 IndexedDBDatabaseError::IndexedDBDatabaseError() = default;
 
-IndexedDBDatabaseError::IndexedDBDatabaseError(uint16 code, const char* message)
-    : code_(code), message_(base::ASCIIToUTF16(message)) {
-}
+IndexedDBDatabaseError::IndexedDBDatabaseError(uint16_t code,
+                                               const char* message)
+    : code_(code), message_(base::ASCIIToUTF16(message)) {}
 
-IndexedDBDatabaseError::IndexedDBDatabaseError(uint16 code,
+IndexedDBDatabaseError::IndexedDBDatabaseError(uint16_t code,
                                                const base::string16& message)
-    : code_(code), message_(message) {
-}
+    : code_(code), message_(message) {}
 
 IndexedDBDatabaseError::~IndexedDBDatabaseError() = default;
 

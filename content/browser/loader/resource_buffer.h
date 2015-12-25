@@ -7,7 +7,7 @@
 
 #include <queue>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"

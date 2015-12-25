@@ -40,15 +40,15 @@ RateEstimator::RateEstimator(TimeDelta bucket_time,
 RateEstimator::~RateEstimator() {
 }
 
-void RateEstimator::Increment(uint32 count) {
+void RateEstimator::Increment(uint32_t count) {
   Increment(count, TimeTicks::Now());
 }
 
-void RateEstimator::Increment(uint32 count, TimeTicks now) {
+void RateEstimator::Increment(uint32_t count, TimeTicks now) {
   ClearOldBuckets(now);
-  int64 seconds_since_oldest = (now - oldest_time_).InSeconds();
+  int64_t seconds_since_oldest = (now - oldest_time_).InSeconds();
   DCHECK(seconds_since_oldest >= 0);
-  int64 delta_buckets = seconds_since_oldest / bucket_time_.InSeconds();
+  int64_t delta_buckets = seconds_since_oldest / bucket_time_.InSeconds();
   DCHECK(delta_buckets >= 0);
   size_t index_offset = static_cast<size_t>(delta_buckets);
   DCHECK(index_offset <= history_.size());
@@ -56,17 +56,17 @@ void RateEstimator::Increment(uint32 count, TimeTicks now) {
   history_[current_index] += count;
 }
 
-uint64 RateEstimator::GetCountPerSecond() const {
+uint64_t RateEstimator::GetCountPerSecond() const {
   return GetCountPerSecond(TimeTicks::Now());
 }
 
-uint64 RateEstimator::GetCountPerSecond(TimeTicks now) const {
+uint64_t RateEstimator::GetCountPerSecond(TimeTicks now) const {
   const_cast<RateEstimator*>(this)->ClearOldBuckets(now);
   // TODO(cbentzel): Support fractional seconds for active bucket?
   // We explicitly don't check for overflow here. If it happens, unsigned
   // arithmetic at least guarantees behavior by wrapping around. The estimate
   // will be off, but the code will still be valid.
-  uint64 total_count = 0;
+  uint64_t total_count = 0;
   for (size_t i = 0; i < bucket_count_; ++i) {
     size_t index = (oldest_index_ + i) % history_.size();
     total_count += history_[index];
@@ -75,9 +75,9 @@ uint64 RateEstimator::GetCountPerSecond(TimeTicks now) const {
 }
 
 void RateEstimator::ClearOldBuckets(TimeTicks now) {
-  int64 seconds_since_oldest = (now - oldest_time_).InSeconds();
+  int64_t seconds_since_oldest = (now - oldest_time_).InSeconds();
 
-  int64 delta_buckets = seconds_since_oldest / bucket_time_.InSeconds();
+  int64_t delta_buckets = seconds_since_oldest / bucket_time_.InSeconds();
 
   // It's possible (although unlikely) for there to be rollover with TimeTicks.
   // If that's the case, just reset the history.

@@ -4,6 +4,8 @@
 
 #include "content/browser/mojo/mojo_app_connection_impl.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "mojo/shell/capability_filter.h"

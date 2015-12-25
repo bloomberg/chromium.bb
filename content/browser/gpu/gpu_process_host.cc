@@ -4,20 +4,23 @@
 
 #include "content/browser/gpu/gpu_process_host.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/base64.h"
 #include "base/base_switches.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -641,7 +644,7 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
+void GpuProcessHost::OnChannelConnected(int32_t peer_pid) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnChannelConnected");
 
   while (!queued_messages_.empty()) {
@@ -715,7 +718,7 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
-    int32 surface_id,
+    int32_t surface_id,
     const CreateGpuMemoryBufferCallback& callback) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
@@ -1145,7 +1148,7 @@ void GpuProcessHost::LoadedShader(const std::string& key,
     Send(new GpuMsg_LoadedShader(data));
 }
 
-void GpuProcessHost::CreateChannelCache(int32 client_id) {
+void GpuProcessHost::CreateChannelCache(int32_t client_id) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateChannelCache");
 
   scoped_refptr<ShaderDiskCache> cache =
@@ -1158,12 +1161,12 @@ void GpuProcessHost::CreateChannelCache(int32 client_id) {
   client_id_to_shader_cache_[client_id] = cache;
 }
 
-void GpuProcessHost::OnDestroyChannel(int32 client_id) {
+void GpuProcessHost::OnDestroyChannel(int32_t client_id) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyChannel");
   client_id_to_shader_cache_.erase(client_id);
 }
 
-void GpuProcessHost::OnCacheShader(int32 client_id,
+void GpuProcessHost::OnCacheShader(int32_t client_id,
                                    const std::string& key,
                                    const std::string& shader) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnCacheShader");

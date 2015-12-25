@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_INDEX_WRITER_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_INDEX_WRITER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
@@ -29,9 +31,9 @@ class IndexWriter {
 
   bool VerifyIndexKeys(IndexedDBBackingStore* store,
                        IndexedDBBackingStore::Transaction* transaction,
-                       int64 database_id,
-                       int64 object_store_id,
-                       int64 index_id,
+                       int64_t database_id,
+                       int64_t object_store_id,
+                       int64_t index_id,
                        bool* can_add_keys,
                        const IndexedDBKey& primary_key,
                        base::string16* error_message) const WARN_UNUSED_RESULT;
@@ -39,17 +41,17 @@ class IndexWriter {
   void WriteIndexKeys(const IndexedDBBackingStore::RecordIdentifier& record,
                       IndexedDBBackingStore* store,
                       IndexedDBBackingStore::Transaction* transaction,
-                      int64 database_id,
-                      int64 object_store_id) const;
+                      int64_t database_id,
+                      int64_t object_store_id) const;
 
   ~IndexWriter();
 
  private:
   bool AddingKeyAllowed(IndexedDBBackingStore* store,
                         IndexedDBBackingStore::Transaction* transaction,
-                        int64 database_id,
-                        int64 object_store_id,
-                        int64 index_id,
+                        int64_t database_id,
+                        int64_t object_store_id,
+                        int64_t index_id,
                         const IndexedDBKey& index_key,
                         const IndexedDBKey& primary_key,
                         bool* allowed) const WARN_UNUSED_RESULT;
@@ -63,7 +65,7 @@ class IndexWriter {
 bool MakeIndexWriters(
     IndexedDBTransaction* transaction,
     IndexedDBBackingStore* store,
-    int64 database_id,
+    int64_t database_id,
     const IndexedDBObjectStoreMetadata& metadata,
     const IndexedDBKey& primary_key,
     bool key_was_generated,

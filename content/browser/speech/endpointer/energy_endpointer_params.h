@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_PARAMS_H_
 #define CONTENT_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_PARAMS_H_
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 
 namespace content {

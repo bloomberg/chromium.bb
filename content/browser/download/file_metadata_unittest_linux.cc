@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <errno.h>
+#include <stddef.h>
 #include <sys/types.h>
 #include <sys/xattr.h>
 

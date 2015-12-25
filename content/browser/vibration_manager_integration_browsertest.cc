@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/test/content_browser_test.h"
@@ -21,7 +25,7 @@ namespace content {
 namespace {
 
 // Global, record milliseconds when Vibrate() got called.
-int64 g_vibrate_milliseconds;
+int64_t g_vibrate_milliseconds;
 // Global, record whether Cancel() got called.
 bool g_cancelled;
 // Global, wait for end of execution for VibrationManager API Vibrate().
@@ -48,7 +52,7 @@ class FakeVibrationManager : public device::VibrationManager {
       : binding_(this, request.Pass()) {}
   ~FakeVibrationManager() override {}
 
-  void Vibrate(int64 milliseconds) override {
+  void Vibrate(int64_t milliseconds) override {
     g_vibrate_milliseconds = milliseconds;
     g_wait_vibrate_runner->Quit();
   }

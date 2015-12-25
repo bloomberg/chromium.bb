@@ -256,7 +256,8 @@ unsigned int GpuDataManagerImpl::GetDisplayCount() const {
   return private_->GetDisplayCount();
 }
 
-bool GpuDataManagerImpl::UpdateActiveGpu(uint32 vendor_id, uint32 device_id) {
+bool GpuDataManagerImpl::UpdateActiveGpu(uint32_t vendor_id,
+                                         uint32_t device_id) {
   base::AutoLock auto_lock(lock_);
   return private_->UpdateActiveGpu(vendor_id, device_id);
 }

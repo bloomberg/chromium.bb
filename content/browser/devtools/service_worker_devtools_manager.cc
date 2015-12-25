@@ -15,13 +15,12 @@ namespace content {
 ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
     const ServiceWorkerContextCore* context,
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
-    int64 version_id,
+    int64_t version_id,
     const GURL& url)
     : context_(context),
       context_weak_(context_weak),
       version_id_(version_id),
-      url_(url) {
-}
+      url_(url) {}
 
 ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
     const ServiceWorkerIdentifier& other)

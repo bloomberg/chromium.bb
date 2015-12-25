@@ -21,7 +21,7 @@
 
 namespace content {
 
-const int64 kInactivityTimeoutPeriodSeconds = 60;
+const int64_t kInactivityTimeoutPeriodSeconds = 60;
 
 IndexedDBTransaction::TaskQueue::TaskQueue() {}
 IndexedDBTransaction::TaskQueue::~TaskQueue() { clear(); }
@@ -54,9 +54,9 @@ IndexedDBTransaction::Operation IndexedDBTransaction::TaskStack::pop() {
 }
 
 IndexedDBTransaction::IndexedDBTransaction(
-    int64 id,
+    int64_t id,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-    const std::set<int64>& object_store_ids,
+    const std::set<int64_t>& object_store_ids,
     blink::WebIDBTransactionMode mode,
     IndexedDBDatabase* database,
     IndexedDBBackingStore::Transaction* backing_store_transaction)

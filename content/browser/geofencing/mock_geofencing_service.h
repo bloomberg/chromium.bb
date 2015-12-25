@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_GEOFENCING_MOCK_GEOFENCING_SERVICE_H_
 #define CONTENT_BROWSER_GEOFENCING_MOCK_GEOFENCING_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "content/browser/geofencing/geofencing_service.h"
@@ -27,16 +29,16 @@ class MockGeofencingService : public GeofencingService {
 
   // GeofencingService implementation.
   bool IsServiceAvailable() override;
-  int64 RegisterRegion(const blink::WebCircularGeofencingRegion& region,
-                       GeofencingRegistrationDelegate* delegate) override;
-  void UnregisterRegion(int64 geofencing_registration_id) override;
+  int64_t RegisterRegion(const blink::WebCircularGeofencingRegion& region,
+                         GeofencingRegistrationDelegate* delegate) override;
+  void UnregisterRegion(int64_t geofencing_registration_id) override;
 
  private:
   struct Registration;
 
   bool available_;
-  std::map<int64, Registration> registrations_;
-  int64 next_id_;
+  std::map<int64_t, Registration> registrations_;
+  int64_t next_id_;
   bool has_position_;
   double last_latitude_;
   double last_longitude_;

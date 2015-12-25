@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/frame_mojo_shell.h"
 
+#include "build/build_config.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/browser/content_browser_client.h"

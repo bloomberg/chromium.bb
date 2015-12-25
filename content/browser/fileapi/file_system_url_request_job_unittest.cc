@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/file_system_url_request_job.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -12,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"

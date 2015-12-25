@@ -8,7 +8,7 @@
 #ifndef CONTENT_BROWSER_DEVICE_MONITOR_UDEV_H_
 #define CONTENT_BROWSER_DEVICE_MONITOR_UDEV_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 

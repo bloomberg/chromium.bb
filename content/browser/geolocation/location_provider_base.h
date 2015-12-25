@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_LOCATION_PROVIDER_BASE_H_
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_PROVIDER_BASE_H_
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/location_provider.h"
 

@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_RESOURCE_HANDLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/loader/resource_handler.h"
 #include "url/gurl.h"
@@ -81,7 +84,7 @@ class SaveFileResourceHandler : public ResourceHandler {
   std::string content_disposition_;
   GURL url_;
   GURL final_url_;
-  int64 content_length_;
+  int64_t content_length_;
   SaveFileManager* save_manager_;
 
   static const int kReadBufSize = 32768;  // bytes

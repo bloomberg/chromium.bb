@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_IMPL_H_
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_HOST_IMPL_H_
 
+#include "base/macros.h"
 #include "content/public/browser/screen_orientation_dispatcher_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationError.h"

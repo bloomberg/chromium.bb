@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -123,7 +126,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_FALSE(main_test_rfh()->IsRenderFrameLive());
 
   // Start a browser-initiated navigation.
-  int32 site_instance_id = main_test_rfh()->GetSiteInstance()->GetId();
+  int32_t site_instance_id = main_test_rfh()->GetSiteInstance()->GetId();
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
   int entry_id = RequestNavigation(node, kUrl);
   NavigationRequest* request = node->navigation_request();
@@ -219,7 +222,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   contents()->NavigateAndCommit(kUrl1);
   EXPECT_TRUE(main_test_rfh()->IsRenderFrameLive());
-  int32 site_instance_id_1 = main_test_rfh()->GetSiteInstance()->GetId();
+  int32_t site_instance_id_1 = main_test_rfh()->GetSiteInstance()->GetId();
 
   // Start a renderer-initiated non-user-initiated navigation.
   process()->sink().ClearMessages();
@@ -539,7 +542,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // Confirm a speculative RenderFrameHost was created.
   TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
-  int32 site_instance_id_1 = speculative_rfh->GetSiteInstance()->GetId();
+  int32_t site_instance_id_1 = speculative_rfh->GetSiteInstance()->GetId();
   EXPECT_EQ(kUrl1_site, speculative_rfh->GetSiteInstance()->GetSiteURL());
 
   // Request navigation to the 2nd URL; the NavigationRequest must have been
@@ -557,7 +560,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // Confirm that a new speculative RenderFrameHost was created.
   speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
-  int32 site_instance_id_2 = speculative_rfh->GetSiteInstance()->GetId();
+  int32_t site_instance_id_2 = speculative_rfh->GetSiteInstance()->GetId();
   EXPECT_NE(site_instance_id_1, site_instance_id_2);
 
   // Have the RenderFrameHost commit the navigation.
@@ -740,7 +743,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // Initialization.
   contents()->NavigateAndCommit(kUrl0);
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
-  int32 site_instance_id_0 = main_test_rfh()->GetSiteInstance()->GetId();
+  int32_t site_instance_id_0 = main_test_rfh()->GetSiteInstance()->GetId();
 
   // Start a renderer-initiated non-user-initiated navigation to the 1st URL.
   process()->sink().ClearMessages();
@@ -835,7 +838,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl),
             speculative_rfh->GetSiteInstance()->GetSiteURL());
   EXPECT_FALSE(node->render_manager()->pending_frame_host());
-  int32 site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
+  int32_t site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
 
   // Ask Navigator to commit the navigation by simulating a call to
   // OnResponseStarted.
@@ -862,7 +865,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   const GURL kUrlInit("http://wikipedia.org/");
   contents()->NavigateAndCommit(kUrlInit);
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
-  int32 init_site_instance_id = main_test_rfh()->GetSiteInstance()->GetId();
+  int32_t init_site_instance_id = main_test_rfh()->GetSiteInstance()->GetId();
 
   // Begin navigating to another site.
   const GURL kUrl("http://google.com/");
@@ -870,7 +873,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   int entry_id = RequestNavigation(node, kUrl);
   TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
-  int32 site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
+  int32_t site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
   RenderFrameDeletedObserver rfh_deleted_observer(speculative_rfh);
   EXPECT_NE(init_site_instance_id, site_instance_id);
   EXPECT_EQ(init_site_instance_id, main_test_rfh()->GetSiteInstance()->GetId());
@@ -913,7 +916,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // known final SiteInstance.
   EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrlRedirect),
             speculative_rfh->GetSiteInstance()->GetSiteURL());
-  int32 redirect_site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
+  int32_t redirect_site_instance_id =
+      speculative_rfh->GetSiteInstance()->GetId();
   EXPECT_NE(init_site_instance_id, redirect_site_instance_id);
   EXPECT_NE(site_instance_id, redirect_site_instance_id);
 

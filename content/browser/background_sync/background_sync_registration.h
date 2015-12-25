@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/callback.h"

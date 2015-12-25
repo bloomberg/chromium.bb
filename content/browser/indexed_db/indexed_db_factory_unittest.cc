@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -273,7 +276,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
   scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
-  const int64 transaction_id = 1;
+  const int64_t transaction_id = 1;
   IndexedDBPendingConnection connection(
       callbacks,
       db_callbacks,
@@ -306,7 +309,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
   scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
-  const int64 transaction_id = 1;
+  const int64_t transaction_id = 1;
   IndexedDBPendingConnection connection(
       callbacks,
       db_callbacks,
@@ -401,7 +404,7 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
   scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
-  const int64 transaction_id = 1;
+  const int64_t transaction_id = 1;
   IndexedDBPendingConnection connection(
       callbacks,
       db_callbacks,
@@ -443,7 +446,7 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
   }
 
   void OnUpgradeNeeded(
-      int64 old_version,
+      int64_t old_version,
       scoped_ptr<IndexedDBConnection> connection,
       const content::IndexedDBDatabaseMetadata& metadata) override {
     connection_ = connection.Pass();
@@ -479,8 +482,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
   const base::string16 db_name(ASCIIToUTF16("db"));
-  const int64 db_version = 2;
-  const int64 transaction_id = 1;
+  const int64_t db_version = 2;
+  const int64_t transaction_id = 1;
   scoped_refptr<IndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
 

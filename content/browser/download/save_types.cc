@@ -33,7 +33,7 @@ SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
                                        int render_frame_routing_id,
                                        int request_id,
                                        const std::string& content_disposition,
-                                       int64 total_bytes)
+                                       int64_t total_bytes)
     : url(url),
       final_url(final_url),
       save_item_id(save_item_id),

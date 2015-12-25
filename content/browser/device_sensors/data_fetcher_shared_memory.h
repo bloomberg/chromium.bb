@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_DEVICE_SENSORS_DATA_FETCHER_SHARED_MEMORY_H_
 #define CONTENT_BROWSER_DEVICE_SENSORS_DATA_FETCHER_SHARED_MEMORY_H_
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "content/browser/device_sensors/data_fetcher_shared_memory_base.h"
 
 #if !defined(OS_ANDROID)

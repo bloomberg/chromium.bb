@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_RATE_ESTIMATOR_H_
 #define CONTENT_BROWSER_DOWNLOAD_RATE_ESTIMATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 
@@ -28,19 +30,19 @@ class CONTENT_EXPORT RateEstimator {
 
   // Increment the counter by |count|. The first variant uses the current time,
   // the second variant provides the time that |count| is observed.
-  void Increment(uint32 count);
-  void Increment(uint32 count, base::TimeTicks now);
+  void Increment(uint32_t count);
+  void Increment(uint32_t count, base::TimeTicks now);
 
   // Get a rate estimate, in terms of counts/second. The first variant uses the
   // current time, the second variant provides the time.
-  uint64 GetCountPerSecond() const;
-  uint64 GetCountPerSecond(base::TimeTicks now) const;
+  uint64_t GetCountPerSecond() const;
+  uint64_t GetCountPerSecond(base::TimeTicks now) const;
 
  private:
   void ClearOldBuckets(base::TimeTicks now);
   void ResetBuckets(base::TimeTicks now);
 
-  std::vector<uint32> history_;
+  std::vector<uint32_t> history_;
   base::TimeDelta bucket_time_;
   size_t oldest_index_;
   size_t bucket_count_;

@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
@@ -64,7 +65,7 @@ class CONTENT_EXPORT DownloadFile {
 
   virtual base::FilePath FullPath() const = 0;
   virtual bool InProgress() const = 0;
-  virtual int64 CurrentSpeed() const = 0;
+  virtual int64_t CurrentSpeed() const = 0;
 
   // Set |hash| with sha256 digest for the file.
   // Returns true if digest is successfully calculated.

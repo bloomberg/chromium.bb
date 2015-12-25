@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -22,11 +25,11 @@
 namespace content {
 namespace {
 
-const int64 kMockGroupId = 1;
-const int64 kMockCacheId = 1;
-const int64 kMockResponseId = 1;
-const int64 kMissingCacheId = 5;
-const int64 kMissingResponseId = 5;
+const int64_t kMockGroupId = 1;
+const int64_t kMockCacheId = 1;
+const int64_t kMockResponseId = 1;
+const int64_t kMissingCacheId = 5;
+const int64_t kMissingResponseId = 5;
 const char kMockHeaders[] =
     "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
 const char kMockBody[] = "Hello";
@@ -34,13 +37,16 @@ const int kMockBodySize = 5;
 
 class MockResponseReader : public AppCacheResponseReader {
  public:
-  MockResponseReader(int64 response_id,
-                     net::HttpResponseInfo* info, int info_size,
-                     const char* data, int data_size)
+  MockResponseReader(int64_t response_id,
+                     net::HttpResponseInfo* info,
+                     int info_size,
+                     const char* data,
+                     int data_size)
       : AppCacheResponseReader(response_id, 0, NULL),
-        info_(info), info_size_(info_size),
-        data_(data), data_size_(data_size) {
-  }
+        info_(info),
+        info_size_(info_size),
+        data_(data),
+        data_size_(data_size) {}
   void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
                 const net::CompletionCallback& callback) override {
     info_buffer_ = info_buf;

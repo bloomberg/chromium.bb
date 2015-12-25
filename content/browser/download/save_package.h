@@ -5,16 +5,19 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_PACKAGE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -107,8 +110,10 @@ class CONTENT_EXPORT SavePackage
 
   // Notifications sent from the file thread to the UI thread.
   void StartSave(const SaveFileCreateInfo* info);
-  bool UpdateSaveProgress(int32 save_item_id, int64 size, bool write_success);
-  void SaveFinished(int32 save_item_id, int64 size, bool is_success);
+  bool UpdateSaveProgress(int32_t save_item_id,
+                          int64_t size,
+                          bool write_success);
+  void SaveFinished(int32_t save_item_id, int64_t size, bool is_success);
   void SaveCanceled(SaveItem* save_item);
 
   // Rough percent complete, -1 means we don't know (since we didn't receive a
@@ -130,7 +135,7 @@ class CONTENT_EXPORT SavePackage
       DownloadItemImpl* item);
 
   // Callback for WebContents::GenerateMHTML().
-  void OnMHTMLGenerated(int64 size);
+  void OnMHTMLGenerated(int64_t size);
 
   // For testing only.
   SavePackage(WebContents* web_contents,
@@ -164,12 +169,12 @@ class CONTENT_EXPORT SavePackage
   // This is needed on POSIX, which restrict the length of file names in
   // addition to the restriction on the length of path names.
   // |base_dir| is assumed to be a directory name with no trailing slash.
-  static uint32 GetMaxPathLengthForDirectory(const base::FilePath& base_dir);
+  static uint32_t GetMaxPathLengthForDirectory(const base::FilePath& base_dir);
 
   static bool GetSafePureFileName(
       const base::FilePath& dir_path,
       const base::FilePath::StringType& file_name_ext,
-      uint32 max_file_path_len,
+      uint32_t max_file_path_len,
       base::FilePath::StringType* pure_file_name);
 
   // Create a file name based on the response from the server.
@@ -251,7 +256,7 @@ class CONTENT_EXPORT SavePackage
                                               bool end_of_data);
 
   // Look up SaveItem by save item id from in progress map.
-  SaveItem* LookupSaveItemInProcess(int32 save_item_id);
+  SaveItem* LookupSaveItemInProcess(int32_t save_item_id);
 
   // Remove SaveItem from in progress map and put it to saved map.
   void PutInProgressItemToSavedMap(SaveItem* save_item);
@@ -295,7 +300,7 @@ class CONTENT_EXPORT SavePackage
   // presented by the DownloadItem to the UI as bytes per second, which is
   // not correct but matches the way the total and received number of files is
   // presented as the total and received bytes.
-  int64 CurrentSpeed() const;
+  int64_t CurrentSpeed() const;
 
   // Helper function for preparing suggested name for the SaveAs Dialog. The
   // suggested name is determined by the web document's title.
@@ -345,7 +350,7 @@ class CONTENT_EXPORT SavePackage
   // Number of frames that we still need to get a response from.
   int number_of_frames_pending_response_;
 
-  typedef base::hash_map<int32, SaveItem*> SavedItemMap;
+  typedef base::hash_map<int32_t, SaveItem*> SavedItemMap;
   // saved_success_items_ is map of all saving job which are successfully saved.
   SavedItemMap saved_success_items_;
 
@@ -392,7 +397,7 @@ class CONTENT_EXPORT SavePackage
   // This set is used to eliminate duplicated file names in saving directory.
   FileNameSet file_name_set_;
 
-  typedef base::hash_map<base::FilePath::StringType, uint32> FileNameCountMap;
+  typedef base::hash_map<base::FilePath::StringType, uint32_t> FileNameCountMap;
   // This map is used to track serial number for specified filename.
   FileNameCountMap file_name_count_map_;
 

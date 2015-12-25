@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEMORY_MEMORY_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_MEMORY_MEMORY_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"

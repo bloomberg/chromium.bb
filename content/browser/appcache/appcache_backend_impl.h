@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_BACKEND_IMPL_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_BACKEND_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/common/content_export.h"
@@ -32,15 +34,16 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   bool SetSpawningHostId(int host_id, int spawning_host_id);
   bool SelectCache(int host_id,
                    const GURL& document_url,
-                   const int64 cache_document_was_loaded_from,
+                   const int64_t cache_document_was_loaded_from,
                    const GURL& manifest_url);
   void GetResourceList(
       int host_id, std::vector<AppCacheResourceInfo>* resource_infos);
   bool SelectCacheForWorker(int host_id, int parent_process_id,
                             int parent_host_id);
-  bool SelectCacheForSharedWorker(int host_id, int64 appcache_id);
-  bool MarkAsForeignEntry(int host_id, const GURL& document_url,
-                          int64 cache_document_was_loaded_from);
+  bool SelectCacheForSharedWorker(int host_id, int64_t appcache_id);
+  bool MarkAsForeignEntry(int host_id,
+                          const GURL& document_url,
+                          int64_t cache_document_was_loaded_from);
   bool GetStatusWithCallback(int host_id, const GetStatusCallback& callback,
                              void* callback_param);
   bool StartUpdateWithCallback(int host_id, const StartUpdateCallback& callback,

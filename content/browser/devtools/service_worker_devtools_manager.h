@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_MANAGER_H_
 #define CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -44,7 +46,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     ServiceWorkerIdentifier(
         const ServiceWorkerContextCore* context,
         base::WeakPtr<ServiceWorkerContextCore> context_weak,
-        int64 version_id,
+        int64_t version_id,
         const GURL& url);
     ServiceWorkerIdentifier(const ServiceWorkerIdentifier& other);
     ~ServiceWorkerIdentifier();
@@ -55,13 +57,13 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     base::WeakPtr<ServiceWorkerContextCore> context_weak() const {
       return context_weak_;
     }
-    int64 version_id() const { return version_id_; }
+    int64_t version_id() const { return version_id_; }
     GURL url() const { return url_; }
 
    private:
     const ServiceWorkerContextCore* const context_;
     const base::WeakPtr<ServiceWorkerContextCore> context_weak_;
-    const int64 version_id_;
+    const int64_t version_id_;
     const GURL url_;
   };
 

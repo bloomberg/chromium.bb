@@ -4,8 +4,10 @@
 
 #include "content/browser/frame_host/interstitial_page_impl.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/frame_messages.h"

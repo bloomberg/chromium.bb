@@ -65,7 +65,7 @@ bool AppCacheBackendImpl::SetSpawningHostId(
 bool AppCacheBackendImpl::SelectCache(
     int host_id,
     const GURL& document_url,
-    const int64 cache_document_was_loaded_from,
+    const int64_t cache_document_was_loaded_from,
     const GURL& manifest_url) {
   AppCacheHost* host = GetHost(host_id);
   if (!host)
@@ -84,8 +84,8 @@ bool AppCacheBackendImpl::SelectCacheForWorker(
   return host->SelectCacheForWorker(parent_process_id, parent_host_id);
 }
 
-bool AppCacheBackendImpl::SelectCacheForSharedWorker(
-    int host_id, int64 appcache_id) {
+bool AppCacheBackendImpl::SelectCacheForSharedWorker(int host_id,
+                                                     int64_t appcache_id) {
   AppCacheHost* host = GetHost(host_id);
   if (!host)
     return false;
@@ -96,7 +96,7 @@ bool AppCacheBackendImpl::SelectCacheForSharedWorker(
 bool AppCacheBackendImpl::MarkAsForeignEntry(
     int host_id,
     const GURL& document_url,
-    int64 cache_document_was_loaded_from) {
+    int64_t cache_document_was_loaded_from) {
   AppCacheHost* host = GetHost(host_id);
   if (!host)
     return false;

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_TRACING_BACKGROUND_TRACING_CONFIG_IMPL_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_tracing_config.h"

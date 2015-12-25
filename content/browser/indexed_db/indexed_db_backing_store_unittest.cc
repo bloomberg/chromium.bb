@@ -4,6 +4,9 @@
 
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -109,14 +112,14 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
     return writes_;
   }
   void ClearWrites() { writes_.clear(); }
-  const std::vector<int64>& removals() const { return removals_; }
+  const std::vector<int64_t>& removals() const { return removals_; }
   void ClearRemovals() { removals_.clear(); }
 
  protected:
   ~TestableIndexedDBBackingStore() override {}
 
   bool WriteBlobFile(
-      int64 database_id,
+      int64_t database_id,
       const Transaction::WriteDescriptor& descriptor,
       Transaction::ChainedBlobWriter* chained_blob_writer) override {
     if (KeyPrefix::IsValidDatabaseId(database_id_)) {
@@ -136,7 +139,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
     return true;
   }
 
-  bool RemoveBlobFile(int64 database_id, int64 key) const override {
+  bool RemoveBlobFile(int64_t database_id, int64_t key) const override {
     if (database_id_ != database_id ||
         !KeyPrefix::IsValidDatabaseId(database_id)) {
       return false;
@@ -167,12 +170,12 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
                               task_runner),
         database_id_(0) {}
 
-  int64 database_id_;
+  int64_t database_id_;
   std::vector<Transaction::WriteDescriptor> writes_;
 
   // This is modified in an overridden virtual function that is properly const
   // in the real implementation, therefore must be mutable here.
-  mutable std::vector<int64> removals_;
+  mutable std::vector<int64_t> removals_;
 
   DISALLOW_COPY_AND_ASSIGN(TestableIndexedDBBackingStore);
 };
@@ -295,7 +298,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
       const std::vector<IndexedDBBlobInfo>& reads) const {
     if (backing_store_->writes().size() != reads.size())
       return false;
-    std::set<int64> ids;
+    std::set<int64_t> ids;
     for (size_t i = 0; i < backing_store_->writes().size(); ++i)
       ids.insert(backing_store_->writes()[i].key());
     if (ids.size() != backing_store_->writes().size())
@@ -753,12 +756,12 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
 // Make sure that using very high ( more than 32 bit ) values for database_id
 // and object_store_id still work.
 TEST_F(IndexedDBBackingStoreTest, HighIds) {
-  const int64 high_database_id = 1ULL << 35;
-  const int64 high_object_store_id = 1ULL << 39;
+  const int64_t high_database_id = 1ULL << 35;
+  const int64_t high_object_store_id = 1ULL << 39;
   // index_ids are capped at 32 bits for storage purposes.
-  const int64 high_index_id = 1ULL << 29;
+  const int64_t high_index_id = 1ULL << 29;
 
-  const int64 invalid_high_index_id = 1ULL << 37;
+  const int64_t invalid_high_index_id = 1ULL << 37;
 
   const IndexedDBKey& index_key = m_key2;
   std::string index_key_raw;
@@ -845,10 +848,11 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
 // Make sure that other invalid ids do not crash.
 TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
   // valid ids for use when testing invalid ids
-  const int64 database_id = 1;
-  const int64 object_store_id = 1;
-  const int64 index_id = kMinimumIndexId;
-  const int64 invalid_low_index_id = 19;  // index_ids must be > kMinimumIndexId
+  const int64_t database_id = 1;
+  const int64_t object_store_id = 1;
+  const int64_t index_id = kMinimumIndexId;
+  const int64_t invalid_low_index_id =
+      19;  // index_ids must be > kMinimumIndexId
 
   IndexedDBValue result_value;
 
@@ -933,17 +937,17 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
 
 TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
   const base::string16 database_name(ASCIIToUTF16("db1"));
-  int64 database_id;
+  int64_t database_id;
   const base::string16 version(ASCIIToUTF16("old_string_version"));
-  const int64 int_version = 9;
+  const int64_t int_version = 9;
 
-  const int64 object_store_id = 99;
+  const int64_t object_store_id = 99;
   const base::string16 object_store_name(ASCIIToUTF16("object_store1"));
   const bool auto_increment = true;
   const IndexedDBKeyPath object_store_key_path(
       ASCIIToUTF16("object_store_key"));
 
-  const int64 index_id = 999;
+  const int64_t index_id = 999;
   const base::string16 index_name(ASCIIToUTF16("index1"));
   const bool unique = true;
   const bool multi_entry = true;
@@ -1021,14 +1025,14 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
   const base::string16 string_version(ASCIIToUTF16("string_version"));
 
   const base::string16 db1_name(ASCIIToUTF16("db1"));
-  const int64 db1_version = 1LL;
-  int64 db1_id;
+  const int64_t db1_version = 1LL;
+  int64_t db1_id;
 
   // Database records with DEFAULT_INT_VERSION represent stale data,
   // and should not be enumerated.
   const base::string16 db2_name(ASCIIToUTF16("db2"));
-  const int64 db2_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
-  int64 db2_id;
+  const int64_t db2_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
+  int64_t db2_id;
 
   leveldb::Status s = backing_store_->CreateIDBDatabaseMetaData(
       db1_name, string_version, db1_version, &db1_id);

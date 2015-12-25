@@ -4,6 +4,8 @@
 
 #include "content/browser/fileapi/browser_file_system_helper.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_TRACING_BACKGROUND_TRACING_RULE_H_
 #define CONTENT_BROWSER_TRACING_BACKGROUND_TRACING_RULE_H_
 
+#include "base/macros.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/common/content_export.h"
 

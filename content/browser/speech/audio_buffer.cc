@@ -17,7 +17,7 @@ AudioChunk::AudioChunk(size_t length, int bytes_per_sample)
   DCHECK_EQ(length % bytes_per_sample, 0U);
 }
 
-AudioChunk::AudioChunk(const uint8* data, size_t length, int bytes_per_sample)
+AudioChunk::AudioChunk(const uint8_t* data, size_t length, int bytes_per_sample)
     : data_string_(reinterpret_cast<const char*>(data), length),
       bytes_per_sample_(bytes_per_sample) {
   DCHECK_EQ(length % bytes_per_sample, 0U);
@@ -35,13 +35,13 @@ const std::string& AudioChunk::AsString() const {
   return data_string_;
 }
 
-int16 AudioChunk::GetSample16(size_t index) const {
-  DCHECK(index < (data_string_.size() / sizeof(int16)));
+int16_t AudioChunk::GetSample16(size_t index) const {
+  DCHECK(index < (data_string_.size() / sizeof(int16_t)));
   return SamplesData16()[index];
 }
 
-const int16* AudioChunk::SamplesData16() const {
-  return reinterpret_cast<const int16*>(data_string_.data());
+const int16_t* AudioChunk::SamplesData16() const {
+  return reinterpret_cast<const int16_t*>(data_string_.data());
 }
 
 AudioBuffer::AudioBuffer(int bytes_per_sample)
@@ -55,7 +55,7 @@ AudioBuffer::~AudioBuffer() {
   Clear();
 }
 
-void AudioBuffer::Enqueue(const uint8* data, size_t length) {
+void AudioBuffer::Enqueue(const uint8_t* data, size_t length) {
   chunks_.push_back(new AudioChunk(data, length, bytes_per_sample_));
 }
 
@@ -76,7 +76,7 @@ scoped_refptr<AudioChunk> AudioBuffer::DequeueAll() {
   }
   scoped_refptr<AudioChunk> chunk(
       new AudioChunk(resulting_length, bytes_per_sample_));
-  uint8* dest = chunk->writable_data();
+  uint8_t* dest = chunk->writable_data();
   for (it = chunks_.begin(); it != chunks_.end(); ++it) {
     memcpy(dest, (*it)->AsString().data(), (*it)->AsString().length());
     dest += (*it)->AsString().length();

@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_ACTIVE_BLOB_REGISTRY_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_ACTIVE_BLOB_REGISTRY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <utility>
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -29,14 +31,14 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
   // which just calls ReleaseBlobRefThreadSafe.
 
   // Use DatabaseMetaDataKey::AllBlobsKey for "the whole database".
-  bool MarkDeletedCheckIfUsed(int64 database_id, int64 blob_key);
+  bool MarkDeletedCheckIfUsed(int64_t database_id, int64_t blob_key);
 
   storage::ShareableFileReference::FinalReleaseCallback GetFinalReleaseCallback(
-      int64 database_id,
-      int64 blob_key);
+      int64_t database_id,
+      int64_t blob_key);
   // This closure holds a raw pointer to the IndexedDBActiveBlobRegistry,
   // and may not be called after it is deleted.
-  base::Closure GetAddBlobRefCallback(int64 database_id, int64 blob_key);
+  base::Closure GetAddBlobRefCallback(int64_t database_id, int64_t blob_key);
   // Call this to force the registry to drop its use counts, permitting the
   // factory to drop any blob-related refcount for the backing store.
   // This will also turn any outstanding callbacks into no-ops.
@@ -45,18 +47,18 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
  private:
   // Maps blob_key -> IsDeleted; if the record's absent, it's not in active use
   // and we don't care if it's deleted.
-  typedef std::map<int64, bool> SingleDBMap;
+  typedef std::map<int64_t, bool> SingleDBMap;
   // Maps DB ID -> SingleDBMap
-  typedef std::map<int64, SingleDBMap> AllDBsMap;
-  typedef std::set<int64> DeletedDBSet;
+  typedef std::map<int64_t, SingleDBMap> AllDBsMap;
+  typedef std::set<int64_t> DeletedDBSet;
 
-  void AddBlobRef(int64 database_id, int64 blob_key);
-  void ReleaseBlobRef(int64 database_id, int64 blob_key);
+  void AddBlobRef(int64_t database_id, int64_t blob_key);
+  void ReleaseBlobRef(int64_t database_id, int64_t blob_key);
   static void ReleaseBlobRefThreadSafe(
       scoped_refptr<base::TaskRunner> task_runner,
       base::WeakPtr<IndexedDBActiveBlobRegistry> weak_ptr,
-      int64 database_id,
-      int64 blob_key,
+      int64_t database_id,
+      int64_t blob_key,
       const base::FilePath& unused);
 
   AllDBsMap use_tracker_;

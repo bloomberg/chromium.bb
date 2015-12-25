@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -50,7 +52,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Constructing from persistent store:
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   uint32 id,
+                   uint32_t id,
                    const base::FilePath& current_path,
                    const base::FilePath& target_path,
                    const std::vector<GURL>& url_chain,
@@ -61,8 +63,8 @@ class CONTENT_EXPORT DownloadItemImpl
                    const base::Time& end_time,
                    const std::string& etag,
                    const std::string& last_modified,
-                   int64 received_bytes,
-                   int64 total_bytes,
+                   int64_t received_bytes,
+                   int64_t total_bytes,
                    DownloadItem::DownloadState state,
                    DownloadDangerType danger_type,
                    DownloadInterruptReason interrupt_reason,
@@ -72,14 +74,14 @@ class CONTENT_EXPORT DownloadItemImpl
   // Constructing for a regular download.
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   uint32 id,
+                   uint32_t id,
                    const DownloadCreateInfo& info,
                    const net::BoundNetLog& bound_net_log);
 
   // Constructing for the "Save Page As..." feature:
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                   uint32 id,
+                   uint32_t id,
                    const base::FilePath& path,
                    const GURL& url,
                    const std::string& mime_type,
@@ -100,7 +102,7 @@ class CONTENT_EXPORT DownloadItemImpl
   void Remove() override;
   void OpenDownload() override;
   void ShowDownloadInShell() override;
-  uint32 GetId() const override;
+  uint32_t GetId() const override;
   DownloadState GetState() const override;
   DownloadInterruptReason GetLastReason() const override;
   bool IsPaused() const override;
@@ -135,11 +137,11 @@ class CONTENT_EXPORT DownloadItemImpl
   bool IsDangerous() const override;
   DownloadDangerType GetDangerType() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
-  int64 CurrentSpeed() const override;
+  int64_t CurrentSpeed() const override;
   int PercentComplete() const override;
   bool AllDataSaved() const override;
-  int64 GetTotalBytes() const override;
-  int64 GetReceivedBytes() const override;
+  int64_t GetTotalBytes() const override;
+  int64_t GetReceivedBytes() const override;
   base::Time GetStartTime() const override;
   base::Time GetEndTime() const override;
   bool CanShowInFolder() override;
@@ -199,7 +201,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // DownloadItemImpl routines only needed by SavePackage ----------------------
 
   // Called by SavePackage to set the total number of bytes on the item.
-  virtual void SetTotalBytes(int64 total_bytes);
+  virtual void SetTotalBytes(int64_t total_bytes);
 
   virtual void OnAllDataSaved(const std::string& final_hash);
 
@@ -208,8 +210,8 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void MarkAsComplete();
 
   // DownloadDestinationObserver
-  void DestinationUpdate(int64 bytes_so_far,
-                         int64 bytes_per_sec,
+  void DestinationUpdate(int64_t bytes_so_far,
+                         int64_t bytes_per_sec,
                          const std::string& hash_state) override;
   void DestinationError(DownloadInterruptReason reason) override;
   void DestinationCompleted(const std::string& final_hash) override;
@@ -393,7 +395,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // download system.
   scoped_ptr<DownloadRequestHandleInterface> request_handle_;
 
-  uint32 download_id_;
+  uint32_t download_id_;
 
   // Display name for the download. If this is empty, then the display name is
   // considered to be |target_path_.BaseName()|.
@@ -457,13 +459,13 @@ class CONTENT_EXPORT DownloadItemImpl
   std::string remote_address_;
 
   // Total bytes expected.
-  int64 total_bytes_;
+  int64_t total_bytes_;
 
   // Current received bytes.
-  int64 received_bytes_;
+  int64_t received_bytes_;
 
   // Current speed. Calculated by the DownloadFile.
-  int64 bytes_per_sec_;
+  int64_t bytes_per_sec_;
 
   // Sha256 hash of the content.  This might be empty either because
   // the download isn't done yet or because the hash isn't needed

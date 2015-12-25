@@ -4,6 +4,8 @@
 
 #include "content/browser/web_contents/web_contents_android.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -83,10 +85,10 @@ struct AccessibilitySnapshotParams {
   // The current text selection within this tree, if any, expressed as the
   // node ID and character offset of the anchor (selection start) and focus
   // (selection end).
-  int32 sel_anchor_object_id;
-  int32 sel_anchor_offset;
-  int32 sel_focus_object_id;
-  int32 sel_focus_offset;
+  int32_t sel_anchor_object_id;
+  int32_t sel_anchor_offset;
+  int32_t sel_focus_object_id;
+  int32_t sel_focus_offset;
   // if the flag is true, mark the leaf node as selected.
   bool should_select_leaf_nodes;
 };
@@ -143,7 +145,7 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
           env, j_node.obj(), start_selection, end_selection);
   }
 
-  for(uint32 i = 0; i < node->PlatformChildCount(); i++) {
+  for (uint32_t i = 0; i < node->PlatformChildCount(); i++) {
     BrowserAccessibilityAndroid* child =
         static_cast<BrowserAccessibilityAndroid*>(
             node->PlatformGetChild(i));

@@ -323,7 +323,7 @@ STDMETHODIMP BrowserAccessibilityWin::accNavigate(LONG nav_dir,
     return E_INVALIDARG;
   }
 
-  uint32 child_count = target->PlatformChildCount();
+  uint32_t child_count = target->PlatformChildCount();
 
   BrowserAccessibility* result = NULL;
   switch (nav_dir) {
@@ -1106,8 +1106,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_accessibleAt(
   if (row < 0 || row >= rows || column < 0 || column >= columns)
     return E_INVALIDARG;
 
-  const std::vector<int32>& cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_CELL_IDS);
+  const std::vector<int32_t>& cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
 
   int cell_id = cell_ids[row * columns + column];
@@ -1155,10 +1155,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_childIndex(long row,
   if (row < 0 || row >= rows || column < 0 || column >= columns)
     return E_INVALIDARG;
 
-  const std::vector<int32>& cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_CELL_IDS);
-  const std::vector<int32>& unique_cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_UNIQUE_CELL_IDS);
+  const std::vector<int32_t>& cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
+  const std::vector<int32_t>& unique_cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
   DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
   int cell_id = cell_ids[row * columns + column];
   for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
@@ -1192,8 +1192,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(long column,
   if (column < 0 || column >= columns)
     return E_INVALIDARG;
 
-  const std::vector<int32>& cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_CELL_IDS);
+  const std::vector<int32_t>& cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
@@ -1239,8 +1239,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
   if (row < 0 || row >= rows || column < 0 || column >= columns)
     return E_INVALIDARG;
 
-  const std::vector<int32>& cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_CELL_IDS);
+  const std::vector<int32_t>& cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   int cell_id = cell_ids[row * columns + column];
   BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
       manager()->GetFromID(cell_id));
@@ -1271,8 +1271,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long cell_index,
   if (!column_index)
     return E_INVALIDARG;
 
-  const std::vector<int32>& unique_cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_UNIQUE_CELL_IDS);
+  const std::vector<int32_t>& unique_cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
   int cell_id_count = static_cast<int>(unique_cell_ids.size());
   if (cell_index < 0)
     return E_INVALIDARG;
@@ -1381,8 +1381,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
   if (row < 0 || row >= rows)
     return E_INVALIDARG;
 
-  const std::vector<int32>& cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_CELL_IDS);
+  const std::vector<int32_t>& cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
     BrowserAccessibilityWin* cell =
@@ -1427,8 +1427,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(long row,
   if (row < 0 || row >= rows || column < 0 || column >= columns)
     return E_INVALIDARG;
 
-  const std::vector<int32>& cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_CELL_IDS);
+  const std::vector<int32_t>& cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
   int cell_id = cell_ids[row * columns + column];
   BrowserAccessibilityWin* cell =
       manager()->GetFromID(cell_id)->ToBrowserAccessibilityWin();
@@ -1459,8 +1459,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long cell_index,
   if (!row_index)
     return E_INVALIDARG;
 
-  const std::vector<int32>& unique_cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_UNIQUE_CELL_IDS);
+  const std::vector<int32_t>& unique_cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
   int cell_id_count = static_cast<int>(unique_cell_ids.size());
   if (cell_index < 0)
     return E_INVALIDARG;
@@ -1588,8 +1588,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
   if (!row || !column || !row_extents || !column_extents || !is_selected)
     return E_INVALIDARG;
 
-  const std::vector<int32>& unique_cell_ids = GetIntListAttribute(
-      ui::AX_ATTR_UNIQUE_CELL_IDS);
+  const std::vector<int32_t>& unique_cell_ids =
+      GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
   int cell_id_count = static_cast<int>(unique_cell_ids.size());
   if (index < 0)
     return E_INVALIDARG;
@@ -1751,8 +1751,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
   if (columns <= 0 || rows <= 0 || column < 0 || column >= columns)
     return S_FALSE;
 
-  const std::vector<int32>& cell_ids = table->GetIntListAttribute(
-      ui::AX_ATTR_CELL_IDS);
+  const std::vector<int32_t>& cell_ids =
+      table->GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
 
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
@@ -1849,8 +1849,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
   if (columns <= 0 || rows <= 0 || row < 0 || row >= rows)
     return S_FALSE;
 
-  const std::vector<int32>& cell_ids = table->GetIntListAttribute(
-      ui::AX_ATTR_CELL_IDS);
+  const std::vector<int32_t>& cell_ids =
+      table->GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
 
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
@@ -2403,7 +2403,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlink(
     return E_INVALIDARG;
   }
 
-  int32 id = hyperlinks()[index];
+  int32_t id = hyperlinks()[index];
   BrowserAccessibilityWin* child =
       manager()->GetFromID(id)->ToBrowserAccessibilityWin();
   if (child) {
@@ -2428,7 +2428,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
     return E_INVALIDARG;
   }
 
-  std::map<int32, int32>::iterator it =
+  std::map<int32_t, int32_t>::iterator it =
       hyperlink_offset_to_index().find(char_index);
   if (it == hyperlink_offset_to_index().end()) {
     *hyperlink_index = -1;
@@ -2500,7 +2500,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_startIndex(long* index) {
   if (!index)
     return E_INVALIDARG;
 
-  int32 hypertext_offset = 0;
+  int32_t hypertext_offset = 0;
   const auto parent = GetParent();
   if (parent) {
     hypertext_offset =
@@ -3212,7 +3212,7 @@ HRESULT WINAPI BrowserAccessibilityWin::InternalQueryInterface(
     void** object) {
   BrowserAccessibilityWin* accessibility =
       reinterpret_cast<BrowserAccessibilityWin*>(this_ptr);
-  int32 ia_role = accessibility->ia_role();
+  int32_t ia_role = accessibility->ia_role();
   if (iid == IID_IAccessibleImage) {
     if (ia_role != ROLE_SYSTEM_GRAPHIC) {
       *object = NULL;
@@ -3312,8 +3312,8 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
     while (table && table->GetRole() != ui::AX_ROLE_TABLE)
       table = table->GetParent();
     if (table) {
-      const std::vector<int32>& unique_cell_ids = table->GetIntListAttribute(
-          ui::AX_ATTR_UNIQUE_CELL_IDS);
+      const std::vector<int32_t>& unique_cell_ids =
+          table->GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
       for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
         if (unique_cell_ids[i] == GetId()) {
           win_attributes_->ia2_attributes.push_back(
@@ -3362,7 +3362,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   }
 
   // Expose row or column header sort direction.
-  int32 sort_direction;
+  int32_t sort_direction;
   if ((ia_role() == ROLE_SYSTEM_COLUMNHEADER ||
       ia_role() == ROLE_SYSTEM_ROWHEADER) &&
       GetIntAttribute(ui::AX_ATTR_SORT_DIRECTION, &sort_direction)) {
@@ -3446,9 +3446,9 @@ void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
     if (child->IsTextOnlyObject()) {
       win_attributes_->hypertext += child->name();
     } else {
-      int32 char_offset = hypertext().size();
-      int32 child_id = child->GetId();
-      int32 index = hyperlinks().size();
+      int32_t char_offset = hypertext().size();
+      int32_t child_id = child->GetId();
+      int32_t index = hyperlinks().size();
       win_attributes_->hyperlink_offset_to_index[char_offset] = index;
       win_attributes_->hyperlinks.push_back(child_id);
       win_attributes_->hypertext += kEmbeddedCharacter;
@@ -3665,7 +3665,7 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
 }
 
 bool BrowserAccessibilityWin::IsHyperlink() const {
-  int32 hyperlink_index = -1;
+  int32_t hyperlink_index = -1;
   const auto parent = GetParent();
   if (parent) {
     hyperlink_index =
@@ -3677,7 +3677,7 @@ bool BrowserAccessibilityWin::IsHyperlink() const {
   return false;
 }
 
-int32 BrowserAccessibilityWin::GetHyperlinkIndexFromChild(
+int32_t BrowserAccessibilityWin::GetHyperlinkIndexFromChild(
     const BrowserAccessibilityWin& child) const {
   if (hyperlinks().empty())
     return -1;
@@ -3687,11 +3687,11 @@ int32 BrowserAccessibilityWin::GetHyperlinkIndexFromChild(
   if (iterator == hyperlinks().end())
     return -1;
 
-  return static_cast<int32>(iterator - hyperlinks().begin());
+  return static_cast<int32_t>(iterator - hyperlinks().begin());
 }
 
-int32 BrowserAccessibilityWin::GetHypertextOffsetFromHyperlinkIndex(
-    int32 hyperlink_index) const {
+int32_t BrowserAccessibilityWin::GetHypertextOffsetFromHyperlinkIndex(
+    int32_t hyperlink_index) const {
   for (auto& offset_index : hyperlink_offset_to_index()) {
     if (offset_index.second == hyperlink_index)
       return offset_index.first;
@@ -3700,7 +3700,7 @@ int32 BrowserAccessibilityWin::GetHypertextOffsetFromHyperlinkIndex(
   return -1;
 }
 
-int32 BrowserAccessibilityWin::GetHypertextOffsetFromChild(
+int32_t BrowserAccessibilityWin::GetHypertextOffsetFromChild(
     const BrowserAccessibilityWin& child) const {
   DCHECK(child.GetParent() == this);
 
@@ -3710,11 +3710,11 @@ int32 BrowserAccessibilityWin::GetHypertextOffsetFromChild(
   // children should not be present at tree roots and so no cross-tree traversal
   // is necessary.)
   if (child.IsTextOnlyObject()) {
-    int32 hypertextOffset = 0;
-    int32 index_in_parent = child.GetIndexInParent();
+    int32_t hypertextOffset = 0;
+    int32_t index_in_parent = child.GetIndexInParent();
     DCHECK_GE(index_in_parent, 0);
-    DCHECK_LT(index_in_parent, static_cast<int32>(InternalChildCount()));
-    for (uint32 i = 0; i < static_cast<uint32>(index_in_parent); ++i) {
+    DCHECK_LT(index_in_parent, static_cast<int32_t>(InternalChildCount()));
+    for (uint32_t i = 0; i < static_cast<uint32_t>(index_in_parent); ++i) {
       const BrowserAccessibilityWin* sibling =
           InternalGetChild(i)->ToBrowserAccessibilityWin();
       DCHECK(sibling);
@@ -3726,14 +3726,14 @@ int32 BrowserAccessibilityWin::GetHypertextOffsetFromChild(
     return hypertextOffset;
   }
 
-  int32 hyperlink_index = GetHyperlinkIndexFromChild(child);
+  int32_t hyperlink_index = GetHyperlinkIndexFromChild(child);
   if (hyperlink_index < 0)
     return -1;
 
   return GetHypertextOffsetFromHyperlinkIndex(hyperlink_index);
 }
 
-int32 BrowserAccessibilityWin::GetHypertextOffsetFromDescendant(
+int32_t BrowserAccessibilityWin::GetHypertextOffsetFromDescendant(
     const BrowserAccessibilityWin& descendant) const {
   auto parent_object = descendant.GetParent()->ToBrowserAccessibilityWin();
   auto current_object = const_cast<BrowserAccessibilityWin*>(&descendant);
@@ -3767,7 +3767,7 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
     return endpoint_offset;
 
   const BrowserAccessibility* common_parent = this;
-  int32 index_in_common_parent = GetIndexInParent();
+  int32_t index_in_common_parent = GetIndexInParent();
   while (common_parent && !endpoint_object.IsDescendantOf(common_parent)) {
     index_in_common_parent = common_parent->GetIndexInParent();
     common_parent = common_parent->GetParent();
@@ -3784,7 +3784,8 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
   // We can safely assume that it is a descendant or in a completely different
   // part of the tree.
   if (common_parent == this) {
-    int32 hypertext_offset = GetHypertextOffsetFromDescendant(endpoint_object);
+    int32_t hypertext_offset =
+        GetHypertextOffsetFromDescendant(endpoint_object);
     if (endpoint_object.GetParent() == this &&
         endpoint_object.IsTextOnlyObject()) {
       hypertext_offset += endpoint_offset;
@@ -3797,8 +3798,8 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
   //
   // We can safely assume that the endpoint is in another part of the tree or
   // at common parent, and that this object is a descendant of common parent.
-  int32 endpoint_index_in_common_parent = -1;
-  for (uint32 i = 0; i < common_parent->InternalChildCount(); ++i) {
+  int32_t endpoint_index_in_common_parent = -1;
+  for (uint32_t i = 0; i < common_parent->InternalChildCount(); ++i) {
     const BrowserAccessibility* child = common_parent->InternalGetChild(i);
     DCHECK(child);
     if (endpoint_object.IsDescendantOf(child)) {
@@ -3818,7 +3819,7 @@ int BrowserAccessibilityWin::GetHypertextOffsetFromEndpoint(
 }
 
 int BrowserAccessibilityWin::GetSelectionAnchor() const {
-  int32 anchor_id = manager()->GetTreeData().sel_anchor_object_id;
+  int32_t anchor_id = manager()->GetTreeData().sel_anchor_object_id;
   const auto anchor_object =
       manager()->GetFromID(anchor_id)->ToBrowserAccessibilityWin();
   if (!anchor_object)
@@ -3829,7 +3830,7 @@ int BrowserAccessibilityWin::GetSelectionAnchor() const {
 }
 
 int BrowserAccessibilityWin::GetSelectionFocus() const {
-  int32 focus_id = manager()->GetTreeData().sel_focus_object_id;
+  int32_t focus_id = manager()->GetTreeData().sel_focus_object_id;
   const auto focus_object =
       manager()->GetFromID(focus_id)->ToBrowserAccessibilityWin();
   if (!focus_object)
@@ -3927,20 +3928,20 @@ bool BrowserAccessibilityWin::IsSameHypertextCharacter(size_t old_char_index,
 
   // If it's an embedded character, they're only identical if the child id
   // the hyperlink points to is the same.
-  std::map<int32, int32>& old_offset_to_index =
+  std::map<int32_t, int32_t>& old_offset_to_index =
       old_win_attributes_->hyperlink_offset_to_index;
-  std::vector<int32>& old_hyperlinks = old_win_attributes_->hyperlinks;
-  int32 old_hyperlinks_count = static_cast<int32>(old_hyperlinks.size());
-  std::map<int32, int32>::iterator iter;
+  std::vector<int32_t>& old_hyperlinks = old_win_attributes_->hyperlinks;
+  int32_t old_hyperlinks_count = static_cast<int32_t>(old_hyperlinks.size());
+  std::map<int32_t, int32_t>::iterator iter;
   iter = old_offset_to_index.find(old_char_index);
   int old_index = (iter != old_offset_to_index.end()) ? iter->second : -1;
   int old_child_id = (old_index >= 0 && old_index < old_hyperlinks_count) ?
       old_hyperlinks[old_index] : -1;
 
-  std::map<int32, int32>& new_offset_to_index =
+  std::map<int32_t, int32_t>& new_offset_to_index =
       win_attributes_->hyperlink_offset_to_index;
-  std::vector<int32>& new_hyperlinks = win_attributes_->hyperlinks;
-  int32 new_hyperlinks_count = static_cast<int32>(new_hyperlinks.size());
+  std::vector<int32_t>& new_hyperlinks = win_attributes_->hyperlinks;
+  int32_t new_hyperlinks_count = static_cast<int32_t>(new_hyperlinks.size());
   iter = new_offset_to_index.find(new_char_index);
   int new_index = (iter != new_offset_to_index.end()) ? iter->second : -1;
   int new_child_id = (new_index >= 0 && new_index < new_hyperlinks_count) ?
@@ -4021,13 +4022,13 @@ LONG BrowserAccessibilityWin::FindBoundary(
     return GetWordStartBoundary(static_cast<int>(start_offset), direction);
 
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
-  const std::vector<int32>& line_breaks = GetIntListAttribute(
-      ui::AX_ATTR_LINE_BREAKS);
+  const std::vector<int32_t>& line_breaks =
+      GetIntListAttribute(ui::AX_ATTR_LINE_BREAKS);
   return ui::FindAccessibleTextBoundary(
       text, line_breaks, boundary, start_offset, direction);
 }
 
-BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromID(int32 id) {
+BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromID(int32_t id) {
   return manager()->GetFromID(id)->ToBrowserAccessibilityWin();
 }
 
@@ -4035,8 +4036,8 @@ bool BrowserAccessibilityWin::IsListBoxOptionOrMenuListOption() {
   if (!GetParent())
     return false;
 
-  int32 role = GetRole();
-  int32 parent_role = GetParent()->GetRole();
+  int32_t role = GetRole();
+  int32_t parent_role = GetParent()->GetRole();
 
   if (role == ui::AX_ROLE_LIST_BOX_OPTION &&
       parent_role == ui::AX_ROLE_LIST_BOX) {
@@ -4120,7 +4121,7 @@ void BrowserAccessibilityWin::AddRelations(
   if (!HasIntListAttribute(src_attr))
     return;
 
-  const std::vector<int32>& ids = GetIntListAttribute(src_attr);
+  const std::vector<int32_t>& ids = GetIntListAttribute(src_attr);
   for (size_t i = 0; i < ids.size(); ++i) {
     CComObject<BrowserAccessibilityRelation>* relation;
     HRESULT hr = CComObject<BrowserAccessibilityRelation>::CreateInstance(
@@ -4134,11 +4135,11 @@ void BrowserAccessibilityWin::AddRelations(
 }
 
 void BrowserAccessibilityWin::InitRoleAndState() {
-  int32 ia_role = 0;
-  int32 ia_state = 0;
+  int32_t ia_role = 0;
+  int32_t ia_state = 0;
   base::string16 role_name;
-  int32 ia2_role = 0;
-  int32 ia2_state = IA2_STATE_OPAQUE;
+  int32_t ia2_role = 0;
+  int32_t ia2_state = IA2_STATE_OPAQUE;
 
   if (HasState(ui::AX_STATE_BUSY))
     ia_state |= STATE_SYSTEM_BUSY;

@@ -4,6 +4,11 @@
 
 #include "content/public/browser/browser_context.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "build/build_config.h"
+
 #if !defined(OS_IOS)
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
@@ -248,7 +253,7 @@ void BrowserContext::CreateFileBackedBlob(
 void BrowserContext::DeliverPushMessage(
     BrowserContext* browser_context,
     const GURL& origin,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& data,
     const base::Callback<void(PushDeliveryStatus)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

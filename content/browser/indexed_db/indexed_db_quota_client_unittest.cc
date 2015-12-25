@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
@@ -74,9 +77,9 @@ class IndexedDBQuotaClientTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  int64 GetOriginUsage(storage::QuotaClient* client,
-                       const GURL& origin,
-                       storage::StorageType type) {
+  int64_t GetOriginUsage(storage::QuotaClient* client,
+                         const GURL& origin,
+                         storage::StorageType type) {
     usage_ = -1;
     client->GetOriginUsage(
         origin,
@@ -148,7 +151,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
  private:
-  void OnGetOriginUsageComplete(int64 usage) { usage_ = usage; }
+  void OnGetOriginUsageComplete(int64_t usage) { usage_ = usage; }
 
   void OnGetOriginsComplete(const std::set<GURL>& origins) {
     origins_ = origins;
@@ -159,7 +162,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  int64 usage_;
+  int64_t usage_;
   std::set<GURL> origins_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;

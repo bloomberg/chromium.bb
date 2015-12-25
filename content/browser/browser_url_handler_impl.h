@@ -5,10 +5,11 @@
 #ifndef CONTENT_BROWSER_BROWSER_URL_HANDLER_IMPL_H_
 #define CONTENT_BROWSER_BROWSER_URL_HANDLER_IMPL_H_
 
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/browser_url_handler.h"
 

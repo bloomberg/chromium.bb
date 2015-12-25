@@ -4,11 +4,14 @@
 
 #include "content/browser/loader/upload_data_stream_builder.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -41,10 +44,10 @@ TEST(UploadDataStreamBuilderTest, CreateUploadDataStream) {
     const std::string kBlobData = "blobdata";
     const char kData[] = "123";
     const base::FilePath::StringType kFilePath = FILE_PATH_LITERAL("abc");
-    const uint64 kFileOffset = 10U;
-    const uint64 kFileLength = 100U;
+    const uint64_t kFileOffset = 10U;
+    const uint64_t kFileLength = 100U;
     const base::Time kFileTime = base::Time::FromDoubleT(999);
-    const int64 kIdentifier = 12345;
+    const int64_t kIdentifier = 12345;
 
     BlobStorageContext context;
     BlobDataBuilder builder(kBlob);
@@ -158,7 +161,7 @@ TEST(UploadDataStreamBuilderTest, ResetUploadStreamWithBlob) {
     const std::string kBlob = "blobuuid";
     const std::string kBlobData = "blobdata";
     const int kBlobDataLength = 8;
-    const int64 kIdentifier = 12345;
+    const int64_t kIdentifier = 12345;
 
     BlobStorageContext blob_storage_context;
     BlobDataBuilder builder(kBlob);

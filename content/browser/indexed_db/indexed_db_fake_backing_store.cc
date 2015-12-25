@@ -46,13 +46,13 @@ leveldb::Status IndexedDBFakeBackingStore::GetIDBDatabaseMetaData(
 leveldb::Status IndexedDBFakeBackingStore::CreateIDBDatabaseMetaData(
     const base::string16& name,
     const base::string16& version,
-    int64 int_version,
-    int64* row_id) {
+    int64_t int_version,
+    int64_t* row_id) {
   return leveldb::Status::OK();
 }
 bool IndexedDBFakeBackingStore::UpdateIDBDatabaseIntVersion(Transaction*,
-                                                            int64 row_id,
-                                                            int64 version) {
+                                                            int64_t row_id,
+                                                            int64_t version) {
   return false;
 }
 leveldb::Status IndexedDBFakeBackingStore::DeleteDatabase(
@@ -62,8 +62,8 @@ leveldb::Status IndexedDBFakeBackingStore::DeleteDatabase(
 
 leveldb::Status IndexedDBFakeBackingStore::CreateObjectStore(
     Transaction*,
-    int64 database_id,
-    int64 object_store_id,
+    int64_t database_id,
+    int64_t object_store_id,
     const base::string16& name,
     const IndexedDBKeyPath&,
     bool auto_increment) {
@@ -72,15 +72,15 @@ leveldb::Status IndexedDBFakeBackingStore::CreateObjectStore(
 
 leveldb::Status IndexedDBFakeBackingStore::DeleteObjectStore(
     Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id) {
+    int64_t database_id,
+    int64_t object_store_id) {
   return leveldb::Status::OK();
 }
 
 leveldb::Status IndexedDBFakeBackingStore::PutRecord(
     IndexedDBBackingStore::Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id,
+    int64_t database_id,
+    int64_t object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* value,
     ScopedVector<storage::BlobDataHandle>* handles,
@@ -90,36 +90,36 @@ leveldb::Status IndexedDBFakeBackingStore::PutRecord(
 
 leveldb::Status IndexedDBFakeBackingStore::ClearObjectStore(
     Transaction*,
-    int64 database_id,
-    int64 object_store_id) {
+    int64_t database_id,
+    int64_t object_store_id) {
   return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::DeleteRecord(
     Transaction*,
-    int64 database_id,
-    int64 object_store_id,
+    int64_t database_id,
+    int64_t object_store_id,
     const RecordIdentifier&) {
   return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::GetKeyGeneratorCurrentNumber(
     Transaction*,
-    int64 database_id,
-    int64 object_store_id,
-    int64* current_number) {
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t* current_number) {
   return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::MaybeUpdateKeyGeneratorCurrentNumber(
     Transaction*,
-    int64 database_id,
-    int64 object_store_id,
-    int64 new_number,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t new_number,
     bool check_current) {
   return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::KeyExistsInObjectStore(
     Transaction*,
-    int64 database_id,
-    int64 object_store_id,
+    int64_t database_id,
+    int64_t object_store_id,
     const IndexedDBKey&,
     RecordIdentifier* found_record_identifier,
     bool* found) {
@@ -128,9 +128,9 @@ leveldb::Status IndexedDBFakeBackingStore::KeyExistsInObjectStore(
 
 leveldb::Status IndexedDBFakeBackingStore::CreateIndex(
     Transaction*,
-    int64 database_id,
-    int64 object_store_id,
-    int64 index_id,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const base::string16& name,
     const IndexedDBKeyPath&,
     bool is_unique,
@@ -139,29 +139,29 @@ leveldb::Status IndexedDBFakeBackingStore::CreateIndex(
 }
 
 leveldb::Status IndexedDBFakeBackingStore::DeleteIndex(Transaction*,
-                                                       int64 database_id,
-                                                       int64 object_store_id,
-                                                       int64 index_id) {
+                                                       int64_t database_id,
+                                                       int64_t object_store_id,
+                                                       int64_t index_id) {
   return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::PutIndexDataForRecord(
     Transaction*,
-    int64 database_id,
-    int64 object_store_id,
-    int64 index_id,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const IndexedDBKey&,
     const RecordIdentifier&) {
   return leveldb::Status::OK();
 }
 
-void IndexedDBFakeBackingStore::ReportBlobUnused(int64 database_id,
-                                                 int64 blob_key) {}
+void IndexedDBFakeBackingStore::ReportBlobUnused(int64_t database_id,
+                                                 int64_t blob_key) {}
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
 IndexedDBFakeBackingStore::OpenObjectStoreKeyCursor(
     IndexedDBBackingStore::Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id,
+    int64_t database_id,
+    int64_t object_store_id,
     const IndexedDBKeyRange& key_range,
     blink::WebIDBCursorDirection,
     leveldb::Status* s) {
@@ -170,8 +170,8 @@ IndexedDBFakeBackingStore::OpenObjectStoreKeyCursor(
 scoped_ptr<IndexedDBBackingStore::Cursor>
 IndexedDBFakeBackingStore::OpenObjectStoreCursor(
     IndexedDBBackingStore::Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id,
+    int64_t database_id,
+    int64_t object_store_id,
     const IndexedDBKeyRange& key_range,
     blink::WebIDBCursorDirection,
     leveldb::Status* s) {
@@ -180,9 +180,9 @@ IndexedDBFakeBackingStore::OpenObjectStoreCursor(
 scoped_ptr<IndexedDBBackingStore::Cursor>
 IndexedDBFakeBackingStore::OpenIndexKeyCursor(
     IndexedDBBackingStore::Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id,
-    int64 index_id,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const IndexedDBKeyRange& key_range,
     blink::WebIDBCursorDirection,
     leveldb::Status* s) {
@@ -191,9 +191,9 @@ IndexedDBFakeBackingStore::OpenIndexKeyCursor(
 scoped_ptr<IndexedDBBackingStore::Cursor>
 IndexedDBFakeBackingStore::OpenIndexCursor(
     IndexedDBBackingStore::Transaction* transaction,
-    int64 database_id,
-    int64 object_store_id,
-    int64 index_id,
+    int64_t database_id,
+    int64_t object_store_id,
+    int64_t index_id,
     const IndexedDBKeyRange& key_range,
     blink::WebIDBCursorDirection,
     leveldb::Status* s) {

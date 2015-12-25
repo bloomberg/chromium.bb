@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_INTERSTITIAL_PAGE_NAVIGATOR_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_INTERSTITIAL_PAGE_NAVIGATOR_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/common/content_export.h"

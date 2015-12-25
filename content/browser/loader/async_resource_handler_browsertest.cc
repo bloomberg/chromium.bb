@@ -4,11 +4,14 @@
 
 #include "content/browser/loader/async_resource_handler.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"

@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_TETHERING_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_TETHERING_HANDLER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 
@@ -35,7 +38,7 @@ class TetheringHandler {
  private:
   class TetheringImpl;
 
-  void Accepted(uint16 port, const std::string& name);
+  void Accepted(uint16_t port, const std::string& name);
   bool Activate();
 
   void SendBindSuccess(DevToolsCommandId command_id);

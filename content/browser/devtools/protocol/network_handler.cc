@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/protocol/network_handler.h"
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"

@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_FACTORY_IMPL_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_FACTORY_IMPL_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 
 namespace content {

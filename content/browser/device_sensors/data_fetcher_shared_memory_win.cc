@@ -10,6 +10,7 @@
 #include <Sensors.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/win/iunknown_impl.h"
 #include "base/win/windows_version.h"

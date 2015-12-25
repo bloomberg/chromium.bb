@@ -9,15 +9,17 @@
 #include "content/browser/speech/endpointer/energy_endpointer.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace {
 
 // Returns the RMS (quadratic mean) of the input signal.
-float RMS(const int16* samples, int num_samples) {
-  int64 ssq_int64 = 0;
-  int64 sum_int64 = 0;
+float RMS(const int16_t* samples, int num_samples) {
+  int64_t ssq_int64 = 0;
+  int64_t sum_int64 = 0;
   for (int i = 0; i < num_samples; ++i) {
     sum_int64 += samples[i];
     ssq_int64 += samples[i] * samples[i];
@@ -29,8 +31,8 @@ float RMS(const int16* samples, int num_samples) {
   return static_cast<float>(sqrt((ssq / num_samples) - (sum * sum)));
 }
 
-int64 Secs2Usecs(float seconds) {
-  return static_cast<int64>(0.5 + (1.0e6 * seconds));
+int64_t Secs2Usecs(float seconds) {
+  return static_cast<int64_t>(0.5 + (1.0e6 * seconds));
 }
 
 float GetDecibel(float value) {
@@ -53,10 +55,10 @@ class EnergyEndpointer::HistoryRing {
   void SetRing(int size, bool initial_state);
 
   // Inserts a new entry into the ring and drops the oldest entry.
-  void Insert(int64 time_us, bool decision);
+  void Insert(int64_t time_us, bool decision);
 
   // Returns the time in microseconds of the most recently added entry.
-  int64 EndTime() const;
+  int64_t EndTime() const;
 
   // Returns the sum of all intervals during which 'decision' is true within
   // the time in seconds specified by 'duration'. The returned interval is
@@ -65,7 +67,7 @@ class EnergyEndpointer::HistoryRing {
 
  private:
   struct DecisionPoint {
-    int64 time_us;
+    int64_t time_us;
     bool decision;
   };
 
@@ -82,13 +84,13 @@ void EnergyEndpointer::HistoryRing::SetRing(int size, bool initial_state) {
   decision_points_.resize(size, init);
 }
 
-void EnergyEndpointer::HistoryRing::Insert(int64 time_us, bool decision) {
+void EnergyEndpointer::HistoryRing::Insert(int64_t time_us, bool decision) {
   decision_points_[insertion_index_].time_us = time_us;
   decision_points_[insertion_index_].decision = decision;
   insertion_index_ = (insertion_index_ + 1) % decision_points_.size();
 }
 
-int64 EnergyEndpointer::HistoryRing::EndTime() const {
+int64_t EnergyEndpointer::HistoryRing::EndTime() const {
   int ind = insertion_index_ - 1;
   if (ind < 0)
     ind = decision_points_.size() - 1;
@@ -99,13 +101,14 @@ float EnergyEndpointer::HistoryRing::RingSum(float duration_sec) {
   if (!decision_points_.size())
     return 0.0;
 
-  int64 sum_us = 0;
+  int64_t sum_us = 0;
   int ind = insertion_index_ - 1;
   if (ind < 0)
     ind = decision_points_.size() - 1;
-  int64 end_us = decision_points_[ind].time_us;
+  int64_t end_us = decision_points_[ind].time_us;
   bool is_on = decision_points_[ind].decision;
-  int64 start_us = end_us - static_cast<int64>(0.5 + (1.0e6 * duration_sec));
+  int64_t start_us =
+      end_us - static_cast<int64_t>(0.5 + (1.0e6 * duration_sec));
   if (start_us < 0)
     start_us = 0;
   size_t n_summed = 1;  // n points ==> (n-1) intervals
@@ -146,7 +149,7 @@ EnergyEndpointer::~EnergyEndpointer() {
 }
 
 int EnergyEndpointer::TimeToFrame(float time) const {
-  return static_cast<int32>(0.5 + (time / params_.frame_period()));
+  return static_cast<int32_t>(0.5 + (time / params_.frame_period()));
 }
 
 void EnergyEndpointer::Restart(bool reset_threshold) {
@@ -200,7 +203,7 @@ void EnergyEndpointer::Init(const EnergyEndpointerParams& params) {
   // The level of the first frame will overwrite these values.
   noise_level_ = params_.decision_threshold() / 2.0f;
   fast_update_frames_ =
-      static_cast<int64>(params_.fast_update_dur() / params_.frame_period());
+      static_cast<int64_t>(params_.fast_update_dur() / params_.frame_period());
 
   frame_counter_ = 0;  // Used for rapid initial update of levels.
 
@@ -229,8 +232,8 @@ void EnergyEndpointer::SetUserInputMode() {
   user_input_start_time_us_ = endpointer_time_us_;
 }
 
-void EnergyEndpointer::ProcessAudioFrame(int64 time_us,
-                                         const int16* samples,
+void EnergyEndpointer::ProcessAudioFrame(int64_t time_us,
+                                         const int16_t* samples,
                                          int num_samples,
                                          float* rms_out) {
   endpointer_time_us_ = time_us;
@@ -368,7 +371,7 @@ void EnergyEndpointer::UpdateLevels(float rms) {
   }
 }
 
-EpStatus EnergyEndpointer::Status(int64* status_time)  const {
+EpStatus EnergyEndpointer::Status(int64_t* status_time) const {
   *status_time = history_->EndTime();
   return status_;
 }

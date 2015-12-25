@@ -8,6 +8,10 @@
 
 #include "content/browser/geolocation/wifi_data_provider_linux.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -155,7 +159,7 @@ bool NetworkManagerWlanApi::GetAccessPointData(
       continue;  // Check the next device.
     }
     dbus::MessageReader reader(response.get());
-    uint32 device_type = 0;
+    uint32_t device_type = 0;
     if (!reader.PopVariantOfUint32(&device_type)) {
       LOG(WARNING) << "Unexpected response for " << device_type << ": "
                    << response->ToString();
@@ -247,7 +251,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
                      << ": " << response->ToString();
         continue;
       }
-      const uint8* ssid_bytes = NULL;
+      const uint8_t* ssid_bytes = NULL;
       size_t ssid_length = 0;
       if (!variant_reader.PopArrayOfBytes(&ssid_bytes, &ssid_length)) {
         LOG(WARNING) << "Unexpected response for " << access_point_path.value()
@@ -272,7 +276,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       }
 
       base::ReplaceSubstringsAfterOffset(&mac, 0U, ":", base::StringPiece());
-      std::vector<uint8> mac_bytes;
+      std::vector<uint8_t> mac_bytes;
       if (!base::HexStringToBytes(mac, &mac_bytes) || mac_bytes.size() != 6) {
         LOG(WARNING) << "Can't parse mac address (found " << mac_bytes.size()
                      << " bytes) so using raw string: " << mac;
@@ -288,7 +292,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       if (!response)
         continue;
       dbus::MessageReader reader(response.get());
-      uint8 strength = 0;
+      uint8_t strength = 0;
       if (!reader.PopVariantOfByte(&strength)) {
         LOG(WARNING) << "Unexpected response for " << access_point_path.value()
                      << ": " << response->ToString();
@@ -304,7 +308,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       if (!response)
         continue;
       dbus::MessageReader reader(response.get());
-      uint32 frequency = 0;
+      uint32_t frequency = 0;
       if (!reader.PopVariantOfUint32(&frequency)) {
         LOG(WARNING) << "Unexpected response for " << access_point_path.value()
                      << ": " << response->ToString();

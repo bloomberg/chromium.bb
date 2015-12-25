@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_MHTML_GENERATION_MANAGER_H_
 #define CONTENT_BROWSER_DOWNLOAD_MHTML_GENERATION_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "ipc/ipc_platform_file.h"
@@ -29,7 +32,7 @@ class MHTMLGenerationManager {
   // GenerateMHTMLCallback is called to report completion and status of MHTML
   // generation.  On success |file_size| indicates the size of the
   // generated file.  On failure |file_size| is -1.
-  typedef base::Callback<void(int64 file_size)> GenerateMHTMLCallback;
+  typedef base::Callback<void(int64_t file_size)> GenerateMHTMLCallback;
 
   // Instructs the render view to generate a MHTML representation of the current
   // page for |web_contents|.
@@ -61,7 +64,7 @@ class MHTMLGenerationManager {
   void JobFinished(int job_id, JobStatus job_status);
 
   // Called on the UI thread after the file got finalized and we have its size.
-  void OnFileClosed(int job_id, JobStatus job_status, int64 file_size);
+  void OnFileClosed(int job_id, JobStatus job_status, int64_t file_size);
 
   // Creates and registers a new job.
   int NewJob(WebContents* web_contents, const GenerateMHTMLCallback& callback);

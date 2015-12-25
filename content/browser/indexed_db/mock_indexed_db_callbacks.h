@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_MOCK_INDEXED_DB_CALLBACKS_H_
 #define CONTENT_BROWSER_INDEXED_DB_MOCK_INDEXED_DB_CALLBACKS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 
@@ -18,7 +21,7 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
   explicit MockIndexedDBCallbacks(bool expect_connection);
 
   void OnSuccess() override;
-  void OnSuccess(int64 result) override;
+  void OnSuccess(int64_t result) override;
   void OnSuccess(const std::vector<base::string16>& result) override;
   void OnSuccess(const IndexedDBKey& key) override;
   void OnSuccess(scoped_ptr<IndexedDBConnection> connection,

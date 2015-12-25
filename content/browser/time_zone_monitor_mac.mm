@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/time_zone_monitor.h"
-
 #import <Foundation/Foundation.h>
+
+#include "base/macros.h"
+#include "content/browser/time_zone_monitor.h"
 
 namespace content {
 

@@ -4,8 +4,11 @@
 
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -23,7 +26,7 @@ namespace content {
 
 namespace {
 
-const uint32 kFilteredMessageClasses[] = {CacheStorageMsgStart};
+const uint32_t kFilteredMessageClasses[] = {CacheStorageMsgStart};
 
 blink::WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
     CacheStorageError err) {

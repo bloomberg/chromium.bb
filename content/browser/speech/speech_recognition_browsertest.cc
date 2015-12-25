@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
 #include "base/bind.h"
@@ -137,11 +140,11 @@ class SpeechRecognitionBrowserTest :
       bool fill_with_noise) {
     DCHECK(controller.get());
     const media::AudioParameters& audio_params = controller->audio_parameters();
-    scoped_ptr<uint8[]> audio_buffer(new uint8[buffer_size]);
+    scoped_ptr<uint8_t[]> audio_buffer(new uint8_t[buffer_size]);
     if (fill_with_noise) {
       for (size_t i = 0; i < buffer_size; ++i)
-        audio_buffer[i] = static_cast<uint8>(127 * sin(i * 3.14F /
-            (16 * buffer_size)));
+        audio_buffer[i] =
+            static_cast<uint8_t>(127 * sin(i * 3.14F / (16 * buffer_size)));
     } else {
       memset(audio_buffer.get(), 0, buffer_size);
     }

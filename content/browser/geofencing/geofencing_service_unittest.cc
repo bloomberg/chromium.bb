@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "content/browser/geofencing/geofencing_provider.h"
 #include "content/browser/geofencing/geofencing_registration_delegate.h"
 #include "content/browser/geofencing/geofencing_service.h"
@@ -30,18 +32,19 @@ class MockGeofencingRegistrationDelegate
     : public GeofencingRegistrationDelegate {
  public:
   MOCK_METHOD2(RegistrationFinished,
-               void(int64 geofencing_registration_id, GeofencingStatus status));
-  MOCK_METHOD1(RegionEntered, void(int64 geofencing_registration_id));
-  MOCK_METHOD1(RegionExited, void(int64 geofencing_registration_id));
+               void(int64_t geofencing_registration_id,
+                    GeofencingStatus status));
+  MOCK_METHOD1(RegionEntered, void(int64_t geofencing_registration_id));
+  MOCK_METHOD1(RegionExited, void(int64_t geofencing_registration_id));
 };
 
 class MockGeofencingProvider : public GeofencingProvider {
  public:
   MOCK_METHOD3(RegisterRegion,
-               void(int64 geofencing_registration_id,
+               void(int64_t geofencing_registration_id,
                     const blink::WebCircularGeofencingRegion& region,
                     const StatusCallback& callback));
-  MOCK_METHOD1(UnregisterRegion, void(int64 geofencing_registration_id));
+  MOCK_METHOD1(UnregisterRegion, void(int64_t geofencing_registration_id));
 };
 
 ACTION_P(QuitRunner, runner) {
@@ -79,12 +82,12 @@ class GeofencingServiceTest : public testing::Test {
 
   int RegistrationCount() { return service_->RegistrationCountForTesting(); }
 
-  int64 RegisterRegionSync(const WebCircularGeofencingRegion& region,
-                           GeofencingStatus provider_status) {
+  int64_t RegisterRegionSync(const WebCircularGeofencingRegion& region,
+                             GeofencingStatus provider_status) {
     scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner());
 
     // The registration ID that is passed to the provider.
-    int64 provider_registration_id = -1;
+    int64_t provider_registration_id = -1;
     // The callback that is passed to the provider.
     GeofencingProvider::StatusCallback callback;
 
@@ -95,7 +98,7 @@ class GeofencingServiceTest : public testing::Test {
         .WillOnce(testing::DoAll(SaveRegistrationId(&provider_registration_id),
                                  SaveStatusCallback(&callback)));
 
-    int64 geofencing_registration_id =
+    int64_t geofencing_registration_id =
         service_->RegisterRegion(region, &delegate_);
 
     // Service should have synchronously called the provider.
@@ -124,7 +127,7 @@ class GeofencingServiceTest : public testing::Test {
 
 TEST_F(GeofencingServiceTest, RegisterRegion_NoProvider) {
   scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner());
-  int64 geofencing_registration_id =
+  int64_t geofencing_registration_id =
       service_->RegisterRegion(test_region_, &delegate_);
   EXPECT_CALL(delegate_,
               RegistrationFinished(
@@ -171,7 +174,7 @@ TEST_F(GeofencingServiceTest, UnregisterRegion_DuringSuccesfullRegistration) {
           testing::_, WebCircularGeofencingRegionEq(test_region_), testing::_))
       .WillOnce(SaveStatusCallback(&callback));
 
-  int64 geofencing_registration_id =
+  int64_t geofencing_registration_id =
       service_->RegisterRegion(test_region_, &delegate_);
 
   // Service should have synchronously called the provider.

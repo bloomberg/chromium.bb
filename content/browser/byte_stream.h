@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_BYTE_STREAM_H_
 #define CONTENT_BROWSER_BYTE_STREAM_H_
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

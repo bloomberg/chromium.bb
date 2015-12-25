@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <Carbon/Carbon.h>
+#include <stdint.h>
 
 #include "build/build_config.h"
 
@@ -19,7 +20,7 @@
 
 namespace content {
 
-void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
+void PluginProcessHost::OnPluginShowWindow(uint32_t window_id,
                                            gfx::Rect window_rect,
                                            bool modal) {
   plugin_visible_windows_set_.insert(window_id);
@@ -57,7 +58,7 @@ static void ReleasePluginFullScreen(pid_t plugin_pid) {
   }
 }
 
-void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
+void PluginProcessHost::OnPluginHideWindow(uint32_t window_id,
                                            gfx::Rect window_rect) {
   bool had_windows = !plugin_visible_windows_set_.empty();
   plugin_visible_windows_set_.erase(window_id);

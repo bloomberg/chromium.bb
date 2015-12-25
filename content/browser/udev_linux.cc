@@ -4,6 +4,8 @@
 
 #include "content/browser/udev_linux.h"
 
+#include <stddef.h>
+
 #include "base/message_loop/message_loop.h"
 
 namespace content {

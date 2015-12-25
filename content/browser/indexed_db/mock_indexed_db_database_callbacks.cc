@@ -18,7 +18,7 @@ void MockIndexedDBDatabaseCallbacks::OnForcedClose() {
 }
 
 void MockIndexedDBDatabaseCallbacks::OnAbort(
-    int64 transaction_id,
+    int64_t transaction_id,
     const IndexedDBDatabaseError& error) {
   abort_called_ = true;
 }

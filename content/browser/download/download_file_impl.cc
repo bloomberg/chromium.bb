@@ -228,7 +228,7 @@ bool DownloadFileImpl::InProgress() const {
   return file_.in_progress();
 }
 
-int64 DownloadFileImpl::CurrentSpeed() const {
+int64_t DownloadFileImpl::CurrentSpeed() const {
   return rate_estimator_.GetCountPerSecond();
 }
 

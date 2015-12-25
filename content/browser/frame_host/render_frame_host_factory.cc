@@ -21,8 +21,8 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
     RenderWidgetHostDelegate* rwh_delegate,
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
-    int32 routing_id,
-    int32 widget_routing_id,
+    int32_t routing_id,
+    int32_t widget_routing_id,
     int flags) {
   if (factory_) {
     return factory_->CreateRenderFrameHost(

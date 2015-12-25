@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DOM_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DOM_HANDLER_H_
 
+#include "base/macros.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 
 namespace content {

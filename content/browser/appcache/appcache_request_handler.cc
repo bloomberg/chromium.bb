@@ -175,8 +175,8 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
   return job.release();
 }
 
-void AppCacheRequestHandler::GetExtraResponseInfo(
-    int64* cache_id, GURL* manifest_url) {
+void AppCacheRequestHandler::GetExtraResponseInfo(int64_t* cache_id,
+                                                  GURL* manifest_url) {
   *cache_id = cache_id_;
   *manifest_url = manifest_url_;
 }
@@ -222,8 +222,11 @@ void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {
 }
 
 void AppCacheRequestHandler::DeliverAppCachedResponse(
-    const AppCacheEntry& entry, int64 cache_id, int64 group_id,
-    const GURL& manifest_url,  bool is_fallback,
+    const AppCacheEntry& entry,
+    int64_t cache_id,
+    int64_t group_id,
+    const GURL& manifest_url,
+    bool is_fallback,
     const GURL& namespace_entry_url) {
   DCHECK(host_ && job_.get() && job_->is_waiting());
   DCHECK(entry.has_response_id());
@@ -313,9 +316,13 @@ scoped_ptr<AppCacheURLRequestJob> AppCacheRequestHandler::MaybeLoadMainResource(
 }
 
 void AppCacheRequestHandler::OnMainResponseFound(
-    const GURL& url, const AppCacheEntry& entry,
-    const GURL& namespace_entry_url, const AppCacheEntry& fallback_entry,
-    int64 cache_id, int64 group_id, const GURL& manifest_url) {
+    const GURL& url,
+    const AppCacheEntry& entry,
+    const GURL& namespace_entry_url,
+    const AppCacheEntry& fallback_entry,
+    int64_t cache_id,
+    int64_t group_id,
+    const GURL& manifest_url) {
   DCHECK(host_);
   DCHECK(is_main_resource());
   DCHECK(!entry.IsForeign());

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_
 #define CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/geolocation/wifi_data_provider.h"

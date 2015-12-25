@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/logging.h"
@@ -60,9 +62,9 @@ class IndexedDBTestDatabase : public IndexedDBDatabase {
 class IndexedDBTestTransaction : public IndexedDBTransaction {
  public:
   IndexedDBTestTransaction(
-      int64 id,
+      int64_t id,
       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-      const std::set<int64>& scope,
+      const std::set<int64_t>& scope,
       blink::WebIDBTransactionMode mode,
       IndexedDBDatabase* db,
       IndexedDBBackingStore::Transaction* backing_store_transaction)
@@ -262,9 +264,9 @@ MockBrowserTestIndexedDBClassFactory::CreateIndexedDBDatabase(
 
 IndexedDBTransaction*
 MockBrowserTestIndexedDBClassFactory::CreateIndexedDBTransaction(
-    int64 id,
+    int64_t id,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-    const std::set<int64>& scope,
+    const std::set<int64_t>& scope,
     blink::WebIDBTransactionMode mode,
     IndexedDBDatabase* db,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {

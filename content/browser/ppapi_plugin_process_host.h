@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
 #define CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
@@ -83,16 +85,16 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   // the plugin.
   static void DidCreateOutOfProcessInstance(
       int plugin_process_id,
-      int32 pp_instance,
+      int32_t pp_instance,
       const PepperRendererInstanceData& instance_data);
 
   // The opposite of DIdCreate... above.
   static void DidDeleteOutOfProcessInstance(int plugin_process_id,
-                                            int32 pp_instance);
+                                            int32_t pp_instance);
 
   // Notification that a Plugin instance has been throttled or unthrottled.
   static void OnPluginInstanceThrottleStateChange(int plugin_process_id,
-                                                  int32 pp_instance,
+                                                  int32_t pp_instance,
                                                   bool is_throttled);
 
   // Returns the instances that match the specified process name.
@@ -135,7 +137,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
 
   void OnProcessCrashed(int exit_code) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   void CancelRequests();

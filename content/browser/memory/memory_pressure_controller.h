@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"

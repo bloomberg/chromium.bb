@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CURSOR_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CURSOR_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -27,7 +29,7 @@ class CONTENT_EXPORT IndexedDBCursor
                   blink::WebIDBTaskType task_type,
                   IndexedDBTransaction* transaction);
 
-  void Advance(uint32 count, scoped_refptr<IndexedDBCallbacks> callbacks);
+  void Advance(uint32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
   void Continue(scoped_ptr<IndexedDBKey> key,
                 scoped_ptr<IndexedDBKey> primary_key,
                 scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -47,7 +49,7 @@ class CONTENT_EXPORT IndexedDBCursor
                                 scoped_ptr<IndexedDBKey> primary_key,
                                 scoped_refptr<IndexedDBCallbacks> callbacks,
                                 IndexedDBTransaction* transaction);
-  void CursorAdvanceOperation(uint32 count,
+  void CursorAdvanceOperation(uint32_t count,
                               scoped_refptr<IndexedDBCallbacks> callbacks,
                               IndexedDBTransaction* transaction);
   void CursorPrefetchIterationOperation(

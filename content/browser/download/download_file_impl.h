@@ -7,6 +7,10 @@
 
 #include "content/browser/download/download_file.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -56,7 +60,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void Cancel() override;
   base::FilePath FullPath() const override;
   bool InProgress() const override;
-  int64 CurrentSpeed() const override;
+  int64_t CurrentSpeed() const override;
   bool GetHash(std::string* hash) override;
   std::string GetHashState() override;
   void SetClientGuid(const std::string& guid) override;

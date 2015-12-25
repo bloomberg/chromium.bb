@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_VR_VR_DEVICE_MANAGER_H
 #define CONTENT_BROWSER_VR_VR_DEVICE_MANAGER_H
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"

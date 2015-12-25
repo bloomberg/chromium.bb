@@ -5,25 +5,28 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UTILS_WIN_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UTILS_WIN_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
-CONTENT_EXPORT base::string16 IAccessibleRoleToString(int32 ia_role);
-CONTENT_EXPORT base::string16 IAccessible2RoleToString(int32 ia_role);
-CONTENT_EXPORT base::string16 IAccessibleStateToString(int32 ia_state);
+CONTENT_EXPORT base::string16 IAccessibleRoleToString(int32_t ia_role);
+CONTENT_EXPORT base::string16 IAccessible2RoleToString(int32_t ia_role);
+CONTENT_EXPORT base::string16 IAccessibleStateToString(int32_t ia_state);
 CONTENT_EXPORT void IAccessibleStateToStringVector(
-    int32 ia_state, std::vector<base::string16>* result);
-CONTENT_EXPORT base::string16 IAccessible2StateToString(int32 ia2_state);
+    int32_t ia_state,
+    std::vector<base::string16>* result);
+CONTENT_EXPORT base::string16 IAccessible2StateToString(int32_t ia2_state);
 CONTENT_EXPORT void IAccessible2StateToStringVector(
-    int32 ia_state, std::vector<base::string16>* result);
+    int32_t ia_state,
+    std::vector<base::string16>* result);
 
 // Handles both IAccessible/MSAA events and IAccessible2 events.
-CONTENT_EXPORT base::string16 AccessibilityEventToString(int32 event_id);
+CONTENT_EXPORT base::string16 AccessibilityEventToString(int32_t event_id);
 
 }  // namespace content
 

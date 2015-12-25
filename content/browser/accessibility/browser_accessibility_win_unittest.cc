@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
@@ -337,7 +340,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   text_field.id = 2;
   text_field.role = ui::AX_ROLE_TEXT_FIELD;
   text_field.AddStringAttribute(ui::AX_ATTR_VALUE, text_value);
-  std::vector<int32> line_start_offsets;
+  std::vector<int32_t> line_start_offsets;
   line_start_offsets.push_back(15);
   text_field.AddIntListAttribute(
       ui::AX_ATTR_LINE_BREAKS, line_start_offsets);
@@ -355,7 +358,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   inline_box1.id = 4;
   inline_box1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_box1.AddStringAttribute(ui::AX_ATTR_NAME, line1);
-  std::vector<int32> word_start_offsets1;
+  std::vector<int32_t> word_start_offsets1;
   word_start_offsets1.push_back(0);
   word_start_offsets1.push_back(4);
   word_start_offsets1.push_back(8);
@@ -377,7 +380,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   inline_box2.id = 7;
   inline_box2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
   inline_box2.AddStringAttribute(ui::AX_ATTR_NAME, line2);
-  std::vector<int32> word_start_offsets2;
+  std::vector<int32_t> word_start_offsets2;
   word_start_offsets2.push_back(0);
   word_start_offsets2.push_back(5);
   word_start_offsets2.push_back(10);
@@ -720,9 +723,9 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   // Try creating an empty document with busy state. Readonly is
   // set automatically.
   CountedBrowserAccessibility::reset();
-  const int32 busy_state = 1 << ui::AX_STATE_BUSY;
-  const int32 readonly_state = 1 << ui::AX_STATE_READ_ONLY;
-  const int32 enabled_state = 1 << ui::AX_STATE_ENABLED;
+  const int32_t busy_state = 1 << ui::AX_STATE_BUSY;
+  const int32_t readonly_state = 1 << ui::AX_STATE_READ_ONLY;
+  const int32_t enabled_state = 1 << ui::AX_STATE_ENABLED;
   scoped_ptr<BrowserAccessibilityManager> manager(
       new BrowserAccessibilityManagerWin(
           BrowserAccessibilityManagerWin::GetEmptyDocument(),

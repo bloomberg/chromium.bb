@@ -4,15 +4,19 @@
 
 #include "content/browser/ppapi_plugin_process_host.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -188,7 +192,7 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
 // static
 void PpapiPluginProcessHost::DidCreateOutOfProcessInstance(
     int plugin_process_id,
-    int32 pp_instance,
+    int32_t pp_instance,
     const PepperRendererInstanceData& instance_data) {
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter->process_.get() &&
@@ -211,7 +215,7 @@ void PpapiPluginProcessHost::DidCreateOutOfProcessInstance(
 // static
 void PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
     int plugin_process_id,
-    int32 pp_instance) {
+    int32_t pp_instance) {
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter->process_.get() &&
         iter->process_->GetData().id == plugin_process_id) {
@@ -228,7 +232,7 @@ void PpapiPluginProcessHost::DidDeleteOutOfProcessInstance(
 // static
 void PpapiPluginProcessHost::OnPluginInstanceThrottleStateChange(
     int plugin_process_id,
-    int32 pp_instance,
+    int32_t pp_instance,
     bool is_throttled) {
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter->process_.get() &&
@@ -275,7 +279,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
     const base::FilePath& profile_data_directory)
     : profile_data_directory_(profile_data_directory),
       is_broker_(false) {
-  uint32 base_permissions = info.permissions;
+  uint32_t base_permissions = info.permissions;
 
   // We don't have to do any whitelisting for APIs in this process host, so
   // don't bother passing a browser context or document url here.
@@ -462,7 +466,7 @@ bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 // Called when the browser <--> plugin channel has been established.
-void PpapiPluginProcessHost::OnChannelConnected(int32 peer_pid) {
+void PpapiPluginProcessHost::OnChannelConnected(int32_t peer_pid) {
   // This will actually load the plugin. Errors will actually not be reported
   // back at this point. Instead, the plugin will fail to establish the
   // connections when we request them on behalf of the renderer(s).

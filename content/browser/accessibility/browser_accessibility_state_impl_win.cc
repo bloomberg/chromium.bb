@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <psapi.h>
+#include <stddef.h>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"

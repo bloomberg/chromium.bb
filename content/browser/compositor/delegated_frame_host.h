@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_DELEGATED_FRAME_HOST_H_
 #define CONTENT_BROWSER_COMPOSITOR_DELEGATED_FRAME_HOST_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -127,7 +129,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Public interface exposed to RenderWidgetHostView.
 
-  void SwapDelegatedFrame(uint32 output_surface_id,
+  void SwapDelegatedFrame(uint32_t output_surface_id,
                           scoped_ptr<cc::CompositorFrame> frame);
   void ClearDelegatedFrame();
   void WasHidden();
@@ -249,9 +251,9 @@ class CONTENT_EXPORT DelegatedFrameHost
       scoped_refptr<OwnedMailbox> subscriber_texture,
       const gpu::SyncToken& sync_token);
 
-  void SendDelegatedFrameAck(uint32 output_surface_id);
-  void SurfaceDrawn(uint32 output_surface_id, cc::SurfaceDrawStatus drawn);
-  void SendReturnedDelegatedResources(uint32 output_surface_id);
+  void SendDelegatedFrameAck(uint32_t output_surface_id);
+  void SurfaceDrawn(uint32_t output_surface_id, cc::SurfaceDrawStatus drawn);
+  void SendReturnedDelegatedResources(uint32_t output_surface_id);
 
   // Called to consult the current |frame_subscriber_|, to determine and maybe
   // initiate a copy-into-video-frame request.
@@ -280,7 +282,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // With delegated renderer, this is the last output surface, used to
   // disambiguate resources with the same id coming from different output
   // surfaces.
-  uint32 last_output_surface_id_;
+  uint32_t last_output_surface_id_;
 
   // The number of delegated frame acks that are pending, to delay resource
   // returns until the acks are sent.

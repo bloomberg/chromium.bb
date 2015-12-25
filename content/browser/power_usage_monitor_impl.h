@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
 #define CONTENT_BROWSER_POWER_USAGE_MONITOR_IMPL_H_
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/time/time.h"

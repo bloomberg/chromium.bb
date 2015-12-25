@@ -23,7 +23,7 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
       weak_factory_(this) {
 }
 
-void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
+void AppCacheDispatcherHost::OnChannelConnected(int32_t peer_pid) {
   if (appcache_service_.get()) {
     backend_impl_.Initialize(
         appcache_service_.get(), &frontend_proxy_, process_id_);
@@ -89,8 +89,9 @@ void AppCacheDispatcherHost::OnSetSpawningHostId(
 }
 
 void AppCacheDispatcherHost::OnSelectCache(
-    int host_id, const GURL& document_url,
-    int64 cache_document_was_loaded_from,
+    int host_id,
+    const GURL& document_url,
+    int64_t cache_document_was_loaded_from,
     const GURL& opt_manifest_url) {
   if (appcache_service_.get()) {
     if (!backend_impl_.SelectCache(host_id,
@@ -117,8 +118,8 @@ void AppCacheDispatcherHost::OnSelectCacheForWorker(
   }
 }
 
-void AppCacheDispatcherHost::OnSelectCacheForSharedWorker(
-    int host_id, int64 appcache_id) {
+void AppCacheDispatcherHost::OnSelectCacheForSharedWorker(int host_id,
+                                                          int64_t appcache_id) {
   if (appcache_service_.get()) {
     if (!backend_impl_.SelectCacheForSharedWorker(host_id, appcache_id))
       bad_message::ReceivedBadMessage(
@@ -129,8 +130,9 @@ void AppCacheDispatcherHost::OnSelectCacheForSharedWorker(
 }
 
 void AppCacheDispatcherHost::OnMarkAsForeignEntry(
-    int host_id, const GURL& document_url,
-    int64 cache_document_was_loaded_from) {
+    int host_id,
+    const GURL& document_url,
+    int64_t cache_document_was_loaded_from) {
   if (appcache_service_.get()) {
     if (!backend_impl_.MarkAsForeignEntry(
             host_id, document_url, cache_document_was_loaded_from)) {

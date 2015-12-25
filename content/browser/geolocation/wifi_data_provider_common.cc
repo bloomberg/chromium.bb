@@ -12,7 +12,7 @@
 
 namespace content {
 
-base::string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
+base::string16 MacAddressAsString16(const uint8_t mac_as_int[6]) {
   // mac_as_int is big-endian. Write in byte chunks.
   // Format is XX-XX-XX-XX-XX-XX.
   static const char* const kMacFormatString =

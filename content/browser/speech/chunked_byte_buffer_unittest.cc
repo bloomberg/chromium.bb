@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -10,15 +12,15 @@
 
 namespace content {
 
-typedef std::vector<uint8> ByteVector;
+typedef std::vector<uint8_t> ByteVector;
 
 TEST(ChunkedByteBufferTest, BasicTest) {
   ChunkedByteBuffer buffer;
 
-  const uint8 kChunks[] = {
+  const uint8_t kChunks[] = {
       0x00, 0x00, 0x00, 0x04, 0x01, 0x02, 0x03, 0x04,  // Chunk 1: 4 bytes
-      0x00, 0x00, 0x00, 0x02, 0x05, 0x06,  // Chunk 2: 2 bytes
-      0x00, 0x00, 0x00, 0x01, 0x07  // Chunk 3: 1 bytes
+      0x00, 0x00, 0x00, 0x02, 0x05, 0x06,              // Chunk 2: 2 bytes
+      0x00, 0x00, 0x00, 0x01, 0x07                     // Chunk 3: 1 bytes
   };
 
   EXPECT_EQ(0U, buffer.GetTotalLength());
@@ -44,9 +46,8 @@ TEST(ChunkedByteBufferTest, BasicTest) {
   chunk = buffer.PopChunk();
   EXPECT_TRUE(chunk != NULL);
   EXPECT_EQ(4U, chunk->size());
-  EXPECT_EQ(0, std::char_traits<uint8>::compare(kChunks + 4,
-                                                &(*chunk)[0],
-                                                chunk->size()));
+  EXPECT_EQ(0, std::char_traits<uint8_t>::compare(kChunks + 4, &(*chunk)[0],
+                                                  chunk->size()));
   EXPECT_EQ(6U, buffer.GetTotalLength());
   EXPECT_TRUE(buffer.HasChunks());
 
@@ -54,9 +55,8 @@ TEST(ChunkedByteBufferTest, BasicTest) {
   chunk = buffer.PopChunk();
   EXPECT_TRUE(chunk != NULL);
   EXPECT_EQ(2U, chunk->size());
-  EXPECT_EQ(0, std::char_traits<uint8>::compare(kChunks + 12,
-                                                &(*chunk)[0],
-                                                chunk->size()));
+  EXPECT_EQ(0, std::char_traits<uint8_t>::compare(kChunks + 12, &(*chunk)[0],
+                                                  chunk->size()));
   EXPECT_EQ(0U, buffer.GetTotalLength());
   EXPECT_FALSE(buffer.HasChunks());
 

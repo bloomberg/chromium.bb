@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_SPEECH_CHUNKED_BYTE_BUFFER_H_
 #define CONTENT_BROWSER_SPEECH_CHUNKED_BYTE_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
@@ -31,7 +34,7 @@ class CONTENT_EXPORT ChunkedByteBuffer {
   ~ChunkedByteBuffer();
 
   // Appends |length| bytes starting from |start| to the buffer.
-  void Append(const uint8* start, size_t length);
+  void Append(const uint8_t* start, size_t length);
 
   // Appends bytes contained in the |string| to the buffer.
   void Append(const std::string& string);
@@ -41,7 +44,7 @@ class CONTENT_EXPORT ChunkedByteBuffer {
 
   // If enough data is available, reads and removes the first complete chunk
   // from the buffer. Returns a NULL pointer if no complete chunk is available.
-  scoped_ptr< std::vector<uint8> > PopChunk();
+  scoped_ptr<std::vector<uint8_t>> PopChunk();
 
   // Clears all the content of the buffer.
   void Clear();
@@ -54,8 +57,8 @@ class CONTENT_EXPORT ChunkedByteBuffer {
     Chunk();
     ~Chunk();
 
-    std::vector<uint8> header;
-    scoped_ptr< std::vector<uint8> > content;
+    std::vector<uint8_t> header;
+    scoped_ptr<std::vector<uint8_t>> content;
     size_t ExpectedContentLength() const;
 
    private:

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_TRACING_ETW_SYSTEM_EVENT_CONSUMER_WIN_H_
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/tracing_agent.h"

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_TRACING_POWER_TRACING_AGENT_H_
 #define CONTENT_BROWSER_TRACING_POWER_TRACING_AGENT_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/tracing_agent.h"

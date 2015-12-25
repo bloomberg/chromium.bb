@@ -6,8 +6,10 @@
 #define CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H_
 
 #include <assert.h>
+#include <stdint.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -17,8 +19,8 @@
 
 namespace content {
 
-// Converts a MAC address stored as an array of uint8 to a string.
-base::string16 MacAddressAsString16(const uint8 mac_as_int[6]);
+// Converts a MAC address stored as an array of uint8_t to a string.
+base::string16 MacAddressAsString16(const uint8_t mac_as_int[6]);
 
 // Base class to promote code sharing between platform specific wifi data
 // providers. It's optional for specific platforms to derive this, but if they

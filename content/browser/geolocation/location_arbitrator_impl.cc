@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "build/build_config.h"
 #include "content/browser/geolocation/network_location_provider.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/content_browser_client.h"
@@ -23,7 +24,7 @@ const char* kDefaultNetworkProviderUrl =
 
 // To avoid oscillations, set this to twice the expected update interval of a
 // a GPS-type location provider (in case it misses a beat) plus a little.
-const int64 LocationArbitratorImpl::kFixStaleTimeoutMilliseconds =
+const int64_t LocationArbitratorImpl::kFixStaleTimeoutMilliseconds =
     11 * base::Time::kMillisecondsPerSecond;
 
 LocationArbitratorImpl::LocationArbitratorImpl(

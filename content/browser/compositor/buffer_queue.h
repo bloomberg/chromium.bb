@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_BUFFER_QUEUE_H_
 #define CONTENT_BROWSER_COMPOSITOR_BUFFER_QUEUE_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"

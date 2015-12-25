@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 
+#include <stdint.h>
+
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -115,7 +117,7 @@ void OneShotAccessibilityTreeSearch::SearchByIteratingOverChildren() {
   // If start_node_ is specified, iterate over the first child past that
   // node.
 
-  uint32 count = scope_node_->PlatformChildCount();
+  uint32_t count = scope_node_->PlatformChildCount();
   if (count == 0)
     return;
 
@@ -125,7 +127,7 @@ void OneShotAccessibilityTreeSearch::SearchByIteratingOverChildren() {
   while (start_node_ && start_node_->GetParent() != scope_node_)
     start_node_ = start_node_->GetParent();
 
-  uint32 index = (direction_ == FORWARDS ? 0 : count - 1);
+  uint32_t index = (direction_ == FORWARDS ? 0 : count - 1);
   if (start_node_) {
     index = start_node_->GetIndexInParent();
     if (direction_ == FORWARDS)

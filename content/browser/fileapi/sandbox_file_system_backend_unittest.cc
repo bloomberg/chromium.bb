@@ -4,11 +4,13 @@
 
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 
+#include <stddef.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"

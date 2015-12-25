@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -50,19 +53,19 @@ class MHTMLGenerationTest : public ContentBrowserTest {
   }
 
   bool has_mhtml_callback_run() const { return has_mhtml_callback_run_; }
-  int64 file_size() const { return file_size_; }
+  int64_t file_size() const { return file_size_; }
 
   base::ScopedTempDir temp_dir_;
 
  private:
-  void MHTMLGenerated(base::Closure quit_closure, int64 size) {
+  void MHTMLGenerated(base::Closure quit_closure, int64_t size) {
     has_mhtml_callback_run_ = true;
     file_size_ = size;
     quit_closure.Run();
   }
 
   bool has_mhtml_callback_run_;
-  int64 file_size_;
+  int64_t file_size_;
 };
 
 // Tests that generating a MHTML does create contents.
@@ -78,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
 
   // Make sure the actual generated file has some contents.
   EXPECT_GT(file_size(), 0);  // Verify the size reported by the callback.
-  int64 file_size;
+  int64_t file_size;
   ASSERT_TRUE(base::GetFileSize(path, &file_size));
   EXPECT_GT(file_size, 100);  // Verify the actual file size.
 }

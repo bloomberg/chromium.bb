@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_COCOA_SYSTEM_HOTKEY_HELPER_MAC_H_
 #define CONTENT_BROWSER_COCOA_SYSTEM_HOTKEY_HELPER_MAC_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 

@@ -5,12 +5,16 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_BASE_FILE_H_
 #define CONTENT_BROWSER_DOWNLOAD_BASE_FILE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -36,7 +40,7 @@ class CONTENT_EXPORT BaseFile {
   BaseFile(const base::FilePath& full_path,
            const GURL& source_url,
            const GURL& referrer_url,
-           int64 received_bytes,
+           int64_t received_bytes,
            bool calculate_hash,
            const std::string& hash_state,
            base::File file,
@@ -91,7 +95,7 @@ class CONTENT_EXPORT BaseFile {
   bool in_progress() const { return file_.IsValid(); }
 
   // Returns the number of bytes in the file pointed to by full_path().
-  int64 bytes_so_far() const { return bytes_so_far_; }
+  int64_t bytes_so_far() const { return bytes_so_far_; }
 
   // Fills |hash| with the hash digest for the file.
   // Returns true if digest is successfully calculated.
@@ -127,7 +131,7 @@ class CONTENT_EXPORT BaseFile {
       const base::FilePath& new_path);
 
   // Split out from CurrentSpeed to enable testing.
-  int64 CurrentSpeedAtTime(base::TimeTicks current_time) const;
+  int64_t CurrentSpeedAtTime(base::TimeTicks current_time) const;
 
   // Log a TYPE_DOWNLOAD_FILE_ERROR NetLog event with |error| and passes error
   // on through, converting to a |DownloadInterruptReason|.
@@ -161,7 +165,7 @@ class CONTENT_EXPORT BaseFile {
   base::File file_;
 
   // Amount of data received up so far, in bytes.
-  int64 bytes_so_far_;
+  int64_t bytes_so_far_;
 
   // Start time for calculating speed.
   base::TimeTicks start_tick_;

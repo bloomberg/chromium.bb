@@ -5,6 +5,8 @@
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 
 #include <oleacc.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 
@@ -174,7 +176,7 @@ void AccessibilityTreeFormatterWin::AddProperties(
   temp_bstr.Reset();
 
   std::vector<base::string16> state_strings;
-  int32 ia_state = ax_object->ia_state();
+  int32_t ia_state = ax_object->ia_state();
 
   // Avoid flakiness: these states depend on whether the window is focused
   // and the position of the mouse cursor.

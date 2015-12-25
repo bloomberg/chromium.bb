@@ -46,7 +46,7 @@ void GeofencingDispatcherHost::OnRegisterRegion(
     int request_id,
     const std::string& region_id,
     const blink::WebCircularGeofencingRegion& region,
-    int64 service_worker_registration_id) {
+    int64_t service_worker_registration_id) {
   // Sanity check on region_id
   if (region_id.length() > kMaxRegionIdLength) {
     Send(new GeofencingMsg_RegisterRegionComplete(
@@ -68,7 +68,7 @@ void GeofencingDispatcherHost::OnUnregisterRegion(
     int thread_id,
     int request_id,
     const std::string& region_id,
-    int64 service_worker_registration_id) {
+    int64_t service_worker_registration_id) {
   // Sanity check on region_id
   if (region_id.length() > kMaxRegionIdLength) {
     Send(new GeofencingMsg_UnregisterRegionComplete(
@@ -88,7 +88,7 @@ void GeofencingDispatcherHost::OnUnregisterRegion(
 void GeofencingDispatcherHost::OnGetRegisteredRegions(
     int thread_id,
     int request_id,
-    int64 service_worker_registration_id) {
+    int64_t service_worker_registration_id) {
   GeofencingRegistrations result;
 
   GeofencingStatus status =

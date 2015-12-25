@@ -37,9 +37,11 @@
 #ifndef CONTENT_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_H_
 #define CONTENT_BROWSER_SPEECH_ENDPOINTER_ENERGY_ENDPOINTER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/speech/endpointer/energy_endpointer_params.h"
 #include "content/common/content_export.h"
@@ -80,13 +82,14 @@ class CONTENT_EXPORT EnergyEndpointer {
 
   // Computes the next input frame and modifies EnergyEndpointer status as
   // appropriate based on the computation.
-  void ProcessAudioFrame(int64 time_us,
-                         const int16* samples, int num_samples,
+  void ProcessAudioFrame(int64_t time_us,
+                         const int16_t* samples,
+                         int num_samples,
                          float* rms_out);
 
   // Returns the current state of the EnergyEndpointer and the time
   // corresponding to the most recently computed frame.
-  EpStatus Status(int64* status_time_us) const;
+  EpStatus Status(int64_t* status_time_us) const;
 
   bool estimating_environment() const {
     return estimating_environment_;
@@ -112,9 +115,12 @@ class CONTENT_EXPORT EnergyEndpointer {
 
   EpStatus status_;  // The current state of this instance.
   float offset_confirm_dur_sec_;  // max on time allowed to confirm POST_SPEECH
-  int64 endpointer_time_us_;  // Time of the most recently received audio frame.
-  int64 fast_update_frames_; // Number of frames for initial level adaptation.
-  int64 frame_counter_;  // Number of frames seen. Used for initial adaptation.
+  int64_t
+      endpointer_time_us_;  // Time of the most recently received audio frame.
+  int64_t
+      fast_update_frames_;  // Number of frames for initial level adaptation.
+  int64_t
+      frame_counter_;     // Number of frames seen. Used for initial adaptation.
   float max_window_dur_;  // Largest search window size (seconds)
   float sample_rate_;  // Sampling rate.
 
@@ -145,7 +151,7 @@ class CONTENT_EXPORT EnergyEndpointer {
 
   // Time when mode switched from environment estimation to user input. This
   // is used to time forced rejection of audio feedback contamination.
-  int64 user_input_start_time_us_;
+  int64_t user_input_start_time_us_;
 
   DISALLOW_COPY_AND_ASSIGN(EnergyEndpointer);
 };

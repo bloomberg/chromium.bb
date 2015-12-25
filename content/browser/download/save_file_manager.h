@@ -57,10 +57,12 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H_
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/download/save_types.h"
 #include "content/common/content_export.h"
@@ -165,11 +167,11 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   // Update the SavePackage with the current state of a started saving job.
   // If the SavePackage for this saving job is gone, cancel the request.
   void OnUpdateSaveProgress(int save_item_id,
-                            int64 bytes_so_far,
+                            int64_t bytes_so_far,
                             bool write_success);
   // Update the SavePackage with the finish state, and remove the request
   // tracking entries.
-  void OnSaveFinished(int save_item_id, int64 bytes_so_far, bool is_success);
+  void OnSaveFinished(int save_item_id, int64_t bytes_so_far, bool is_success);
   // Notifies SavePackage that the whole page saving job is finished.
   void OnFinishSavePageJob(int render_process_id,
                            int render_frame_routing_id,

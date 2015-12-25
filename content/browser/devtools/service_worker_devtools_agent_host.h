@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_AGENT_HOST_H_
 #define CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_AGENT_HOST_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/devtools/worker_devtools_agent_host.h"
@@ -36,7 +39,7 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   // WorkerDevToolsAgentHost overrides.
   void OnAttachedStateChanged(bool attached) override;
 
-  int64 service_worker_version_id() const;
+  int64_t service_worker_version_id() const;
 
   bool Matches(const ServiceWorkerIdentifier& other);
 

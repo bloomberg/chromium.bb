@@ -4,10 +4,13 @@
 
 #include "content/browser/indexed_db/indexed_db_database.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -71,7 +74,7 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   scoped_refptr<MockIndexedDBCallbacks> request1(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks1(
       new MockIndexedDBDatabaseCallbacks());
-  const int64 transaction_id1 = 1;
+  const int64_t transaction_id1 = 1;
   IndexedDBPendingConnection connection1(
       request1,
       callbacks1,
@@ -85,7 +88,7 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   scoped_refptr<MockIndexedDBCallbacks> request2(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks2(
       new MockIndexedDBDatabaseCallbacks());
-  const int64 transaction_id2 = 2;
+  const int64_t transaction_id2 = 2;
   IndexedDBPendingConnection connection2(
       request2,
       callbacks2,
@@ -129,7 +132,7 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks(
       new MockIndexedDBDatabaseCallbacks());
   scoped_refptr<MockIndexedDBCallbacks> request(new MockIndexedDBCallbacks());
-  const int64 upgrade_transaction_id = 3;
+  const int64_t upgrade_transaction_id = 3;
   IndexedDBPendingConnection connection(
       request,
       callbacks,
@@ -139,8 +142,8 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   database->OpenConnection(connection);
   EXPECT_EQ(database.get(), request->connection()->database());
 
-  const int64 transaction_id = 123;
-  const std::vector<int64> scope;
+  const int64_t transaction_id = 123;
+  const std::vector<int64_t> scope;
   database->CreateTransaction(transaction_id,
                               request->connection(),
                               scope,
@@ -159,8 +162,8 @@ class MockDeleteCallbacks : public IndexedDBCallbacks {
         blocked_called_(false),
         success_called_(false) {}
 
-  void OnBlocked(int64 existing_version) override { blocked_called_ = true; }
-  void OnSuccess(int64 result) override { success_called_ = true; }
+  void OnBlocked(int64_t existing_version) override { blocked_called_ = true; }
+  void OnSuccess(int64_t result) override { success_called_ = true; }
 
   bool blocked_called() const { return blocked_called_; }
   bool success_called() const { return success_called_; }
@@ -193,7 +196,7 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
   scoped_refptr<MockIndexedDBCallbacks> request1(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks1(
       new MockIndexedDBDatabaseCallbacks());
-  const int64 transaction_id1 = 1;
+  const int64_t transaction_id1 = 1;
   IndexedDBPendingConnection connection(
       request1,
       callbacks1,
@@ -241,7 +244,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
 
     request_ = new MockIndexedDBCallbacks();
     callbacks_ = new MockIndexedDBDatabaseCallbacks();
-    const int64 transaction_id = 1;
+    const int64_t transaction_id = 1;
     db_->OpenConnection(IndexedDBPendingConnection(
         request_,
         callbacks_,
@@ -252,7 +255,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
               db_->metadata().int_version);
 
     transaction_ = IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
-        transaction_id, callbacks_, std::set<int64>() /*scope*/,
+        transaction_id, callbacks_, std::set<int64_t>() /*scope*/,
         blink::WebIDBTransactionModeVersionChange, db_.get(),
         new IndexedDBFakeBackingStore::FakeTransaction(commit_success_));
     db_->TransactionCreated(transaction_.get());
@@ -283,7 +286,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
 
 TEST_F(IndexedDBDatabaseOperationTest, CreateObjectStore) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
-  const int64 store_id = 1001;
+  const int64_t store_id = 1001;
   db_->CreateObjectStore(transaction_->id(),
                          store_id,
                          ASCIIToUTF16("store"),
@@ -297,14 +300,14 @@ TEST_F(IndexedDBDatabaseOperationTest, CreateObjectStore) {
 
 TEST_F(IndexedDBDatabaseOperationTest, CreateIndex) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
-  const int64 store_id = 1001;
+  const int64_t store_id = 1001;
   db_->CreateObjectStore(transaction_->id(),
                          store_id,
                          ASCIIToUTF16("store"),
                          IndexedDBKeyPath(),
                          false /*auto_increment*/);
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
-  const int64 index_id = 2002;
+  const int64_t index_id = 2002;
   db_->CreateIndex(transaction_->id(),
                    store_id,
                    index_id,
@@ -336,7 +339,7 @@ class IndexedDBDatabaseOperationAbortTest
 
 TEST_F(IndexedDBDatabaseOperationAbortTest, CreateObjectStore) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
-  const int64 store_id = 1001;
+  const int64_t store_id = 1001;
   db_->CreateObjectStore(transaction_->id(),
                          store_id,
                          ASCIIToUTF16("store"),
@@ -350,14 +353,14 @@ TEST_F(IndexedDBDatabaseOperationAbortTest, CreateObjectStore) {
 
 TEST_F(IndexedDBDatabaseOperationAbortTest, CreateIndex) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
-  const int64 store_id = 1001;
+  const int64_t store_id = 1001;
   db_->CreateObjectStore(transaction_->id(),
                          store_id,
                          ASCIIToUTF16("store"),
                          IndexedDBKeyPath(),
                          false /*auto_increment*/);
   EXPECT_EQ(1ULL, db_->metadata().object_stores.size());
-  const int64 index_id = 2002;
+  const int64_t index_id = 2002;
   db_->CreateIndex(transaction_->id(),
                    store_id,
                    index_id,
@@ -375,7 +378,7 @@ TEST_F(IndexedDBDatabaseOperationAbortTest, CreateIndex) {
 
 TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   EXPECT_EQ(0ULL, db_->metadata().object_stores.size());
-  const int64 store_id = 1001;
+  const int64_t store_id = 1001;
 
   // Creation is synchronous.
   db_->CreateObjectStore(transaction_->id(),

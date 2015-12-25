@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SIGNED_CERTIFICATE_TIMESTAMP_STORE_IMPL_H_
 #define CONTENT_BROWSER_SIGNED_CERTIFICATE_TIMESTAMP_STORE_IMPL_H_
 
+#include "base/macros.h"
 #include "content/browser/renderer_data_memoizing_store.h"
 #include "content/public/browser/signed_certificate_timestamp_store.h"
 #include "net/cert/signed_certificate_timestamp.h"

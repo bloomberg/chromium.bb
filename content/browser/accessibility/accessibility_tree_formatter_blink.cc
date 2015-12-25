@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
@@ -15,13 +17,14 @@ AccessibilityTreeFormatterBlink::AccessibilityTreeFormatterBlink()
 AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {
 }
 
-uint32 AccessibilityTreeFormatterBlink::ChildCount(
-    const BrowserAccessibility& node) const{
+uint32_t AccessibilityTreeFormatterBlink::ChildCount(
+    const BrowserAccessibility& node) const {
   return node.InternalChildCount();
 }
 
 BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
-    const BrowserAccessibility& node, uint32 i) const {
+    const BrowserAccessibility& node,
+    uint32_t i) const {
   return node.InternalGetChild(i);
 }
 
@@ -82,7 +85,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        ++attr_index) {
     auto attr = static_cast<ui::AXIntListAttribute>(attr_index);
     if (node.HasIntListAttribute(attr)) {
-      std::vector<int32> values;
+      std::vector<int32_t> values;
       node.GetIntListAttribute(attr, &values);
       base::ListValue* value_list = new base::ListValue;
       for (size_t i = 0; i < values.size(); ++i)

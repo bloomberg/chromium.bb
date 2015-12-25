@@ -18,13 +18,17 @@
 #ifndef CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_GUEST_H_
 #define CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_GUEST_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
@@ -238,7 +242,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void PointerLockPermissionResponse(bool allow);
 
   // The next two functions are virtual for test purposes.
-  virtual void SwapCompositorFrame(uint32 output_surface_id,
+  virtual void SwapCompositorFrame(uint32_t output_surface_id,
                                    int host_process_id,
                                    int host_routing_id,
                                    scoped_ptr<cc::CompositorFrame> frame);

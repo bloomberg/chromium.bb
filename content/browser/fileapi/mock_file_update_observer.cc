@@ -26,7 +26,7 @@ void MockFileUpdateObserver::OnStartUpdate(const FileSystemURL& url) {
     ++start_update_count_[url];
 }
 
-void MockFileUpdateObserver::OnUpdate(const FileSystemURL& url, int64 delta) {
+void MockFileUpdateObserver::OnUpdate(const FileSystemURL& url, int64_t delta) {
   if (!is_ready_)
     return;
   int start = start_update_count_[url];

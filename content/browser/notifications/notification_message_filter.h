@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_database_data.h"
@@ -58,7 +61,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const PlatformNotificationData& notification_data);
   void OnShowPersistentNotification(
       int request_id,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const GURL& origin,
       const SkBitmap& icon,
       const PlatformNotificationData& notification_data);

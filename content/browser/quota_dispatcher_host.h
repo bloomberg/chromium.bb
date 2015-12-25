@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
 
-#include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "storage/common/quota/quota_types.h"
 

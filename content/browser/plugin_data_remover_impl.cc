@@ -4,6 +4,8 @@
 
 #include "content/browser/plugin_data_remover_impl.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/bind.h"
@@ -12,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
@@ -30,8 +33,8 @@ namespace {
 
 // The minimum Flash Player version that implements NPP_ClearSiteData.
 const char kMinFlashVersion[] = "10.3";
-const int64 kRemovalTimeoutMs = 10000;
-const uint64 kClearAllData = 0;
+const int64_t kRemovalTimeoutMs = 10000;
+const uint64_t kClearAllData = 0;
 
 }  // namespace
 
@@ -200,7 +203,7 @@ class PluginDataRemoverImpl::Context
   friend class base::DeleteHelper<Context>;
   ~Context() override {}
 
-  IPC::Message* CreatePpapiClearSiteDataMsg(uint64 max_age) {
+  IPC::Message* CreatePpapiClearSiteDataMsg(uint64_t max_age) {
     base::FilePath profile_path =
         PepperFlashFileMessageFilter::GetDataDirName(browser_context_path_);
     // TODO(vtl): This "duplicates" logic in webkit/plugins/ppapi/file_path.cc
@@ -234,9 +237,9 @@ class PluginDataRemoverImpl::Context
       return;
     }
 
-    uint64 max_age = begin_time_.is_null() ?
-        std::numeric_limits<uint64>::max() :
-        (base::Time::Now() - begin_time_).InSeconds();
+    uint64_t max_age = begin_time_.is_null()
+                           ? std::numeric_limits<uint64_t>::max()
+                           : (base::Time::Now() - begin_time_).InSeconds();
 
     IPC::Message* msg;
     if (is_ppapi) {
@@ -254,7 +257,7 @@ class PluginDataRemoverImpl::Context
 
   // Handles the PpapiHostMsg_ClearSiteDataResult message by delegating to the
   // PluginProcessHostMsg_ClearSiteDataResult handler.
-  void OnPpapiClearSiteDataResult(uint32 request_id, bool success) {
+  void OnPpapiClearSiteDataResult(uint32_t request_id, bool success) {
     DCHECK_EQ(0u, request_id);
     OnClearSiteDataResult(success);
   }

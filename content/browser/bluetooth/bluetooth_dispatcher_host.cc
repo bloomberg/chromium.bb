@@ -11,6 +11,8 @@
 
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -537,7 +539,7 @@ void BluetoothDispatcherHost::GattServicesDiscovered(
 void BluetoothDispatcherHost::GattCharacteristicValueChanged(
     device::BluetoothAdapter* adapter,
     device::BluetoothGattCharacteristic* characteristic,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   VLOG(1) << "Characteristic updated: " << characteristic->GetIdentifier();
   auto iter =
       active_characteristic_threads_.find(characteristic->GetIdentifier());
@@ -565,7 +567,7 @@ void BluetoothDispatcherHost::GattCharacteristicValueChanged(
 void BluetoothDispatcherHost::NotifyActiveCharacteristic(
     int thread_id,
     const std::string& characteristic_instance_id,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   Send(new BluetoothMsg_CharacteristicValueChanged(
       thread_id, characteristic_instance_id, value));
 }
@@ -819,7 +821,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
       // https://crbug.com/495379
       Send(new BluetoothMsg_GetCharacteristicSuccess(
           thread_id, request_id, characteristic_instance_id,
-          static_cast<uint32>(characteristic->GetProperties())));
+          static_cast<uint32_t>(characteristic->GetProperties())));
       return;
     }
   }
@@ -1180,7 +1182,7 @@ void BluetoothDispatcherHost::AddToServicesMapAndSendGetPrimaryServiceSuccess(
 void BluetoothDispatcherHost::OnCharacteristicValueRead(
     int thread_id,
     int request_id,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::SUCCESS);
   Send(new BluetoothMsg_ReadCharacteristicValueSuccess(thread_id, request_id,

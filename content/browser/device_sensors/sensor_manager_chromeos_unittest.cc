@@ -4,6 +4,7 @@
 
 #include "content/browser/device_sensors/sensor_manager_chromeos.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"

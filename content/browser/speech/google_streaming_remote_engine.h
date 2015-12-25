@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_SPEECH_GOOGLE_STREAMING_REMOTE_ENGINE_H_
 #define CONTENT_BROWSER_SPEECH_GOOGLE_STREAMING_REMOTE_ENGINE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -71,8 +74,8 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
   // net::URLFetcherDelegate methods.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override;
+                                  int64_t current,
+                                  int64_t total) override;
 
  private:
   // Response status codes from the speech recognition webservice.
@@ -116,7 +119,7 @@ class CONTENT_EXPORT GoogleStreamingRemoteEngine
     scoped_refptr<const AudioChunk> audio_data;
 
     // In case of EVENT_DOWNSTREAM_RESPONSE, hold the current chunk bytes.
-    scoped_ptr<std::vector<uint8> > response;
+    scoped_ptr<std::vector<uint8_t>> response;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FSMEventArgs);

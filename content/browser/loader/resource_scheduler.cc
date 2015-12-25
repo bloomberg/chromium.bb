@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -167,14 +168,14 @@ class ResourceScheduler::RequestQueue {
  private:
   typedef std::map<ScheduledResourceRequest*, NetQueue::iterator> PointerMap;
 
-  uint32 MakeFifoOrderingId() {
+  uint32_t MakeFifoOrderingId() {
     fifo_ordering_ids_ += 1;
     return fifo_ordering_ids_;
   }
 
   // Used to create an ordering ID for scheduled resources so that resources
   // with same priority/intra_priority stay in fifo order.
-  uint32 fifo_ordering_ids_;
+  uint32_t fifo_ordering_ids_;
 
   NetQueue queue_;
   PointerMap pointers_;
@@ -282,8 +283,8 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
   net::URLRequest* url_request() { return request_; }
   const net::URLRequest* url_request() const { return request_; }
   bool is_async() const { return is_async_; }
-  uint32 fifo_ordering() const { return fifo_ordering_; }
-  void set_fifo_ordering(uint32 fifo_ordering) {
+  uint32_t fifo_ordering() const { return fifo_ordering_; }
+  void set_fifo_ordering(uint32_t fifo_ordering) {
     fifo_ordering_ = fifo_ordering;
   }
   RequestAttributes attributes() const {
@@ -326,7 +327,7 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
   RequestAttributes attributes_;
   ResourceScheduler* scheduler_;
   RequestPriorityParams priority_;
-  uint32 fifo_ordering_;
+  uint32_t fifo_ordering_;
   base::TimeTicks time_deferred_;
 
   base::WeakPtrFactory<ResourceScheduler::ScheduledResourceRequest>

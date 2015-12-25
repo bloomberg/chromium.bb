@@ -4,6 +4,7 @@
 
 #include "content/browser/mojo/mojo_application_host.h"
 
+#include "build/build_config.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_sender.h"

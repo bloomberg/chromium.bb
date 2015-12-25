@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_LOADER_NAVIGATION_RESOURCE_THROTTLE_H_
 #define CONTENT_BROWSER_LOADER_NAVIGATION_RESOURCE_THROTTLE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/resource_throttle.h"

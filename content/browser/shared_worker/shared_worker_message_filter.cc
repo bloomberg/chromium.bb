@@ -4,6 +4,9 @@
 
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/common/devtools_messages.h"
@@ -13,9 +16,8 @@
 
 namespace content {
 namespace {
-const uint32 kFilteredMessageClasses[] = {
-  ViewMsgStart,
-  WorkerMsgStart,
+const uint32_t kFilteredMessageClasses[] = {
+    ViewMsgStart, WorkerMsgStart,
 };
 }  // namespace
 

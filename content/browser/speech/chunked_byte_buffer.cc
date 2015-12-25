@@ -6,22 +6,21 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 
 namespace {
 
-static const size_t kHeaderLength = sizeof(uint32);
+static const size_t kHeaderLength = sizeof(uint32_t);
 
 static_assert(sizeof(size_t) >= kHeaderLength,
               "chunked byte buffer not supported on this architecture");
 
-uint32 ReadBigEndian32(const uint8* buffer) {
-  return (static_cast<uint32>(buffer[3])) |
-         (static_cast<uint32>(buffer[2]) <<  8) |
-         (static_cast<uint32>(buffer[1]) << 16) |
-         (static_cast<uint32>(buffer[0]) << 24);
+uint32_t ReadBigEndian32(const uint8_t* buffer) {
+  return (static_cast<uint32_t>(buffer[3])) |
+         (static_cast<uint32_t>(buffer[2]) << 8) |
+         (static_cast<uint32_t>(buffer[1]) << 16) |
+         (static_cast<uint32_t>(buffer[0]) << 24);
 }
 
 }  // namespace
@@ -37,16 +36,16 @@ ChunkedByteBuffer::~ChunkedByteBuffer() {
   Clear();
 }
 
-void ChunkedByteBuffer::Append(const uint8* start, size_t length) {
+void ChunkedByteBuffer::Append(const uint8_t* start, size_t length) {
   size_t remaining_bytes = length;
-  const uint8* next_data = start;
+  const uint8_t* next_data = start;
 
   while (remaining_bytes > 0) {
     DCHECK(partial_chunk_ != NULL);
     size_t insert_length = 0;
     bool header_completed = false;
     bool content_completed = false;
-    std::vector<uint8>* insert_target;
+    std::vector<uint8_t>* insert_target;
 
     if (partial_chunk_->header.size() < kHeaderLength) {
       const size_t bytes_to_complete_header =
@@ -96,16 +95,16 @@ void ChunkedByteBuffer::Append(const uint8* start, size_t length) {
 }
 
 void ChunkedByteBuffer::Append(const std::string& string) {
-  Append(reinterpret_cast<const uint8*>(string.data()), string.size());
+  Append(reinterpret_cast<const uint8_t*>(string.data()), string.size());
 }
 
 bool ChunkedByteBuffer::HasChunks() const {
   return !chunks_.empty();
 }
 
-scoped_ptr< std::vector<uint8> > ChunkedByteBuffer::PopChunk() {
+scoped_ptr<std::vector<uint8_t>> ChunkedByteBuffer::PopChunk() {
   if (chunks_.empty())
-    return scoped_ptr< std::vector<uint8> >();
+    return scoped_ptr<std::vector<uint8_t>>();
   scoped_ptr<Chunk> chunk(*chunks_.begin());
   chunks_.weak_erase(chunks_.begin());
   DCHECK_EQ(chunk->header.size(), kHeaderLength);
@@ -121,9 +120,7 @@ void ChunkedByteBuffer::Clear() {
   total_bytes_stored_ = 0;
 }
 
-ChunkedByteBuffer::Chunk::Chunk()
-    : content(new std::vector<uint8>()) {
-}
+ChunkedByteBuffer::Chunk::Chunk() : content(new std::vector<uint8_t>()) {}
 
 ChunkedByteBuffer::Chunk::~Chunk() {
 }

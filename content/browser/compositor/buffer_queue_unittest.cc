@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "cc/test/test_context_provider.h"
@@ -56,7 +59,7 @@ class StubBrowserGpuMemoryBufferManager : public BrowserGpuMemoryBufferManager {
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
       const gfx::Size& size,
       gfx::BufferFormat format,
-      int32 surface_id) override {
+      int32_t surface_id) override {
     if (allocate_succeeds_)
       return make_scoped_ptr<gfx::GpuMemoryBuffer>(new StubGpuMemoryBufferImpl);
     return nullptr;

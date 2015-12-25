@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -83,7 +85,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   content::DownloadItem* CreateDownloadItem(
-      uint32 id,
+      uint32_t id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
@@ -94,8 +96,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const base::Time& end_time,
       const std::string& etag,
       const std::string& last_modified,
-      int64 received_bytes,
-      int64 total_bytes,
+      int64_t received_bytes,
+      int64_t total_bytes,
       content::DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
@@ -104,7 +106,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   int NonMaliciousInProgressCount() const override;
   BrowserContext* GetBrowserContext() const override;
   void CheckForHistoryFilesRemoval() override;
-  DownloadItem* GetDownload(uint32 id) override;
+  DownloadItem* GetDownload(uint32_t id) override;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
@@ -117,7 +119,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
  private:
   typedef std::set<DownloadItem*> DownloadSet;
-  typedef base::hash_map<uint32, DownloadItemImpl*> DownloadMap;
+  typedef base::hash_map<uint32_t, DownloadItemImpl*> DownloadMap;
   typedef std::vector<DownloadItemImpl*> DownloadItemImplVector;
   typedef base::Callback<bool(const DownloadItemImpl*)> DownloadRemover;
 
@@ -130,7 +132,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       scoped_ptr<ByteStreamReader> stream,
       const DownloadUrlParameters::OnStartedCallback& on_started,
       bool new_download,
-      uint32 id);
+      uint32_t id);
 
   void CreateSavePackageDownloadItemWithId(
       const base::FilePath& main_file_path,
@@ -138,11 +140,11 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const std::string& mime_type,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const DownloadItemImplCreated& on_started,
-      uint32 id);
+      uint32_t id);
 
   // Create a new active item based on the info.  Separate from
   // StartDownload() for testing.
-  DownloadItemImpl* CreateActiveItem(uint32 id,
+  DownloadItemImpl* CreateActiveItem(uint32_t id,
                                      const DownloadCreateInfo& info);
 
   // Get next download id. |callback| is called on the UI thread and may
@@ -152,7 +154,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Called with the result of DownloadManagerDelegate::CheckForFileExistence.
   // Updates the state of the file and then notifies this update to the file's
   // observer.
-  void OnFileExistenceChecked(uint32 download_id, bool result);
+  void OnFileExistenceChecked(uint32_t download_id, bool result);
 
   // Remove all downloads for which |remover| returns true.
   int RemoveDownloads(const DownloadRemover& remover);
@@ -169,7 +171,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void CheckForFileRemoval(DownloadItemImpl* download_item) override;
   void ResumeInterruptedDownload(
       scoped_ptr<content::DownloadUrlParameters> params,
-      uint32 id) override;
+      uint32_t id) override;
   void OpenDownload(DownloadItemImpl* download) override;
   void ShowDownloadInShell(DownloadItemImpl* download) override;
   void DownloadRemoved(DownloadItemImpl* download) override;

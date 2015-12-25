@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache_database.h"
@@ -42,9 +45,9 @@ class CONTENT_EXPORT AppCache
   typedef std::map<GURL, AppCacheEntry> EntryMap;
   typedef std::set<AppCacheHost*> AppCacheHosts;
 
-  AppCache(AppCacheStorage* storage, int64 cache_id);
+  AppCache(AppCacheStorage* storage, int64_t cache_id);
 
-  int64 cache_id() const { return cache_id_; }
+  int64_t cache_id() const { return cache_id_; }
 
   AppCacheGroup* owning_group() const { return owning_group_.get(); }
 
@@ -64,11 +67,11 @@ class CONTENT_EXPORT AppCache
 
   // Do not store or delete the returned ptr, they're owned by 'this'.
   AppCacheEntry* GetEntry(const GURL& url);
-  const AppCacheEntry* GetEntryWithResponseId(int64 response_id) {
+  const AppCacheEntry* GetEntryWithResponseId(int64_t response_id) {
     return GetEntryAndUrlWithResponseId(response_id, NULL);
   }
-  const AppCacheEntry* GetEntryAndUrlWithResponseId(
-      int64 response_id, GURL* optional_url);
+  const AppCacheEntry* GetEntryAndUrlWithResponseId(int64_t response_id,
+                                                    GURL* optional_url);
   const EntryMap& entries() const { return entries_; }
 
   // The AppCache owns the collection of executable handlers that have
@@ -76,9 +79,10 @@ class CONTENT_EXPORT AppCache
   // handler returning null if not found, the GetOrCreate method will
   // cons one up if not found.
   // Do not store the returned ptrs, they're owned by 'this'.
-  AppCacheExecutableHandler* GetExecutableHandler(int64 response_id);
+  AppCacheExecutableHandler* GetExecutableHandler(int64_t response_id);
   AppCacheExecutableHandler* GetOrCreateExecutableHandler(
-      int64 response_id, net::IOBuffer* handler_source);
+      int64_t response_id,
+      net::IOBuffer* handler_source);
 
   // Returns the URL of the resource used as entry for 'namespace_url'.
   GURL GetFallbackEntryUrl(const GURL& namespace_url) const {
@@ -105,7 +109,7 @@ class CONTENT_EXPORT AppCache
 
   base::Time update_time() const { return update_time_; }
 
-  int64 cache_size() const { return cache_size_; }
+  int64_t cache_size() const { return cache_size_; }
 
   void set_update_time(base::Time ticks) { update_time_ = ticks; }
 
@@ -176,7 +180,7 @@ class CONTENT_EXPORT AppCache
   }
   void UnassociateHost(AppCacheHost* host);
 
-  const int64 cache_id_;
+  const int64_t cache_id_;
   scoped_refptr<AppCacheGroup> owning_group_;
   AppCacheHosts associated_hosts_;
 
@@ -192,9 +196,9 @@ class CONTENT_EXPORT AppCache
   // when this cache was last updated
   base::Time update_time_;
 
-  int64 cache_size_;
+  int64_t cache_size_;
 
-  typedef std::map<int64, AppCacheExecutableHandler*> HandlerMap;
+  typedef std::map<int64_t, AppCacheExecutableHandler*> HandlerMap;
   HandlerMap executable_handlers_;
 
   // to notify storage when cache is deleted

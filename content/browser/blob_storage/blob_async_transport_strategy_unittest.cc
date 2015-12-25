@@ -4,6 +4,9 @@
 
 #include "storage/browser/blob/blob_async_transport_strategy.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/logging.h"

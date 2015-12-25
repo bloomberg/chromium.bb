@@ -12,6 +12,7 @@
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_stats.h"
@@ -28,7 +29,7 @@ const unsigned char BaseFile::kEmptySha256Hash[] = { 0 };
 BaseFile::BaseFile(const base::FilePath& full_path,
                    const GURL& source_url,
                    const GURL& referrer_url,
-                   int64 received_bytes,
+                   int64_t received_bytes,
                    bool calculate_hash,
                    const std::string& hash_state_bytes,
                    base::File file,
@@ -272,7 +273,7 @@ DownloadInterruptReason BaseFile::Open() {
 
   // We may be re-opening the file after rename. Always make sure we're
   // writing at the end of the file.
-  int64 file_size = file_.Seek(base::File::FROM_END, 0);
+  int64_t file_size = file_.Seek(base::File::FROM_END, 0);
   if (file_size < 0) {
     logging::SystemErrorCode error = logging::GetLastSystemErrorCode();
     ClearFile();

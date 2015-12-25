@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_H_
 #define CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/common/content_export.h"
@@ -121,8 +124,8 @@ class CONTENT_EXPORT FrameTree {
   // |site_instance|.  The RenderViewHost will have its Shutdown method called
   // when all of the RenderFrameHosts using it are deleted.
   RenderViewHostImpl* CreateRenderViewHost(SiteInstance* site_instance,
-                                           int32 routing_id,
-                                           int32 main_frame_routing_id,
+                                           int32_t routing_id,
+                                           int32_t main_frame_routing_id,
                                            bool swapped_out,
                                            bool hidden);
 

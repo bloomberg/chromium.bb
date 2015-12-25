@@ -4,6 +4,9 @@
 
 #include "content/browser/loader/resource_scheduler_filter.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/frame_messages.h"
@@ -12,9 +15,8 @@
 
 namespace content {
 namespace {
-const uint32 kFilteredMessageClasses[] = {
-  FrameMsgStart,
-  ViewMsgStart,
+const uint32_t kFilteredMessageClasses[] = {
+    FrameMsgStart, ViewMsgStart,
 };
 }  // namespace
 

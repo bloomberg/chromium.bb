@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_SPEECH_ENDPOINTER_ENDPOINTER_H_
 #define CONTENT_BROWSER_SPEECH_ENDPOINTER_ENDPOINTER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "content/browser/speech/endpointer/energy_endpointer.h"
 #include "content/common/content_export.h"
 
@@ -66,7 +67,7 @@ class CONTENT_EXPORT Endpointer {
   EpStatus ProcessAudio(const AudioChunk& raw_audio, float* rms_out);
 
   // Get the status of the endpointer.
-  EpStatus Status(int64 *time_us);
+  EpStatus Status(int64_t* time_us);
 
   // Returns true if the endpointer detected reasonable audio levels above
   // background noise which could be user speech, false if not.
@@ -78,19 +79,19 @@ class CONTENT_EXPORT Endpointer {
     return energy_endpointer_.estimating_environment();
   }
 
-  void set_speech_input_complete_silence_length(int64 time_us) {
+  void set_speech_input_complete_silence_length(int64_t time_us) {
     speech_input_complete_silence_length_us_ = time_us;
   }
 
-  void set_long_speech_input_complete_silence_length(int64 time_us) {
+  void set_long_speech_input_complete_silence_length(int64_t time_us) {
     long_speech_input_complete_silence_length_us_ = time_us;
   }
 
-  void set_speech_input_possibly_complete_silence_length(int64 time_us) {
+  void set_speech_input_possibly_complete_silence_length(int64_t time_us) {
     speech_input_possibly_complete_silence_length_us_ = time_us;
   }
 
-  void set_long_speech_length(int64 time_us) {
+  void set_long_speech_length(int64_t time_us) {
     long_speech_length_us_ = time_us;
   }
 
@@ -107,37 +108,37 @@ class CONTENT_EXPORT Endpointer {
   void Reset();
 
   // Minimum allowable length of speech input.
-  int64 speech_input_minimum_length_us_;
+  int64_t speech_input_minimum_length_us_;
 
   // The speechInputPossiblyComplete event signals that silence/noise has been
   // detected for a *short* amount of time after some speech has been detected.
   // This proporty specifies the time period.
-  int64 speech_input_possibly_complete_silence_length_us_;
+  int64_t speech_input_possibly_complete_silence_length_us_;
 
   // The speechInputComplete event signals that silence/noise has been
   // detected for a *long* amount of time after some speech has been detected.
   // This property specifies the time period.
-  int64 speech_input_complete_silence_length_us_;
+  int64_t speech_input_complete_silence_length_us_;
 
   // Same as above, this specifies the required silence period after speech
   // detection. This period is used instead of
   // speech_input_complete_silence_length_ when the utterance is longer than
   // long_speech_length_. This parameter is optional.
-  int64 long_speech_input_complete_silence_length_us_;
+  int64_t long_speech_input_complete_silence_length_us_;
 
   // The period of time after which the endpointer should consider
   // long_speech_input_complete_silence_length_ as a valid silence period
   // instead of speech_input_complete_silence_length_. This parameter is
   // optional.
-  int64 long_speech_length_us_;
+  int64_t long_speech_length_us_;
 
   // First speech onset time, used in determination of speech complete timeout.
-  int64 speech_start_time_us_;
+  int64_t speech_start_time_us_;
 
   // Most recent end time, used in determination of speech complete timeout.
-  int64 speech_end_time_us_;
+  int64_t speech_end_time_us_;
 
-  int64 audio_frame_time_us_;
+  int64_t audio_frame_time_us_;
   EpStatus old_ep_status_;
   bool waiting_for_speech_possibly_complete_timeout_;
   bool waiting_for_speech_complete_timeout_;
@@ -145,7 +146,7 @@ class CONTENT_EXPORT Endpointer {
   bool speech_input_complete_;
   EnergyEndpointer energy_endpointer_;
   int sample_rate_;
-  int32 frame_size_;
+  int32_t frame_size_;
 };
 
 }  // namespace content

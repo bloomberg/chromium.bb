@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/download/save_package.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_render_view_host.h"
@@ -30,11 +35,11 @@ namespace {
 
 // This constant copied from save_package.cc.
 #if defined(OS_WIN)
-const uint32 kMaxFilePathLength = MAX_PATH - 1;
-const uint32 kMaxFileNameLength = MAX_PATH - 1;
+const uint32_t kMaxFilePathLength = MAX_PATH - 1;
+const uint32_t kMaxFileNameLength = MAX_PATH - 1;
 #elif defined(OS_POSIX)
-const uint32 kMaxFilePathLength = PATH_MAX - 1;
-const uint32 kMaxFileNameLength = NAME_MAX;
+const uint32_t kMaxFilePathLength = PATH_MAX - 1;
+const uint32_t kMaxFileNameLength = NAME_MAX;
 #endif
 
 // Used to make long filenames.
@@ -248,7 +253,7 @@ TEST_F(SavePackageTest, MAYBE_TestLongSafePureFilename) {
 #endif
 
   // Test that the filename + extension doesn't exceed kMaxFileNameLength
-  uint32 max_path = SavePackage::GetMaxPathLengthForDirectory(save_dir);
+  uint32_t max_path = SavePackage::GetMaxPathLengthForDirectory(save_dir);
   ASSERT_TRUE(SavePackage::GetSafePureFileName(save_dir, ext, max_path,
                                                &filename));
   EXPECT_TRUE(filename.length() <= kMaxFileNameLength-ext.length());
@@ -325,7 +330,7 @@ TEST_F(SavePackageTest, MAYBE_TestEnsureMimeExtension) {
     { FPL("filename.abc"), FPL("filename.abc"), "unknown/unknown" },
     { FPL("filename"), FPL("filename"), "unknown/unknown" },
   };
-  for (uint32 i = 0; i < arraysize(kExtensionTests); ++i) {
+  for (uint32_t i = 0; i < arraysize(kExtensionTests); ++i) {
     base::FilePath original = base::FilePath(kExtensionTests[i].page_title);
     base::FilePath expected = base::FilePath(kExtensionTests[i].expected_name);
     std::string mime_type(kExtensionTests[i].contents_mime_type);

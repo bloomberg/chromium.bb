@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
 #define CONTENT_BROWSER_FILEAPI_MOCK_FILE_UPDATE_OBSERVER_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
@@ -26,7 +28,7 @@ class MockFileUpdateObserver : public FileUpdateObserver {
 
   // FileUpdateObserver overrides.
   void OnStartUpdate(const FileSystemURL& url) override;
-  void OnUpdate(const FileSystemURL& url, int64 delta) override;
+  void OnUpdate(const FileSystemURL& url, int64_t delta) override;
   void OnEndUpdate(const FileSystemURL& url) override;
 
   void Enable() { is_ready_ = true; }

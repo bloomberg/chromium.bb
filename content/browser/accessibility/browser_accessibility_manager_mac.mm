@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 
+#include <stddef.h>
+
 #import "base/logging.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"

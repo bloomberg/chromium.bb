@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_LINUX_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 #include "content/common/content_export.h"
 

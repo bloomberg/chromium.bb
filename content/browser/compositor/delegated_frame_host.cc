@@ -286,7 +286,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   if (vsync_interval_ <= base::TimeDelta()) {
     present_time = now;
   } else {
-    const int64 intervals_elapsed = (now - vsync_timebase_) / vsync_interval_;
+    const int64_t intervals_elapsed = (now - vsync_timebase_) / vsync_interval_;
     present_time = vsync_timebase_ + (intervals_elapsed + 1) * vsync_interval_;
   }
 
@@ -341,7 +341,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
 }
 
 void DelegatedFrameHost::SwapDelegatedFrame(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   DCHECK(frame->delegated_frame_data.get());
   cc::DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
@@ -520,7 +520,7 @@ void DelegatedFrameHost::ClearDelegatedFrame() {
     EvictDelegatedFrame();
 }
 
-void DelegatedFrameHost::SendDelegatedFrameAck(uint32 output_surface_id) {
+void DelegatedFrameHost::SendDelegatedFrameAck(uint32_t output_surface_id) {
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty())
     ack.resources.swap(surface_returned_resources_);
@@ -531,7 +531,7 @@ void DelegatedFrameHost::SendDelegatedFrameAck(uint32 output_surface_id) {
   pending_delegated_ack_count_--;
 }
 
-void DelegatedFrameHost::SurfaceDrawn(uint32 output_surface_id,
+void DelegatedFrameHost::SurfaceDrawn(uint32_t output_surface_id,
                                       cc::SurfaceDrawStatus drawn) {
   SendDelegatedFrameAck(output_surface_id);
 }
@@ -544,7 +544,7 @@ void DelegatedFrameHost::UnusedResourcesAreAvailable() {
 }
 
 void DelegatedFrameHost::SendReturnedDelegatedResources(
-    uint32 output_surface_id) {
+    uint32_t output_surface_id) {
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty()) {
     ack.resources.swap(surface_returned_resources_);
@@ -673,7 +673,7 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
 
   scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock(
       new SkAutoLockPixels(*bitmap));
-  uint8* pixels = static_cast<uint8*>(bitmap->getPixels());
+  uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
 
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> release_callback;
@@ -836,10 +836,8 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
       SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
 
       media::CopyRGBToVideoFrame(
-          reinterpret_cast<uint8*>(scaled_bitmap.getPixels()),
-          scaled_bitmap.rowBytes(),
-          region_in_frame,
-          video_frame.get());
+          reinterpret_cast<uint8_t*>(scaled_bitmap.getPixels()),
+          scaled_bitmap.rowBytes(), region_in_frame, video_frame.get());
     }
     ignore_result(scoped_callback_runner.Release());
     callback.Run(region_in_frame, true);

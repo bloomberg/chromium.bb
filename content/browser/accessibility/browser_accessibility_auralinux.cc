@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager_auralinux.h"
 #include "content/common/accessibility_messages.h"
@@ -532,7 +534,7 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
     return NULL;
   AtkStateSet* state_set = ATK_OBJECT_CLASS(browser_accessibility_parent_class)
                                ->ref_state_set(atk_object);
-  int32 state = obj->GetState();
+  int32_t state = obj->GetState();
 
   if (state & (1 << ui::AX_STATE_FOCUSABLE))
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);

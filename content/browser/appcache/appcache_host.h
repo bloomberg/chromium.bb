@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_HOST_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_HOST_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -78,13 +81,13 @@ class CONTENT_EXPORT AppCacheHost
 
   // Support for cache selection and scriptable method calls.
   bool SelectCache(const GURL& document_url,
-                   const int64 cache_document_was_loaded_from,
+                   const int64_t cache_document_was_loaded_from,
                    const GURL& manifest_url);
   bool SelectCacheForWorker(int parent_process_id,
                             int parent_host_id);
-  bool SelectCacheForSharedWorker(int64 appcache_id);
+  bool SelectCacheForSharedWorker(int64_t appcache_id);
   bool MarkAsForeignEntry(const GURL& document_url,
-                          int64 cache_document_was_loaded_from);
+                          int64_t cache_document_was_loaded_from);
   void GetStatusWithCallback(const GetStatusCallback& callback,
                              void* callback_param);
   void StartUpdateWithCallback(const StartUpdateCallback& callback,
@@ -143,7 +146,7 @@ class CONTENT_EXPORT AppCacheHost
   void SetSwappableCache(AppCacheGroup* group);
 
   // Used to ensure that a loaded appcache survives a frame navigation.
-  void LoadMainResourceCache(int64 cache_id);
+  void LoadMainResourceCache(int64_t cache_id);
 
   // Used to notify the host that a namespace resource is being delivered as
   // the main resource of the page and to provide its url.
@@ -187,14 +190,14 @@ class CONTENT_EXPORT AppCacheHost
   friend class content::AppCacheUpdateJobTest;
 
   AppCacheStatus GetStatus();
-  void LoadSelectedCache(int64 cache_id);
+  void LoadSelectedCache(int64_t cache_id);
   void LoadOrCreateGroup(const GURL& manifest_url);
 
   // See public Associate*Host() methods above.
   void AssociateCacheHelper(AppCache* cache, const GURL& manifest_url);
 
   // AppCacheStorage::Delegate impl
-  void OnCacheLoaded(AppCache* cache, int64 cache_id) override;
+  void OnCacheLoaded(AppCache* cache, int64_t cache_id) override;
   void OnGroupLoaded(AppCacheGroup* group, const GURL& manifest_url) override;
   // AppCacheServiceImpl::Observer impl
   void OnServiceReinitialized(
@@ -262,12 +265,12 @@ class CONTENT_EXPORT AppCacheHost
   // Keep a reference to the cache of the main resource so it survives frame
   // navigations.
   scoped_refptr<AppCache> main_resource_cache_;
-  int64 pending_main_resource_cache_id_;
+  int64_t pending_main_resource_cache_id_;
 
   // Cache loading is async, if we're loading a specific cache or group
   // for the purposes of cache selection, one or the other of these will
   // indicate which cache or group is being loaded.
-  int64 pending_selected_cache_id_;
+  int64_t pending_selected_cache_id_;
   GURL pending_selected_manifest_url_;
 
   // Used to defend against bad IPC messages.

@@ -4,6 +4,9 @@
 
 #include "content/browser/plugin_loader_posix.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -54,11 +57,11 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     return false;
   }
 
-  void TestOnPluginLoaded(uint32 index, const WebPluginInfo& plugin) {
+  void TestOnPluginLoaded(uint32_t index, const WebPluginInfo& plugin) {
     OnPluginLoaded(index, plugin);
   }
 
-  void TestOnPluginLoadFailed(uint32 index, const base::FilePath& path) {
+  void TestOnPluginLoadFailed(uint32_t index, const base::FilePath& path) {
     OnPluginLoadFailed(index, path);
   }
 

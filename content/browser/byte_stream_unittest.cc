@@ -4,6 +4,8 @@
 
 #include "content/browser/byte_stream.h"
 
+#include <stddef.h>
+
 #include <deque>
 #include <limits>
 

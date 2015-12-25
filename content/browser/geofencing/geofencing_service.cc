@@ -27,11 +27,11 @@ void RunSoon(const base::Closure& callback) {
 struct GeofencingServiceImpl::Registration {
   Registration();
   Registration(const blink::WebCircularGeofencingRegion& region,
-               int64 geofencing_registration_id,
+               int64_t geofencing_registration_id,
                GeofencingRegistrationDelegate* delegate);
 
   blink::WebCircularGeofencingRegion region;
-  int64 geofencing_registration_id;
+  int64_t geofencing_registration_id;
   GeofencingRegistrationDelegate* delegate;
 
   enum RegistrationState {
@@ -56,13 +56,12 @@ GeofencingServiceImpl::Registration::Registration()
 
 GeofencingServiceImpl::Registration::Registration(
     const blink::WebCircularGeofencingRegion& region,
-    int64 geofencing_registration_id,
+    int64_t geofencing_registration_id,
     GeofencingRegistrationDelegate* delegate)
     : region(region),
       geofencing_registration_id(geofencing_registration_id),
       delegate(delegate),
-      state(STATE_REGISTERING) {
-}
+      state(STATE_REGISTERING) {}
 
 GeofencingServiceImpl::GeofencingServiceImpl() : next_registration_id_(0) {
 }
@@ -80,12 +79,12 @@ bool GeofencingServiceImpl::IsServiceAvailable() {
   return EnsureProvider();
 }
 
-int64 GeofencingServiceImpl::RegisterRegion(
+int64_t GeofencingServiceImpl::RegisterRegion(
     const blink::WebCircularGeofencingRegion& region,
     GeofencingRegistrationDelegate* delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  int64 geofencing_registration_id = GetNextId();
+  int64_t geofencing_registration_id = GetNextId();
   registrations_[geofencing_registration_id] =
       Registration(region, geofencing_registration_id, delegate);
 
@@ -107,7 +106,8 @@ int64 GeofencingServiceImpl::RegisterRegion(
   return geofencing_registration_id;
 }
 
-void GeofencingServiceImpl::UnregisterRegion(int64 geofencing_registration_id) {
+void GeofencingServiceImpl::UnregisterRegion(
+    int64_t geofencing_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RegistrationsMap::iterator registration_iterator =
@@ -157,14 +157,14 @@ bool GeofencingServiceImpl::EnsureProvider() {
   return true;
 }
 
-int64 GeofencingServiceImpl::GetNextId() {
+int64_t GeofencingServiceImpl::GetNextId() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return next_registration_id_++;
 }
 
 void GeofencingServiceImpl::NotifyRegistrationFinished(
-    int64 geofencing_registration_id,
+    int64_t geofencing_registration_id,
     GeofencingStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

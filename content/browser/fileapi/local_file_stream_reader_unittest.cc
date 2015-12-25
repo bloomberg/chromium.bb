@@ -4,6 +4,9 @@
 
 #include "storage/browser/fileapi/local_file_stream_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"
@@ -11,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -86,7 +90,7 @@ class LocalFileStreamReaderTest : public testing::Test {
  protected:
   LocalFileStreamReader* CreateFileReader(
       const base::FilePath& path,
-      int64 initial_offset,
+      int64_t initial_offset,
       const base::Time& expected_modification_time) {
     return new LocalFileStreamReader(
             file_task_runner(),
@@ -151,7 +155,7 @@ TEST_F(LocalFileStreamReaderTest, Empty) {
   ASSERT_EQ(0U, data.size());
 
   net::TestInt64CompletionCallback callback;
-  int64 length_result = reader->GetLength(callback.callback());
+  int64_t length_result = reader->GetLength(callback.callback());
   if (length_result == net::ERR_IO_PENDING)
     length_result = callback.WaitForResult();
   ASSERT_EQ(0, result);
@@ -161,7 +165,7 @@ TEST_F(LocalFileStreamReaderTest, GetLengthNormal) {
   scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   net::TestInt64CompletionCallback callback;
-  int64 result = reader->GetLength(callback.callback());
+  int64_t result = reader->GetLength(callback.callback());
   if (result == net::ERR_IO_PENDING)
     result = callback.WaitForResult();
   ASSERT_EQ(kTestDataSize, result);
@@ -175,7 +179,7 @@ TEST_F(LocalFileStreamReaderTest, GetLengthAfterModified) {
   scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   net::TestInt64CompletionCallback callback;
-  int64 result = reader->GetLength(callback.callback());
+  int64_t result = reader->GetLength(callback.callback());
   if (result == net::ERR_IO_PENDING)
     result = callback.WaitForResult();
   ASSERT_EQ(net::ERR_UPLOAD_FILE_CHANGED, result);
@@ -192,7 +196,7 @@ TEST_F(LocalFileStreamReaderTest, GetLengthWithOffset) {
   scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 3, base::Time()));
   net::TestInt64CompletionCallback callback;
-  int64 result = reader->GetLength(callback.callback());
+  int64_t result = reader->GetLength(callback.callback());
   if (result == net::ERR_IO_PENDING)
     result = callback.WaitForResult();
   // Initial offset does not affect the result of GetLength.
@@ -222,7 +226,7 @@ TEST_F(LocalFileStreamReaderTest, ReadAfterModified) {
   EXPECT_EQ(net::ERR_UPLOAD_FILE_CHANGED, result);
   EXPECT_EQ(0U, data.size());
 
-  // Due to precision loss converting int64->double->int64 (e.g. through
+  // Due to precision loss converting int64_t->double->int64_t (e.g. through
   // Blink) the expected/actual time may vary by microseconds. With
   // modification time delta < 10us this should work.
   TouchTestFile(base::TimeDelta::FromMicroseconds(1));

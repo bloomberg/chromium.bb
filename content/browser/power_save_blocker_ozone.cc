@@ -4,6 +4,7 @@
 
 #include "content/browser/power_save_blocker_impl.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace content {

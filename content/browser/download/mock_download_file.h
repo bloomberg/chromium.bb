@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_
 #define CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -40,8 +43,8 @@ class MockDownloadFile : public DownloadFile {
   MOCK_METHOD0(Finish, void());
   MOCK_CONST_METHOD0(FullPath, base::FilePath());
   MOCK_CONST_METHOD0(InProgress, bool());
-  MOCK_CONST_METHOD0(BytesSoFar, int64());
-  MOCK_CONST_METHOD0(CurrentSpeed, int64());
+  MOCK_CONST_METHOD0(BytesSoFar, int64_t());
+  MOCK_CONST_METHOD0(CurrentSpeed, int64_t());
   MOCK_METHOD1(GetHash, bool(std::string* hash));
   MOCK_METHOD0(GetHashState, std::string());
   MOCK_METHOD0(SendUpdate, void());

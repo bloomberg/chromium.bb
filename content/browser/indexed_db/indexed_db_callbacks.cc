@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
@@ -32,14 +34,14 @@ using storage::ShareableFileReference;
 namespace content {
 
 namespace {
-const int32 kNoCursor = -1;
-const int32 kNoDatabaseCallbacks = -1;
-const int64 kNoTransaction = -1;
+const int32_t kNoCursor = -1;
+const int32_t kNoDatabaseCallbacks = -1;
+const int64_t kNoTransaction = -1;
 }
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                                       int32 ipc_thread_id,
-                                       int32 ipc_callbacks_id)
+                                       int32_t ipc_thread_id,
+                                       int32_t ipc_callbacks_id)
     : dispatcher_host_(dispatcher_host),
       ipc_callbacks_id_(ipc_callbacks_id),
       ipc_thread_id_(ipc_thread_id),
@@ -48,13 +50,12 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       ipc_database_id_(kNoDatabase),
       ipc_database_callbacks_id_(kNoDatabaseCallbacks),
       data_loss_(blink::WebIDBDataLossNone),
-      sent_blocked_(false) {
-}
+      sent_blocked_(false) {}
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                                       int32 ipc_thread_id,
-                                       int32 ipc_callbacks_id,
-                                       int32 ipc_cursor_id)
+                                       int32_t ipc_thread_id,
+                                       int32_t ipc_callbacks_id,
+                                       int32_t ipc_cursor_id)
     : dispatcher_host_(dispatcher_host),
       ipc_callbacks_id_(ipc_callbacks_id),
       ipc_thread_id_(ipc_thread_id),
@@ -63,14 +64,13 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       ipc_database_id_(kNoDatabase),
       ipc_database_callbacks_id_(kNoDatabaseCallbacks),
       data_loss_(blink::WebIDBDataLossNone),
-      sent_blocked_(false) {
-}
+      sent_blocked_(false) {}
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                                       int32 ipc_thread_id,
-                                       int32 ipc_callbacks_id,
-                                       int32 ipc_database_callbacks_id,
-                                       int64 host_transaction_id,
+                                       int32_t ipc_thread_id,
+                                       int32_t ipc_callbacks_id,
+                                       int32_t ipc_database_callbacks_id,
+                                       int64_t host_transaction_id,
                                        const GURL& origin_url)
     : dispatcher_host_(dispatcher_host),
       ipc_callbacks_id_(ipc_callbacks_id),
@@ -81,8 +81,7 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       ipc_database_id_(kNoDatabase),
       ipc_database_callbacks_id_(ipc_database_callbacks_id),
       data_loss_(blink::WebIDBDataLossNone),
-      sent_blocked_(false) {
-}
+      sent_blocked_(false) {}
 
 IndexedDBCallbacks::~IndexedDBCallbacks() {}
 
@@ -119,7 +118,7 @@ void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
   dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks::OnBlocked(int64 existing_version) {
+void IndexedDBCallbacks::OnBlocked(int64_t existing_version) {
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
@@ -151,7 +150,7 @@ void IndexedDBCallbacks::OnDataLoss(blink::WebIDBDataLoss data_loss,
 }
 
 void IndexedDBCallbacks::OnUpgradeNeeded(
-    int64 old_version,
+    int64_t old_version,
     scoped_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {
   DCHECK(dispatcher_host_.get());
@@ -162,7 +161,7 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   DCHECK_NE(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
   dispatcher_host_->RegisterTransactionId(host_transaction_id_, origin_url_);
-  int32 ipc_database_id =
+  int32_t ipc_database_id =
       dispatcher_host_->Add(connection.release(), ipc_thread_id_, origin_url_);
   if (ipc_database_id < 0)
     return;
@@ -197,7 +196,7 @@ void IndexedDBCallbacks::OnSuccess(scoped_ptr<IndexedDBConnection> connection,
 
   scoped_refptr<IndexedDBCallbacks> self(this);
 
-  int32 ipc_object_id = kNoDatabase;
+  int32_t ipc_object_id = kNoDatabase;
   // Only register if the connection was not previously sent in OnUpgradeNeeded.
   if (ipc_database_id_ == kNoDatabase) {
     ipc_object_id = dispatcher_host_->Add(
@@ -348,7 +347,7 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
-  int32 ipc_object_id = dispatcher_host_->Add(cursor.get());
+  int32_t ipc_object_id = dispatcher_host_->Add(cursor.get());
   scoped_ptr<IndexedDBMsg_CallbacksSuccessIDBCursor_Params> params(
       new IndexedDBMsg_CallbacksSuccessIDBCursor_Params());
   params->ipc_thread_id = ipc_thread_id_;
@@ -581,7 +580,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
   dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks::OnSuccess(int64 value) {
+void IndexedDBCallbacks::OnSuccess(int64_t value) {
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);

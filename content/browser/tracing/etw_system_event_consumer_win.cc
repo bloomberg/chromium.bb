@@ -4,6 +4,8 @@
 
 #include "content/browser/tracing/etw_system_event_consumer_win.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
@@ -90,10 +92,9 @@ void EtwSystemEventConsumer::OnStopSystemTracingDone(
 
 bool EtwSystemEventConsumer::StartKernelSessionTracing() {
   // Enabled flags (tracing facilities).
-  uint32 enabled_flags = EVENT_TRACE_FLAG_IMAGE_LOAD |
-                         EVENT_TRACE_FLAG_PROCESS |
-                         EVENT_TRACE_FLAG_THREAD |
-                         EVENT_TRACE_FLAG_CSWITCH;
+  uint32_t enabled_flags = EVENT_TRACE_FLAG_IMAGE_LOAD |
+                           EVENT_TRACE_FLAG_PROCESS | EVENT_TRACE_FLAG_THREAD |
+                           EVENT_TRACE_FLAG_CSWITCH;
 
   EVENT_TRACE_PROPERTIES& p = *properties_.get();
   p.LogFileMode = EVENT_TRACE_REAL_TIME_MODE;

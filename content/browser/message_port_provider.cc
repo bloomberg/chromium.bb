@@ -4,7 +4,6 @@
 
 #include "content/public/browser/message_port_provider.h"
 
-#include "base/basictypes.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"

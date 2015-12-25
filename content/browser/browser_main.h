@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_BROWSER_MAIN_H_
 #define CONTENT_BROWSER_BROWSER_MAIN_H_
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 
 namespace content {

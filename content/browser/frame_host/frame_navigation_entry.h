@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_FRAME_NAVIGATION_ENTRY_H_
 #define CONTENT_BROWSER_FRAME_HOST_FRAME_NAVIGATION_ENTRY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/common/page_state.h"
@@ -29,8 +31,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   explicit FrameNavigationEntry(int frame_tree_node_id);
   FrameNavigationEntry(int frame_tree_node_id,
                        const std::string& frame_unique_name,
-                       int64 item_sequence_number,
-                       int64 document_sequence_number,
+                       int64_t item_sequence_number,
+                       int64_t document_sequence_number,
                        SiteInstanceImpl* site_instance,
                        const GURL& url,
                        const Referrer& referrer);
@@ -41,8 +43,8 @@ class CONTENT_EXPORT FrameNavigationEntry
 
   // Updates all the members of this entry.
   void UpdateEntry(const std::string& frame_unique_name,
-                   int64 item_sequence_number,
-                   int64 document_sequence_number,
+                   int64_t item_sequence_number,
+                   int64_t document_sequence_number,
                    SiteInstanceImpl* site_instance,
                    const GURL& url,
                    const Referrer& referrer,
@@ -77,10 +79,10 @@ class CONTENT_EXPORT FrameNavigationEntry
   // new document and is also globally unique.  In-page navigations get a new
   // item sequence number but the same document sequence number.  These numbers
   // should not change once assigned.
-  void set_item_sequence_number(int64 item_sequence_number);
-  int64 item_sequence_number() const { return item_sequence_number_; }
-  void set_document_sequence_number(int64 document_sequence_number);
-  int64 document_sequence_number() const { return document_sequence_number_; }
+  void set_item_sequence_number(int64_t item_sequence_number);
+  int64_t item_sequence_number() const { return item_sequence_number_; }
+  void set_document_sequence_number(int64_t document_sequence_number);
+  int64_t document_sequence_number() const { return document_sequence_number_; }
 
   // The SiteInstance responsible for rendering this frame.  All frames sharing
   // a SiteInstance must live in the same process.  This is a refcounted pointer
@@ -116,8 +118,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   // See the accessors above for descriptions.
   int frame_tree_node_id_;
   std::string frame_unique_name_;
-  int64 item_sequence_number_;
-  int64 document_sequence_number_;
+  int64_t item_sequence_number_;
+  int64_t document_sequence_number_;
   scoped_refptr<SiteInstanceImpl> site_instance_;
   GURL url_;
   Referrer referrer_;

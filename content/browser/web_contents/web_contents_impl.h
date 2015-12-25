@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_IMPL_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -12,10 +14,12 @@
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -260,8 +264,8 @@ class CONTENT_EXPORT WebContentsImpl
 #endif
   const PageImportanceSignals& GetPageImportanceSignals() const override;
   const base::string16& GetTitle() const override;
-  int32 GetMaxPageID() override;
-  int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) override;
+  int32_t GetMaxPageID() override;
+  int32_t GetMaxPageIDForSiteInstance(SiteInstance* site_instance) override;
   SiteInstanceImpl* GetSiteInstance() const override;
   SiteInstanceImpl* GetPendingSiteInstance() const override;
   bool IsLoading() const override;
@@ -269,8 +273,8 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsWaitingForResponse() const override;
   const net::LoadStateWithParam& GetLoadState() const override;
   const base::string16& GetLoadStateHost() const override;
-  uint64 GetUploadSize() const override;
-  uint64 GetUploadPosition() const override;
+  uint64_t GetUploadSize() const override;
+  uint64_t GetUploadPosition() const override;
   const std::string& GetEncoding() const override;
   bool DisplayedInsecureContent() const override;
   void IncrementCapturerCount(const gfx::Size& capture_size) override;
@@ -335,7 +339,7 @@ class CONTENT_EXPORT WebContentsImpl
                             const Referrer& referrer,
                             const std::string& headers) override;
   void GenerateMHTML(const base::FilePath& file,
-                     const base::Callback<void(int64)>& callback) override;
+                     const base::Callback<void(int64_t)>& callback) override;
   const std::string& GetContentsMimeType() const override;
   bool WillNotifyDisconnection() const override;
   void SetOverrideEncoding(const std::string& encoding) override;
@@ -419,7 +423,7 @@ class CONTENT_EXPORT WebContentsImpl
   void UpdateStateForFrame(RenderFrameHost* render_frame_host,
                            const PageState& page_state) override;
   void UpdateTitle(RenderFrameHost* render_frame_host,
-                   int32 page_id,
+                   int32_t page_id,
                    const base::string16& title,
                    base::i18n::TextDirection title_direction) override;
   void UpdateEncoding(RenderFrameHost* render_frame_host,
@@ -459,7 +463,7 @@ class CONTENT_EXPORT WebContentsImpl
                             int error_code) override;
   void RenderViewDeleted(RenderViewHost* render_view_host) override;
   void UpdateState(RenderViewHost* render_view_host,
-                   int32 page_id,
+                   int32_t page_id,
                    const PageState& page_state) override;
   void UpdateTargetURL(RenderViewHost* render_view_host,
                        const GURL& url) override;
@@ -468,9 +472,9 @@ class CONTENT_EXPORT WebContentsImpl
   void DidCancelLoading() override;
   void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) override;
   void RouteCloseEvent(RenderViewHost* rvh) override;
-  bool AddMessageToConsole(int32 level,
+  bool AddMessageToConsole(int32_t level,
                            const base::string16& message,
-                           int32 line_no,
+                           int32_t line_no,
                            const base::string16& source_id) override;
   RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
@@ -478,8 +482,8 @@ class CONTENT_EXPORT WebContentsImpl
   void OnIgnoredUIEvent() override;
   void LoadStateChanged(const GURL& url,
                         const net::LoadStateWithParam& load_state,
-                        uint64 upload_position,
-                        uint64 upload_size) override;
+                        uint64_t upload_position,
+                        uint64_t upload_size) override;
   void Activate() override;
   void RunFileChooser(RenderViewHost* render_view_host,
                       const FileChooserParams& params) override;
@@ -491,11 +495,11 @@ class CONTENT_EXPORT WebContentsImpl
       int32_t main_frame_widget_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) override;
-  void CreateNewWidget(int32 render_process_id,
-                       int32 route_id,
+  void CreateNewWidget(int32_t render_process_id,
+                       int32_t route_id,
                        blink::WebPopupType popup_type) override;
-  void CreateNewFullscreenWidget(int32 render_process_id,
-                                 int32 route_id) override;
+  void CreateNewFullscreenWidget(int32_t render_process_id,
+                                 int32_t route_id) override;
   void ShowCreatedWindow(int route_id,
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
@@ -670,12 +674,12 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Updates the max page ID for the current SiteInstance in this
   // WebContentsImpl to be at least |page_id|.
-  void UpdateMaxPageID(int32 page_id) override;
+  void UpdateMaxPageID(int32_t page_id) override;
 
   // Updates the max page ID for the given SiteInstance in this WebContentsImpl
   // to be at least |page_id|.
   void UpdateMaxPageIDForSiteInstance(SiteInstance* site_instance,
-                                      int32 page_id) override;
+                                      int32_t page_id) override;
 
   // Copy the current map of SiteInstance ID to max page ID from another tab.
   // This is necessary when this tab adopts the NavigationEntries from
@@ -943,8 +947,8 @@ class CONTENT_EXPORT WebContentsImpl
                            const base::string16& title);
 
   // Helper for CreateNewWidget/CreateNewFullscreenWidget.
-  void CreateNewWidget(int32 render_process_id,
-                       int32 route_id,
+  void CreateNewWidget(int32_t render_process_id,
+                       int32_t route_id,
                        bool is_fullscreen,
                        blink::WebPopupType popup_type);
 
@@ -1084,7 +1088,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Map of SiteInstance ID to max page ID for this tab. A page ID is specific
   // to a given tab and SiteInstance, and must be valid for the lifetime of the
   // WebContentsImpl.
-  std::map<int32, int32> max_page_ids_;
+  std::map<int32_t, int32_t> max_page_ids_;
 
   // The current load state and the URL associated with it.
   net::LoadStateWithParam load_state_;
@@ -1094,8 +1098,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Upload progress, for displaying in the status bar.
   // Set to zero when there is no significant upload happening.
-  uint64 upload_size_;
-  uint64 upload_position_;
+  uint64_t upload_size_;
+  uint64_t upload_position_;
 
   // Tracks that this WebContents needs to unblock requests to the renderer.
   // See ResumeLoadingCreatedWebContents.

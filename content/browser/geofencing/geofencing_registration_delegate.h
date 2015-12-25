@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_GEOFENCING_GEOFENCING_REGISTRATION_DELEGATE_H_
 #define CONTENT_BROWSER_GEOFENCING_GEOFENCING_REGISTRATION_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "content/common/geofencing_types.h"
 
 namespace content {
@@ -17,10 +18,10 @@ namespace content {
 // TODO(mek): Add methods for geofence enter/leave events.
 class GeofencingRegistrationDelegate {
  public:
-  virtual void RegistrationFinished(int64 geofencing_registration_id,
+  virtual void RegistrationFinished(int64_t geofencing_registration_id,
                                     GeofencingStatus status) = 0;
-  virtual void RegionEntered(int64 geofencing_registration_id) = 0;
-  virtual void RegionExited(int64 geofencing_registration_id) = 0;
+  virtual void RegionEntered(int64_t geofencing_registration_id) = 0;
+  virtual void RegionExited(int64_t geofencing_registration_id) = 0;
 
  protected:
   virtual ~GeofencingRegistrationDelegate() {}

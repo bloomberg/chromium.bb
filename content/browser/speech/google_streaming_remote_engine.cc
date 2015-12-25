@@ -38,7 +38,7 @@ const char kDownstreamUrl[] = "/down?";
 const char kUpstreamUrl[] = "/up?";
 
 // This matches the maximum maxAlternatives value supported by the server.
-const uint32 kMaxMaxAlternatives = 30;
+const uint32_t kMaxMaxAlternatives = 30;
 
 // TODO(hans): Remove this and other logging when we don't need it anymore.
 void DumpResponse(const std::string& response) {
@@ -121,7 +121,9 @@ void GoogleStreamingRemoteEngine::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 void GoogleStreamingRemoteEngine::OnURLFetchDownloadProgress(
-    const URLFetcher* source, int64 current, int64 total) {
+    const URLFetcher* source,
+    int64_t current,
+    int64_t total) {
   const bool kPartialResponse = false;
   DispatchHTTPResponse(source, kPartialResponse);
 }
@@ -341,7 +343,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   upstream_args.push_back(
       config_.filter_profanities ? "pFilter=2" : "pFilter=0");
   if (config_.max_hypotheses > 0U) {
-    uint32 max_alternatives =
+    uint32_t max_alternatives =
         std::min(kMaxMaxAlternatives, config_.max_hypotheses);
     upstream_args.push_back("maxAlternatives=" +
                             base::UintToString(max_alternatives));
@@ -398,9 +400,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   if (preamble_encoder_) {
     // Encode and send preamble right away.
     scoped_refptr<AudioChunk> chunk = new AudioChunk(
-        reinterpret_cast<const uint8*>(config_.preamble->sample_data.data()),
-        config_.preamble->sample_data.size(),
-        config_.preamble->sample_depth);
+        reinterpret_cast<const uint8_t*>(config_.preamble->sample_data.data()),
+        config_.preamble->sample_data.size(), config_.preamble->sample_depth);
     preamble_encoder_->Encode(*chunk);
     preamble_encoder_->Flush();
     scoped_refptr<AudioChunk> encoded_data(
@@ -519,7 +520,7 @@ GoogleStreamingRemoteEngine::CloseUpstreamAndWaitForResults(
   size_t sample_count =
       config_.audio_sample_rate * kAudioPacketIntervalMs / 1000;
   scoped_refptr<AudioChunk> dummy_chunk = new AudioChunk(
-      sample_count * sizeof(int16), encoder_->GetBitsPerSample() / 8);
+      sample_count * sizeof(int16_t), encoder_->GetBitsPerSample() / 8);
   encoder_->Encode(*dummy_chunk.get());
   encoder_->Flush();
   scoped_refptr<AudioChunk> encoded_dummy_data =
@@ -607,13 +608,13 @@ std::string GoogleStreamingRemoteEngine::GetAcceptedLanguages() const {
 
 // TODO(primiano): Is there any utility in the codebase that already does this?
 std::string GoogleStreamingRemoteEngine::GenerateRequestKey() const {
-  const int64 kKeepLowBytes = 0x00000000FFFFFFFFLL;
-  const int64 kKeepHighBytes = 0xFFFFFFFF00000000LL;
+  const int64_t kKeepLowBytes = 0x00000000FFFFFFFFLL;
+  const int64_t kKeepHighBytes = 0xFFFFFFFF00000000LL;
 
   // Just keep the least significant bits of timestamp, in order to reduce
   // probability of collisions.
-  int64 key = (base::Time::Now().ToInternalValue() & kKeepLowBytes) |
-              (base::RandUint64() & kKeepHighBytes);
+  int64_t key = (base::Time::Now().ToInternalValue() & kKeepLowBytes) |
+                (base::RandUint64() & kKeepHighBytes);
   return base::HexEncode(reinterpret_cast<void*>(&key), sizeof(key));
 }
 

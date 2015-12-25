@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_RESOURCE_HANDLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/loader/resource_handler.h"
@@ -37,7 +40,7 @@ class CONTENT_EXPORT DownloadResourceHandler
   // started_cb will be called exactly once on the UI thread.
   // |id| should be invalid if the id should be automatically assigned.
   DownloadResourceHandler(
-      uint32 id,
+      uint32_t id,
       net::URLRequest* request,
       const DownloadUrlParameters::OnStartedCallback& started_cb,
       scoped_ptr<DownloadSaveInfo> save_info);
@@ -88,7 +91,7 @@ class CONTENT_EXPORT DownloadResourceHandler
 
   void OnCoreReadyToRead();
 
-  uint32 download_id_;
+  uint32_t download_id_;
 
   // This is read only on the IO thread, but may only
   // be called on the UI thread.

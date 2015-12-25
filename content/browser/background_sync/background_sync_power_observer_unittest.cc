@@ -4,6 +4,7 @@
 
 #include <content/browser/background_sync/background_sync_power_observer.h>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"

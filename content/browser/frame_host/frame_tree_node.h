@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_H_
 #define CONTENT_BROWSER_FRAME_HOST_FRAME_TREE_NODE_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"

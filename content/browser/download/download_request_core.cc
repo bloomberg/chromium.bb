@@ -87,9 +87,9 @@ void DownloadRequestCore::OnResponseStarted(
   // If the content-length header is not present (or contains something other
   // than numbers), the incoming content_length is -1 (unknown size).
   // Set the content length to 0 to indicate unknown size to DownloadManager.
-  int64 content_length = request()->GetExpectedContentSize() > 0
-                             ? request()->GetExpectedContentSize()
-                             : 0;
+  int64_t content_length = request()->GetExpectedContentSize() > 0
+                               ? request()->GetExpectedContentSize()
+                               : 0;
 
   // Deleted in DownloadManager.
   scoped_ptr<DownloadCreateInfo> info(

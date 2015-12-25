@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
 #include "content/browser/tracing/power_tracing_agent.h"
 #include "content/browser/tracing/trace_message_filter.h"
@@ -1034,7 +1035,7 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
     tmf->SendProcessMemoryDumpRequest(args);
 }
 
-uint64 TracingControllerImpl::GetTracingProcessId() const {
+uint64_t TracingControllerImpl::GetTracingProcessId() const {
   return ChildProcessHost::kBrowserTracingProcessId;
 }
 
@@ -1058,7 +1059,7 @@ void TracingControllerImpl::RemoveTraceMessageFilterObserver(
 
 void TracingControllerImpl::OnProcessMemoryDumpResponse(
     TraceMessageFilter* trace_message_filter,
-    uint64 dump_guid,
+    uint64_t dump_guid,
     bool success) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
@@ -1090,7 +1091,7 @@ void TracingControllerImpl::OnProcessMemoryDumpResponse(
   FinalizeGlobalMemoryDumpIfAllProcessesReplied();
 }
 
-void TracingControllerImpl::OnBrowserProcessMemoryDumpDone(uint64 dump_guid,
+void TracingControllerImpl::OnBrowserProcessMemoryDumpDone(uint64_t dump_guid,
                                                            bool success) {
   DCHECK_GT(pending_memory_dump_ack_count_, 0);
   --pending_memory_dump_ack_count_;

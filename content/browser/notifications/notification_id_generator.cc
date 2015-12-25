@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/sha1.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "url/gurl.h"
 

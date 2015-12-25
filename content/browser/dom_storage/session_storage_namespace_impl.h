@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_SESSION_STORAGE_NAMESPACE_IMPL_H_
 #define CONTENT_BROWSER_DOM_STORAGE_SESSION_STORAGE_NAMESPACE_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -27,7 +29,7 @@ class SessionStorageNamespaceImpl
   // Constructs a |SessionStorageNamespaceImpl| by cloning
   // |namespace_to_clone|. Allocates new IDs for it.
   SessionStorageNamespaceImpl(DOMStorageContextWrapper* context,
-                              int64 namepace_id_to_clone);
+                              int64_t namepace_id_to_clone);
 
   // Constructs a |SessionStorageNamespaceImpl| and assigns |persistent_id|
   // to it. Allocates a new non-persistent ID.
@@ -35,7 +37,7 @@ class SessionStorageNamespaceImpl
                               const std::string& persistent_id);
 
   // SessionStorageNamespace implementation.
-  int64 id() const override;
+  int64_t id() const override;
   const std::string& persistent_id() const override;
   void SetShouldPersist(bool should_persist) override;
   bool should_persist() const override;

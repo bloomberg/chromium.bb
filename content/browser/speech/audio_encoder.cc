@@ -4,6 +4,8 @@
 
 #include "content/browser/speech/audio_encoder.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"

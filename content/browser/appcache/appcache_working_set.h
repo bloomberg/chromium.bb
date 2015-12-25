@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_WORKING_SET_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_WORKING_SET_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/containers/hash_tables.h"
@@ -31,7 +33,7 @@ class CONTENT_EXPORT AppCacheWorkingSet {
 
   void AddCache(AppCache* cache);
   void RemoveCache(AppCache* cache);
-  AppCache* GetCache(int64 id) {
+  AppCache* GetCache(int64_t id) {
     CacheMap::iterator it = caches_.find(id);
     return (it != caches_.end()) ? it->second : NULL;
   }
@@ -49,15 +51,15 @@ class CONTENT_EXPORT AppCacheWorkingSet {
 
   void AddResponseInfo(AppCacheResponseInfo* response_info);
   void RemoveResponseInfo(AppCacheResponseInfo* response_info);
-  AppCacheResponseInfo* GetResponseInfo(int64 id) {
+  AppCacheResponseInfo* GetResponseInfo(int64_t id) {
     ResponseInfoMap::iterator it = response_infos_.find(id);
     return (it != response_infos_.end()) ? it->second : NULL;
   }
 
  private:
-  typedef base::hash_map<int64, AppCache*> CacheMap;
+  typedef base::hash_map<int64_t, AppCache*> CacheMap;
   typedef std::map<GURL, GroupMap> GroupsByOriginMap;
-  typedef base::hash_map<int64, AppCacheResponseInfo*> ResponseInfoMap;
+  typedef base::hash_map<int64_t, AppCacheResponseInfo*> ResponseInfoMap;
 
   GroupMap* GetMutableGroupsInOrigin(const GURL& origin_url) {
     GroupsByOriginMap::iterator it = groups_by_origin_.find(origin_url);

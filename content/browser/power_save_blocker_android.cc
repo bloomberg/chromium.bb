@@ -4,6 +4,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"

@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -344,8 +348,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, old_rfh->rfh_state());
 
     // Commit the navigation with a new page ID.
-    int32 max_page_id = contents()->GetMaxPageIDForSiteInstance(
-        active_rfh->GetSiteInstance());
+    int32_t max_page_id =
+        contents()->GetMaxPageIDForSiteInstance(active_rfh->GetSiteInstance());
 
     // Use an observer to avoid accessing a deleted renderer later on when the
     // state is being checked.
@@ -1004,7 +1008,7 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   ASSERT_TRUE(contents()->GetPendingMainFrame())
       << "Expected new pending RenderFrameHost to be created.";
   RenderFrameHost* last_rfh = contents()->GetPendingMainFrame();
-  int32 new_id =
+  int32_t new_id =
       contents()->GetMaxPageIDForSiteInstance(last_rfh->GetSiteInstance()) + 1;
   contents()->GetPendingMainFrame()->SendNavigate(new_id, entry_id, true, kUrl);
 

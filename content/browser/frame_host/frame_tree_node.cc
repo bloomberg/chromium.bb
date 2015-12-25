@@ -6,6 +6,7 @@
 
 #include <queue>
 
+#include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"

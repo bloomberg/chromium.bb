@@ -4,6 +4,9 @@
 
 #include "content/browser/gamepad/raw_input_data_fetcher_win.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gamepad_hardware_buffer.h"
 #include "content/common/gamepad_messages.h"
@@ -187,7 +190,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   }
   DCHECK_EQ(0u, result);
 
-  scoped_ptr<uint8[]> di_buffer(new uint8[size]);
+  scoped_ptr<uint8_t[]> di_buffer(new uint8_t[size]);
   RID_DEVICE_INFO* device_info =
       reinterpret_cast<RID_DEVICE_INFO*>(di_buffer.get());
   result = GetRawInputDeviceInfo(hDevice, RIDI_DEVICEINFO,
@@ -266,7 +269,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
   }
   DCHECK_EQ(0u, result);
 
-  gamepad_info->ppd_buffer.reset(new uint8[size]);
+  gamepad_info->ppd_buffer.reset(new uint8_t[size]);
   gamepad_info->preparsed_data =
       reinterpret_cast<PHIDP_PREPARSED_DATA>(gamepad_info->ppd_buffer.get());
   result = GetRawInputDeviceInfo(hDevice, RIDI_PREPARSEDDATA,
@@ -442,7 +445,7 @@ LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {
   DCHECK_EQ(0u, result);
 
   // Retrieve the input record.
-  scoped_ptr<uint8[]> buffer(new uint8[size]);
+  scoped_ptr<uint8_t[]> buffer(new uint8_t[size]);
   RAWINPUT* input = reinterpret_cast<RAWINPUT*>(buffer.get());
   result = GetRawInputData(
       input_handle, RID_INPUT, buffer.get(), &size, sizeof(RAWINPUTHEADER));

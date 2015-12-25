@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -112,14 +115,14 @@ struct ProgressRecord {
   storage::FileSystemOperation::CopyProgressType type;
   FileSystemURL source_url;
   FileSystemURL dest_url;
-  int64 size;
+  int64_t size;
 };
 
 void RecordProgressCallback(std::vector<ProgressRecord>* records,
                             storage::FileSystemOperation::CopyProgressType type,
                             const FileSystemURL& source_url,
                             const FileSystemURL& dest_url,
-                            int64 size) {
+                            int64_t size) {
   ProgressRecord record;
   record.type = type;
   record.source_url = source_url;
@@ -128,8 +131,8 @@ void RecordProgressCallback(std::vector<ProgressRecord>* records,
   records->push_back(record);
 }
 
-void RecordFileProgressCallback(std::vector<int64>* records,
-                                int64 progress) {
+void RecordFileProgressCallback(std::vector<int64_t>* records,
+                                int64_t progress) {
   records->push_back(progress);
 }
 
@@ -237,14 +240,14 @@ class CopyOrMoveOperationTestHelper {
         1024 * 1024);
   }
 
-  int64 GetSourceUsage() {
-    int64 usage = 0;
+  int64_t GetSourceUsage() {
+    int64_t usage = 0;
     GetUsageAndQuota(src_type_, &usage, NULL);
     return usage;
   }
 
-  int64 GetDestUsage() {
-    int64 usage = 0;
+  int64_t GetDestUsage() {
+    int64_t usage = 0;
     GetUsageAndQuota(dest_type_, &usage, NULL);
     return usage;
   }
@@ -364,7 +367,7 @@ class CopyOrMoveOperationTestHelper {
         file_system_context_.get(), url, size);
   }
 
-  bool FileExists(const FileSystemURL& url, int64 expected_size) {
+  bool FileExists(const FileSystemURL& url, int64_t expected_size) {
     return AsyncFileTestHelper::FileExists(
         file_system_context_.get(), url, expected_size);
   }
@@ -376,8 +379,8 @@ class CopyOrMoveOperationTestHelper {
 
  private:
   void GetUsageAndQuota(storage::FileSystemType type,
-                        int64* usage,
-                        int64* quota) {
+                        int64_t* usage,
+                        int64_t* quota) {
     storage::QuotaStatusCode status = AsyncFileTestHelper::GetUsageAndQuota(
         quota_manager_.get(), origin_, type, usage, quota);
     ASSERT_EQ(storage::kQuotaStatusOk, status);
@@ -406,12 +409,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
 
   FileSystemURL src = helper.SourceURL("a");
   FileSystemURL dest = helper.DestURL("b");
-  int64 src_initial_usage = helper.GetSourceUsage();
-  int64 dest_initial_usage = helper.GetDestUsage();
+  int64_t src_initial_usage = helper.GetSourceUsage();
+  int64_t dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source file.
   ASSERT_EQ(base::File::FILE_OK, helper.CreateFile(src, 10));
-  int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
+  int64_t src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Copy it.
   ASSERT_EQ(base::File::FILE_OK, helper.Copy(src, dest));
@@ -420,10 +423,10 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
   ASSERT_TRUE(helper.FileExists(src, 10));
   ASSERT_TRUE(helper.FileExists(dest, 10));
 
-  int64 src_new_usage = helper.GetSourceUsage();
+  int64_t src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage + src_increase, src_new_usage);
 
-  int64 dest_increase = helper.GetDestUsage() - dest_initial_usage;
+  int64_t dest_increase = helper.GetDestUsage() - dest_initial_usage;
   ASSERT_EQ(src_increase, dest_increase);
 }
 
@@ -435,12 +438,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
 
   FileSystemURL src = helper.SourceURL("a");
   FileSystemURL dest = helper.DestURL("b");
-  int64 src_initial_usage = helper.GetSourceUsage();
-  int64 dest_initial_usage = helper.GetDestUsage();
+  int64_t src_initial_usage = helper.GetSourceUsage();
+  int64_t dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source file.
   ASSERT_EQ(base::File::FILE_OK, helper.CreateFile(src, 10));
-  int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
+  int64_t src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Move it.
   ASSERT_EQ(base::File::FILE_OK, helper.Move(src, dest));
@@ -449,10 +452,10 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
   ASSERT_FALSE(helper.FileExists(src, AsyncFileTestHelper::kDontCheckSize));
   ASSERT_TRUE(helper.FileExists(dest, 10));
 
-  int64 src_new_usage = helper.GetSourceUsage();
+  int64_t src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage, src_new_usage);
 
-  int64 dest_increase = helper.GetDestUsage() - dest_initial_usage;
+  int64_t dest_increase = helper.GetDestUsage() - dest_initial_usage;
   ASSERT_EQ(src_increase, dest_increase);
 }
 
@@ -464,12 +467,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
 
   FileSystemURL src = helper.SourceURL("a");
   FileSystemURL dest = helper.DestURL("b");
-  int64 src_initial_usage = helper.GetSourceUsage();
-  int64 dest_initial_usage = helper.GetDestUsage();
+  int64_t src_initial_usage = helper.GetSourceUsage();
+  int64_t dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source directory.
   ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
-  int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
+  int64_t src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Copy it.
   ASSERT_EQ(base::File::FILE_OK, helper.Copy(src, dest));
@@ -478,10 +481,10 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
   ASSERT_TRUE(helper.DirectoryExists(src));
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
-  int64 src_new_usage = helper.GetSourceUsage();
+  int64_t src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage + src_increase, src_new_usage);
 
-  int64 dest_increase = helper.GetDestUsage() - dest_initial_usage;
+  int64_t dest_increase = helper.GetDestUsage() - dest_initial_usage;
   ASSERT_EQ(src_increase, dest_increase);
 }
 
@@ -493,12 +496,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
 
   FileSystemURL src = helper.SourceURL("a");
   FileSystemURL dest = helper.DestURL("b");
-  int64 src_initial_usage = helper.GetSourceUsage();
-  int64 dest_initial_usage = helper.GetDestUsage();
+  int64_t src_initial_usage = helper.GetSourceUsage();
+  int64_t dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source directory.
   ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
-  int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
+  int64_t src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Move it.
   ASSERT_EQ(base::File::FILE_OK, helper.Move(src, dest));
@@ -507,10 +510,10 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
   ASSERT_FALSE(helper.DirectoryExists(src));
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
-  int64 src_new_usage = helper.GetSourceUsage();
+  int64_t src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage, src_new_usage);
 
-  int64 dest_increase = helper.GetDestUsage() - dest_initial_usage;
+  int64_t dest_increase = helper.GetDestUsage() - dest_initial_usage;
   ASSERT_EQ(src_increase, dest_increase);
 }
 
@@ -522,8 +525,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
 
   FileSystemURL src = helper.SourceURL("a");
   FileSystemURL dest = helper.DestURL("b");
-  int64 src_initial_usage = helper.GetSourceUsage();
-  int64 dest_initial_usage = helper.GetDestUsage();
+  int64_t src_initial_usage = helper.GetSourceUsage();
+  int64_t dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source directory.
   ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
@@ -531,7 +534,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
             helper.SetUpTestCaseFiles(src,
                                       kRegularFileSystemTestCases,
                                       kRegularFileSystemTestCaseSize));
-  int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
+  int64_t src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Copy it.
   ASSERT_EQ(base::File::FILE_OK,
@@ -547,10 +550,10 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
                              kRegularFileSystemTestCases,
                              kRegularFileSystemTestCaseSize);
 
-  int64 src_new_usage = helper.GetSourceUsage();
+  int64_t src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage + src_increase, src_new_usage);
 
-  int64 dest_increase = helper.GetDestUsage() - dest_initial_usage;
+  int64_t dest_increase = helper.GetDestUsage() - dest_initial_usage;
   ASSERT_EQ(src_increase, dest_increase);
 }
 
@@ -562,8 +565,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
 
   FileSystemURL src = helper.SourceURL("a");
   FileSystemURL dest = helper.DestURL("b");
-  int64 src_initial_usage = helper.GetSourceUsage();
-  int64 dest_initial_usage = helper.GetDestUsage();
+  int64_t src_initial_usage = helper.GetSourceUsage();
+  int64_t dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source directory.
   ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
@@ -571,7 +574,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
             helper.SetUpTestCaseFiles(src,
                                       kRegularFileSystemTestCases,
                                       kRegularFileSystemTestCaseSize));
-  int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
+  int64_t src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Move it.
   ASSERT_EQ(base::File::FILE_OK, helper.Move(src, dest));
@@ -584,10 +587,10 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
                              kRegularFileSystemTestCases,
                              kRegularFileSystemTestCaseSize);
 
-  int64 src_new_usage = helper.GetSourceUsage();
+  int64_t src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage, src_new_usage);
 
-  int64 dest_increase = helper.GetDestUsage() - dest_initial_usage;
+  int64_t dest_increase = helper.GetDestUsage() - dest_initial_usage;
   ASSERT_EQ(src_increase, dest_increase);
 }
 
@@ -701,7 +704,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
       EXPECT_EQ(begin_index + 1, end_index);
     } else {
       // PROGRESS event's size should be assending order.
-      int64 current_size = 0;
+      int64_t current_size = 0;
       for (size_t j = begin_index + 1; j < end_index; ++j) {
         if (records[j].source_url == src_url) {
           EXPECT_EQ(FileSystemOperation::PROGRESS, records[j].type);
@@ -739,7 +742,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
       task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
 
-  std::vector<int64> progress;
+  std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
       reader.Pass(), writer.Pass(),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
@@ -795,7 +798,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
       task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
 
-  std::vector<int64> progress;
+  std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
       reader.Pass(), writer.Pass(),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
@@ -846,7 +849,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
       task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
 
-  std::vector<int64> progress;
+  std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
       reader.Pass(), writer.Pass(),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,

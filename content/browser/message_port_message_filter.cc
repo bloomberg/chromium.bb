@@ -4,6 +4,8 @@
 
 #include "content/browser/message_port_message_filter.h"
 
+#include <stddef.h>
+
 #include "content/browser/message_port_service.h"
 #include "content/common/frame_messages.h"
 #include "content/common/message_port_messages.h"

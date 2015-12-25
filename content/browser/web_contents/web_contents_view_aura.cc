@@ -4,10 +4,15 @@
 
 #include "content/browser/web_contents/web_contents_view_aura.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -251,7 +256,7 @@ bool ReadFileSystemFilesFromPickle(
 
   for (size_t i = 0; i < num_files; ++i) {
     std::string url_string;
-    int64 size = 0;
+    int64_t size = 0;
     if (!iter.ReadString(&url_string) || !iter.ReadInt64(&size))
       return false;
 

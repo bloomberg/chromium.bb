@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -137,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
     TestNavigationObserver observer(shell()->web_contents());
     const char kReplacePortNumber[] =
       "window.domAutomationController.send(setPortNumber(%d));";
-    uint16 port_number = embedded_test_server()->port();
+    uint16_t port_number = embedded_test_server()->port();
     GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
     bool success = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(

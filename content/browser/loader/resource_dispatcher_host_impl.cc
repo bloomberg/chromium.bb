@@ -6,6 +6,8 @@
 
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <vector>
@@ -16,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -647,7 +650,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
     bool prefer_cache,
     bool do_not_prompt_for_login,
     scoped_ptr<DownloadSaveInfo> save_info,
-    uint32 download_id,
+    uint32_t download_id,
     const DownloadStartedCallback& started_callback) {
   if (is_shutdown_)
     return CallbackAndReturn(started_callback,
@@ -755,7 +758,7 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
     bool is_content_initiated,
     bool must_download,
-    uint32 id,
+    uint32_t id,
     scoped_ptr<DownloadSaveInfo> save_info,
     const DownloadUrlParameters::OnStartedCallback& started_cb) {
   scoped_ptr<ResourceHandler> handler(
@@ -2316,11 +2319,11 @@ bool ResourceDispatcherHostImpl::LoadInfoIsMoreInteresting(const LoadInfo& a,
   // Set |*_uploading_size| to be the size of the corresponding upload body if
   // it's currently being uploaded.
 
-  uint64 a_uploading_size = 0;
+  uint64_t a_uploading_size = 0;
   if (a.load_state.state == net::LOAD_STATE_SENDING_REQUEST)
     a_uploading_size = a.upload_size;
 
-  uint64 b_uploading_size = 0;
+  uint64_t b_uploading_size = 0;
   if (b.load_state.state == net::LOAD_STATE_SENDING_REQUEST)
     b_uploading_size = b.upload_size;
 

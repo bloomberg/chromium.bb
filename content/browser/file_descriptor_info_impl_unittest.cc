@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/posix/eintr_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

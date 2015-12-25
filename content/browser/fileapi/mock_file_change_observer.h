@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_
 #define CONTENT_BROWSER_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 
+#include "build/build_config.h"
 #include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/gpu/compositor_util.h"

@@ -6,7 +6,9 @@
 #define CONTENT_BROWSER_DEVICE_SENSORS_AMBIENT_LIGHT_MAC_H_
 
 #include <IOKit/IOKitLib.h>
+#include <stdint.h>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace content {

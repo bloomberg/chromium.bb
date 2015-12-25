@@ -4,7 +4,11 @@
 
 #include "content/browser/notifications/notification_database.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/notification_database_data.h"

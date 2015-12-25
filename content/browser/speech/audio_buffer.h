@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_SPEECH_AUDIO_BUFFER_H_
 #define CONTENT_BROWSER_SPEECH_AUDIO_BUFFER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
@@ -21,15 +24,17 @@ class CONTENT_EXPORT AudioChunk :
   explicit AudioChunk(int bytes_per_sample);
   // Creates a chunk of |length| bytes, initialized to zeros.
   AudioChunk(size_t length, int bytes_per_sample);
-  AudioChunk(const uint8* data, size_t length, int bytes_per_sample);
+  AudioChunk(const uint8_t* data, size_t length, int bytes_per_sample);
 
   bool IsEmpty() const;
   int bytes_per_sample() const { return bytes_per_sample_; }
   size_t NumSamples() const;
   const std::string& AsString() const;
-  int16 GetSample16(size_t index) const;
-  const int16* SamplesData16() const;
-  uint8* writable_data() { return reinterpret_cast<uint8*>(&data_string_[0]); }
+  int16_t GetSample16(size_t index) const;
+  const int16_t* SamplesData16() const;
+  uint8_t* writable_data() {
+    return reinterpret_cast<uint8_t*>(&data_string_[0]);
+  }
 
  private:
   friend class base::RefCountedThreadSafe<AudioChunk>;
@@ -49,7 +54,7 @@ class AudioBuffer {
   ~AudioBuffer();
 
   // Enqueues a copy of |length| bytes of |data| buffer.
-  void Enqueue(const uint8* data, size_t length);
+  void Enqueue(const uint8_t* data, size_t length);
 
   // Dequeues, in FIFO order, a single chunk respecting the length of the
   // corresponding Enqueue call (in a nutshell: multiple Enqueue calls followed

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/notifications/notification_id_generator.h"
 #include "content/public/test/test_browser_context.h"

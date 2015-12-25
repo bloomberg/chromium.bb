@@ -11,6 +11,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/generic_shared_memory_id_generator.h"
@@ -226,7 +227,7 @@ bool BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled() {
 }
 
 // static
-uint32 BrowserGpuMemoryBufferManager::GetImageTextureTarget(
+uint32_t BrowserGpuMemoryBufferManager::GetImageTextureTarget(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   GpuMemoryBufferConfigurationSet native_configurations =
@@ -292,7 +293,7 @@ scoped_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForScanout(
     const gfx::Size& size,
     gfx::BufferFormat format,
-    int32 surface_id) {
+    int32_t surface_id) {
   DCHECK_GT(surface_id, 0);
   return AllocateGpuMemoryBufferForSurface(
       size, format, gfx::BufferUsage::SCANOUT, surface_id);
@@ -381,7 +382,8 @@ bool BrowserGpuMemoryBufferManager::OnMemoryDump(
       // corresponding dump for the same buffer, this will avoid to
       // double-count them in tracing. If, instead, no other process will emit a
       // dump with the same guid, the segment will be accounted to the browser.
-      uint64 client_tracing_process_id = ClientIdToTracingProcessId(client_id);
+      uint64_t client_tracing_process_id =
+          ClientIdToTracingProcessId(client_id);
 
       base::trace_event::MemoryAllocatorDumpGuid shared_buffer_guid =
           gfx::GetGpuMemoryBufferGUIDForTracing(client_tracing_process_id,
@@ -440,7 +442,7 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    int32 surface_id) {
+    int32_t surface_id) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   CreateGpuMemoryBufferRequest request(size, format, usage, gpu_client_id_,

@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -41,7 +44,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
       callback.Run(storage::kQuotaErrorInvalidModification);
       return;
     }
-    int64 origin_usage = EnsureOriginRemoved(origin);
+    int64_t origin_usage = EnsureOriginRemoved(origin);
     if (origin_usage >= 0)
       available_space_ += origin_usage;
     callback.Run(storage::kQuotaStatusOk);
@@ -61,7 +64,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
 
   void GetEvictionOrigin(StorageType type,
                          const std::set<GURL>& exceptions,
-                         int64 global_quota,
+                         int64_t global_quota,
                          const storage::GetOriginCallback& callback) override {
     if (origin_order_.empty())
       callback.Run(GURL());
@@ -69,19 +72,16 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
       callback.Run(GURL(origin_order_.front()));
   }
 
-  int64 GetUsage() const {
-    int64 total_usage = 0;
-    for (std::map<GURL, int64>::const_iterator p = origins_.begin();
-         p != origins_.end();
-         ++p)
+  int64_t GetUsage() const {
+    int64_t total_usage = 0;
+    for (std::map<GURL, int64_t>::const_iterator p = origins_.begin();
+         p != origins_.end(); ++p)
       total_usage += p->second;
     return total_usage;
   }
 
-  void set_quota(int64 quota) {
-    quota_ = quota;
-  }
-  void set_available_space(int64 available_space) {
+  void set_quota(int64_t quota) { quota_ = quota; }
+  void set_available_space(int64_t available_space) {
     available_space_ = available_space;
   }
   void set_task_for_get_usage_and_quota(const base::Closure& task) {
@@ -97,7 +97,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   // Simulates an access to |origin|.  It reorders the internal LRU list.
   // It internally uses AddOrigin().
   void AccessOrigin(const GURL& origin) {
-    std::map<GURL, int64>::iterator found = origins_.find(origin);
+    std::map<GURL, int64_t>::iterator found = origins_.find(origin);
     EXPECT_TRUE(origins_.end() != found);
     AddOrigin(origin, found->second);
   }
@@ -105,15 +105,15 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   // Simulates adding or overwriting the |origin| to the internal origin set
   // with the |usage|.  It also adds or moves the |origin| to the end of the
   // LRU list.
-  void AddOrigin(const GURL& origin, int64 usage) {
+  void AddOrigin(const GURL& origin, int64_t usage) {
     EnsureOriginRemoved(origin);
     origin_order_.push_back(origin);
     origins_[origin] = usage;
   }
 
  private:
-  int64 EnsureOriginRemoved(const GURL& origin) {
-    int64 origin_usage;
+  int64_t EnsureOriginRemoved(const GURL& origin) {
+    int64_t origin_usage;
     if (origins_.find(origin) == origins_.end())
       return -1;
     else
@@ -124,10 +124,10 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
     return origin_usage;
   }
 
-  int64 quota_;
-  int64 available_space_;
+  int64_t quota_;
+  int64_t available_space_;
   std::list<GURL> origin_order_;
-  std::map<GURL, int64> origins_;
+  std::map<GURL, int64_t> origins_;
   bool error_on_evict_origin_data_;
   bool error_on_get_usage_and_quota_;
 
@@ -157,7 +157,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
   }
 
   void TaskForRepeatedEvictionTest(
-      const std::pair<GURL, int64>& origin_to_be_added,
+      const std::pair<GURL, int64_t>& origin_to_be_added,
       const GURL& origin_to_be_accessed,
       int expected_usage_after_first,
       int expected_usage_after_second) {
@@ -203,11 +203,11 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
     return num_get_usage_and_quota_for_eviction_;
   }
 
-  int64 default_min_available_disk_space_to_start_eviction() const {
+  int64_t default_min_available_disk_space_to_start_eviction() const {
     return 1000 * 1000 * 500;
   }
 
-  void set_min_available_disk_space_to_start_eviction(int64 value) const {
+  void set_min_available_disk_space_to_start_eviction(int64_t value) const {
     temporary_storage_evictor_->set_min_available_disk_space_to_start_eviction(
         value);
   }
@@ -268,12 +268,12 @@ TEST_F(QuotaTemporaryStorageEvictorTest, MultipleEvictionTest) {
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionTest) {
-  const int64 a_size = 400;
-  const int64 b_size = 150;
-  const int64 c_size = 120;
-  const int64 d_size = 292;
-  const int64 initial_total_size = a_size + b_size + c_size + d_size;
-  const int64 e_size = 275;
+  const int64_t a_size = 400;
+  const int64_t b_size = 150;
+  const int64_t c_size = 120;
+  const int64_t d_size = 292;
+  const int64_t initial_total_size = a_size + b_size + c_size + d_size;
+  const int64_t e_size = 275;
 
   quota_eviction_handler()->AddOrigin(GURL("http://www.d.com"), d_size);
   quota_eviction_handler()->AddOrigin(GURL("http://www.c.com"), c_size);
@@ -302,11 +302,11 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionTest) {
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionSkippedTest) {
-  const int64 a_size = 400;
-  const int64 b_size = 150;
-  const int64 c_size = 120;
-  const int64 d_size = 292;
-  const int64 initial_total_size = a_size + b_size + c_size + d_size;
+  const int64_t a_size = 400;
+  const int64_t b_size = 150;
+  const int64_t c_size = 120;
+  const int64_t d_size = 292;
+  const int64_t initial_total_size = a_size + b_size + c_size + d_size;
 
   quota_eviction_handler()->AddOrigin(GURL("http://www.d.com"), d_size);
   quota_eviction_handler()->AddOrigin(GURL("http://www.c.com"), c_size);
@@ -333,12 +333,12 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionSkippedTest) {
 }
 
 TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionWithAccessOriginTest) {
-  const int64 a_size = 400;
-  const int64 b_size = 150;
-  const int64 c_size = 120;
-  const int64 d_size = 292;
-  const int64 initial_total_size = a_size + b_size + c_size + d_size;
-  const int64 e_size = 275;
+  const int64_t a_size = 400;
+  const int64_t b_size = 150;
+  const int64_t c_size = 120;
+  const int64_t d_size = 292;
+  const int64_t initial_total_size = a_size + b_size + c_size + d_size;
+  const int64_t e_size = 275;
 
   quota_eviction_handler()->AddOrigin(GURL("http://www.d.com"), d_size);
   quota_eviction_handler()->AddOrigin(GURL("http://www.c.com"), c_size);

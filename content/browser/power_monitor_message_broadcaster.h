@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_POWER_MONITOR_MESSAGE_BROADCASTER_H_
 #define CONTENT_BROWSER_POWER_MONITOR_MESSAGE_BROADCASTER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
 #include "content/common/content_export.h"
 

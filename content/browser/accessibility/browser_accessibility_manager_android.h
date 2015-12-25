@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_ANDROID_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_ANDROID_H_
 
+#include <stdint.h>
+
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/android/content_view_core_impl.h"
 
@@ -178,12 +181,16 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // take a single cursor index as input and return the boundaries surrounding
   // the next word or line. If moving by character, the output start and
   // end index will be the same.
-  bool NextAtGranularity(
-      int32 granularity, int cursor_index,
-      BrowserAccessibilityAndroid* node, int32* start_index, int32* end_index);
-  bool PreviousAtGranularity(
-      int32 granularity, int cursor_index,
-      BrowserAccessibilityAndroid* node, int32* start_index, int32* end_index);
+  bool NextAtGranularity(int32_t granularity,
+                         int cursor_index,
+                         BrowserAccessibilityAndroid* node,
+                         int32_t* start_index,
+                         int32_t* end_index);
+  bool PreviousAtGranularity(int32_t granularity,
+                             int cursor_index,
+                             BrowserAccessibilityAndroid* node,
+                             int32_t* start_index,
+                             int32_t* end_index);
 
   // Set accessibility focus. This sends a message to the renderer to
   // asynchronously load inline text boxes for this node only, enabling more

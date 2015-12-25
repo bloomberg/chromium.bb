@@ -84,7 +84,7 @@ void DeleteOnUIThread(
 }  // namespace
 
 DownloadResourceHandler::DownloadResourceHandler(
-    uint32 id,
+    uint32_t id,
     net::URLRequest* request,
     const DownloadUrlParameters::OnStartedCallback& started_cb,
     scoped_ptr<DownloadSaveInfo> save_info)

@@ -56,9 +56,11 @@ AppCacheURLRequestJob::~AppCacheURLRequestJob() {
     storage_->CancelDelegateCallbacks(this);
 }
 
-void AppCacheURLRequestJob::DeliverAppCachedResponse(
-    const GURL& manifest_url, int64 group_id, int64 cache_id,
-    const AppCacheEntry& entry, bool is_fallback) {
+void AppCacheURLRequestJob::DeliverAppCachedResponse(const GURL& manifest_url,
+                                                     int64_t group_id,
+                                                     int64_t cache_id,
+                                                     const AppCacheEntry& entry,
+                                                     bool is_fallback) {
   DCHECK(!has_delivery_orders());
   DCHECK(entry.has_response_id());
   delivery_type_ = APPCACHED_DELIVERY;
@@ -167,7 +169,7 @@ void AppCacheURLRequestJob::BeginExecutableHandlerDelivery() {
   storage_->LoadCache(cache_id_, this);
 }
 
-void AppCacheURLRequestJob::OnCacheLoaded(AppCache* cache, int64 cache_id) {
+void AppCacheURLRequestJob::OnCacheLoaded(AppCache* cache, int64_t cache_id) {
   DCHECK_EQ(cache_id_, cache_id);
   DCHECK(!has_been_killed());
 
@@ -196,7 +198,7 @@ void AppCacheURLRequestJob::OnCacheLoaded(AppCache* cache, int64 cache_id) {
   // Read the script data, truncating if its too large.
   // NOTE: we just issue one read and don't bother chaining if the resource
   // is very (very) large, close enough for now.
-  const int64 kLimit = 500 * 1000;
+  const int64_t kLimit = 500 * 1000;
   handler_source_buffer_ = new net::GrowableIOBuffer();
   handler_source_buffer_->SetCapacity(kLimit);
   handler_source_reader_.reset(storage_->CreateResponseReader(
@@ -276,7 +278,8 @@ void AppCacheURLRequestJob::BeginErrorDelivery(const char* message) {
 }
 
 void AppCacheURLRequestJob::OnResponseInfoLoaded(
-      AppCacheResponseInfo* response_info, int64 response_id) {
+    AppCacheResponseInfo* response_info,
+    int64_t response_id) {
   DCHECK(is_delivering_appcache_response());
   if (response_info) {
     info_ = response_info;

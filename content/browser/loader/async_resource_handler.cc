@@ -11,6 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -144,10 +145,10 @@ void AsyncResourceHandler::ReportUploadProgress() {
   if (progress.position() == last_upload_position_)
     return;  // No progress made since last time.
 
-  const uint64 kHalfPercentIncrements = 200;
+  const uint64_t kHalfPercentIncrements = 200;
   const TimeDelta kOneSecond = TimeDelta::FromMilliseconds(1000);
 
-  uint64 amt_since_last = progress.position() - last_upload_position_;
+  uint64_t amt_since_last = progress.position() - last_upload_position_;
   TimeDelta time_since_last = TimeTicks::Now() - last_upload_ticks_;
 
   bool is_finished = (progress.size() == progress.position());

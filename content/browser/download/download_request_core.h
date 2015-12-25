@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_CORE_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_CORE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -118,7 +121,7 @@ class CONTENT_EXPORT DownloadRequestCore
   base::TimeTicks last_stream_pause_time_;
   base::TimeDelta total_pause_time_;
   size_t last_buffer_size_;
-  int64 bytes_read_;
+  int64_t bytes_read_;
 
   int pause_count_;
   bool was_deferred_;

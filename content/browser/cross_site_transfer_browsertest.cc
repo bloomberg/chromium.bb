@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/navigation_entry.h"

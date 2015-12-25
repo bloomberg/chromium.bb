@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
@@ -79,7 +81,7 @@ class AppCacheHostTest : public testing::Test {
     }
 
     int last_host_id_;
-    int64 last_cache_id_;
+    int64_t last_cache_id_;
     AppCacheStatus last_status_;
     AppCacheStatus last_status_changed_;
     AppCacheEventID last_event_id_;
@@ -98,7 +100,7 @@ class AppCacheHostTest : public testing::Test {
     void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                const GURL& origin,
                                storage::StorageType type,
-                               int64 delta) override {}
+                               int64_t delta) override {}
     void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                               const GURL& origin,
                               storage::StorageType type,

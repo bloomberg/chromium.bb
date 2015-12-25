@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_GPU_GPU_SURFACE_TRACKER_H_
 #define CONTENT_BROWSER_GPU_GPU_SURFACE_TRACKER_H_
 
+#include <stddef.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"

@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_CALLBACKS_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_CALLBACKS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
@@ -21,11 +23,11 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
                              int ipc_database_callbacks_id);
 
   virtual void OnForcedClose();
-  virtual void OnVersionChange(int64 old_version, int64 new_version);
+  virtual void OnVersionChange(int64_t old_version, int64_t new_version);
 
-  virtual void OnAbort(int64 host_transaction_id,
+  virtual void OnAbort(int64_t host_transaction_id,
                        const IndexedDBDatabaseError& error);
-  virtual void OnComplete(int64 host_transaction_id);
+  virtual void OnComplete(int64_t host_transaction_id);
 
  protected:
   virtual ~IndexedDBDatabaseCallbacks();

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <stack>
 #include <string>
 #include <vector>
@@ -10,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -269,7 +272,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_FALSE(job_->is_waiting());
     EXPECT_TRUE(job_->is_delivering_network_response());
 
-    int64 cache_id = kAppCacheNoCacheId;
+    int64_t cache_id = kAppCacheNoCacheId;
     GURL manifest_url;
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(kAppCacheNoCacheId, cache_id);
@@ -322,7 +325,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_FALSE(job_->is_waiting());
     EXPECT_TRUE(job_->is_delivering_appcache_response());
 
-    int64 cache_id = kAppCacheNoCacheId;
+    int64_t cache_id = kAppCacheNoCacheId;
     GURL manifest_url;
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(1, cache_id);
@@ -408,7 +411,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_delivering_appcache_response());
 
-    int64 cache_id = kAppCacheNoCacheId;
+    int64_t cache_id = kAppCacheNoCacheId;
     GURL manifest_url;
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(1, cache_id);
@@ -483,7 +486,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_FALSE(job_.get());
 
     // GetExtraResponseInfo should return no information.
-    int64 cache_id = kAppCacheNoCacheId;
+    int64_t cache_id = kAppCacheNoCacheId;
     GURL manifest_url;
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(kAppCacheNoCacheId, cache_id);

@@ -182,7 +182,7 @@ bool CollectURLs(std::set<GURL>* urls, FrameTreeNode* tree_node) {
 }
 
 void StopServiceWorkerOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
-                           int64 version_id) {
+                           int64_t version_id) {
   if (content::ServiceWorkerVersion* version =
           context->GetLiveVersion(version_id)) {
     version->StopWorker(base::Bind(&StatusNoOp));
@@ -191,7 +191,7 @@ void StopServiceWorkerOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
 
 void GetDevToolsRouteInfoOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> context,
-    int64 version_id,
+    int64_t version_id,
     const base::Callback<void(int, int)>& callback) {
   if (content::ServiceWorkerVersion* version =
           context->GetLiveVersion(version_id)) {
@@ -376,7 +376,7 @@ Response ServiceWorkerHandler::StopWorker(const std::string& version_id) {
     return Response::OK();
   if (!context_)
     return CreateContextErrorResponse();
-  int64 id = 0;
+  int64_t id = 0;
   if (!base::StringToInt64(version_id, &id))
     return CreateInvalidVersionIdErrorResponse();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -400,7 +400,7 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   if (!context_)
     return CreateContextErrorResponse();
 
-  int64 id = kInvalidServiceWorkerVersionId;
+  int64_t id = kInvalidServiceWorkerVersionId;
   if (!base::StringToInt64(version_id, &id))
     return CreateInvalidVersionIdErrorResponse();
   BrowserThread::PostTask(
@@ -422,7 +422,7 @@ Response ServiceWorkerHandler::SetForceUpdateOnPageLoad(
     bool force_update_on_page_load) {
   if (!context_)
     return CreateContextErrorResponse();
-  int64 id = kInvalidServiceWorkerRegistrationId;
+  int64_t id = kInvalidServiceWorkerRegistrationId;
   if (!base::StringToInt64(registration_id, &id))
     return CreateInvalidVersionIdErrorResponse();
   context_->SetForceUpdateOnPageLoad(id, force_update_on_page_load);
@@ -437,7 +437,7 @@ Response ServiceWorkerHandler::DeliverPushMessage(
     return Response::OK();
   if (!render_frame_host_)
     return CreateContextErrorResponse();
-  int64 id = 0;
+  int64_t id = 0;
   if (!base::StringToInt64(registration_id, &id))
     return CreateInvalidVersionIdErrorResponse();
   BrowserContext::DeliverPushMessage(
@@ -504,8 +504,8 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
 }
 
 void ServiceWorkerHandler::OnErrorReported(
-    int64 registration_id,
-    int64 version_id,
+    int64_t registration_id,
+    int64_t version_id,
     const ServiceWorkerContextObserver::ErrorInfo& info) {
   client_->WorkerErrorReported(
       WorkerErrorReportedParams::Create()->set_error_message(

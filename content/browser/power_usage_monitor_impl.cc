@@ -4,6 +4,8 @@
 
 #include "content/browser/power_usage_monitor_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

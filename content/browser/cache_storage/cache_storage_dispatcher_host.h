@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_HOST_H_
 
+#include <stdint.h>
+
 #include <list>
 
+#include "base/macros.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/public/browser/browser_message_filter.h"
 

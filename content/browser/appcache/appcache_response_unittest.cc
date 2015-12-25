@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <stack>
 #include <string>
 #include <utility>
@@ -11,6 +13,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -44,14 +47,14 @@ class AppCacheResponseTest : public testing::Test {
     }
 
     void OnResponseInfoLoaded(AppCacheResponseInfo* info,
-                              int64 response_id) override {
+                              int64_t response_id) override {
       loaded_info_ = info;
       loaded_info_id_ = response_id;
       test_->ScheduleNextTask();
     }
 
     scoped_refptr<AppCacheResponseInfo> loaded_info_;
-    int64 loaded_info_id_;
+    int64_t loaded_info_id_;
     AppCacheResponseTest* test_;
   };
 
@@ -766,7 +769,7 @@ class AppCacheResponseTest : public testing::Test {
   int reader_deletion_count_down_;
   bool read_callback_was_called_;
 
-  int64 written_response_id_;
+  int64_t written_response_id_;
   scoped_ptr<AppCacheResponseWriter> writer_;
   scoped_ptr<AppCacheResponseMetadataWriter> metadata_writer_;
   scoped_refptr<HttpResponseInfoIOBuffer> write_info_buffer_;

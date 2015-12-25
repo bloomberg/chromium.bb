@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_DISPATCHER_HOST_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/bluetooth_chooser.h"
@@ -85,13 +87,13 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic,
-      const std::vector<uint8>& value) override;
+      const std::vector<uint8_t>& value) override;
 
   // Sends an IPC to the thread informing that a the characteristic's
   // value changed.
   void NotifyActiveCharacteristic(int thread_id,
                                   const std::string& characteristic_instance_id,
-                                  const std::vector<uint8>& value);
+                                  const std::vector<uint8_t>& value);
 
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDevice(
@@ -173,7 +175,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Callbacks for BluetoothGattCharacteristic::ReadRemoteCharacteristic.
   void OnCharacteristicValueRead(int thread_id,
                                  int request_id,
-                                 const std::vector<uint8>& value);
+                                 const std::vector<uint8_t>& value);
   void OnCharacteristicReadValueError(
       int thread_id,
       int request_id,

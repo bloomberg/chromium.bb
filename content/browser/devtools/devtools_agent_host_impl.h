@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_IMPL_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -87,7 +89,7 @@ class DevToolsMessageChunkProcessor {
  private:
   SendMessageCallback callback_;
   std::string message_buffer_;
-  uint32 message_buffer_size_;
+  uint32_t message_buffer_size_;
   std::string state_cookie_;
   int last_call_id_;
 };

@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_BROWSER_SHUTDOWN_PROFILE_DUMPER_H_
 #define CONTENT_BROWSER_BROWSER_SHUTDOWN_PROFILE_DUMPER_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "content/common/content_export.h"

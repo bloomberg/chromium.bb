@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_LOADER_SYNC_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_SYNC_RESOURCE_HANDLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "content/browser/loader/resource_handler.h"
@@ -56,7 +58,7 @@ class SyncResourceHandler : public ResourceHandler {
   SyncLoadResult result_;
   IPC::Message* result_message_;
   ResourceDispatcherHostImpl* rdh_;
-  int64 total_transfer_size_;
+  int64_t total_transfer_size_;
 };
 
 }  // namespace content

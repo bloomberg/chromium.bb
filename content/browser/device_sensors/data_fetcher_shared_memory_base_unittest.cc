@@ -5,6 +5,7 @@
 #include "content/browser/device_sensors/data_fetcher_shared_memory_base.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"

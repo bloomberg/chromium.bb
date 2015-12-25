@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_SHARED_WORKER_DEVTOOLS_AGENT_HOST_H_
 #define CONTENT_BROWSER_DEVTOOLS_SHARED_WORKER_DEVTOOLS_AGENT_HOST_H_
 
+#include "base/macros.h"
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
 namespace content {

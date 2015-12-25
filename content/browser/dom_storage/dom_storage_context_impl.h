@@ -5,13 +5,14 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_IMPL_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -106,7 +107,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   }
 
   DOMStorageTaskRunner* task_runner() const { return task_runner_.get(); }
-  DOMStorageNamespace* GetStorageNamespace(int64 namespace_id);
+  DOMStorageNamespace* GetStorageNamespace(int64_t namespace_id);
 
   void GetLocalStorageUsage(std::vector<LocalStorageUsageInfo>* infos,
                             bool include_file_info);
@@ -152,14 +153,15 @@ class CONTENT_EXPORT DOMStorageContextImpl
       const GURL& page_url);
 
   // May be called on any thread.
-  int64 AllocateSessionId();
+  int64_t AllocateSessionId();
   std::string AllocatePersistentSessionId();
 
   // Must be called on the background thread.
-  void CreateSessionNamespace(int64 namespace_id,
+  void CreateSessionNamespace(int64_t namespace_id,
                               const std::string& persistent_namespace_id);
-  void DeleteSessionNamespace(int64 namespace_id, bool should_persist_data);
-  void CloneSessionNamespace(int64 existing_id, int64 new_id,
+  void DeleteSessionNamespace(int64_t namespace_id, bool should_persist_data);
+  void CloneSessionNamespace(int64_t existing_id,
+                             int64_t new_id,
                              const std::string& new_persistent_id);
 
   // Starts backing sessionStorage on disk. This function must be called right
@@ -175,7 +177,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   friend class DOMStorageContextImplTest;
   FRIEND_TEST_ALL_PREFIXES(DOMStorageContextImplTest, Basics);
   friend class base::RefCountedThreadSafe<DOMStorageContextImpl>;
-  typedef std::map<int64, scoped_refptr<DOMStorageNamespace> >
+  typedef std::map<int64_t, scoped_refptr<DOMStorageNamespace>>
       StorageNamespaceMap;
 
   ~DOMStorageContextImpl();
@@ -229,7 +231,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
 
   // Mapping between persistent namespace IDs and namespace IDs for
   // sessionStorage.
-  std::map<std::string, int64> persistent_namespace_id_to_namespace_id_;
+  std::map<std::string, int64_t> persistent_namespace_id_to_namespace_id_;
 };
 
 }  // namespace content

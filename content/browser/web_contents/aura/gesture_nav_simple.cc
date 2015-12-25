@@ -4,6 +4,7 @@
 
 #include "content/browser/web_contents/aura/gesture_nav_simple.h"
 
+#include "base/macros.h"
 #include "cc/layers/layer.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"

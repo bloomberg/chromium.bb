@@ -7,6 +7,7 @@
 
 #include <X11/Xlib.h>
 
+#include "base/macros.h"
 #include "cc/output/software_output_device.h"
 #include "ui/gfx/x/x11_types.h"
 

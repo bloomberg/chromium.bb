@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_CONSUMER_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_CONSUMER_H_
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGamepad.h"
 

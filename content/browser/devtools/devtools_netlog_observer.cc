@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/devtools_netlog_observer.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -28,8 +30,8 @@ DevToolsNetLogObserver::DevToolsNetLogObserver() {
 DevToolsNetLogObserver::~DevToolsNetLogObserver() {
 }
 
-DevToolsNetLogObserver::ResourceInfo*
-DevToolsNetLogObserver::GetResourceInfo(uint32 id) {
+DevToolsNetLogObserver::ResourceInfo* DevToolsNetLogObserver::GetResourceInfo(
+    uint32_t id) {
   RequestToInfoMap::iterator it = request_to_info_.find(id);
   if (it != request_to_info_.end())
     return it->second.get();
@@ -193,7 +195,7 @@ void DevToolsNetLogObserver::PopulateResponseInfo(
   if (!request_info || !request_info->ShouldReportRawHeaders())
     return;
 
-  uint32 source_id = request->net_log().source().id;
+  uint32_t source_id = request->net_log().source().id;
   DevToolsNetLogObserver* dev_tools_net_log_observer =
       DevToolsNetLogObserver::GetInstance();
   if (dev_tools_net_log_observer == NULL)

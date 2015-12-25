@@ -4,6 +4,7 @@
 
 #include "content/browser/time_zone_monitor.h"
 
+#include "base/macros.h"
 #include "chromeos/settings/timezone_settings.h"
 
 namespace content {

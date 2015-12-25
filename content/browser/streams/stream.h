@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_STREAMS_STREAM_H_
 #define CONTENT_BROWSER_STREAMS_STREAM_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/byte_stream.h"

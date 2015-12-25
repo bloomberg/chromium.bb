@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/protocol/system_info_handler.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -26,7 +28,7 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
       : dictionary_(dictionary),
         in_aux_attributes_(false) { }
 
-  void AddInt64(const char* name, int64 value) override {
+  void AddInt64(const char* name, int64_t value) override {
     if (in_aux_attributes_)
       dictionary_->SetDouble(name, value);
   }

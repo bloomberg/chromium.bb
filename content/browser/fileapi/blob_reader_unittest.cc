@@ -4,11 +4,15 @@
 
 #include "storage/browser/blob/blob_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -80,7 +84,7 @@ class DelayedReadEntry : public disk_cache::Entry {
     return entry_->GetLastModified();
   }
 
-  int32 GetDataSize(int index) const override {
+  int32_t GetDataSize(int index) const override {
     return entry_->GetDataSize(index);
   }
 
@@ -106,23 +110,23 @@ class DelayedReadEntry : public disk_cache::Entry {
     return entry_->WriteData(index, offset, buf, buf_len, callback, truncate);
   }
 
-  int ReadSparseData(int64 offset,
+  int ReadSparseData(int64_t offset,
                      IOBuffer* buf,
                      int buf_len,
                      const CompletionCallback& callback) override {
     return entry_->ReadSparseData(offset, buf, buf_len, callback);
   }
 
-  int WriteSparseData(int64 offset,
+  int WriteSparseData(int64_t offset,
                       IOBuffer* buf,
                       int buf_len,
                       const CompletionCallback& callback) override {
     return entry_->WriteSparseData(offset, buf, buf_len, callback);
   }
 
-  int GetAvailableRange(int64 offset,
+  int GetAvailableRange(int64_t offset,
                         int len,
-                        int64* start,
+                        int64_t* start,
                         const CompletionCallback& callback) override {
     return entry_->GetAvailableRange(offset, len, start, callback);
   }
@@ -225,7 +229,8 @@ class FakeFileStreamReader : public FileStreamReader {
     return net::ERR_IO_PENDING;
   }
 
-  int64 GetLength(const net::Int64CompletionCallback& size_callback) override {
+  int64_t GetLength(
+      const net::Int64CompletionCallback& size_callback) override {
     // When async_task_runner_ is not set, return synchronously.
     if (!async_task_runner_.get()) {
       if (net_error_ == net::OK) {
@@ -828,7 +833,7 @@ TEST_F(BlobReaderTest, DiskCacheRange) {
 
 TEST_F(BlobReaderTest, FileSomeAsyncSegmentedOffsetsUnknownSizes) {
   // This tests includes:
-  // * Unknown file sizes (item length of uint64::max) for every other item.
+  // * Unknown file sizes (item length of uint64_t::max) for every other item.
   // * Offsets for every 3rd file item.
   // * Non-async reader for every 4th file item.
   BlobDataBuilder b("uuid");

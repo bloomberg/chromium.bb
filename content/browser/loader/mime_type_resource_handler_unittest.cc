@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/mime_type_resource_handler.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -90,7 +92,7 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
       net::URLRequest* request,
       bool is_content_initiated,
       bool must_download,
-      uint32 id,
+      uint32_t id,
       scoped_ptr<DownloadSaveInfo> save_info,
       const DownloadUrlParameters::OnStartedCallback& started_cb) override {
     return scoped_ptr<ResourceHandler>(new TestResourceHandler).Pass();

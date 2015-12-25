@@ -5,6 +5,7 @@
 #include "content/browser/loader/certificate_resource_handler.h"
 
 #include <limits.h>
+#include <stddef.h>
 
 #include "components/mime_util/mime_util.h"
 #include "content/browser/loader/resource_request_info_impl.h"

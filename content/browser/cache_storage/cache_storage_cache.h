@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CACHE_H_
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CACHE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/cache_storage/cache_storage_types.h"
@@ -105,7 +108,7 @@ class CONTENT_EXPORT CacheStorageCache
 
   // The size of the cache contents in memory. Returns 0 if the cache backend is
   // not a memory cache backend.
-  int64 MemoryBackedSize() const;
+  int64_t MemoryBackedSize() const;
 
   base::FilePath path() const { return path_; }
 

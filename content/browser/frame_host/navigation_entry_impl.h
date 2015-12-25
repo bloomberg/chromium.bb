@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_NAVIGATION_ENTRY_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATION_ENTRY_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
@@ -97,7 +100,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   void SetPageState(const PageState& state) override;
   PageState GetPageState() const override;
   void SetPageID(int page_id) override;
-  int32 GetPageID() const override;
+  int32_t GetPageID() const override;
   const base::string16& GetTitleForDisplay(
       const std::string& languages) const override;
   bool IsViewSourceMode() const override;
@@ -106,8 +109,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   const GURL& GetUserTypedURL() const override;
   void SetHasPostData(bool has_post_data) override;
   bool GetHasPostData() const override;
-  void SetPostID(int64 post_id) override;
-  int64 GetPostID() const override;
+  void SetPostID(int64_t post_id) override;
+  int64_t GetPostID() const override;
   void SetBrowserInitiatedPostData(const base::RefCountedMemory* data) override;
   const base::RefCountedMemory* GetBrowserInitiatedPostData() const override;
   const FaviconStatus& GetFavicon() const override;
@@ -187,8 +190,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   // that does not count as a real commit.
   void AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
                              const std::string& frame_unique_name,
-                             int64 item_sequence_number,
-                             int64 document_sequence_number,
+                             int64_t item_sequence_number,
+                             int64_t document_sequence_number,
                              SiteInstanceImpl* site_instance,
                              const GURL& url,
                              const Referrer& referrer,
@@ -388,12 +391,12 @@ class CONTENT_EXPORT NavigationEntryImpl
   bool update_virtual_url_with_url_;
   base::string16 title_;
   FaviconStatus favicon_;
-  int32 page_id_;
+  int32_t page_id_;
   SSLStatus ssl_;
   ui::PageTransition transition_type_;
   GURL user_typed_url_;
   bool has_post_data_;
-  int64 post_id_;
+  int64_t post_id_;
   RestoreType restore_type_;
   GURL original_request_url_;
   bool is_overriding_user_agent_;

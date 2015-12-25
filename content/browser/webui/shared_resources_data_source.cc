@@ -4,6 +4,8 @@
 
 #include "content/browser/webui/shared_resources_data_source.h"
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"

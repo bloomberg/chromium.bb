@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 
 @class BrowserAccessibilityCocoa;

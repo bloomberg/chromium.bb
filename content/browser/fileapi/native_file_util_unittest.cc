@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "storage/browser/fileapi/native_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +40,7 @@ class NativeFileUtilTest : public testing::Test {
            !base::DirectoryExists(path);
   }
 
-  int64 GetSize(const base::FilePath& path) {
+  int64_t GetSize(const base::FilePath& path) {
     base::File::Info info;
     base::GetFileInfo(path, &info);
     return info.size;

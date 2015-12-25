@@ -5,11 +5,15 @@
 #ifndef CONTENT_BROWSER_TRACING_TRACING_CONTROLLER_IMPL_H_
 #define CONTENT_BROWSER_TRACING_TRACING_CONTROLLER_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/tracing_agent.h"
@@ -73,7 +77,7 @@ class TracingControllerImpl
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
       const base::trace_event::MemoryDumpCallback& callback) override;
-  uint64 GetTracingProcessId() const override;
+  uint64_t GetTracingProcessId() const override;
 
   class TraceMessageFilterObserver {
    public:
@@ -147,11 +151,11 @@ class TracingControllerImpl
   void OnTraceLogStatusReply(TraceMessageFilter* trace_message_filter,
                              const base::trace_event::TraceLogStatus& status);
   void OnProcessMemoryDumpResponse(TraceMessageFilter* trace_message_filter,
-                                   uint64 dump_guid,
+                                   uint64_t dump_guid,
                                    bool success);
 
   // Callback of MemoryDumpManager::CreateProcessDump().
-  void OnBrowserProcessMemoryDumpDone(uint64 dump_guid, bool success);
+  void OnBrowserProcessMemoryDumpDone(uint64_t dump_guid, bool success);
 
   void FinalizeGlobalMemoryDumpIfAllProcessesReplied();
 
@@ -203,7 +207,7 @@ class TracingControllerImpl
   int pending_memory_dump_ack_count_;
   int failed_memory_dump_count_;
   TraceMessageFilterSet pending_memory_dump_filters_;
-  uint64 pending_memory_dump_guid_;
+  uint64_t pending_memory_dump_guid_;
   base::trace_event::MemoryDumpCallback pending_memory_dump_callback_;
 
   StartTracingDoneCallback start_tracing_done_callback_;

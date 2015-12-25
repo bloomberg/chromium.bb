@@ -4,6 +4,8 @@
 
 #include "content/browser/background_sync/background_sync_service_impl.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,10 +32,10 @@ const char kServiceWorkerScript[] = "https://example.com/a/script.js";
 
 // Callbacks from SetUp methods
 void RegisterServiceWorkerCallback(bool* called,
-                                   int64* store_registration_id,
+                                   int64_t* store_registration_id,
                                    ServiceWorkerStatusCode status,
                                    const std::string& status_message,
-                                   int64 registration_id) {
+                                   int64_t registration_id) {
   EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   *called = true;
   *store_registration_id = registration_id;
@@ -195,7 +197,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   }
 
   void UnregisterOneShot(
-      int32 handle_id,
+      int32_t handle_id,
       const BackgroundSyncService::UnregisterCallback& callback) {
     service_impl_->Unregister(
         handle_id, sw_registration_id_, callback);
@@ -220,7 +222,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   }
 
   void NotifyWhenDone(
-      int32 handle_id,
+      int32_t handle_id,
       const BackgroundSyncService::NotifyWhenFinishedCallback& callback) {
     service_impl_->NotifyWhenFinished(handle_id, callback);
     base::RunLoop().RunUntilIdle();
@@ -231,7 +233,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
-  int64 sw_registration_id_;
+  int64_t sw_registration_id_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_;
   BackgroundSyncServicePtr service_ptr_;
   BackgroundSyncServiceImpl*

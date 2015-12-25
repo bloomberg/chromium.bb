@@ -5,10 +5,12 @@
 #ifndef CONTENT_BROWSER_STREAMS_STREAM_REGISTRY_H_
 #define CONTENT_BROWSER_STREAMS_STREAM_REGISTRY_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/browser/streams/stream_register_observer.h"

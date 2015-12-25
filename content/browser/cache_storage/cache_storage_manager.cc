@@ -4,6 +4,8 @@
 
 #include "content/browser/cache_storage/cache_storage_manager.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -72,7 +74,7 @@ std::vector<CacheStorageUsageInfo> GetAllOriginsUsageOnTaskRunner(
   for (const GURL& origin : origins) {
     base::FilePath path =
         CacheStorageManager::ConstructOriginPath(root_path, origin);
-    int64 size = base::ComputeDirectorySize(path);
+    int64_t size = base::ComputeDirectorySize(path);
     base::File::Info file_info;
     base::Time last_modified;
     if (base::GetFileInfo(path, &file_info))
@@ -229,7 +231,7 @@ void CacheStorageManager::GetOriginUsage(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (IsMemoryBacked()) {
-    int64 usage = 0;
+    int64_t usage = 0;
     if (ContainsKey(cache_storage_map_, origin_url))
       usage = cache_storage_map_[origin_url]->MemoryBackedSize();
     callback.Run(usage);

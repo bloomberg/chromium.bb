@@ -5,12 +5,13 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_TYPES_H_
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_TYPES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "url/gurl.h"
 
@@ -53,7 +54,7 @@ struct SaveFileCreateInfo {
                      int render_frame_routing_id,
                      int request_id,
                      const std::string& content_disposition,
-                     int64 total_bytes);
+                     int64_t total_bytes);
 
   ~SaveFileCreateInfo();
 
@@ -76,7 +77,7 @@ struct SaveFileCreateInfo {
   // Disposition info from HTTP response.
   std::string content_disposition;
   // Total bytes of saved file.
-  int64 total_bytes;
+  int64_t total_bytes;
   // Source type of saved file.
   SaveFileSource save_source;
 };

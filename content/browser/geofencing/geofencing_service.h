@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_GEOFENCING_GEOFENCING_SERVICE_H_
 #define CONTENT_BROWSER_GEOFENCING_GEOFENCING_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/geofencing_types.h"
@@ -41,12 +43,13 @@ class GeofencingService {
   // inform the delegate of the result of the attempt to register the region.
   // This does not transfer ownership of the |delegate|. Callers have to ensure
   // that the delegate remains valid as long as the region is registered.
-  virtual int64 RegisterRegion(const blink::WebCircularGeofencingRegion& region,
-                               GeofencingRegistrationDelegate* delegate) = 0;
+  virtual int64_t RegisterRegion(
+      const blink::WebCircularGeofencingRegion& region,
+      GeofencingRegistrationDelegate* delegate) = 0;
 
   // Unregister a region. This is assumed to always succeed. It is safe to call
   // this even if a registration is still in progress.
-  virtual void UnregisterRegion(int64 geofencing_registration_id) = 0;
+  virtual void UnregisterRegion(int64_t geofencing_registration_id) = 0;
 };
 
 // This class combines all the geofence registrations from the various per
@@ -64,10 +67,9 @@ class CONTENT_EXPORT GeofencingServiceImpl
 
   // GeofencingServiceInterface implementation.
   bool IsServiceAvailable() override;
-  int64 RegisterRegion(
-      const blink::WebCircularGeofencingRegion& region,
-      GeofencingRegistrationDelegate* delegate) override;
-  void UnregisterRegion(int64 geofencing_registration_id) override;
+  int64_t RegisterRegion(const blink::WebCircularGeofencingRegion& region,
+                         GeofencingRegistrationDelegate* delegate) override;
+  void UnregisterRegion(int64_t geofencing_registration_id) override;
 
  protected:
   friend class GeofencingServiceTest;
@@ -80,7 +82,7 @@ class CONTENT_EXPORT GeofencingServiceImpl
 
  private:
   struct Registration;
-  typedef std::map<int64, Registration> RegistrationsMap;
+  typedef std::map<int64_t, Registration> RegistrationsMap;
 
   // This method checks if a |GeofencingProvider| exists, creates a new one if
   // not, and finally returns false if it can't create a provider for the
@@ -88,14 +90,14 @@ class CONTENT_EXPORT GeofencingServiceImpl
   bool EnsureProvider();
 
   // Returns a new unique ID to use for the next geofence registration.
-  int64 GetNextId();
+  int64_t GetNextId();
 
   // Notifies the correct delegate that registration has completed for a
   // specific geofence registration.
-  void NotifyRegistrationFinished(int64 geofencing_registration_id,
+  void NotifyRegistrationFinished(int64_t geofencing_registration_id,
                                   GeofencingStatus status);
 
-  int64 next_registration_id_;
+  int64_t next_registration_id_;
   RegistrationsMap registrations_;
   scoped_ptr<GeofencingProvider> provider_;
 

@@ -4,8 +4,11 @@
 
 #include "content/browser/gamepad/gamepad_platform_data_fetcher_mac.h"
 
+#include <stdint.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

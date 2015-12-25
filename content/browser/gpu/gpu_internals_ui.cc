@@ -4,9 +4,7 @@
 
 #include "content/browser/gpu/gpu_internals_ui.h"
 
-#if defined(OS_LINUX) && defined(USE_X11)
-#include <X11/Xlib.h>
-#endif
+#include <stddef.h>
 
 #include <string>
 
@@ -15,10 +13,12 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/i18n/time_formatting.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -37,6 +37,9 @@
 #include "third_party/angle/src/common/version.h"
 #include "ui/gl/gpu_switching_manager.h"
 
+#if defined(OS_LINUX) && defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
 #endif

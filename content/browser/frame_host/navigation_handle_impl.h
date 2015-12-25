@@ -7,6 +7,8 @@
 
 #include "content/public/browser/navigation_handle.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

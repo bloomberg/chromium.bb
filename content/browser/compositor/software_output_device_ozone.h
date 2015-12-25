@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_OZONE_H_
 #define CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_OZONE_H_
 
+#include "base/macros.h"
 #include "cc/output/software_output_device.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"

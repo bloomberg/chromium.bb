@@ -20,19 +20,19 @@
 namespace content {
 
 struct GeofencingManager::Registration {
-  Registration(int64 service_worker_registration_id,
+  Registration(int64_t service_worker_registration_id,
                const GURL& service_worker_origin,
                const std::string& region_id,
                const blink::WebCircularGeofencingRegion& region,
                const StatusCallback& callback,
-               int64 geofencing_registration_id);
-  int64 service_worker_registration_id;
+               int64_t geofencing_registration_id);
+  int64_t service_worker_registration_id;
   GURL service_worker_origin;
   std::string region_id;
   blink::WebCircularGeofencingRegion region;
 
   // Registration ID as returned by the |GeofencingService|.
-  int64 geofencing_registration_id;
+  int64_t geofencing_registration_id;
 
   // Callback to call when registration is completed. This field is reset when
   // registration is complete.
@@ -44,19 +44,18 @@ struct GeofencingManager::Registration {
 };
 
 GeofencingManager::Registration::Registration(
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const GURL& service_worker_origin,
     const std::string& region_id,
     const blink::WebCircularGeofencingRegion& region,
     const GeofencingManager::StatusCallback& callback,
-    int64 geofencing_registration_id)
+    int64_t geofencing_registration_id)
     : service_worker_registration_id(service_worker_registration_id),
       service_worker_origin(service_worker_origin),
       region_id(region_id),
       region(region),
       geofencing_registration_id(geofencing_registration_id),
-      registration_callback(callback) {
-}
+      registration_callback(callback) {}
 
 GeofencingManager::GeofencingManager(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
@@ -100,7 +99,7 @@ void GeofencingManager::ShutdownOnIO() {
 }
 
 void GeofencingManager::RegisterRegion(
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& region_id,
     const blink::WebCircularGeofencingRegion& region,
     const StatusCallback& callback) {
@@ -137,7 +136,7 @@ void GeofencingManager::RegisterRegion(
                   service_->RegisterRegion(region, this));
 }
 
-void GeofencingManager::UnregisterRegion(int64 service_worker_registration_id,
+void GeofencingManager::UnregisterRegion(int64_t service_worker_registration_id,
                                          const std::string& region_id,
                                          const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -178,7 +177,7 @@ void GeofencingManager::UnregisterRegion(int64 service_worker_registration_id,
 }
 
 GeofencingStatus GeofencingManager::GetRegisteredRegions(
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     std::map<std::string, blink::WebCircularGeofencingRegion>* result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   CHECK(result);
@@ -240,13 +239,13 @@ void GeofencingManager::SetMockPosition(double latitude, double longitude) {
 }
 
 void GeofencingManager::OnRegistrationDeleted(
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const GURL& pattern) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   CleanUpForServiceWorker(service_worker_registration_id);
 }
 
-void GeofencingManager::RegistrationFinished(int64 geofencing_registration_id,
+void GeofencingManager::RegistrationFinished(int64_t geofencing_registration_id,
                                              GeofencingStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   Registration* registration = FindRegistrationById(geofencing_registration_id);
@@ -260,18 +259,18 @@ void GeofencingManager::RegistrationFinished(int64 geofencing_registration_id,
     ClearRegistration(registration);
 }
 
-void GeofencingManager::RegionEntered(int64 geofencing_registration_id) {
+void GeofencingManager::RegionEntered(int64_t geofencing_registration_id) {
   DispatchGeofencingEvent(blink::WebGeofencingEventTypeEnter,
                           geofencing_registration_id);
 }
 
-void GeofencingManager::RegionExited(int64 geofencing_registration_id) {
+void GeofencingManager::RegionExited(int64_t geofencing_registration_id) {
   DispatchGeofencingEvent(blink::WebGeofencingEventTypeLeave,
                           geofencing_registration_id);
 }
 
 GeofencingManager::Registration* GeofencingManager::FindRegistration(
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& region_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ServiceWorkerRegistrationsMap::iterator registrations_iterator =
@@ -286,7 +285,7 @@ GeofencingManager::Registration* GeofencingManager::FindRegistration(
 }
 
 GeofencingManager::Registration* GeofencingManager::FindRegistrationById(
-    int64 geofencing_registration_id) {
+    int64_t geofencing_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   RegistrationIdRegistrationMap::iterator registration_iterator =
       registrations_by_id_.find(geofencing_registration_id);
@@ -296,12 +295,12 @@ GeofencingManager::Registration* GeofencingManager::FindRegistrationById(
 }
 
 GeofencingManager::Registration& GeofencingManager::AddRegistration(
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const GURL& service_worker_origin,
     const std::string& region_id,
     const blink::WebCircularGeofencingRegion& region,
     const StatusCallback& callback,
-    int64 geofencing_registration_id) {
+    int64_t geofencing_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!FindRegistration(service_worker_registration_id, region_id));
   RegionIdRegistrationMap::iterator registration =
@@ -330,7 +329,7 @@ void GeofencingManager::ClearRegistration(Registration* registration) {
 }
 
 void GeofencingManager::CleanUpForServiceWorker(
-    int64 service_worker_registration_id) {
+    int64_t service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ServiceWorkerRegistrationsMap::iterator registrations_iterator =
       registrations_.find(service_worker_registration_id);
@@ -348,7 +347,7 @@ void GeofencingManager::CleanUpForServiceWorker(
 
 void GeofencingManager::DispatchGeofencingEvent(
     blink::WebGeofencingEventType event_type,
-    int64 geofencing_registration_id) {
+    int64_t geofencing_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   Registration* registration = FindRegistrationById(geofencing_registration_id);
   if (!registration ||
@@ -369,7 +368,7 @@ void GeofencingManager::DispatchGeofencingEvent(
 
 void GeofencingManager::DeliverGeofencingEvent(
     blink::WebGeofencingEventType event_type,
-    int64 geofencing_registration_id,
+    int64_t geofencing_registration_id,
     ServiceWorkerStatusCode service_worker_status,
     const scoped_refptr<ServiceWorkerRegistration>&
         service_worker_registration) {

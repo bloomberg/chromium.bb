@@ -4,6 +4,7 @@
 
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "base/bind.h"
@@ -68,7 +69,7 @@ DOMStorageContextImpl::~DOMStorageContextImpl() {
 }
 
 DOMStorageNamespace* DOMStorageContextImpl::GetStorageNamespace(
-    int64 namespace_id) {
+    int64_t namespace_id) {
   if (is_shutdown_)
     return NULL;
   StorageNamespaceMap::iterator found = namespaces_.find(namespace_id);
@@ -148,13 +149,13 @@ void DOMStorageContextImpl::DeleteSessionStorage(
     const SessionStorageUsageInfo& usage_info) {
   DCHECK(!is_shutdown_);
   DOMStorageNamespace* dom_storage_namespace = NULL;
-  std::map<std::string, int64>::const_iterator it =
+  std::map<std::string, int64_t>::const_iterator it =
       persistent_namespace_id_to_namespace_id_.find(
           usage_info.persistent_namespace_id);
   if (it != persistent_namespace_id_to_namespace_id_.end()) {
     dom_storage_namespace = GetStorageNamespace(it->second);
   } else {
-    int64 namespace_id = AllocateSessionId();
+    int64_t namespace_id = AllocateSessionId();
     CreateSessionNamespace(namespace_id, usage_info.persistent_namespace_id);
     dom_storage_namespace = GetStorageNamespace(namespace_id);
   }
@@ -239,7 +240,7 @@ void DOMStorageContextImpl::NotifyAreaCleared(
       OnDOMStorageAreaCleared(area, page_url));
 }
 
-int64 DOMStorageContextImpl::AllocateSessionId() {
+int64_t DOMStorageContextImpl::AllocateSessionId() {
   return session_id_sequence_.GetNext() + session_id_offset_;
 }
 
@@ -250,7 +251,7 @@ std::string DOMStorageContextImpl::AllocatePersistentSessionId() {
 }
 
 void DOMStorageContextImpl::CreateSessionNamespace(
-    int64 namespace_id,
+    int64_t namespace_id,
     const std::string& persistent_namespace_id) {
   if (is_shutdown_)
     return;
@@ -263,8 +264,8 @@ void DOMStorageContextImpl::CreateSessionNamespace(
       namespace_id;
 }
 
-void DOMStorageContextImpl::DeleteSessionNamespace(
-    int64 namespace_id, bool should_persist_data) {
+void DOMStorageContextImpl::DeleteSessionNamespace(int64_t namespace_id,
+                                                   bool should_persist_data) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
   StorageNamespaceMap::const_iterator it = namespaces_.find(namespace_id);
   if (it == namespaces_.end())
@@ -293,7 +294,8 @@ void DOMStorageContextImpl::DeleteSessionNamespace(
 }
 
 void DOMStorageContextImpl::CloneSessionNamespace(
-    int64 existing_id, int64 new_id,
+    int64_t existing_id,
+    int64_t new_id,
     const std::string& new_persistent_id) {
   if (is_shutdown_)
     return;

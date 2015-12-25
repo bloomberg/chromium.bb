@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <Unknwn.h>
 #include <WinDef.h>
@@ -16,6 +17,7 @@
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -39,7 +41,7 @@ struct RawGamepadInfo {
   ~RawGamepadInfo();
 
   HANDLE handle;
-  scoped_ptr<uint8[]> ppd_buffer;
+  scoped_ptr<uint8_t[]> ppd_buffer;
   PHIDP_PREPARSED_DATA preparsed_data;
 
   uint32_t report_id;

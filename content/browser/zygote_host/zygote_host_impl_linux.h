@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
 #define CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>

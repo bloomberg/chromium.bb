@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/message_loop/message_loop.h"
@@ -51,7 +53,7 @@ class TestAppCacheFrontend : public content::AppCacheFrontend {
   void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
 
   int last_host_id_;
-  int64 last_cache_id_;
+  int64_t last_cache_id_;
   content::AppCacheStatus last_status_;
 };
 

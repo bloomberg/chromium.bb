@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -284,16 +285,16 @@ void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
       video_memory_usage_stats);
 }
 
-void GpuProcessHostUIShim::OnAddSubscription(
-    int32 process_id, unsigned int target) {
+void GpuProcessHostUIShim::OnAddSubscription(int32_t process_id,
+                                             unsigned int target) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   if (rph) {
     rph->OnAddSubscription(target);
   }
 }
 
-void GpuProcessHostUIShim::OnRemoveSubscription(
-    int32 process_id, unsigned int target) {
+void GpuProcessHostUIShim::OnRemoveSubscription(int32_t process_id,
+                                                unsigned int target) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   if (rph) {
     rph->OnRemoveSubscription(target);

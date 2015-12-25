@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_PLUGIN_LOADER_POSIX_H_
 #define CONTENT_BROWSER_PLUGIN_LOADER_POSIX_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/browser/plugin_service_impl.h"
@@ -74,8 +77,8 @@ class CONTENT_EXPORT PluginLoaderPosix
       const std::vector<WebPluginInfo>& plugins_unused);
 
   // Message handlers.
-  void OnPluginLoaded(uint32 index, const WebPluginInfo& plugin);
-  void OnPluginLoadFailed(uint32 index, const base::FilePath& plugin_path);
+  void OnPluginLoaded(uint32_t index, const WebPluginInfo& plugin);
+  void OnPluginLoadFailed(uint32_t index, const base::FilePath& plugin_path);
 
   // Returns an iterator to the plugin in |internal_plugins_| whose path
   // matches |plugin_path|.

@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/pattern.h"
@@ -88,13 +90,14 @@ void AccessibilityTreeFormatter::SetFilters(
   filters_ = filters;
 }
 
-uint32 AccessibilityTreeFormatter::ChildCount(
-    const BrowserAccessibility& node) const{
+uint32_t AccessibilityTreeFormatter::ChildCount(
+    const BrowserAccessibility& node) const {
   return node.PlatformChildCount();
 }
 
 BrowserAccessibility* AccessibilityTreeFormatter::GetChild(
-    const BrowserAccessibility& node, uint32 i) const {
+    const BrowserAccessibility& node,
+    uint32_t i) const {
   return node.PlatformGetChild(i);
 }
 

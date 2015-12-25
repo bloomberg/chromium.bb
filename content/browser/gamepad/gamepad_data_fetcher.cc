@@ -4,7 +4,10 @@
 
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace {
 

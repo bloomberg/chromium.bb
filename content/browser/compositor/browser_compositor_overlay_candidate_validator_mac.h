@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_MAC_H_
 #define CONTENT_BROWSER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_MAC_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "ui/gfx/native_widget_types.h"

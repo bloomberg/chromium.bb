@@ -240,7 +240,7 @@ void SaveFileManager::OnStartSave(const SaveFileCreateInfo& info) {
 }
 
 void SaveFileManager::OnUpdateSaveProgress(int save_item_id,
-                                           int64 bytes_so_far,
+                                           int64_t bytes_so_far,
                                            bool write_success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SavePackage* package = LookupPackage(save_item_id);
@@ -251,7 +251,7 @@ void SaveFileManager::OnUpdateSaveProgress(int save_item_id,
 }
 
 void SaveFileManager::OnSaveFinished(int save_item_id,
-                                     int64 bytes_so_far,
+                                     int64_t bytes_so_far,
                                      bool is_success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SavePackage* package = LookupPackage(save_item_id);

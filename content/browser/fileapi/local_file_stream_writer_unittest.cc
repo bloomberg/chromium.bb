@@ -4,6 +4,8 @@
 
 #include "storage/browser/fileapi/local_file_stream_writer.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -82,7 +84,7 @@ class LocalFileStreamWriterTest : public testing::Test {
   }
 
   LocalFileStreamWriter* CreateWriter(const base::FilePath& path,
-                                      int64 offset) {
+                                      int64_t offset) {
     return new LocalFileStreamWriter(file_task_runner(), path, offset,
         FileStreamWriter::OPEN_EXISTING_FILE);
   }
