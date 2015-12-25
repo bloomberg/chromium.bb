@@ -6,6 +6,7 @@
 #define COMPONENTS_TRANSLATE_IOS_BROWSER_JS_LANGUAGE_DETECTION_MANAGER_H_
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"

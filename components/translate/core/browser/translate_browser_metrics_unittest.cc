@@ -4,7 +4,7 @@
 
 #include "components/translate/core/browser/translate_browser_metrics.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"

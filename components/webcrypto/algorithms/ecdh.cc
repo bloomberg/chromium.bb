@@ -5,6 +5,8 @@
 #include <openssl/ec.h>
 #include <openssl/ecdh.h>
 #include <openssl/evp.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "components/webcrypto/algorithm_implementation.h"

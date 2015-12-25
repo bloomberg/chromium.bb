@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEBCRYPTO_STATUS_H_
 #define COMPONENTS_WEBCRYPTO_STATUS_H_
 
+#include <stddef.h>
+
 #include <string>
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 

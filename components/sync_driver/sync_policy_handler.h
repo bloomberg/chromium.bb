@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_SYNC_POLICY_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 class PrefValueMap;

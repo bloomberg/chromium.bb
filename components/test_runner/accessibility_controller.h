@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/test_runner/web_ax_object_proxy.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"

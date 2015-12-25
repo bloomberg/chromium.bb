@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_AX_OBJECT_PROXY_H_
 #define COMPONENTS_TEST_RUNNER_WEB_AX_OBJECT_PROXY_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"

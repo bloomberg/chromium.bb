@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 #define COMPONENTS_WEB_VIEW_FRAME_TREE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/web_view/frame.h"

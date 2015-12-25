@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
 #define COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
@@ -47,7 +50,7 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
   // Message handlers.
   void OnBeginTracing(const std::string& trace_config_str,
                       base::TimeTicks browser_time,
-                      uint64 tracing_process_id);
+                      uint64_t tracing_process_id);
   void OnEndTracing();
   void OnCancelTracing();
   void OnStartMonitoring(const std::string& trace_config_str,
@@ -61,7 +64,7 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
   void OnWatchEventMatched();
   void OnProcessMemoryDumpRequest(
       const base::trace_event::MemoryDumpRequestArgs& args);
-  void OnGlobalMemoryDumpResponse(uint64 dump_guid, bool success);
+  void OnGlobalMemoryDumpResponse(uint64_t dump_guid, bool success);
   void OnSetUMACallback(const std::string& histogram_name,
                         int histogram_lower_value,
                         int histogram_upper_value,
@@ -84,7 +87,7 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
       const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events);
 
-  void OnProcessMemoryDumpDone(uint64 dump_guid, bool success);
+  void OnProcessMemoryDumpDone(uint64_t dump_guid, bool success);
 
   void SetSenderForTesting(IPC::Sender* sender);
 
@@ -93,7 +96,7 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
 
   // guid of the outstanding request (to the Browser's MemoryDumpManager), if
   // any. 0 if there is no request pending.
-  uint64 pending_memory_dump_guid_;
+  uint64_t pending_memory_dump_guid_;
 
   // callback of the outstanding memory dump request, if any.
   base::trace_event::MemoryDumpCallback pending_memory_dump_callback_;

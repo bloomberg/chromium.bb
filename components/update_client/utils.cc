@@ -4,6 +4,7 @@
 
 #include "components/update_client/utils.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <cmath>
 
@@ -16,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "components/crx_file/id_util.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"

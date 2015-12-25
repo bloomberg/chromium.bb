@@ -4,6 +4,10 @@
 
 #include "components/variations/service/ui_string_overrider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {

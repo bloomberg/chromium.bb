@@ -4,6 +4,8 @@
 
 #include "components/variations/active_field_trials.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/strings/stringprintf.h"

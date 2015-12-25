@@ -4,6 +4,8 @@
 
 #include "components/variations/variations_http_header_provider.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>

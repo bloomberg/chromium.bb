@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"

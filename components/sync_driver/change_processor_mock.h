@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_
 #define COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "components/sync_driver/change_processor.h"
@@ -20,7 +22,8 @@ class ChangeProcessorMock
   ChangeProcessorMock();
   virtual ~ChangeProcessorMock();
   MOCK_METHOD3(ApplyChangesFromSyncModel,
-               void(const syncer::BaseTransaction*, int64,
+               void(const syncer::BaseTransaction*,
+                    int64_t,
                     const syncer::ImmutableChangeRecordList&));
   MOCK_METHOD0(CommitChangesFromSyncModel, void());
   MOCK_METHOD0(StartImpl, void());

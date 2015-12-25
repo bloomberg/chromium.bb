@@ -4,6 +4,9 @@
 
 #include <openssl/aes.h>
 #include <openssl/evp.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "base/logging.h"
 #include "base/macros.h"

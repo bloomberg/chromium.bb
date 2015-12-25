@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_DELEGATE_H_
 #define COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_DELEGATE_H_
 
+#include "base/macros.h"
+
 class GURL;
 class SkBitmap;
 

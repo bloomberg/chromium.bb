@@ -8,6 +8,7 @@
 
 #include "base/i18n/string_compare.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/translate/core/browser/language_state.h"

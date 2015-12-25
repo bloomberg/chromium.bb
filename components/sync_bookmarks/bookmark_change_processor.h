@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_CHANGE_PROCESSOR_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -82,7 +85,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   // the sync model to the bookmarks model.
   void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
-      int64 model_version,
+      int64_t model_version,
       const syncer::ImmutableChangeRecordList& changes) override;
 
   // The following methods are static and hence may be invoked at any time, and
@@ -145,19 +148,21 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   // will be transferred to the new node.  A node corresponding to |parent|
   // must already exist and be associated for this call to succeed.  Returns
   // the ID of the just-created node, or if creation fails, kInvalidID.
-  static int64 CreateSyncNode(const bookmarks::BookmarkNode* parent,
-                              bookmarks::BookmarkModel* model,
-                              int index,
-                              syncer::WriteTransaction* trans,
-                              BookmarkModelAssociator* associator,
-                              sync_driver::DataTypeErrorHandler* error_handler);
+  static int64_t CreateSyncNode(
+      const bookmarks::BookmarkNode* parent,
+      bookmarks::BookmarkModel* model,
+      int index,
+      syncer::WriteTransaction* trans,
+      BookmarkModelAssociator* associator,
+      sync_driver::DataTypeErrorHandler* error_handler);
 
   // Update |bookmark_node|'s sync node.
-  static int64 UpdateSyncNode(const bookmarks::BookmarkNode* bookmark_node,
-                              bookmarks::BookmarkModel* model,
-                              syncer::WriteTransaction* trans,
-                              BookmarkModelAssociator* associator,
-                              sync_driver::DataTypeErrorHandler* error_handler);
+  static int64_t UpdateSyncNode(
+      const bookmarks::BookmarkNode* bookmark_node,
+      bookmarks::BookmarkModel* model,
+      syncer::WriteTransaction* trans,
+      BookmarkModelAssociator* associator,
+      sync_driver::DataTypeErrorHandler* error_handler);
 
   // Tombstone |topmost_sync_node| node and all its children in the sync domain
   // using transaction |trans|. Returns the number of removed nodes.
@@ -168,7 +173,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   // Update transaction version of |model| and |nodes| to |new_version| if
   // it's valid.
   static void UpdateTransactionVersion(
-      int64 new_version,
+      int64_t new_version,
       bookmarks::BookmarkModel* model,
       const std::vector<const bookmarks::BookmarkNode*>& nodes);
 
@@ -225,7 +230,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   // Remove all children of |sync_node|. Returns the number of removed
   // children.
   static int RemoveAllChildNodes(syncer::WriteTransaction* trans,
-                                 int64 sync_id,
+                                 int64_t sync_id,
                                  BookmarkModelAssociator* associator);
 
   // Remove |sync_node|. It should not have any children.

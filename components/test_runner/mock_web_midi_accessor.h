@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_TEST_RUNNER_MOCK_WEB_MIDI_ACCESSOR_H_
 #define COMPONENTS_TEST_RUNNER_MOCK_WEB_MIDI_ACCESSOR_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessor.h"
 

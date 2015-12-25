@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_BACKUP_ROLLBACK_CONTROLLER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 class SigninManagerWrapper;

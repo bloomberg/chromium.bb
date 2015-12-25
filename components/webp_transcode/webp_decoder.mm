@@ -5,6 +5,7 @@
 #include "components/webp_transcode/webp_decoder.h"
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"

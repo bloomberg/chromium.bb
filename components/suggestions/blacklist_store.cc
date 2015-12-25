@@ -4,6 +4,8 @@
 
 #include "components/suggestions/blacklist_store.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <string>

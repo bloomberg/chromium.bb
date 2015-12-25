@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_VARIATIONS_SERVICE_UI_STRING_OVERRIDER_H_
 #define COMPONENTS_VARIATIONS_SERVICE_UI_STRING_OVERRIDER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 

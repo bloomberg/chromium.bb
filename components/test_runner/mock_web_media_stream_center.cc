@@ -4,7 +4,10 @@
 
 #include "components/test_runner/mock_web_media_stream_center.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebAudioDestinationConsumer.h"

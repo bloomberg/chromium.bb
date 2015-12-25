@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 // Multiply-included message header, no traditional include guard.
+
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/sync_socket.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -47,7 +49,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 IPC_MESSAGE_CONTROL3(TracingMsg_BeginTracing,
                      std::string /*  trace_config_str */,
                      base::TimeTicks /* browser_time */,
-                     uint64 /* Tracing process id (hash of child id) */)
+                     uint64_t /* Tracing process id (hash of child id) */)
 
 // Sent to all child processes to disable trace event recording.
 IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)
@@ -84,7 +86,7 @@ IPC_MESSAGE_CONTROL1(TracingMsg_ProcessMemoryDumpRequest,
 // Reply to TracingHostMsg_GlobalMemoryDumpRequest, sent by the browser process.
 // This is to get the result of a global dump initiated by a child process.
 IPC_MESSAGE_CONTROL2(TracingMsg_GlobalMemoryDumpResponse,
-                     uint64 /* dump_guid */,
+                     uint64_t /* dump_guid */,
                      bool /* success */)
 
 IPC_MESSAGE_CONTROL4(TracingMsg_SetUMACallback,
@@ -129,7 +131,7 @@ IPC_MESSAGE_CONTROL1(TracingHostMsg_GlobalMemoryDumpRequest,
 
 // Reply to TracingMsg_ProcessMemoryDumpRequest.
 IPC_MESSAGE_CONTROL2(TracingHostMsg_ProcessMemoryDumpResponse,
-                     uint64 /* dump_guid */,
+                     uint64_t /* dump_guid */,
                      bool /* success */)
 
 IPC_MESSAGE_CONTROL1(TracingHostMsg_TriggerBackgroundTrace,

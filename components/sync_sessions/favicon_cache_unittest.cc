@@ -4,6 +4,10 @@
 
 #include "components/sync_sessions/favicon_cache.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -109,7 +113,7 @@ struct TestFaviconData {
   std::string image_16;
   std::string image_32;
   std::string image_64;
-  int64 last_visit_time;
+  int64_t last_visit_time;
   bool is_bookmarked;
 };
 
@@ -286,7 +290,7 @@ class SyncFaviconCacheTest : public testing::Test {
   void TriggerSyncFaviconReceived(const GURL& page_url,
                                   const GURL& icon_url,
                                   const std::string& icon_bytes,
-                                  int64 last_visit_time_ms);
+                                  int64_t last_visit_time_ms);
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -445,7 +449,7 @@ void SyncFaviconCacheTest::TriggerSyncFaviconReceived(
     const GURL& page_url,
     const GURL& icon_url,
     const std::string& icon_bytes,
-    int64 last_visit_time_ms) {
+    int64_t last_visit_time_ms) {
   cache()->OnReceivedSyncFavicon(page_url,
                                  icon_url,
                                  icon_bytes,

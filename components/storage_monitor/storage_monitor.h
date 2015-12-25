@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "components/storage_monitor/storage_info.h"
 
 class MediaFileSystemRegistryTest;

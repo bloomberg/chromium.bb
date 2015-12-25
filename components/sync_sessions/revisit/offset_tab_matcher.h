@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_OFFSET_TAB_MATCHER_H_
 #define COMPONENTS_SYNC_SESSIONS_REVISIT_OFFSET_TAB_MATCHER_H_
 
+#include "base/macros.h"
 #include "components/sync_sessions/revisit/page_equality.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"
 

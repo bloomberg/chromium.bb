@@ -116,7 +116,7 @@ void SyncBackendHostImpl::Initialize(
   if (cl->HasSwitch(switches::kSyncEnableClearDataOnPassphraseEncryption))
     clear_data_option = syncer::PASSPHRASE_TRANSITION_CLEAR_DATA;
 
-  std::map<syncer::ModelType, int64> invalidation_versions;
+  std::map<syncer::ModelType, int64_t> invalidation_versions;
   sync_prefs_->GetInvalidationVersions(&invalidation_versions);
 
   scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
@@ -828,7 +828,7 @@ void SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
 }
 
 void SyncBackendHostImpl::UpdateInvalidationVersions(
-    const std::map<syncer::ModelType, int64>& invalidation_versions) {
+    const std::map<syncer::ModelType, int64_t>& invalidation_versions) {
   sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
 }
 

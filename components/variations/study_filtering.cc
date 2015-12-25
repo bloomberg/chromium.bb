@@ -4,9 +4,13 @@
 
 #include "components/variations/study_filtering.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/stl_util.h"
+#include "build/build_config.h"
 
 namespace variations {
 
@@ -33,7 +37,7 @@ Study_Platform GetCurrentPlatform() {
 }
 
 // Converts |date_time| in Study date format to base::Time.
-base::Time ConvertStudyDateToBaseTime(int64 date_time) {
+base::Time ConvertStudyDateToBaseTime(int64_t date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
 }
 

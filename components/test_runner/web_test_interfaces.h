@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_TEST_INTERFACES_H_
 #define COMPONENTS_TEST_RUNNER_WEB_TEST_INTERFACES_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/test_runner/test_runner_export.h"
 

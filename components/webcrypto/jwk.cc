@@ -4,11 +4,14 @@
 
 #include "components/webcrypto/jwk.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/base64url.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"

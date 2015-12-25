@@ -4,6 +4,8 @@
 
 #include "components/translate/core/browser/translate_accept_languages.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"

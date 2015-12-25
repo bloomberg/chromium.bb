@@ -4,8 +4,13 @@
 
 #include "components/variations/study_filtering.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "components/variations/processed_study.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +20,7 @@ namespace variations {
 namespace {
 
 // Converts |time| to Study proto format.
-int64 TimeToProtoTime(const base::Time& time) {
+int64_t TimeToProtoTime(const base::Time& time) {
   return (time - base::Time::UnixEpoch()).InSeconds();
 }
 

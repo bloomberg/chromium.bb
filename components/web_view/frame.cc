@@ -4,6 +4,8 @@
 
 #include "components/web_view/frame.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/auto_reset.h"
@@ -164,7 +166,7 @@ double Frame::GatherProgress(int* frame_count) const {
   return progress_;
 }
 
-void Frame::Find(int32 request_id,
+void Frame::Find(int32_t request_id,
                  const mojo::String& search_text,
                  mojom::FindOptionsPtr options,
                  bool wrap_within_frame,
@@ -292,7 +294,7 @@ void Frame::OnWillNavigateAck(
     mojom::FrameClient* frame_client,
     scoped_ptr<FrameUserData> user_data,
     mus::mojom::WindowTreeClientPtr window_tree_client,
-    uint32 app_id,
+    uint32_t app_id,
     base::TimeTicks navigation_start_time) {
   DCHECK(waiting_for_on_will_navigate_ack_);
   DVLOG(2) << "Frame::OnWillNavigateAck id=" << id_;

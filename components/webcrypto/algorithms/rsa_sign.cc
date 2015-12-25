@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/numerics/safe_math.h"
 #include "components/webcrypto/algorithms/rsa_sign.h"
 #include "components/webcrypto/algorithms/util.h"

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_TYPED_URL_PAGE_REVISIT_OBSERVER_H_
 #define COMPONENTS_SYNC_SESSIONS_REVISIT_TYPED_URL_PAGE_REVISIT_OBSERVER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"

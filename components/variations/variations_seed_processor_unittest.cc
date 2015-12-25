@@ -4,6 +4,9 @@
 
 #include "components/variations/variations_seed_processor.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
@@ -11,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,7 +27,7 @@ namespace variations {
 namespace {
 
 // Converts |time| to Study proto format.
-int64 TimeToProtoTime(const base::Time& time) {
+int64_t TimeToProtoTime(const base::Time& time) {
   return (time - base::Time::UnixEpoch()).InSeconds();
 }
 

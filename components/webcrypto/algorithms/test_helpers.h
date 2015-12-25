@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEBCRYPTO_ALGORITHMS_TEST_HELPERS_H_
 #define COMPONENTS_WEBCRYPTO_ALGORITHMS_TEST_HELPERS_H_
 
+#include <stdint.h>
+
 #include <ostream>
 #include <string>
 #include <vector>

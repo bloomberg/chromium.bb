@@ -4,6 +4,8 @@
 
 #include "components/storage_monitor/storage_info.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/media_storage_util.h"
@@ -22,7 +24,7 @@ const char kITunesPrefix[] = "itunes:";
 const char kPicasaPrefix[] = "picasa:";
 const char kIPhotoPrefix[] = "iphoto:";
 
-base::string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
+base::string16 GetDisplayNameForDevice(uint64_t storage_size_in_bytes,
                                        const base::string16& name) {
   DCHECK(!name.empty());
   return (storage_size_in_bytes == 0) ?
@@ -58,14 +60,13 @@ StorageInfo::StorageInfo(const std::string& device_id_in,
                          const base::string16& label,
                          const base::string16& vendor,
                          const base::string16& model,
-                         uint64 size_in_bytes)
+                         uint64_t size_in_bytes)
     : device_id_(device_id_in),
       location_(device_location),
       storage_label_(label),
       vendor_name_(vendor),
       model_name_(model),
-      total_size_in_bytes_(size_in_bytes) {
-}
+      total_size_in_bytes_(size_in_bytes) {}
 
 StorageInfo::~StorageInfo() {
 }

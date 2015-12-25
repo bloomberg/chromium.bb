@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_STEP_H_
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_STEP_H_
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
 namespace translate {
 

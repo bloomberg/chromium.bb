@@ -18,14 +18,14 @@ namespace metrics {
 
 namespace internal {
 
-SeededRandGenerator::SeededRandGenerator(uint32 seed) {
+SeededRandGenerator::SeededRandGenerator(uint32_t seed) {
   mersenne_twister_.init_genrand(seed);
 }
 
 SeededRandGenerator::~SeededRandGenerator() {
 }
 
-uint32 SeededRandGenerator::operator()(uint32 range) {
+uint32_t SeededRandGenerator::operator()(uint32_t range) {
   // Based on base::RandGenerator().
   DCHECK_GT(range, 0u);
 
@@ -33,10 +33,10 @@ uint32 SeededRandGenerator::operator()(uint32 range) {
   // make the random generator non-uniform (consider e.g. if
   // MAX_UINT64 was 7 and |range| was 5, then a result of 1 would be twice
   // as likely as a result of 3 or 4).
-  uint32 max_acceptable_value =
-      (std::numeric_limits<uint32>::max() / range) * range - 1;
+  uint32_t max_acceptable_value =
+      (std::numeric_limits<uint32_t>::max() / range) * range - 1;
 
-  uint32 value;
+  uint32_t value;
   do {
     value = mersenne_twister_.genrand_int32();
   } while (value > max_acceptable_value);
@@ -44,10 +44,10 @@ uint32 SeededRandGenerator::operator()(uint32 range) {
   return value % range;
 }
 
-void PermuteMappingUsingRandomizationSeed(uint32 randomization_seed,
-                                          std::vector<uint16>* mapping) {
+void PermuteMappingUsingRandomizationSeed(uint32_t randomization_seed,
+                                          std::vector<uint16_t>* mapping) {
   for (size_t i = 0; i < mapping->size(); ++i)
-    (*mapping)[i] = static_cast<uint16>(i);
+    (*mapping)[i] = static_cast<uint16_t>(i);
 
   SeededRandGenerator generator(randomization_seed);
 
@@ -78,7 +78,7 @@ SHA1EntropyProvider::~SHA1EntropyProvider() {
 
 double SHA1EntropyProvider::GetEntropyForTrial(
     const std::string& trial_name,
-    uint32 randomization_seed) const {
+    uint32_t randomization_seed) const {
   // Given enough input entropy, SHA-1 will produce a uniformly random spread
   // in its output space. In this case, the input entropy that is used is the
   // combination of the original |entropy_source_| and the |trial_name|.
@@ -93,7 +93,7 @@ double SHA1EntropyProvider::GetEntropyForTrial(
                       input.size(),
                       sha1_hash);
 
-  uint64 bits;
+  uint64_t bits;
   static_assert(sizeof(bits) < sizeof(sha1_hash), "more data required");
   memcpy(&bits, sha1_hash, sizeof(bits));
   bits = base::ByteSwapToLE64(bits);
@@ -101,13 +101,12 @@ double SHA1EntropyProvider::GetEntropyForTrial(
   return base::BitsToOpenEndedUnitInterval(bits);
 }
 
-PermutedEntropyProvider::PermutedEntropyProvider(
-    uint16 low_entropy_source,
-    size_t low_entropy_source_max)
+PermutedEntropyProvider::PermutedEntropyProvider(uint16_t low_entropy_source,
+                                                 size_t low_entropy_source_max)
     : low_entropy_source_(low_entropy_source),
       low_entropy_source_max_(low_entropy_source_max) {
   DCHECK_LT(low_entropy_source, low_entropy_source_max);
-  DCHECK_LE(low_entropy_source_max, std::numeric_limits<uint16>::max());
+  DCHECK_LE(low_entropy_source_max, std::numeric_limits<uint16_t>::max());
 }
 
 PermutedEntropyProvider::~PermutedEntropyProvider() {
@@ -115,7 +114,7 @@ PermutedEntropyProvider::~PermutedEntropyProvider() {
 
 double PermutedEntropyProvider::GetEntropyForTrial(
     const std::string& trial_name,
-    uint32 randomization_seed) const {
+    uint32_t randomization_seed) const {
   if (randomization_seed == 0)
     randomization_seed = HashName(trial_name);
 
@@ -123,9 +122,9 @@ double PermutedEntropyProvider::GetEntropyForTrial(
          static_cast<double>(low_entropy_source_max_);
 }
 
-uint16 PermutedEntropyProvider::GetPermutedValue(
-    uint32 randomization_seed) const {
-  std::vector<uint16> mapping(low_entropy_source_max_);
+uint16_t PermutedEntropyProvider::GetPermutedValue(
+    uint32_t randomization_seed) const {
+  std::vector<uint16_t> mapping(low_entropy_source_max_);
   internal::PermuteMappingUsingRandomizationSeed(randomization_seed, &mapping);
   return mapping[low_entropy_source_];
 }

@@ -4,6 +4,8 @@
 
 #include "components/test_runner/test_interfaces.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/json/json_writer.h"

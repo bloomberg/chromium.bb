@@ -4,6 +4,7 @@
 
 #include "components/url_formatter/url_formatter.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include <vector>

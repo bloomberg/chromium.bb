@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_VARIATIONS_ACTIVE_FIELD_TRIALS_H_
 #define COMPONENTS_VARIATIONS_ACTIVE_FIELD_TRIALS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/metrics/field_trial.h"
 
 namespace variations {
@@ -15,8 +16,8 @@ namespace variations {
 // The Unique ID of a trial and its active group, where the name and group
 // identifiers are hashes of the trial and group name strings.
 struct ActiveGroupId {
-  uint32 name;
-  uint32 group;
+  uint32_t name;
+  uint32_t group;
 };
 
 // Returns an ActiveGroupId struct for the given trial and group names.

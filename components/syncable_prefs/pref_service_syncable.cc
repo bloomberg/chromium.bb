@@ -164,7 +164,7 @@ void PrefServiceSyncable::SetPrefModelAssociatorClientForTesting(
 
 void PrefServiceSyncable::AddRegisteredSyncablePreference(
     const std::string& path,
-    uint32 flags) {
+    uint32_t flags) {
   DCHECK(FindPreference(path));
   if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) {
     pref_sync_associator_.RegisterPref(path.c_str());

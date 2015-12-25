@@ -4,6 +4,8 @@
 
 #include "components/update_client/update_response.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/memory/scoped_ptr.h"

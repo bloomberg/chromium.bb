@@ -4,6 +4,8 @@
 
 #include "components/update_client/update_checker.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

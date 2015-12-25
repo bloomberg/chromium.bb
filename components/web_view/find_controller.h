@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_WEB_VIEW_FIND_CONTROLLER_H_
 #define COMPONENTS_WEB_VIEW_FIND_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/web_view/local_find_options.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"

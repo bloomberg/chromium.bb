@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_SESSIONS_REVISIT_TYPED_URL_PAGE_REVISIT_TASK_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"

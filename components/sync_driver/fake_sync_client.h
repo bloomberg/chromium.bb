@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_FAKE_SYNC_CLIENT_H_
 #define COMPONENTS_SYNC_DRIVER_FAKE_SYNC_CLIENT_H_
 
+#include "base/macros.h"
 #include "components/sync_driver/sync_client.h"
 
 namespace sync_driver {

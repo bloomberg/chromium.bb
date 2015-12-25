@@ -4,16 +4,16 @@
 
 #include "components/url_formatter/url_fixer.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#if defined(OS_POSIX)
-#include "base/path_service.h"
-#endif
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
@@ -21,6 +21,10 @@
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_file.h"
 #include "url/url_util.h"
+
+#if defined(OS_POSIX)
+#include "base/path_service.h"
+#endif
 
 namespace url_formatter {
 

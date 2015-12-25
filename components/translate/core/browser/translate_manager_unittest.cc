@@ -4,6 +4,7 @@
 
 #include "components/translate/core/browser/translate_manager.h"
 
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/translate_download_manager.h"

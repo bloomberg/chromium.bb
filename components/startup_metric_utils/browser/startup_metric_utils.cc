@@ -4,6 +4,8 @@
 
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/environment.h"
 #include "base/lazy_instance.h"
@@ -13,6 +15,7 @@
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <winternl.h>
@@ -227,7 +230,7 @@ void RecordMainEntryTimeHistogram() {
   const base::TimeDelta browser_main_entry_time_absolute =
       g_browser_main_entry_point_time.Get() - base::Time::UnixEpoch();
 
-  const uint64 browser_main_entry_time_raw_ms =
+  const uint64_t browser_main_entry_time_raw_ms =
       browser_main_entry_time_absolute.InMilliseconds();
 
   const base::TimeDelta browser_main_entry_time_raw_ms_high_word =
@@ -271,7 +274,7 @@ const char kChromeMainTicksEnvVar[] = "CHROME_MAIN_TICKS";
 base::TimeTicks ExeMainEntryPointTicks() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string ticks_string;
-  int64 time_int = 0;
+  int64_t time_int = 0;
   if (env->GetVar(kChromeMainTicksEnvVar, &ticks_string) &&
       base::StringToInt64(ticks_string, &time_int)) {
     return base::TimeTicks::FromInternalValue(time_int);

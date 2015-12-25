@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_TEST_RUNNER_SPELL_CHECK_CLIENT_H_
 #define COMPONENTS_TEST_RUNNER_SPELL_CHECK_CLIENT_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/test_runner/mock_spell_check.h"
 #include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"

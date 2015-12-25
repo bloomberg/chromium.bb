@@ -4,6 +4,10 @@
 
 #include "components/undo/bookmark_undo_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_undo_provider.h"
@@ -51,7 +55,7 @@ class BookmarkAddOperation : public BookmarkUndoOperation {
   int GetRedoLabelId() const override;
 
  private:
-  int64 parent_id_;
+  int64_t parent_id_;
   const int index_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAddOperation);
@@ -161,7 +165,7 @@ class BookmarkEditOperation : public BookmarkUndoOperation {
   int GetRedoLabelId() const override;
 
  private:
-  int64 node_id_;
+  int64_t node_id_;
   BookmarkNodeData original_bookmark_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkEditOperation);
@@ -212,8 +216,8 @@ class BookmarkMoveOperation : public BookmarkUndoOperation {
   void Undo() override;
 
  private:
-  int64 old_parent_id_;
-  int64 new_parent_id_;
+  int64_t old_parent_id_;
+  int64_t new_parent_id_;
   int old_index_;
   int new_index_;
 
@@ -280,8 +284,8 @@ class BookmarkReorderOperation : public BookmarkUndoOperation {
   int GetRedoLabelId() const override;
 
  private:
-  int64 parent_id_;
-  std::vector<int64> ordered_bookmarks_;
+  int64_t parent_id_;
+  std::vector<int64_t> ordered_bookmarks_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkReorderOperation);
 };

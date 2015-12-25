@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_WEB_VIEW_URL_REQUEST_CLONEABLE_H_
 #define COMPONENTS_WEB_VIEW_URL_REQUEST_CLONEABLE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "url/gurl.h"

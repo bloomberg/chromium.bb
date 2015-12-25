@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/change_record.h"
@@ -36,7 +39,7 @@ class ChangeProcessor {
   // applied to the frontend model.
   virtual void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
-      int64 model_version,
+      int64_t model_version,
       const syncer::ImmutableChangeRecordList& changes) = 0;
 
   // The changes found in ApplyChangesFromSyncModel may be too slow to be

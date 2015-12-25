@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_TEST_RUNNER_EVENT_SENDER_H_
 #define COMPONENTS_TEST_RUNNER_EVENT_SENDER_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 #include <vector>
@@ -288,7 +290,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   blink::WebDragOperation current_drag_effect_;
 
-  uint32 time_offset_ms_;
+  uint32_t time_offset_ms_;
   int click_count_;
   // Timestamp (in seconds) of the last event that was dispatched
   double last_event_timestamp_;

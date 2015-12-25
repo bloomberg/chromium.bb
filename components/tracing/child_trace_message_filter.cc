@@ -73,7 +73,7 @@ ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 void ChildTraceMessageFilter::OnBeginTracing(
     const std::string& trace_config_str,
     base::TimeTicks browser_time,
-    uint64 tracing_process_id) {
+    uint64_t tracing_process_id) {
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
@@ -200,7 +200,7 @@ void ChildTraceMessageFilter::OnProcessMemoryDumpRequest(
       base::Bind(&ChildTraceMessageFilter::OnProcessMemoryDumpDone, this));
 }
 
-void ChildTraceMessageFilter::OnProcessMemoryDumpDone(uint64 dump_guid,
+void ChildTraceMessageFilter::OnProcessMemoryDumpDone(uint64_t dump_guid,
                                                       bool success) {
   sender_->Send(
       new TracingHostMsg_ProcessMemoryDumpResponse(dump_guid, success));
@@ -229,7 +229,7 @@ void ChildTraceMessageFilter::SendGlobalMemoryDumpRequest(
 
 // Sent by the Browser's MemoryDumpManager in response of a dump request
 // initiated by this child process.
-void ChildTraceMessageFilter::OnGlobalMemoryDumpResponse(uint64 dump_guid,
+void ChildTraceMessageFilter::OnGlobalMemoryDumpResponse(uint64_t dump_guid,
                                                          bool success) {
   DCHECK_NE(0U, pending_memory_dump_guid_);
   pending_memory_dump_guid_ = 0;

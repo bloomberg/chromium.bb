@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_URL_MATCHER_URL_MATCHER_H_
 #define COMPONENTS_URL_MATCHER_URL_MATCHER_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/url_matcher/regex_set_matcher.h"

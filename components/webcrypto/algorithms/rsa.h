@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEBCRYPTO_ALGORITHMS_RSA_H_
 #define COMPONENTS_WEBCRYPTO_ALGORITHMS_RSA_H_
 
+#include <stdint.h>
+
 #include "components/webcrypto/algorithm_implementation.h"
 
 namespace webcrypto {

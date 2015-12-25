@@ -4,9 +4,12 @@
 
 #include "components/storage_monitor/storage_monitor_chromeos.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -44,9 +47,9 @@ const char kUniqueId1[] = "FFFF-FFFF";
 const char kUniqueId2[] = "FFFF-FF0F";
 const char kVendorName[] = "CompanyA";
 
-uint64 kDevice1SizeInBytes = 113048;
-uint64 kDevice2SizeInBytes = 212312;
-uint64 kSDCardSizeInBytes = 9000000;
+uint64_t kDevice1SizeInBytes = 113048;
+uint64_t kDevice2SizeInBytes = 212312;
+uint64_t kSDCardSizeInBytes = 9000000;
 
 std::string GetDCIMDeviceId(const std::string& unique_id) {
   return StorageInfo::MakeDeviceId(
@@ -107,12 +110,12 @@ class StorageMonitorCrosTest : public testing::Test {
                    const std::string& vendor_name,
                    const std::string& product_name,
                    chromeos::DeviceType device_type,
-                   uint64 device_size_in_bytes);
+                   uint64_t device_size_in_bytes);
 
   void UnmountDevice(chromeos::MountError error_code,
                      const DiskMountManager::MountPointInfo& mount_info);
 
-  uint64 GetDeviceStorageSize(const std::string& device_location);
+  uint64_t GetDeviceStorageSize(const std::string& device_location);
 
   // Create a directory named |dir| relative to the test directory.
   // Set |with_dcim_dir| to true if the created directory will have a "DCIM"
@@ -193,7 +196,7 @@ void StorageMonitorCrosTest::MountDevice(
     const std::string& vendor_name,
     const std::string& product_name,
     chromeos::DeviceType device_type,
-    uint64 device_size_in_bytes) {
+    uint64_t device_size_in_bytes) {
   if (error_code == chromeos::MOUNT_ERROR_NONE) {
     disk_mount_manager_mock_->CreateDiskEntryForMountDevice(
         mount_info,
@@ -221,7 +224,7 @@ void StorageMonitorCrosTest::UnmountDevice(
   WaitForFileThread();
 }
 
-uint64 StorageMonitorCrosTest::GetDeviceStorageSize(
+uint64_t StorageMonitorCrosTest::GetDeviceStorageSize(
     const std::string& device_location) {
   StorageInfo info;
   if (!monitor_->GetStorageInfoForPath(base::FilePath(device_location), &info))

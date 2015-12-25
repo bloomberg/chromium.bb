@@ -4,6 +4,8 @@
 
 #include "components/test_runner/mock_web_user_media_client.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/test_runner/mock_constraints.h"

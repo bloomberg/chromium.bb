@@ -4,6 +4,9 @@
 
 #include "components/test_runner/web_ax_object_proxy.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "gin/handle.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"

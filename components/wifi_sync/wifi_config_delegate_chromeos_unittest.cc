@@ -4,6 +4,8 @@
 
 #include "components/wifi_sync/wifi_config_delegate_chromeos.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"

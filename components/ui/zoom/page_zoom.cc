@@ -4,6 +4,8 @@
 
 #include "components/ui/zoom/page_zoom.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 

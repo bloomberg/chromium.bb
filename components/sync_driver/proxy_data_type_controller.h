@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "components/sync_driver/data_type_controller.h"
 

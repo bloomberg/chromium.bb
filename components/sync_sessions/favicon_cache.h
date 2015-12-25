@@ -5,14 +5,17 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_FAVICON_CACHE_H_
 #define COMPONENTS_SYNC_SESSIONS_FAVICON_CACHE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
@@ -105,7 +108,7 @@ class FaviconCache : public syncer::SyncableService,
   void OnReceivedSyncFavicon(const GURL& page_url,
                              const GURL& icon_url,
                              const std::string& icon_bytes,
-                             int64 visit_time_ms);
+                             int64_t visit_time_ms);
 
  private:
   friend class SyncFaviconCacheTest;
@@ -132,7 +135,7 @@ class FaviconCache : public syncer::SyncableService,
   // whether caller holds a sync transaction.
   void OnReceivedSyncFaviconImpl(const GURL& icon_url,
                                  const std::string& icon_bytes,
-                                 int64 visit_time_ms);
+                                 int64_t visit_time_ms);
 
   // Callback method to store a tab's favicon into its sync node once it becomes
   // available. Does nothing if no favicon data was available.

@@ -4,6 +4,8 @@
 
 #include "components/sync_sessions/revisit/offset_tab_matcher.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"

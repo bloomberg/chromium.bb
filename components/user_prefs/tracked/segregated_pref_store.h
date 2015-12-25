@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_SEGREGATED_PREF_STORE_H_
 #define COMPONENTS_USER_PREFS_TRACKED_SEGREGATED_PREF_STORE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
@@ -54,15 +56,15 @@ class SegregatedPrefStore : public PersistentPrefStore {
   // WriteablePrefStore implementation
   void SetValue(const std::string& key,
                 scoped_ptr<base::Value> value,
-                uint32 flags) override;
-  void RemoveValue(const std::string& key, uint32 flags) override;
+                uint32_t flags) override;
+  void RemoveValue(const std::string& key, uint32_t flags) override;
 
   // PersistentPrefStore implementation
   bool GetMutableValue(const std::string& key, base::Value** result) override;
-  void ReportValueChanged(const std::string& key, uint32 flags) override;
+  void ReportValueChanged(const std::string& key, uint32_t flags) override;
   void SetValueSilently(const std::string& key,
                         scoped_ptr<base::Value> value,
-                        uint32 flags) override;
+                        uint32_t flags) override;
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
   PrefReadError ReadPrefs() override;

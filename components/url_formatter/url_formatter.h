@@ -15,6 +15,7 @@
 #ifndef COMPONENTS_URL_FORMATTER_URL_FORMATTER_H_
 #define COMPONENTS_URL_FORMATTER_URL_FORMATTER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

@@ -5,6 +5,7 @@
 #include "components/variations/android/variations_seed_bridge.h"
 
 #include <jni.h>
+#include <stdint.h>
 #include <vector>
 
 #include "base/android/context_utils.h"
@@ -25,7 +26,7 @@ namespace {
 std::string JavaByteArrayToString(JNIEnv* env, jbyteArray byte_array) {
   if (!byte_array)
     return std::string();
-  std::vector<uint8> array_data;
+  std::vector<uint8_t> array_data;
   base::android::JavaByteArrayToByteVector(env, byte_array, &array_data);
   return std::string(array_data.begin(), array_data.end());
 }
@@ -33,7 +34,7 @@ std::string JavaByteArrayToString(JNIEnv* env, jbyteArray byte_array) {
 ScopedJavaLocalRef<jbyteArray> StringToJavaByteArray(
     JNIEnv* env,
     const std::string& str_data) {
-  std::vector<uint8> array_data(str_data.begin(), str_data.end());
+  std::vector<uint8_t> array_data(str_data.begin(), str_data.end());
   return base::android::ToJavaByteArray(env, array_data);
 }
 

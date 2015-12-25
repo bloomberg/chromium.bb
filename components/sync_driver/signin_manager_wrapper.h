@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 class SigninManagerBase;
 
@@ -34,6 +34,7 @@ class SigninManagerWrapper {
 
  private:
   SigninManagerBase* original_;
+
   DISALLOW_COPY_AND_ASSIGN(SigninManagerWrapper);
 };
 

@@ -4,6 +4,8 @@
 
 #include "components/test_runner/test_common.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/rand_util.h"

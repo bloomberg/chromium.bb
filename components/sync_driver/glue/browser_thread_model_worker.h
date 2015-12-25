@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GLUE_BROWSER_THREAD_MODEL_WORKER_H_
 #define COMPONENTS_SYNC_DRIVER_GLUE_BROWSER_THREAD_MODEL_WORKER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 

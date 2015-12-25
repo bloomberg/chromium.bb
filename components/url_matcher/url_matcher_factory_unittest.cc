@@ -4,8 +4,10 @@
 
 #include "components/url_matcher/url_matcher_factory.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/url_matcher/url_matcher_constants.h"

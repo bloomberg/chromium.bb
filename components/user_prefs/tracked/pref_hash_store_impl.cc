@@ -4,7 +4,10 @@
 
 #include "components/user_prefs/tracked/pref_hash_store_impl.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "components/user_prefs/tracked/hash_store_contents.h"

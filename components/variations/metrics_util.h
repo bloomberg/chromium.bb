@@ -5,15 +5,16 @@
 #ifndef COMPONENTS_VARIATIONS_METRICS_UTIL_H_
 #define COMPONENTS_VARIATIONS_METRICS_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 
 namespace metrics {
 
-// Computes a uint32 hash of a given string based on its SHA1 hash. Suitable for
-// uniquely identifying field trial names and group names.
-uint32 HashName(const std::string& name);
+// Computes a uint32_t hash of a given string based on its SHA1 hash. Suitable
+// for uniquely identifying field trial names and group names.
+uint32_t HashName(const std::string& name);
 
 }  // namespace metrics
 

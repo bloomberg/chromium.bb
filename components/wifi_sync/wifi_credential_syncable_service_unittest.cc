@@ -4,6 +4,8 @@
 
 #include "components/wifi_sync/wifi_credential_syncable_service.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

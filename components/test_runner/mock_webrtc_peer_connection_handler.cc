@@ -4,6 +4,8 @@
 
 #include "components/test_runner/mock_webrtc_peer_connection_handler.h"
 
+#include <stddef.h>
+
 #include "components/test_runner/mock_constraints.h"
 #include "components/test_runner/mock_webrtc_data_channel_handler.h"
 #include "components/test_runner/mock_webrtc_dtmf_sender_handler.h"

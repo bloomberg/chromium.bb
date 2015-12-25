@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATA_RESULTS_H_
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATA_RESULTS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "components/webdata/common/webdata_export.h"
 
 class WDTypedResult;
@@ -15,20 +18,20 @@ class WDTypedResult;
 // Result types for WebDataService.
 //
 typedef enum {
-  BOOL_RESULT = 1,             // WDResult<bool>
-  KEYWORDS_RESULT,             // WDResult<WDKeywordsResult>
-  INT64_RESULT,                // WDResult<int64>
+  BOOL_RESULT = 1,              // WDResult<bool>
+  KEYWORDS_RESULT,              // WDResult<WDKeywordsResult>
+  INT64_RESULT,                 // WDResult<int64_t>
 #if defined(OS_WIN)
-  PASSWORD_IE7_RESULT,         // WDResult<IE7PasswordInfo>
+  PASSWORD_IE7_RESULT,          // WDResult<IE7PasswordInfo>
 #endif
-  WEB_APP_IMAGES,              // WDResult<WDAppImagesResult>
-  TOKEN_RESULT,                // WDResult<std::vector<std::string>>
-  AUTOFILL_VALUE_RESULT,       // WDResult<std::vector<base::string16>>
-  AUTOFILL_CHANGES,            // WDResult<std::vector<AutofillChange>>
-  AUTOFILL_PROFILE_RESULT,     // WDResult<AutofillProfile>
-  AUTOFILL_PROFILES_RESULT,    // WDResult<std::vector<AutofillProfile*>>
-  AUTOFILL_CREDITCARD_RESULT,  // WDResult<CreditCard>
-  AUTOFILL_CREDITCARDS_RESULT, // WDResult<std::vector<CreditCard*>>
+  WEB_APP_IMAGES,               // WDResult<WDAppImagesResult>
+  TOKEN_RESULT,                 // WDResult<std::vector<std::string>>
+  AUTOFILL_VALUE_RESULT,        // WDResult<std::vector<base::string16>>
+  AUTOFILL_CHANGES,             // WDResult<std::vector<AutofillChange>>
+  AUTOFILL_PROFILE_RESULT,      // WDResult<AutofillProfile>
+  AUTOFILL_PROFILES_RESULT,     // WDResult<std::vector<AutofillProfile*>>
+  AUTOFILL_CREDITCARD_RESULT,   // WDResult<CreditCard>
+  AUTOFILL_CREDITCARDS_RESULT,  // WDResult<std::vector<CreditCard*>>
 } WDResultType;
 
 

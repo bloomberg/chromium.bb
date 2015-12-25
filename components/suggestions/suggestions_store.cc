@@ -4,6 +4,8 @@
 
 #include "components/suggestions/suggestions_store.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/base64.h"
@@ -69,7 +71,7 @@ bool SuggestionsStore::LoadSuggestions(SuggestionsProfile* suggestions) {
 void SuggestionsStore::FilterExpiredSuggestions(
     SuggestionsProfile* suggestions) {
   SuggestionsProfile filtered_suggestions;
-  int64 now_usec =
+  int64_t now_usec =
       (this->clock_->Now() - base::Time::UnixEpoch()).ToInternalValue();
 
   for (int i = 0; i < suggestions->suggestions_size(); ++i) {

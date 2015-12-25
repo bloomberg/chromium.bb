@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
 #define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
 
+#include "base/macros.h"
 #include "base/prefs/pref_service_factory.h"
 
 namespace base {

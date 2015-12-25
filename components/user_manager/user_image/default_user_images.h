@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_USER_MANAGER_USER_IMAGE_DEFAULT_USER_IMAGES_H_
 #define COMPONENTS_USER_MANAGER_USER_IMAGE_DEFAULT_USER_IMAGES_H_
 
-#include <cstddef>  // for size_t
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/string16.h"

@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 #include "base/test/histogram_tester.h"

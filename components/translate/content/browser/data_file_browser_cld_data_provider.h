@@ -9,6 +9,8 @@
 #ifndef COMPONENTS_TRANSLATE_CONTENT_BROWSER_DATA_FILE_BROWSER_CLD_DATA_PROVIDER_H_
 #define COMPONENTS_TRANSLATE_CONTENT_BROWSER_DATA_FILE_BROWSER_CLD_DATA_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -34,8 +36,8 @@ class DataFileBrowserCldDataProvider : public BrowserCldDataProvider {
 
  private:
   void SendCldDataResponseInternal(const base::File*,
-                                   const uint64,
-                                   const uint64);
+                                   const uint64_t,
+                                   const uint64_t);
   static void OnCldDataRequestInternal();
 
   content::WebContents* web_contents_;

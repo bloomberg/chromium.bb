@@ -5,11 +5,14 @@
 #ifndef COMPONENTS_TEST_RUNNER_TEST_RUNNER_H_
 #define COMPONENTS_TEST_RUNNER_TEST_RUNNER_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/test_runner/test_runner_export.h"
@@ -609,7 +612,7 @@ class TestRunner : public WebTestRunner,
 
   // Similar to LayoutAndPaintAsyncThen(), but pass parameters of the captured
   // snapshot (width, height, snapshot) to the callback. The snapshot is in
-  // uint8 RGBA format.
+  // uint8_t RGBA format.
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   // Similar to CapturePixelsAsyncThen(). Copies to the clipboard the image
   // located at a particular point in the WebView (if there is such an image),

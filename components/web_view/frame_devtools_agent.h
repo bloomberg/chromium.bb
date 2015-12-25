@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_DEVTOOLS_AGENT_H_
 #define COMPONENTS_WEB_VIEW_FRAME_DEVTOOLS_AGENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 

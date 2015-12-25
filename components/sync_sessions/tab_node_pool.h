@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_TAB_NODE_POOL_H_
 #define COMPONENTS_SYNC_SESSIONS_TAB_NODE_POOL_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 #include "sync/api/sync_change_processor.h"
 

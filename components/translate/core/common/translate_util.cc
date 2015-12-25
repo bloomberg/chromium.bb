@@ -4,9 +4,11 @@
 
 #include "components/translate/core/common/translate_util.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "url/gurl.h"

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_MOCK_FACTORY_H_
 #define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_MOCK_FACTORY_H_
 
+#include "base/macros.h"
 #include "components/syncable_prefs/pref_service_syncable_factory.h"
 
 namespace syncable_prefs {

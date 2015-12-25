@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_WEB_VIEW_CLIENT_INITIATED_FRAME_CONNECTION_H_
 #define COMPONENTS_WEB_VIEW_CLIENT_INITIATED_FRAME_CONNECTION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 

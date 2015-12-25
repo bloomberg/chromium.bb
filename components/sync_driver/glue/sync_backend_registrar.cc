@@ -185,7 +185,7 @@ bool SyncBackendRegistrar::IsTypeActivatedForTest(
 
 void SyncBackendRegistrar::OnChangesApplied(
     syncer::ModelType model_type,
-    int64 model_version,
+    int64_t model_version,
     const syncer::BaseTransaction* trans,
     const syncer::ImmutableChangeRecordList& changes) {
   sync_driver::ChangeProcessor* processor = GetProcessor(model_type);

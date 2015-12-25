@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_RENDER_PROCESS_OBSERVER_H_
 #define COMPONENTS_WEB_CACHE_RENDERER_WEB_CACHE_RENDER_PROCESS_OBSERVER_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/renderer/render_process_observer.h"

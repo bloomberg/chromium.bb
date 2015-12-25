@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_TEST_RUNNER_MOCK_WEB_THEME_ENGINE_H_
 #define COMPONENTS_TEST_RUNNER_MOCK_WEB_THEME_ENGINE_H_
 
+#include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
 namespace test_runner {

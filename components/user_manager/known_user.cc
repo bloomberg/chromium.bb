@@ -4,6 +4,8 @@
 
 #include "components/user_manager/known_user.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"

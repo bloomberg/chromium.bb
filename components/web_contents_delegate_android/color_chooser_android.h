@@ -6,9 +6,10 @@
 #define COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_
 
 #include <vector>
+
 #include "base/android/jni_android.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/color_chooser.h"
 

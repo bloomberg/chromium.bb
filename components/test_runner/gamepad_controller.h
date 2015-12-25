@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/test_runner/test_runner_export.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"

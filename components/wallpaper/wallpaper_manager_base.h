@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_WALLPAPER_WALLPAPER_MANAGER_BASE_H_
 #define COMPONENTS_WALLPAPER_WALLPAPER_MANAGER_BASE_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

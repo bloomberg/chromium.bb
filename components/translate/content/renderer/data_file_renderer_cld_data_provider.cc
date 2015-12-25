@@ -8,7 +8,6 @@
 
 #include "data_file_renderer_cld_data_provider.h"
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
@@ -72,16 +71,16 @@ void DataFileRendererCldDataProvider::SetCldAvailableCallback(
 
 void DataFileRendererCldDataProvider::OnCldDataAvailable(
     const IPC::PlatformFileForTransit ipc_file_handle,
-    const uint64 data_offset,
-    const uint64 data_length) {
+    const uint64_t data_offset,
+    const uint64_t data_length) {
   LoadCldData(IPC::PlatformFileForTransitToFile(ipc_file_handle),
               data_offset,
               data_length);
 }
 
 void DataFileRendererCldDataProvider::LoadCldData(base::File file,
-                                                  const uint64 data_offset,
-                                                  const uint64 data_length) {
+                                                  const uint64_t data_offset,
+                                                  const uint64_t data_length) {
   // Terminate immediately if data is already loaded.
   if (IsCldDataAvailable())
     return;
@@ -102,7 +101,7 @@ void DataFileRendererCldDataProvider::LoadCldData(base::File file,
   }
 
   // Sanity checks
-  uint64 max_int32 = std::numeric_limits<int32>::max();
+  uint64_t max_int32 = std::numeric_limits<int32_t>::max();
   if (data_length + data_offset > g_cld_mmap.Get().value->length() ||
       data_length > max_int32) {  // max signed 32 bit integer
     LOG(ERROR) << "Illegal mmap config: data_offset=" << data_offset
@@ -114,7 +113,7 @@ void DataFileRendererCldDataProvider::LoadCldData(base::File file,
   }
 
   // Initialize the CLD subsystem... and it's all done!
-  const uint8* data_ptr = g_cld_mmap.Get().value->data() + data_offset;
+  const uint8_t* data_ptr = g_cld_mmap.Get().value->data() + data_offset;
   CLD2::loadDataFromRawAddress(data_ptr, data_length);
   DCHECK(CLD2::isDataLoaded()) << "Failed to load CLD data from mmap";
   if (!cld_available_callback_.is_null()) {

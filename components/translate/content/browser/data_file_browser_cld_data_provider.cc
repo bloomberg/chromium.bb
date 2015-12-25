@@ -8,7 +8,6 @@
 
 #include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -32,8 +31,8 @@ namespace {
 // We also track the offset at which the data starts, and its length.
 base::LazyInstance<base::FilePath> g_cached_filepath;  // guarded by g_file_lock
 base::File* g_cached_file = NULL;  // guarded by g_file_lock_
-uint64 g_cached_data_offset = 0;  // guarded by g_file_lock_
-uint64 g_cached_data_length = 0;  // guarded by g_file_lock_
+uint64_t g_cached_data_offset = 0;  // guarded by g_file_lock_
+uint64_t g_cached_data_length = 0;  // guarded by g_file_lock_
 
 // Guards g_cached_filepath
 base::LazyInstance<base::Lock> g_file_lock_;
@@ -87,8 +86,8 @@ void DataFileBrowserCldDataProvider::OnCldDataRequest() {
   // blocking pool.
   VLOG(1) << "Received request for CLD data file.";
   base::File* handle = NULL;
-  uint64 data_offset = 0;
-  uint64 data_length = 0;
+  uint64_t data_offset = 0;
+  uint64_t data_length = 0;
   {
     base::AutoLock lock(g_file_lock_.Get());
     handle = g_cached_file;
@@ -125,8 +124,8 @@ void DataFileBrowserCldDataProvider::OnCldDataRequest() {
 
 void DataFileBrowserCldDataProvider::SendCldDataResponse() {
   base::File* handle = NULL;
-  uint64 data_offset = 0;
-  uint64 data_length = 0;
+  uint64_t data_offset = 0;
+  uint64_t data_length = 0;
   {
     base::AutoLock lock(g_file_lock_.Get());
     handle = g_cached_file;
@@ -140,8 +139,8 @@ void DataFileBrowserCldDataProvider::SendCldDataResponse() {
 
 void DataFileBrowserCldDataProvider::SendCldDataResponseInternal(
     const base::File* handle,
-    const uint64 data_offset,
-    const uint64 data_length) {
+    const uint64_t data_offset,
+    const uint64_t data_length) {
   VLOG(1) << "Sending CLD data file response.";
 
   content::RenderFrameHost* render_frame_host =
@@ -224,8 +223,8 @@ void DataFileBrowserCldDataProvider::OnCldDataRequestInternal() {
   // For now, our offset and length are simply 0 and the length of the file,
   // respectively. If we later decide to include the CLD2 data file inside of
   // a larger binary context, these params can be twiddled appropriately.
-  const uint64 data_offset = 0;
-  const uint64 data_length = file_info.size;
+  const uint64_t data_offset = 0;
+  const uint64_t data_length = file_info.size;
 
   {
     base::AutoLock lock(g_file_lock_.Get());

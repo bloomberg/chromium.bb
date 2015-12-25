@@ -4,6 +4,7 @@
 
 #include "components/timers/alarm_timer_chromeos.h"
 
+#include <stdint.h>
 #include <sys/timerfd.h>
 
 #include "base/bind.h"

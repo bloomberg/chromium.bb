@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/generic_change_processor.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 
@@ -64,7 +66,7 @@ void SetAttachmentMetadata(const syncer::AttachmentIdList& attachment_ids,
 }
 
 syncer::SyncData BuildRemoteSyncData(
-    int64 sync_id,
+    int64_t sync_id,
     const syncer::BaseNode& read_node,
     const syncer::AttachmentServiceProxy& attachment_service_proxy) {
   const syncer::AttachmentIdList& attachment_ids = read_node.GetAttachmentIds();
@@ -137,7 +139,7 @@ GenericChangeProcessor::~GenericChangeProcessor() {
 
 void GenericChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
-    int64 model_version,
+    int64_t model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(CalledOnValidThread());
   DCHECK(syncer_changes_.empty());
@@ -257,10 +259,10 @@ syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
   // TODO(akalin): We'll have to do a tree traversal for bookmarks.
   DCHECK_NE(type_, syncer::BOOKMARKS);
 
-  std::vector<int64> child_ids;
+  std::vector<int64_t> child_ids;
   root.GetChildIds(&child_ids);
 
-  for (std::vector<int64>::iterator it = child_ids.begin();
+  for (std::vector<int64_t>::iterator it = child_ids.begin();
        it != child_ids.end(); ++it) {
     syncer::ReadNode sync_child_node(&trans);
     if (sync_child_node.InitByIdLookup(*it) !=

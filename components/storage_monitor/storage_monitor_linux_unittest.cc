@@ -7,6 +7,8 @@
 #include "components/storage_monitor/storage_monitor_linux.h"
 
 #include <mntent.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include <string>
@@ -14,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,7 +55,7 @@ struct TestDeviceData {
   const char* device_path;
   const char* unique_id;
   StorageInfo::Type type;
-  uint64 partition_size_in_bytes;
+  uint64_t partition_size_in_bytes;
 };
 
 const TestDeviceData kTestDeviceData[] = {
@@ -97,7 +100,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   return storage_info.Pass();
 }
 
-uint64 GetDevicePartitionSize(const std::string& device) {
+uint64_t GetDevicePartitionSize(const std::string& device) {
   for (size_t i = 0; i < arraysize(kTestDeviceData); ++i) {
     if (device == kTestDeviceData[i].device_path)
       return kTestDeviceData[i].partition_size_in_bytes;
@@ -241,7 +244,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     return monitor_.get();
   }
 
-  uint64 GetStorageSize(const base::FilePath& path) {
+  uint64_t GetStorageSize(const base::FilePath& path) {
     StorageInfo info;
     if (!notifier()->GetStorageInfoForPath(path, &info))
       return 0;

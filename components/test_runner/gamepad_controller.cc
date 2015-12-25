@@ -4,6 +4,9 @@
 
 #include "components/test_runner/gamepad_controller.h"
 
+#include <string.h>
+
+#include "base/macros.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"

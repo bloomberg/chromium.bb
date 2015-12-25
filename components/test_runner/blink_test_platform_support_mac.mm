@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "components/test_runner/blink_test_platform_support.h"
 

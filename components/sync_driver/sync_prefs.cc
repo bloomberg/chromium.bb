@@ -490,7 +490,7 @@ void SyncPrefs::SetCleanShutdown(bool value) {
 }
 
 void SyncPrefs::GetInvalidationVersions(
-    std::map<syncer::ModelType, int64>* invalidation_versions) const {
+    std::map<syncer::ModelType, int64_t>* invalidation_versions) const {
   const base::DictionaryValue* invalidation_dictionary =
       pref_service_->GetDictionary(prefs::kSyncInvalidationVersions);
   syncer::ModelTypeSet protocol_types = syncer::ProtocolTypes();
@@ -499,7 +499,7 @@ void SyncPrefs::GetInvalidationVersions(
     std::string version_str;
     if (!invalidation_dictionary->GetString(key, &version_str))
       continue;
-    int64 version = 0;
+    int64_t version = 0;
     if (!base::StringToInt64(version_str, &version))
       continue;
     (*invalidation_versions)[iter.Get()] = version;
@@ -507,7 +507,7 @@ void SyncPrefs::GetInvalidationVersions(
 }
 
 void SyncPrefs::UpdateInvalidationVersions(
-    const std::map<syncer::ModelType, int64>& invalidation_versions) {
+    const std::map<syncer::ModelType, int64_t>& invalidation_versions) {
   scoped_ptr<base::DictionaryValue> invalidation_dictionary(
       new base::DictionaryValue());
   for (const auto& map_iter : invalidation_versions) {

@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_URL_MATCHER_SUBSTRING_SET_MATCHER_H_
 #define COMPONENTS_URL_MATCHER_SUBSTRING_SET_MATCHER_H_
 
+#include <stdint.h>
+
 #include <limits>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/url_matcher/string_pattern.h"
 #include "components/url_matcher/url_matcher_export.h"
 
@@ -82,22 +84,22 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
   class AhoCorasickNode {
    public:
     // Key: label of the edge, value: node index in |tree_| of parent class.
-    typedef std::map<char, uint32> Edges;
+    typedef std::map<char, uint32_t> Edges;
     typedef std::set<StringPattern::ID> Matches;
 
-    static const uint32 kNoSuchEdge;  // Represents an invalid node index.
+    static const uint32_t kNoSuchEdge;  // Represents an invalid node index.
 
     AhoCorasickNode();
     ~AhoCorasickNode();
     AhoCorasickNode(const AhoCorasickNode& other);
     AhoCorasickNode& operator=(const AhoCorasickNode& other);
 
-    uint32 GetEdge(char c) const;
-    void SetEdge(char c, uint32 node);
+    uint32_t GetEdge(char c) const;
+    void SetEdge(char c, uint32_t node);
     const Edges& edges() const { return edges_; }
 
-    uint32 failure() const { return failure_; }
-    void set_failure(uint32 failure) { failure_ = failure; }
+    uint32_t failure() const { return failure_; }
+    void set_failure(uint32_t failure) { failure_ = failure; }
 
     void AddMatch(StringPattern::ID id);
     void AddMatches(const Matches& matches);
@@ -108,7 +110,7 @@ class URL_MATCHER_EXPORT SubstringSetMatcher {
     Edges edges_;
 
     // Node index that failure edge leads to.
-    uint32 failure_;
+    uint32_t failure_;
 
     // Identifiers of matches.
     Matches matches_;

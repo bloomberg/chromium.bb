@@ -8,6 +8,8 @@
 
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
@@ -32,5 +34,5 @@ IPC_MESSAGE_ROUTED0(ChromeFrameHostMsg_NeedCldDataFile)
 // DataFileRendererCldDataProvider.
 IPC_MESSAGE_ROUTED3(ChromeFrameMsg_CldDataFileAvailable,
                     IPC::PlatformFileForTransit /* ipc_file_handle */,
-                    uint64 /* data_offset */,
-                    uint64 /* data_length */)
+                    uint64_t /* data_offset */,
+                    uint64_t /* data_length */)

@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 // Multiply-included file, no traditional include guard.
+
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
@@ -20,7 +22,7 @@ IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_NewTable,
 
 // History system notification that a link has been added and the link
 // coloring state for the given hash must be re-calculated.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_Add, std::vector<uint64>)
+IPC_MESSAGE_CONTROL1(ChromeViewMsg_VisitedLink_Add, std::vector<uint64_t>)
 
 // History system notification that one or more history items have been
 // deleted, which at this point means that all link coloring state must be

@@ -4,6 +4,9 @@
 
 #include "components/test_runner/web_test_proxy.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cctype>
 
 #include "base/callback_helpers.h"

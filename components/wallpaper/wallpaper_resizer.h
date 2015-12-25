@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_WALLPAPER_WALLPAPER_RESIZER_H_
 #define COMPONENTS_WALLPAPER_WALLPAPER_RESIZER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/wallpaper/wallpaper_layout.h"

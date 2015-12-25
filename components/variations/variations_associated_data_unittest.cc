@@ -4,6 +4,7 @@
 
 #include "components/variations/variations_associated_data.h"
 
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

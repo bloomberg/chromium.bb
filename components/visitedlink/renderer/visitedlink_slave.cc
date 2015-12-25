@@ -4,6 +4,9 @@
 
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "components/visitedlink/common/visitedlink_messages.h"
@@ -52,7 +55,7 @@ void VisitedLinkSlave::OnUpdateVisitedLinks(base::SharedMemoryHandle table) {
   SharedHeader* header =
     static_cast<SharedHeader*>(shared_memory_->memory());
   DCHECK(header);
-  int32 table_len = header->length;
+  int32_t table_len = header->length;
   memcpy(salt_, header->salt, sizeof(salt_));
   shared_memory_->Unmap();
 

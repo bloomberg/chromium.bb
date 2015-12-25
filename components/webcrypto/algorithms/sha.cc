@@ -4,6 +4,7 @@
 
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+#include <stdint.h>
 #include <vector>
 
 #include "base/logging.h"

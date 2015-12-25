@@ -7,9 +7,11 @@
 #include "components/storage_monitor/mtab_watcher_linux.h"
 
 #include <mntent.h>
+#include <stddef.h>
 #include <stdio.h>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {

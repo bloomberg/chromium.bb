@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/device_info_sync_service.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync_driver/local_device_info_provider.h"
@@ -108,7 +110,7 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
       // Retrieve local device backup timestamp value from the sync data.
       bool has_synced_backup_time =
           iter->GetSpecifics().device_info().has_backup_timestamp();
-      int64 synced_backup_time =
+      int64_t synced_backup_time =
           has_synced_backup_time
               ? iter->GetSpecifics().device_info().backup_timestamp()
               : -1;

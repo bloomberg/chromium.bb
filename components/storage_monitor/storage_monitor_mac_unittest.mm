@@ -4,6 +4,8 @@
 
 #include "components/storage_monitor/storage_monitor_mac.h"
 
+#include <stdint.h>
+
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -19,17 +21,16 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-uint64 kTestSize = 1000000ULL;
+uint64_t kTestSize = 1000000ULL;
 
 namespace storage_monitor {
 
 namespace {
 
-StorageInfo CreateStorageInfo(
-    const std::string& device_id,
-    const std::string& model_name,
-    const base::FilePath& mount_point,
-    uint64 size_bytes) {
+StorageInfo CreateStorageInfo(const std::string& device_id,
+                              const std::string& model_name,
+                              const base::FilePath& mount_point,
+                              uint64_t size_bytes) {
   return StorageInfo(
       device_id, mount_point.value(), base::string16(), base::string16(),
       base::UTF8ToUTF16(model_name), size_bytes);

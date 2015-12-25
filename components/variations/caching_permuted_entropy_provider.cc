@@ -16,7 +16,7 @@ namespace metrics {
 
 CachingPermutedEntropyProvider::CachingPermutedEntropyProvider(
     PrefService* local_state,
-    uint16 low_entropy_source,
+    uint16_t low_entropy_source,
     size_t low_entropy_source_max)
     : PermutedEntropyProvider(low_entropy_source, low_entropy_source_max),
       local_state_(local_state) {
@@ -38,11 +38,11 @@ void CachingPermutedEntropyProvider::ClearCache(PrefService* local_state) {
   local_state->ClearPref(variations::prefs::kVariationsPermutedEntropyCache);
 }
 
-uint16 CachingPermutedEntropyProvider::GetPermutedValue(
-    uint32 randomization_seed) const {
+uint16_t CachingPermutedEntropyProvider::GetPermutedValue(
+    uint32_t randomization_seed) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  uint16 value = 0;
+  uint16_t value = 0;
   if (!FindValue(randomization_seed, &value)) {
     value = PermutedEntropyProvider::GetPermutedValue(randomization_seed);
     AddToCache(randomization_seed, value);
@@ -71,8 +71,8 @@ void CachingPermutedEntropyProvider::UpdateLocalState() const {
                           base64_encoded);
 }
 
-void CachingPermutedEntropyProvider::AddToCache(uint32 randomization_seed,
-                                                uint16 value) const {
+void CachingPermutedEntropyProvider::AddToCache(uint32_t randomization_seed,
+                                                uint16_t value) const {
   PermutedEntropyCache::Entry* entry;
   const int kMaxSize = 25;
   if (cache_.entry_size() >= kMaxSize) {
@@ -94,8 +94,8 @@ void CachingPermutedEntropyProvider::AddToCache(uint32 randomization_seed,
   UpdateLocalState();
 }
 
-bool CachingPermutedEntropyProvider::FindValue(uint32 randomization_seed,
-                                               uint16* value) const {
+bool CachingPermutedEntropyProvider::FindValue(uint32_t randomization_seed,
+                                               uint16_t* value) const {
   for (int i = 0; i < cache_.entry_size(); ++i) {
     if (cache_.entry(i).randomization_seed() == randomization_seed) {
       *value = cache_.entry(i).value();

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VARIATIONS_SYNTHETIC_TRIALS_H_
 #define COMPONENTS_VARIATIONS_SYNTHETIC_TRIALS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"

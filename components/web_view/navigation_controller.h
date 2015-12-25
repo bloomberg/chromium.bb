@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_vector.h"
 
+#include "base/macros.h"
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "url/gurl.h"
 

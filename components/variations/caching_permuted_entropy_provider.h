@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_VARIATIONS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_
 #define COMPONENTS_VARIATIONS_CACHING_PERMUTED_ENTROPY_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/proto/permuted_entropy_cache.pb.h"
@@ -25,7 +28,7 @@ class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
   // prefs service with the specified |low_entropy_source|, which should have a
   // value in the range of [0, low_entropy_source_max).
   CachingPermutedEntropyProvider(PrefService* local_state,
-                                 uint16 low_entropy_source,
+                                 uint16_t low_entropy_source,
                                  size_t low_entropy_source_max);
   ~CachingPermutedEntropyProvider() override;
 
@@ -38,7 +41,7 @@ class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
 
  private:
   // PermutedEntropyProvider overrides:
-  uint16 GetPermutedValue(uint32 randomization_seed) const override;
+  uint16_t GetPermutedValue(uint32_t randomization_seed) const override;
 
   // Reads the cache from local state.
   void ReadFromLocalState() const;
@@ -47,11 +50,11 @@ class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
   void UpdateLocalState() const;
 
   // Adds |randomization_seed| -> |value| to the cache.
-  void AddToCache(uint32 randomization_seed, uint16 value) const;
+  void AddToCache(uint32_t randomization_seed, uint16_t value) const;
 
   // Finds the value corresponding to |randomization_seed|, setting |value| and
   // returning true if found.
-  bool FindValue(uint32 randomization_seed, uint16* value) const;
+  bool FindValue(uint32_t randomization_seed, uint16_t* value) const;
 
   base::ThreadChecker thread_checker_;
   PrefService* local_state_;

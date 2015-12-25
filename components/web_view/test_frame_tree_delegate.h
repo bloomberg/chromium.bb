@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_WEB_VIEW_TEST_FRAME_TREE_DELEGATE_H_
 #define COMPONENTS_WEB_VIEW_TEST_FRAME_TREE_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/web_view/frame_tree_delegate.h"
 

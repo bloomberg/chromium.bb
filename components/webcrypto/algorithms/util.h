@@ -9,6 +9,8 @@
 #include <vector>
 
 #include <openssl/base.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"

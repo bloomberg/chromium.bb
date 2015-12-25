@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
 
+#include <stdint.h>
+
 #include <cstddef>
 #include <map>
 
@@ -795,7 +797,7 @@ TEST_F(SyncBackendHostTest, ClearServerDataCallsAreForwarded) {
 // set of invalidation version is persisted across restarts.
 TEST_F(SyncBackendHostTest, IgnoreOldInvalidations) {
   // Set up some old persisted invalidations.
-  std::map<syncer::ModelType, int64> invalidation_versions;
+  std::map<syncer::ModelType, int64_t> invalidation_versions;
   invalidation_versions[syncer::BOOKMARKS] = 20;
   sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
   InitializeBackend(true);
@@ -843,7 +845,7 @@ TEST_F(SyncBackendHostTest, IgnoreOldInvalidations) {
   // Verify that the invalidation versions were updated in the prefs.
   invalidation_versions[syncer::BOOKMARKS] = 30;
   invalidation_versions[syncer::SESSIONS] = 10;
-  std::map<syncer::ModelType, int64> persisted_invalidation_versions;
+  std::map<syncer::ModelType, int64_t> persisted_invalidation_versions;
   sync_prefs_->GetInvalidationVersions(&persisted_invalidation_versions);
   EXPECT_EQ(invalidation_versions.size(),
             persisted_invalidation_versions.size());

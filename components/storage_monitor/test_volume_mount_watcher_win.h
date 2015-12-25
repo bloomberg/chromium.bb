@@ -8,9 +8,12 @@
 #ifndef COMPONENTS_STORAGE_MONITOR_TEST_VOLUME_MOUNT_WATCHER_WIN_H_
 #define COMPONENTS_STORAGE_MONITOR_TEST_VOLUME_MOUNT_WATCHER_WIN_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/storage_monitor/volume_mount_watcher_win.h"
@@ -32,7 +35,7 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
   void AddDeviceForTesting(const base::FilePath& device_path,
                            const std::string& device_id,
                            const base::string16& device_name,
-                           uint64 total_size_in_bytes);
+                           uint64_t total_size_in_bytes);
 
   void SetAttachedDevicesFake();
 

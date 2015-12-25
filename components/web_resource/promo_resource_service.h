@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_WEB_RESOURCE_PROMO_RESOURCE_SERVICE_H_
 #define COMPONENTS_WEB_RESOURCE_PROMO_RESOURCE_SERVICE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/web_resource/web_resource_service.h"
 
@@ -71,7 +74,7 @@ class PromoResourceService : public WebResourceService {
   // If delay_ms is positive, schedule notification with the delay.
   // If delay_ms is 0, notify immediately by calling WebResourceStateChange().
   // If delay_ms is negative, do nothing.
-  void PostNotification(int64 delay_ms);
+  void PostNotification(int64_t delay_ms);
 
   // Notify listeners that the state of a web resource has changed.
   void PromoResourceStateChange();

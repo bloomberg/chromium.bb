@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_ERROR_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_ERROR_CONTROLLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/sync_driver/sync_service_observer.h"
 

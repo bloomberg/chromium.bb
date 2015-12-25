@@ -7,6 +7,7 @@
 
 #include "components/web_view/url_request_cloneable.h"
 
+#include "base/macros.h"
 #include "url/gurl.h"
 
 namespace web_view {

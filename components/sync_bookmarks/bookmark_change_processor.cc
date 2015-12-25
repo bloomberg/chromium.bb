@@ -4,6 +4,8 @@
 
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <stack>
 #include <vector>
@@ -123,7 +125,7 @@ int BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
 
 void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
     const BookmarkNode* topmost) {
-  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  int64_t new_version = syncer::syncable::kInvalidTransactionVersion;
   {
     syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
     syncer::WriteNode topmost_sync_node(&trans);
@@ -145,22 +147,23 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
 }
 
 void BookmarkChangeProcessor::RemoveAllSyncNodes() {
-  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  int64_t new_version = syncer::syncable::kInvalidTransactionVersion;
   {
     syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
 
-    int64 bookmark_bar_node_sync_id = model_associator_->GetSyncIdFromChromeId(
-        bookmark_model_->bookmark_bar_node()->id());
+    int64_t bookmark_bar_node_sync_id =
+        model_associator_->GetSyncIdFromChromeId(
+            bookmark_model_->bookmark_bar_node()->id());
     DCHECK_NE(syncer::kInvalidId, bookmark_bar_node_sync_id);
     RemoveAllChildNodes(&trans, bookmark_bar_node_sync_id, model_associator_);
 
-    int64 other_node_sync_id = model_associator_->GetSyncIdFromChromeId(
+    int64_t other_node_sync_id = model_associator_->GetSyncIdFromChromeId(
         bookmark_model_->other_node()->id());
     DCHECK_NE(syncer::kInvalidId, other_node_sync_id);
     RemoveAllChildNodes(&trans, other_node_sync_id, model_associator_);
 
     // Remove mobile bookmarks node only if it is present.
-    int64 mobile_node_sync_id = model_associator_->GetSyncIdFromChromeId(
+    int64_t mobile_node_sync_id = model_associator_->GetSyncIdFromChromeId(
         bookmark_model_->mobile_node()->id());
     if (mobile_node_sync_id != syncer::kInvalidId) {
       RemoveAllChildNodes(&trans, mobile_node_sync_id, model_associator_);
@@ -178,7 +181,7 @@ void BookmarkChangeProcessor::RemoveAllSyncNodes() {
 // static
 int BookmarkChangeProcessor::RemoveAllChildNodes(
     syncer::WriteTransaction* trans,
-    int64 topmost_sync_id,
+    int64_t topmost_sync_id,
     BookmarkModelAssociator* associator) {
   // Do a DFS and delete all the child sync nodes, use sync id instead of
   // bookmark node ids since the bookmark nodes may already be deleted.
@@ -191,11 +194,11 @@ int BookmarkChangeProcessor::RemoveAllChildNodes(
   //      delete node
 
   int num_removed = 0;
-  std::stack<int64> dfs_sync_id_stack;
+  std::stack<int64_t> dfs_sync_id_stack;
   // Push the topmost node.
   dfs_sync_id_stack.push(topmost_sync_id);
   while (!dfs_sync_id_stack.empty()) {
-    const int64 sync_node_id = dfs_sync_id_stack.top();
+    const int64_t sync_node_id = dfs_sync_id_stack.top();
     syncer::WriteNode node(trans);
     node.InitByIdLookup(sync_node_id);
     if (!node.GetIsFolder() || node.GetFirstChildId() == syncer::kInvalidId) {
@@ -212,7 +215,7 @@ int BookmarkChangeProcessor::RemoveAllChildNodes(
         DCHECK(dfs_sync_id_stack.empty());
       }
     } else {
-      int64 child_id = node.GetFirstChildId();
+      int64_t child_id = node.GetFirstChildId();
       if (child_id != syncer::kInvalidId) {
         dfs_sync_id_stack.push(child_id);
       }
@@ -241,8 +244,8 @@ void BookmarkChangeProcessor::CreateOrUpdateSyncNode(const BookmarkNode* node) {
   const BookmarkNode* parent = node->parent();
   int index = node->parent()->GetIndexOf(node);
 
-  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
-  int64 sync_id = syncer::kInvalidId;
+  int64_t new_version = syncer::syncable::kInvalidTransactionVersion;
+  int64_t sync_id = syncer::kInvalidId;
   {
     // Acquire a scoped write lock via a transaction.
     syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
@@ -292,8 +295,11 @@ void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
 }
 
 // static
-int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
-    BookmarkModel* model, int index, syncer::WriteTransaction* trans,
+int64_t BookmarkChangeProcessor::CreateSyncNode(
+    const BookmarkNode* parent,
+    BookmarkModel* model,
+    int index,
+    syncer::WriteTransaction* trans,
     BookmarkModelAssociator* associator,
     sync_driver::DataTypeErrorHandler* error_handler) {
   const BookmarkNode* child = parent->GetChild(index);
@@ -357,7 +363,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
 }
 
 // Static.
-int64 BookmarkChangeProcessor::UpdateSyncNode(
+int64_t BookmarkChangeProcessor::UpdateSyncNode(
     const BookmarkNode* node,
     BookmarkModel* model,
     syncer::WriteTransaction* trans,
@@ -400,7 +406,7 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
     return;
   }
 
-  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  int64_t new_version = syncer::syncable::kInvalidTransactionVersion;
   {
     // Acquire a scoped write lock via a transaction.
     syncer::WriteTransaction trans(FROM_HERE, share_handle(), &new_version);
@@ -458,7 +464,7 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   if (!CanSyncNode(node))
     return;
-  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  int64_t new_version = syncer::syncable::kInvalidTransactionVersion;
   std::vector<const BookmarkNode*> children;
   {
     // Acquire a scoped write lock via a transaction.
@@ -545,7 +551,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
 // model.
 void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
-    int64 model_version,
+    int64_t model_version,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // A note about ordering.  Sync backend is responsible for ordering the change
@@ -637,7 +643,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   std::multimap<int, const BookmarkNode*> to_reposition;
 
   syncer::ReadNode synced_bookmarks(trans);
-  int64 synced_bookmarks_id = syncer::kInvalidId;
+  int64_t synced_bookmarks_id = syncer::kInvalidId;
   if (synced_bookmarks.InitByTagLookupForBookmarks(kMobileBookmarksTag) ==
       syncer::BaseNode::INIT_OK) {
     synced_bookmarks_id = synced_bookmarks.GetId();
@@ -771,7 +777,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
 
 // static
 void BookmarkChangeProcessor::UpdateTransactionVersion(
-    int64 new_version,
+    int64_t new_version,
     BookmarkModel* model,
     const std::vector<const BookmarkNode*>& nodes) {
   if (new_version != syncer::syncable::kInvalidTransactionVersion) {
@@ -817,7 +823,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     // 'creation_time_us' was added in m24. Assume a time of 0 means now.
     const sync_pb::BookmarkSpecifics& specifics =
         sync_node->GetBookmarkSpecifics();
-    const int64 create_time_internal = specifics.creation_time_us();
+    const int64_t create_time_internal = specifics.creation_time_us();
     base::Time create_time = (create_time_internal == 0) ?
         base::Time::Now() : base::Time::FromInternalValue(create_time_internal);
     node = model->AddURLWithCreationTimeAndMetaInfo(

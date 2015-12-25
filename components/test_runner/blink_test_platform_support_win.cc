@@ -5,6 +5,7 @@
 #include "components/test_runner/blink_test_platform_support.h"
 
 #include <windows.h>
+#include <stddef.h>
 #include <iostream>
 #include <list>
 #include <string>
@@ -13,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/win/direct_write.h"

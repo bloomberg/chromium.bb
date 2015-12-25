@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
 #define COMPONENTS_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -135,7 +137,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // Sets default timestamp for suggestions which do not have expiry timestamp.
   void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,
-                                 int64 timestamp_usec);
+                                 int64_t timestamp_usec);
 
   // Issues a network request if there isn't already one happening.
   void IssueRequestIfNoneOngoing(const GURL& url);

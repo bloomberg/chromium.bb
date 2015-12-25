@@ -4,7 +4,9 @@
 
 #include "components/test_runner/test_plugin.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
@@ -418,11 +420,9 @@ void TestPlugin::DrawSceneGL() {
 }
 
 void TestPlugin::DrawSceneSoftware(void* memory) {
-  SkColor background_color =
-      SkColorSetARGB(static_cast<uint8>(scene_.opacity * 255),
-                     scene_.background_color[0],
-                     scene_.background_color[1],
-                     scene_.background_color[2]);
+  SkColor background_color = SkColorSetARGB(
+      static_cast<uint8_t>(scene_.opacity * 255), scene_.background_color[0],
+      scene_.background_color[1], scene_.background_color[2]);
 
   const SkImageInfo info =
       SkImageInfo::MakeN32Premul(rect_.width, rect_.height);
@@ -433,11 +433,9 @@ void TestPlugin::DrawSceneSoftware(void* memory) {
 
   if (scene_.primitive != PrimitiveNone) {
     DCHECK_EQ(PrimitiveTriangle, scene_.primitive);
-    SkColor foreground_color =
-        SkColorSetARGB(static_cast<uint8>(scene_.opacity * 255),
-                       scene_.primitive_color[0],
-                       scene_.primitive_color[1],
-                       scene_.primitive_color[2]);
+    SkColor foreground_color = SkColorSetARGB(
+        static_cast<uint8_t>(scene_.opacity * 255), scene_.primitive_color[0],
+        scene_.primitive_color[1], scene_.primitive_color[2]);
     SkPath triangle_path;
     triangle_path.moveTo(0.5f * rect_.width, 0.9f * rect_.height);
     triangle_path.lineTo(0.1f * rect_.width, 0.1f * rect_.height);

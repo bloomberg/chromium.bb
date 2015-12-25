@@ -4,6 +4,7 @@
 
 #include "components/test_runner/accessibility_controller.h"
 
+#include "base/macros.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"

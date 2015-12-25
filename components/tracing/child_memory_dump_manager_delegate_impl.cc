@@ -90,7 +90,7 @@ void ChildMemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
   ctmf_->SendGlobalMemoryDumpRequest(args, callback);
 }
 
-uint64 ChildMemoryDumpManagerDelegateImpl::GetTracingProcessId() const {
+uint64_t ChildMemoryDumpManagerDelegateImpl::GetTracingProcessId() const {
   return tracing_process_id_;
 }
 

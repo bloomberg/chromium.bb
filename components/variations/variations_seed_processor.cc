@@ -4,6 +4,8 @@
 
 #include "components/variations/variations_seed_processor.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
@@ -211,7 +213,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
     }
   }
 
-  uint32 randomization_seed = 0;
+  uint32_t randomization_seed = 0;
   base::FieldTrial::RandomizationType randomization_type =
       base::FieldTrial::SESSION_RANDOMIZED;
   if (study.has_consistency() &&

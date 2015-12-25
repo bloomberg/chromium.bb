@@ -4,11 +4,13 @@
 
 #include "components/variations/experiment_labels.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"

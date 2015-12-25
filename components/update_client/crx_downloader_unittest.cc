@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/update_client/crx_downloader.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_request_interceptor.h"

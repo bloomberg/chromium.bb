@@ -7,6 +7,7 @@
 #if !defined(OS_MACOSX)
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"

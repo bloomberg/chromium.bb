@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_CORE_H_
 #define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_CORE_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
@@ -45,7 +47,7 @@ struct DoInitializeOptions {
       const base::Closure& report_unrecoverable_error_function,
       scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state,
       syncer::PassphraseTransitionClearDataOption clear_data_option,
-      const std::map<syncer::ModelType, int64>& invalidation_versions);
+      const std::map<syncer::ModelType, int64_t>& invalidation_versions);
   ~DoInitializeOptions();
 
   base::MessageLoop* sync_loop;
@@ -71,7 +73,7 @@ struct DoInitializeOptions {
   base::Closure report_unrecoverable_error_function;
   scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state;
   const syncer::PassphraseTransitionClearDataOption clear_data_option;
-  const std::map<syncer::ModelType, int64> invalidation_versions;
+  const std::map<syncer::ModelType, int64_t> invalidation_versions;
 };
 
 // Helper struct to handle currying params to
@@ -320,7 +322,7 @@ class SyncBackendHostCore
   // received invalidation version for each type.
   // This allows dropping any invalidations with versions older than those
   // most recently received for that data type.
-  std::map<syncer::ModelType, int64> last_invalidation_versions_;
+  std::map<syncer::ModelType, int64_t> last_invalidation_versions_;
 
   base::WeakPtrFactory<SyncBackendHostCore> weak_ptr_factory_;
 

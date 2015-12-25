@@ -86,7 +86,7 @@ DoInitializeOptions::DoInitializeOptions(
     const base::Closure& report_unrecoverable_error_function,
     scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state,
     syncer::PassphraseTransitionClearDataOption clear_data_option,
-    const std::map<syncer::ModelType, int64>& invalidation_versions)
+    const std::map<syncer::ModelType, int64_t>& invalidation_versions)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),

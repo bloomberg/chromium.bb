@@ -4,6 +4,10 @@
 
 #include "components/variations/metrics_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -12,7 +16,7 @@ TEST(MetricsUtilTest, HashName) {
   // Checks that hashing is stable on all platforms.
   struct {
     const char* name;
-    uint32 hash_value;
+    uint32_t hash_value;
   } known_hashes[] = {
     {"a", 937752454u},
     {"1", 723085877u},

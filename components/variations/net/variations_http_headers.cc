@@ -4,6 +4,9 @@
 
 #include "components/variations/net/variations_http_headers.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/variations/variations_http_header_provider.h"

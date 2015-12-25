@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_H_
 #define COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/sync_driver/change_processor.h"
@@ -63,7 +66,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   // Build and store a list of all changes into |syncer_changes_|.
   void ApplyChangesFromSyncModel(
       const syncer::BaseTransaction* trans,
-      int64 version,
+      int64_t version,
       const syncer::ImmutableChangeRecordList& changes) override;
   // Passes |syncer_changes_|, built in ApplyChangesFromSyncModel, onto
   // |local_service_| by way of its ProcessSyncChanges method.

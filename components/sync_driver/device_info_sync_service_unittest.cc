@@ -4,6 +4,9 @@
 
 #include "components/sync_driver/device_info_sync_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "components/sync_driver/local_device_info_provider_mock.h"
@@ -110,7 +113,7 @@ class DeviceInfoSyncServiceTest : public testing::Test,
 
   SyncData CreateRemoteData(const std::string& client_id,
                             const std::string& client_name,
-                            int64 backup_timestamp = 0) {
+                            int64_t backup_timestamp = 0) {
     sync_pb::EntitySpecifics entity;
     sync_pb::DeviceInfoSpecifics& specifics = *entity.mutable_device_info();
 

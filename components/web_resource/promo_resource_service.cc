@@ -4,15 +4,19 @@
 
 #include "components/web_resource/promo_resource_service.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/web_resource/notification_promo.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -118,10 +122,10 @@ void PromoResourceService::ScheduleNotification(
   const double promo_end = notification_promo.EndTime();
 
   if (promo_start > 0 && promo_end > 0) {
-    const int64 ms_until_start = static_cast<int64>(
+    const int64_t ms_until_start = static_cast<int64_t>(
         (base::Time::FromDoubleT(promo_start) - base::Time::Now())
             .InMilliseconds());
-    const int64 ms_until_end = static_cast<int64>(
+    const int64_t ms_until_end = static_cast<int64_t>(
         (base::Time::FromDoubleT(promo_end) - base::Time::Now())
             .InMilliseconds());
     if (ms_until_start > 0) {
@@ -154,7 +158,7 @@ void PromoResourceService::ScheduleNotificationOnInit() {
   }
 }
 
-void PromoResourceService::PostNotification(int64 delay_ms) {
+void PromoResourceService::PostNotification(int64_t delay_ms) {
   // Note that this could cause re-issuing a notification every time
   // we receive an update from a server if something goes wrong.
   // Given that this couldn't happen more frequently than every

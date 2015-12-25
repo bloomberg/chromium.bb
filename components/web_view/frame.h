@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_H_
 #define COMPONENTS_WEB_VIEW_FRAME_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/mus/common/types.h"
@@ -176,7 +178,7 @@ class Frame : public mus::WindowObserver, public mojom::Frame {
   void OnWillNavigateAck(mojom::FrameClient* frame_client,
                          scoped_ptr<FrameUserData> user_data,
                          mus::mojom::WindowTreeClientPtr window_tree_client,
-                         uint32 app_id,
+                         uint32_t app_id,
                          base::TimeTicks navigation_start_time);
 
   // Completes a navigation request; swapping the existing FrameClient to the
@@ -184,7 +186,7 @@ class Frame : public mus::WindowObserver, public mojom::Frame {
   void ChangeClient(mojom::FrameClient* frame_client,
                     scoped_ptr<FrameUserData> user_data,
                     mus::mojom::WindowTreeClientPtr window_tree_client,
-                    uint32 app_id,
+                    uint32_t app_id,
                     base::TimeTicks navigation_start_time);
 
   void SetWindow(mus::Window* window);

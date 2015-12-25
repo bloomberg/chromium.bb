@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SERVICE_H_
 #define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -89,11 +91,11 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   void OnProviderInitialized();
 
   // |local_device_backup_time_| accessors.
-  int64 local_device_backup_time() const { return local_device_backup_time_; }
+  int64_t local_device_backup_time() const { return local_device_backup_time_; }
   bool has_local_device_backup_time() const {
     return local_device_backup_time_ >= 0;
   }
-  void set_local_device_backup_time(int64 value) {
+  void set_local_device_backup_time(int64_t value) {
     local_device_backup_time_ = value;
   }
   void clear_local_device_backup_time() { local_device_backup_time_ = -1; }
@@ -101,7 +103,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   // TODO(skym): Remove once we remove local provider.
   // Local device last set backup time (in proto format).
   // -1 if the value hasn't been specified
-  int64 local_device_backup_time_;
+  int64_t local_device_backup_time_;
 
   // |local_device_info_provider_| isn't owned.
   const sync_driver::LocalDeviceInfoProvider* const local_device_info_provider_;

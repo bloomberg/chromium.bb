@@ -12,6 +12,7 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "components/web_view/frame_devtools_agent_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"

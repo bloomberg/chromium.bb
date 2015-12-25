@@ -4,6 +4,8 @@
 
 #include "components/web_view/public/cpp/web_view.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "components/mus/public/cpp/window.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -11,7 +13,7 @@
 namespace web_view {
 namespace {
 
-void OnEmbed(bool success, uint16 connection_id) {
+void OnEmbed(bool success, uint16_t connection_id) {
   CHECK(success);
 }
 

@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_TEST_RUNNER_TEST_INFO_EXTRACTOR_H_
 #define COMPONENTS_TEST_RUNNER_TEST_INFO_EXTRACTOR_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "components/test_runner/test_runner_export.h"
 #include "url/gurl.h"
 

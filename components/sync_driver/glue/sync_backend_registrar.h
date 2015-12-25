@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_REGISTRAR_H_
 #define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_REGISTRAR_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -111,7 +113,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // any thread.
   void OnChangesApplied(
       syncer::ModelType model_type,
-      int64 model_version,
+      int64_t model_version,
       const syncer::BaseTransaction* trans,
       const syncer::ImmutableChangeRecordList& changes) override;
   void OnChangesComplete(syncer::ModelType model_type) override;

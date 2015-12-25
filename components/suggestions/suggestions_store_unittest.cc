@@ -4,6 +4,9 @@
 
 #include "components/suggestions/suggestions_store.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
@@ -19,8 +22,10 @@ namespace {
 const char kTestTitle[] = "Foo site";
 const char kTestUrl[] = "http://foo.com/";
 
-void AddSuggestion(SuggestionsProfile* suggestions, const char *title,
-                   const char *url, int64 expiry_ts) {
+void AddSuggestion(SuggestionsProfile* suggestions,
+                   const char* title,
+                   const char* url,
+                   int64_t expiry_ts) {
   ChromeSuggestion* suggestion = suggestions->add_suggestions();
   suggestion->set_url(title);
   suggestion->set_title(url);
@@ -39,9 +44,9 @@ SuggestionsProfile CreateTestSuggestionsProfileWithExpiry(
     base::Time current_time,
     int expired_count,
     int valid_count) {
-  int64 current_time_usec =
+  int64_t current_time_usec =
       (current_time - base::Time::UnixEpoch()).ToInternalValue();
-  int64 offset_usec = 5 * base::Time::kMicrosecondsPerMinute;
+  int64_t offset_usec = 5 * base::Time::kMicrosecondsPerMinute;
 
   SuggestionsProfile suggestions;
   for (int i = 1; i <= valid_count; i++)

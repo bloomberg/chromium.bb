@@ -95,8 +95,7 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
         params.browser_initiated_post_data.get() &&
         params.browser_initiated_post_data.get()->size()) {
       post_data = base::android::ToJavaByteArray(
-          env,
-          params.browser_initiated_post_data.get()->front_as<uint8>(),
+          env, params.browser_initiated_post_data.get()->front_as<uint8_t>(),
           params.browser_initiated_post_data.get()->size());
     }
     Java_WebContentsDelegateAndroid_openNewTab(env,
@@ -282,9 +281,9 @@ void WebContentsDelegateAndroid::MoveContents(WebContents* source,
 
 bool WebContentsDelegateAndroid::AddMessageToConsole(
     WebContents* source,
-    int32 level,
+    int32_t level,
     const base::string16& message,
-    int32 line_no,
+    int32_t line_no,
     const base::string16& source_id) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);

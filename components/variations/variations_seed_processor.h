@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_
 #define COMPONENTS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"

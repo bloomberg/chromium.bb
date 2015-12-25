@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_WEBCRYPTO_WEBCRYPTO_IMPL_H_
 #define COMPONENTS_WEBCRYPTO_WEBCRYPTO_IMPL_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebVector.h"

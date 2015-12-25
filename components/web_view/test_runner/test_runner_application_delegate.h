@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_WEB_VIEW__TEST_RUNNER_TEST_RUNNER_APPLICATION_DELEGATE_H_
 #define COMPONENTS_WEB_VIEW__TEST_RUNNER_TEST_RUNNER_APPLICATION_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"

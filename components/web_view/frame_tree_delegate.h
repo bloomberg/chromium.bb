@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_TREE_DELEGATE_H_
 #define COMPONENTS_WEB_VIEW_FRAME_TREE_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback_forward.h"

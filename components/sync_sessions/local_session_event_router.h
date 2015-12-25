@@ -7,7 +7,6 @@
 
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "url/gurl.h"
 

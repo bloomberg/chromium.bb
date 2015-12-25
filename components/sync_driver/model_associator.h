@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATOR_H_
 #define COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATOR_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/synchronization/lock.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -70,11 +71,11 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
   // Returns sync id for the given chrome model id.
   // Returns syncer::kInvalidId if the sync node is not found for the given
   // chrome id.
-  virtual int64 GetSyncIdFromChromeId(const IDType& id) = 0;
+  virtual int64_t GetSyncIdFromChromeId(const IDType& id) = 0;
 
   // Returns the chrome node for the given sync id.
   // Returns NULL if no node is found for the given sync id.
-  virtual const Node* GetChromeNodeFromSyncId(int64 sync_id) = 0;
+  virtual const Node* GetChromeNodeFromSyncId(int64_t sync_id) = 0;
 
   // Initializes the given sync node from the given chrome node id.
   // Returns false if no sync node was found for the given chrome node id or
@@ -88,7 +89,7 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
                          const syncer::BaseNode& sync_node) = 0;
 
   // Remove the association that corresponds to the given sync id.
-  virtual void Disassociate(int64 sync_id) = 0;
+  virtual void Disassociate(int64_t sync_id) = 0;
 };
 
 }  // namespace sync_driver

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_TEST_RUNNER_MOCK_COLOR_CHOOSER_H_
 #define COMPONENTS_TEST_RUNNER_MOCK_COLOR_CHOOSER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/web/WebColorChooser.h"
 #include "third_party/WebKit/public/web/WebColorChooserClient.h"

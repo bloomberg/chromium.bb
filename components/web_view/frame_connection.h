@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_WEB_VIEW_FRAME_CONNECTION_H_
 #define COMPONENTS_WEB_VIEW_FRAME_CONNECTION_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/web_view/frame_tree_delegate.h"

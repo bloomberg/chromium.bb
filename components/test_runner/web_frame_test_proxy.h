@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_
 #define COMPONENTS_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_interfaces.h"

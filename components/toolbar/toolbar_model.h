@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_TOOLBAR_TOOLBAR_MODEL_H_
 #define COMPONENTS_TOOLBAR_TOOLBAR_MODEL_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 

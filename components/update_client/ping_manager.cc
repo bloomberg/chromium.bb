@@ -4,6 +4,8 @@
 
 #include "components/update_client/ping_manager.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

@@ -4,6 +4,8 @@
 
 #include "components/url_matcher/substring_set_matcher.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>

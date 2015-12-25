@@ -8,13 +8,15 @@
 #ifndef COMPONENTS_WEB_CACHE_BROWSER_WEB_CACHE_MANAGER_H_
 #define COMPONENTS_WEB_CACHE_BROWSER_WEB_CACHE_MANAGER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/notification_observer.h"

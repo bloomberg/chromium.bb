@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "components/storage_monitor/storage_monitor.h"
 
 namespace storage_monitor {

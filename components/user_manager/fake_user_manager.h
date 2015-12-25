@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"

@@ -4,6 +4,8 @@
 
 #include "components/tracing/trace_config_file.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/command_line.h"
@@ -13,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/tracing/tracing_switches.h"
 
 namespace tracing {

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_ACTION_H_
 #define COMPONENTS_UPDATE_CLIENT_ACTION_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/callback.h"

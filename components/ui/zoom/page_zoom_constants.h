@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_UI_ZOOM_PAGE_ZOOM_CONSTANTS_H_
 #define COMPONENTS_UI_ZOOM_PAGE_ZOOM_CONSTANTS_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 namespace ui_zoom {

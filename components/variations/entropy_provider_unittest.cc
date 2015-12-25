@@ -4,12 +4,15 @@
 
 #include "components/variations/entropy_provider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 #include <limits>
 #include <numeric>
 
-#include "base/basictypes.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -53,7 +56,7 @@ double GenerateSHA1Entropy(const std::string& entropy_source,
 
 // Generates permutation-based entropy for the given |trial_name| based on
 // |entropy_source| which must be in the range [0, entropy_max).
-double GeneratePermutedEntropy(uint16 entropy_source,
+double GeneratePermutedEntropy(uint16_t entropy_source,
                                size_t entropy_max,
                                const std::string& trial_name) {
   PermutedEntropyProvider permuted_provider(entropy_source, entropy_max);
@@ -86,7 +89,7 @@ class SHA1EntropyGenerator : public TrialEntropyGenerator {
     // Use a random GUID + 13 additional bits of entropy to match how the
     // SHA1EntropyProvider is used in metrics_service.cc.
     const int low_entropy_source =
-        static_cast<uint16>(base::RandInt(0, kMaxLowEntropySize - 1));
+        static_cast<uint16_t>(base::RandInt(0, kMaxLowEntropySize - 1));
     const std::string high_entropy_source =
         base::GenerateGUID() + base::IntToString(low_entropy_source);
     return GenerateSHA1Entropy(high_entropy_source, trial_name_);
@@ -107,7 +110,7 @@ class PermutedEntropyGenerator : public TrialEntropyGenerator {
     // Note: Given a trial name, the computed mapping will be the same.
     // As a performance optimization, pre-compute the mapping once per trial
     // name and index into it for each entropy value.
-    const uint32 randomization_seed = HashName(trial_name);
+    const uint32_t randomization_seed = HashName(trial_name);
     internal::PermuteMappingUsingRandomizationSeed(randomization_seed,
                                                    &mapping_);
   }
@@ -116,13 +119,13 @@ class PermutedEntropyGenerator : public TrialEntropyGenerator {
 
   double GenerateEntropyValue() const override {
     const int low_entropy_source =
-        static_cast<uint16>(base::RandInt(0, kMaxLowEntropySize - 1));
+        static_cast<uint16_t>(base::RandInt(0, kMaxLowEntropySize - 1));
     return mapping_[low_entropy_source] /
            static_cast<double>(kMaxLowEntropySize);
   }
 
  private:
-  std::vector<uint16> mapping_;
+  std::vector<uint16_t> mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(PermutedEntropyGenerator);
 };
@@ -245,7 +248,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
   base::FieldTrialList field_trial_list(
       new PermutedEntropyProvider(1234, kMaxLowEntropySize));
   const int kNoExpirationYear = base::FieldTrialList::kNoExpirationYear;
-  const uint32 kCustomSeed = 9001;
+  const uint32_t kCustomSeed = 9001;
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
           "one", 100, "default", kNoExpirationYear, 1, 1,
@@ -331,20 +334,21 @@ TEST(EntropyProviderTest, SeededRandGeneratorIsUniform) {
   //
   // Mirrors RandUtilTest.RandGeneratorIsUniform in base/rand_util_unittest.cc.
 
-  const uint32 kTopOfRange = (std::numeric_limits<uint32>::max() / 4ULL) * 3ULL;
-  const uint32 kExpectedAverage = kTopOfRange / 2ULL;
-  const uint32 kAllowedVariance = kExpectedAverage / 50ULL;  // +/- 2%
+  const uint32_t kTopOfRange =
+      (std::numeric_limits<uint32_t>::max() / 4ULL) * 3ULL;
+  const uint32_t kExpectedAverage = kTopOfRange / 2ULL;
+  const uint32_t kAllowedVariance = kExpectedAverage / 50ULL;  // +/- 2%
   const int kMinAttempts = 1000;
   const int kMaxAttempts = 1000000;
 
   for (size_t i = 0; i < arraysize(kTestTrialNames); ++i) {
-    const uint32 seed = HashName(kTestTrialNames[i]);
+    const uint32_t seed = HashName(kTestTrialNames[i]);
     internal::SeededRandGenerator rand_generator(seed);
 
     double cumulative_average = 0.0;
     int count = 0;
     while (count < kMaxAttempts) {
-      uint32 value = rand_generator(kTopOfRange);
+      uint32_t value = rand_generator(kTopOfRange);
       cumulative_average = (count * cumulative_average + value) / (count + 1);
 
       // Don't quit too quickly for things to start converging, or we may have

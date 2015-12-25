@@ -4,6 +4,8 @@
 
 #include <openssl/aes.h>
 #include <openssl/evp.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"

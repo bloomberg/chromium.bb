@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/prefs/scoped_user_pref_update.h"
+#include "build/build_config.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

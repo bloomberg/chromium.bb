@@ -81,7 +81,7 @@ class BookmarkNodeFinder {
   const BookmarkNode* FindBookmarkNode(const GURL& url,
                                        const std::string& title,
                                        bool is_folder,
-                                       int64 preferred_id);
+                                       int64_t preferred_id);
 
   // Returns true if |bookmark_node| matches the specified |url|,
   // |title|, and |is_folder| flags.
@@ -143,7 +143,7 @@ const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
     const GURL& url,
     const std::string& title,
     bool is_folder,
-    int64 preferred_id) {
+    int64_t preferred_id) {
   const BookmarkNode* match = nullptr;
 
   // First lookup a range of bookmarks with the same title.
@@ -214,11 +214,11 @@ BookmarkModelAssociator::Context::Context(
 BookmarkModelAssociator::Context::~Context() {
 }
 
-void BookmarkModelAssociator::Context::PushNode(int64 sync_id) {
+void BookmarkModelAssociator::Context::PushNode(int64_t sync_id) {
   dfs_stack_.push(sync_id);
 }
 
-bool BookmarkModelAssociator::Context::PopNode(int64* sync_id) {
+bool BookmarkModelAssociator::Context::PopNode(int64_t* sync_id) {
   if (dfs_stack_.empty()) {
     *sync_id = 0;
     return false;
@@ -229,8 +229,8 @@ bool BookmarkModelAssociator::Context::PopNode(int64* sync_id) {
 }
 
 void BookmarkModelAssociator::Context::SetPreAssociationVersions(
-    int64 native_version,
-    int64 sync_version) {
+    int64_t native_version,
+    int64_t sync_version) {
   local_merge_result_->set_pre_association_version(native_version);
   syncer_merge_result_->set_pre_association_version(sync_version);
 }
@@ -295,7 +295,7 @@ void BookmarkModelAssociator::Context::AddBookmarkRoot(
   bookmark_roots_.push_back(root);
 }
 
-int64 BookmarkModelAssociator::Context::GetSyncPreAssociationVersion() const {
+int64_t BookmarkModelAssociator::Context::GetSyncPreAssociationVersion() const {
   return syncer_merge_result_->pre_association_version();
 }
 
@@ -332,22 +332,22 @@ syncer::SyncError BookmarkModelAssociator::DisassociateModels() {
   return syncer::SyncError();
 }
 
-int64 BookmarkModelAssociator::GetSyncIdFromChromeId(const int64& node_id) {
+int64_t BookmarkModelAssociator::GetSyncIdFromChromeId(const int64_t& node_id) {
   BookmarkIdToSyncIdMap::const_iterator iter = id_map_.find(node_id);
   return iter == id_map_.end() ? syncer::kInvalidId : iter->second;
 }
 
 const BookmarkNode* BookmarkModelAssociator::GetChromeNodeFromSyncId(
-    int64 sync_id) {
+    int64_t sync_id) {
   SyncIdToBookmarkNodeMap::const_iterator iter = id_map_inverse_.find(sync_id);
   return iter == id_map_inverse_.end() ? NULL : iter->second;
 }
 
 bool BookmarkModelAssociator::InitSyncNodeFromChromeId(
-    const int64& node_id,
+    const int64_t& node_id,
     syncer::BaseNode* sync_node) {
   DCHECK(sync_node);
-  int64 sync_id = GetSyncIdFromChromeId(node_id);
+  int64_t sync_id = GetSyncIdFromChromeId(node_id);
   if (sync_id == syncer::kInvalidId)
     return false;
   if (sync_node->InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK)
@@ -357,9 +357,9 @@ bool BookmarkModelAssociator::InitSyncNodeFromChromeId(
 }
 
 void BookmarkModelAssociator::AddAssociation(const BookmarkNode* node,
-                                             int64 sync_id) {
+                                             int64_t sync_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  int64 node_id = node->id();
+  int64_t node_id = node->id();
   DCHECK_NE(sync_id, syncer::kInvalidId);
   DCHECK(id_map_.find(node_id) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
@@ -380,7 +380,7 @@ void BookmarkModelAssociator::Associate(const BookmarkNode* node,
   }
 }
 
-void BookmarkModelAssociator::Disassociate(int64 sync_id) {
+void BookmarkModelAssociator::Disassociate(int64_t sync_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SyncIdToBookmarkNodeMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
@@ -428,7 +428,7 @@ bool BookmarkModelAssociator::AssociateTaggedPermanentNode(
     const BookmarkNode* permanent_node,
     const std::string& tag) {
   // Do nothing if |permanent_node| is already initialized and associated.
-  int64 sync_id = GetSyncIdFromChromeId(permanent_node->id());
+  int64_t sync_id = GetSyncIdFromChromeId(permanent_node->id());
   if (sync_id != syncer::kInvalidId)
     return true;
 
@@ -496,15 +496,15 @@ syncer::SyncError BookmarkModelAssociator::AssociatePermanentFolders(
 
   // Note: the root node may have additional extra nodes. Currently none of
   // them are meant to sync.
-  int64 bookmark_bar_sync_id =
+  int64_t bookmark_bar_sync_id =
       GetSyncIdFromChromeId(bookmark_model_->bookmark_bar_node()->id());
   DCHECK_NE(bookmark_bar_sync_id, syncer::kInvalidId);
   context->AddBookmarkRoot(bookmark_model_->bookmark_bar_node());
-  int64 other_bookmarks_sync_id =
+  int64_t other_bookmarks_sync_id =
       GetSyncIdFromChromeId(bookmark_model_->other_node()->id());
   DCHECK_NE(other_bookmarks_sync_id, syncer::kInvalidId);
   context->AddBookmarkRoot(bookmark_model_->other_node());
-  int64 mobile_bookmarks_sync_id =
+  int64_t mobile_bookmarks_sync_id =
       GetSyncIdFromChromeId(bookmark_model_->mobile_node()->id());
   if (expect_mobile_bookmarks_folder_)
     DCHECK_NE(syncer::kInvalidId, mobile_bookmarks_sync_id);
@@ -569,7 +569,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(Context* context) {
   DCHECK_NE(context->native_model_sync_state(), AHEAD);
 
   int initial_duplicate_count = 0;
-  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  int64_t new_version = syncer::syncable::kInvalidTransactionVersion;
   {
     syncer::WriteTransaction trans(FROM_HERE, user_share_, &new_version);
 
@@ -601,7 +601,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(Context* context) {
     // perform the primary match. If there are multiple match candidates it
     // selects the preferred one based on sync node external ID match to the
     // bookmark folder ID.
-    int64 sync_parent_id;
+    int64_t sync_parent_id;
     while (context->PopNode(&sync_parent_id)) {
       syncer::ReadNode sync_parent(&trans);
       if (sync_parent.InitByIdLookup(sync_parent_id) !=
@@ -620,7 +620,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(Context* context) {
       }
       DCHECK(parent_node->is_folder());
 
-      std::vector<int64> children;
+      std::vector<int64_t> children;
       sync_parent.GetChildIds(&children);
 
       error = BuildAssociations(&trans, parent_node, children, context);
@@ -662,14 +662,14 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(Context* context) {
 syncer::SyncError BookmarkModelAssociator::BuildAssociations(
     syncer::WriteTransaction* trans,
     const BookmarkNode* parent_node,
-    const std::vector<int64>& sync_ids,
+    const std::vector<int64_t>& sync_ids,
     Context* context) {
   BookmarkNodeFinder node_finder(parent_node);
 
   int index = 0;
-  for (std::vector<int64>::const_iterator it = sync_ids.begin();
+  for (std::vector<int64_t>::const_iterator it = sync_ids.begin();
        it != sync_ids.end(); ++it) {
-    int64 sync_child_id = *it;
+    int64_t sync_child_id = *it;
     syncer::ReadNode sync_child_node(trans);
     if (sync_child_node.InitByIdLookup(sync_child_id) !=
         syncer::BaseNode::INIT_OK) {
@@ -677,7 +677,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
           FROM_HERE, "Failed to lookup node.", model_type());
     }
 
-    int64 external_id = sync_child_node.GetExternalId();
+    int64_t external_id = sync_child_node.GetExternalId();
     GURL url(sync_child_node.GetBookmarkSpecifics().url());
     const BookmarkNode* child_node = node_finder.FindBookmarkNode(
         url, sync_child_node.GetTitle(), sync_child_node.GetIsFolder(),
@@ -725,7 +725,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
   // So the children starting from index in the parent bookmark node are the
   // ones that are not present in the parent sync node. So create them.
   for (int i = index; i < parent_node->child_count(); ++i) {
-    int64 sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
+    int64_t sync_child_id = BookmarkChangeProcessor::CreateSyncNode(
         parent_node, bookmark_model_, i, trans, this,
         unrecoverable_error_handler_);
     if (syncer::kInvalidId == sync_child_id) {
@@ -783,7 +783,7 @@ const BookmarkNode* BookmarkModelAssociator::CreateBookmarkNode(
 
 int BookmarkModelAssociator::RemoveSyncNodeHierarchy(
     syncer::WriteTransaction* trans,
-    int64 sync_id) {
+    int64_t sync_id) {
   syncer::WriteNode sync_node(trans);
   if (sync_node.InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK) {
     syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
@@ -798,11 +798,11 @@ int BookmarkModelAssociator::RemoveSyncNodeHierarchy(
 }
 
 struct FolderInfo {
-  FolderInfo(const BookmarkNode* f, const BookmarkNode* p, int64 id)
+  FolderInfo(const BookmarkNode* f, const BookmarkNode* p, int64_t id)
       : folder(f), parent(p), sync_id(id) {}
   const BookmarkNode* folder;
   const BookmarkNode* parent;
-  int64 sync_id;
+  int64_t sync_id;
 };
 typedef std::vector<FolderInfo> FolderInfoList;
 
@@ -818,7 +818,7 @@ void BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
 
   // Make a set of all external IDs in the delete journal,
   // ignore entries with unset external IDs.
-  std::set<int64> journaled_external_ids;
+  std::set<int64_t> journaled_external_ids;
   for (size_t i = 0; i < num_journals_unmatched; i++) {
     if (bk_delete_journals[i].external_id != 0)
       journaled_external_ids.insert(bk_delete_journals[i].external_id);
@@ -888,7 +888,7 @@ void BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
 
   // Ids of sync nodes not found in bookmark model, meaning the deletions are
   // persisted and correponding delete journals can be dropped.
-  std::set<int64> journals_to_purge;
+  std::set<int64_t> journals_to_purge;
 
   // Remove empty folders from bottom to top.
   for (FolderInfoList::reverse_iterator it = folders_matched.rbegin();
@@ -928,7 +928,7 @@ void BookmarkModelAssociator::PersistAssociations() {
     return;
   }
 
-  int64 new_version = syncer::syncable::kInvalidTransactionVersion;
+  int64_t new_version = syncer::syncable::kInvalidTransactionVersion;
   std::vector<const BookmarkNode*> bnodes;
   {
     syncer::WriteTransaction trans(FROM_HERE, user_share_, &new_version);
@@ -936,7 +936,7 @@ void BookmarkModelAssociator::PersistAssociations() {
     for (iter = dirty_associations_sync_ids_.begin();
          iter != dirty_associations_sync_ids_.end();
          ++iter) {
-      int64 sync_id = *iter;
+      int64_t sync_id = *iter;
       syncer::WriteNode sync_node(&trans);
       if (sync_node.InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK) {
         syncer::SyncError error(
@@ -972,11 +972,11 @@ bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
 syncer::SyncError BookmarkModelAssociator::CheckModelSyncState(
     Context* context) const {
   DCHECK_EQ(context->native_model_sync_state(), UNSET);
-  int64 native_version =
+  int64_t native_version =
       bookmark_model_->root_node()->sync_transaction_version();
 
   syncer::ReadTransaction trans(FROM_HERE, user_share_);
-  int64 sync_version = trans.GetModelVersion(syncer::BOOKMARKS);
+  int64_t sync_version = trans.GetModelVersion(syncer::BOOKMARKS);
   context->SetPreAssociationVersions(native_version, sync_version);
 
   if (native_version != syncer::syncable::kInvalidTransactionVersion) {

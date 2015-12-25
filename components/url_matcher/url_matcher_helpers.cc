@@ -4,6 +4,8 @@
 
 #include "components/url_matcher/url_matcher_helpers.h"
 
+#include <stddef.h>
+
 #include "base/values.h"
 
 namespace url_matcher {

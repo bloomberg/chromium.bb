@@ -4,6 +4,7 @@
 
 #include "components/test_runner/mock_web_midi_accessor.h"
 
+#include "base/macros.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_test_delegate.h"

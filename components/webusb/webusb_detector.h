@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_WEBUSB_WEBUSB_DETECTOR_H_
 #define COMPONENTS_WEBUSB_WEBUSB_DETECTOR_H_
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "device/usb/usb_service.h"
 

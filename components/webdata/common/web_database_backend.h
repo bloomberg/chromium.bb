@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_BACKEND_H_
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_BACKEND_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/memory/scoped_ptr.h"

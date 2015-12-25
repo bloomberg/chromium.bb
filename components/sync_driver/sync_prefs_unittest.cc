@@ -4,6 +4,8 @@
 
 #include "components/sync_driver/sync_prefs.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/command_line.h"
@@ -241,7 +243,7 @@ TEST_F(SyncPrefsTest, DeviceInfo) {
 
 // Verify that invalidation versions are persisted and loaded correctly.
 TEST_F(SyncPrefsTest, InvalidationVersions) {
-  std::map<syncer::ModelType, int64> versions;
+  std::map<syncer::ModelType, int64_t> versions;
   versions[syncer::BOOKMARKS] = 10;
   versions[syncer::SESSIONS] = 20;
   versions[syncer::PREFERENCES] = 30;
@@ -249,7 +251,7 @@ TEST_F(SyncPrefsTest, InvalidationVersions) {
   SyncPrefs sync_prefs(&pref_service_);
   sync_prefs.UpdateInvalidationVersions(versions);
 
-  std::map<syncer::ModelType, int64> versions2;
+  std::map<syncer::ModelType, int64_t> versions2;
   sync_prefs.GetInvalidationVersions(&versions2);
 
   EXPECT_EQ(versions.size(), versions2.size());

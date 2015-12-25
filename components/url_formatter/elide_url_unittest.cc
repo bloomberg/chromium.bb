@@ -4,8 +4,12 @@
 
 #include "components/url_formatter/elide_url.h"
 
+#include <stddef.h>
+
 #include "base/ios/ios_util.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

@@ -4,8 +4,11 @@
 
 #include "components/variations/variations_seed_simulator.h"
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/proto/study.pb.h"
@@ -26,7 +29,7 @@ class TestEntropyProvider : public base::FieldTrial::EntropyProvider {
 
   // base::FieldTrial::EntropyProvider implementation:
   double GetEntropyForTrial(const std::string& trial_name,
-                            uint32 randomization_seed) const override {
+                            uint32_t randomization_seed) const override {
     return entropy_value_;
   }
 

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_WEB_CONTENTS_DELEGATE_ANDROID_H_
 #define COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_WEB_CONTENTS_DELEGATE_ANDROID_H_
 
+#include <stdint.h>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
@@ -88,9 +90,9 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   void MoveContents(content::WebContents* source,
                     const gfx::Rect& pos) override;
   bool AddMessageToConsole(content::WebContents* source,
-                           int32 level,
+                           int32_t level,
                            const base::string16& message,
-                           int32 line_no,
+                           int32_t line_no,
                            const base::string16& source_id) override;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
   void HandleKeyboardEvent(

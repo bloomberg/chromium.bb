@@ -4,9 +4,12 @@
 
 #include "components/test_runner/test_runner.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/test_runner/mock_credential_manager_client.h"

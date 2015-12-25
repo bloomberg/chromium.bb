@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -103,7 +104,7 @@ const char kPingURL[] =
     "https://www.google.com/chromesuggestions/click?q=%lld&cd=%d";
 
 // The default expiry timeout is 168 hours.
-const int64 kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
+const int64_t kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 
 const base::Feature kOAuth2AuthenticationFeature {
   "SuggestionsServiceOAuth2", base::FEATURE_DISABLED_BY_DEFAULT
@@ -324,7 +325,8 @@ GURL SuggestionsService::BuildSuggestionsBlacklistClearURL() {
 }
 
 void SuggestionsService::SetDefaultExpiryTimestamp(
-    SuggestionsProfile* suggestions, int64 default_timestamp_usec) {
+    SuggestionsProfile* suggestions,
+    int64_t default_timestamp_usec) {
   for (int i = 0; i < suggestions->suggestions_size(); ++i) {
     ChromeSuggestion* suggestion = suggestions->mutable_suggestions(i);
     // Do not set expiry if the server has already provided a more specific
@@ -444,8 +446,9 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     suggestions_store_->ClearSuggestions();
   } else if (suggestions.ParseFromString(suggestions_data)) {
     LogResponseState(RESPONSE_VALID);
-    int64 now_usec = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
-        .ToInternalValue();
+    int64_t now_usec =
+        (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
+            .ToInternalValue();
     SetDefaultExpiryTimestamp(&suggestions, now_usec + kDefaultExpiryUsec);
     PopulateExtraData(&suggestions);
     suggestions_store_->StoreSuggestions(suggestions);

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_ERRORS_H_
 #define COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_ERRORS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace translate {
 

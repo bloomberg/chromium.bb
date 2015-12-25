@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_STORAGE_MONITOR_STORAGE_INFO_H_
 #define COMPONENTS_STORAGE_MONITOR_STORAGE_INFO_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
@@ -38,7 +40,7 @@ class StorageInfo {
               const base::string16& label,
               const base::string16& vendor,
               const base::string16& model,
-              uint64 size_in_bytes);
+              uint64_t size_in_bytes);
   ~StorageInfo();
 
   // Returns a device id given properties of the device. A prefix dependent on
@@ -84,7 +86,7 @@ class StorageInfo {
   const base::string16& storage_label() const { return storage_label_; }
   const base::string16& vendor_name() const { return vendor_name_; }
   const base::string16& model_name() const { return model_name_; }
-  uint64 total_size_in_bytes() const { return total_size_in_bytes_; }
+  uint64_t total_size_in_bytes() const { return total_size_in_bytes_; }
 
   void set_device_id(const std::string& device_id) { device_id_ = device_id; }
   void set_location(const base::FilePath::StringType& location) {
@@ -115,7 +117,7 @@ class StorageInfo {
 
   // Size of the removable device in bytes.
   // Zero if not collected or unknown.
-  uint64 total_size_in_bytes_;
+  uint64_t total_size_in_bytes_;
 };
 
 }  // namespace storage_monitor

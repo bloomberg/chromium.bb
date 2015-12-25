@@ -4,6 +4,8 @@
 
 #include "components/variations/net/variations_http_headers.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

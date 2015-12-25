@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"

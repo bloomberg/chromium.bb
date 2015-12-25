@@ -5,6 +5,7 @@
 #include "components/webcrypto/algorithms/asymmetric_key_util.h"
 
 #include <openssl/pkcs12.h>
+#include <stdint.h>
 
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"

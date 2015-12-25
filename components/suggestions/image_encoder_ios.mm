@@ -4,6 +4,7 @@
 
 #include "components/suggestions/image_encoder.h"
 
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_cftyperef.h"

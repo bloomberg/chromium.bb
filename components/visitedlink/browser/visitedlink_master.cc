@@ -4,12 +4,8 @@
 
 #include "components/visitedlink/browser/visitedlink_master.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <io.h>
-#include <shlobj.h>
-#endif  // defined(OS_WIN)
 #include <stdio.h>
+#include <string.h>
 
 #include <algorithm>
 
@@ -19,30 +15,38 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_event_listener.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#include <io.h>
+#include <shlobj.h>
+#endif  // defined(OS_WIN)
+
 using content::BrowserThread;
 
 namespace visitedlink {
 
-const int32 VisitedLinkMaster::kFileHeaderSignatureOffset = 0;
-const int32 VisitedLinkMaster::kFileHeaderVersionOffset = 4;
-const int32 VisitedLinkMaster::kFileHeaderLengthOffset = 8;
-const int32 VisitedLinkMaster::kFileHeaderUsedOffset = 12;
-const int32 VisitedLinkMaster::kFileHeaderSaltOffset = 16;
+const int32_t VisitedLinkMaster::kFileHeaderSignatureOffset = 0;
+const int32_t VisitedLinkMaster::kFileHeaderVersionOffset = 4;
+const int32_t VisitedLinkMaster::kFileHeaderLengthOffset = 8;
+const int32_t VisitedLinkMaster::kFileHeaderUsedOffset = 12;
+const int32_t VisitedLinkMaster::kFileHeaderSaltOffset = 16;
 
-const int32 VisitedLinkMaster::kFileCurrentVersion = 3;
+const int32_t VisitedLinkMaster::kFileCurrentVersion = 3;
 
 // the signature at the beginning of the URL table = "VLnk" (visited links)
-const int32 VisitedLinkMaster::kFileSignature = 0x6b6e4c56;
+const int32_t VisitedLinkMaster::kFileSignature = 0x6b6e4c56;
 const size_t VisitedLinkMaster::kFileHeaderSize =
     kFileHeaderSaltOffset + LINK_SALT_LENGTH;
 
@@ -57,9 +61,9 @@ namespace {
 // Fills the given salt structure with some quasi-random values
 // It is not necessary to generate a cryptographically strong random string,
 // only that it be reasonably different for different users.
-void GenerateSalt(uint8 salt[LINK_SALT_LENGTH]) {
+void GenerateSalt(uint8_t salt[LINK_SALT_LENGTH]) {
   DCHECK_EQ(LINK_SALT_LENGTH, 8) << "This code assumes the length of the salt";
-  uint64 randval = base::RandUint64();
+  uint64_t randval = base::RandUint64();
   memcpy(salt, &randval, 8);
 }
 
@@ -92,7 +96,7 @@ static bool WriteToFile(FILE* file,
 // prevents us from blocking the UI thread doing I/O. Double pointer to FILE
 // is used because file may still not be opened by the time of scheduling
 // the task for execution.
-void AsyncWrite(FILE** file, int32 offset, const std::string& data) {
+void AsyncWrite(FILE** file, int32_t offset, const std::string& data) {
   if (*file)
     WriteToFile(*file, offset, data.data(), data.size());
 }
@@ -121,16 +125,16 @@ struct VisitedLinkMaster::LoadFromFileResult
   LoadFromFileResult(base::ScopedFILE file,
                      scoped_ptr<base::SharedMemory> shared_memory,
                      Fingerprint* hash_table,
-                     int32 num_entries,
-                     int32 used_count,
-                     uint8 salt[LINK_SALT_LENGTH]);
+                     int32_t num_entries,
+                     int32_t used_count,
+                     uint8_t salt[LINK_SALT_LENGTH]);
 
   base::ScopedFILE file;
   scoped_ptr<base::SharedMemory> shared_memory;
   Fingerprint* hash_table;
-  int32 num_entries;
-  int32 used_count;
-  uint8 salt[LINK_SALT_LENGTH];
+  int32_t num_entries;
+  int32_t used_count;
+  uint8_t salt[LINK_SALT_LENGTH];
 
  private:
   friend class base::RefCountedThreadSafe<LoadFromFileResult>;
@@ -143,9 +147,9 @@ VisitedLinkMaster::LoadFromFileResult::LoadFromFileResult(
     base::ScopedFILE file,
     scoped_ptr<base::SharedMemory> shared_memory,
     Fingerprint* hash_table,
-    int32 num_entries,
-    int32 used_count,
-    uint8 salt[LINK_SALT_LENGTH])
+    int32_t num_entries,
+    int32_t used_count,
+    uint8_t salt[LINK_SALT_LENGTH])
     : file(file.Pass()),
       shared_memory(shared_memory.Pass()),
       hash_table(hash_table),
@@ -179,8 +183,7 @@ VisitedLinkMaster::LoadFromFileResult::~LoadFromFileResult() {
 class VisitedLinkMaster::TableBuilder
     : public VisitedLinkDelegate::URLEnumerator {
  public:
-  TableBuilder(VisitedLinkMaster* master,
-               const uint8 salt[LINK_SALT_LENGTH]);
+  TableBuilder(VisitedLinkMaster* master, const uint8_t salt[LINK_SALT_LENGTH]);
 
   // Called on the main thread when the master is being destroyed. This will
   // prevent a crash when the query completes and the master is no longer
@@ -206,7 +209,7 @@ class VisitedLinkMaster::TableBuilder
   bool success_;
 
   // Salt for this new table.
-  uint8 salt_[LINK_SALT_LENGTH];
+  uint8_t salt_[LINK_SALT_LENGTH];
 
   // Stores the fingerprints we computed on the background thread.
   VisitedLinkCommon::Fingerprints fingerprints_;
@@ -233,7 +236,7 @@ VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      bool persist_to_disk,
                                      bool suppress_rebuild,
                                      const base::FilePath& filename,
-                                     int32 default_table_size)
+                                     int32_t default_table_size)
     : browser_context_(NULL),
       delegate_(delegate),
       persist_to_disk_(persist_to_disk),
@@ -595,7 +598,7 @@ void VisitedLinkMaster::WriteFullTable() {
   }
 
   // Write the new header.
-  int32 header[4];
+  int32_t header[4];
   header[0] = kFileSignature;
   header[1] = kFileCurrentVersion;
   header[2] = table_length_;
@@ -653,8 +656,8 @@ bool VisitedLinkMaster::LoadApartFromFile(
   if (!file_closer.get())
     return false;
 
-  int32 num_entries, used_count;
-  uint8 salt[LINK_SALT_LENGTH];
+  int32_t num_entries, used_count;
+  uint8_t salt[LINK_SALT_LENGTH];
   if (!ReadFileHeader(file_closer.get(), &num_entries, &used_count, salt))
     return false;  // Header isn't valid.
 
@@ -792,9 +795,9 @@ bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
 
 // static
 bool VisitedLinkMaster::ReadFileHeader(FILE* file,
-                                       int32* num_entries,
-                                       int32* used_count,
-                                       uint8 salt[LINK_SALT_LENGTH]) {
+                                       int32_t* num_entries,
+                                       int32_t* used_count,
+                                       uint8_t salt[LINK_SALT_LENGTH]) {
   // Get file size.
   // Note that there is no need to seek back to the original location in the
   // file since ReadFromFile() [which is the next call accessing the file]
@@ -806,12 +809,12 @@ bool VisitedLinkMaster::ReadFileHeader(FILE* file,
   if (file_size <= kFileHeaderSize)
     return false;
 
-  uint8 header[kFileHeaderSize];
+  uint8_t header[kFileHeaderSize];
   if (!ReadFromFile(file, 0, &header, kFileHeaderSize))
     return false;
 
   // Verify the signature.
-  int32 signature;
+  int32_t signature;
   memcpy(&signature, &header[kFileHeaderSignatureOffset], sizeof(signature));
   if (signature != kFileSignature)
     return false;
@@ -819,7 +822,7 @@ bool VisitedLinkMaster::ReadFileHeader(FILE* file,
   // Verify the version is up-to-date. As with other read errors, a version
   // mistmatch will trigger a rebuild of the database from history, which will
   // have the effect of migrating the database.
-  int32 version;
+  int32_t version;
   memcpy(&version, &header[kFileHeaderVersionOffset], sizeof(version));
   if (version != kFileCurrentVersion)
     return false;  // Bad version.
@@ -858,7 +861,7 @@ bool VisitedLinkMaster::GetDatabaseFileName(base::FilePath* filename) {
 
 // Initializes the shared memory structure. The salt should already be filled
 // in so that it can be written to the shared memory
-bool VisitedLinkMaster::CreateURLTable(int32 num_entries) {
+bool VisitedLinkMaster::CreateURLTable(int32_t num_entries) {
   scoped_ptr<base::SharedMemory> shared_memory;
   VisitedLinkCommon::Fingerprint* hash_table;
   if (CreateApartURLTable(num_entries, salt_, &shared_memory, &hash_table)) {
@@ -874,8 +877,8 @@ bool VisitedLinkMaster::CreateURLTable(int32 num_entries) {
 
 // static
 bool VisitedLinkMaster::CreateApartURLTable(
-    int32 num_entries,
-    const uint8 salt[LINK_SALT_LENGTH],
+    int32_t num_entries,
+    const uint8_t salt[LINK_SALT_LENGTH],
     scoped_ptr<base::SharedMemory>* shared_memory,
     VisitedLinkCommon::Fingerprint** hash_table) {
   DCHECK(salt);
@@ -883,7 +886,8 @@ bool VisitedLinkMaster::CreateApartURLTable(
   DCHECK(hash_table);
 
   // The table is the size of the table followed by the entries.
-  uint32 alloc_size = num_entries * sizeof(Fingerprint) + sizeof(SharedHeader);
+  uint32_t alloc_size =
+      num_entries * sizeof(Fingerprint) + sizeof(SharedHeader);
 
   // Create the shared memory object.
   scoped_ptr<base::SharedMemory> sh_mem(new base::SharedMemory());
@@ -913,10 +917,10 @@ bool VisitedLinkMaster::CreateApartURLTable(
   return true;
 }
 
-bool VisitedLinkMaster::BeginReplaceURLTable(int32 num_entries) {
+bool VisitedLinkMaster::BeginReplaceURLTable(int32_t num_entries) {
   base::SharedMemory *old_shared_memory = shared_memory_;
   Fingerprint* old_hash_table = hash_table_;
-  int32 old_table_length = table_length_;
+  int32_t old_table_length = table_length_;
   if (!CreateURLTable(num_entries)) {
     // Try to put back the old state.
     shared_memory_ = old_shared_memory;
@@ -968,7 +972,7 @@ bool VisitedLinkMaster::ResizeTableIfNecessary() {
   return true;
 }
 
-void VisitedLinkMaster::ResizeTable(int32 new_size) {
+void VisitedLinkMaster::ResizeTable(int32_t new_size) {
   DCHECK(shared_memory_ && shared_memory_->memory() && hash_table_);
   shared_memory_serial_++;
 
@@ -978,13 +982,13 @@ void VisitedLinkMaster::ResizeTable(int32 new_size) {
 
   base::SharedMemory* old_shared_memory = shared_memory_;
   Fingerprint* old_hash_table = hash_table_;
-  int32 old_table_length = table_length_;
+  int32_t old_table_length = table_length_;
   if (!BeginReplaceURLTable(new_size))
     return;
 
   // Now we have two tables, our local copy which is the old one, and the new
   // one loaded into this object where we need to copy the data.
-  for (int32 i = 0; i < old_table_length; i++) {
+  for (int32_t i = 0; i < old_table_length; i++) {
     Fingerprint cur = old_hash_table[i];
     if (cur)
       AddFingerprint(cur, false);
@@ -1007,14 +1011,14 @@ void VisitedLinkMaster::ResizeTable(int32 new_size) {
     WriteFullTable();
 }
 
-uint32 VisitedLinkMaster::DefaultTableSize() const {
+uint32_t VisitedLinkMaster::DefaultTableSize() const {
   if (table_size_override_)
     return table_size_override_;
 
   return kDefaultTableSize;
 }
 
-uint32 VisitedLinkMaster::NewTableSizeForCount(int32 item_count) const {
+uint32_t VisitedLinkMaster::NewTableSizeForCount(int32_t item_count) const {
   // These table sizes are selected to be the maximum prime number less than
   // a "convenient" multiple of 1K.
   static const int table_sizes[] = {
@@ -1112,7 +1116,7 @@ void VisitedLinkMaster::OnTableRebuildComplete(
 void VisitedLinkMaster::WriteToFile(FILE** file,
                                     off_t offset,
                                     void* data,
-                                    int32 data_size) {
+                                    int32_t data_size) {
   DCHECK(persist_to_disk_);
   DCHECK(!table_is_loading_from_file_);
   PostIOTask(FROM_HERE,
@@ -1165,11 +1169,10 @@ bool VisitedLinkMaster::ReadFromFile(FILE* file,
 
 VisitedLinkMaster::TableBuilder::TableBuilder(
     VisitedLinkMaster* master,
-    const uint8 salt[LINK_SALT_LENGTH])
-    : master_(master),
-      success_(true) {
+    const uint8_t salt[LINK_SALT_LENGTH])
+    : master_(master), success_(true) {
   fingerprints_.reserve(4096);
-  memcpy(salt_, salt, LINK_SALT_LENGTH * sizeof(uint8));
+  memcpy(salt_, salt, LINK_SALT_LENGTH * sizeof(uint8_t));
 }
 
 // TODO(brettw): Do we want to try to cancel the request if this happens? It

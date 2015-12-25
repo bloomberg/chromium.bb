@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_
 #define COMPONENTS_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -72,7 +75,7 @@ class WebResourceService
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Schedules a fetch after |delay_ms| milliseconds.
-  void ScheduleFetch(int64 delay_ms);
+  void ScheduleFetch(int64_t delay_ms);
 
   // Starts fetching data from the server.
   void StartFetch();

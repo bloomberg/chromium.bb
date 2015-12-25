@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "components/storage_monitor/storage_info.h"
 
 #if defined(OS_LINUX)

@@ -5,12 +5,15 @@
 #include "components/tracing/graphics_memory_dump_provider_android.h"
 
 #include <fcntl.h>
+#include <stdint.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/un.h>
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"

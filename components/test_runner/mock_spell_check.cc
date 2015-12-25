@@ -4,9 +4,12 @@
 
 #include "components/test_runner/mock_spell_check.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/test_runner/test_common.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 

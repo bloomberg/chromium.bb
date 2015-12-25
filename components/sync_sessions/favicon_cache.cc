@@ -5,6 +5,7 @@
 #include "components/sync_sessions/favicon_cache.h"
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -508,7 +509,7 @@ bool FaviconCache::GetSyncedFaviconForPageURL(
 void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
                                          const GURL& icon_url,
                                          const std::string& icon_bytes,
-                                         int64 visit_time_ms) {
+                                         int64_t visit_time_ms) {
   if (!icon_url.is_valid() || !page_url.is_valid() || icon_url.SchemeIs("data"))
     return;
   DVLOG(1) << "Associating " << page_url.spec() << " with favicon at "
@@ -529,10 +530,9 @@ void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
                             icon_bytes, visit_time_ms));
 }
 
-void FaviconCache::OnReceivedSyncFaviconImpl(
-    const GURL& icon_url,
-    const std::string& icon_bytes,
-    int64 visit_time_ms) {
+void FaviconCache::OnReceivedSyncFaviconImpl(const GURL& icon_url,
+                                             const std::string& icon_bytes,
+                                             int64_t visit_time_ms) {
   // If this favicon is already synced, do nothing else.
   if (synced_favicons_.find(icon_url) != synced_favicons_.end())
     return;

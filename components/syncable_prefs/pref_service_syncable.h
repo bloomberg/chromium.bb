@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_H_
 #define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/syncable_prefs/pref_model_associator.h"
@@ -90,7 +93,7 @@ class PrefServiceSyncable : public PrefService {
  private:
   friend class PrefModelAssociator;
 
-  void AddRegisteredSyncablePreference(const std::string& path, uint32 flags);
+  void AddRegisteredSyncablePreference(const std::string& path, uint32_t flags);
 
   // Invoked internally when the IsSyncing() state changes.
   void OnIsSyncingChanged();

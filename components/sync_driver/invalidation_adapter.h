@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
 #define COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "components/invalidation/public/invalidation.h"
@@ -21,7 +23,7 @@ class InvalidationAdapter : public syncer::InvalidationInterface {
   // Implementation of InvalidationInterface.
   bool IsUnknownVersion() const override;
   const std::string& GetPayload() const override;
-  int64 GetVersion() const override;
+  int64_t GetVersion() const override;
   void Acknowledge() override;
   void Drop() override;
 

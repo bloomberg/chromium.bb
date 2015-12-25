@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_UNDO_UNDO_MANAGER_H_
 #define COMPONENTS_UNDO_UNDO_MANAGER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"

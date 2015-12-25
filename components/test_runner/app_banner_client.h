@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "components/test_runner/test_runner_export.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 

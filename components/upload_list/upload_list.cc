@@ -4,6 +4,8 @@
 
 #include "components/upload_list/upload_list.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 

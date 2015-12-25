@@ -4,10 +4,13 @@
 
 #include "components/web_view/public/cpp/web_view.h"
 
+#include <stdint.h>
+
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"

@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_TRACKER_H_
 #define COMPONENTS_SYNC_SESSIONS_SYNCED_SESSION_TRACKER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_sessions/synced_session.h"

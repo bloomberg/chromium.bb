@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
 #define COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <string>
 

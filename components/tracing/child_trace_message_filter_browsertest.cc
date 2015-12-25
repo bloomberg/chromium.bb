@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -36,7 +38,7 @@ class MockDumpProvider : public base::trace_event::MemoryDumpProvider {
 class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
  public:
   // Used as callback argument for MemoryDumpManager::RequestGlobalDump():
-  void OnMemoryDumpCallback(uint64 dump_guid, bool status) {
+  void OnMemoryDumpCallback(uint64_t dump_guid, bool status) {
     last_callback_dump_guid_ = dump_guid;
     last_callback_status_ = status;
     ++callback_call_count_;
@@ -124,7 +126,7 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
 
   // Simulates a synthetic browser -> child process memory dump request and
   // checks that the child actually sends a response to that.
-  void RequestProcessMemoryDumpAndCheckResponse(uint64 dump_guid) {
+  void RequestProcessMemoryDumpAndCheckResponse(uint64_t dump_guid) {
     SimulateSyntheticMessageFromBrowser(TracingMsg_ProcessMemoryDumpRequest(
         {dump_guid, MemoryDumpType::EXPLICITLY_TRIGGERED}));
 
@@ -136,7 +138,7 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
     // Check that the |dump_guid| and the |success| fields are properly set.
     TracingHostMsg_ProcessMemoryDumpResponse::Param params;
     TracingHostMsg_ProcessMemoryDumpResponse::Read(msg, &params);
-    const uint64 resp_guid = base::get<0>(params);
+    const uint64_t resp_guid = base::get<0>(params);
     const bool resp_success = base::get<1>(params);
     EXPECT_EQ(dump_guid, resp_guid);
     EXPECT_TRUE(resp_success);
@@ -162,21 +164,21 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
   base::trace_event::MemoryDumpCallback callback_;
   uint32_t wait_for_ipc_message_type_;
   base::Closure wait_for_ipc_closure_;
-  uint32 callback_call_count_;
-  uint64 last_callback_dump_guid_;
+  uint32_t callback_call_count_;
+  uint64_t last_callback_dump_guid_;
   bool last_callback_status_;
 };
 
 // Covers the case of some browser-initiated memory dumps.
 TEST_F(ChildTracingTest, BrowserInitiatedMemoryDumps) {
-  const uint32 kNumDumps = 3;
+  const uint32_t kNumDumps = 3;
 
   EnableTracingWithMemoryDumps();
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_, _))
       .Times(kNumDumps)
       .WillRepeatedly(Return(true));
 
-  for (uint32 i = 0; i < kNumDumps; ++i) {
+  for (uint32_t i = 0; i < kNumDumps; ++i) {
     render_thread_->sink().ClearMessages();
     RequestProcessMemoryDumpAndCheckResponse(i + 1);
   }
@@ -274,7 +276,7 @@ TEST_F(ChildTracingTest, OverlappingChildInitiatedMemoryDumps) {
 // Covers the case of five child-initiated global memory dumps. Each global dump
 // request has a callback, which is expected to fail for 3 out of 5 cases.
 TEST_F(ChildTracingTest, MultipleChildInitiatedMemoryDumpWithFailures) {
-  const uint32 kNumRequests = 5;
+  const uint32_t kNumRequests = 5;
   MemoryDumpType kDumpType = MemoryDumpType::EXPLICITLY_TRIGGERED;
 
   EnableTracingWithMemoryDumps();
@@ -282,7 +284,7 @@ TEST_F(ChildTracingTest, MultipleChildInitiatedMemoryDumpWithFailures) {
       .Times(kNumRequests)
       .WillRepeatedly(Return(true));
 
-  for (uint32 i = 0; i < kNumRequests; ++i) {
+  for (uint32_t i = 0; i < kNumRequests; ++i) {
     render_thread_->sink().ClearMessages();
     MemoryDumpManager::GetInstance()->RequestGlobalDump(
         kDumpType, MemoryDumpLevelOfDetail::DETAILED, callback_);

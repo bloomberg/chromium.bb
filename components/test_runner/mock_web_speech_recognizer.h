@@ -8,7 +8,7 @@
 #include <deque>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
 

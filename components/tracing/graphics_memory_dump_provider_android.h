@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_TRACING_GRAPHICS_MEMORY_DUMP_PROVIDER_ANDROID_H_
 #define COMPONENTS_TRACING_GRAPHICS_MEMORY_DUMP_PROVIDER_ANDROID_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/tracing/tracing_export.h"

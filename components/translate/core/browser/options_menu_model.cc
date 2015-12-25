@@ -5,6 +5,7 @@
 #include "components/translate/core/browser/options_menu_model.h"
 
 #include "base/metrics/histogram.h"
+#include "build/build_config.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "grit/components_strings.h"

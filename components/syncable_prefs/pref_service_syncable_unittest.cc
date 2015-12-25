@@ -4,9 +4,12 @@
 
 #include "components/syncable_prefs/pref_service_syncable.h"
 
+#include <stdint.h>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
@@ -120,11 +123,10 @@ class PrefServiceSyncableTest : public testing::Test {
     next_pref_remote_sync_node_id_ = 0;
   }
 
-  syncer::SyncChange MakeRemoteChange(
-      int64 id,
-      const std::string& name,
-      const base::Value& value,
-      SyncChange::SyncChangeType type) {
+  syncer::SyncChange MakeRemoteChange(int64_t id,
+                                      const std::string& name,
+                                      const base::Value& value,
+                                      SyncChange::SyncChangeType type) {
     std::string serialized;
     JSONStringValueSerializer json(&serialized);
     if (!json.Serialize(value))

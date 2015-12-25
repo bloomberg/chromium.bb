@@ -9,7 +9,7 @@
 
 namespace metrics {
 
-uint32 HashName(const std::string& name) {
+uint32_t HashName(const std::string& name) {
   // SHA-1 is designed to produce a uniformly random spread in its output space,
   // even for nearly-identical inputs.
   unsigned char sha1_hash[base::kSHA1Length];
@@ -17,7 +17,7 @@ uint32 HashName(const std::string& name) {
                       name.size(),
                       sha1_hash);
 
-  uint32 bits;
+  uint32_t bits;
   static_assert(sizeof(bits) < sizeof(sha1_hash), "more data required");
   memcpy(&bits, sha1_hash, sizeof(bits));
 

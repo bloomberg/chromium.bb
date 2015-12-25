@@ -9,9 +9,9 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/syncable_prefs/synced_pref_observer.h"

@@ -4,11 +4,14 @@
 
 #include "components/variations/service/variations_service.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/sha1.h"

@@ -4,6 +4,8 @@
 
 #include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
 
+#include <stdint.h>
+
 #include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -25,7 +27,7 @@ class SyncPageRevisitBroadcasterTest : public ::testing::Test {
   }
 
   void Check(const PageVisitObserver::TransitionType expected,
-             const int32 conversionInput) {
+             const int32_t conversionInput) {
     Check(expected, ui::PageTransitionFromInt(conversionInput));
   }
 };

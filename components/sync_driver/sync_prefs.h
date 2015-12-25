@@ -5,16 +5,19 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 
@@ -159,9 +162,9 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Get/set for the last known sync invalidation versions.
   void GetInvalidationVersions(
-      std::map<syncer::ModelType, int64>* invalidation_versions) const;
+      std::map<syncer::ModelType, int64_t>* invalidation_versions) const;
   void UpdateInvalidationVersions(
-      const std::map<syncer::ModelType, int64>& invalidation_versions);
+      const std::map<syncer::ModelType, int64_t>& invalidation_versions);
 
   // Will return the contents of the LastRunVersion preference. This may be an
   // empty string if no version info was present, and is only valid at

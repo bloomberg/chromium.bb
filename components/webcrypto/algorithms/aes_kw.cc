@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <openssl/evp.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <vector>
 
 #include "base/logging.h"

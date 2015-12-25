@@ -4,6 +4,8 @@
 
 #include "components/test_runner/mock_constraints.h"
 
+#include <stddef.h>
+
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

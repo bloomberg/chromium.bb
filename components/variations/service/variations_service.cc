@@ -4,6 +4,9 @@
 
 #include "components/variations/service/variations_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -16,6 +19,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/network_time/network_time_tracker.h"
@@ -47,7 +51,7 @@ const int kMaxRetrySeedFetch = 5;
 
 // TODO(mad): To be removed when we stop updating the NetworkTimeTracker.
 // For the HTTP date headers, the resolution of the server time is 1 second.
-const int64 kServerTimeResolutionMs = 1000;
+const int64_t kServerTimeResolutionMs = 1000;
 
 // Maximum age permitted for a variations seed, in days.
 const int kMaxVariationsSeedAgeDays = 30;
@@ -195,7 +199,7 @@ std::string GetHardwareClass() {
 // Returns the date that should be used by the VariationsSeedProcessor to do
 // expiry and start date checks.
 base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
-  const int64 date_value = local_state->GetInt64(prefs::kVariationsSeedDate);
+  const int64_t date_value = local_state->GetInt64(prefs::kVariationsSeedDate);
   const base::Time seed_date = base::Time::FromInternalValue(date_value);
   const base::Time build_time = base::GetBuildTime();
   // Use the build time for date checks if either the seed date is invalid or
@@ -302,7 +306,7 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
   if (!LoadSeed(&seed))
     return false;
 
-  const int64 last_fetch_time_internal =
+  const int64_t last_fetch_time_internal =
       local_state_->GetInt64(prefs::kVariationsLastFetchTime);
   const base::Time last_fetch_time =
       base::Time::FromInternalValue(last_fetch_time_internal);

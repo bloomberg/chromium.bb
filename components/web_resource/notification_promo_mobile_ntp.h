@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/web_resource/notification_promo.h"
 
 namespace base {

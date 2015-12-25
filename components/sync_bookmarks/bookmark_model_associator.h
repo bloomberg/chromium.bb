@@ -5,15 +5,18 @@
 #ifndef COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_ASSOCIATOR_H_
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_ASSOCIATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <stack>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/hash.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/sync_driver/data_type_error_handler.h"
@@ -46,7 +49,7 @@ namespace browser_sync {
 // * Persisting model associations and loading them back.
 class BookmarkModelAssociator
     : public sync_driver::
-          PerDataTypeAssociatorInterface<bookmarks::BookmarkNode, int64> {
+          PerDataTypeAssociatorInterface<bookmarks::BookmarkNode, int64_t> {
  public:
   static syncer::ModelType model_type() { return syncer::BOOKMARKS; }
   // |expect_mobile_bookmarks_folder| controls whether or not we
@@ -82,24 +85,24 @@ class BookmarkModelAssociator
   // Returns sync id for the given bookmark node id.
   // Returns syncer::kInvalidId if the sync node is not found for the given
   // bookmark node id.
-  int64 GetSyncIdFromChromeId(const int64& node_id) override;
+  int64_t GetSyncIdFromChromeId(const int64_t& node_id) override;
 
   // Returns the bookmark node for the given sync id.
   // Returns NULL if no bookmark node is found for the given sync id.
   const bookmarks::BookmarkNode* GetChromeNodeFromSyncId(
-      int64 sync_id) override;
+      int64_t sync_id) override;
 
   // Initializes the given sync node from the given bookmark node id.
   // Returns false if no sync node was found for the given bookmark node id or
   // if the initialization of sync node fails.
-  bool InitSyncNodeFromChromeId(const int64& node_id,
+  bool InitSyncNodeFromChromeId(const int64_t& node_id,
                                 syncer::BaseNode* sync_node) override;
 
   // Associates the given bookmark node with the given sync node.
   void Associate(const bookmarks::BookmarkNode* node,
                  const syncer::BaseNode& sync_node) override;
   // Remove the association that corresponds to the given sync id.
-  void Disassociate(int64 sync_id) override;
+  void Disassociate(int64_t sync_id) override;
 
   void AbortAssociation() override {
     // No implementation needed, this associator runs on the main
@@ -110,15 +113,15 @@ class BookmarkModelAssociator
   bool CryptoReadyIfNecessary() override;
 
  private:
-  typedef std::map<int64, int64> BookmarkIdToSyncIdMap;
-  typedef std::map<int64, const bookmarks::BookmarkNode*>
+  typedef std::map<int64_t, int64_t> BookmarkIdToSyncIdMap;
+  typedef std::map<int64_t, const bookmarks::BookmarkNode*>
       SyncIdToBookmarkNodeMap;
-  typedef std::set<int64> DirtyAssociationsSyncIds;
+  typedef std::set<int64_t> DirtyAssociationsSyncIds;
   typedef std::vector<const bookmarks::BookmarkNode*> BookmarkList;
   typedef std::stack<const bookmarks::BookmarkNode*> BookmarkStack;
 
   // Add association between native node and sync node to the maps.
-  void AddAssociation(const bookmarks::BookmarkNode* node, int64 sync_id);
+  void AddAssociation(const bookmarks::BookmarkNode* node, int64_t sync_id);
 
   // Posts a task to persist dirty associations.
   void PostPersistAssociationsTask();
@@ -154,14 +157,15 @@ class BookmarkModelAssociator
     ~Context();
 
     // Push a sync node to the DFS stack.
-    void PushNode(int64 sync_id);
+    void PushNode(int64_t sync_id);
     // Pops a sync node from the DFS stack. Returns false if the stack
     // is empty.
-    bool PopNode(int64* sync_id);
+    bool PopNode(int64_t* sync_id);
 
     // The following methods are used to update |local_merge_result_| and
     // |syncer_merge_result_|.
-    void SetPreAssociationVersions(int64 native_version, int64 sync_version);
+    void SetPreAssociationVersions(int64_t native_version,
+                                   int64_t sync_version);
     void SetNumItemsBeforeAssociation(int local_num, int sync_num);
     void SetNumItemsAfterAssociation(int local_num, int sync_num);
     void IncrementLocalItemsDeleted();
@@ -186,7 +190,7 @@ class BookmarkModelAssociator
     const BookmarkList& bookmark_roots() const { return bookmark_roots_; }
 
     // Gets pre-association sync version for Bookmarks datatype.
-    int64 GetSyncPreAssociationVersion() const;
+    int64_t GetSyncPreAssociationVersion() const;
 
     void MarkForVersionUpdate(const bookmarks::BookmarkNode* node);
     const BookmarkList& bookmarks_for_version_update() const {
@@ -195,7 +199,7 @@ class BookmarkModelAssociator
 
    private:
     // DFS stack of sync nodes traversed during association.
-    std::stack<int64> dfs_stack_;
+    std::stack<int64_t> dfs_stack_;
     // Local and merge results are not owned.
     syncer::SyncMergeResult* local_merge_result_;
     syncer::SyncMergeResult* syncer_merge_result_;
@@ -262,7 +266,7 @@ class BookmarkModelAssociator
   syncer::SyncError BuildAssociations(
       syncer::WriteTransaction* trans,
       const bookmarks::BookmarkNode* parent_node,
-      const std::vector<int64>& sync_ids,
+      const std::vector<int64_t>& sync_ids,
       Context* context);
 
   // Helper method for creating a new native bookmark node.
@@ -276,7 +280,7 @@ class BookmarkModelAssociator
 
   // Helper method for deleting a sync node and all its children.
   // Returns the number of sync nodes deleted.
-  int RemoveSyncNodeHierarchy(syncer::WriteTransaction* trans, int64 sync_id);
+  int RemoveSyncNodeHierarchy(syncer::WriteTransaction* trans, int64_t sync_id);
 
   // Check whether bookmark model and sync model are synced by comparing
   // their transaction versions.

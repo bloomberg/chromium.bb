@@ -4,12 +4,15 @@
 
 #include "components/suggestions/suggestions_service.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <sstream>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/suggestions/blacklist_store.h"
@@ -52,8 +55,8 @@ const char kTestClickUrl[] =
     "https://www.google.com/chromesuggestions/click?q=123&cd=0";
 const char kBlacklistedUrl[] = "http://blacklist.com";
 const char kBlacklistedUrlAlt[] = "http://blacklist-atl.com";
-const int64 kTestDefaultExpiry = 1402200000000000;
-const int64 kTestSetExpiry = 1404792000000000;
+const int64_t kTestDefaultExpiry = 1402200000000000;
+const int64_t kTestSetExpiry = 1404792000000000;
 
 scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
     const GURL& url, net::URLFetcherDelegate* delegate,

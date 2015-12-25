@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WIFI_NETWORK_PROPERTIES_H_
 #define COMPONENTS_WIFI_NETWORK_PROPERTIES_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <set>
 #include <string>
@@ -14,7 +16,7 @@
 
 namespace wifi {
 
-typedef int32 Frequency;
+typedef int32_t Frequency;
 
 enum FrequencyEnum {
   kFrequencyAny = 0,
@@ -43,7 +45,7 @@ struct WIFI_EXPORT NetworkProperties {
   // once operation is completed.
   std::string password;
   // WiFi Signal Strength. 0..100
-  uint32 signal_strength;
+  uint32_t signal_strength;
   bool auto_connect;
   Frequency frequency;
   FrequencySet frequency_set;
@@ -51,7 +53,7 @@ struct WIFI_EXPORT NetworkProperties {
   scoped_ptr<base::DictionaryValue> ToValue(bool network_list) const;
   // Updates only properties set in |value|.
   bool UpdateFromValue(const base::DictionaryValue& value);
-  static std::string MacAddressAsString(const uint8 mac_as_int[6]);
+  static std::string MacAddressAsString(const uint8_t mac_as_int[6]);
   static bool OrderByType(const NetworkProperties& l,
                           const NetworkProperties& r);
 };

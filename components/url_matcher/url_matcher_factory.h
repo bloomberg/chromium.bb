@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/url_matcher/url_matcher_export.h"
 

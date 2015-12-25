@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_VARIATIONS_ENTROPY_PROVIDER_H_
 #define COMPONENTS_VARIATIONS_ENTROPY_PROVIDER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <functional>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "third_party/mt19937ar/mt19937ar.h"
 
@@ -21,20 +24,20 @@ namespace internal {
 
 // A functor that generates random numbers based on a seed, using the Mersenne
 // Twister algorithm. Suitable for use with std::random_shuffle().
-struct SeededRandGenerator : std::unary_function<uint32, uint32> {
-  explicit SeededRandGenerator(uint32 seed);
+struct SeededRandGenerator : std::unary_function<uint32_t, uint32_t> {
+  explicit SeededRandGenerator(uint32_t seed);
   ~SeededRandGenerator();
 
   // Returns a random number in range [0, range).
-  uint32 operator()(uint32 range);
+  uint32_t operator()(uint32_t range);
 
   MersenneTwister mersenne_twister_;
 };
 
 // Fills |mapping| to create a bijection of values in the range of
 // [0, |mapping.size()|), permuted based on |randomization_seed|.
-void PermuteMappingUsingRandomizationSeed(uint32 randomization_seed,
-                                          std::vector<uint16>* mapping);
+void PermuteMappingUsingRandomizationSeed(uint32_t randomization_seed,
+                                          std::vector<uint16_t>* mapping);
 
 }  // namespace internal
 
@@ -52,7 +55,7 @@ class SHA1EntropyProvider : public base::FieldTrial::EntropyProvider {
 
   // base::FieldTrial::EntropyProvider implementation:
   double GetEntropyForTrial(const std::string& trial_name,
-                            uint32 randomization_seed) const override;
+                            uint32_t randomization_seed) const override;
 
  private:
   std::string entropy_source_;
@@ -69,21 +72,21 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
  public:
   // Creates a PermutedEntropyProvider with the given |low_entropy_source|,
   // which should have a value in the range of [0, low_entropy_source_max).
-  PermutedEntropyProvider(uint16 low_entropy_source,
+  PermutedEntropyProvider(uint16_t low_entropy_source,
                           size_t low_entropy_source_max);
   ~PermutedEntropyProvider() override;
 
   // base::FieldTrial::EntropyProvider implementation:
   double GetEntropyForTrial(const std::string& trial_name,
-                            uint32 randomization_seed) const override;
+                            uint32_t randomization_seed) const override;
 
  protected:
   // Performs the permutation algorithm and returns the permuted value that
   // corresponds to |low_entropy_source_|.
-  virtual uint16 GetPermutedValue(uint32 randomization_seed) const;
+  virtual uint16_t GetPermutedValue(uint32_t randomization_seed) const;
 
  private:
-  uint16 low_entropy_source_;
+  uint16_t low_entropy_source_;
   size_t low_entropy_source_max_;
 
   DISALLOW_COPY_AND_ASSIGN(PermutedEntropyProvider);

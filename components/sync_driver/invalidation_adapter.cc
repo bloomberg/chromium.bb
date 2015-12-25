@@ -24,7 +24,7 @@ const std::string& InvalidationAdapter::GetPayload() const {
   return invalidation_.payload();
 }
 
-int64 InvalidationAdapter::GetVersion() const {
+int64_t InvalidationAdapter::GetVersion() const {
   return invalidation_.version();
 }
 

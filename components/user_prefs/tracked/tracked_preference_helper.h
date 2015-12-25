@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_TRACKED_PREFERENCE_HELPER_H_
 #define COMPONENTS_USER_PREFS_TRACKED_TRACKED_PREFERENCE_HELPER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/macros.h"

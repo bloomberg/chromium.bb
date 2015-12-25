@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/url_matcher/url_matcher_export.h"
 
 namespace url_matcher {

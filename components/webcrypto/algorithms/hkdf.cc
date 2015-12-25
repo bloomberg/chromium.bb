@@ -4,6 +4,7 @@
 
 #include <openssl/err.h>
 #include <openssl/hkdf.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "components/webcrypto/algorithm_implementation.h"

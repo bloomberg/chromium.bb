@@ -6,6 +6,7 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <stddef.h>
 
 #include <stdint.h>
 #include <functional>

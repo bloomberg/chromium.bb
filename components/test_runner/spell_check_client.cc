@@ -4,6 +4,9 @@
 
 #include "components/test_runner/spell_check_client.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "components/test_runner/mock_grammar_check.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_proxy.h"

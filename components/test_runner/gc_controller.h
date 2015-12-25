@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_TEST_RUNNER_GC_CONTROLLER_H_
 #define COMPONENTS_TEST_RUNNER_GC_CONTROLLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "gin/wrappable.h"
 
 namespace blink {

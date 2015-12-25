@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <openssl/hmac.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"

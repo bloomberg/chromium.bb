@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_OPTIONS_MENU_MODEL_H_
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_OPTIONS_MENU_MODEL_H_
 
+#include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace translate {

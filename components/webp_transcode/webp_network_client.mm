@@ -4,6 +4,8 @@
 
 #import "components/webp_transcode/webp_network_client.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"

@@ -4,6 +4,8 @@
 
 #include "components/storage_monitor/storage_monitor_mac.h"
 
+#include <stdint.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -61,7 +63,7 @@ StorageInfo BuildStorageInfo(
   CFNumberRef size_number =
       base::mac::GetValueFromDictionary<CFNumberRef>(
           dict, kDADiskDescriptionMediaSizeKey);
-  uint64 size_in_bytes = 0;
+  uint64_t size_in_bytes = 0;
   if (size_number)
     CFNumberGetValue(size_number, kCFNumberLongLongType, &size_in_bytes);
 

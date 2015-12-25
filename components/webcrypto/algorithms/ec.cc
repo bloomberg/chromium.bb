@@ -8,8 +8,10 @@
 #include <openssl/ec_key.h>
 #include <openssl/evp.h>
 #include <openssl/pkcs12.h>
+#include <stddef.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/webcrypto/algorithms/asymmetric_key_util.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"

@@ -4,6 +4,8 @@
 
 #include "components/user_prefs/tracked/pref_hash_calculator.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -20,7 +22,7 @@ namespace {
 std::string GetDigestString(const std::string& key,
                             const std::string& message) {
   crypto::HMAC hmac(crypto::HMAC::SHA256);
-  std::vector<uint8> digest(hmac.DigestLength());
+  std::vector<uint8_t> digest(hmac.DigestLength());
   if (!hmac.Init(key) || !hmac.Sign(message, &digest[0], digest.size())) {
     NOTREACHED();
     return std::string();
@@ -34,7 +36,7 @@ bool VerifyDigestString(const std::string& key,
                         const std::string& message,
                         const std::string& digest_string) {
   crypto::HMAC hmac(crypto::HMAC::SHA256);
-  std::vector<uint8> digest;
+  std::vector<uint8_t> digest;
   return base::HexStringToBytes(digest_string, &digest) && hmac.Init(key) &&
          hmac.Verify(message,
                      base::StringPiece(reinterpret_cast<char*>(&digest[0]),

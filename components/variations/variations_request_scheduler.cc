@@ -4,7 +4,10 @@
 
 #include "components/variations/variations_request_scheduler.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace variations {

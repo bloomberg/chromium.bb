@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
 

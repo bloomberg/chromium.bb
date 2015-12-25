@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/synchronization/lock.h"
 #include "components/variations/synthetic_trials.h"

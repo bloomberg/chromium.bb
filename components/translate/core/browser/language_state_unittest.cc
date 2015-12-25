@@ -4,6 +4,7 @@
 
 #include "components/translate/core/browser/language_state.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_driver.h"

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEBCRYPTO_ALGORITHMS_SECRET_KEY_UTIL_
 #define COMPONENTS_WEBCRYPTO_ALGORITHMS_SECRET_KEY_UTIL_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

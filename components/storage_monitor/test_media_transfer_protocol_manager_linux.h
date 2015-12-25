@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_
 #define COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace storage_monitor {

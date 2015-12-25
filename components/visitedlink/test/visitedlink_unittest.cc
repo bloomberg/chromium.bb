@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cstdio>
 #include <string>
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -260,7 +264,7 @@ TEST_F(VisitedLinkTest, DatabaseIO) {
 
 // Checks that we can delete things properly when there are collisions.
 TEST_F(VisitedLinkTest, Delete) {
-  static const int32 kInitialSize = 17;
+  static const int32_t kInitialSize = 17;
   ASSERT_TRUE(InitVisited(kInitialSize, true, true));
 
   // Add a cluster from 14-17 wrapping around to 0. These will all hash to the
@@ -303,13 +307,13 @@ TEST_F(VisitedLinkTest, BigDelete) {
 
   // Add the base set of URLs that won't be deleted.
   // Reload() will test for these.
-  for (int32 i = 0; i < g_test_count; i++)
+  for (int32_t i = 0; i < g_test_count; i++)
     master_->AddURL(TestURL(i));
 
   // Add more URLs than necessary to trigger this case.
   const int kTestDeleteCount = VisitedLinkMaster::kBigDeleteThreshold + 2;
   URLs urls_to_delete;
-  for (int32 i = g_test_count; i < g_test_count + kTestDeleteCount; i++) {
+  for (int32_t i = g_test_count; i < g_test_count + kTestDeleteCount; i++) {
     GURL url(TestURL(i));
     master_->AddURL(url);
     urls_to_delete.push_back(url);
@@ -369,7 +373,7 @@ TEST_F(VisitedLinkTest, DeleteAll) {
 // full, notifies its slaves of the change, and updates the disk.
 TEST_F(VisitedLinkTest, Resizing) {
   // Create a very small database.
-  const int32 initial_size = 17;
+  const int32_t initial_size = 17;
   ASSERT_TRUE(InitVisited(initial_size, true, true));
 
   // ...and a slave
@@ -380,7 +384,7 @@ TEST_F(VisitedLinkTest, Resizing) {
   slave.OnUpdateVisitedLinks(new_handle);
   g_slaves.push_back(&slave);
 
-  int32 used_count = master_->GetUsedCount();
+  int32_t used_count = master_->GetUsedCount();
   ASSERT_EQ(used_count, 0);
 
   for (int i = 0; i < g_test_count; i++) {
@@ -390,7 +394,7 @@ TEST_F(VisitedLinkTest, Resizing) {
   }
 
   // Verify that the table got resized sufficiently.
-  int32 table_size;
+  int32_t table_size;
   VisitedLinkCommon::Fingerprint* table;
   master_->GetUsageStatistics(&table_size, &table);
   used_count = master_->GetUsedCount();
@@ -400,11 +404,11 @@ TEST_F(VisitedLinkTest, Resizing) {
 
   // Verify that the slave got the resize message and has the same
   // table information.
-  int32 child_table_size;
+  int32_t child_table_size;
   VisitedLinkCommon::Fingerprint* child_table;
   slave.GetUsageStatistics(&child_table_size, &child_table);
   ASSERT_EQ(table_size, child_table_size);
-  for (int32 i = 0; i < table_size; i++) {
+  for (int32_t i = 0; i < table_size; i++) {
     ASSERT_EQ(table[i], child_table[i]);
   }
 
@@ -593,7 +597,7 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
 
     if (msg->type() == ChromeViewMsg_VisitedLink_Add::ID) {
       base::PickleIterator iter(*msg);
-      std::vector<uint64> fingerprints;
+      std::vector<uint64_t> fingerprints;
       CHECK(IPC::ReadParam(msg, &iter, &fingerprints));
       counting_context->CountAddEvent(fingerprints.size());
     } else if (msg->type() == ChromeViewMsg_VisitedLink_Reset::ID) {

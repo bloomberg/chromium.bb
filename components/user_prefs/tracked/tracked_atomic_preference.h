@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_ATOMIC_PREFERENCE_H_
 #define COMPONENTS_USER_PREFS_TRACKED_ATOMIC_PREFERENCE_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"

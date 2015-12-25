@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 // Multiply-included file, no traditional include guard.
+
+#include <stddef.h>
+
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 

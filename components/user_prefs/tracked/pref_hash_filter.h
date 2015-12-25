@@ -5,14 +5,16 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_PREF_HASH_FILTER_H_
 #define COMPONENTS_USER_PREFS_TRACKED_PREF_HASH_FILTER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/user_prefs/tracked/interceptable_pref_filter.h"
 #include "components/user_prefs/tracked/tracked_preference.h"

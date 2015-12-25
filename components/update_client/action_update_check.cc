@@ -4,6 +4,8 @@
 
 #include "components/update_client/action_update_check.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"

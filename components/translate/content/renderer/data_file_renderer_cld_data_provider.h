@@ -9,6 +9,8 @@
 #ifndef COMPONENTS_TRANSLATE_CONTENT_RENDERER_DATA_FILE_RENDERER_CLD_DATA_PROVIDER_H_
 #define COMPONENTS_TRANSLATE_CONTENT_RENDERER_DATA_FILE_RENDERER_CLD_DATA_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
@@ -32,8 +34,8 @@ class DataFileRendererCldDataProvider : public RendererCldDataProvider {
   // third_party/cld_2/src/internal/compact_lang_det.h for more information on
   // the dynamic data loading process.
   void LoadCldData(base::File file,
-                   const uint64 data_offset,
-                   const uint64 data_length);
+                   const uint64_t data_offset,
+                   const uint64_t data_length);
 
   // RendererCldDataProvider implementations:
   bool OnMessageReceived(const IPC::Message&) override;
@@ -43,8 +45,8 @@ class DataFileRendererCldDataProvider : public RendererCldDataProvider {
 
  private:
   void OnCldDataAvailable(const IPC::PlatformFileForTransit ipc_file_handle,
-                          const uint64 data_offset,
-                          const uint64 data_length);
+                          const uint64_t data_offset,
+                          const uint64_t data_length);
   content::RenderFrameObserver* render_frame_observer_;
   base::Callback<void(void)> cld_available_callback_;
 

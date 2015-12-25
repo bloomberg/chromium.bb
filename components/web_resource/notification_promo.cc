@@ -4,10 +4,13 @@
 
 #include "components/web_resource/notification_promo.h"
 
+#include <stddef.h>
+
 #include <cmath>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -17,6 +20,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/promo_resource_service.h"

@@ -4,6 +4,7 @@
 
 #include "components/test_runner/text_input_controller.h"
 
+#include "base/macros.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"

@@ -4,6 +4,8 @@
 
 #include "components/webdata/common/web_database_service.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"

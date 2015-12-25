@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
 #define COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
 

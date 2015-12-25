@@ -4,9 +4,11 @@
 
 #include "components/variations/caching_permuted_entropy_provider.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

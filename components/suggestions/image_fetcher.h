@@ -6,6 +6,7 @@
 #define COMPONENTS_SUGGESTIONS_IMAGE_FETCHER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "components/suggestions/image_fetcher_delegate.h"
 #include "url/gurl.h"
 

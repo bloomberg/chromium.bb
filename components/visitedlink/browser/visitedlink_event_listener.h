@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/timer/timer.h"
 #include "components/visitedlink/browser/visitedlink_master.h"

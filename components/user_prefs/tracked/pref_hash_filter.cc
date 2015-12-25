@@ -4,9 +4,12 @@
 
 #include "components/user_prefs/tracked/pref_hash_filter.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_store.h"
@@ -110,11 +113,11 @@ base::Time PrefHashFilter::GetResetTime(PrefService* user_prefs) {
   // order to ensure it remains consistent with the way we store this value
   // (which we do via a PrefStore, preventing us from reusing
   // PrefService::SetInt64).
-  int64 internal_value = base::Time().ToInternalValue();
+  int64_t internal_value = base::Time().ToInternalValue();
   if (!base::StringToInt64(
           user_prefs->GetString(user_prefs::kPreferenceResetTime),
           &internal_value)) {
-    // Somehow the value stored on disk is not a valid int64.
+    // Somehow the value stored on disk is not a valid int64_t.
     NOTREACHED();
     return base::Time();
   }

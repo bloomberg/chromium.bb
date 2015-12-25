@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace webcrypto {

@@ -4,6 +4,8 @@
 
 #include "components/web_cache/browser/web_cache_manager.h"
 
+#include <string.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

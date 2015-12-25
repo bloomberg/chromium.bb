@@ -4,7 +4,8 @@
 
 #include "components/user_manager/user_manager_base.h"
 
-#include <cstddef>
+#include <stddef.h>
+
 #include <set>
 
 #include "base/bind.h"

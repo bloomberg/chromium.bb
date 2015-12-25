@@ -4,7 +4,10 @@
 
 #include "components/webp_transcode/webp_network_client.h"
 
+#include <stddef.h>
+
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"

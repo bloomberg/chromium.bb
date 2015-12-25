@@ -4,6 +4,8 @@
 
 #include "components/url_matcher/regex_set_matcher.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

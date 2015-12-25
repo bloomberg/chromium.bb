@@ -4,6 +4,8 @@
 
 #include "components/variations/variations_seed_simulator.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/metrics/field_trial.h"

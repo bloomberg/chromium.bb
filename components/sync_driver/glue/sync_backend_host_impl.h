@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_IMPL_H_
 #define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
@@ -220,7 +222,7 @@ class SyncBackendHostImpl
   // Overwrites the kSyncInvalidationVersions preference with the most recent
   // set of invalidation versions for each type.
   void UpdateInvalidationVersions(
-      const std::map<syncer::ModelType, int64>& invalidation_versions);
+      const std::map<syncer::ModelType, int64_t>& invalidation_versions);
 
   sync_driver::SyncFrontend* frontend() {
     return frontend_;

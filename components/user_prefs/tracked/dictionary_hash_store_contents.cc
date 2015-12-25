@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"

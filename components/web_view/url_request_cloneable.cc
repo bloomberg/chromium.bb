@@ -4,6 +4,8 @@
 
 #include "components/web_view/url_request_cloneable.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/common/url_type_converters.h"
