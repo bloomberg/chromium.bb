@@ -867,6 +867,7 @@ crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overf
 
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Slow Timeout ]
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Slow Timeout ]
+crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
 
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ Failure ]
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-move.html [ Failure ]
