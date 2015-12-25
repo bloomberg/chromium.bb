@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/webui/options/media_devices_selection_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_QUOTA_INTERNALS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_QUOTA_INTERNALS_HANDLER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "storage/common/quota/quota_types.h"
@@ -35,7 +38,7 @@ class QuotaInternalsHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
   // Called by QuotaInternalsProxy to report information to WebUI page.
-  void ReportAvailableSpace(int64 available_space);
+  void ReportAvailableSpace(int64_t available_space);
   void ReportGlobalInfo(const GlobalStorageInfo& data);
   void ReportPerHostInfo(const std::vector<PerHostStorageInfo>& hosts);
   void ReportPerOriginInfo(const std::vector<PerOriginStorageInfo>& origins);

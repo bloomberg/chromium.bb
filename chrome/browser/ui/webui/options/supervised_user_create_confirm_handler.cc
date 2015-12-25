@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/webui/options/supervised_user_create_confirm_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"

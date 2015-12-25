@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 #include <map>
 #include <set>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"

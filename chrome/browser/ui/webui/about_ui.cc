@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/about_ui.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -17,6 +20,7 @@
 #include "base/format_macros.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,6 +31,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
@@ -539,7 +544,7 @@ std::vector<std::string> GetHtmlTabDescriptorsForDiscardPage() {
 
 std::string AboutDiscards(const std::string& path) {
   std::string output;
-  int64 web_content_id;
+  int64_t web_content_id;
   memory::TabManager* tab_manager = g_browser_process->GetTabManager();
 
   std::vector<std::string> path_split = base::SplitString(

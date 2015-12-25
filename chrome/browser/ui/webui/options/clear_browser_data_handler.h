@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CLEAR_BROWSER_DATA_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CLEAR_BROWSER_DATA_HANDLER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/browsing_data/browsing_data_counter.h"

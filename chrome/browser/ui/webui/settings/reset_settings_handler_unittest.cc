@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_UI_H_
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 

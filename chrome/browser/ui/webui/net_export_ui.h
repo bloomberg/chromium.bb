@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NET_EXPORT_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_NET_EXPORT_UI_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The C++ back-end for the chrome://net-export webui page.

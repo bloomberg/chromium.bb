@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"

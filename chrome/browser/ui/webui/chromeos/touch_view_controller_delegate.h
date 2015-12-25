@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_TOUCH_VIEW_CONTROLLER_DELEGATE_H_
 
 #include "ash/shell_observer.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 
 namespace chromeos {

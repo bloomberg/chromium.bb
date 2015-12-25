@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/policy_material_design_ui.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy_ui_handler.h"
 #include "chrome/common/url_constants.h"

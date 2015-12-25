@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"

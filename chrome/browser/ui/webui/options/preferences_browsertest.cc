@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/preferences_browsertest.h"
 
+#include <stddef.h>
+
 #include <iostream>
 #include <sstream>
 
@@ -13,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

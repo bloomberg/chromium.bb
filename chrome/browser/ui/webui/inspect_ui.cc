@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/inspect_ui.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/command_line.h"

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/display/window_tree_host_manager.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace base {

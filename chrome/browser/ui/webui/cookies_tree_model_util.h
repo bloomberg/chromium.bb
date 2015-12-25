@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_COOKIES_TREE_MODEL_UTIL_H_
 #define CHROME_BROWSER_UI_WEBUI_COOKIES_TREE_MODEL_UTIL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 
 class CookieTreeNode;
 
@@ -40,7 +42,7 @@ class CookiesTreeModelUtil {
 
  private:
   typedef IDMap<const CookieTreeNode> CookiesTreeNodeIdMap;
-  typedef std::map<const CookieTreeNode*, int32> CookieTreeNodeMap;
+  typedef std::map<const CookieTreeNode*, int32_t> CookieTreeNodeMap;
 
   // Populate given |dict| with cookie tree node properties. |id_map| maps
   // a CookieTreeNode to an ID and creates a new ID if |node| is not in the

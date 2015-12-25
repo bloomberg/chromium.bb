@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_HELP_OVERLAY_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_HELP_OVERLAY_HANDLER_H_
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 

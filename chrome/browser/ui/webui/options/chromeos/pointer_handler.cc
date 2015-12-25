@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/pointer_handler.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/url_constants.h"

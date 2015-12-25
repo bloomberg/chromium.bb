@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"

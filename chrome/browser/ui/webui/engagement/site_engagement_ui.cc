@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 
+#include "base/macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"

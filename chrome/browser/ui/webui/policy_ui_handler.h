@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_POLICY_UI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_POLICY_UI_HANDLER_H_
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/macros.h"

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 
 #include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <map>
@@ -14,11 +16,13 @@
 #include "base/files/file_util.h"  // for FileAccessProvider
 #include "base/i18n/string_compare.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -157,7 +161,7 @@ class CertIdMap {
   net::X509Certificate* CallbackArgsToCert(const base::ListValue* args);
 
  private:
-  typedef std::map<net::X509Certificate*, int32> CertMap;
+  typedef std::map<net::X509Certificate*, int32_t> CertMap;
 
   // Creates an ID for cert and looks up the cert for an ID.
   IDMap<net::X509Certificate>id_map_;
@@ -173,13 +177,13 @@ std::string CertIdMap::CertToId(net::X509Certificate* cert) {
   if (iter != cert_map_.end())
     return base::IntToString(iter->second);
 
-  int32 new_id = id_map_.Add(cert);
+  int32_t new_id = id_map_.Add(cert);
   cert_map_[cert] = new_id;
   return base::IntToString(new_id);
 }
 
 net::X509Certificate* CertIdMap::IdToCert(const std::string& id) {
-  int32 cert_id = 0;
+  int32_t cert_id = 0;
   if (!base::StringToInt(id, &cert_id))
     return NULL;
 

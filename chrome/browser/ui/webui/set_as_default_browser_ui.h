@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SET_AS_DEFAULT_BROWSER_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SET_AS_DEFAULT_BROWSER_UI_H_
 
+#include "base/macros.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 class Browser;

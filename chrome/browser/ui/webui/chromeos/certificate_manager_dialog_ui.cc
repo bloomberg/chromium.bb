@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

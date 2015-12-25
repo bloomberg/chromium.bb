@@ -4,13 +4,16 @@
 
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -383,7 +386,7 @@ void SimUnlockHandler::DeviceListChanged() {
     return;
 
   sim_lock_type_ = cellular_device->sim_lock_type();
-  uint32 retries_left = cellular_device->sim_retries_left();
+  uint32_t retries_left = cellular_device->sim_retries_left();
   VLOG(1) << "OnNetworkDeviceSimLockChanged, lock: " << sim_lock_type_
           << ", retries: " << retries_left;
   // There's a pending PIN operation.
@@ -656,7 +659,7 @@ void SimUnlockHandler::ProcessSimCardState(
     const DeviceState* cellular) {
   std::string error_msg;
   if (cellular) {
-    uint32 retries_left = cellular->sim_retries_left();
+    uint32_t retries_left = cellular->sim_retries_left();
     VLOG(1) << "Current state: " << state_ << " lock_type: " << sim_lock_type_
             << " retries: " << retries_left;
     switch (state_) {

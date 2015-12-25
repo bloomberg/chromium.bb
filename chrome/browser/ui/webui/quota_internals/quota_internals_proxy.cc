@@ -93,7 +93,7 @@ QuotaInternalsProxy::~QuotaInternalsProxy() {}
     handler_->func(arg);                                      \
   }
 
-RELAY_TO_HANDLER(ReportAvailableSpace, int64)
+RELAY_TO_HANDLER(ReportAvailableSpace, int64_t)
 RELAY_TO_HANDLER(ReportGlobalInfo, const GlobalStorageInfo&)
 RELAY_TO_HANDLER(ReportPerHostInfo, const std::vector<PerHostStorageInfo>&)
 RELAY_TO_HANDLER(ReportPerOriginInfo, const std::vector<PerOriginStorageInfo>&)
@@ -102,7 +102,7 @@ RELAY_TO_HANDLER(ReportStatistics, const Statistics&)
 #undef RELAY_TO_HANDLER
 
 void QuotaInternalsProxy::DidGetAvailableSpace(storage::QuotaStatusCode status,
-                                               int64 space) {
+                                               int64_t space) {
   // crbug.com/349708
   TRACE_EVENT0("io", "QuotaInternalsProxy::DidGetAvailableSpace");
 
@@ -112,7 +112,7 @@ void QuotaInternalsProxy::DidGetAvailableSpace(storage::QuotaStatusCode status,
 
 void QuotaInternalsProxy::DidGetGlobalQuota(storage::StorageType type,
                                             storage::QuotaStatusCode status,
-                                            int64 quota) {
+                                            int64_t quota) {
   if (status == storage::kQuotaStatusOk) {
     GlobalStorageInfo info(type);
     info.set_quota(quota);
@@ -121,8 +121,8 @@ void QuotaInternalsProxy::DidGetGlobalQuota(storage::StorageType type,
 }
 
 void QuotaInternalsProxy::DidGetGlobalUsage(storage::StorageType type,
-                                            int64 usage,
-                                            int64 unlimited_usage) {
+                                            int64_t usage,
+                                            int64_t unlimited_usage) {
   GlobalStorageInfo info(type);
   info.set_usage(usage);
   info.set_unlimited_usage(unlimited_usage);
@@ -165,7 +165,7 @@ void QuotaInternalsProxy::DidDumpOriginInfoTable(
 
 void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
                                           storage::StorageType type,
-                                          int64 usage) {
+                                          int64_t usage) {
   DCHECK(type == storage::kStorageTypeTemporary ||
          type == storage::kStorageTypePersistent ||
          type == storage::kStorageTypeSyncable);

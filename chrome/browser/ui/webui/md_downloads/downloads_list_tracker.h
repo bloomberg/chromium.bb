@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_DOWNLOADS_LIST_TRACKER_H_
 #define CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_DOWNLOADS_LIST_TRACKER_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/callback_forward.h"

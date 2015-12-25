@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 #include "ui/shell_dialogs/select_file_dialog.h"

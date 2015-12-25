@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
@@ -505,7 +506,7 @@ void DownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
   if (removals_.empty())
     return;
 
-  const std::set<uint32> last_removed_ids = removals_.back();
+  const std::set<uint32_t> last_removed_ids = removals_.back();
   removals_.pop_back();
 
   for (auto id : last_removed_ids) {
@@ -548,7 +549,7 @@ void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
 
 void DownloadsDOMHandler::RemoveDownloads(
     const std::vector<content::DownloadItem*>& to_remove) {
-  std::set<uint32> ids;
+  std::set<uint32_t> ids;
 
   for (auto* download : to_remove) {
     DownloadItemModel item_model(download);
@@ -606,7 +607,7 @@ content::DownloadManager* DownloadsDOMHandler::GetOriginalNotifierManager()
 
 void DownloadsDOMHandler::FinalizeRemovals() {
   while (!removals_.empty()) {
-    const std::set<uint32> remove = removals_.back();
+    const std::set<uint32_t> remove = removals_.back();
     removals_.pop_back();
 
     for (const auto id : remove) {
@@ -690,16 +691,16 @@ content::DownloadItem* DownloadsDOMHandler::GetDownloadByValue(
     return nullptr;
   }
 
-  uint64 id;
+  uint64_t id;
   if (!base::StringToUint64(download_id, &id)) {
     NOTREACHED();
     return nullptr;
   }
 
-  return GetDownloadById(static_cast<uint32>(id));
+  return GetDownloadById(static_cast<uint32_t>(id));
 }
 
-content::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32 id) {
+content::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32_t id) {
   content::DownloadItem* item = NULL;
   if (GetMainNotifierManager())
     item = GetMainNotifierManager()->GetDownload(id);

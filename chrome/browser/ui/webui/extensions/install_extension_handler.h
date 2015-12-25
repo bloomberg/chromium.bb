@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_INSTALL_EXTENSION_HANDLER_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"

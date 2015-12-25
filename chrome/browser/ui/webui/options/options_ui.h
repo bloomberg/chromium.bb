@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_OPTIONS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_OPTIONS_UI_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "apps/metrics_names.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/task/cancelable_task_tracker.h"

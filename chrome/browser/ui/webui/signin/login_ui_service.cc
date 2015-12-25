@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/supervised_user_learn_more_handler.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/url_constants.h"

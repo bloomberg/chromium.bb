@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <string>

@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -53,7 +56,7 @@ namespace local_discovery {
 
 namespace {
 
-const uint8 kQueryData[] = {
+const uint8_t kQueryData[] = {
   // Header
   0x00, 0x00,
   0x00, 0x00,               // Flags not set.
@@ -73,7 +76,7 @@ const uint8 kQueryData[] = {
   0x00, 0x01,               // QCLASS: IN class. Unicast bit not set.
 };
 
-const uint8 kAnnouncePacket[] = {
+const uint8_t kAnnouncePacket[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x80, 0x00,               // Standard query response, no error
@@ -148,7 +151,7 @@ const uint8 kAnnouncePacket[] = {
 };
 
 
-const uint8 kGoodbyePacket[] = {
+const uint8_t kGoodbyePacket[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x80, 0x00,               // Standard query response, RA, no error
@@ -185,7 +188,7 @@ const uint8 kGoodbyePacket[] = {
   0x00,
 };
 
-const uint8 kAnnouncePacketRegistered[] = {
+const uint8_t kAnnouncePacketRegistered[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x80, 0x00,               // Standard query response, RA, no error

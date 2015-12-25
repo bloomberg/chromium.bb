@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/supervised_user_internals_message_handler.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"

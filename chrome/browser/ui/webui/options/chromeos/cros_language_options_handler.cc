@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"

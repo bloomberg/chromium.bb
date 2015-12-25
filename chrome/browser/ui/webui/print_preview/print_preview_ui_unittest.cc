@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -198,13 +201,13 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 
   // Test with invalid |preview_ui_addr|.
   bool cancel = false;
-  const int32 kInvalidId = -5;
+  const int32_t kInvalidId = -5;
   preview_ui->GetCurrentPrintPreviewStatus(kInvalidId, 0, &cancel);
   EXPECT_TRUE(cancel);
 
   const int kFirstRequestId = 1000;
   const int kSecondRequestId = 1001;
-  const int32 preview_ui_addr = preview_ui->GetIDForPrintPreviewUI();
+  const int32_t preview_ui_addr = preview_ui->GetIDForPrintPreviewUI();
 
   // Test with kFirstRequestId.
   preview_ui->OnPrintPreviewRequest(kFirstRequestId);

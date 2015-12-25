@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"

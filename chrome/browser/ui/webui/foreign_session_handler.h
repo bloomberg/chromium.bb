@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_service.h"

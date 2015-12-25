@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/privet_http.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -12,6 +14,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"

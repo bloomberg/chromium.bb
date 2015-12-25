@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_loader_handler.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"

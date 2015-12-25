@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
 
+#include <stddef.h>
+
 #include "ash/new_window_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"

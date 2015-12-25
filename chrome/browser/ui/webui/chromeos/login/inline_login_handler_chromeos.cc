@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"

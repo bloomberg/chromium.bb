@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

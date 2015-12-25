@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <functional>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
@@ -389,16 +388,16 @@ content::DownloadItem* MdDownloadsDOMHandler::GetDownloadByValue(
     return nullptr;
   }
 
-  uint64 id;
+  uint64_t id;
   if (!base::StringToUint64(download_id, &id)) {
     NOTREACHED();
     return nullptr;
   }
 
-  return GetDownloadById(static_cast<uint32>(id));
+  return GetDownloadById(static_cast<uint32_t>(id));
 }
 
-content::DownloadItem* MdDownloadsDOMHandler::GetDownloadById(uint32 id) {
+content::DownloadItem* MdDownloadsDOMHandler::GetDownloadById(uint32_t id) {
   content::DownloadItem* item = NULL;
   if (GetMainNotifierManager())
     item = GetMainNotifierManager()->GetDownload(id);

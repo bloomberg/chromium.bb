@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"

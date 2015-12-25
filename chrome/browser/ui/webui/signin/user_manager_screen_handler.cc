@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"

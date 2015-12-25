@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_BROWSING_HISTORY_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_BROWSING_HISTORY_HANDLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"
@@ -85,7 +87,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     std::string client_id;
 
     // Timestamps of all local or remote visits the same URL on the same day.
-    std::set<int64> all_timestamps;
+    std::set<int64_t> all_timestamps;
 
     // If true, this entry is a search result.
     bool is_search_result;

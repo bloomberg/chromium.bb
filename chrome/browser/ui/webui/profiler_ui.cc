@@ -14,6 +14,7 @@
 // #define USE_SOURCE_FILES_DIRECTLY
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/tracked_objects.h"

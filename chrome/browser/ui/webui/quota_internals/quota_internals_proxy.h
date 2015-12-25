@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_QUOTA_INTERNALS_PROXY_H_
 #define CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_QUOTA_INTERNALS_PROXY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -48,25 +51,25 @@ class QuotaInternalsProxy
 
   virtual ~QuotaInternalsProxy();
 
-  void ReportAvailableSpace(int64 available_space);
+  void ReportAvailableSpace(int64_t available_space);
   void ReportGlobalInfo(const GlobalStorageInfo& data);
   void ReportPerHostInfo(const std::vector<PerHostStorageInfo>& hosts);
   void ReportPerOriginInfo(const std::vector<PerOriginStorageInfo>& origins);
   void ReportStatistics(const Statistics& stats);
 
   // Called on IO Thread by QuotaManager as callback.
-  void DidGetAvailableSpace(storage::QuotaStatusCode status, int64 space);
+  void DidGetAvailableSpace(storage::QuotaStatusCode status, int64_t space);
   void DidGetGlobalQuota(storage::StorageType type,
                          storage::QuotaStatusCode status,
-                         int64 quota);
+                         int64_t quota);
   void DidGetGlobalUsage(storage::StorageType type,
-                         int64 usage,
-                         int64 unlimited_usage);
+                         int64_t usage,
+                         int64_t unlimited_usage);
   void DidDumpQuotaTable(const QuotaTableEntries& entries);
   void DidDumpOriginInfoTable(const OriginInfoTableEntries& entries);
   void DidGetHostUsage(const std::string& host,
                        storage::StorageType type,
-                       int64 usage);
+                       int64_t usage);
 
   // Helper. Called on IO Thread.
   void RequestPerOriginInfo(storage::StorageType type);

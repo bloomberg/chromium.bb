@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 
-#include "base/basictypes.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

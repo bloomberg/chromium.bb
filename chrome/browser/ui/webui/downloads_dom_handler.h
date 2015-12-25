@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOM_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_DOWNLOADS_DOM_HANDLER_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/download/download_danger_prompt.h"
@@ -139,7 +142,7 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   content::DownloadItem* GetDownloadByValue(const base::ListValue* args);
 
   // Returns the download with |id| or NULL if it doesn't exist.
-  content::DownloadItem* GetDownloadById(uint32 id);
+  content::DownloadItem* GetDownloadById(uint32_t id);
 
   // Remove all downloads in |to_remove| with the ability to undo removal later.
   void RemoveDownloads(const std::vector<content::DownloadItem*>& to_remove);
@@ -159,13 +162,13 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   scoped_ptr<AllDownloadItemNotifier> original_notifier_;
 
   // IDs of downloads to remove when this handler gets deleted.
-  std::vector<std::set<uint32>> removals_;
+  std::vector<std::set<uint32_t>> removals_;
 
   // Whether a call to SendCurrentDownloads() is currently scheduled.
   bool update_scheduled_;
 
   // IDs of new downloads that the page doesn't know about yet.
-  std::set<uint32> new_downloads_;
+  std::set<uint32_t> new_downloads_;
 
   base::WeakPtrFactory<DownloadsDOMHandler> weak_ptr_factory_;
 

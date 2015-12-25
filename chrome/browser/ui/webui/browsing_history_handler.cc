@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/bind.h"
@@ -222,7 +224,7 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
 
   // Pass the timestamps in a list.
   scoped_ptr<base::ListValue> timestamps(new base::ListValue);
-  for (std::set<int64>::const_iterator it = all_timestamps.begin();
+  for (std::set<int64_t>::const_iterator it = all_timestamps.begin();
        it != all_timestamps.end(); ++it) {
     timestamps->AppendDouble(base::Time::FromInternalValue(*it).ToJsTime());
   }
@@ -761,7 +763,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
       for (int j = 0; j < static_cast<int>(ids->GetSize()); ++j) {
         const base::DictionaryValue* id = NULL;
         std::string timestamp_string;
-        int64 timestamp_usec = 0;
+        int64_t timestamp_usec = 0;
 
         if (!ids->GetDictionary(j, &id) ||
             !id->GetString("timestamp_usec", &timestamp_string) ||

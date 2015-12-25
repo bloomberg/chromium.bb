@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -27,20 +29,20 @@ using testing::Return;
 
 namespace {
 
-uint64 GetId(const base::Value* value) {
+uint64_t GetId(const base::Value* value) {
   const base::DictionaryValue* dict;
   CHECK(value->GetAsDictionary(&dict));
 
   int id;
   CHECK(dict->GetInteger("id", &id));
   CHECK_GE(id, 0);
-  return static_cast<uint64>(id);
+  return static_cast<uint64_t>(id);
 }
 
-std::vector<uint64> GetIds(const base::Value* value) {
+std::vector<uint64_t> GetIds(const base::Value* value) {
   CHECK(value);
 
-  std::vector<uint64> ids;
+  std::vector<uint64_t> ids;
 
   if (value->GetType() == base::Value::TYPE_LIST) {
     const base::ListValue* list;
@@ -85,7 +87,7 @@ class TestDownloadsListTracker : public DownloadsListTracker {
   scoped_ptr<base::DictionaryValue> CreateDownloadItemValue(
       content::DownloadItem* item) const override {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    CHECK_LE(item->GetId(), static_cast<uint64>(INT_MAX));
+    CHECK_LE(item->GetId(), static_cast<uint64_t>(INT_MAX));
     dict->SetInteger("id", item->GetId());
     return dict.Pass();
   }
@@ -109,7 +111,7 @@ class DownloadsListTrackerTest : public testing::Test {
         testing::Invoke(this, &DownloadsListTrackerTest::GetAllDownloads));
   }
 
-  MockDownloadItem* CreateMock(uint64 id, const base::Time& started) {
+  MockDownloadItem* CreateMock(uint64_t id, const base::Time& started) {
     MockDownloadItem* new_item = new testing::NiceMock<MockDownloadItem>();
     mock_items_.push_back(new_item);
 
@@ -182,7 +184,7 @@ TEST_F(DownloadsListTrackerTest, StartCallsInsertItems) {
             web_ui()->call_data()[0]->function_name());
   EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
 
-  std::vector<uint64> ids = GetIds(web_ui()->call_data()[0]->arg2());
+  std::vector<uint64_t> ids = GetIds(web_ui()->call_data()[0]->arg2());
   ASSERT_FALSE(ids.empty());
   EXPECT_EQ(first_item->GetId(), ids[0]);
 }
@@ -218,7 +220,7 @@ TEST_F(DownloadsListTrackerTest, OnDownloadCreatedCallsInsertItems) {
             web_ui()->call_data()[0]->function_name());
   EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
 
-  std::vector<uint64> ids = GetIds(web_ui()->call_data()[0]->arg2());
+  std::vector<uint64_t> ids = GetIds(web_ui()->call_data()[0]->arg2());
   ASSERT_FALSE(ids.empty());
   EXPECT_EQ(first_item->GetId(), ids[0]);
 }

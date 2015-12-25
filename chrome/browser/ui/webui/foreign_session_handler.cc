@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>

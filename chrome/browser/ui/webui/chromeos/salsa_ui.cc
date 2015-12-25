@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/salsa_ui.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"

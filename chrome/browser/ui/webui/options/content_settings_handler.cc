@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <vector>
@@ -12,11 +14,13 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -817,7 +821,7 @@ void ContentSettingsHandler::Observe(
 }
 
 void ContentSettingsHandler::OnGetPermissionSettingsCompleted(
-    uint32 request_id,
+    uint32_t request_id,
     bool success,
     PP_Flash_BrowserOperations_Permission default_permission,
     const ppapi::FlashSiteSettings& sites) {

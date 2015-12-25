@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,7 +14,7 @@ namespace {
 
 struct TestResult {
   std::string url;
-  int64 hour_offset;  // Visit time in hours past the baseline time.
+  int64_t hour_offset;  // Visit time in hours past the baseline time.
 };
 
 // Duplicates on the same day in the local timezone are removed, so set a

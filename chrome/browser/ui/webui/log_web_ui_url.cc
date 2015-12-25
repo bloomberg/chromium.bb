@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 
+#include <stdint.h>
+
 #include "base/hash.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/sparse_histogram.h"
@@ -30,7 +32,7 @@ bool LogWebUIUrl(const GURL& web_ui_url) {
 #endif
 
   if (should_log) {
-    uint32 hash = base::Hash(web_ui_url.GetOrigin().spec());
+    uint32_t hash = base::Hash(web_ui_url.GetOrigin().spec());
     UMA_HISTOGRAM_SPARSE_SLOWLY(kWebUICreatedForUrl,
                                 static_cast<base::HistogramBase::Sample>(hash));
   }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_handler.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -96,7 +98,7 @@ void SyncFileSystemInternalsHandler::OnFileSynced(
 void SyncFileSystemInternalsHandler::OnLogRecorded(
     const sync_file_system::TaskLogger::TaskLog& task_log) {
   base::DictionaryValue dict;
-  int64 duration = (task_log.end_time - task_log.start_time).InMilliseconds();
+  int64_t duration = (task_log.end_time - task_log.start_time).InMilliseconds();
   dict.SetInteger("duration", duration);
   dict.SetString("task_description", task_log.task_description);
   dict.SetString("result_description", task_log.result_description);

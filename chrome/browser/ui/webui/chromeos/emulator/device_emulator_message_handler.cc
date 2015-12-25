@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_message_handler.h"
 
+#include <stdint.h>
+
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -325,7 +328,7 @@ void DeviceEmulatorMessageHandler::HandleInsertAudioNode(
 void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
     const base::ListValue* args) {
   std::string tmp_id;
-  uint64 id;
+  uint64_t id;
   CHECK(args->GetString(0, &tmp_id));
   CHECK(base::StringToUint64(tmp_id, &id));
 

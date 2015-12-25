@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 
+#include <stddef.h>
+
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"

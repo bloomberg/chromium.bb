@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "apps/metrics_names.h"

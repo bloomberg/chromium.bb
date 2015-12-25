@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_DATE_TIME_OPTIONS_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chromeos/dbus/system_clock_client.h"
 

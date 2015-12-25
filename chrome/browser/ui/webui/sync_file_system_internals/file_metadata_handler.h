@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SYNC_FILE_SYSTEM_INTERNALS_FILE_METADATA_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"

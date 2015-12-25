@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/cache_storage_context.h"
@@ -66,7 +67,7 @@ const char kKeyCertType[] = "certType";
 
 const char kKeyScopes[] = "scopes";
 
-const int64 kNegligibleUsage = 1024;  // 1KiB
+const int64_t kNegligibleUsage = 1024;  // 1KiB
 
 }  // namespace
 
@@ -81,7 +82,7 @@ std::string CookiesTreeModelUtil::GetTreeNodeId(const CookieTreeNode* node) {
   if (iter != node_map_.end())
     return base::IntToString(iter->second);
 
-  int32 new_id = id_map_.Add(node);
+  int32_t new_id = id_map_.Add(node);
   node_map_[node] = new_id;
   return base::IntToString(new_id);
 }
@@ -340,7 +341,7 @@ const CookieTreeNode* CookiesTreeModelUtil::GetTreeNodeFromPath(
   // Validate the tree path and get the node pointer.
   for (const base::StringPiece& cur_node : base::SplitStringPiece(
            path, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    int32 node_id = 0;
+    int32_t node_id = 0;
     if (!base::StringToInt(cur_node, &node_id))
       break;
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/md_history_ui.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"

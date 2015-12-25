@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/update_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 

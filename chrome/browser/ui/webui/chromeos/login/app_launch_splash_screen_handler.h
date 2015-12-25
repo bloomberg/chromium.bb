@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/app_launch_splash_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/network_error_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"

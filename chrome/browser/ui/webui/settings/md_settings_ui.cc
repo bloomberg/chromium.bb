@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "chrome/browser/profiles/profile.h"

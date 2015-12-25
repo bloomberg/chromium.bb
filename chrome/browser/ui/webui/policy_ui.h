@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace content {

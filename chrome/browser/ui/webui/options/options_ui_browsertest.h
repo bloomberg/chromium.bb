@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace content {

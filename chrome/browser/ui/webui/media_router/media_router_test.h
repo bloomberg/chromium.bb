@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_TEST_H_
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_TEST_H_
 
+#include "base/macros.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/common/feature_switch.h"
 

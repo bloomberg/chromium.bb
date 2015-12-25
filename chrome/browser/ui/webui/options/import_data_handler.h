@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_IMPORT_DATA_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_IMPORT_DATA_HANDLER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -36,7 +38,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
 
  private:
   void StartImport(const importer::SourceProfile& source_profile,
-                   uint16 imported_items);
+                   uint16_t imported_items);
 
   void ImportData(const base::ListValue* args);
 

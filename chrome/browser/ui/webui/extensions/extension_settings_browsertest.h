@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_SETTINGS_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_SETTINGS_BROWSERTEST_H_
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/web_ui_browser_test.h"

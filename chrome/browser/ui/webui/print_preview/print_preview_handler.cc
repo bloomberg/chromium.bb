@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 
 #include <ctype.h>
+#include <stddef.h>
 
 #include <map>
 #include <string>
@@ -17,6 +18,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -28,6 +30,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"

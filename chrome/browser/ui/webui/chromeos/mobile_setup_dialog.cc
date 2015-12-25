@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"

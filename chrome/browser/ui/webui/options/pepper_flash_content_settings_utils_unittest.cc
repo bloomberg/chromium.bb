@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/options/pepper_flash_content_settings_utils.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using options::MediaException;

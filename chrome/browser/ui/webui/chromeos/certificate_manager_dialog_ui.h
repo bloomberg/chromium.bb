@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_CERTIFICATE_MANAGER_DIALOG_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_CERTIFICATE_MANAGER_DIALOG_UI_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 

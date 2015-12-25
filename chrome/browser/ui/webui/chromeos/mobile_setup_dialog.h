@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 

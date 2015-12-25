@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CONTENT_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CONTENT_SETTINGS_HANDLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
@@ -55,7 +58,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   // PepperFlashSettingsManager::Client implementation.
   void OnGetPermissionSettingsCompleted(
-      uint32 request_id,
+      uint32_t request_id,
       bool success,
       PP_Flash_BrowserOperations_Permission default_permission,
       const ppapi::FlashSiteSettings& sites) override;

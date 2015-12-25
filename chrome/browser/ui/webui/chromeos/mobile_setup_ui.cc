@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_ui.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <string>
@@ -12,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"

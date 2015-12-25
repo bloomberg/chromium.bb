@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/font_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_service.h"

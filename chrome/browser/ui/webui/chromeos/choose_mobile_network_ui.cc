@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
@@ -11,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_QUOTA_INTERNALS_TYPES_H_
 #define CHROME_BROWSER_UI_WEBUI_QUOTA_INTERNALS_QUOTA_INTERNALS_TYPES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -24,17 +26,13 @@ class GlobalStorageInfo {
   explicit GlobalStorageInfo(storage::StorageType type);
   ~GlobalStorageInfo();
 
-  void set_usage(int64 usage) {
-    usage_ = usage;
-  }
+  void set_usage(int64_t usage) { usage_ = usage; }
 
-  void set_unlimited_usage(int64 unlimited_usage) {
+  void set_unlimited_usage(int64_t unlimited_usage) {
     unlimited_usage_ = unlimited_usage;
   }
 
-  void set_quota(int64 quota) {
-    quota_ = quota;
-  }
+  void set_quota(int64_t quota) { quota_ = quota; }
 
   // Create new Value for passing to WebUI page.  Caller is responsible for
   // deleting the returned pointer.
@@ -42,9 +40,9 @@ class GlobalStorageInfo {
  private:
   storage::StorageType type_;
 
-  int64 usage_;
-  int64 unlimited_usage_;
-  int64 quota_;
+  int64_t usage_;
+  int64_t unlimited_usage_;
+  int64_t quota_;
 };
 
 // Represents per host usage and quota information for the storage.
@@ -53,13 +51,9 @@ class PerHostStorageInfo {
   PerHostStorageInfo(const std::string& host, storage::StorageType type);
   ~PerHostStorageInfo();
 
-  void set_usage(int64 usage) {
-    usage_ = usage;
-  }
+  void set_usage(int64_t usage) { usage_ = usage; }
 
-  void set_quota(int64 quota) {
-    quota_ = quota;
-  }
+  void set_quota(int64_t quota) { quota_ = quota; }
 
   // Create new Value for passing to WebUI page.  Caller is responsible for
   // deleting the returned pointer.
@@ -68,8 +62,8 @@ class PerHostStorageInfo {
   std::string host_;
   storage::StorageType type_;
 
-  int64 usage_;
-  int64 quota_;
+  int64_t usage_;
+  int64_t quota_;
 };
 
 // Represendts per origin usage and access time information.

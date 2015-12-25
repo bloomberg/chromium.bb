@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SCREENLOCK_ICON_SOURCE_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SCREENLOCK_ICON_SOURCE_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/url_data_source.h"
 

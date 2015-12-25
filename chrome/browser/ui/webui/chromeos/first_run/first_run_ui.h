@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_FIRST_RUN_FIRST_RUN_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_FIRST_RUN_FIRST_RUN_UI_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace content {

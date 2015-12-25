@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

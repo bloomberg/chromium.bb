@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/build_time.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -78,7 +81,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
     }
 
     chromeos::DBusThreadManager::Get()->GetSystemClockClient()->SetTime(
-        static_cast<int64>(seconds));
+        static_cast<int64_t>(seconds));
   }
 
   // Handler for Javascript call to change the system time zone when the user

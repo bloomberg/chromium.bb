@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/webui/options/import_data_handler.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -99,7 +101,7 @@ void ImportDataHandler::RegisterMessages() {
 
 void ImportDataHandler::StartImport(
     const importer::SourceProfile& source_profile,
-    uint16 imported_items) {
+    uint16_t imported_items) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!imported_items)
@@ -137,7 +139,7 @@ void ImportDataHandler::ImportData(const base::ListValue* args) {
     return;
   }
 
-  uint16 selected_items = importer::NONE;
+  uint16_t selected_items = importer::NONE;
   if (args->GetString(1, &string_value) && string_value == "true") {
     selected_items |= importer::HISTORY;
   }
@@ -156,9 +158,9 @@ void ImportDataHandler::ImportData(const base::ListValue* args) {
 
   const importer::SourceProfile& source_profile =
       importer_list_->GetSourceProfileAt(browser_index);
-  uint16 supported_items = source_profile.services_supported;
+  uint16_t supported_items = source_profile.services_supported;
 
-  uint16 imported_items = (selected_items & supported_items);
+  uint16_t imported_items = (selected_items & supported_items);
   if (imported_items) {
     StartImport(source_profile, imported_items);
   } else {
@@ -174,7 +176,7 @@ void ImportDataHandler::InitializePage() {
   for (size_t i = 0; i < importer_list_->count(); ++i) {
     const importer::SourceProfile& source_profile =
         importer_list_->GetSourceProfileAt(i);
-    uint16 browser_services = source_profile.services_supported;
+    uint16_t browser_services = source_profile.services_supported;
 
     base::DictionaryValue* browser_profile = new base::DictionaryValue();
     browser_profile->SetString("name", source_profile.importer_name);

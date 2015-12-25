@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/webui/chromeos/image_source.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"

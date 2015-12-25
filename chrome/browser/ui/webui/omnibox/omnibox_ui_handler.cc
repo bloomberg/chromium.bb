@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui_handler.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/auto_reset.h"
@@ -83,7 +85,7 @@ struct TypeConverter<AutocompleteMatchMojoPtr, AutocompleteMatch> {
           mojo::String::From(input.associated_keyword->keyword);
     }
     result->keyword = mojo::String::From(input.keyword);
-    result->duplicates = static_cast<int32>(input.duplicate_matches.size());
+    result->duplicates = static_cast<int32_t>(input.duplicate_matches.size());
     result->from_previous = input.from_previous;
 
     result->additional_info =

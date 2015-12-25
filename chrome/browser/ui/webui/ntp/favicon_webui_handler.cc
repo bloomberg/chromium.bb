@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_split.h"

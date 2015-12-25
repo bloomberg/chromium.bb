@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_OPTIONS_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_OPTIONS_BROWSERTEST_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/web_ui_message_handler.h"
 

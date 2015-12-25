@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MD_DOWNLOADS_DOM_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MD_DOWNLOADS_DOM_HANDLER_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
@@ -92,7 +94,7 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler {
   void FinalizeRemovals();
 
  private:
-  using IdSet = std::set<uint32>;
+  using IdSet = std::set<uint32_t>;
   using DownloadVector = std::vector<content::DownloadItem*>;
 
   // Convenience method to call |main_notifier_->GetManager()| while
@@ -123,7 +125,7 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler {
   content::DownloadItem* GetDownloadByValue(const base::ListValue* args);
 
   // Returns the download with |id| or NULL if it doesn't exist.
-  content::DownloadItem* GetDownloadById(uint32 id);
+  content::DownloadItem* GetDownloadById(uint32_t id);
 
   // Remove all downloads in |to_remove| with the ability to undo removal later.
   void RemoveDownloads(const DownloadVector& to_remove);

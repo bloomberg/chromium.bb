@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <list>
 #include <string>
@@ -17,6 +19,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_member.h"
@@ -27,6 +30,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"

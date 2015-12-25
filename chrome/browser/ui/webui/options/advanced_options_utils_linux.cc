@@ -6,6 +6,8 @@
 
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
@@ -14,6 +16,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"

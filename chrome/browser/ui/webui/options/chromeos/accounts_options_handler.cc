@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"

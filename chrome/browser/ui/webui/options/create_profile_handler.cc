@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/create_profile_handler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"

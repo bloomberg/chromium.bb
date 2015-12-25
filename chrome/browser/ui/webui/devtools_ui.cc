@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/devtools_ui.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

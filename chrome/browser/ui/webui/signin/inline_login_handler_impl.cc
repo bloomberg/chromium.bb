@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
