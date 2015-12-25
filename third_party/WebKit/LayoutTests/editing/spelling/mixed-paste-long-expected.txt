@@ -1,0 +1,10 @@
+For bug cr571988: Spell checking for pasted mixed content.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS verifyMarker(destination) became true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -104,14 +104,10 @@ EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
     const VisiblePosition& visibleStart = createVisiblePosition(range.startPosition());
     ASSERT(visibleStart.isNotNull());
     const Position& sentenceStart = startOfSentence(visibleStart).deepEquivalent();
-    if (sentenceStart.isNull())
-        return EphemeralRange();
     const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
     ASSERT(visibleEnd.isNotNull());
     const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
-    if (sentenceEnd.isNull())
-        return EphemeralRange();
-    return EphemeralRange(sentenceStart, sentenceEnd);
+    return EphemeralRange(sentenceStart.isNull() ? range.startPosition() : sentenceStart, sentenceEnd.isNull() ? range.endPosition() : sentenceEnd);
 }
 
 static EphemeralRange expandToParagraphBoundary(const EphemeralRange& range)

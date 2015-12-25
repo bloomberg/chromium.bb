@@ -1,0 +1,11 @@
+For bug cr571988: Spell checking for pasted mixed content.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS DIV has 2 markers on '<img src="../resources/abe.png">&nbsp;zz zz.'
+PASS verifyMarker(destination, misspelledCount) became true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

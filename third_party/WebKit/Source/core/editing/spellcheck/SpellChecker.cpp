@@ -510,8 +510,6 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
 
     for (int iter = 0; iter < kNumChunksToCheck; ++iter) {
         EphemeralRange checkRange = expandRangeToSentenceBoundary(fullParagraphToCheck.subrange(currentChunkStart, kChunkSize));
-        if (checkRange.isNull())
-            continue;
         int checkingLength = 0;
         markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange, checkRange, iter, &checkingLength);
         currentChunkStart += checkingLength;
