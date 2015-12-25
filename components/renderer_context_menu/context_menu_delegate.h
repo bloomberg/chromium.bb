@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_RENDERER_CONTEXT_MENU_CONTEXT_MENU_DELEGATE_H_
 #define COMPONENTS_RENDERER_CONTEXT_MENU_CONTEXT_MENU_DELEGATE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 class RenderViewContextMenuBase;

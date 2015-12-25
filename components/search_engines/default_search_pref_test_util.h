@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/search_engines/default_search_manager.h"

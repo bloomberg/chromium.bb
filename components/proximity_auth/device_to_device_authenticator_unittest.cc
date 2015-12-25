@@ -6,6 +6,7 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/timer/mock_timer.h"

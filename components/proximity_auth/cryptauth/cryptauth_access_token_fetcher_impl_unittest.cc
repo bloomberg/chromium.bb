@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

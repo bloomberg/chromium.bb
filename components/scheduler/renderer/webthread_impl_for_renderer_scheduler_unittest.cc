@@ -4,7 +4,10 @@
 
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"

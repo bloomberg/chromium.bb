@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(IE7PasswordTest, GetUserPassword) {

@@ -5,6 +5,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_enroller_impl.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/cryptauth/mock_cryptauth_client.h"

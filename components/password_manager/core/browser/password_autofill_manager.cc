@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

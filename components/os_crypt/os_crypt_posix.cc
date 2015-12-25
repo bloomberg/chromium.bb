@@ -4,6 +4,8 @@
 
 #include "components/os_crypt/os_crypt.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATED_MATCH_HELPER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATED_MATCH_HELPER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -99,7 +101,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // much, but also low enough that the user be able log-in shortly after
   // browser start-up into web sites using Android credentials.
   // TODO(engedy): See if we can tie this instead to some meaningful event.
-  static const int64 kInitializationDelayOnStartupInSeconds = 8;
+  static const int64_t kInitializationDelayOnStartupInSeconds = 8;
 
  private:
   // Reads all autofillable credentials from the password store and starts

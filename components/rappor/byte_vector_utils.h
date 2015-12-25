@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_RAPPOR_BYTE_VECTOR_UTILS_H_
 #define COMPONENTS_RAPPOR_BYTE_VECTOR_UTILS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "components/rappor/rappor_parameters.h"
 #include "crypto/hmac.h"

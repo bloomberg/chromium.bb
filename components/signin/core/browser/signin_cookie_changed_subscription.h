@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_COOKIE_CHANGED_SUBSCRIPTION_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_COOKIE_CHANGED_SUBSCRIPTION_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/core/browser/signin_client.h"

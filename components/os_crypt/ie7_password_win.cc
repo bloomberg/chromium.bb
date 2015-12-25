@@ -4,6 +4,9 @@
 
 #include "components/os_crypt/ie7_password_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -75,9 +78,9 @@ bool GetUserPassFromData(const std::vector<unsigned char>& data,
   if (information->header.fixed_header_size != sizeof(Header))
     return false;
 
-  const uint8* offset_to_data = &data[0] +
-                                information->pre_header.header_size +
-                                information->pre_header.pre_header_size;
+  const uint8_t* offset_to_data = &data[0] +
+                                  information->pre_header.header_size +
+                                  information->pre_header.pre_header_size;
 
   for (int i = 0; i < entry_count / 2; ++i) {
 

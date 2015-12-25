@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/account_reconcilor.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"

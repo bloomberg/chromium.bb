@@ -4,7 +4,10 @@
 
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -269,9 +272,9 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
   void ResponseSignalReceived(MockBluetoothLowEnergyConnection* connection) {
     // Written value contains only the
     // BluetoothLowEneryConnection::ControlSignal::kInviteToConnectSignal.
-    const std::vector<uint8> kInviteToConnectSignal = ToByteVector(static_cast<
-        uint32>(
-        BluetoothLowEnergyConnection::ControlSignal::kInviteToConnectSignal));
+    const std::vector<uint8_t> kInviteToConnectSignal = ToByteVector(
+        static_cast<uint32_t>(BluetoothLowEnergyConnection::ControlSignal::
+                                  kInviteToConnectSignal));
     EXPECT_EQ(last_value_written_on_to_peripheral_char_,
               kInviteToConnectSignal);
 
@@ -280,9 +283,9 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
 
     // Received the
     // BluetoothLowEneryConnection::ControlSignal::kInvitationResponseSignal.
-    const std::vector<uint8> kInvitationResponseSignal = ToByteVector(
-        static_cast<uint32>(BluetoothLowEnergyConnection::ControlSignal::
-                                kInvitationResponseSignal));
+    const std::vector<uint8_t> kInvitationResponseSignal = ToByteVector(
+        static_cast<uint32_t>(BluetoothLowEnergyConnection::ControlSignal::
+                                  kInvitationResponseSignal));
     connection->GattCharacteristicValueChanged(
         adapter_.get(), from_peripheral_char_.get(), kInvitationResponseSignal);
 
@@ -318,28 +321,30 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
     write_remote_characteristic_success_callback_.Run();
   }
 
-  std::vector<uint8> CreateSendSignalWithSize(int message_size) {
-    std::vector<uint8> value = ToByteVector(static_cast<uint32>(
+  std::vector<uint8_t> CreateSendSignalWithSize(int message_size) {
+    std::vector<uint8_t> value = ToByteVector(static_cast<uint32_t>(
         BluetoothLowEnergyConnection::ControlSignal::kSendSignal));
-    std::vector<uint8> size = ToByteVector(static_cast<uint32>(message_size));
+    std::vector<uint8_t> size =
+        ToByteVector(static_cast<uint32_t>(message_size));
     value.insert(value.end(), size.begin(), size.end());
     return value;
   }
 
-  std::vector<uint8> CreateFirstCharacteristicValue(const std::string& message,
-                                                    int size) {
-    std::vector<uint8> value(CreateSendSignalWithSize(size));
-    std::vector<uint8> bytes(message.begin(), message.end());
+  std::vector<uint8_t> CreateFirstCharacteristicValue(
+      const std::string& message,
+      int size) {
+    std::vector<uint8_t> value(CreateSendSignalWithSize(size));
+    std::vector<uint8_t> bytes(message.begin(), message.end());
     value.insert(value.end(), bytes.begin(), bytes.end());
     return value;
   }
 
-  std::vector<uint8> ToByteVector(uint32 value) {
-    std::vector<uint8> bytes(4, 0);
-    bytes[0] = static_cast<uint8>(value);
-    bytes[1] = static_cast<uint8>(value >> 8);
-    bytes[2] = static_cast<uint8>(value >> 16);
-    bytes[3] = static_cast<uint8>(value >> 24);
+  std::vector<uint8_t> ToByteVector(uint32_t value) {
+    std::vector<uint8_t> bytes(4, 0);
+    bytes[0] = static_cast<uint8_t>(value);
+    bytes[1] = static_cast<uint8_t>(value >> 8);
+    bytes[2] = static_cast<uint8_t>(value >> 16);
+    bytes[3] = static_cast<uint8_t>(value >> 24);
     return bytes;
   }
 
@@ -353,7 +358,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
   scoped_ptr<device::MockBluetoothGattService> service_;
   scoped_ptr<device::MockBluetoothGattCharacteristic> to_peripheral_char_;
   scoped_ptr<device::MockBluetoothGattCharacteristic> from_peripheral_char_;
-  std::vector<uint8> last_value_written_on_to_peripheral_char_;
+  std::vector<uint8_t> last_value_written_on_to_peripheral_char_;
   device::MockBluetoothGattNotifySession* notify_session_alias_;
   scoped_ptr<MockBluetoothThrottler> bluetooth_throttler_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -489,9 +494,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
   for (int i = 0; i < kMaxNumberOfTries; i++) {
-    const std::vector<uint8> kInviteToConnectSignal = ToByteVector(static_cast<
-        uint32>(
-        BluetoothLowEnergyConnection::ControlSignal::kInviteToConnectSignal));
+    const std::vector<uint8_t> kInviteToConnectSignal = ToByteVector(
+        static_cast<uint32_t>(BluetoothLowEnergyConnection::ControlSignal::
+                                  kInviteToConnectSignal));
     EXPECT_EQ(last_value_written_on_to_peripheral_char_,
               kInviteToConnectSignal);
     ASSERT_FALSE(write_remote_characteristic_error_callback_.is_null());
@@ -549,7 +554,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
           message.substr(0, first_write_payload_size), message.size()));
 
   // Sending the remaining bytes.
-  std::vector<uint8> value;
+  std::vector<uint8_t> value;
   value.push_back(0);
   value.insert(value.end(), message.begin() + first_write_payload_size,
                message.end());
@@ -607,11 +612,11 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
   // Expecting that |kSendSignal| + |message_size| was written in the first 8
   // bytes.
-  std::vector<uint8> prefix(
+  std::vector<uint8_t> prefix(
       last_value_written_on_to_peripheral_char_.begin(),
       last_value_written_on_to_peripheral_char_.begin() + 8);
   EXPECT_EQ(prefix, CreateSendSignalWithSize(message_size));
-  std::vector<uint8> bytes_received(
+  std::vector<uint8_t> bytes_received(
       last_value_written_on_to_peripheral_char_.begin() + 8,
       last_value_written_on_to_peripheral_char_.end());
 
@@ -629,7 +634,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
                         last_value_written_on_to_peripheral_char_.end());
 
   // Expecting that the message was written.
-  std::vector<uint8> expected_value(message.begin(), message.end());
+  std::vector<uint8_t> expected_value(message.begin(), message.end());
   EXPECT_EQ(expected_value.size(), bytes_received.size());
   EXPECT_EQ(expected_value, bytes_received);
 

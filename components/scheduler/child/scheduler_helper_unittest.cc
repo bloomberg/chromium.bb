@@ -5,6 +5,7 @@
 #include "components/scheduler/child/scheduler_helper.h"
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/task_queue.h"

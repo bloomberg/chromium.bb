@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SESSIONS_IOS_IOS_LIVE_TAB_H_
 #define COMPONENTS_SESSIONS_IOS_IOS_LIVE_TAB_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "components/sessions/core/live_tab.h"
 #include "components/sessions/ios/ios_serialized_navigation_builder.h"

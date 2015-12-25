@@ -5,8 +5,11 @@
 #ifndef CONTENT_RENDERER_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_
 #define CONTENT_RENDERER_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_
 
+#include <stddef.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"

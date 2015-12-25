@@ -4,8 +4,11 @@
 
 #include "components/password_manager/core/browser/affiliation_database.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,9 +28,9 @@ const char kTestFacetURI6[] = "https://zeta.example.com";
 
 const char kTestAndroidFacetURI[] = "android://hash@com.example.android";
 
-const int64 kTestTimeUs1 = 1000000;
-const int64 kTestTimeUs2 = 2000000;
-const int64 kTestTimeUs3 = 3000000;
+const int64_t kTestTimeUs1 = 1000000;
+const int64_t kTestTimeUs2 = 2000000;
+const int64_t kTestTimeUs3 = 3000000;
 
 void ExpectEquivalenceClassesAreEqual(
     const AffiliatedFacetsWithUpdateTime& expectation,

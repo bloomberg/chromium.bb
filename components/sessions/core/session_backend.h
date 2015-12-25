@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_SESSIONS_CORE_SESSION_BACKEND_H_
 #define COMPONENTS_SESSIONS_CORE_SESSION_BACKEND_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"

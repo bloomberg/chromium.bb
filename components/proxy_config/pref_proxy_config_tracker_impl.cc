@@ -4,6 +4,8 @@
 
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"

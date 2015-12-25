@@ -4,6 +4,8 @@
 
 #include "components/pairing/fake_host_pairing_controller.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 

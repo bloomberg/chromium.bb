@@ -4,6 +4,7 @@
 
 #include "components/proximity_auth/cryptauth/sync_scheduler_impl.h"
 
+#include "base/macros.h"
 #include "base/timer/mock_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

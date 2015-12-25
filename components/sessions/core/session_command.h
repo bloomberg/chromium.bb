@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_SESSIONS_CORE_SESSION_COMMAND_H_
 #define COMPONENTS_SESSIONS_CORE_SESSION_COMMAND_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/sessions/core/sessions_export.h"
 
 namespace base {
@@ -30,10 +33,10 @@ class SESSIONS_EXPORT SessionCommand {
  public:
   // These get written to disk, so we define types for them.
   // Type for the identifier.
-  typedef uint8 id_type;
+  typedef uint8_t id_type;
 
   // Type for writing the size.
-  typedef uint16 size_type;
+  typedef uint16_t size_type;
 
   // Creates a session command with the specified id. This allocates a buffer
   // of size |size| that must be filled via contents().

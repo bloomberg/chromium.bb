@@ -5,6 +5,7 @@
 #include "components/session_manager/core/session_manager.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"

@@ -4,8 +4,11 @@
 
 #include "components/query_parser/snippet.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

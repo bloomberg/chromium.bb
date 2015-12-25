@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "content/public/test/render_view_test.h"
@@ -46,7 +48,7 @@ class CredentialManagerClientTest : public content::RenderViewTest {
   // returns false, and the |request_id| is set to -1.
   //
   // Clears any pending messages upon return.
-  bool ExtractRequestId(uint32 message_id, int& request_id) {
+  bool ExtractRequestId(uint32_t message_id, int& request_id) {
     request_id = -1;
     const IPC::Message* message = sink().GetFirstMessageMatching(message_id);
     if (!message)

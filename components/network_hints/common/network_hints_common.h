@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_COMMON_H_
 #define COMPONENTS_NETWORK_HINTS_COMMON_NETWORK_HINTS_COMMON_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

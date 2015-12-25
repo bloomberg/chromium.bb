@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 

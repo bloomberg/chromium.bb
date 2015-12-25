@@ -4,6 +4,9 @@
 
 #include "components/search_provider_logos/logo_cache.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -27,7 +30,7 @@ bool GetTimeValue(const base::DictionaryValue& dict,
                   const std::string& key,
                   base::Time* time) {
   std::string str;
-  int64 internal_time_value;
+  int64_t internal_time_value;
   if (dict.GetString(key, &str) &&
       base::StringToInt64(str, &internal_time_value)) {
     *time = base::Time::FromInternalValue(internal_time_value);
@@ -39,7 +42,7 @@ bool GetTimeValue(const base::DictionaryValue& dict,
 void SetTimeValue(base::DictionaryValue& dict,
                   const std::string& key,
                   const base::Time& time) {
-  int64 internal_time_value = time.ToInternalValue();
+  int64_t internal_time_value = time.ToInternalValue();
   dict.SetString(key, base::Int64ToString(internal_time_value));
 }
 

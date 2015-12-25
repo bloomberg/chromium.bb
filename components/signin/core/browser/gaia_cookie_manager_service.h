@@ -7,6 +7,7 @@
 
 #include <deque>
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/signin_client.h"

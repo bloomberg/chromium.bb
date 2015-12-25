@@ -5,6 +5,7 @@
 #include "components/proximity_auth/screenlock_bridge.h"
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/proximity_auth/logging/logging.h"
 
 #if defined(OS_CHROMEOS)

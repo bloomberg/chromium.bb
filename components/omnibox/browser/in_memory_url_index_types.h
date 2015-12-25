@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_IN_MEMORY_URL_INDEX_TYPES_H_
 #define COMPONENTS_OMNIBOX_BROWSER_IN_MEMORY_URL_INDEX_TYPES_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <vector>

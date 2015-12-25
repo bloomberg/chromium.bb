@@ -4,6 +4,8 @@
 
 #include "components/ssl_errors/error_classification.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/build_time.h"
@@ -12,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/net_util.h"

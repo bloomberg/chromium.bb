@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/offline_page_model.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -35,13 +37,13 @@ namespace offline_pages {
 
 namespace {
 const GURL kTestUrl("http://example.com");
-const int64 kTestPageBookmarkId1 = 1234LL;
+const int64_t kTestPageBookmarkId1 = 1234LL;
 const GURL kTestUrl2("http://other.page.com");
 const GURL kTestUrl3("http://test.xyz");
 const GURL kFileUrl("file:///foo");
-const int64 kTestPageBookmarkId2 = 5678LL;
-const int64 kTestPageBookmarkId3 = 42LL;
-const int64 kTestFileSize = 876543LL;
+const int64_t kTestPageBookmarkId2 = 5678LL;
+const int64_t kTestPageBookmarkId3 = 42LL;
+const int64_t kTestFileSize = 876543LL;
 
 }  // namespace
 
@@ -60,7 +62,7 @@ class OfflinePageModelTest
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageModelChanged(OfflinePageModel* model) override;
-  void OfflinePageDeleted(int64 bookmark_id) override;
+  void OfflinePageDeleted(int64_t bookmark_id) override;
 
   // OfflinePageTestArchiver::Observer implementation.
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override;
@@ -92,11 +94,10 @@ class OfflinePageModelTest
 
   OfflinePageTestStore* GetStore();
 
-  void SavePage(const GURL& url, int64 bookmark_id);
-  void SavePageWithArchiverResult(
-      const GURL& url,
-      int64 bookmark_id,
-      OfflinePageArchiver::ArchiverResult result);
+  void SavePage(const GURL& url, int64_t bookmark_id);
+  void SavePageWithArchiverResult(const GURL& url,
+                                  int64_t bookmark_id,
+                                  OfflinePageArchiver::ArchiverResult result);
 
   OfflinePageModel* model() { return model_.get(); }
 
@@ -108,9 +109,7 @@ class OfflinePageModelTest
     return last_delete_result_;
   }
 
-  int64 last_deleted_bookmark_id() const {
-    return last_deleted_bookmark_id_;
-  }
+  int64_t last_deleted_bookmark_id() const { return last_deleted_bookmark_id_; }
 
   const base::FilePath& last_archiver_path() { return last_archiver_path_; }
 
@@ -123,7 +122,7 @@ class OfflinePageModelTest
   SavePageResult last_save_result_;
   DeletePageResult last_delete_result_;
   base::FilePath last_archiver_path_;
-  int64 last_deleted_bookmark_id_;
+  int64_t last_deleted_bookmark_id_;
 };
 
 OfflinePageModelTest::OfflinePageModelTest()
@@ -158,7 +157,7 @@ void OfflinePageModelTest::OfflinePageModelChanged(OfflinePageModel* model) {
   ASSERT_EQ(model_.get(), model);
 }
 
-void OfflinePageModelTest::OfflinePageDeleted(int64 bookmark_id) {
+void OfflinePageModelTest::OfflinePageDeleted(int64_t bookmark_id) {
   last_deleted_bookmark_id_ = bookmark_id;
 }
 
@@ -229,7 +228,7 @@ OfflinePageTestStore* OfflinePageModelTest::GetStore() {
   return static_cast<OfflinePageTestStore*>(model()->GetStoreForTesting());
 }
 
-void OfflinePageModelTest::SavePage(const GURL& url, int64 bookmark_id) {
+void OfflinePageModelTest::SavePage(const GURL& url, int64_t bookmark_id) {
   SavePageWithArchiverResult(
       url,
       bookmark_id,
@@ -238,7 +237,7 @@ void OfflinePageModelTest::SavePage(const GURL& url, int64 bookmark_id) {
 
 void OfflinePageModelTest::SavePageWithArchiverResult(
     const GURL& url,
-    int64 bookmark_id,
+    int64_t bookmark_id,
     OfflinePageArchiver::ArchiverResult result) {
   scoped_ptr<OfflinePageTestArchiver> archiver(
       BuildArchiver(url, result).Pass());
@@ -612,7 +611,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
   EXPECT_EQ(3u, store->GetAllPages().size());
 
   // Delete multiple pages.
-  std::vector<int64> ids_to_delete;
+  std::vector<int64_t> ids_to_delete;
   ids_to_delete.push_back(kTestPageBookmarkId2);
   ids_to_delete.push_back(kTestPageBookmarkId1);
   ids_to_delete.push_back(23434LL);  // Non-existent ID.

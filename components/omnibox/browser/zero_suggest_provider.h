@@ -9,8 +9,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_ZERO_SUGGEST_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_ZERO_SUGGEST_PROVIDER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/metrics/proto/omnibox_event.pb.h"

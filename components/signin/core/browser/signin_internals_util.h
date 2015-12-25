@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_INTERNALS_UTIL_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_INTERNALS_UTIL_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 

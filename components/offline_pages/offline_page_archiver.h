@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_ARCHIVER_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_ARCHIVER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
@@ -58,7 +60,7 @@ class OfflinePageArchiver {
                               ArchiverResult /* result */,
                               const GURL& /* url */,
                               const base::FilePath& /* file_path */,
-                              int64 /* file_size */)> CreateArchiveCallback;
+                              int64_t /* file_size */)> CreateArchiveCallback;
 
   virtual ~OfflinePageArchiver() {}
 

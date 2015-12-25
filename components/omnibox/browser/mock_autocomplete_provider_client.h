@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/search_engines/search_terms_data.h"

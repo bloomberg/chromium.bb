@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <sstream>
 
+#include "base/macros.h"
 #include "components/network_hints/renderer/dns_prefetch_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,8 +23,9 @@ class DnsQueueTest : public testing::Test {
 // value in sync with the Push value.
 class DnsQueueSequentialTester {
  public:
-  DnsQueueSequentialTester(DnsQueue& buffer, int32 read_counter = 0,
-                           int32 write_counter = 0);
+  DnsQueueSequentialTester(DnsQueue& buffer,
+                           int32_t read_counter = 0,
+                           int32_t write_counter = 0);
 
   // Return of false means buffer was full, or would not take entry.
   bool Push(void);  // Push the string value of next number.
@@ -30,18 +35,17 @@ class DnsQueueSequentialTester {
 
  private:
   DnsQueue* buffer_;
-  int32 read_counter_;  // expected value of next read string.
-  int32 write_counter_;  // Numerical value to write next string.
+  int32_t read_counter_;   // expected value of next read string.
+  int32_t write_counter_;  // Numerical value to write next string.
   DISALLOW_COPY_AND_ASSIGN(DnsQueueSequentialTester);
 };
 
-
-DnsQueueSequentialTester::DnsQueueSequentialTester(
-  DnsQueue& buffer, int32 read_counter, int32 write_counter)
+DnsQueueSequentialTester::DnsQueueSequentialTester(DnsQueue& buffer,
+                                                   int32_t read_counter,
+                                                   int32_t write_counter)
     : buffer_(&buffer),
       read_counter_(read_counter),
-      write_counter_(write_counter) {
-}
+      write_counter_(write_counter) {}
 
 bool DnsQueueSequentialTester::Push(void) {
   std::ostringstream value;

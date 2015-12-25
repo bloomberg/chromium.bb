@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/login_database.h"
 
 #import <Security/Security.h>
+#include <stddef.h>
 
 #include "base/base64.h"
 #include "base/logging.h"

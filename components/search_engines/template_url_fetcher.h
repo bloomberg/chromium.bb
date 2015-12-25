@@ -6,6 +6,7 @@
 #define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"

@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_PREF_REGISTRY_PREF_REGISTRY_SYNCABLE_H_
 #define COMPONENTS_PREF_REGISTRY_PREF_REGISTRY_SYNCABLE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/prefs/pref_registry_simple.h"
 
 namespace base {
@@ -42,7 +45,7 @@ class PrefRegistrySyncable : public PrefRegistrySimple {
   // should ever be specified.
   //
   // Note: These must NOT overlap with PrefRegistry::PrefRegistrationFlags.
-  enum PrefRegistrationFlags : uint32 {
+  enum PrefRegistrationFlags : uint32_t {
     // The pref will be synced.
     SYNCABLE_PREF = 1 << 0,
 
@@ -53,7 +56,7 @@ class PrefRegistrySyncable : public PrefRegistrySimple {
     SYNCABLE_PRIORITY_PREF = 1 << 1,
   };
 
-  typedef base::Callback<void(const std::string& path, uint32 flags)>
+  typedef base::Callback<void(const std::string& path, uint32_t flags)>
       SyncableRegistrationCallback;
 
   PrefRegistrySyncable();
@@ -77,7 +80,7 @@ class PrefRegistrySyncable : public PrefRegistrySimple {
   // PrefRegistrySimple overrides.
   void OnPrefRegistered(const std::string& path,
                         base::Value* default_value,
-                        uint32 flags) override;
+                        uint32_t flags) override;
 
   SyncableRegistrationCallback callback_;
 

@@ -4,6 +4,8 @@
 
 #include "components/sessions/core/base_session_service_commands.h"
 
+#include <stddef.h>
+
 #include "base/pickle.h"
 #include "components/sessions/core/session_backend.h"
 #include "components/sessions/core/session_types.h"

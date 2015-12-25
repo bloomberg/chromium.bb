@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_TEST_STORE_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_TEST_STORE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
@@ -37,11 +39,11 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   void Load(const LoadCallback& callback) override;
   void AddOrUpdateOfflinePage(const OfflinePageItem& offline_page,
                               const UpdateCallback& callback) override;
-  void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
+  void RemoveOfflinePages(const std::vector<int64_t>& bookmark_ids,
                           const UpdateCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
 
-  void UpdateLastAccessTime(int64 bookmark_id,
+  void UpdateLastAccessTime(int64_t bookmark_id,
                             const base::Time& last_access_time);
 
   // Returns all pages, regardless their states.
@@ -56,7 +58,7 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TestScenario scenario_;
 
-  std::map<int64, OfflinePageItem> offline_pages_;
+  std::map<int64_t, OfflinePageItem> offline_pages_;
 
   DISALLOW_ASSIGN(OfflinePageTestStore);
 };

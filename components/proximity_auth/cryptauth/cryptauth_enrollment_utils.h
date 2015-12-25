@@ -14,8 +14,8 @@ namespace proximity_auth {
 std::string CalculateDeviceUserId(const std::string& device_id,
                                   const std::string& user_id);
 
-// Hashes |string| to an int64 value. These int64 hashes are used to fill the
-// GcmDeviceInfo proto to upload to CryptAuth.
+// Hashes |string| to an int64_t value. These int64_t hashes are used to fill
+// the GcmDeviceInfo proto to upload to CryptAuth.
 int64_t HashStringToInt64(const std::string& string);
 
 }  // namespace proximity_auth

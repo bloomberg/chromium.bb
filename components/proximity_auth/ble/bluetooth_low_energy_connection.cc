@@ -170,15 +170,15 @@ void BluetoothLowEnergyConnection::SendMessageImpl(
   // [First write]: Build a header with the [send signal] + [size of the
   // message].
   WriteRequest write_request = BuildWriteRequest(
-      ToByteVector(static_cast<uint32>(ControlSignal::kSendSignal)),
-      ToByteVector(static_cast<uint32>(serialized_msg.size())), false);
+      ToByteVector(static_cast<uint32_t>(ControlSignal::kSendSignal)),
+      ToByteVector(static_cast<uint32_t>(serialized_msg.size())), false);
 
   // [First write]: Fill the it with a prefix of |serialized_msg| up to
   // |max_chunk_size_|.
   size_t first_chunk_size = std::min(
       max_chunk_size_ - write_request.value.size(), serialized_msg.size());
-  std::vector<uint8> bytes(serialized_msg.begin(),
-                           serialized_msg.begin() + first_chunk_size);
+  std::vector<uint8_t> bytes(serialized_msg.begin(),
+                             serialized_msg.begin() + first_chunk_size);
   write_request.value.insert(write_request.value.end(), bytes.begin(),
                              bytes.end());
 
@@ -191,8 +191,8 @@ void BluetoothLowEnergyConnection::SendMessageImpl(
   // [Other write requests]: Each chunk has to include a deprecated signal:
   // |kFirstByteZero| as the first byte.
   int chunk_size = max_chunk_size_ - 1;
-  std::vector<uint8> kFirstByteZeroVector;
-  kFirstByteZeroVector.push_back(static_cast<uint8>(kFirstByteZero));
+  std::vector<uint8_t> kFirstByteZeroVector;
+  kFirstByteZeroVector.push_back(static_cast<uint8_t>(kFirstByteZero));
 
   int message_size = static_cast<int>(serialized_msg.size());
   int start_index = first_chunk_size;
@@ -203,8 +203,8 @@ void BluetoothLowEnergyConnection::SendMessageImpl(
     bool is_last_write_request = (end_index == message_size);
     write_request = BuildWriteRequest(
         kFirstByteZeroVector,
-        std::vector<uint8>(serialized_msg.begin() + start_index,
-                           serialized_msg.begin() + end_index),
+        std::vector<uint8_t>(serialized_msg.begin() + start_index,
+                             serialized_msg.begin() + end_index),
         is_last_write_request);
     WriteRemoteCharacteristic(write_request);
     start_index = end_index;
@@ -246,7 +246,7 @@ void BluetoothLowEnergyConnection::DeviceRemoved(BluetoothAdapter* adapter,
 void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic,
-    const std::vector<uint8>& value) {
+    const std::vector<uint8_t>& value) {
   DCHECK_EQ(adapter, adapter_.get());
   if (sub_status() != SubStatus::WAITING_RESPONSE_SIGNAL &&
       sub_status() != SubStatus::CONNECTED)
@@ -286,7 +286,7 @@ void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
               << "Incoming data corrupted, expected message size not found.";
           return;
         }
-        std::vector<uint8> size(value.begin() + 4, value.begin() + 8);
+        std::vector<uint8_t> size(value.begin() + 4, value.begin() + 8);
         expected_number_of_incoming_bytes_ =
             static_cast<size_t>(ToUint32(size));
         receiving_bytes_ = true;
@@ -310,12 +310,11 @@ void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
 }
 
 BluetoothLowEnergyConnection::WriteRequest::WriteRequest(
-    const std::vector<uint8>& val,
+    const std::vector<uint8_t>& val,
     bool flag)
     : value(val),
       is_last_write_for_wire_message(flag),
-      number_of_failed_attempts(0) {
-}
+      number_of_failed_attempts(0) {}
 
 BluetoothLowEnergyConnection::WriteRequest::~WriteRequest() {}
 
@@ -456,8 +455,8 @@ void BluetoothLowEnergyConnection::SendInviteToConnectSignal() {
 
     WriteRequest write_request = BuildWriteRequest(
         ToByteVector(
-            static_cast<uint32>(ControlSignal::kInviteToConnectSignal)),
-        std::vector<uint8>(), false);
+            static_cast<uint32_t>(ControlSignal::kInviteToConnectSignal)),
+        std::vector<uint8_t>(), false);
 
     WriteRemoteCharacteristic(write_request);
   }
@@ -525,10 +524,10 @@ void BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError(
 
 BluetoothLowEnergyConnection::WriteRequest
 BluetoothLowEnergyConnection::BuildWriteRequest(
-    const std::vector<uint8>& signal,
-    const std::vector<uint8>& bytes,
+    const std::vector<uint8_t>& signal,
+    const std::vector<uint8_t>& bytes,
     bool is_last_write_for_wire_message) {
-  std::vector<uint8> value(signal.begin(), signal.end());
+  std::vector<uint8_t> value(signal.begin(), signal.end());
   value.insert(value.end(), bytes.begin(), bytes.end());
   return WriteRequest(value, is_last_write_for_wire_message);
 }
@@ -594,19 +593,20 @@ BluetoothLowEnergyConnection::GetGattCharacteristic(
 
 // TODO(sacomoto): make this robust to byte ordering in both sides of the
 // SmartLock BLE socket.
-uint32 BluetoothLowEnergyConnection::ToUint32(const std::vector<uint8>& bytes) {
+uint32_t BluetoothLowEnergyConnection::ToUint32(
+    const std::vector<uint8_t>& bytes) {
   return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
 }
 
 // TODO(sacomoto): make this robust to byte ordering in both sides of the
 // SmartLock BLE socket.
-const std::vector<uint8> BluetoothLowEnergyConnection::ToByteVector(
-    const uint32 value) {
-  std::vector<uint8> bytes(4, 0);
-  bytes[0] = static_cast<uint8>(value);
-  bytes[1] = static_cast<uint8>(value >> 8);
-  bytes[2] = static_cast<uint8>(value >> 16);
-  bytes[3] = static_cast<uint8>(value >> 24);
+const std::vector<uint8_t> BluetoothLowEnergyConnection::ToByteVector(
+    const uint32_t value) {
+  std::vector<uint8_t> bytes(4, 0);
+  bytes[0] = static_cast<uint8_t>(value);
+  bytes[1] = static_cast<uint8_t>(value >> 8);
+  bytes[2] = static_cast<uint8_t>(value >> 16);
+  bytes[3] = static_cast<uint8_t>(value >> 24);
   return bytes;
 }
 

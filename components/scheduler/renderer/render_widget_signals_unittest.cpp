@@ -4,6 +4,7 @@
 
 #include "components/scheduler/renderer/render_widget_signals.h"
 
+#include "base/macros.h"
 #include "components/scheduler/renderer/render_widget_scheduling_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

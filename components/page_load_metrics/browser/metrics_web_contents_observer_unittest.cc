@@ -4,6 +4,7 @@
 
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/test/histogram_tester.h"

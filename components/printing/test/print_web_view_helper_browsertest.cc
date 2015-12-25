@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 #include "components/printing/renderer/print_web_view_helper.h"
 #include "components/printing/test/mock_printer.h"

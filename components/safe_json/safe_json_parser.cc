@@ -4,6 +4,8 @@
 
 #include "components/safe_json/safe_json_parser.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_ANDROID)
 #include "components/safe_json/safe_json_parser_android.h"
 #else

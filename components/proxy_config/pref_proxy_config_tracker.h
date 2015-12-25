@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_H_
 #define COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/proxy_config/proxy_config_export.h"
 

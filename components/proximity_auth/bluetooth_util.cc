@@ -7,6 +7,7 @@
 #include "components/proximity_auth/bluetooth_util.h"
 
 #include "base/callback.h"
+#include "build/build_config.h"
 
 namespace proximity_auth {
 namespace bluetooth_util {

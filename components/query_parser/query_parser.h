@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_QUERY_PARSER_QUERY_PARSER_H_
 #define COMPONENTS_QUERY_PARSER_QUERY_PARSER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/query_parser/snippet.h"
 

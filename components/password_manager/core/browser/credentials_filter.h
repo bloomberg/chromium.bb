@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIALS_FILTER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIALS_FILTER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 

@@ -11,9 +11,12 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_VIEW_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_VIEW_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

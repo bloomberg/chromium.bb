@@ -4,6 +4,8 @@
 
 #include "components/query_parser/snippet.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -153,8 +155,8 @@ bool IsNextMatchWithinSnippetWindow(icu::BreakIterator* bi,
   // heuristics to speed things up if necessary, but it's not likely that
   // we need to bother.
   bi->next(kSnippetContext);
-  int64 current = bi->current();
-  return (next_match_start < static_cast<uint64>(current) ||
+  int64_t current = bi->current();
+  return (next_match_start < static_cast<uint64_t>(current) ||
           current == icu::BreakIterator::DONE);
 }
 

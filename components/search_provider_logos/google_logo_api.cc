@@ -4,6 +4,8 @@
 
 #include "components/search_provider_logos/google_logo_api.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/base64.h"
@@ -118,7 +120,7 @@ scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
   int time_to_live_ms;
   if (logo_dict->GetInteger("time_to_live", &time_to_live_ms)) {
     time_to_live = base::TimeDelta::FromMilliseconds(
-        std::min(static_cast<int64>(time_to_live_ms), kMaxTimeToLiveMS));
+        std::min(static_cast<int64_t>(time_to_live_ms), kMaxTimeToLiveMS));
     logo->metadata.can_show_after_expiration = false;
   } else {
     time_to_live = base::TimeDelta::FromMilliseconds(kMaxTimeToLiveMS);

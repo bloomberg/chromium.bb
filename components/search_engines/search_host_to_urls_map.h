@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/search_engines/template_url_service.h"
 
 // Holds the host to template url mappings for the search providers. WARNING:

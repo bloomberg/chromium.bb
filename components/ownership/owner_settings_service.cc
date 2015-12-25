@@ -6,8 +6,8 @@
 
 #include <cryptohi.h>
 #include <keyhi.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -50,7 +50,7 @@ scoped_ptr<em::PolicyFetchResponse> AssembleAndSignPolicy(
   SECItem signature_item;
   if (SGN_Begin(sign_context.get()) != SECSuccess ||
       SGN_Update(sign_context.get(),
-                 reinterpret_cast<const uint8*>(
+                 reinterpret_cast<const uint8_t*>(
                      policy_response->policy_data().c_str()),
                  policy_response->policy_data().size()) != SECSuccess ||
       SGN_End(sign_context.get(), &signature_item) != SECSuccess) {

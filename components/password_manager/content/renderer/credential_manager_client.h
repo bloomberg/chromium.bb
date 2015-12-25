@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_RENDERER_CREDENTIAL_MANAGER_CLIENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_RENDERER_CREDENTIAL_MANAGER_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"

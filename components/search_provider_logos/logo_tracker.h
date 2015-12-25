@@ -5,11 +5,14 @@
 #ifndef COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_TRACKER_H_
 #define COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_TRACKER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -195,8 +198,8 @@ class LogoTracker : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override;
+                                  int64_t current,
+                                  int64_t total) override;
 
   // The URL from which the logo is fetched.
   GURL logo_url_;

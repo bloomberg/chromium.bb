@@ -16,7 +16,7 @@ OfflinePageTestArchiver::OfflinePageTestArchiver(
     Observer* observer,
     const GURL& url,
     ArchiverResult result,
-    int64 size_to_report,
+    int64_t size_to_report,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : observer_(observer),
       url_(url),

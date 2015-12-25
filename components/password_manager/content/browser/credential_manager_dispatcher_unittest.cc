@@ -4,11 +4,14 @@
 
 #include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -244,7 +247,7 @@ class CredentialManagerDispatcherTest
 
     RunAllPendingTasks();
 
-    const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+    const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     ASSERT_TRUE(message);
@@ -263,7 +266,7 @@ class CredentialManagerDispatcherTest
 
     RunAllPendingTasks();
 
-    const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+    const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     ASSERT_TRUE(message);
@@ -296,7 +299,7 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnStore) {
 
   dispatcher()->OnStore(kRequestId, info);
 
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -333,7 +336,7 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerStoreOverwrite) {
                             _, CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(0));
 
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -386,7 +389,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   dispatcher()->OnStore(kRequestId, info);
 
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_AcknowledgeStore::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -413,7 +416,7 @@ TEST_F(CredentialManagerDispatcherTest,
   dispatcher()->OnRequireUserMediation(kRequestId);
   RunAllPendingTasks();
 
-  const uint32 kMsgID =
+  const uint32_t kMsgID =
       CredentialManagerMsg_AcknowledgeRequireUserMediation::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
@@ -478,7 +481,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -504,7 +507,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -528,7 +531,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -546,7 +549,7 @@ TEST_F(
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -593,7 +596,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -620,7 +623,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -649,7 +652,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -676,7 +679,7 @@ TEST_F(CredentialManagerDispatcherTest,
   dispatcher()->OnRequestCredential(kRequestId, false, federations);
 
   // Check that the second request triggered a rejection.
-  uint32 kMsgID = CredentialManagerMsg_RejectCredentialRequest::ID;
+  uint32_t kMsgID = CredentialManagerMsg_RejectCredentialRequest::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);
@@ -762,7 +765,7 @@ TEST_F(CredentialManagerDispatcherTest, IncognitoZeroClickRequestCredential) {
 
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   ASSERT_TRUE(message);

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_WORKER_SCHEDULER_IMPL_H_
 #define COMPONENTS_SCHEDULER_CHILD_WORKER_SCHEDULER_IMPL_H_
 
+#include "base/macros.h"
 #include "components/scheduler/child/idle_helper.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/child/worker_scheduler.h"

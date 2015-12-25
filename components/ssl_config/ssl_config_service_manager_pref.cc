@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 #include "components/ssl_config/ssl_config_service_manager.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
@@ -48,14 +50,14 @@ std::vector<std::string> ListValueToStringVector(const base::ListValue* value) {
 // Parses a vector of cipher suite strings, returning a sorted vector
 // containing the underlying SSL/TLS cipher suites. Unrecognized/invalid
 // cipher suites will be ignored.
-std::vector<uint16> ParseCipherSuites(
+std::vector<uint16_t> ParseCipherSuites(
     const std::vector<std::string>& cipher_strings) {
-  std::vector<uint16> cipher_suites;
+  std::vector<uint16_t> cipher_suites;
   cipher_suites.reserve(cipher_strings.size());
 
   for (std::vector<std::string>::const_iterator it = cipher_strings.begin();
        it != cipher_strings.end(); ++it) {
-    uint16 cipher_suite = 0;
+    uint16_t cipher_suite = 0;
     if (!net::ParseSSLCipherString(*it, &cipher_suite)) {
       LOG(ERROR) << "Ignoring unrecognized or unparsable cipher suite: " << *it;
       continue;
@@ -66,10 +68,10 @@ std::vector<uint16> ParseCipherSuites(
   return cipher_suites;
 }
 
-// Returns the SSL protocol version (as a uint16) represented by a string.
+// Returns the SSL protocol version (as a uint16_t) represented by a string.
 // Returns 0 if the string is invalid.
-uint16 SSLProtocolVersionFromString(const std::string& version_str) {
-  uint16 version = 0;  // Invalid.
+uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
+  uint16_t version = 0;  // Invalid.
   if (version_str == switches::kSSLVersionTLSv1) {
     version = net::SSL_PROTOCOL_VERSION_TLS1;
   } else if (version_str == switches::kSSLVersionTLSv11) {
@@ -175,7 +177,7 @@ class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
   BooleanPrefMember rc4_enabled_;
 
   // The cached list of disabled SSL cipher suites.
-  std::vector<uint16> disabled_cipher_suites_;
+  std::vector<uint16_t> disabled_cipher_suites_;
 
   scoped_refptr<SSLConfigServicePref> ssl_config_service_;
 
@@ -281,15 +283,15 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   config->version_min = net::kDefaultSSLVersionMin;
   config->version_max = net::kDefaultSSLVersionMax;
   config->version_fallback_min = net::kDefaultSSLVersionFallbackMin;
-  uint16 version_min = SSLProtocolVersionFromString(version_min_str);
-  uint16 version_max = SSLProtocolVersionFromString(version_max_str);
-  uint16 version_fallback_min =
+  uint16_t version_min = SSLProtocolVersionFromString(version_min_str);
+  uint16_t version_max = SSLProtocolVersionFromString(version_max_str);
+  uint16_t version_fallback_min =
       SSLProtocolVersionFromString(version_fallback_min_str);
   if (version_min) {
     config->version_min = version_min;
   }
   if (version_max) {
-    uint16 supported_version_max = config->version_max;
+    uint16_t supported_version_max = config->version_max;
     config->version_max = std::min(supported_version_max, version_max);
   }
   if (version_fallback_min) {

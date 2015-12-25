@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_form_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <set>
@@ -12,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"

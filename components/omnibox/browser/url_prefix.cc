@@ -4,7 +4,6 @@
 
 #include "components/omnibox/browser/url_prefix.h"
 
-#include "base/basictypes.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

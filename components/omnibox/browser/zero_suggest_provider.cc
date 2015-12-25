@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/zero_suggest_provider.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_string_value_serializer.h"

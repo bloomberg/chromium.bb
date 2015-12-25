@@ -471,21 +471,21 @@ void BluetoothControllerPairingController::DisplayPinCode(
 
 void BluetoothControllerPairingController::DisplayPasskey(
     device::BluetoothDevice* device,
-    uint32 passkey) {
+    uint32_t passkey) {
   // Disallow unknown device.
   device->RejectPairing();
 }
 
 void BluetoothControllerPairingController::KeysEntered(
     device::BluetoothDevice* device,
-    uint32 entered) {
+    uint32_t entered) {
   // Disallow unknown device.
   device->RejectPairing();
 }
 
 void BluetoothControllerPairingController::ConfirmPasskey(
     device::BluetoothDevice* device,
-    uint32 passkey) {
+    uint32_t passkey) {
   confirmation_code_ = base::StringPrintf("%06d", passkey);
   ChangeStage(STAGE_WAITING_FOR_CODE_CONFIRMATION);
 }

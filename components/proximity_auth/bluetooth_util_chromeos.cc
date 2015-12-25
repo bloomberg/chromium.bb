@@ -4,7 +4,9 @@
 
 #include "components/proximity_auth/bluetooth_util.h"
 
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <algorithm>
 #include <vector>

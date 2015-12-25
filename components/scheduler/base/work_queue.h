@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_SCHEDULER_BASE_WORK_QUEUE_H_
 #define CONTENT_RENDERER_SCHEDULER_BASE_WORK_QUEUE_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/trace_event/trace_event.h"

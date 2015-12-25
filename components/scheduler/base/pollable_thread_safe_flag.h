@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_BASE_POLLABLE_THREAD_SAFE_FLAG_H_
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 
 // A PollableThreadSafeFlag can be polled without requiring a lock, but can only

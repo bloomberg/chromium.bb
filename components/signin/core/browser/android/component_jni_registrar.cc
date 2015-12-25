@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/signin/core/browser/child_account_info_fetcher_android.h"
 
 namespace signin {

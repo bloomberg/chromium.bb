@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_H_
 #define COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"

@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "components/omnibox/common/omnibox_focus_state.h"

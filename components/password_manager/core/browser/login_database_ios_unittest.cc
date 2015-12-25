@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/login_database.h"
 
 #include <Security/Security.h>
+#include <stddef.h>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/ios/ios_util.h"

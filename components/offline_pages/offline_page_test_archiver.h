@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_TEST_ARCHIVER_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_TEST_ARCHIVER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -35,7 +38,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
       Observer* observer,
       const GURL& url,
       ArchiverResult result,
-      int64 size_to_report,
+      int64_t size_to_report,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~OfflinePageTestArchiver() override;
 
@@ -65,7 +68,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   base::FilePath archives_dir_;
   base::FilePath filename_;
   ArchiverResult result_;
-  int64 size_to_report_;
+  int64_t size_to_report_;
   bool create_archive_called_;
   bool delayed_;
   CreateArchiveCallback callback_;

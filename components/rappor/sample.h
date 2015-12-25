@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_RAPPOR_SAMPLE_H_
 #define COMPONENTS_RAPPOR_SAMPLE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "components/rappor/rappor_parameters.h"
 

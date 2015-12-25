@@ -6,6 +6,7 @@
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL_H
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 

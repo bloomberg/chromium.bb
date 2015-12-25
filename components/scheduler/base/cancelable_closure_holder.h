@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_BASE_CANCELABLE_CLOSURE_HOLDER_H_
 
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 
 namespace scheduler {
 

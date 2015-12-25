@@ -4,11 +4,14 @@
 
 #include "components/search_engines/template_url_parser.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <map>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

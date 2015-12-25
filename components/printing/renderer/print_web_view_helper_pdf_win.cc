@@ -4,6 +4,9 @@
 
 #include "components/printing/renderer/print_web_view_helper.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"

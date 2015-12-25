@@ -30,7 +30,7 @@ bool IsAndroidApplicationCredential(const autofill::PasswordForm& form,
 }  // namespace
 
 // static
-const int64 AffiliatedMatchHelper::kInitializationDelayOnStartupInSeconds;
+const int64_t AffiliatedMatchHelper::kInitializationDelayOnStartupInSeconds;
 
 AffiliatedMatchHelper::AffiliatedMatchHelper(
     PasswordStore* password_store,

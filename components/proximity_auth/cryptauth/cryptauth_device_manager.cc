@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 
+#include <stddef.h>
+
 #include "base/base64url.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"

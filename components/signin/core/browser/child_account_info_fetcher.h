@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "build/build_config.h"
+
 #if defined(OS_ANDROID)
 #include <jni.h>
 #endif

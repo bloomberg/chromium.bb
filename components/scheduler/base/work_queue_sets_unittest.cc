@@ -4,6 +4,8 @@
 
 #include "components/scheduler/base/work_queue_sets.h"
 
+#include <stddef.h>
+
 #include "components/scheduler/base/work_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

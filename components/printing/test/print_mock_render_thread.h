@@ -5,10 +5,14 @@
 #ifndef COMPONENTS_PRINTING_TEST_PRINT_MOCK_RENDER_THREAD_H_
 #define COMPONENTS_PRINTING_TEST_PRINT_MOCK_RENDER_THREAD_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "content/public/test/mock_render_thread.h"
 
 namespace base {
@@ -78,7 +82,7 @@ class PrintMockRenderThread : public content::MockRenderThread {
   void OnDidGetPreviewPageCount(
       const PrintHostMsg_DidGetPreviewPageCount_Params& params);
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
-  void OnCheckForCancel(int32 preview_ui_id,
+  void OnCheckForCancel(int32_t preview_ui_id,
                         int preview_request_id,
                         bool* cancel);
 

@@ -5,11 +5,14 @@
 // IPC messages for printing.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/memory/shared_memory.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/page_range.h"
@@ -45,7 +48,7 @@ struct PrintMsg_Print_Params {
   int document_cookie;
   bool selection_only;
   bool supports_alpha_blend;
-  int32 preview_ui_id;
+  int32_t preview_ui_id;
   int preview_request_id;
   bool is_first_request;
   blink::WebPrintScalingOption print_scaling_option;
@@ -432,7 +435,7 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPreviewPage,
 
 // Asks the browser whether the print preview has been cancelled.
 IPC_SYNC_MESSAGE_ROUTED2_1(PrintHostMsg_CheckForCancel,
-                           int32 /* PrintPreviewUI ID */,
+                           int32_t /* PrintPreviewUI ID */,
                            int /* request id */,
                            bool /* print preview cancelled */)
 

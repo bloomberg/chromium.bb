@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/search/search.h"
@@ -141,7 +142,7 @@ int OmniboxFieldTrial::GetDisabledProviderTypes() {
 }
 
 void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
-    std::vector<uint32>* field_trial_hashes) {
+    std::vector<uint32_t>* field_trial_hashes) {
   field_trial_hashes->clear();
   for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i) {
     const std::string& trial_name = DynamicFieldTrialName(i);

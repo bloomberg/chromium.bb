@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_PDF_RENDERER_PEPPER_PDF_HOST_H_
 #define COMPONENTS_PDF_RENDERER_PEPPER_PDF_HOST_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/ppb_image_data.h"

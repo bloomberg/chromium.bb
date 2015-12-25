@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_RENDERER_RENDERER_SCHEDULER_IMPL_H_
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "components/scheduler/base/pollable_thread_safe_flag.h"
 #include "components/scheduler/child/idle_helper.h"

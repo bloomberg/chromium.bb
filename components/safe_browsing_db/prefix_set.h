@@ -49,6 +49,9 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_PREFIX_SET_H_
 #define COMPONENTS_SAFE_BROWSING_DB_PREFIX_SET_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -105,14 +108,15 @@ class PrefixSet {
   static const size_t kMaxRun = 100;
 
   // Helpers to make |index_| easier to deal with.
-  typedef std::pair<SBPrefix, uint32> IndexPair;
+  typedef std::pair<SBPrefix, uint32_t> IndexPair;
   typedef std::vector<IndexPair> IndexVector;
   static bool PrefixLess(const IndexPair& a, const IndexPair& b);
 
   // Helper to let |PrefixSetBuilder| add a run of data.  |index_prefix| is
   // added to |index_|, with the other elements added into |deltas_|.
   void AddRun(SBPrefix index_prefix,
-              const uint16* run_begin, const uint16* run_end);
+              const uint16_t* run_begin,
+              const uint16_t* run_end);
 
   // |true| if |prefix| is one of the prefixes passed to the set's builder.
   // Provided for testing purposes.
@@ -127,7 +131,7 @@ class PrefixSet {
 
   // Helper for |LoadFile()|.  Steals vector contents using |swap()|.
   PrefixSet(IndexVector* index,
-            std::vector<uint16>* deltas,
+            std::vector<uint16_t>* deltas,
             std::vector<SBFullHash>* full_hashes);
 
   // Top-level index of prefix to offset in |deltas_|.  Each pair
@@ -139,7 +143,7 @@ class PrefixSet {
   // Deltas which are added to the prefix in |index_| to generate
   // prefixes.  Deltas are only valid between consecutive items from
   // |index_|, or the end of |deltas_| for the last |index_| pair.
-  std::vector<uint16> deltas_;
+  std::vector<uint16_t> deltas_;
 
   // Full hashes ordered by SBFullHashLess.
   std::vector<SBFullHash> full_hashes_;

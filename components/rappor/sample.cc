@@ -20,7 +20,7 @@ Sample::Sample(int32_t cohort_seed, const RapporParameters& parameters)
   : parameters_(parameters),
     bloom_offset_((cohort_seed % parameters_.num_cohorts) *
           parameters_.bloom_filter_hash_function_count) {
-  // Must use bloom filter size that fits in uint64.
+  // Must use bloom filter size that fits in uint64_t.
   DCHECK_LE(parameters_.bloom_filter_size_bytes, 8);
 }
 

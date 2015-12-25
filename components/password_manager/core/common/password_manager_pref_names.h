@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_PASSWORD_MANAGER_PREF_NAMES_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_PASSWORD_MANAGER_PREF_NAMES_H_
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
 namespace password_manager {
 namespace prefs {

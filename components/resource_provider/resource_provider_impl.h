@@ -6,6 +6,7 @@
 #define COMPONENTS_RESOURCE_PROVIDER_RESOURCE_PROVIDER_IMPL_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 
 namespace resource_provider {

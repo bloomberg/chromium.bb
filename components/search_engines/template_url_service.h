@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
 #define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <map>
 #include <set>
@@ -13,6 +15,7 @@
 
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"

@@ -4,6 +4,8 @@
 
 #include "components/password_manager/content/renderer/credential_manager_client.h"
 
+#include <stddef.h>
+
 #include "components/password_manager/content/common/credential_manager_content_utils.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/common/credential_manager_types.h"

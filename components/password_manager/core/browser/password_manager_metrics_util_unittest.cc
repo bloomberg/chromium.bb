@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/macros.h"

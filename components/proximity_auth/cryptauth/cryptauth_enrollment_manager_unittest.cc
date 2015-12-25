@@ -5,6 +5,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 
 #include "base/base64url.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/simple_test_clock.h"

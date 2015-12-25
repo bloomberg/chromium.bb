@@ -4,6 +4,9 @@
 
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -102,7 +105,7 @@ UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
 const size_t kNumRapporHistogramBuckets = 6;
 
 uint64_t RapporHistogramBucketIndex(const base::TimeDelta& time) {
-  int64 seconds = time.InSeconds();
+  int64_t seconds = time.InSeconds();
   if (seconds < 2)
     return 0;
   if (seconds < 4)

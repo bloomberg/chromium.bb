@@ -4,6 +4,7 @@
 
 #include "components/printing/browser/print_manager.h"
 
+#include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 
 namespace printing {

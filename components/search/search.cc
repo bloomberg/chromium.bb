@@ -4,12 +4,15 @@
 
 #include "components/search/search.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/search/search_switches.h"
 #include "components/search_engines/template_url.h"
@@ -29,13 +32,13 @@ namespace {
 const char kEmbeddedPageVersionFlagName[] = "espv";
 
 #if defined(OS_IOS)
-const uint64 kEmbeddedPageVersionDefault = 1;
+const uint64_t kEmbeddedPageVersionDefault = 1;
 #elif defined(OS_ANDROID)
-const uint64 kEmbeddedPageVersionDefault = 1;
+const uint64_t kEmbeddedPageVersionDefault = 1;
 // Use this variant to enable EmbeddedSearch SearchBox API in the results page.
-const uint64 kEmbeddedSearchEnabledVersion = 2;
+const uint64_t kEmbeddedSearchEnabledVersion = 2;
 #else
-const uint64 kEmbeddedPageVersionDefault = 2;
+const uint64_t kEmbeddedPageVersionDefault = 2;
 #endif
 
 // Constants for the field trial name and group prefix.
@@ -83,7 +86,7 @@ bool IsInstantExtendedAPIEnabled() {
 
 // Determine what embedded search page version to request from the user's
 // default search provider. If 0, the embedded search UI should not be enabled.
-uint64 EmbeddedSearchPageVersion() {
+uint64_t EmbeddedSearchPageVersion() {
 #if defined(OS_ANDROID)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableEmbeddedSearchAPI)) {
@@ -143,12 +146,12 @@ std::string GetStringValueForFlagWithDefault(const std::string& flag,
   return default_value;
 }
 
-// Given a FieldTrialFlags object, returns the uint64 value of the provided
+// Given a FieldTrialFlags object, returns the uint64_t value of the provided
 // flag.
-uint64 GetUInt64ValueForFlagWithDefault(const std::string& flag,
-                                        uint64 default_value,
-                                        const FieldTrialFlags& flags) {
-  uint64 value;
+uint64_t GetUInt64ValueForFlagWithDefault(const std::string& flag,
+                                          uint64_t default_value,
+                                          const FieldTrialFlags& flags) {
+  uint64_t value;
   std::string str_value =
       GetStringValueForFlagWithDefault(flag, std::string(), flags);
   if (base::StringToUint64(str_value, &value))

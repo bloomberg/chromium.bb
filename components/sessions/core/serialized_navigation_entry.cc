@@ -4,6 +4,8 @@
 
 #include "components/sessions/core/serialized_navigation_entry.h"
 
+#include <stddef.h>
+
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/core/serialized_navigation_driver.h"
@@ -52,7 +54,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   navigation.virtual_url_ = GURL(sync_data.virtual_url());
   navigation.title_ = base::UTF8ToUTF16(sync_data.title());
 
-  uint32 transition = 0;
+  uint32_t transition = 0;
   if (sync_data.has_page_transition()) {
     switch (sync_data.page_transition()) {
       case sync_pb::SyncEnums_PageTransition_LINK:
@@ -293,7 +295,7 @@ bool SerializedNavigationEntry::ReadFromPickle(base::PickleIterator* iterator) {
     if (!iterator->ReadBool(&is_overriding_user_agent_))
       is_overriding_user_agent_ = false;
 
-    int64 timestamp_internal_value = 0;
+    int64_t timestamp_internal_value = 0;
     if (iterator->ReadInt64(&timestamp_internal_value)) {
       timestamp_ = base::Time::FromInternalValue(timestamp_internal_value);
     } else {

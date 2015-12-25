@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_ENROLLMENT_MANAGER_H
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

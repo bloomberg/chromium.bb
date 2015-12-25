@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PLUGINS_RENDERER_MOBILE_YOUTUBE_PLUGIN_H_
 #define COMPONENTS_PLUGINS_RENDERER_MOBILE_YOUTUBE_PLUGIN_H_
 
+#include "base/macros.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 
 namespace plugins {

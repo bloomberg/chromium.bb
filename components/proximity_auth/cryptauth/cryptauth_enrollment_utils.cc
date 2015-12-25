@@ -5,6 +5,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include "base/base64url.h"
 #include "base/md5.h"
@@ -20,7 +21,7 @@ int64_t HashStringToInt64(const std::string& string) {
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
 
-  // Fold the digest into an int64 value. |digest.a| is a 16-byte array, so we
+  // Fold the digest into an int64_t value. |digest.a| is a 16-byte array, so we
   // sum the two 8-byte halves of the digest to create the hash.
   int64_t hash = 0;
   for (size_t i = 0; i < sizeof(digest.a); ++i) {

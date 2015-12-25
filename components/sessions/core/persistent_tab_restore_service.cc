@@ -4,14 +4,17 @@
 
 #include "components/sessions/core/persistent_tab_restore_service.h"
 
-#include <cstring>  // memcpy
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
@@ -30,7 +33,7 @@ namespace {
 // Only written if the tab is pinned.
 typedef bool PinnedStatePayload;
 
-typedef int32 RestoredEntryPayload;
+typedef int32_t RestoredEntryPayload;
 
 typedef std::map<SessionID::id_type, TabRestoreService::Entry*> IDToEntry;
 
@@ -38,7 +41,7 @@ typedef std::map<SessionID::id_type, TabRestoreService::Entry*> IDToEntry;
 // used for backwards compat when it comes to reading the session files.
 struct SelectedNavigationInTabPayload {
   SessionID::id_type id;
-  int32 index;
+  int32_t index;
 };
 
 // Payload used for the start of a window close. This is the old struct that is
@@ -46,19 +49,19 @@ struct SelectedNavigationInTabPayload {
 // struct must be POD, because we memset the contents.
 struct WindowPayload {
   SessionID::id_type window_id;
-  int32 selected_tab_index;
-  int32 num_tabs;
+  int32_t selected_tab_index;
+  int32_t num_tabs;
 };
 
 // Payload used for the start of a window close.  This struct must be POD,
 // because we memset the contents.
 struct WindowPayload2 : WindowPayload {
-  int64 timestamp;
+  int64_t timestamp;
 };
 
 // Payload used for the start of a tab close.
 struct SelectedNavigationInTabPayload2 : SelectedNavigationInTabPayload {
-  int64 timestamp;
+  int64_t timestamp;
 };
 
 // Used to indicate what has loaded.
@@ -166,7 +169,7 @@ class PersistentTabRestoreService::Delegate
   // Creates a tab close command.
   static scoped_ptr<SessionCommand> CreateSelectedNavigationInTabCommand(
       SessionID::id_type tab_id,
-      int32 index,
+      int32_t index,
       base::Time timestamp);
 
   // Creates a restore command.
@@ -508,7 +511,7 @@ PersistentTabRestoreService::Delegate::CreateWindowCommand(
 scoped_ptr<SessionCommand>
 PersistentTabRestoreService::Delegate::CreateSelectedNavigationInTabCommand(
     SessionID::id_type tab_id,
-    int32 index,
+    int32_t index,
     base::Time timestamp) {
   SelectedNavigationInTabPayload2 payload;
   payload.id = tab_id;

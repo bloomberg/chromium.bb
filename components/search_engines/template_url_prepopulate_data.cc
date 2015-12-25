@@ -9,12 +9,14 @@
 #endif
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/prepopulated_engines.h"

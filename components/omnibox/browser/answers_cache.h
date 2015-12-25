@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_ANSWERS_CACHE_H_
 #define COMPONENTS_OMNIBOX_BROWSER_ANSWERS_CACHE_H_
 
+#include <stddef.h>
+
 #include <list>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 struct AnswersQueryData {

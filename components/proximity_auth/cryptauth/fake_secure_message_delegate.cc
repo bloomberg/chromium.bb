@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/callback.h"

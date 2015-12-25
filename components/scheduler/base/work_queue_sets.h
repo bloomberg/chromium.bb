@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SCHEDULER_BASE_WORK_QUEUE_SETS_H_
 #define COMPONENTS_SCHEDULER_BASE_WORK_QUEUE_SETS_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 

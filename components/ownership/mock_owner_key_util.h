@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_OWNERSHIP_MOCK_OWNER_KEY_UTIL_H_
 #define COMPONENTS_OWNERSHIP_MOCK_OWNER_KEY_UTIL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/ownership/ownership_export.h"
@@ -27,9 +29,9 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
   MockOwnerKeyUtil();
 
   // OwnerKeyUtil implementation:
-  bool ImportPublicKey(std::vector<uint8>* output) override;
+  bool ImportPublicKey(std::vector<uint8_t>* output) override;
   crypto::ScopedSECKEYPrivateKey FindPrivateKeyInSlot(
-      const std::vector<uint8>& key,
+      const std::vector<uint8_t>& key,
       PK11SlotInfo* slot) override;
   bool IsPublicKeyPresent() override;
 
@@ -37,7 +39,7 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
   void Clear();
 
   // Configures the mock to return the given public key.
-  void SetPublicKey(const std::vector<uint8>& key);
+  void SetPublicKey(const std::vector<uint8_t>& key);
 
   // Sets the public key to use from the given private key, but doesn't
   // configure the private key.
@@ -49,7 +51,7 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
  private:
   ~MockOwnerKeyUtil() override;
 
-  std::vector<uint8> public_key_;
+  std::vector<uint8_t> public_key_;
   crypto::ScopedSECKEYPrivateKey private_key_;
 
   DISALLOW_COPY_AND_ASSIGN(MockOwnerKeyUtil);

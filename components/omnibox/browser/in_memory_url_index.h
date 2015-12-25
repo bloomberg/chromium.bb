@@ -5,15 +5,17 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_IN_MEMORY_URL_INDEX_H_
 #define COMPONENTS_OMNIBOX_BROWSER_IN_MEMORY_URL_INDEX_H_
 
+#include <stddef.h>
+
 #include <functional>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"

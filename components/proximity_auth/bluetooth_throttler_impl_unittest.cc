@@ -4,6 +4,7 @@
 
 #include "components/proximity_auth/bluetooth_throttler_impl.h"
 
+#include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/fake_connection.h"

@@ -4,6 +4,9 @@
 
 #include "components/sessions/core/session_service_commands.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include <vector>
 
 #include "base/pickle.h"
@@ -45,32 +48,32 @@ namespace {
 // Various payload structures.
 struct ClosedPayload {
   SessionID::id_type id;
-  int64 close_time;
+  int64_t close_time;
 };
 
 struct WindowBoundsPayload2 {
   SessionID::id_type window_id;
-  int32 x;
-  int32 y;
-  int32 w;
-  int32 h;
+  int32_t x;
+  int32_t y;
+  int32_t w;
+  int32_t h;
   bool is_maximized;
 };
 
 struct WindowBoundsPayload3 {
   SessionID::id_type window_id;
-  int32 x;
-  int32 y;
-  int32 w;
-  int32 h;
-  int32 show_state;
+  int32_t x;
+  int32_t y;
+  int32_t w;
+  int32_t h;
+  int32_t show_state;
 };
 
 typedef SessionID::id_type ActiveWindowPayload;
 
 struct IDAndIndexPayload {
   SessionID::id_type id;
-  int32 index;
+  int32_t index;
 };
 
 typedef IDAndIndexPayload TabIndexInWindowPayload;
@@ -92,7 +95,7 @@ struct PinnedStatePayload {
 
 struct LastActiveTimePayload {
   SessionID::id_type tab_id;
-  int64 last_active_time;
+  int64_t last_active_time;
 };
 
 // Persisted versions of ui::WindowShowState that are written to disk and can
@@ -683,7 +686,7 @@ scoped_ptr<SessionCommand> CreateSetWindowTypeCommand(
     SessionWindow::WindowType type) {
   WindowTypePayload payload = { 0 };
   payload.id = window_id.id();
-  payload.index = static_cast<int32>(type);
+  payload.index = static_cast<int32_t>(type);
   scoped_ptr<SessionCommand> command(
       new SessionCommand( kCommandSetWindowType, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_CHILD_ACCOUNT_INFO_FETCHER_IMPL_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_CHILD_ACCOUNT_INFO_FETCHER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/invalidation/public/invalidation_handler.h"

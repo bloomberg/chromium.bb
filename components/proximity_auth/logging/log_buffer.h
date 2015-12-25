@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_LOGGING_LOG_BUFFER_H
 #define COMPONENTS_PROXIMITY_AUTH_LOGGING_LOG_BUFFER_H
 
+#include <stddef.h>
+
 #include <list>
 
 #include "base/logging.h"

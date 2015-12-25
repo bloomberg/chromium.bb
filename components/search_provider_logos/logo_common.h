@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_COMMON_H_
 #define COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_COMMON_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -15,7 +17,7 @@
 namespace search_provider_logos {
 
 // The maximum number of milliseconds that a logo can be cached.
-extern const int64 kMaxTimeToLiveMS;
+extern const int64_t kMaxTimeToLiveMS;
 
 struct LogoMetadata {
   LogoMetadata();

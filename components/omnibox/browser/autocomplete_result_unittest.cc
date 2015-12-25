@@ -4,8 +4,11 @@
 
 #include "components/omnibox/browser/autocomplete_result.h"
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"

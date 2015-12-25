@@ -4,6 +4,8 @@
 
 #include "components/search_engines/keyword_table.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/json/json_reader.h"
@@ -253,12 +255,12 @@ bool KeywordTable::GetKeywords(Keywords* keywords) {
   return succeeded;
 }
 
-bool KeywordTable::SetDefaultSearchProviderID(int64 id) {
+bool KeywordTable::SetDefaultSearchProviderID(int64_t id) {
   return meta_table_->SetValue(kDefaultSearchProviderKey, id);
 }
 
-int64 KeywordTable::GetDefaultSearchProviderID() {
-  int64 value = kInvalidTemplateURLID;
+int64_t KeywordTable::GetDefaultSearchProviderID() {
+  int64_t value = kInvalidTemplateURLID;
   meta_table_->GetValue(kDefaultSearchProviderKey, &value);
   return value;
 }

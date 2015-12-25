@@ -4,7 +4,9 @@
 
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/log_router.h"
 
+#include "base/macros.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/stub_log_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"

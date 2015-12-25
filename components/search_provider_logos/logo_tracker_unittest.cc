@@ -4,6 +4,7 @@
 
 #include "components/search_provider_logos/logo_tracker.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <vector>
 

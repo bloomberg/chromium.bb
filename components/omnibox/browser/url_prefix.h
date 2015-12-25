@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_URL_PREFIX_H_
 #define COMPONENTS_OMNIBOX_BROWSER_URL_PREFIX_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/strings/string16.h"

@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/about_signin_internals.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/hash.h"
 #include "base/i18n/time_formatting.h"
@@ -13,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"

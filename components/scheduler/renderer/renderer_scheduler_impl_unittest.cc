@@ -5,6 +5,7 @@
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"

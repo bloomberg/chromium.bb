@@ -4,6 +4,8 @@
 
 #include "components/search_engines/default_search_pref_migration.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"

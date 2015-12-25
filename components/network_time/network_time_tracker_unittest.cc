@@ -5,6 +5,7 @@
 #include "components/network_time/network_time_tracker.h"
 
 #include <math.h>
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
 #include "base/prefs/testing_pref_service.h"
@@ -16,15 +17,15 @@ namespace network_time {
 namespace {
 
 // These are all in milliseconds.
-const int64 kLatency1 = 50;
-const int64 kLatency2 = 500;
+const int64_t kLatency1 = 50;
+const int64_t kLatency2 = 500;
 
 // Can not be smaller than 15, it's the NowFromSystemTime() resolution.
-const int64 kResolution1 = 17;
-const int64 kResolution2 = 177;
+const int64_t kResolution1 = 17;
+const int64_t kResolution2 = 177;
 
-const int64 kPseudoSleepTime1 = 500000001;
-const int64 kPseudoSleepTime2 = 1888;
+const int64_t kPseudoSleepTime1 = 500000001;
+const int64_t kPseudoSleepTime2 = 1888;
 
 // A custom tick clock that will return an arbitrary time.
 class TestTickClock : public base::TickClock {
@@ -61,7 +62,7 @@ class NetworkTimeTrackerTest : public testing::Test {
     return ticks_now_;
   }
 
-  void AddToTicksNow(int64 ms) {
+  void AddToTicksNow(int64_t ms) {
     ticks_now_ += base::TimeDelta::FromMilliseconds(ms);
   }
 

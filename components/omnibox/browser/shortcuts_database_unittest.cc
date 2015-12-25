@@ -4,12 +4,16 @@
 
 #include "components/omnibox/browser/shortcuts_database.h"
 
+#include <stddef.h>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/shortcuts_constants.h"
 #include "sql/statement.h"

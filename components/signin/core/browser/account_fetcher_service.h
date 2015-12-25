@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_FETCHER_SERVICE_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_FETCHER_SERVICE_H_
 
+#include <stdint.h>
+
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -30,7 +33,7 @@ class AccountFetcherService : public KeyedService,
                               public OAuth2TokenService::Observer,
                               public base::NonThreadSafe {
  public:
-  // Name of the preference that tracks the int64 representation of the last
+  // Name of the preference that tracks the int64_t representation of the last
   // time the AccountTrackerService was updated.
   static const char kLastUpdatePref[];
 

@@ -24,7 +24,7 @@ void PrefRegistrySyncable::SetSyncableRegistrationCallback(
 
 void PrefRegistrySyncable::OnPrefRegistered(const std::string& path,
                                             base::Value* default_value,
-                                            uint32 flags) {
+                                            uint32_t flags) {
   // Tests that |flags| does not contain both SYNCABLE_PREF and
   // SYNCABLE_PRIORITY_PREF flags at the same time.
   DCHECK(!(flags & PrefRegistrySyncable::SYNCABLE_PREF) ||

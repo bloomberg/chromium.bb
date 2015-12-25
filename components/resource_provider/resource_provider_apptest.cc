@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"

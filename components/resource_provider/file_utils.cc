@@ -4,10 +4,13 @@
 
 #include "components/resource_provider/file_utils.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 
 namespace resource_provider {
 namespace {

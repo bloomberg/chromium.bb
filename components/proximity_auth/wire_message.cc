@@ -4,6 +4,9 @@
 
 #include "components/proximity_auth/wire_message.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/base64url.h"

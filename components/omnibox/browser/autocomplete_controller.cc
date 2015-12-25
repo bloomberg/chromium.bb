@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/autocomplete_controller.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

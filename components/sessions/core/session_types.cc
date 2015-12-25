@@ -4,7 +4,8 @@
 
 #include "components/sessions/core/session_types.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/stl_util.h"
 #include "components/sessions/core/session_command.h"
 

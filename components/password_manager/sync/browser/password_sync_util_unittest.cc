@@ -4,6 +4,8 @@
 
 #include "components/password_manager/sync/browser/password_sync_util.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/sync/browser/sync_username_test_base.h"

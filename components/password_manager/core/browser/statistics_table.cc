@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/statistics_table.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -130,7 +132,7 @@ bool StatisticsTable::RemoveStatsBetween(base::Time delete_begin,
       SQL_FROM_HERE,
       "DELETE FROM stats WHERE update_time >= ? AND update_time < ?"));
   s.BindInt64(0, delete_begin.ToInternalValue());
-  s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64>::max()
+  s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64_t>::max()
                                       : delete_end.ToInternalValue());
   return s.Run();
 }

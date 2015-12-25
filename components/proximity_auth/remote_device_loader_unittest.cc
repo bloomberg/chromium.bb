@@ -4,7 +4,10 @@
 
 #include "components/proximity_auth/remote_device_loader.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"

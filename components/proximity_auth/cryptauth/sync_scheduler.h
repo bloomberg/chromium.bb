@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_SYNC_SCHEDULER_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_SYNC_SCHEDULER_H
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 

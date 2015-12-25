@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/affiliation_fetcher.h"
 
+#include "base/macros.h"
 #include "base/test/null_task_runner.h"
 #include "components/password_manager/core/browser/affiliation_api.pb.h"
 #include "net/url_request/test_url_fetcher_factory.h"

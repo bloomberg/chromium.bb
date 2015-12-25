@@ -46,7 +46,7 @@ void OfflinePageTestStore::AddOrUpdateOfflinePage(
 }
 
 void OfflinePageTestStore::RemoveOfflinePages(
-    const std::vector<int64>& bookmark_ids,
+    const std::vector<int64_t>& bookmark_ids,
     const UpdateCallback& callback) {
   ASSERT_FALSE(bookmark_ids.empty());
   bool result = false;
@@ -69,7 +69,7 @@ void OfflinePageTestStore::Reset(const ResetCallback& callback) {
 }
 
 void OfflinePageTestStore::UpdateLastAccessTime(
-    int64 bookmark_id,
+    int64_t bookmark_id,
     const base::Time& last_access_time) {
   auto iter = offline_pages_.find(bookmark_id);
   if (iter == offline_pages_.end())

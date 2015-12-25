@@ -8,12 +8,13 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "rlz/lib/rlz_lib.h"
 
 namespace net {

@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_SYNC_SCHEDULER_IMPL_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CRYPTAUTH_SYNC_SCHEDULER_IMPL_H
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "components/proximity_auth/cryptauth/sync_scheduler.h"
 

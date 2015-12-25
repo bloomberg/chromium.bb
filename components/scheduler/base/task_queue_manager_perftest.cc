@@ -4,6 +4,8 @@
 
 #include "components/scheduler/base/task_queue_manager.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"

@@ -4,7 +4,10 @@
 
 #include "components/ssl_errors/error_info.h"
 
+#include <stddef.h>
+
 #include "base/i18n/message_formatter.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/components_strings.h"
 #include "net/base/escape.h"

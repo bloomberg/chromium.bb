@@ -4,6 +4,8 @@
 
 #include "components/search_engines/desktop_search_win.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/search_engines/testing_search_terms_data.h"

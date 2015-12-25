@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/log_router.h"
 

@@ -4,10 +4,11 @@
 
 #include "components/sessions/core/serialized_navigation_entry.h"
 
+#include <stdint.h>
+
 #include <cstddef>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
@@ -194,14 +195,14 @@ TEST(SerializedNavigationEntryTest, TransitionTypes) {
   SerializedNavigationEntry navigation =
       SerializedNavigationEntryTestHelper::CreateNavigationForTest();
 
-  for (uint32 core_type = ui::PAGE_TRANSITION_LINK;
+  for (uint32_t core_type = ui::PAGE_TRANSITION_LINK;
        core_type != ui::PAGE_TRANSITION_LAST_CORE; ++core_type) {
-    // Because qualifier is a uint32, left shifting will eventually overflow
+    // Because qualifier is a uint32_t, left shifting will eventually overflow
     // and hit zero again. SERVER_REDIRECT, as the last qualifier and also
     // in place of the sign bit, is therefore the last transition before
     // breaking.
-    for (uint32 qualifier = ui::PAGE_TRANSITION_FORWARD_BACK;
-         qualifier != 0; qualifier <<= 1) {
+    for (uint32_t qualifier = ui::PAGE_TRANSITION_FORWARD_BACK; qualifier != 0;
+         qualifier <<= 1) {
       if (qualifier == 0x08000000)
         continue;  // 0x08000000 is not a valid qualifier.
       ui::PageTransition transition =

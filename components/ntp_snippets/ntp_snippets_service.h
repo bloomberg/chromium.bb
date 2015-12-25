@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SERVICE_H_
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SERVICE_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

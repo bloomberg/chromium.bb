@@ -5,6 +5,7 @@
 #include "components/os_crypt/os_crypt.h"
 
 #include <CommonCrypto/CommonCryptor.h>  // for kCCBlockSizeAES128
+#include <stddef.h>
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"

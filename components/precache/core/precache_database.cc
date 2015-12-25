@@ -91,7 +91,7 @@ void PrecacheDatabase::ClearHistory() {
 void PrecacheDatabase::RecordURLPrefetch(const GURL& url,
                                          const base::TimeDelta& latency,
                                          const base::Time& fetch_time,
-                                         int64 size,
+                                         int64_t size,
                                          bool was_cached) {
   UMA_HISTOGRAM_TIMES("Precache.Latency.Prefetch", latency);
 
@@ -134,7 +134,7 @@ void PrecacheDatabase::RecordURLPrefetch(const GURL& url,
 void PrecacheDatabase::RecordURLNonPrefetch(const GURL& url,
                                             const base::TimeDelta& latency,
                                             const base::Time& fetch_time,
-                                            int64 size,
+                                            int64_t size,
                                             bool was_cached,
                                             int host_rank,
                                             bool is_connection_cellular) {

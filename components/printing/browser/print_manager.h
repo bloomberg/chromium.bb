@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PRINTING_BROWSER_PRINT_MANAGER_H_
 #define COMPONENTS_PRINTING_BROWSER_PRINT_MANAGER_H_
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/web_contents_observer.h"
 
 #if defined(OS_ANDROID)

@@ -7,15 +7,18 @@
 // instead). We could special-case it, but it is easier to just have empty
 // passwords. This will not be needed anymore if crbug.com/466638 is fixed.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation_service.h"
 #include "components/password_manager/core/browser/mock_affiliated_match_helper.h"

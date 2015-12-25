@@ -4,9 +4,9 @@
 
 #include "components/password_manager/core/browser/login_database.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "sql/connection.h"

@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_PARSER_H_
 #define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_PARSER_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 class SearchTermsData;
 class TemplateURL;

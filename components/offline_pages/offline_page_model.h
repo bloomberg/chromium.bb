@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_MODEL_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_MODEL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
@@ -113,7 +115,7 @@ class OfflinePageModel : public KeyedService,
     // Invoked when an offline copy related to |bookmark_id| was deleted.
     // In can be invoked as a result of |CheckForExternalFileDeletion|, if a
     // deleted page is detected.
-    virtual void OfflinePageDeleted(int64 bookmark_id) = 0;
+    virtual void OfflinePageDeleted(int64_t bookmark_id) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -148,29 +150,29 @@ class OfflinePageModel : public KeyedService,
   // Attempts to save a page addressed by |url| offline. Requires that the model
   // is loaded.
   void SavePage(const GURL& url,
-                int64 bookmark_id,
+                int64_t bookmark_id,
                 scoped_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback);
 
   // Marks that the offline page related to the passed |bookmark_id| has been
   // accessed. Its access info, including last access time and access count,
   // will be updated. Requires that the model is loaded.
-  void MarkPageAccessed(int64 bookmark_id);
+  void MarkPageAccessed(int64_t bookmark_id);
 
   // Marks that the offline page related to the passed |bookmark_id| was going
   // to be deleted. The deletion will occur in a short while. The undo can be
   // done before this. Requires that the model is loaded.
-  void MarkPageForDeletion(int64 bookmark_id,
+  void MarkPageForDeletion(int64_t bookmark_id,
                            const DeletePageCallback& callback);
 
   // Deletes an offline page related to the passed |bookmark_id|. Requires that
   // the model is loaded.
-  void DeletePageByBookmarkId(int64 bookmark_id,
+  void DeletePageByBookmarkId(int64_t bookmark_id,
                               const DeletePageCallback& callback);
 
   // Deletes offline pages related to the passed |bookmark_ids|. Requires that
   // the model is loaded.
-  void DeletePagesByBookmarkId(const std::vector<int64>& bookmark_ids,
+  void DeletePagesByBookmarkId(const std::vector<int64_t>& bookmark_ids,
                                const DeletePageCallback& callback);
 
   // Wipes out all the data by deleting all saved files and clearing the store.
@@ -188,7 +190,7 @@ class OfflinePageModel : public KeyedService,
 
   // Returns an offline page associated with a specified |bookmark_id|. nullptr
   // is returned if not found.
-  const OfflinePageItem* GetPageByBookmarkId(int64 bookmark_id) const;
+  const OfflinePageItem* GetPageByBookmarkId(int64_t bookmark_id) const;
 
   // Returns an offline page that is stored as |offline_url|. A nullptr is
   // returned if not found.
@@ -237,14 +239,14 @@ class OfflinePageModel : public KeyedService,
 
   // Steps for saving a page offline.
   void OnCreateArchiveDone(const GURL& requested_url,
-                           int64 bookmark_id,
+                           int64_t bookmark_id,
                            const base::Time& start_time,
                            const SavePageCallback& callback,
                            OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult result,
                            const GURL& url,
                            const base::FilePath& file_path,
-                           int64 file_size);
+                           int64_t file_size);
   void OnAddOfflinePageDone(OfflinePageArchiver* archiver,
                             const SavePageCallback& callback,
                             const OfflinePageItem& offline_page,
@@ -254,11 +256,10 @@ class OfflinePageModel : public KeyedService,
   void DeletePendingArchiver(OfflinePageArchiver* archiver);
 
   // Steps for deleting files and data for an offline page.
-  void OnDeleteArchiveFilesDone(
-      const std::vector<int64>& bookmark_ids,
-      const DeletePageCallback& callback,
-      const bool* success);
-  void OnRemoveOfflinePagesDone(const std::vector<int64>& bookmark_ids,
+  void OnDeleteArchiveFilesDone(const std::vector<int64_t>& bookmark_ids,
+                                const DeletePageCallback& callback,
+                                const bool* success);
+  void OnRemoveOfflinePagesDone(const std::vector<int64_t>& bookmark_ids,
                                 const DeletePageCallback& callback,
                                 bool success);
   void InformDeletePageDone(const DeletePageCallback& callback,
@@ -274,14 +275,14 @@ class OfflinePageModel : public KeyedService,
   void FinalizePageDeletion();
 
   // Steps for undoing an offline page deletion.
-  void UndoPageDeletion(int64 bookmark_id);
+  void UndoPageDeletion(int64_t bookmark_id);
   void OnUndoOfflinePageDone(const OfflinePageItem& offline_page, bool success);
 
   // Callbacks for checking if offline pages are missing archive files.
   void OnFindPagesMissingArchiveFile(
-      const std::vector<int64>* pages_missing_archive_file);
+      const std::vector<int64_t>* pages_missing_archive_file);
   void OnRemoveOfflinePagesMissingArchiveFileDone(
-      const std::vector<int64>& bookmark_ids,
+      const std::vector<int64_t>& bookmark_ids,
       OfflinePageModel::DeletePageResult result);
 
   // Steps for clearing all.
@@ -307,7 +308,7 @@ class OfflinePageModel : public KeyedService,
   bool is_loaded_;
 
   // In memory copy of the offline page metadata, keyed by bookmark IDs.
-  std::map<int64, OfflinePageItem> offline_pages_;
+  std::map<int64_t, OfflinePageItem> offline_pages_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SCHEDULER_BASE_TEST_ALWAYS_FAIL_TIME_SOURCE_H_
 #define COMPONENTS_SCHEDULER_BASE_TEST_ALWAYS_FAIL_TIME_SOURCE_H_
 
+#include "base/macros.h"
 #include "base/time/tick_clock.h"
 
 namespace scheduler {

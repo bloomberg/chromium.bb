@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 

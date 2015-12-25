@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 

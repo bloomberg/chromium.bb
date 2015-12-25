@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/facet_manager.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"

@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/shortcuts_backend.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

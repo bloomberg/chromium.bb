@@ -8,6 +8,8 @@
 #ifndef COMPONENTS_QUERY_PARSER_SNIPPET_H__
 #define COMPONENTS_QUERY_PARSER_SNIPPET_H__
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/strings/string16.h"

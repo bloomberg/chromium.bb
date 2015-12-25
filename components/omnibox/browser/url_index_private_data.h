@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_URL_INDEX_PRIVATE_DATA_H_
 #define COMPONENTS_OMNIBOX_BROWSER_URL_INDEX_PRIVATE_DATA_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

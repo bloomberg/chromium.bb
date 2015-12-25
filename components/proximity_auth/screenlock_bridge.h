@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

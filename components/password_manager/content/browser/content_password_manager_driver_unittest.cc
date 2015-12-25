@@ -4,6 +4,9 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/password_manager/core/browser/stub_log_manager.h"
@@ -48,7 +51,7 @@ class ContentPasswordManagerDriverTest
   }
 
   bool WasLoggingActivationMessageSent(bool* activation_flag) {
-    const uint32 kMsgID = AutofillMsg_SetLoggingState::ID;
+    const uint32_t kMsgID = AutofillMsg_SetLoggingState::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)

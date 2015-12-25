@@ -4,6 +4,7 @@
 
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 
+#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"

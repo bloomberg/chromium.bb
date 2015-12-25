@@ -4,7 +4,10 @@
 
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 
+#include <stddef.h>
+
 #include "base/base64url.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"

@@ -5,6 +5,7 @@
 #include "components/scheduler/child/worker_scheduler_impl.h"
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PAIRING_PROTO_DECODER_H_
 #define COMPONENTS_PAIRING_PROTO_DECODER_H_
 
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/logging.h"

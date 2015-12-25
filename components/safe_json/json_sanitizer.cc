@@ -13,9 +13,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/safe_json/safe_json_parser.h"
 
 namespace safe_json {

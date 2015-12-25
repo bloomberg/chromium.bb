@@ -20,7 +20,7 @@ namespace {
 // |kMagic| should be reasonably unique, and not match itself across
 // endianness changes.  I generated this value with:
 // md5 -qs chrome/browser/safe_browsing/prefix_set.cc | colrm 9
-static uint32 kMagic = 0x864088dd;
+static uint32_t kMagic = 0x864088dd;
 
 // Version history:
 // Version 1: b6cb7cfe/r74487 by shess@chromium.org on 2011-02-10
@@ -28,17 +28,17 @@ static uint32 kMagic = 0x864088dd;
 // Version 3: dd07faf5/r268145 by shess@chromium.org on 2014-05-05
 
 // Version 2 layout is identical to version 1.  The sort order of |index_|
-// changed from |int32| to |uint32| to match the change of |SBPrefix|.
+// changed from |int32_t| to |uint32_t| to match the change of |SBPrefix|.
 // Version 3 adds storage for full hashes.
-static uint32 kVersion = 3;
-static uint32 kDeprecatedVersion = 2;  // And lower.
+static uint32_t kVersion = 3;
+static uint32_t kDeprecatedVersion = 2;  // And lower.
 
 typedef struct {
-  uint32 magic;
-  uint32 version;
-  uint32 index_size;
-  uint32 deltas_size;
-  uint32 full_hashes_size;
+  uint32_t magic;
+  uint32_t version;
+  uint32_t index_size;
+  uint32_t deltas_size;
+  uint32_t full_hashes_size;
 } FileHeader;
 
 // Common std::vector<> implementations add capacity by multiplying from the
@@ -68,7 +68,7 @@ size_t EstimateFinalCount(SBPrefix current_prefix, size_t current_count) {
   // estimated_count / current_count == estimated_max / current_prefix
   // For large input sets, estimated_max of 2^32 is close enough.
   const size_t estimated_prefix_count = static_cast<size_t>(
-      (static_cast<uint64>(current_count) << 32) / current_prefix);
+      (static_cast<uint64_t>(current_count) << 32) / current_prefix);
 
   // The estimate has an error bar, if the final total is below the estimate, no
   // harm, but if it is above a capacity resize will happen at nearly 100%.  Add
@@ -88,7 +88,7 @@ PrefixSet::PrefixSet() {
 }
 
 PrefixSet::PrefixSet(IndexVector* index,
-                     std::vector<uint16>* deltas,
+                     std::vector<uint16_t>* deltas,
                      std::vector<SBFullHash>* full_hashes) {
   DCHECK(index && deltas && full_hashes);
   index_.swap(*index);
@@ -159,11 +159,11 @@ void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
 // static
 scoped_ptr<const PrefixSet> PrefixSet::LoadFile(
     const base::FilePath& filter_name) {
-  int64 size_64;
+  int64_t size_64;
   if (!base::GetFileSize(filter_name, &size_64))
     return nullptr;
   using base::MD5Digest;
-  if (size_64 < static_cast<int64>(sizeof(FileHeader) + sizeof(MD5Digest)))
+  if (size_64 < static_cast<int64_t>(sizeof(FileHeader) + sizeof(MD5Digest)))
     return nullptr;
 
   base::ScopedFILE file(base::OpenFile(filter_name, "rb"));
@@ -196,7 +196,7 @@ scoped_ptr<const PrefixSet> PrefixSet::LoadFile(
   IndexVector index;
   const size_t index_bytes = sizeof(index[0]) * header.index_size;
 
-  std::vector<uint16> deltas;
+  std::vector<uint16_t> deltas;
   const size_t deltas_bytes = sizeof(deltas[0]) * header.deltas_size;
 
   std::vector<SBFullHash> full_hashes;
@@ -206,7 +206,7 @@ scoped_ptr<const PrefixSet> PrefixSet::LoadFile(
   // Check for bogus sizes before allocating any space.
   const size_t expected_bytes = sizeof(header) +
       index_bytes + deltas_bytes + full_hashes_bytes + sizeof(MD5Digest);
-  if (static_cast<int64>(expected_bytes) != size_64)
+  if (static_cast<int64_t>(expected_bytes) != size_64)
     return nullptr;
 
   // Read the index vector.  Herb Sutter indicates that vectors are
@@ -266,9 +266,9 @@ bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
   FileHeader header;
   header.magic = kMagic;
   header.version = kVersion;
-  header.index_size = static_cast<uint32>(index_.size());
-  header.deltas_size = static_cast<uint32>(deltas_.size());
-  header.full_hashes_size = static_cast<uint32>(full_hashes_.size());
+  header.index_size = static_cast<uint32_t>(index_.size());
+  header.deltas_size = static_cast<uint32_t>(deltas_.size());
+  header.full_hashes_size = static_cast<uint32_t>(full_hashes_.size());
 
   // Sanity check that the 32-bit values never mess things up.
   if (static_cast<size_t>(header.index_size) != index_.size() ||
@@ -345,7 +345,8 @@ bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
 }
 
 void PrefixSet::AddRun(SBPrefix index_prefix,
-                       const uint16* run_begin, const uint16* run_end) {
+                       const uint16_t* run_begin,
+                       const uint16_t* run_end) {
   // Preempt organic capacity decisions for |delta_| once strong estimates can
   // be made.
   if (index_prefix > kEstimateThreshold &&
@@ -354,7 +355,7 @@ void PrefixSet::AddRun(SBPrefix index_prefix,
   }
 
   index_.push_back(
-      std::make_pair(index_prefix, static_cast<uint32>(deltas_.size())));
+      std::make_pair(index_prefix, static_cast<uint32_t>(deltas_.size())));
   deltas_.insert(deltas_.end(), run_begin, run_end);
 }
 
@@ -400,7 +401,7 @@ void PrefixSetBuilder::EmitRun() {
   DCHECK(prefix_set_.get());
 
   SBPrefix prev_prefix = buffer_[0];
-  uint16 run[PrefixSet::kMaxRun];
+  uint16_t run[PrefixSet::kMaxRun];
   size_t run_pos = 0;
 
   size_t i;
@@ -409,7 +410,7 @@ void PrefixSetBuilder::EmitRun() {
     // sorted_prefixes could be more than INT_MAX apart.
     DCHECK_GT(buffer_[i], prev_prefix);
     const unsigned delta = buffer_[i] - prev_prefix;
-    const uint16 delta16 = static_cast<uint16>(delta);
+    const uint16_t delta16 = static_cast<uint16_t>(delta);
 
     // Break the run if the delta doesn't fit.
     if (delta != static_cast<unsigned>(delta16))

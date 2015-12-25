@@ -11,6 +11,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_POPUP_VIEW_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_POPUP_VIEW_H_
 
+#include <stddef.h>
+
 #include "build/build_config.h"
 
 namespace gfx {

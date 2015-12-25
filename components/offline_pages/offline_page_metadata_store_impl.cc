@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/proto/offline_pages.pb.h"

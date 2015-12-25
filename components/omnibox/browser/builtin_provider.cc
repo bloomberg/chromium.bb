@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/builtin_provider.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/strings/string_util.h"

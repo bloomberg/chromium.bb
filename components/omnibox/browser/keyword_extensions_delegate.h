@@ -12,7 +12,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 

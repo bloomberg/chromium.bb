@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"

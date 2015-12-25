@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/remote_device_life_cycle.h"

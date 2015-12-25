@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/suggestion_answer.h"
 
+#include <stddef.h>
+
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

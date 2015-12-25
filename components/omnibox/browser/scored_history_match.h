@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_SCORED_HISTORY_MATCH_H_
 #define COMPONENTS_OMNIBOX_BROWSER_SCORED_HISTORY_MATCH_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

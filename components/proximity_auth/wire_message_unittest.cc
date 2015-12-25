@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/wire_message.h"
 
+#include <stdint.h>
+
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -4,9 +4,12 @@
 
 #include "components/printing/test/print_mock_render_thread.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/printing/test/mock_printer.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/page_range.h"
@@ -105,7 +108,7 @@ void PrintMockRenderThread::OnDidPreviewPage(
   print_preview_pages_remaining_--;
 }
 
-void PrintMockRenderThread::OnCheckForCancel(int32 preview_ui_id,
+void PrintMockRenderThread::OnCheckForCancel(int32_t preview_ui_id,
                                              int preview_request_id,
                                              bool* cancel) {
   *cancel =

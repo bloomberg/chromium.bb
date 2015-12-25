@@ -4,6 +4,8 @@
 
 #include "components/power/origin_power_map.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace power {

@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_PRECACHE_CONTENT_PRECACHE_MANAGER_H_
 #define COMPONENTS_PRECACHE_CONTENT_PRECACHE_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <string>
 #include <utility>
@@ -12,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -94,7 +98,7 @@ class PrecacheManager : public KeyedService,
                            const GURL& referrer,
                            const base::TimeDelta& latency,
                            const base::Time& fetch_time,
-                           int64 size,
+                           int64_t size,
                            bool was_cached);
 
   // Posts a task to the DB thread to delete all history entries from the
@@ -129,7 +133,7 @@ class PrecacheManager : public KeyedService,
   void RecordStatsForFetchInternal(const GURL& url,
                                    const base::TimeDelta& latency,
                                    const base::Time& fetch_time,
-                                   int64 size,
+                                   int64_t size,
                                    bool was_cached,
                                    int host_rank);
 

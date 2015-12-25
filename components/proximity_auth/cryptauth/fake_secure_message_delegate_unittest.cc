@@ -5,6 +5,7 @@
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace proximity_auth {

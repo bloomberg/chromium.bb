@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 
+#include "base/macros.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"

@@ -17,6 +17,7 @@
 #ifndef COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_PRECONNECT_H_
 #define COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_PRECONNECT_H_
 
+#include "base/macros.h"
 #include "url/gurl.h"
 
 namespace network_hints {

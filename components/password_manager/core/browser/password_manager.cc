@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_manager.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/command_line.h"
@@ -13,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data_predictions.h"

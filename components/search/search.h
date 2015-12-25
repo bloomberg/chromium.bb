@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_SEARCH_SEARCH_H_
 #define COMPONENTS_SEARCH_SEARCH_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 
@@ -28,7 +29,7 @@ bool IsInstantExtendedAPIEnabled();
 // Returns the value to pass to the &espv CGI parameter when loading the
 // embedded search page from the user's default search provider. Returns 0 if
 // the Instant Extended API is not enabled.
-uint64 EmbeddedSearchPageVersion();
+uint64_t EmbeddedSearchPageVersion();
 
 // Type for a collection of experiment configuration parameters.
 typedef base::StringPairs FieldTrialFlags;
@@ -49,12 +50,12 @@ std::string GetStringValueForFlagWithDefault(const std::string& flag,
                                              const std::string& default_value,
                                              const FieldTrialFlags& flags);
 
-// Given a FieldTrialFlags object, returns the uint64 value of the provided
+// Given a FieldTrialFlags object, returns the uint64_t value of the provided
 // flag.
 // Exposed for testing only.
-uint64 GetUInt64ValueForFlagWithDefault(const std::string& flag,
-                                        uint64 default_value,
-                                        const FieldTrialFlags& flags);
+uint64_t GetUInt64ValueForFlagWithDefault(const std::string& flag,
+                                          uint64_t default_value,
+                                          const FieldTrialFlags& flags);
 
 // Given a FieldTrialFlags object, returns the bool value of the provided flag.
 // Exposed for testing only.

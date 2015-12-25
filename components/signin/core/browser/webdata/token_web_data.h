@@ -16,6 +16,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"

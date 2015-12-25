@@ -4,6 +4,9 @@
 
 #include "components/safe_browsing_db/util.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"

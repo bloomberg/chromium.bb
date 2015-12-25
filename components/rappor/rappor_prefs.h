@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_RAPPOR_RAPPOR_PREFS_H_
 #define COMPONENTS_RAPPOR_RAPPOR_PREFS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 
 class PrefService;
 class PrefRegistrySimple;

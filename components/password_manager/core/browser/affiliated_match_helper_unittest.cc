@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

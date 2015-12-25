@@ -4,6 +4,9 @@
 
 #include "components/search_engines/util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -142,7 +145,7 @@ void RemoveDuplicatePrepopulateIDs(
 // If not found, returns NULL.
 TemplateURL* GetTemplateURLByID(
     const TemplateURLService::TemplateURLVector& template_urls,
-    int64 id) {
+    int64_t id) {
   for (TemplateURLService::TemplateURLVector::const_iterator i(
        template_urls.begin()); i != template_urls.end(); ++i) {
     if ((*i)->id() == id) {

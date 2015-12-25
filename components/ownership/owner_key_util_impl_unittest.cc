@@ -4,20 +4,22 @@
 
 #include "components/ownership/owner_key_util_impl.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ownership {
 
 // 2048-bit RSA public key for testing.
-const uint8 kTestKeyData[] = {
+const uint8_t kTestKeyData[] = {
     0x30, 0x82, 0x01, 0x22, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
     0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0f, 0x00,
     0x30, 0x82, 0x01, 0x0a, 0x02, 0x82, 0x01, 0x01, 0x00, 0xe8, 0x39, 0x11,
@@ -66,15 +68,15 @@ class OwnerKeyUtilImplTest : public testing::Test {
 
 TEST_F(OwnerKeyUtilImplTest, ImportPublicKey) {
   // Export public key, so that we can compare it to the one we get off disk.
-  std::vector<uint8> public_key(kTestKeyData,
-                                kTestKeyData + sizeof(kTestKeyData));
+  std::vector<uint8_t> public_key(kTestKeyData,
+                                  kTestKeyData + sizeof(kTestKeyData));
   ASSERT_EQ(static_cast<int>(public_key.size()),
             base::WriteFile(key_file_,
                             reinterpret_cast<const char*>(public_key.data()),
                             public_key.size()));
   EXPECT_TRUE(util_->IsPublicKeyPresent());
 
-  std::vector<uint8> from_disk;
+  std::vector<uint8_t> from_disk;
   EXPECT_TRUE(util_->ImportPublicKey(&from_disk));
 
   EXPECT_EQ(public_key, from_disk);
@@ -83,7 +85,7 @@ TEST_F(OwnerKeyUtilImplTest, ImportPublicKey) {
 TEST_F(OwnerKeyUtilImplTest, ImportPublicKeyFailed) {
   // First test the case where the file is missing which should fail.
   EXPECT_FALSE(util_->IsPublicKeyPresent());
-  std::vector<uint8> from_disk;
+  std::vector<uint8_t> from_disk;
   EXPECT_FALSE(util_->ImportPublicKey(&from_disk));
 
   // Next try empty file. This should fail and the array should be empty.

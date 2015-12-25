@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_RAPPOR_BLOOM_FILTER_H_
 #define COMPONENTS_RAPPOR_BLOOM_FILTER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "components/rappor/byte_vector_utils.h"
 

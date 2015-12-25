@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/safe_json/json_sanitizer.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"

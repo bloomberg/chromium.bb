@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/net_log/chrome_net_log.h"
 #include "net/log/write_to_file_net_log_observer.h"
 

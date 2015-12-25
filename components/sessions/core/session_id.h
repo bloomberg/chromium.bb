@@ -5,13 +5,14 @@
 #ifndef COMPONENTS_SESSIONS_CORE_SESSION_ID_H_
 #define COMPONENTS_SESSIONS_CORE_SESSION_ID_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "components/sessions/core/sessions_export.h"
 
 // Uniquely identifies a tab or window for the duration of a session.
 class SESSIONS_EXPORT SessionID {
  public:
-  typedef int32 id_type;
+  typedef int32_t id_type;
 
   SessionID();
   ~SessionID() {}

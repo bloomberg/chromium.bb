@@ -4,6 +4,7 @@
 
 #include "components/rlz/rlz_tracker.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -11,6 +12,7 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 #include "net/url_request/url_request_test_util.h"
 #include "rlz/test/rlz_test_helpers.h"

@@ -4,6 +4,8 @@
 
 #include "components/proximity_auth/logging/logging.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"

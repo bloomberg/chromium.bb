@@ -4,11 +4,11 @@
 
 #include "components/printing/test/mock_printer.h"
 
-#include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/pdf_metafile_skia.h"
@@ -43,11 +43,11 @@ void UpdateMargins(int margins_type, int dpi, PrintMsg_Print_Params* params) {
 }  // namespace
 
 MockPrinterPage::MockPrinterPage(const void* source_data,
-                                 uint32 source_size,
+                                 uint32_t source_size,
                                  const printing::Image& image)
     : source_size_(source_size), image_(image) {
   // Create copies of the source data
-  source_data_.reset(new uint8[source_size]);
+  source_data_.reset(new uint8_t[source_size]);
   if (source_data_.get())
     memcpy(source_data_.get(), source_data, source_size);
 }
@@ -269,8 +269,8 @@ bool MockPrinter::SaveSource(unsigned int page,
                              const base::FilePath& filepath) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
-  const uint8* source_data = pages_[page]->source_data();
-  uint32 source_size = pages_[page]->source_size();
+  const uint8_t* source_data = pages_[page]->source_data();
+  uint32_t source_size = pages_[page]->source_size();
   base::WriteFile(filepath, reinterpret_cast<const char*>(source_data),
                   source_size);
   return true;

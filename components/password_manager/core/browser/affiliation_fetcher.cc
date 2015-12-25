@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/affiliation_fetcher.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "components/password_manager/core/browser/affiliation_api.pb.h"

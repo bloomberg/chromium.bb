@@ -7,11 +7,12 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_UTIL_H_
 #define COMPONENTS_SAFE_BROWSING_DB_UTIL_H_
 
+#include <stdint.h>
+
 #include <cstring>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 
@@ -50,7 +51,7 @@ enum SBThreatType {
 
 
 // A truncated hash's type.
-typedef uint32 SBPrefix;
+typedef uint32_t SBPrefix;
 
 // A full hash.
 union SBFullHash {

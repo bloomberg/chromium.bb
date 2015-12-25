@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_RAPPOR_RAPPOR_SERVICE_H_
 #define COMPONENTS_RAPPOR_RAPPOR_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
 #define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MODEL_WORKER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 

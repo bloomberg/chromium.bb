@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_FAKE_CONNECTION_H
 #define COMPONENTS_PROXIMITY_AUTH_FAKE_CONNECTION_H
 
+#include "base/macros.h"
 #include "components/proximity_auth/connection.h"
 
 namespace proximity_auth {

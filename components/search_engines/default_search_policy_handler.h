@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 namespace policy {

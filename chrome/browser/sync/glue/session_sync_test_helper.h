@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 
 namespace sync_driver {
@@ -50,6 +51,7 @@ class SessionSyncTestHelper {
 
  private:
   int max_tab_node_id_;
+
   DISALLOW_COPY_AND_ASSIGN(SessionSyncTestHelper);
 };
 

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_TOOLKIT_DELEGATE_VIEWS_H_
 #define COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_TOOLKIT_DELEGATE_VIEWS_H_
 
+#include "base/macros.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
 #include "ui/base/ui_base_types.h"
 

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "components/safe_json/safe_json_parser.h"
 
 namespace safe_json {

@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/common/password_form_fill_data.h"

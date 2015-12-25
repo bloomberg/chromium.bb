@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OWNERSHIP_OWNER_KEY_UTIL_IMPL_H_
 #define COMPONENTS_OWNERSHIP_OWNER_KEY_UTIL_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -20,9 +22,9 @@ class OWNERSHIP_EXPORT OwnerKeyUtilImpl : public OwnerKeyUtil {
   explicit OwnerKeyUtilImpl(const base::FilePath& public_key_file);
 
   // OwnerKeyUtil implementation:
-  bool ImportPublicKey(std::vector<uint8>* output) override;
+  bool ImportPublicKey(std::vector<uint8_t>* output) override;
   crypto::ScopedSECKEYPrivateKey FindPrivateKeyInSlot(
-      const std::vector<uint8>& key,
+      const std::vector<uint8_t>& key,
       PK11SlotInfo* slot) override;
   bool IsPublicKeyPresent() override;
 

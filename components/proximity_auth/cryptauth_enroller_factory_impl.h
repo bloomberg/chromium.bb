@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_FACTORY_IMPL_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ENROLLER_FACTORY_IMPL_H
 
+#include "base/macros.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 

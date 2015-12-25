@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_PACKED_CT_EV_WHITELIST_BIT_STREAM_READER_H_
 #define COMPONENTS_PACKED_CT_EV_WHITELIST_BIT_STREAM_READER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 
 namespace packed_ct_ev_whitelist {
@@ -54,7 +56,7 @@ class BitStreamReader {
   // Index of the last bit read within |current_byte_|. Since bits are read
   // from the MSB to the LSB, this value is initialized to 7 and decremented
   // after each read.
-  int8 current_bit_;
+  int8_t current_bit_;
 
   DISALLOW_COPY_AND_ASSIGN(BitStreamReader);
 };

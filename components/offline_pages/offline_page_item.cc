@@ -20,22 +20,21 @@ OfflinePageItem::OfflinePageItem()
 }
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
-                                 int64 bookmark_id,
+                                 int64_t bookmark_id,
                                  const base::FilePath& file_path,
-                                 int64 file_size)
+                                 int64_t file_size)
     : url(url),
       bookmark_id(bookmark_id),
       version(kCurrentVersion),
       file_path(file_path),
       file_size(file_size),
       access_count(0),
-      flags(NO_FLAG) {
-}
+      flags(NO_FLAG) {}
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
-                                 int64 bookmark_id,
+                                 int64_t bookmark_id,
                                  const base::FilePath& file_path,
-                                 int64 file_size,
+                                 int64_t file_size,
                                  const base::Time& creation_time)
     : url(url),
       bookmark_id(bookmark_id),
@@ -45,8 +44,7 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       creation_time(creation_time),
       last_access_time(creation_time),
       access_count(0),
-      flags(NO_FLAG) {
-}
+      flags(NO_FLAG) {}
 
 OfflinePageItem::~OfflinePageItem() {
 }

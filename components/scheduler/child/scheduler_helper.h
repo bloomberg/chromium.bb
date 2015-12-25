@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_SCHEDULER_HELPER_H_
 #define COMPONENTS_SCHEDULER_CHILD_SCHEDULER_HELPER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/task_queue_selector.h"

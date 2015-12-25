@@ -4,6 +4,7 @@
 
 #include "components/omnibox/browser/base_search_provider.h"
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"

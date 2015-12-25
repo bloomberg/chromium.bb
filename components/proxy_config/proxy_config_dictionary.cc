@@ -4,7 +4,6 @@
 
 #include "components/proxy_config/proxy_config_dictionary.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "net/proxy/proxy_config.h"

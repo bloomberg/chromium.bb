@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"

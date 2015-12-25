@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 

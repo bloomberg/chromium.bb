@@ -4,6 +4,8 @@
 
 #include "components/scheduler/base/task_queue_manager.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"

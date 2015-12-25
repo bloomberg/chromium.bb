@@ -4,8 +4,11 @@
 
 #include "components/printing/renderer/print_web_view_helper.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "printing/metafile_skia_wrapper.h"

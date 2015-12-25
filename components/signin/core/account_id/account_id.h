@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SIGNIN_CORE_ACCOUNT_ID_ACCOUNT_ID_H_
 #define COMPONENTS_SIGNIN_CORE_ACCOUNT_ID_ACCOUNT_ID_H_
 
+#include <stddef.h>
+
 #include <string>
 #include "base/containers/hash_tables.h"
 

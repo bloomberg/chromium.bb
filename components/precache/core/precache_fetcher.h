@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_PRECACHE_CORE_PRECACHE_FETCHER_H_
 #define COMPONENTS_PRECACHE_CORE_PRECACHE_FETCHER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -171,8 +172,8 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
           bool is_resource_request);
   ~Fetcher() override;
   void OnURLFetchComplete(const net::URLFetcher* source) override;
-  int64 response_bytes() const { return response_bytes_; }
-  int64 network_response_bytes() const { return network_response_bytes_; }
+  int64_t response_bytes() const { return response_bytes_; }
+  int64_t network_response_bytes() const { return network_response_bytes_; }
 
  private:
   enum class FetchStage { CACHE, NETWORK };
@@ -189,8 +190,8 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
   // The url_fetcher_cache_ is kept alive until Fetcher destruction for testing.
   scoped_ptr<net::URLFetcher> url_fetcher_cache_;
   scoped_ptr<net::URLFetcher> url_fetcher_network_;
-  int64 response_bytes_;
-  int64 network_response_bytes_;
+  int64_t response_bytes_;
+  int64_t network_response_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(Fetcher);
 };

@@ -21,10 +21,12 @@
 #ifndef COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_DNS_PREFETCH_H_
 #define COMPONENTS_NETWORK_HINTS_RENDERER_RENDERER_DNS_PREFETCH_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/network_hints/renderer/dns_prefetch_queue.h"
 

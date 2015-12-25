@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/macros.h"
 #include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
 
 namespace service_tab_launcher {

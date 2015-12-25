@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 
+#include "base/macros.h"
 #include "components/search_engines/template_url_fetcher.h"
 
 #include "base/strings/string_number_conversions.h"

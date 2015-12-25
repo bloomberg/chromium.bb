@@ -4,6 +4,7 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_initiator_operations.h"
 #include "components/proximity_auth/device_to_device_responder_operations.h"

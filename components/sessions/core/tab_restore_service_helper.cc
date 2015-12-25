@@ -4,6 +4,8 @@
 
 #include "components/sessions/core/tab_restore_service_helper.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 

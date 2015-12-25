@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_MOCK_SYNC_SCHEDULER_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_MOCK_SYNC_SCHEDULER_H
 
+#include "base/macros.h"
 #include "components/proximity_auth/cryptauth/sync_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

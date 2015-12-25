@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_driver/ui_data_type_controller.h"

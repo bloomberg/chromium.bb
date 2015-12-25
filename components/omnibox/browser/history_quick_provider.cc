@@ -4,9 +4,10 @@
 
 #include "components/omnibox/browser/history_quick_provider.h"
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"

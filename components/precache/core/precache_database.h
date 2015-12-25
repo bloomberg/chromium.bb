@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_PRECACHE_CORE_PRECACHE_DATABASE_H_
 #define COMPONENTS_PRECACHE_CORE_PRECACHE_DATABASE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -53,7 +55,7 @@ class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
   void RecordURLPrefetch(const GURL& url,
                          const base::TimeDelta& latency,
                          const base::Time& fetch_time,
-                         int64 size,
+                         int64_t size,
                          bool was_cached);
 
   // Report precache-related metrics in response to a URL being fetched, where
@@ -62,7 +64,7 @@ class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
   void RecordURLNonPrefetch(const GURL& url,
                             const base::TimeDelta& latency,
                             const base::Time& fetch_time,
-                            int64 size,
+                            int64_t size,
                             bool was_cached,
                             int host_rank,
                             bool is_connection_cellular);

@@ -4,6 +4,8 @@
 
 #include "components/plugins/renderer/webview_plugin.h"
 
+#include <stddef.h>
+
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"

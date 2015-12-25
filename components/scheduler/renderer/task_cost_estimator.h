@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SCHEDULER_RENDERER_TASK_COST_ESTIMATOR_H_
 #define COMPONENTS_SCHEDULER_RENDERER_TASK_COST_ESTIMATOR_H_
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "cc/base/rolling_time_delta_history.h"

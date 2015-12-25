@@ -4,7 +4,11 @@
 
 #include "components/omnibox/browser/base_search_provider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/i18n/case_conversion.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -147,7 +151,7 @@ void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
   new_entry.set_provider(AsOmniboxEventProviderType());
   new_entry.set_provider_done(done_);
-  std::vector<uint32> field_trial_hashes;
+  std::vector<uint32_t> field_trial_hashes;
   OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
   for (size_t i = 0; i < field_trial_hashes.size(); ++i) {
     if (field_trial_triggered_)

@@ -4,9 +4,12 @@
 
 #include "components/proximity_auth/metrics.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -17,24 +20,24 @@ namespace metrics {
 
 namespace {
 
-// Converts the 4-byte prefix of an MD5 hash into a int32 value.
-int32 DigestToInt32(const base::MD5Digest& digest) {
-  // First, copy to a uint32, since byte swapping and endianness conversions
+// Converts the 4-byte prefix of an MD5 hash into a int32_t value.
+int32_t DigestToInt32(const base::MD5Digest& digest) {
+  // First, copy to a uint32_t, since byte swapping and endianness conversions
   // expect unsigned integers.
-  uint32 unsigned_value;
+  uint32_t unsigned_value;
   DCHECK_GE(arraysize(digest.a), sizeof(unsigned_value));
   memcpy(&unsigned_value, digest.a, sizeof(unsigned_value));
   unsigned_value = base::ByteSwap(base::HostToNet32(unsigned_value));
 
-  // Then copy the resulting bit pattern to an int32 to match the datatype that
-  // histograms expect.
-  int32 value;
+  // Then copy the resulting bit pattern to an int32_t to match the datatype
+  // that histograms expect.
+  int32_t value;
   memcpy(&value, &unsigned_value, sizeof(value));
   return value;
 }
 
 // Returns a hash of the given |name|, encoded as a 32-bit signed integer.
-int32 HashDeviceModelName(const std::string& name) {
+int32_t HashDeviceModelName(const std::string& name) {
   base::MD5Digest digest;
   base::MD5Sum(name.c_str(), name.size(), &digest);
   return DigestToInt32(digest);

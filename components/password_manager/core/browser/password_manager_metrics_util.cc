@@ -4,7 +4,7 @@
 
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/prefs/pref_service.h"

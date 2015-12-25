@@ -338,7 +338,7 @@ void PrecacheFetcher::OnConfigFetchComplete(const URLFetcher& source) {
   // Attempt to fetch manifests for starting hosts up to the maximum top sites
   // count. If a manifest does not exist for a particular starting host, then
   // the fetch will fail, and that starting host will be ignored.
-  int64 rank = 0;
+  int64_t rank = 0;
   for (const std::string& host : starting_hosts_) {
     ++rank;
     if (rank > config.top_sites_count())

@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_KEYWORD_WEB_DATA_SERVICE_H__
 #define COMPONENTS_SEARCH_ENGINES_KEYWORD_WEB_DATA_SERVICE_H__
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/template_url_id.h"
@@ -26,7 +30,7 @@ struct WDKeywordsResult {
   KeywordTable::Keywords keywords;
   // Identifies the ID of the TemplateURL that is the default search. A value of
   // 0 indicates there is no default search provider.
-  int64 default_search_provider_id;
+  int64_t default_search_provider_id;
   // Version of the built-in keywords. A value of 0 indicates a first run.
   int builtin_keyword_version;
 };

@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/macros.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 @protocol OAuth2TokenServiceObserverBridgeDelegate <NSObject>

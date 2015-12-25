@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SCHEDULER_RENDERER_RENDERER_SCHEDULER_H_
 #define COMPONENTS_SCHEDULER_RENDERER_RENDERER_SCHEDULER_H_
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/child_scheduler.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"

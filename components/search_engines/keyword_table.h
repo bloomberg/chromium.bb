@@ -5,11 +5,14 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_KEYWORD_TABLE_H_
 #define COMPONENTS_SEARCH_ENGINES_KEYWORD_TABLE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/search_engines/template_url_id.h"
 #include "components/webdata/common/web_database_table.h"
@@ -114,8 +117,8 @@ class KeywordTable : public WebDatabaseTable {
   bool GetKeywords(Keywords* keywords);
 
   // ID (TemplateURLData->id) of the default search provider.
-  bool SetDefaultSearchProviderID(int64 id);
-  int64 GetDefaultSearchProviderID();
+  bool SetDefaultSearchProviderID(int64_t id);
+  int64_t GetDefaultSearchProviderID();
 
   // Version of the built-in keywords.
   bool SetBuiltinKeywordVersion(int version);

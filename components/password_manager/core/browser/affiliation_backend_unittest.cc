@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/affiliation_backend.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"

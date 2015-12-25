@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_SESSIONS_SESSION_TYPES_TEST_HELPER_H_
 #define COMPONENTS_SESSIONS_SESSION_TYPES_TEST_HELPER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/base/page_transition_types.h"
@@ -33,7 +35,7 @@ extern const base::string16 kTitle;
 extern const std::string kEncodedPageState;
 extern const ui::PageTransition kTransitionType;
 extern const bool kHasPostData;
-extern const int64 kPostID;
+extern const int64_t kPostID;
 extern const GURL kOriginalRequestURL;
 extern const bool kIsOverridingUserAgent;
 extern const base::Time kTimestamp;

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
 #define COMPONENTS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <utility>
 

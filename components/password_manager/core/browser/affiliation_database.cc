@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/affiliation_database.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "sql/connection.h"
@@ -94,9 +96,9 @@ void AffiliationDatabase::GetAllAffiliations(
       "WHERE m.set_id = c.id "
       "ORDER BY c.id"));
 
-  int64 last_eq_class_id = 0;
+  int64_t last_eq_class_id = 0;
   while (statement.Step()) {
-    int64 eq_class_id = statement.ColumnInt64(2);
+    int64_t eq_class_id = statement.ColumnInt64(2);
     if (results->empty() || eq_class_id != last_eq_class_id) {
       results->push_back(AffiliatedFacetsWithUpdateTime());
       last_eq_class_id = eq_class_id;
@@ -124,7 +126,7 @@ void AffiliationDatabase::DeleteAffiliationsForFacet(
   if (!statement_lookup.Step())
     return;
 
-  int64 eq_class_id = statement_lookup.ColumnInt64(0);
+  int64_t eq_class_id = statement_lookup.ColumnInt64(0);
 
   // Children will get deleted due to 'ON DELETE CASCADE'.
   sql::Statement statement_parent(sql_connection_->GetCachedStatement(
@@ -174,7 +176,7 @@ bool AffiliationDatabase::Store(
   if (!statement_parent.Run())
     return false;
 
-  int64 eq_class_id = sql_connection_->GetLastInsertRowId();
+  int64_t eq_class_id = sql_connection_->GetLastInsertRowId();
   for (const FacetURI& uri : affiliated_facets.facets) {
     statement_child.Reset(true);
     statement_child.BindString(0, uri.canonical_spec());

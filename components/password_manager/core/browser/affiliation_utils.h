@@ -48,6 +48,8 @@
 #include <string>
 #include <vector>
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

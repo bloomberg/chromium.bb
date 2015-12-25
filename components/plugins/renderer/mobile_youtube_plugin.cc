@@ -4,6 +4,8 @@
 
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_piece.h"

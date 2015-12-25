@@ -4,6 +4,9 @@
 
 #include "components/search_engines/default_search_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -354,13 +357,13 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
   url_dict->GetString(kDateCreated, &date_created_str);
   url_dict->GetString(kLastModified, &last_modified_str);
 
-  int64 date_created = 0;
+  int64_t date_created = 0;
   if (base::StringToInt64(date_created_str, &date_created)) {
     prefs_default_search_->date_created =
         base::Time::FromInternalValue(date_created);
   }
 
-  int64 last_modified = 0;
+  int64_t last_modified = 0;
   if (base::StringToInt64(date_created_str, &last_modified)) {
     prefs_default_search_->last_modified =
         base::Time::FromInternalValue(last_modified);

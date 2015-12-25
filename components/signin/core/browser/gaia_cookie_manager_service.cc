@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 
+#include <stddef.h>
+
 #include <queue>
 #include <vector>
 

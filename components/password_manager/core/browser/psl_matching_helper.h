@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 
 class GURL;
 

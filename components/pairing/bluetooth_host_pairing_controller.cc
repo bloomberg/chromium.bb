@@ -187,7 +187,7 @@ void BluetoothHostPairingController::OnGetAdapter(
 void BluetoothHostPairingController::SetName() {
   // Hash the bluetooth address and take the lower 2 bytes to create a human
   // readable device name.
-  const uint32 device_id = base::Hash(adapter_->GetAddress()) & 0xFFFF;
+  const uint32_t device_id = base::Hash(adapter_->GetAddress()) & 0xFFFF;
   device_name_ = base::StringPrintf("%s%04X", kDeviceNamePrefix, device_id);
 
   adapter_->SetName(
@@ -486,21 +486,21 @@ void BluetoothHostPairingController::DisplayPinCode(
 
 void BluetoothHostPairingController::DisplayPasskey(
     device::BluetoothDevice* device,
-    uint32 passkey) {
+    uint32_t passkey) {
   // Disallow unknown device.
   device->RejectPairing();
 }
 
 void BluetoothHostPairingController::KeysEntered(
     device::BluetoothDevice* device,
-    uint32 entered) {
+    uint32_t entered) {
   // Disallow unknown device.
   device->RejectPairing();
 }
 
 void BluetoothHostPairingController::ConfirmPasskey(
     device::BluetoothDevice* device,
-    uint32 passkey) {
+    uint32_t passkey) {
   // If a new connection is occurring, reset the stage.  This can occur if the
   // pairing times out, or a new controller connects.
   if (current_stage_ == STAGE_WAITING_FOR_CODE_CONFIRMATION)

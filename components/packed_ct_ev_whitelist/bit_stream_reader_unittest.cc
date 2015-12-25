@@ -4,6 +4,9 @@
 
 #include "components/packed_ct_ev_whitelist/bit_stream_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 

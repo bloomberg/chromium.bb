@@ -4,6 +4,8 @@
 
 #include "components/password_manager/sync/browser/sync_credentials_filter.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"

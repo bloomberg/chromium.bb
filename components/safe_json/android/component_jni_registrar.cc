@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/safe_json/json_sanitizer.h"
 
 namespace safe_json {

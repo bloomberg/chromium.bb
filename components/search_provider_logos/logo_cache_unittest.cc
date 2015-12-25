@@ -4,6 +4,9 @@
 
 #include "components/search_provider_logos/logo_cache.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -90,7 +93,7 @@ void ExpectLogosEqual(const EncodedLogo& expected_logo,
 // Removes 1 byte from the end of the file at |path|.
 void ShortenFile(base::FilePath path) {
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_WRITE);
-  int64 file_length = file.GetLength();
+  int64_t file_length = file.GetLength();
   ASSERT_NE(file_length, 0);
   file.SetLength(file_length - 1);
 }

@@ -10,9 +10,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"

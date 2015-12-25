@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/shortcuts_provider.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <map>

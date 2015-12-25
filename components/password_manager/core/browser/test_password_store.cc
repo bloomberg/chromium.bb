@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/test_password_store.h"
 
+#include <stddef.h>
+
 #include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/statistics_table.h"

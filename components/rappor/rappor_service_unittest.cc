@@ -4,6 +4,9 @@
 
 #include "components/rappor/rappor_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/prefs/testing_pref_service.h"

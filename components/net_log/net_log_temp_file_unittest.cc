@@ -4,7 +4,8 @@
 
 #include "components/net_log/net_log_temp_file.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -93,7 +94,7 @@ class NetLogTempFileTest : public ::testing::Test {
     EXPECT_EQ(net_export_log_, net_log_temp_file_->log_path_);
     ASSERT_TRUE(base::PathExists(net_export_log_));
 
-    int64 file_size;
+    int64_t file_size;
     // base::GetFileSize returns proper file size on open handles.
     ASSERT_TRUE(base::GetFileSize(net_export_log_, &file_size));
     EXPECT_GT(file_size, 0);
@@ -324,13 +325,13 @@ TEST_F(NetLogTempFileTest, DoStartClearsFile) {
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_START);
   VerifyFileAndStateAfterDoStart();
 
-  int64 start_file_size;
+  int64_t start_file_size;
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &start_file_size));
 
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_STOP);
   VerifyFileAndStateAfterDoStop();
 
-  int64 stop_file_size;
+  int64_t stop_file_size;
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &stop_file_size));
   EXPECT_GE(stop_file_size, start_file_size);
 
@@ -339,7 +340,7 @@ TEST_F(NetLogTempFileTest, DoStartClearsFile) {
   EXPECT_TRUE(
       base::AppendToFile(net_export_log_, junk_data.c_str(), junk_data.size()));
 
-  int64 junk_file_size;
+  int64_t junk_file_size;
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &junk_file_size));
   EXPECT_GT(junk_file_size, stop_file_size);
 
@@ -348,14 +349,14 @@ TEST_F(NetLogTempFileTest, DoStartClearsFile) {
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_START);
   VerifyFileAndStateAfterDoStart();
 
-  int64 new_start_file_size;
+  int64_t new_start_file_size;
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &new_start_file_size));
   EXPECT_EQ(new_start_file_size, start_file_size);
 
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_STOP);
   VerifyFileAndStateAfterDoStop();
 
-  int64 new_stop_file_size;
+  int64_t new_stop_file_size;
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &new_stop_file_size));
   EXPECT_EQ(new_stop_file_size, stop_file_size);
 }
@@ -370,7 +371,7 @@ TEST_F(NetLogTempFileTest, CheckAddEvent) {
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_STOP);
   VerifyFileAndStateAfterDoStop();
 
-  int64 stop_file_size;
+  int64_t stop_file_size;
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &stop_file_size));
 
   // Perform DO_START and add an Event and then DO_STOP and then compare
@@ -384,7 +385,7 @@ TEST_F(NetLogTempFileTest, CheckAddEvent) {
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_STOP);
   VerifyFileAndStateAfterDoStop();
 
-  int64 new_stop_file_size;
+  int64_t new_stop_file_size;
   EXPECT_TRUE(base::GetFileSize(net_export_log_, &new_stop_file_size));
   EXPECT_GE(new_stop_file_size, stop_file_size);
 }

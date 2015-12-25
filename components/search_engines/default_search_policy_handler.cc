@@ -4,6 +4,9 @@
 
 #include "components/search_engines/default_search_policy_handler.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

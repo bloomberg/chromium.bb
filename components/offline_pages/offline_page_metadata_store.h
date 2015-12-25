@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_METADATA_STORE_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_METADATA_STORE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"

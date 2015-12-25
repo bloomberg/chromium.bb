@@ -5,6 +5,8 @@
 #import "components/open_from_clipboard/clipboard_recent_content_ios.h"
 
 #import <CommonCrypto/CommonDigest.h>
+#include <stddef.h>
+#include <stdint.h>
 #import <UIKit/UIKit.h>
 
 #import "base/ios/ios_util.h"
@@ -133,8 +135,8 @@ bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) const {
 }
 
 base::TimeDelta ClipboardRecentContentIOS::GetClipboardContentAge() const {
-  return base::TimeDelta::FromSeconds(
-      static_cast<int64>(-[last_pasteboard_change_date_ timeIntervalSinceNow]));
+  return base::TimeDelta::FromSeconds(static_cast<int64_t>(
+      -[last_pasteboard_change_date_ timeIntervalSinceNow]));
 }
 
 void ClipboardRecentContentIOS::SuppressClipboardContent() {

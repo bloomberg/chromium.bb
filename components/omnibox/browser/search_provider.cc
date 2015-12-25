@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/search_provider.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 

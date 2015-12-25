@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_METRICS_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_METRICS_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"

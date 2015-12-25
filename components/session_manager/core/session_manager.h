@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 #define COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/session_manager/session_manager_export.h"
 

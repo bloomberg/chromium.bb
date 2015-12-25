@@ -5,6 +5,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/test/null_task_runner.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"

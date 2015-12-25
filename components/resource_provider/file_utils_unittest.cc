@@ -4,7 +4,10 @@
 
 #include "components/resource_provider/file_utils.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

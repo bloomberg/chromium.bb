@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_MODEL_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_MODEL_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"

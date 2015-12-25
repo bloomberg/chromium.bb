@@ -28,7 +28,7 @@ const ui::PageTransition kTransitionType =
         ui::PAGE_TRANSITION_HOME_PAGE |
         ui::PAGE_TRANSITION_CLIENT_REDIRECT);
 const bool kHasPostData = true;
-const int64 kPostID = 100;
+const int64_t kPostID = 100;
 const GURL kOriginalRequestURL = GURL("http://www.original-request.com");
 const bool kIsOverridingUserAgent = true;
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);

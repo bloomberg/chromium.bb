@@ -4,6 +4,8 @@
 
 #include "components/resource_provider/resource_provider_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"

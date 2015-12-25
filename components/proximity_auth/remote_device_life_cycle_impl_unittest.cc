@@ -4,7 +4,10 @@
 
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"

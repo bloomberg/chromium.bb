@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_PRINTING_TEST_MOCK_PRINTER_H_
 #define COMPONENTS_PRINTING_TEST_MOCK_PRINTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -28,21 +30,21 @@ struct PrintHostMsg_DidPrintPage_Params;
 class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
  public:
   MockPrinterPage(const void* source_data,
-                  uint32 source_size,
+                  uint32_t source_size,
                   const printing::Image& image);
 
   int width() const { return image_.size().width(); }
   int height() const { return image_.size().height(); }
-  const uint8* source_data() const { return source_data_.get(); }
-  uint32 source_size() const { return source_size_; }
+  const uint8_t* source_data() const { return source_data_.get(); }
+  uint32_t source_size() const { return source_size_; }
   const printing::Image& image() const { return image_; }
 
  private:
   friend class base::RefCounted<MockPrinterPage>;
   virtual ~MockPrinterPage();
 
-  uint32 source_size_;
-  scoped_ptr<uint8[]> source_data_;
+  uint32_t source_size_;
+  scoped_ptr<uint8_t[]> source_data_;
   printing::Image image_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrinterPage);
@@ -98,8 +100,8 @@ class MockPrinter {
   int GetWidth(unsigned int page) const;
   int GetHeight(unsigned int page) const;
   bool GetBitmapChecksum(unsigned int page, std::string* checksum) const;
-  bool GetSource(unsigned int page, const void** data, uint32* size) const;
-  bool GetBitmap(unsigned int page, const void** data, uint32* size) const;
+  bool GetSource(unsigned int page, const void** data, uint32_t* size) const;
+  bool GetBitmap(unsigned int page, const void** data, uint32_t* size) const;
   bool SaveSource(unsigned int page, const base::FilePath& filepath) const;
   bool SaveBitmap(unsigned int page, const base::FilePath& filepath) const;
 

@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "mojo/platform_handle/platform_handle.h"

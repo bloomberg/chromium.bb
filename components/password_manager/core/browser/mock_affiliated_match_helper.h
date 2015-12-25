@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_AFFILIATED_MATCH_HELPER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_MOCK_AFFILIATED_MATCH_HELPER_H_
 
+#include "base/macros.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

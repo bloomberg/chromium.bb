@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/password_manager_settings_migration_experiment.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/sync_driver/sync_service.h"

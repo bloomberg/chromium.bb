@@ -4,6 +4,9 @@
 
 #include "components/password_manager/core/browser/affiliation_fetch_throttler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 
 #include "base/callback.h"

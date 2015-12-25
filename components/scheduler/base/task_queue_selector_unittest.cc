@@ -4,7 +4,10 @@
 
 #include "components/scheduler/base/task_queue_selector.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pending_task.h"
 #include "components/scheduler/base/task_queue_impl.h"

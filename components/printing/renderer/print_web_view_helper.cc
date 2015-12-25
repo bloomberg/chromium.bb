@@ -4,12 +4,16 @@
 
 #include "components/printing/renderer/print_web_view_helper.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/auto_reset.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -17,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_frame.h"

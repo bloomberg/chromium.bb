@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "components/webdata/common/web_database_table.h"
 
 #if defined(OS_WIN)

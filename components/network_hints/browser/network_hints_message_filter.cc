@@ -5,6 +5,7 @@
 #include "components/network_hints/browser/network_hints_message_filter.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/network_hints/common/network_hints_common.h"
 #include "components/network_hints/common/network_hints_messages.h"
 #include "ipc/ipc_message_macros.h"

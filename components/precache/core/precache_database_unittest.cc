@@ -4,6 +4,8 @@
 
 #include "components/precache/core/precache_database.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/containers/hash_tables.h"
@@ -28,7 +30,7 @@ const GURL kURL("http://url.com");
 const base::TimeDelta kLatency = base::TimeDelta::FromMilliseconds(5);
 const base::Time kFetchTime = base::Time() + base::TimeDelta::FromHours(1000);
 const base::Time kOldFetchTime = kFetchTime - base::TimeDelta::FromDays(1);
-const int64 kSize = 5000;
+const int64_t kSize = 5000;
 
 std::map<GURL, base::Time> BuildURLTableMap(const GURL& url,
                                             const base::Time& precache_time) {
@@ -74,26 +76,29 @@ class PrecacheDatabaseTest : public testing::Test {
   void RecordPrecacheFromNetwork(const GURL& url,
                                  base::TimeDelta latency,
                                  const base::Time& fetch_time,
-                                 int64 size);
-  void RecordPrecacheFromCache(const GURL& url, const base::Time& fetch_time,
-                               int64 size);
+                                 int64_t size);
+  void RecordPrecacheFromCache(const GURL& url,
+                               const base::Time& fetch_time,
+                               int64_t size);
   void RecordFetchFromNetwork(const GURL& url,
                               base::TimeDelta latency,
                               const base::Time& fetch_time,
-                              int64 size);
+                              int64_t size);
   void RecordFetchFromNetwork(const GURL& url,
                               base::TimeDelta latency,
                               const base::Time& fetch_time,
-                              int64 size,
+                              int64_t size,
                               int host_rank);
   void RecordFetchFromNetworkCellular(const GURL& url,
                                       base::TimeDelta latency,
                                       const base::Time& fetch_time,
-                                      int64 size);
-  void RecordFetchFromCache(const GURL& url, const base::Time& fetch_time,
-                            int64 size);
+                                      int64_t size);
+  void RecordFetchFromCache(const GURL& url,
+                            const base::Time& fetch_time,
+                            int64_t size);
   void RecordFetchFromCacheCellular(const GURL& url,
-                                    const base::Time& fetch_time, int64 size);
+                                    const base::Time& fetch_time,
+                                    int64_t size);
 
   // Must be declared first so that it is destroyed last.
   base::ScopedTempDir scoped_temp_dir_;
@@ -122,14 +127,14 @@ void PrecacheDatabaseTest::RecordPrecacheFromNetwork(
     const GURL& url,
     base::TimeDelta latency,
     const base::Time& fetch_time,
-    int64 size) {
+    int64_t size) {
   precache_database_->RecordURLPrefetch(url, latency, fetch_time, size,
                                         false /* was_cached */);
 }
 
 void PrecacheDatabaseTest::RecordPrecacheFromCache(const GURL& url,
                                                    const base::Time& fetch_time,
-                                                   int64 size) {
+                                                   int64_t size) {
   precache_database_->RecordURLPrefetch(url, base::TimeDelta() /* latency */,
                                         fetch_time, size,
                                         true /* was_cached */);
@@ -138,7 +143,7 @@ void PrecacheDatabaseTest::RecordPrecacheFromCache(const GURL& url,
 void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
                                                   base::TimeDelta latency,
                                                   const base::Time& fetch_time,
-                                                  int64 size) {
+                                                  int64_t size) {
   precache_database_->RecordURLNonPrefetch(
       url, latency, fetch_time, size, false /* was_cached */,
       history::kMaxTopHosts, false /* is_connection_cellular */);
@@ -147,7 +152,7 @@ void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
 void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
                                                   base::TimeDelta latency,
                                                   const base::Time& fetch_time,
-                                                  int64 size,
+                                                  int64_t size,
                                                   int host_rank) {
   precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, size,
                                            false /* was_cached */, host_rank,
@@ -158,7 +163,7 @@ void PrecacheDatabaseTest::RecordFetchFromNetworkCellular(
     const GURL& url,
     base::TimeDelta latency,
     const base::Time& fetch_time,
-    int64 size) {
+    int64_t size) {
   precache_database_->RecordURLNonPrefetch(
       url, latency, fetch_time, size, false /* was_cached */,
       history::kMaxTopHosts, true /* is_connection_cellular */);
@@ -166,7 +171,7 @@ void PrecacheDatabaseTest::RecordFetchFromNetworkCellular(
 
 void PrecacheDatabaseTest::RecordFetchFromCache(const GURL& url,
                                                 const base::Time& fetch_time,
-                                                int64 size) {
+                                                int64_t size) {
   precache_database_->RecordURLNonPrefetch(
       url, base::TimeDelta() /* latency */, fetch_time, size,
       true /* was_cached */, history::kMaxTopHosts,
@@ -174,7 +179,9 @@ void PrecacheDatabaseTest::RecordFetchFromCache(const GURL& url,
 }
 
 void PrecacheDatabaseTest::RecordFetchFromCacheCellular(
-    const GURL& url, const base::Time& fetch_time, int64 size) {
+    const GURL& url,
+    const base::Time& fetch_time,
+    int64_t size) {
   precache_database_->RecordURLNonPrefetch(
       url, base::TimeDelta() /* latency */, fetch_time, size,
       true /* was_cached */, history::kMaxTopHosts,
@@ -318,15 +325,15 @@ TEST_F(PrecacheDatabaseTest, DeleteExpiredPrecacheHistory) {
 
 TEST_F(PrecacheDatabaseTest, SampleInteraction) {
   const GURL kURL1("http://url1.com");
-  const int64 kSize1 = 1;
+  const int64_t kSize1 = 1;
   const GURL kURL2("http://url2.com");
-  const int64 kSize2 = 2;
+  const int64_t kSize2 = 2;
   const GURL kURL3("http://url3.com");
-  const int64 kSize3 = 3;
+  const int64_t kSize3 = 3;
   const GURL kURL4("http://url4.com");
-  const int64 kSize4 = 4;
+  const int64_t kSize4 = 4;
   const GURL kURL5("http://url5.com");
-  const int64 kSize5 = 5;
+  const int64_t kSize5 = 5;
 
   RecordPrecacheFromNetwork(kURL1, kLatency, kFetchTime, kSize1);
   RecordPrecacheFromNetwork(kURL2, kLatency, kFetchTime, kSize2);

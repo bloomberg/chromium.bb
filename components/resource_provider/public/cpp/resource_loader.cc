@@ -4,6 +4,8 @@
 
 #include "components/resource_provider/public/cpp/resource_loader.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "mojo/application/public/cpp/application_impl.h"

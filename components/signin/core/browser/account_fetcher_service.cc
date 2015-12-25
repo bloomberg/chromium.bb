@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_info_fetcher.h"
 #include "components/signin/core/browser/account_tracker_service.h"

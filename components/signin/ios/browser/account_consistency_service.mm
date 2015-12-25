@@ -9,6 +9,7 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "base/macros.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"

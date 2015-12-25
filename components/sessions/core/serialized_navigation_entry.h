@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_SESSIONS_CORE_SERIALIZED_NAVIGATION_ENTRY_H_
 #define COMPONENTS_SESSIONS_CORE_SERIALIZED_NAVIGATION_ENTRY_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -89,7 +90,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
     return transition_type_;
   }
   bool has_post_data() const { return has_post_data_; }
-  int64 post_id() const { return post_id_; }
+  int64_t post_id() const { return post_id_; }
   const GURL& original_request_url() const { return original_request_url_; }
   bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
   base::Time timestamp() const { return timestamp_; }
@@ -126,7 +127,7 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   std::string encoded_page_state_;
   ui::PageTransition transition_type_;
   bool has_post_data_;
-  int64 post_id_;
+  int64_t post_id_;
   GURL original_request_url_;
   bool is_overriding_user_agent_;
   base::Time timestamp_;

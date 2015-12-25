@@ -4,8 +4,11 @@
 
 #include "components/signin/core/browser/signin_error_controller.h"
 
+#include <stddef.h>
+
 #include <functional>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"

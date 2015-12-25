@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/net_log/net_log_temp_file.h"
 #include "components/net_log/net_log_temp_file.h"

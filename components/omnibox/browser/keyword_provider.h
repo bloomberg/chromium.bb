@@ -11,10 +11,12 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_KEYWORD_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_KEYWORD_PROVIDER_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_input.h"

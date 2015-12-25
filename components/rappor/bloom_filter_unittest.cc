@@ -4,6 +4,8 @@
 
 #include "components/rappor/bloom_filter.h"
 
+#include <stdint.h>
+
 #include "components/rappor/byte_vector_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

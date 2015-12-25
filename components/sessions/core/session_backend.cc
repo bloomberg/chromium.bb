@@ -4,31 +4,35 @@
 
 #include "components/sessions/core/session_backend.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 using base::TimeTicks;
 
 namespace sessions {
 
 // File version number.
-static const int32 kFileCurrentVersion = 1;
+static const int32_t kFileCurrentVersion = 1;
 
 // The signature at the beginning of the file = SSNS (Sessions).
-static const int32 kFileSignature = 0x53534E53;
+static const int32_t kFileSignature = 0x53534E53;
 
 namespace {
 
 // The file header is the first bytes written to the file,
 // and is used to identify the file as one written by us.
 struct FileHeader {
-  int32 signature;
-  int32 version;
+  int32_t signature;
+  int32_t version;
 };
 
 // SessionFileReader ----------------------------------------------------------
@@ -274,7 +278,7 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
   if (base::PathExists(last_session_path))
     base::DeleteFile(last_session_path, false);
   if (base::PathExists(current_session_path)) {
-    int64 file_size;
+    int64_t file_size;
     if (base::GetFileSize(current_session_path, &file_size)) {
       if (type_ == sessions::BaseSessionService::TAB_RESTORE) {
         UMA_HISTOGRAM_COUNTS("TabRestore.last_session_file_size",

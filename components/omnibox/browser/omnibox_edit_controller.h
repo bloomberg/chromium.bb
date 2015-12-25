@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_CONTROLLER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"

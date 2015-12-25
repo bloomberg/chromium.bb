@@ -4,12 +4,16 @@
 
 #include "components/password_manager/core/browser/login_database.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/pickle.h"
@@ -17,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -992,7 +997,7 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
       "DELETE FROM logins WHERE "
       "date_created >= ? AND date_created < ?"));
   s.BindInt64(0, delete_begin.ToInternalValue());
-  s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64>::max()
+  s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64_t>::max()
                                       : delete_end.ToInternalValue());
 
   return s.Run();
@@ -1160,7 +1165,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
       "WHERE date_created >= ? AND date_created < ?"
       "ORDER BY origin_url"));
   s.BindInt64(0, begin.ToInternalValue());
-  s.BindInt64(1, end.is_null() ? std::numeric_limits<int64>::max()
+  s.BindInt64(1, end.is_null() ? std::numeric_limits<int64_t>::max()
                                : end.ToInternalValue());
 
   return StatementToForms(&s, nullptr, forms);

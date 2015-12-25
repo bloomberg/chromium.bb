@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"

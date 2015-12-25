@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
 #define COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"

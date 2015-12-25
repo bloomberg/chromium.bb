@@ -5,11 +5,14 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_HISTORY_URL_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_HISTORY_URL_PROVIDER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_match.h"

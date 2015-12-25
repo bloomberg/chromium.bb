@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CONTROLLER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CONTROLLER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/autocomplete_controller.h"

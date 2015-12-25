@@ -6,6 +6,7 @@
 #define COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_
 
 #include "base/android/jni_weak_ref.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 

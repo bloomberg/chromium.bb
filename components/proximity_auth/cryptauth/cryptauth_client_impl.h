@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_IMPL_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_IMPL_H
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"

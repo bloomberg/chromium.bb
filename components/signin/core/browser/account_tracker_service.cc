@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/account_tracker_service.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -12,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"

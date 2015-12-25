@@ -20,7 +20,7 @@ namespace search_provider_logos {
 
 namespace {
 
-const int64 kMaxDownloadBytes = 1024 * 1024;
+const int64_t kMaxDownloadBytes = 1024 * 1024;
 
 //const int kDecodeLogoTimeoutSeconds = 30;
 
@@ -320,8 +320,8 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void LogoTracker::OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                             int64 current,
-                                             int64 total) {
+                                             int64_t current,
+                                             int64_t total) {
   if (total > kMaxDownloadBytes || current > kMaxDownloadBytes) {
     LOG(WARNING) << "Search provider logo exceeded download size limit";
     ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
