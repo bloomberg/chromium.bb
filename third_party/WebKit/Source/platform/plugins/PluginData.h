@@ -21,6 +21,7 @@
 #define PluginData_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -49,6 +50,7 @@ struct PluginInfo {
 };
 
 class PLATFORM_EXPORT PluginData : public RefCounted<PluginData> {
+    WTF_MAKE_NONCOPYABLE(PluginData);
 public:
     static PassRefPtr<PluginData> create(const Page* page) { return adoptRef(new PluginData(page)); }
 

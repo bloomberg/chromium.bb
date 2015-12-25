@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebScheduler.h"
+#include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -70,6 +71,7 @@ protected:
 
 private:
     class CancellableTask : public WebTaskRunner::Task {
+        USING_FAST_MALLOC(CancellableTask);
         WTF_MAKE_NONCOPYABLE(CancellableTask);
 
     public:

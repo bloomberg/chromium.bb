@@ -33,11 +33,13 @@
 
 #include "platform/plugins/PluginData.h"
 #include "public/platform/WebPluginListBuilder.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class PluginListBuilder final : public WebPluginListBuilder {
+    DISALLOW_NEW();
 public:
     PluginListBuilder(Vector<PluginInfo>* results) : m_results(results) { }
 

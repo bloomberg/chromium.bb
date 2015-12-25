@@ -9,6 +9,8 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCompositorAnimationDelegate.h"
 #include "public/platform/WebCompositorAnimationPlayerClient.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -18,6 +20,8 @@ class WebCompositorAnimationPlayer;
 class WebCompositorAnimationTimeline;
 
 class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private WebCompositorAnimationPlayerClient, WebCompositorAnimationDelegate {
+    USING_FAST_MALLOC_WILL_BE_REMOVED(ScrollAnimatorCompositorCoordinator);
+    WTF_MAKE_NONCOPYABLE(ScrollAnimatorCompositorCoordinator);
 public:
     virtual ~ScrollAnimatorCompositorCoordinator();
 
