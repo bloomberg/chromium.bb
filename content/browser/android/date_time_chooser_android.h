@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/android/jni_weak_ref.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"

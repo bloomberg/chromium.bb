@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BRIDGE_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BRIDGE_DISPATCHER_HOST_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/android/java/gin_java_bound_object.h"
@@ -83,14 +86,14 @@ class GinJavaBridgeDispatcherHost
       const base::android::JavaRef<jobject>& object,
       const base::android::JavaRef<jclass>& safe_annotation_clazz,
       bool is_named,
-      int32 holder);
+      int32_t holder);
   scoped_refptr<GinJavaBoundObject> FindObject(
       GinJavaBoundObject::ObjectID object_id);
   bool FindObjectId(const base::android::JavaRef<jobject>& object,
                     GinJavaBoundObject::ObjectID* object_id);
   void RemoveFromRetainedObjectSetLocked(const JavaObjectWeakGlobalRef& ref);
   JavaObjectWeakGlobalRef RemoveHolderAndAdvanceLocked(
-      int32 holder,
+      int32_t holder,
       ObjectMap::iterator* iter_ptr);
 
   // The following objects are used only on the UI thread.

@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/android/jni_weak_ref.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 

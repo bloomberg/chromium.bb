@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_H_
 #define CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -20,7 +23,7 @@ namespace content {
 class GinJavaBoundObject
     : public base::RefCountedThreadSafe<GinJavaBoundObject> {
  public:
-  typedef int32 ObjectID;
+  typedef int32_t ObjectID;
 
   static GinJavaBoundObject* CreateNamed(
       const JavaObjectWeakGlobalRef& ref,
@@ -28,7 +31,7 @@ class GinJavaBoundObject
   static GinJavaBoundObject* CreateTransient(
       const JavaObjectWeakGlobalRef& ref,
       const base::android::JavaRef<jclass>& safe_annotation_clazz,
-      int32 holder);
+      int32_t holder);
 
   // The following methods can be called on any thread.
   JavaObjectWeakGlobalRef& GetWeakRef() { return ref_; }
@@ -42,8 +45,8 @@ class GinJavaBoundObject
 
   // The following methods are called on the background thread.
   bool HasHolders() { return !holders_.empty(); }
-  void AddHolder(int32 holder) { holders_.insert(holder); }
-  void RemoveHolder(int32 holder) { holders_.erase(holder); }
+  void AddHolder(int32_t holder) { holders_.insert(holder); }
+  void RemoveHolder(int32_t holder) { holders_.erase(holder); }
 
   std::set<std::string> GetMethodNames();
   bool HasMethod(const std::string& method_name);
@@ -62,7 +65,7 @@ class GinJavaBoundObject
   GinJavaBoundObject(
       const JavaObjectWeakGlobalRef& ref,
       const base::android::JavaRef<jclass>& safe_annotation_clazz,
-      const std::set<int32>& holders);
+      const std::set<int32_t>& holders);
   ~GinJavaBoundObject();
 
   // The following methods are called on the background thread.
@@ -73,7 +76,7 @@ class GinJavaBoundObject
   // An object must be kept in retained_object_set_ either if it has
   // names or if it has a non-empty holders set.
   int names_count_;
-  std::set<int32> holders_;
+  std::set<int32_t> holders_;
 
   // The following fields are accessed on the background thread.
   typedef std::multimap<std::string, linked_ptr<JavaMethod> > JavaMethodMap;

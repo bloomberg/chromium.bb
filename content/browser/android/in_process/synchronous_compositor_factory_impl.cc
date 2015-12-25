@@ -4,7 +4,10 @@
 
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
@@ -94,11 +97,11 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
   }
 
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
-      uint32 stream_id) override {
+      uint32_t stream_id) override {
     return gl_in_process_context_->GetSurfaceTexture(stream_id);
   }
 
-  uint32 CreateStreamTexture(uint32 texture_id) override {
+  uint32_t CreateStreamTexture(uint32_t texture_id) override {
     return gl_in_process_context_->CreateStreamTexture(texture_id);
   }
 

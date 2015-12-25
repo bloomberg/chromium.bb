@@ -8,6 +8,7 @@
 #include "ui/touch_selection/touch_handle.h"
 
 #include "base/android/jni_android.h"
+#include "base/macros.h"
 #include "cc/layers/ui_resource_layer.h"
 
 namespace content {

@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_ANDROID_URL_REQUEST_CONTENT_JOB_H_
 #define CONTENT_BROWSER_ANDROID_URL_REQUEST_CONTENT_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -60,7 +63,7 @@ class CONTENT_EXPORT URLRequestContentJob : public net::URLRequestJob {
     // Flag showing whether the content URI exists.
     bool content_exists;
     // Size of the content URI.
-    int64 content_size;
+    int64_t content_size;
     // Mime type associated with the content URI.
     std::string mime_type;
   };
@@ -77,7 +80,7 @@ class CONTENT_EXPORT URLRequestContentJob : public net::URLRequestJob {
 
   // Callback after seeking to the beginning of |byte_range_| in the content URI
   // on a background thread.
-  void DidSeek(int64 result);
+  void DidSeek(int64_t result);
 
   // Callback after data is asynchronously read from the content URI into |buf|.
   void DidRead(int result);
@@ -91,7 +94,7 @@ class CONTENT_EXPORT URLRequestContentJob : public net::URLRequestJob {
 
   net::HttpByteRange byte_range_;
   net::Error range_parse_result_;
-  int64 remaining_bytes_;
+  int64_t remaining_bytes_;
 
   bool io_pending_;
 

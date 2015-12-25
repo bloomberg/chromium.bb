@@ -4,6 +4,8 @@
 
 #include "content/browser/android/url_request_content_job.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/files/file_util.h"
@@ -141,7 +143,7 @@ void URLRequestContentJobTest::RunRequest(const Range* range) {
   base::FilePath path = base::InsertImageIntoMediaStore(image_file);
   EXPECT_TRUE(path.IsContentUri());
   EXPECT_TRUE(base::PathExists(path));
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(path, &file_size));
   EXPECT_LT(0, file_size);
   CallbacksJobFactory factory(path, &observer_);

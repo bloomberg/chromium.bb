@@ -5,12 +5,15 @@
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_IMPL_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_IMPL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -411,8 +414,10 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
 
-  blink::WebGestureEvent MakeGestureEvent(
-      blink::WebInputEvent::Type type, int64 time_ms, float x, float y) const;
+  blink::WebGestureEvent MakeGestureEvent(blink::WebInputEvent::Type type,
+                                          int64_t time_ms,
+                                          float x,
+                                          float y) const;
 
   gfx::Size GetViewportSizePix() const;
   int GetTopControlsHeightPix() const;

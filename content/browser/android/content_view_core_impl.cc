@@ -4,12 +4,15 @@
 
 #include "content/browser/android/content_view_core_impl.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -984,8 +987,10 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(
   return true;
 }
 
-WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(
-    WebInputEvent::Type type, int64 time_ms, float x, float y) const {
+WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(WebInputEvent::Type type,
+                                                      int64_t time_ms,
+                                                      float x,
+                                                      float y) const {
   return WebGestureEventBuilder::Build(
       type, time_ms / 1000.0, x / dpi_scale(), y / dpi_scale());
 }

@@ -5,6 +5,7 @@
 #include "content/browser/android/java/gin_java_bridge_message_filter.h"
 
 #include "base/auto_reset.h"
+#include "build/build_config.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/android/java/java_bridge_thread.h"
 #include "content/common/gin_java_bridge_messages.h"
@@ -43,7 +44,8 @@ void GinJavaBridgeMessageFilter::OnDestruct() const {
 bool GinJavaBridgeMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   DCHECK(JavaBridgeThread::CurrentlyOn());
-  base::AutoReset<int32> routing_id(&current_routing_id_, message.routing_id());
+  base::AutoReset<int32_t> routing_id(&current_routing_id_,
+                                      message.routing_id());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GinJavaBridgeMessageFilter, message)
     IPC_MESSAGE_HANDLER(GinJavaBridgeHostMsg_GetMethods, OnGetMethods)

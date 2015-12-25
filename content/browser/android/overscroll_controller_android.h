@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_ANDROID_OVERSCROLL_CONTROLLER_ANDROID_H_
 #define CONTENT_BROWSER_ANDROID_OVERSCROLL_CONTROLLER_ANDROID_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "ui/android/overscroll_glow.h"

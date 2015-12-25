@@ -4,6 +4,9 @@
 
 #include "content/browser/android/child_process_launcher_android.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -129,8 +132,8 @@ void StartChildProcess(
     PCHECK(0 <= fd);
     int id = files_to_register->GetIDAt(i);
     bool auto_close = files_to_register->OwnsFD(fd);
-    int64 offset = 0L;
-    int64 size = 0L;
+    int64_t offset = 0L;
+    int64_t size = 0L;
     auto found_region_iter = regions.find(id);
     if (found_region_iter != regions.end()) {
       offset = found_region_iter->second.offset;

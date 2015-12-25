@@ -184,7 +184,7 @@ void URLRequestContentJob::DidOpen(int result) {
   }
 }
 
-void URLRequestContentJob::DidSeek(int64 result) {
+void URLRequestContentJob::DidSeek(int64_t result) {
   if (result != byte_range_.first_byte_position()) {
     NotifyStartError(net::URLRequestStatus(
         net::URLRequestStatus::FAILED, net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));

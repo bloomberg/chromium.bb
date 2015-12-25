@@ -4,6 +4,8 @@
 
 #include "content/browser/android/in_process/context_provider_in_process.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"

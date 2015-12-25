@@ -42,8 +42,8 @@ GinJavaBoundObject* GinJavaBoundObject::CreateNamed(
 GinJavaBoundObject* GinJavaBoundObject::CreateTransient(
     const JavaObjectWeakGlobalRef& ref,
     const base::android::JavaRef<jclass>& safe_annotation_clazz,
-    int32 holder) {
-  std::set<int32> holders;
+    int32_t holder) {
+  std::set<int32_t> holders;
   holders.insert(holder);
   return new GinJavaBoundObject(ref, safe_annotation_clazz, holders);
 }
@@ -61,14 +61,13 @@ GinJavaBoundObject::GinJavaBoundObject(
 GinJavaBoundObject::GinJavaBoundObject(
     const JavaObjectWeakGlobalRef& ref,
     const base::android::JavaRef<jclass>& safe_annotation_clazz,
-    const std::set<int32>& holders)
+    const std::set<int32_t>& holders)
     : ref_(ref),
       names_count_(0),
       holders_(holders),
       object_get_class_method_id_(NULL),
       are_methods_set_up_(false),
-      safe_annotation_clazz_(safe_annotation_clazz) {
-}
+      safe_annotation_clazz_(safe_annotation_clazz) {}
 
 GinJavaBoundObject::~GinJavaBoundObject() {
 }

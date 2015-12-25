@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner_util.h"
+#include "build/build_config.h"
 
 #if !defined(OS_ANDROID)
 #error "JavaBridge only supports OS_ANDROID"

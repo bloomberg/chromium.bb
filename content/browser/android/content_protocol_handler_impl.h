@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_PROTOCOL_HANDLER_IMPL_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_PROTOCOL_HANDLER_IMPL_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/android/content_protocol_handler.h"
 

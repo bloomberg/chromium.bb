@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ANDROID_IN_PROCESS_CONTEXT_PROVIDER_IN_PROCESS_H_
 #define CONTENT_BROWSER_ANDROID_IN_PROCESS_CONTEXT_PROVIDER_IN_PROCESS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

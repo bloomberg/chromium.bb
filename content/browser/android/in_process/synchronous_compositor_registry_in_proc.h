@@ -7,6 +7,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 

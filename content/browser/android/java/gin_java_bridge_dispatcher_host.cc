@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "build/build_config.h"
 #include "content/browser/android/java/gin_java_bound_object_delegate.h"
 #include "content/browser/android/java/gin_java_bridge_message_filter.h"
 #include "content/browser/android/java/java_bridge_thread.h"
@@ -83,7 +84,7 @@ GinJavaBoundObject::ObjectID GinJavaBridgeDispatcherHost::AddObject(
     const base::android::JavaRef<jobject>& object,
     const base::android::JavaRef<jclass>& safe_annotation_clazz,
     bool is_named,
-    int32 holder) {
+    int32_t holder) {
   // Can be called on any thread. Calls come from the UI thread via
   // AddNamedObject, and from the background thread, when injected Java
   // object's method returns a Java object.
@@ -143,7 +144,7 @@ JavaObjectWeakGlobalRef GinJavaBridgeDispatcherHost::GetObjectWeakRef(
 
 JavaObjectWeakGlobalRef
 GinJavaBridgeDispatcherHost::RemoveHolderAndAdvanceLocked(
-    int32 holder,
+    int32_t holder,
     ObjectMap::iterator* iter_ptr) {
   objects_lock_.AssertAcquired();
   JavaObjectWeakGlobalRef result;

@@ -4,6 +4,8 @@
 
 #include "content/browser/android/date_time_chooser_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/i18n/char_iterator.h"

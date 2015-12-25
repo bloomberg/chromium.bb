@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_DELEGATE_H_
 #define CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BOUND_OBJECT_DELEGATE_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/android/java/gin_java_bound_object.h"
 #include "content/browser/android/java/gin_java_method_invocation_helper.h"

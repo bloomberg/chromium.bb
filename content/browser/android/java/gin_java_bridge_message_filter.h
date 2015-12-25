@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BRIDGE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_ANDROID_JAVA_GIN_JAVA_BRIDGE_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -59,7 +61,7 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter {
   //  2. As RenderFrames pass away earlier than JavaScript wrappers,
   //     messages from the latter can arrive after the RenderFrame has been
   //     removed from the WebContents' routing table.
-  typedef std::map<int32, GinJavaBridgeDispatcherHost*> HostMap;
+  typedef std::map<int32_t, GinJavaBridgeDispatcherHost*> HostMap;
 
   GinJavaBridgeMessageFilter();
   ~GinJavaBridgeMessageFilter() override;
@@ -84,7 +86,7 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter {
 
   // The routing id of the RenderFrameHost whose request we are processing.
   // Used on the background thread.
-  int32 current_routing_id_;
+  int32_t current_routing_id_;
 };
 
 }  // namespace content

@@ -7,6 +7,7 @@
 
 #include "content/common/android/surface_texture_manager.h"
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/common/content_export.h"

@@ -21,9 +21,12 @@
 
 #include <string>
 
+#include <stdint.h>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/android/download_controller_android.h"
@@ -70,7 +73,7 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
     GURL url;
     // The original URL before any redirection by the server for this URL.
     GURL original_url;
-    int64 total_bytes;
+    int64_t total_bytes;
     std::string content_disposition;
     std::string original_mime_type;
     std::string user_agent;
