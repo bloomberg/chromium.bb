@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_REPETITION_DETECTOR_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_REPETITION_DETECTOR_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/callback.h"

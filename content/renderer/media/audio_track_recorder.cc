@@ -4,7 +4,10 @@
 
 #include "content/renderer/media/audio_track_recorder.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
@@ -230,7 +233,7 @@ bool AudioTrackRecorder::AudioEncoder::EncodeFromFilledBuffer(
   out->resize(OPUS_MAX_PAYLOAD_SIZE);
   const opus_int32 result = opus_encode_float(
       opus_encoder_, buffer_.get(), frames_per_buffer_,
-      reinterpret_cast<uint8*>(string_as_array(out)), OPUS_MAX_PAYLOAD_SIZE);
+      reinterpret_cast<uint8_t*>(string_as_array(out)), OPUS_MAX_PAYLOAD_SIZE);
   if (result > 1) {
     // TODO(ajose): Investigate improving this. http://crbug.com/547918
     out->resize(result);

@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_H_
 #define CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -29,7 +31,7 @@ class StreamTextureProxy {
   // Initialize and bind to the loop, which becomes the thread that
   // a connected client will receive callbacks on. This can be called
   // on any thread, but must be called with the same loop every time.
-  virtual void BindToLoop(int32 stream_id,
+  virtual void BindToLoop(int32_t stream_id,
                           cc::VideoFrameProvider::Client* client,
                           scoped_refptr<base::SingleThreadTaskRunner> loop) = 0;
 
@@ -60,7 +62,9 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
   // object for the given stream_id. After the the surface is created,
   // it will be passed back to the WebMediaPlayerAndroid object identified by
   // the player_id.
-  virtual void EstablishPeer(int32 stream_id, int player_id, int frame_id) = 0;
+  virtual void EstablishPeer(int32_t stream_id,
+                             int player_id,
+                             int frame_id) = 0;
 
   // Creates a StreamTexture and returns its id.  Sets |*texture_id| to the
   // client-side id of the StreamTexture. The texture is produced into
@@ -70,7 +74,7 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
                                        gpu::Mailbox* texture_mailbox) = 0;
 
   // Set the streamTexture size for the given stream Id.
-  virtual void SetStreamTextureSize(int32 texture_id,
+  virtual void SetStreamTextureSize(int32_t texture_id,
                                     const gfx::Size& size) = 0;
 
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;

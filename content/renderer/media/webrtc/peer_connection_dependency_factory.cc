@@ -4,16 +4,20 @@
 
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"

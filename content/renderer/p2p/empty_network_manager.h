@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_P2P_EMPTY_NETWORK_MANAGER_H_
 #define CONTENT_RENDERER_P2P_EMPTY_NETWORK_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"

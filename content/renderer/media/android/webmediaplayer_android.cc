@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/android/webmediaplayer_android.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/android/build_info.h"
@@ -66,7 +68,7 @@
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/image/image.h"
 
-static const uint32 kGLTextureExternalOES = 0x8D65;
+static const uint32_t kGLTextureExternalOES = 0x8D65;
 static const int kSDKVersionToSupportSecurityOriginCheck = 20;
 
 using blink::WebMediaPlayer;
@@ -97,7 +99,7 @@ enum MediaTypePredictionResult {
 // File-static function is to allow it to run even after WMPA is deleted.
 void OnReleaseTexture(
     const scoped_refptr<content::StreamTextureFactory>& factories,
-    uint32 texture_id,
+    uint32_t texture_id,
     const gpu::SyncToken& sync_token) {
   GLES2Interface* gl = factories->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
@@ -704,9 +706,8 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
-  uint32 src_texture =
-      web_graphics_context->createAndConsumeTextureCHROMIUM(
-          mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+  uint32_t src_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
+      mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
   // Application itself needs to take care of setting the right flip_y
   // value down to get the expected result.
@@ -1765,7 +1766,7 @@ void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
 
 void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
                                        media::MediaKeys::KeyError error_code,
-                                       uint32 system_code) {
+                                       uint32_t system_code) {
   EmeUMAHistogramEnumeration(current_key_system_, "KeyError",
                              error_code, media::MediaKeys::kMaxKeyError);
 
@@ -1786,7 +1787,7 @@ void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
 }
 
 void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
-                                         const std::vector<uint8>& message,
+                                         const std::vector<uint8_t>& message,
                                          const GURL& destination_url) {
   DCHECK(destination_url.is_empty() || destination_url.is_valid());
 
@@ -1803,7 +1804,7 @@ void WebMediaPlayerAndroid::OnMediaSourceOpened(
 
 void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
     media::EmeInitDataType init_data_type,
-    const std::vector<uint8>& init_data) {
+    const std::vector<uint8_t>& init_data) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   // Do not fire NeedKey event if encrypted media is not enabled.

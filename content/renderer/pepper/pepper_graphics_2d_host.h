@@ -5,10 +5,12 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_GRAPHICS_2D_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_GRAPHICS_2D_HOST_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/ppb_graphics_2d.h"

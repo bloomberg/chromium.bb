@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_RENDERER_WEBMIDIACCESSOR_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_RENDERER_WEBMIDIACCESSOR_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessor.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
 

@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_WRAPPER_H_
 #define CONTENT_RENDERER_INPUT_INPUT_HANDLER_WRAPPER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/input/input_handler_manager.h"

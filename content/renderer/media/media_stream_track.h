@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_parameters.h"

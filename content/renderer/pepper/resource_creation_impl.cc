@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/resource_creation_impl.h"
 
+#include "build/build_config.h"
 #include "content/common/content_switches_internal.h"
 #include "content/renderer/pepper/ppb_audio_impl.h"
 #include "content/renderer/pepper/ppb_broker_impl.h"

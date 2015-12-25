@@ -11,7 +11,10 @@
 
 #include "content/renderer/media/video_capture_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
@@ -66,13 +69,13 @@ class VideoCaptureImpl::ClientBuffer2
                      base::Unretained(this))));
       bool rv = buffers_[i]->Map();
       DCHECK(rv);
-      data_[i] = reinterpret_cast<uint8*>(buffers_[i]->memory(0u));
+      data_[i] = reinterpret_cast<uint8_t*>(buffers_[i]->memory(0u));
       strides_[i] = width;
     }
   }
 
-  uint8* data(int plane) const { return data_[plane]; }
-  int32 stride(int plane) const { return strides_[plane]; }
+  uint8_t* data(int plane) const { return data_[plane]; }
+  int32_t stride(int plane) const { return strides_[plane]; }
   std::vector<gfx::GpuMemoryBufferHandle> gpu_memory_buffer_handles() {
     return handles_;
   }
@@ -90,8 +93,8 @@ class VideoCaptureImpl::ClientBuffer2
   const std::vector<gfx::GpuMemoryBufferHandle> handles_;
   const gfx::Size size_;
   ScopedVector<gfx::GpuMemoryBuffer> buffers_;
-  uint8* data_[media::VideoFrame::kMaxPlanes];
-  int32 strides_[media::VideoFrame::kMaxPlanes];
+  uint8_t* data_[media::VideoFrame::kMaxPlanes];
+  int32_t strides_[media::VideoFrame::kMaxPlanes];
 
   DISALLOW_COPY_AND_ASSIGN(ClientBuffer2);
 };
@@ -355,16 +358,11 @@ void VideoCaptureImpl::OnBufferReceived(
       DCHECK(iter != client_buffers_.end());
       const scoped_refptr<ClientBuffer> buffer = iter->second;
       frame = media::VideoFrame::WrapExternalSharedMemory(
-          pixel_format,
-          coded_size,
-          visible_rect,
-          gfx::Size(visible_rect.width(),
-                    visible_rect.height()),
-          reinterpret_cast<uint8*>(buffer->buffer()->memory()),
-          buffer->buffer_size(),
-          buffer->buffer()->handle(),
-          0 /* shared_memory_offset */,
-          timestamp - first_frame_timestamp_);
+          pixel_format, coded_size, visible_rect,
+          gfx::Size(visible_rect.width(), visible_rect.height()),
+          reinterpret_cast<uint8_t*>(buffer->buffer()->memory()),
+          buffer->buffer_size(), buffer->buffer()->handle(),
+          0 /* shared_memory_offset */, timestamp - first_frame_timestamp_);
       buffer_finished_callback = media::BindToCurrentLoop(
           base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
                      weak_factory_.GetWeakPtr(), buffer_id, buffer));
@@ -465,7 +463,7 @@ void VideoCaptureImpl::OnDeviceFormatsInUseReceived(
   device_formats_in_use_cb_queue_.clear();
 }
 
-void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {
+void VideoCaptureImpl::OnDelegateAdded(int32_t device_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "OnDelegateAdded: device_id " << device_id;
 

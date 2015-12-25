@@ -5,10 +5,13 @@
 #ifndef CONTENT_CHILD_BLUETOOTH_BLUETOOTH_DISPATCHER_H_
 #define CONTENT_CHILD_BLUETOOTH_BLUETOOTH_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/bluetooth/bluetooth_device.h"
 #include "content/public/child/worker_thread.h"
@@ -178,7 +181,7 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void OnGetCharacteristicSuccess(int thread_id,
                                   int request_id,
                                   const std::string& characteristic_instance_id,
-                                  uint32 characteristic_properties);
+                                  uint32_t characteristic_properties);
   void OnGetCharacteristicError(int thread_id,
                                 int request_id,
                                 blink::WebBluetoothError error);

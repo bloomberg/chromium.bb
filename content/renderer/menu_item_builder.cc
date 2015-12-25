@@ -4,6 +4,8 @@
 
 #include "content/renderer/menu_item_builder.h"
 
+#include <stddef.h>
+
 #include "content/public/common/menu_item.h"
 
 namespace content {

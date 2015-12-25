@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"

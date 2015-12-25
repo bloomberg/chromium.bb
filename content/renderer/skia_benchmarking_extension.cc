@@ -4,6 +4,9 @@
 
 #include "content/renderer/skia_benchmarking_extension.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -230,11 +233,11 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
 
   blink::WebArrayBuffer buffer =
       blink::WebArrayBuffer::create(bitmap.getSize(), 1);
-  uint32* packed_pixels = reinterpret_cast<uint32*>(bitmap.getPixels());
-  uint8* buffer_pixels = reinterpret_cast<uint8*>(buffer.data());
+  uint32_t* packed_pixels = reinterpret_cast<uint32_t*>(bitmap.getPixels());
+  uint8_t* buffer_pixels = reinterpret_cast<uint8_t*>(buffer.data());
   // Swizzle from native Skia format to RGBA as we copy out.
   for (size_t i = 0; i < bitmap.getSize(); i += 4) {
-    uint32 c = packed_pixels[i >> 2];
+    uint32_t c = packed_pixels[i >> 2];
     buffer_pixels[i] = SkGetPackedR32(c);
     buffer_pixels[i + 1] = SkGetPackedG32(c);
     buffer_pixels[i + 2] = SkGetPackedB32(c);

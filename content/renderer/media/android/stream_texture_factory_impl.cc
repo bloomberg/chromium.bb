@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/android/stream_texture_factory_impl.h"
 
+#include "base/macros.h"
 #include "cc/output/context_provider.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -23,7 +24,7 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
   ~StreamTextureProxyImpl() override;
 
   // StreamTextureProxy implementation:
-  void BindToLoop(int32 stream_id,
+  void BindToLoop(int32_t stream_id,
                   cc::VideoFrameProvider::Client* client,
                   scoped_refptr<base::SingleThreadTaskRunner> loop) override;
   void Release() override;
@@ -33,7 +34,7 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
   void OnMatrixChanged(const float matrix[16]) override;
 
  private:
-  void BindOnThread(int32 stream_id);
+  void BindOnThread(int32_t stream_id);
 
   const scoped_ptr<StreamTextureHost> host_;
 
@@ -67,7 +68,7 @@ void StreamTextureProxyImpl::Release() {
 }
 
 void StreamTextureProxyImpl::BindToLoop(
-    int32 stream_id,
+    int32_t stream_id,
     cc::VideoFrameProvider::Client* client,
     scoped_refptr<base::SingleThreadTaskRunner> loop) {
   DCHECK(loop.get());
@@ -91,7 +92,7 @@ void StreamTextureProxyImpl::BindToLoop(
                             stream_id));
 }
 
-void StreamTextureProxyImpl::BindOnThread(int32 stream_id) {
+void StreamTextureProxyImpl::BindOnThread(int32_t stream_id) {
   host_->BindToCurrentThread(stream_id, this);
 }
 
@@ -131,7 +132,7 @@ StreamTextureProxy* StreamTextureFactoryImpl::CreateProxy() {
   return new StreamTextureProxyImpl(host);
 }
 
-void StreamTextureFactoryImpl::EstablishPeer(int32 stream_id,
+void StreamTextureFactoryImpl::EstablishPeer(int32_t stream_id,
                                              int player_id,
                                              int frame_id) {
   DCHECK(channel_.get());
@@ -155,7 +156,7 @@ unsigned StreamTextureFactoryImpl::CreateStreamTexture(
   return stream_id;
 }
 
-void StreamTextureFactoryImpl::SetStreamTextureSize(int32 stream_id,
+void StreamTextureFactoryImpl::SetStreamTextureSize(int32_t stream_id,
                                                     const gfx::Size& size) {
   channel_->Send(new GpuStreamTextureMsg_SetSize(stream_id, size));
 }

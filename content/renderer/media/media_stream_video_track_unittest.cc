@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -19,8 +21,8 @@
 
 namespace content {
 
-const uint8 kBlackValue = 0x00;
-const uint8 kColorValue = 0xAB;
+const uint8_t kBlackValue = 0x00;
+const uint8_t kColorValue = 0xAB;
 
 ACTION_P(RunClosure, closure) {
   closure.Run();

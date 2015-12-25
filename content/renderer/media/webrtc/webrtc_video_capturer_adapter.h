@@ -5,9 +5,12 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/video_capture_types.h"
@@ -42,7 +45,7 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
       const cricket::VideoFormat& capture_format) override;
   void Stop() override;
   bool IsRunning() override;
-  bool GetPreferredFourccs(std::vector<uint32>* fourccs) override;
+  bool GetPreferredFourccs(std::vector<uint32_t>* fourccs) override;
   bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
                             cricket::VideoFormat* best_format) override;
   bool IsScreencast() const override;

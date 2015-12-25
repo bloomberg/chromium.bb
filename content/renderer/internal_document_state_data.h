@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"

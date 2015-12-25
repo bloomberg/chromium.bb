@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -132,7 +135,7 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
   }
 
   bool GetSupportedMessageClasses(
-      std::vector<uint32>* supported_message_classes) const override {
+      std::vector<uint32_t>* supported_message_classes) const override {
     supported_message_classes->push_back(TestMsgStart);
     return true;
   }

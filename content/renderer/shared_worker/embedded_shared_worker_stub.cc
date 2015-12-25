@@ -4,6 +4,8 @@
 
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 
+#include <stdint.h>
+
 #include "base/thread_task_runner_handle.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"

@@ -5,13 +5,15 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_DEVICE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_DEVICE_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -402,7 +404,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   // Buffer used for temporary storage during render callback.
   // It is only accessed by the audio render thread.
-  std::vector<int16> render_buffer_;
+  std::vector<int16_t> render_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };

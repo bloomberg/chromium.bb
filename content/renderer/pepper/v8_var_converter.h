@@ -5,14 +5,14 @@
 #ifndef CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H_
 #define CONTENT_RENDERER_PEPPER_V8_VAR_CONVERTER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "content/common/content_export.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "v8/include/v8.h"
-#include "content/common/content_export.h"
 
 namespace content {
 

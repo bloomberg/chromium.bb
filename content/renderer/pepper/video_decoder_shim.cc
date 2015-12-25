@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #ifndef NDEBUG
 #include "base/logging.h"
@@ -955,7 +956,7 @@ void VideoDecoderShim::AssignPictureBuffers(
   SendPictures();
 }
 
-void VideoDecoderShim::ReusePictureBuffer(int32 picture_buffer_id) {
+void VideoDecoderShim::ReusePictureBuffer(int32_t picture_buffer_id) {
   DCHECK(RenderThreadImpl::current());
   uint32_t texture_id = static_cast<uint32_t>(picture_buffer_id);
   if (textures_to_dismiss_.find(texture_id) != textures_to_dismiss_.end()) {

@@ -5,9 +5,9 @@
 #ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_CLIENT_H_
 #define CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "ui/gfx/geometry/vector2d_f.h"

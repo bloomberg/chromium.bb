@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_GPU_DELEGATED_COMPOSITOR_OUTPUT_SURFACE_H_
 #define CONTENT_RENDERER_GPU_DELEGATED_COMPOSITOR_OUTPUT_SURFACE_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 
@@ -14,8 +16,8 @@ class FrameSwapMessageQueue;
 class DelegatedCompositorOutputSurface : public CompositorOutputSurface {
  public:
   DelegatedCompositorOutputSurface(
-      int32 routing_id,
-      uint32 output_surface_id,
+      int32_t routing_id,
+      uint32_t output_surface_id,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       const scoped_refptr<ContextProviderCommandBuffer>&
           worker_context_provider,

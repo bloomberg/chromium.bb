@@ -17,7 +17,7 @@ namespace content {
 
 // static
 void BackgroundSyncClientImpl::Create(
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     mojo::InterfaceRequest<BackgroundSyncServiceClient> request) {
   new BackgroundSyncClientImpl(service_worker_registration_id, request.Pass());
 }
@@ -25,7 +25,7 @@ void BackgroundSyncClientImpl::Create(
 BackgroundSyncClientImpl::~BackgroundSyncClientImpl() {}
 
 BackgroundSyncClientImpl::BackgroundSyncClientImpl(
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     mojo::InterfaceRequest<BackgroundSyncServiceClient> request)
     : service_worker_registration_id_(service_worker_registration_id),
       binding_(this, request.Pass()),

@@ -5,8 +5,11 @@
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
@@ -73,9 +76,10 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
                           const media::AudioParameters& output_params);
 
   // Received when browser process has created an audio output stream.
-  void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
+  void OnStreamCreated(int stream_id,
+                       base::SharedMemoryHandle handle,
                        base::SyncSocket::TransitDescriptor socket_descriptor,
-                       uint32 length);
+                       uint32_t length);
 
   // Received when internal state of browser process' audio output device has
   // changed.

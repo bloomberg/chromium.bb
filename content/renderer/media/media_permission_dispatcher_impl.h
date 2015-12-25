@@ -11,8 +11,11 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_PERMISSION_DISPATCHER_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_PERMISSION_DISPATCHER_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"

@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_GAMEPAD_SHARED_MEMORY_READER_H_
 #define CONTENT_RENDERER_GAMEPAD_SHARED_MEMORY_READER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/gamepad_messages.h"

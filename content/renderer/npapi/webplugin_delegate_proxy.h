@@ -5,13 +5,17 @@
 #ifndef CONTENT_RENDERER_NPAPI_WEBPLUGIN_DELEGATE_PROXY_H_
 #define CONTENT_RENDERER_NPAPI_WEBPLUGIN_DELEGATE_PROXY_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "build/build_config.h"
 #include "content/child/npapi/webplugin_delegate.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_listener.h"
@@ -153,9 +157,9 @@ class WebPluginDelegateProxy
   void OnStartIme();
   // Accelerated (Core Animation) plugin implementation.
   void OnAcceleratedPluginEnabledRendering();
-  void OnAcceleratedPluginAllocatedIOSurface(int32 width,
-                                             int32 height,
-                                             uint32 surface_id);
+  void OnAcceleratedPluginAllocatedIOSurface(int32_t width,
+                                             int32_t height,
+                                             uint32_t surface_id);
   void OnAcceleratedPluginSwappedIOSurface();
 #endif
 #if defined(OS_WIN)
@@ -204,7 +208,7 @@ class WebPluginDelegateProxy
 #if !defined(OS_WIN)
   // Creates a process-local memory section and canvas. PlatformCanvas on
   // Windows only works with a DIB, not arbitrary memory.
-  bool CreateLocalBitmap(std::vector<uint8>* memory,
+  bool CreateLocalBitmap(std::vector<uint8_t>* memory,
                          scoped_ptr<SkCanvas>* canvas);
 #endif
 

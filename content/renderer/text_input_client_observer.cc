@@ -4,7 +4,10 @@
 
 #include "content/renderer/text_input_client_observer.h"
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "content/common/text_input_client_messages.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_view_impl.h"

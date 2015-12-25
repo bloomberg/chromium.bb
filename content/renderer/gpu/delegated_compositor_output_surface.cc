@@ -8,8 +8,8 @@
 namespace content {
 
 DelegatedCompositorOutputSurface::DelegatedCompositorOutputSurface(
-    int32 routing_id,
-    uint32 output_surface_id,
+    int32_t routing_id,
+    uint32_t output_surface_id,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     const scoped_refptr<ContextProviderCommandBuffer>& worker_context_provider,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)

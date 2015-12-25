@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPB_BROKER_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PPB_BROKER_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "ipc/ipc_listener.h"

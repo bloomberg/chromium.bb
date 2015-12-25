@@ -24,14 +24,14 @@ using blink::WebArrayBuffer;
 
 namespace content {
 
-HostArrayBufferVar::HostArrayBufferVar(uint32 size_in_bytes)
+HostArrayBufferVar::HostArrayBufferVar(uint32_t size_in_bytes)
     : buffer_(WebArrayBuffer::create(size_in_bytes, 1 /* element_size */)),
       valid_(true) {}
 
 HostArrayBufferVar::HostArrayBufferVar(const WebArrayBuffer& buffer)
     : buffer_(buffer), valid_(true) {}
 
-HostArrayBufferVar::HostArrayBufferVar(uint32 size_in_bytes,
+HostArrayBufferVar::HostArrayBufferVar(uint32_t size_in_bytes,
                                        base::SharedMemoryHandle handle)
     : buffer_(WebArrayBuffer::create(size_in_bytes, 1 /* element_size */)) {
   base::SharedMemory s(handle, true);
@@ -54,7 +54,9 @@ void HostArrayBufferVar::Unmap() {
   // We do not used shared memory on the host side. Nothing to do.
 }
 
-uint32 HostArrayBufferVar::ByteLength() { return buffer_.byteLength(); }
+uint32_t HostArrayBufferVar::ByteLength() {
+  return buffer_.byteLength();
+}
 
 bool HostArrayBufferVar::CopyToNewShmem(
     PP_Instance instance,

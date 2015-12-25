@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 
+#include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/origin_util.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"

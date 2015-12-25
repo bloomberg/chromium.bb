@@ -4,6 +4,8 @@
 
 #include "content/renderer/p2p/port_allocator.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/common/content_switches.h"
@@ -24,7 +26,7 @@ P2PPortAllocator::P2PPortAllocator(
       config_(config),
       origin_(origin),
       network_manager_task_runner_(task_runner) {
-  uint32 flags = 0;
+  uint32_t flags = 0;
   if (!config_.enable_multiple_routes) {
     flags |= cricket::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION;
   }

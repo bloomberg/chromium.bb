@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "content/common/navigation_params.h"
 #include "content/public/renderer/navigation_state.h"
 

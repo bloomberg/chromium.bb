@@ -12,7 +12,6 @@
 #include <mlang.h>
 #endif
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/sys_info.h"

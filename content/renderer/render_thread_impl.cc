@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
@@ -33,6 +34,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_external_bitmap_impl.h"
@@ -222,8 +224,8 @@ namespace content {
 
 namespace {
 
-const int64 kInitialIdleHandlerDelayMs = 1000;
-const int64 kLongIdleHandlerDelayMs = 30*1000;
+const int64_t kInitialIdleHandlerDelayMs = 1000;
+const int64_t kLongIdleHandlerDelayMs = 30 * 1000;
 
 #if defined(OS_ANDROID)
 // On Android, resource messages can each take ~1.5ms to dispatch on the browser
@@ -1034,7 +1036,7 @@ RenderThreadImpl::GetIOMessageLoopProxy() {
   return ChildProcess::current()->io_task_runner();
 }
 
-void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
+void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
   ChildThreadImpl::GetRouter()->AddRoute(routing_id, listener);
   PendingRenderFrameConnectMap::iterator it =
       pending_render_frame_connects_.find(routing_id);
@@ -1056,11 +1058,11 @@ void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
   frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
 }
 
-void RenderThreadImpl::RemoveRoute(int32 routing_id) {
+void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
   ChildThreadImpl::GetRouter()->RemoveRoute(routing_id);
 }
 
-void RenderThreadImpl::AddEmbeddedWorkerRoute(int32 routing_id,
+void RenderThreadImpl::AddEmbeddedWorkerRoute(int32_t routing_id,
                                               IPC::Listener* listener) {
   AddRoute(routing_id, listener);
   if (devtools_agent_message_filter_.get()) {
@@ -1069,7 +1071,7 @@ void RenderThreadImpl::AddEmbeddedWorkerRoute(int32 routing_id,
   }
 }
 
-void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32 routing_id) {
+void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32_t routing_id) {
   RemoveRoute(routing_id);
   if (devtools_agent_message_filter_.get()) {
     devtools_agent_message_filter_->RemoveEmbeddedWorkerRouteOnMainThread(
@@ -1333,7 +1335,7 @@ void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
   WebScriptController::registerExtension(extension);
 }
 
-void RenderThreadImpl::ScheduleIdleHandler(int64 initial_delay_ms) {
+void RenderThreadImpl::ScheduleIdleHandler(int64_t initial_delay_ms) {
   idle_notification_delay_in_ms_ = initial_delay_ms;
   idle_timer_.Stop();
   idle_timer_.Start(FROM_HERE,
@@ -1387,12 +1389,12 @@ void RenderThreadImpl::IdleHandler() {
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
 }
 
-int64 RenderThreadImpl::GetIdleNotificationDelayInMs() const {
+int64_t RenderThreadImpl::GetIdleNotificationDelayInMs() const {
   return idle_notification_delay_in_ms_;
 }
 
 void RenderThreadImpl::SetIdleNotificationDelayInMs(
-    int64 idle_notification_delay_in_ms) {
+    int64_t idle_notification_delay_in_ms) {
   idle_notification_delay_in_ms_ = idle_notification_delay_in_ms;
 }
 
@@ -1660,9 +1662,9 @@ scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
 }
 
 CreateCommandBufferResult RenderThreadImpl::CreateViewCommandBuffer(
-      int32 surface_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32 route_id) {
+    int32_t surface_id,
+    const GPUCreateCommandBufferConfig& init_params,
+    int32_t route_id) {
   NOTREACHED();
   return CREATE_COMMAND_BUFFER_FAILED;
 }

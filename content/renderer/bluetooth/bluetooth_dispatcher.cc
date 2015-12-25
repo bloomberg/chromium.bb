@@ -4,6 +4,8 @@
 
 #include "content/renderer/bluetooth/bluetooth_dispatcher.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -612,7 +614,7 @@ void BluetoothDispatcher::OnGetCharacteristicSuccess(
     int thread_id,
     int request_id,
     const std::string& characteristic_instance_id,
-    uint32 characteristic_properties) {
+    uint32_t characteristic_properties) {
   DCHECK(pending_characteristic_requests_.Lookup(request_id)) << request_id;
 
   BluetoothCharacteristicRequest* request =

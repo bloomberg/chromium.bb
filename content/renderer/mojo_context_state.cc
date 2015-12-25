@@ -4,6 +4,8 @@
 
 #include "content/renderer/mojo_context_state.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/public/renderer/render_frame.h"

@@ -5,8 +5,11 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_WEBSOCKET_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_WEBSOCKET_HOST_H_
 
+#include <stdint.h>
+
 #include <queue>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"

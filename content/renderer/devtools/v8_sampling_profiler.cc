@@ -4,6 +4,22 @@
 
 #include "content/renderer/devtools/v8_sampling_profiler.h"
 
+#include <stdint.h>
+
+#include "base/format_macros.h"
+#include "base/location.h"
+#include "base/macros.h"
+#include "base/strings/stringprintf.h"
+#include "base/synchronization/cancellation_flag.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/platform_thread.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
+#include "build/build_config.h"
+#include "content/renderer/devtools/lock_free_circular_queue.h"
+#include "content/renderer/render_thread_impl.h"
+#include "v8/include/v8.h"
+
 #if defined(OS_POSIX)
 #include <signal.h>
 #define USE_SIGNALS
@@ -12,18 +28,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
-
-#include "base/format_macros.h"
-#include "base/location.h"
-#include "base/strings/stringprintf.h"
-#include "base/synchronization/cancellation_flag.h"
-#include "base/thread_task_runner_handle.h"
-#include "base/threading/platform_thread.h"
-#include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
-#include "content/renderer/devtools/lock_free_circular_queue.h"
-#include "content/renderer/render_thread_impl.h"
-#include "v8/include/v8.h"
 
 using base::trace_event::ConvertableToTraceFormat;
 using base::trace_event::TraceLog;
@@ -87,7 +91,7 @@ class PlatformData : public PlatformDataCommon {
 
 std::string PtrToString(const void* value) {
   return base::StringPrintf(
-      "0x%" PRIx64, static_cast<uint64>(reinterpret_cast<intptr_t>(value)));
+      "0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<intptr_t>(value)));
 }
 
 class SampleRecord {

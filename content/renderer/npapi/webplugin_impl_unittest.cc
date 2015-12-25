@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/string_util.h"
 #include "content/renderer/npapi/webplugin_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +59,7 @@ TEST(WebPluginImplTest, PostParserSimple) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ("bar", GetHeader(request, "foo"));
   EXPECT_EQ(0U, GetHeader(request, "bar").length());
@@ -70,7 +73,7 @@ TEST(WebPluginImplTest, PostParserLongHeader) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ(100U, GetHeader(request, "foo").length());
 }
@@ -81,7 +84,7 @@ TEST(WebPluginImplTest, PostParserManyHeaders) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ("h1", GetHeader(request, "h1"));
   EXPECT_EQ("h2", GetHeader(request, "h2"));
@@ -104,7 +107,7 @@ TEST(WebPluginImplTest, PostParserDuplicateHeaders) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
 }
 
@@ -114,7 +117,7 @@ TEST(WebPluginImplTest, PostParserNoHeaders) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ(0U, GetHeader(request, "foo").length());
   EXPECT_EQ(0U, GetHeader(request, "bar").length());
@@ -128,7 +131,7 @@ TEST(WebPluginImplTest, PostParserNoBody) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ("bar", GetHeader(request, "foo"));
   EXPECT_EQ(0U, GetHeader(request, "bar").length());
@@ -142,7 +145,7 @@ TEST(WebPluginImplTest, PostParserBodyWithNewLines) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ(GetBodyText(request), "\n\nabcdefg\n\nabcdefg");
 }
@@ -153,7 +156,7 @@ TEST(WebPluginImplTest, PostParserErrorNoBody) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
 }
 
@@ -163,7 +166,7 @@ TEST(WebPluginImplTest, PostParserErrorEmpty) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
 }
 
@@ -173,7 +176,7 @@ TEST(WebPluginImplTest, PostParserEmptyName) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ("bar", GetHeader(request, "foo"));
   EXPECT_EQ("body", GetBodyText(request));
@@ -185,7 +188,7 @@ TEST(WebPluginImplTest, PostParserEmptyValue) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ("bar", GetHeader(request, "foo"));
   EXPECT_EQ(0U, GetHeader(request, "bar").length());
@@ -198,7 +201,7 @@ TEST(WebPluginImplTest, PostParserCRLF) {
   WebURLRequest request;
   request.initialize();
   bool rv = WebPluginImpl::SetPostData(&request, ex1,
-                                       static_cast<uint32>(strlen(ex1)));
+                                       static_cast<uint32_t>(strlen(ex1)));
   EXPECT_TRUE(rv);
   EXPECT_EQ("bar", GetHeader(request, "foo"));
   EXPECT_EQ(0U, GetHeader(request, "bar").length());

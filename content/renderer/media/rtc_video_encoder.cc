@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -109,7 +110,7 @@ class RTCVideoEncoder::Impl
   // RTCVideoEncoder expects to be able to call this function synchronously from
   // its own thread, hence the |async_waiter| and |async_retval| arguments.
   void CreateAndInitializeVEA(const gfx::Size& input_visible_size,
-                              uint32 bitrate,
+                              uint32_t bitrate,
                               media::VideoCodecProfile profile,
                               base::WaitableEvent* async_waiter,
                               int32_t* async_retval);
@@ -124,10 +125,10 @@ class RTCVideoEncoder::Impl
   // RTCVideoEncoder is given a buffer to be passed to WebRTC through the
   // RTCVideoEncoder::ReturnEncodedImage() function.  When that is complete,
   // the buffer is returned to Impl by its index using this function.
-  void UseOutputBitstreamBufferId(int32 bitstream_buffer_id);
+  void UseOutputBitstreamBufferId(int32_t bitstream_buffer_id);
 
   // Request encoding parameter change for the underlying encoder.
-  void RequestEncodingParametersChange(uint32 bitrate, uint32 framerate);
+  void RequestEncodingParametersChange(uint32_t bitrate, uint32_t framerate);
 
   // Destroy this Impl's encoder.  The destructor is not explicitly called, as
   // Impl is a base::RefCountedThreadSafe.
@@ -137,7 +138,7 @@ class RTCVideoEncoder::Impl
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
                                size_t output_buffer_size) override;
-  void BitstreamBufferReady(int32 bitstream_buffer_id,
+  void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
                             bool key_frame) override;
   void NotifyError(media::VideoEncodeAccelerator::Error error) override;
@@ -171,7 +172,7 @@ class RTCVideoEncoder::Impl
   void SignalAsyncWaiter(int32_t retval);
 
   // Checks if the bitrate would overflow when passing from kbps to bps.
-  bool IsBitrateTooHigh(uint32 bitrate);
+  bool IsBitrateTooHigh(uint32_t bitrate);
 
   base::ThreadChecker thread_checker_;
 
@@ -219,7 +220,7 @@ class RTCVideoEncoder::Impl
   int output_buffers_free_count_;
 
   // 15 bits running index of the VP8 frames. See VP8 RTP spec for details.
-  uint16 picture_id_;
+  uint16_t picture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Impl);
 };
@@ -241,7 +242,7 @@ RTCVideoEncoder::Impl::Impl(const base::WeakPtr<RTCVideoEncoder>& weak_encoder,
 
 void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     const gfx::Size& input_visible_size,
-    uint32 bitrate,
+    uint32_t bitrate,
     media::VideoCodecProfile profile,
     base::WaitableEvent* async_waiter,
     int32_t* async_retval) {
@@ -309,7 +310,7 @@ void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
 }
 
 void RTCVideoEncoder::Impl::UseOutputBitstreamBufferId(
-    int32 bitstream_buffer_id) {
+    int32_t bitstream_buffer_id) {
   DVLOG(3) << "Impl::UseOutputBitstreamBufferIndex(): "
               "bitstream_buffer_id=" << bitstream_buffer_id;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -322,8 +323,9 @@ void RTCVideoEncoder::Impl::UseOutputBitstreamBufferId(
   }
 }
 
-void RTCVideoEncoder::Impl::RequestEncodingParametersChange(uint32 bitrate,
-                                                            uint32 framerate) {
+void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
+    uint32_t bitrate,
+    uint32_t framerate) {
   DVLOG(3) << "Impl::RequestEncodingParametersChange(): bitrate=" << bitrate
            << ", framerate=" << framerate;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -389,7 +391,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   SignalAsyncWaiter(WEBRTC_VIDEO_CODEC_OK);
 }
 
-void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
+void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
                                                  size_t payload_size,
                                                  bool key_frame) {
   DVLOG(3) << "Impl::BitstreamBufferReady(): "
@@ -414,10 +416,10 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
 
   // Use webrtc timestamps to ensure correct RTP sender behavior.
   // TODO(hshi): obtain timestamp from the capturer, see crbug.com/350106.
-  const int64 capture_time_us = webrtc::TickTime::MicrosecondTimestamp();
+  const int64_t capture_time_us = webrtc::TickTime::MicrosecondTimestamp();
 
   // Derive the capture time (in ms) and RTP timestamp (in 90KHz ticks).
-  const int64 capture_time_ms = capture_time_us / 1000;
+  const int64_t capture_time_ms = capture_time_us / 1000;
   const uint32_t rtp_timestamp =
       static_cast<uint32_t>(capture_time_us * 90 / 1000);
 
@@ -508,7 +510,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     frame = media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, input_frame_coded_size_,
         gfx::Rect(input_visible_size_), input_visible_size_,
-        reinterpret_cast<uint8*>(input_buffer->memory()),
+        reinterpret_cast<uint8_t*>(input_buffer->memory()),
         input_buffer->mapped_size(), input_buffer->handle(), 0,
         base::TimeDelta());
     if (!frame.get()) {
@@ -571,8 +573,8 @@ void RTCVideoEncoder::Impl::SignalAsyncWaiter(int32_t retval) {
   async_waiter_ = NULL;
 }
 
-bool RTCVideoEncoder::Impl::IsBitrateTooHigh(uint32 bitrate) {
-  if (base::IsValueInRangeForNumericType<uint32>(bitrate * UINT64_C(1000)))
+bool RTCVideoEncoder::Impl::IsBitrateTooHigh(uint32_t bitrate) {
+  if (base::IsValueInRangeForNumericType<uint32_t>(bitrate * UINT64_C(1000)))
     return false;
   LogAndNotifyError(FROM_HERE, "Overflow converting bitrate from kbps to bps",
                     media::VideoEncodeAccelerator::kInvalidArgumentError);
@@ -713,8 +715,8 @@ int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
 }
 
 void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
-                                         int32 bitstream_buffer_id,
-                                         uint16 picture_id) {
+                                         int32_t bitstream_buffer_id,
+                                         uint16_t picture_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "ReturnEncodedImage(): "
            << "bitstream_buffer_id=" << bitstream_buffer_id

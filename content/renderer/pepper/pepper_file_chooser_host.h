@@ -5,10 +5,12 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_FILE_CHOOSER_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_FILE_CHOOSER_HOST_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/host/host_message_context.h"

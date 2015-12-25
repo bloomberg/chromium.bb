@@ -106,11 +106,11 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
 }
 
 bool RendererGpuVideoAcceleratorFactories::CreateTextures(
-    int32 count,
+    int32_t count,
     const gfx::Size& size,
-    std::vector<uint32>* texture_ids,
+    std::vector<uint32_t>* texture_ids,
     std::vector<gpu::Mailbox>* texture_mailboxes,
-    uint32 texture_target) {
+    uint32_t texture_target) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(texture_target);
 
@@ -123,7 +123,7 @@ bool RendererGpuVideoAcceleratorFactories::CreateTextures(
   gles2->GenTextures(count, &texture_ids->at(0));
   for (int i = 0; i < count; ++i) {
     gles2->ActiveTexture(GL_TEXTURE0);
-    uint32 texture_id = texture_ids->at(i);
+    uint32_t texture_id = texture_ids->at(i);
     gles2->BindTexture(texture_target, texture_id);
     gles2->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -154,7 +154,7 @@ bool RendererGpuVideoAcceleratorFactories::CreateTextures(
   return true;
 }
 
-void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32 texture_id) {
+void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32_t texture_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return;

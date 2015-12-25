@@ -11,7 +11,7 @@
 #include <windows.h>
 #endif
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/main_function_params.h"
 

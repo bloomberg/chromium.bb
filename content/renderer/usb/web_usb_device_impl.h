@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_USB_WEB_USB_DEVICE_IMPL_H_
 #define CONTENT_RENDERER_USB_WEB_USB_DEVICE_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

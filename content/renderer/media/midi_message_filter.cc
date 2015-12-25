@@ -65,8 +65,8 @@ void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
   }
 }
 
-void MidiMessageFilter::SendMidiData(uint32 port,
-                                     const uint8* data,
+void MidiMessageFilter::SendMidiData(uint32_t port,
+                                     const uint8_t* data,
                                      size_t length,
                                      double timestamp) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -77,7 +77,7 @@ void MidiMessageFilter::SendMidiData(uint32 port,
   }
 
   unacknowledged_bytes_sent_ += length;
-  std::vector<uint8> v(data, data + length);
+  std::vector<uint8_t> v(data, data + length);
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MidiMessageFilter::SendMidiDataOnIOThread, this,
                             port, v, timestamp));
@@ -89,8 +89,8 @@ void MidiMessageFilter::StartSessionOnIOThread() {
   Send(new MidiHostMsg_StartSession());
 }
 
-void MidiMessageFilter::SendMidiDataOnIOThread(uint32 port,
-                                               const std::vector<uint8>& data,
+void MidiMessageFilter::SendMidiDataOnIOThread(uint32_t port,
+                                               const std::vector<uint8_t>& data,
                                                double timestamp) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   Send(new MidiHostMsg_SendData(port, data, timestamp));
@@ -166,7 +166,7 @@ void MidiMessageFilter::OnAddOutputPort(media::midi::MidiPortInfo info) {
       base::Bind(&MidiMessageFilter::HandleAddOutputPort, this, info));
 }
 
-void MidiMessageFilter::OnSetInputPortState(uint32 port,
+void MidiMessageFilter::OnSetInputPortState(uint32_t port,
                                             media::midi::MidiPortState state) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
@@ -174,7 +174,7 @@ void MidiMessageFilter::OnSetInputPortState(uint32 port,
                             port, state));
 }
 
-void MidiMessageFilter::OnSetOutputPortState(uint32 port,
+void MidiMessageFilter::OnSetOutputPortState(uint32_t port,
                                              media::midi::MidiPortState state) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
@@ -182,8 +182,8 @@ void MidiMessageFilter::OnSetOutputPortState(uint32 port,
                             port, state));
 }
 
-void MidiMessageFilter::OnDataReceived(uint32 port,
-                                       const std::vector<uint8>& data,
+void MidiMessageFilter::OnDataReceived(uint32_t port,
+                                       const std::vector<uint8_t>& data,
                                        double timestamp) {
   TRACE_EVENT0("midi", "MidiMessageFilter::OnDataReceived");
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -282,8 +282,8 @@ void MidiMessageFilter::HandleAddOutputPort(media::midi::MidiPortInfo info) {
     client->didAddOutputPort(id, manufacturer, name, version, state);
 }
 
-void MidiMessageFilter::HandleDataReceived(uint32 port,
-                                           const std::vector<uint8>& data,
+void MidiMessageFilter::HandleDataReceived(uint32_t port,
+                                           const std::vector<uint8_t>& data,
                                            double timestamp) {
   TRACE_EVENT0("midi", "MidiMessageFilter::HandleDataReceived");
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -301,7 +301,7 @@ void MidiMessageFilter::HandleAckknowledgeSentData(size_t bytes_sent) {
 }
 
 void MidiMessageFilter::HandleSetInputPortState(
-    uint32 port,
+    uint32_t port,
     media::midi::MidiPortState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   inputs_[port].state = state;
@@ -310,7 +310,7 @@ void MidiMessageFilter::HandleSetInputPortState(
 }
 
 void MidiMessageFilter::HandleSetOutputPortState(
-    uint32 port,
+    uint32_t port,
     media::midi::MidiPortState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   outputs_[port].state = state;

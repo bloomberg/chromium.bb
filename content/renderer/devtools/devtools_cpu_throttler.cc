@@ -10,8 +10,10 @@
 #endif
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 
 using base::subtle::Atomic32;
 using base::subtle::Acquire_Load;

@@ -5,9 +5,12 @@
 #ifndef CONTENT_RENDERER_P2P_HOST_ADDRESS_REQUEST_H_
 #define CONTENT_RENDERER_P2P_HOST_ADDRESS_REQUEST_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "net/base/ip_address_number.h"
@@ -63,7 +66,7 @@ class P2PAsyncAddressResolver
   State state_;
 
   // Accessed on the IPC thread only.
-  int32 request_id_;
+  int32_t request_id_;
   bool registered_;
   std::vector<rtc::IPAddress> addresses_;
   DoneCallback done_callback_;

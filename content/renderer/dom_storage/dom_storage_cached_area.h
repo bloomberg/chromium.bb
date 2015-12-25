@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
 #define CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_CACHED_AREA_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>

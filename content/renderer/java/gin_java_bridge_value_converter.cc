@@ -4,8 +4,12 @@
 
 #include "content/renderer/java/gin_java_bridge_value_converter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 
+#include "base/macros.h"
 #include "base/values.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/renderer/java/gin_java_bridge_object.h"

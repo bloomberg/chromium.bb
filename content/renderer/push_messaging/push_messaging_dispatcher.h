@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/public/common/push_messaging_status.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushClient.h"

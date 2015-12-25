@@ -64,8 +64,8 @@ bool PPB_ImageData_Impl::Init(PP_ImageDataFormat format,
     return false;  // Only support this one format for now.
   if (width <= 0 || height <= 0)
     return false;
-  if (static_cast<int64>(width) * static_cast<int64>(height) >=
-      std::numeric_limits<int32>::max() / 4)
+  if (static_cast<int64_t>(width) * static_cast<int64_t>(height) >=
+      std::numeric_limits<int32_t>::max() / 4)
     return false;  // Prevent overflow of signed 32-bit ints.
 
   format_ = format;
@@ -142,7 +142,7 @@ bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
   // TODO(brettw) use init_to_zero when we implement caching.
   width_ = width;
   height_ = height;
-  uint32 buffer_size = width_ * height_ * 4;
+  uint32_t buffer_size = width_ * height_ * 4;
   scoped_ptr<base::SharedMemory> shared_memory =
       RenderThread::Get()->HostAllocateSharedMemoryBuffer(buffer_size);
   if (!shared_memory)

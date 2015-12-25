@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "content/test/image_decoder_test.h"
 #include "third_party/WebKit/public/web/WebImageDecoder.h"
 
@@ -18,7 +20,7 @@ class BMPImageDecoderTest : public ImageDecoderTest {
   // Thus it is split into fast and slow versions. The threshold is
   // set to 10KB because the fast test can finish under Valgrind in
   // less than 30 seconds.
-  static const int64 kThresholdSize = 10240;
+  static const int64_t kThresholdSize = 10240;
 };
 
 TEST_F(BMPImageDecoderTest, DecodingFast) {

@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_HOST_ARRAY_BUFFER_VAR_H_
 #define CONTENT_RENDERER_PEPPER_HOST_ARRAY_BUFFER_VAR_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/host_resource.h"
@@ -16,15 +19,15 @@ namespace content {
 // Represents a host-side ArrayBufferVar.
 class HostArrayBufferVar : public ppapi::ArrayBufferVar {
  public:
-  explicit HostArrayBufferVar(uint32 size_in_bytes);
+  explicit HostArrayBufferVar(uint32_t size_in_bytes);
   explicit HostArrayBufferVar(const blink::WebArrayBuffer& buffer);
-  explicit HostArrayBufferVar(uint32 size_in_bytes,
+  explicit HostArrayBufferVar(uint32_t size_in_bytes,
                               base::SharedMemoryHandle handle);
 
   // ArrayBufferVar implementation.
   void* Map() override;
   void Unmap() override;
-  uint32 ByteLength() override;
+  uint32_t ByteLength() override;
   bool CopyToNewShmem(PP_Instance instance,
                       int* host_shm_handle_id,
                       base::SharedMemoryHandle* plugin_shm_handle) override;

@@ -10,8 +10,11 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_PERMISSION_DISPATCHER_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_PERMISSION_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"

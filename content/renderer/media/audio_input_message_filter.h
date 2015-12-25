@@ -5,10 +5,14 @@
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ipc/message_filter.h"
 #include "media/audio/audio_input_ipc.h"
@@ -66,8 +70,8 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
 #else
                        base::FileDescriptor socket_descriptor,
 #endif
-                       uint32 length,
-                       uint32 total_segments);
+                       uint32_t length,
+                       uint32_t total_segments);
 
   // Notification of volume property of an audio input stream.
   void OnStreamVolume(int stream_id, double volume);

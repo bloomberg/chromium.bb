@@ -4,6 +4,8 @@
 
 #include "content/renderer/devtools/devtools_agent.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/lazy_instance.h"

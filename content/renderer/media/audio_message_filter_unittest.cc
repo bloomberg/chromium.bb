@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "media/audio/audio_output_ipc.h"
@@ -68,7 +71,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
-  uint32 length() { return length_; }
+  uint32_t length() { return length_; }
 
  private:
   bool state_changed_received_;
@@ -125,7 +128,7 @@ TEST(AudioMessageFilterTest, Basic) {
 
   // AudioMsg_NotifyStreamCreated
   base::SyncSocket::TransitDescriptor socket_descriptor;
-  const uint32 kLength = 1024;
+  const uint32_t kLength = 1024;
   EXPECT_FALSE(delegate.created_received());
   filter->OnMessageReceived(AudioMsg_NotifyStreamCreated(
       kStreamId, base::SharedMemory::NULLHandle(), socket_descriptor, kLength));

@@ -9,6 +9,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_PERMISSION_PROXY_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_PERMISSION_PROXY_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"

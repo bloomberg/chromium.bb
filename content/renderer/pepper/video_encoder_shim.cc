@@ -99,12 +99,12 @@ class VideoEncoderShim::EncoderImpl {
   void Initialize(media::VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
-                  uint32 initial_bitrate);
+                  uint32_t initial_bitrate);
   void Encode(const scoped_refptr<media::VideoFrame>& frame,
               bool force_keyframe);
   void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer,
                                 uint8_t* mem);
-  void RequestEncodingParametersChange(uint32 bitrate, uint32 framerate);
+  void RequestEncodingParametersChange(uint32_t bitrate, uint32_t framerate);
   void Stop();
 
  private:
@@ -139,7 +139,7 @@ class VideoEncoderShim::EncoderImpl {
   vpx_codec_enc_cfg_t config_;
   vpx_codec_ctx_t encoder_;
 
-  uint32 framerate_;
+  uint32_t framerate_;
 
   std::deque<PendingEncode> frames_;
   std::deque<BitstreamBuffer> buffers_;
@@ -161,7 +161,7 @@ void VideoEncoderShim::EncoderImpl::Initialize(
     media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate) {
+    uint32_t initial_bitrate) {
   gfx::Size coded_size =
       media::VideoFrame::PlaneSize(input_format, 0, input_visible_size);
 
@@ -252,11 +252,11 @@ void VideoEncoderShim::EncoderImpl::UseOutputBitstreamBuffer(
 }
 
 void VideoEncoderShim::EncoderImpl::RequestEncodingParametersChange(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   framerate_ = framerate;
 
-  uint32 bitrate_kbit = bitrate / 1000;
+  uint32_t bitrate_kbit = bitrate / 1000;
   if (config_.rc_target_bitrate == bitrate_kbit)
     return;
 
@@ -403,7 +403,7 @@ bool VideoEncoderShim::Initialize(
     media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate,
+    uint32_t initial_bitrate,
     media::VideoEncodeAccelerator::Client* client) {
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(client, host_);
@@ -445,8 +445,8 @@ void VideoEncoderShim::UseOutputBitstreamBuffer(
                  host_->ShmHandleToAddress(buffer.id())));
 }
 
-void VideoEncoderShim::RequestEncodingParametersChange(uint32 bitrate,
-                                                       uint32 framerate) {
+void VideoEncoderShim::RequestEncodingParametersChange(uint32_t bitrate,
+                                                       uint32_t framerate) {
   DCHECK(RenderThreadImpl::current());
 
   media_task_runner_->PostTask(
@@ -474,7 +474,7 @@ void VideoEncoderShim::OnRequireBitstreamBuffers(
 
 void VideoEncoderShim::OnBitstreamBufferReady(
     scoped_refptr<media::VideoFrame> frame,
-    int32 bitstream_buffer_id,
+    int32_t bitstream_buffer_id,
     size_t payload_size,
     bool key_frame) {
   DCHECK(RenderThreadImpl::current());

@@ -4,6 +4,10 @@
 
 #include "content/renderer/scheduler/resource_dispatch_throttler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/resource_messages.h"
 #include "content/test/fake_renderer_scheduler.h"
@@ -12,7 +16,7 @@
 namespace content {
 namespace {
 
-const uint32 kRequestsPerFlush = 4;
+const uint32_t kRequestsPerFlush = 4;
 const double kFlushPeriodSeconds = 1.f / 60;
 const int kRoutingId = 1;
 

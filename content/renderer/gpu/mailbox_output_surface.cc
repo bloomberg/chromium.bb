@@ -23,8 +23,8 @@ using gpu::gles2::GLES2Interface;
 namespace content {
 
 MailboxOutputSurface::MailboxOutputSurface(
-    int32 routing_id,
-    uint32 output_surface_id,
+    int32_t routing_id,
+    uint32_t output_surface_id,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     const scoped_refptr<ContextProviderCommandBuffer>& worker_context_provider,
     scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
@@ -152,7 +152,7 @@ void MailboxOutputSurface::BindFramebuffer() {
                            0);
 }
 
-void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
+void MailboxOutputSurface::OnSwapAck(uint32_t output_surface_id,
                                      const cc::CompositorFrameAck& ack) {
   // Ignore message if it's a stale one coming from a different output surface
   // (e.g. after a lost context).
@@ -189,7 +189,7 @@ void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
     // The browser always keeps one texture as the frontbuffer.
     // If it does not return a mailbox, it discarded the frontbuffer which is
     // the oldest texture we sent.
-    uint32 texture_id = pending_textures_.front().texture_id;
+    uint32_t texture_id = pending_textures_.front().texture_id;
     if (texture_id)
       context_provider_->ContextGL()->DeleteTextures(1, &texture_id);
     pending_textures_.pop_front();
@@ -224,7 +224,7 @@ size_t MailboxOutputSurface::GetNumAcksPending() {
 MailboxOutputSurface::TransferableFrame::TransferableFrame() : texture_id(0) {}
 
 MailboxOutputSurface::TransferableFrame::TransferableFrame(
-    uint32 texture_id,
+    uint32_t texture_id,
     const gpu::Mailbox& mailbox,
     const gfx::Size size)
     : texture_id(texture_id), mailbox(mailbox), size(size) {}

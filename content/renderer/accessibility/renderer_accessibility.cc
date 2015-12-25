@@ -4,6 +4,9 @@
 
 #include "content/renderer/accessibility/renderer_accessibility.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/bind.h"
@@ -11,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
@@ -192,7 +196,7 @@ void RendererAccessibility::HandleAXEvent(
   acc_event.event_type = event;
 
   // Discard duplicate accessibility events.
-  for (uint32 i = 0; i < pending_events_.size(); ++i) {
+  for (uint32_t i = 0; i < pending_events_.size(); ++i) {
     if (pending_events_[i].id == acc_event.id &&
         pending_events_[i].event_type == acc_event.event_type) {
       return;

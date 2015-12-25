@@ -5,9 +5,12 @@
 #ifndef CONTENT_RENDERER_MEDIA_RENDERER_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
 #define CONTENT_RENDERER_MEDIA_RENDERER_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
@@ -60,12 +63,12 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       override;
   // Creates textures and produces them into mailboxes. Returns true on success
   // or false on failure.
-  bool CreateTextures(int32 count,
+  bool CreateTextures(int32_t count,
                       const gfx::Size& size,
-                      std::vector<uint32>* texture_ids,
+                      std::vector<uint32_t>* texture_ids,
                       std::vector<gpu::Mailbox>* texture_mailboxes,
-                      uint32 texture_target) override;
-  void DeleteTexture(uint32 texture_id) override;
+                      uint32_t texture_target) override;
+  void DeleteTexture(uint32_t texture_id) override;
   void WaitSyncToken(const gpu::SyncToken& sync_token) override;
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(

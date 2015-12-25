@@ -4,6 +4,9 @@
 
 #include "content/renderer/external_popup_menu.h"
 
+#include <stddef.h>
+
+#include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/renderer/menu_item_builder.h"
 #include "content/renderer/render_frame_impl.h"

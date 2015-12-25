@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_RENDERER_FACTORY_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_RENDERER_FACTORY_IMPL_H_
 
+#include "base/macros.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 
 namespace content {

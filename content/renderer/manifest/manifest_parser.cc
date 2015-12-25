@@ -4,6 +4,8 @@
 
 #include "content/renderer/manifest/manifest_parser.h"
 
+#include <stddef.h>
+
 #include "base/json/json_reader.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -203,9 +205,10 @@ int64_t ManifestParser::ParseColor(
       return Manifest::kInvalidOrMissingColor;
   }
 
-  // We do this here because Java does not have an unsigned int32 type so colors
-  // with high alpha values will be negative. Instead of doing the conversion
-  // after we pass over to Java, we do it here as it is easier and clearer.
+  // We do this here because Java does not have an unsigned int32_t type so
+  // colors with high alpha values will be negative. Instead of doing the
+  // conversion after we pass over to Java, we do it here as it is easier and
+  // clearer.
   int32_t signed_color = reinterpret_cast<int32_t&>(color);
   return static_cast<int64_t>(signed_color);
 }

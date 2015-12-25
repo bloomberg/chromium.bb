@@ -5,11 +5,15 @@
 #ifndef CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
@@ -52,7 +56,7 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebString& presentationUrl,
       const blink::WebString& presentationId,
       presentation::PresentationMessageType type,
-      const uint8* data,
+      const uint8_t* data,
       size_t length);
 
   // WebPresentationClient implementation.
@@ -69,11 +73,11 @@ class CONTENT_EXPORT PresentationDispatcher
                   const blink::WebString& message) override;
   void sendArrayBuffer(const blink::WebString& presentationUrl,
                        const blink::WebString& presentationId,
-                       const uint8* data,
+                       const uint8_t* data,
                        size_t length) override;
   void sendBlobData(const blink::WebString& presentationUrl,
                     const blink::WebString& presentationId,
-                    const uint8* data,
+                    const uint8_t* data,
                     size_t length) override;
   void closeSession(const blink::WebString& presentationUrl,
                     const blink::WebString& presentationId) override;

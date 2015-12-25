@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_INPUT_RENDER_WIDGET_INPUT_HANDLER_H_
 #define CONTENT_RENDERER_INPUT_RENDER_WIDGET_INPUT_HANDLER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/input/did_overscroll_params.h"

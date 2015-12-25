@@ -4,8 +4,11 @@
 
 #include "content/renderer/npapi/plugin_channel_host.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/child/npapi/npobject_base.h"
 #include "content/child/plugin_messages.h"

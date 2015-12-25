@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_JAVA_GIN_JAVA_FUNCTION_INVOCATION_HELPER_H_
 #define CONTENT_RENDERER_JAVA_GIN_JAVA_FUNCTION_INVOCATION_HELPER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"

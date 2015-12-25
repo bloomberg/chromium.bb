@@ -5,10 +5,12 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_FILE_REF_RENDERER_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_FILE_REF_RENDERER_HOST_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"

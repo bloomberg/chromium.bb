@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_CACHE_STORAGE_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_CACHE_STORAGE_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/child/worker_thread_message_filter.h"
 

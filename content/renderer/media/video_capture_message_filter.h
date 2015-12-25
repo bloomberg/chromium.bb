@@ -10,8 +10,11 @@
 #ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
@@ -68,7 +71,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
 
     // Called when the delegate has been added to filter's delegate list.
     // |device_id| is the device id for the delegate.
-    virtual void OnDelegateAdded(int32 device_id) = 0;
+    virtual void OnDelegateAdded(int32_t device_id) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -95,7 +98,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
   ~VideoCaptureMessageFilter() override;
 
  private:
-  typedef std::map<int32, Delegate*> Delegates;
+  typedef std::map<int32_t, Delegate*> Delegates;
 
   // Receive a newly created buffer from browser process.
   void OnBufferCreated(int device_id,
@@ -136,7 +139,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
   // A map of device ids to delegates.
   Delegates delegates_;
   Delegates pending_delegates_;
-  int32 last_device_id_;
+  int32_t last_device_id_;
 
   IPC::Sender* sender_;
 

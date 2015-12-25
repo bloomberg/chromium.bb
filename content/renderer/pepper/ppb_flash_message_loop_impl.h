@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPB_FLASH_MESSAGE_LOOP_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PPB_FLASH_MESSAGE_LOOP_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_flash_message_loop_api.h"

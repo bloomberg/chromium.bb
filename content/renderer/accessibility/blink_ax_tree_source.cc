@@ -4,6 +4,8 @@
 
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/strings/string_number_conversions.h"
@@ -99,7 +101,7 @@ std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
 void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
                                        WebVector<WebAXObject> objects,
                                        AXContentNodeData* dst) {
-  std::vector<int32> ids;
+  std::vector<int32_t> ids;
   for(size_t i = 0; i < objects.size(); i++)
     ids.push_back(objects[i].axID());
   if (ids.size() > 0)
@@ -148,8 +150,8 @@ AXContentTreeData BlinkAXTreeSource::GetTreeData() const {
   root.selection(anchor_object, anchor_offset, focus_object, focus_offset);
   if (!anchor_object.isNull() && !focus_object.isNull() &&
       anchor_offset >= 0 && focus_offset >= 0) {
-    int32 anchor_id = anchor_object.axID();
-    int32 focus_id = focus_object.axID();
+    int32_t anchor_id = anchor_object.axID();
+    int32_t focus_id = focus_object.axID();
     tree_data.sel_anchor_object_id = anchor_id;
     tree_data.sel_anchor_offset = anchor_offset;
     tree_data.sel_focus_object_id = focus_id;
@@ -181,11 +183,11 @@ blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
   return GetMainDocument().accessibilityObject();
 }
 
-blink::WebAXObject BlinkAXTreeSource::GetFromId(int32 id) const {
+blink::WebAXObject BlinkAXTreeSource::GetFromId(int32_t id) const {
   return GetMainDocument().accessibilityObjectFromID(id);
 }
 
-int32 BlinkAXTreeSource::GetId(blink::WebAXObject node) const {
+int32_t BlinkAXTreeSource::GetId(blink::WebAXObject node) const {
   return node.axID();
 }
 
@@ -330,7 +332,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   if (dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
     WebVector<int> src_character_offsets;
     src.characterOffsets(src_character_offsets);
-    std::vector<int32> character_offsets;
+    std::vector<int32_t> character_offsets;
     character_offsets.reserve(src_character_offsets.size());
     for (size_t i = 0; i < src_character_offsets.size(); ++i)
       character_offsets.push_back(src_character_offsets[i]);
@@ -339,8 +341,8 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     WebVector<int> src_word_starts;
     WebVector<int> src_word_ends;
     src.wordBoundaries(src_word_starts, src_word_ends);
-    std::vector<int32> word_starts;
-    std::vector<int32> word_ends;
+    std::vector<int32_t> word_starts;
+    std::vector<int32_t> word_ends;
     word_starts.reserve(src_word_starts.size());
     word_ends.reserve(src_word_starts.size());
     for (size_t i = 0; i < src_word_starts.size(); ++i) {
@@ -436,7 +438,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       WebVector<int> src_line_breaks;
       src.lineBreaks(src_line_breaks);
       if (src_line_breaks.size() > 0) {
-        std::vector<int32> line_breaks;
+        std::vector<int32_t> line_breaks;
         line_breaks.reserve(src_line_breaks.size());
         for (size_t i = 0; i < src_line_breaks.size(); ++i)
           line_breaks.push_back(src_line_breaks[i]);
@@ -524,9 +526,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     int column_count = src.columnCount();
     int row_count = src.rowCount();
     if (column_count > 0 && row_count > 0) {
-      std::set<int32> unique_cell_id_set;
-      std::vector<int32> cell_ids;
-      std::vector<int32> unique_cell_ids;
+      std::set<int32_t> unique_cell_id_set;
+      std::vector<int32_t> cell_ids;
+      std::vector<int32_t> unique_cell_ids;
       dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_COUNT, column_count);
       dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, row_count);
       WebAXObject header = src.headerContainerObject();
@@ -589,7 +591,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   int child_count = src.childCount();
   for (int i = 0; i < child_count; ++i) {
     WebAXObject child = src.childAt(i);
-    std::vector<int32> indirect_child_ids;
+    std::vector<int32_t> indirect_child_ids;
     if (!is_iframe && !child.isDetached() && !IsParentUnignoredOf(src, child))
       indirect_child_ids.push_back(child.axID());
     if (indirect_child_ids.size() > 0) {

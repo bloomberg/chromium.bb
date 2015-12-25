@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/manifest.h"
 #include "content/public/renderer/render_frame_observer.h"

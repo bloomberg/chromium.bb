@@ -4,6 +4,9 @@
 
 #include "content/renderer/media/audio_track_recorder.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -160,7 +163,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
             1000,
         opus_decode_float(
             opus_decoder_,
-            reinterpret_cast<uint8*>(string_as_array(encoded_data.get())),
+            reinterpret_cast<uint8_t*>(string_as_array(encoded_data.get())),
             encoded_data->size(), buffer_.get(), max_frames_per_buffer_, 0));
 
     DoOnEncodedAudio(params, *encoded_data, timestamp);

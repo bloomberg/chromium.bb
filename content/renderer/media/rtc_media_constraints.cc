@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 #include "content/renderer/media/rtc_media_constraints.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_video_source.h"
-#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
+#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {

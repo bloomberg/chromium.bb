@@ -5,8 +5,12 @@
 #ifndef CONTENT_RENDERER_MEDIA_RTC_VIDEO_ENCODER_H_
 #define CONTENT_RENDERER_MEDIA_RTC_VIDEO_ENCODER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -62,8 +66,8 @@ class CONTENT_EXPORT RTCVideoEncoder
 
   // Return an encoded output buffer to WebRTC.
   void ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
-                          int32 bitstream_buffer_id,
-                          uint16 picture_id);
+                          int32_t bitstream_buffer_id,
+                          uint16_t picture_id);
 
   void NotifyError(int32_t error);
 

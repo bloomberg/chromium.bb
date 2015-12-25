@@ -4,6 +4,9 @@
 
 #include "content/renderer/pepper/v8_var_converter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <stack>
 #include <string>
@@ -377,7 +380,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         if (did_create && CanHaveChildren(child_var))
           stack.push(child_var);
         v8::TryCatch try_catch(isolate);
-        v8_array->Set(static_cast<uint32>(i), child_v8);
+        v8_array->Set(static_cast<uint32_t>(i), child_v8);
         if (try_catch.HasCaught()) {
           LOG(ERROR) << "Setter for index " << i << " threw an exception.";
           return false;
@@ -516,7 +519,7 @@ bool V8VarConverter::FromV8ValueInternal(
         return false;
       }
 
-      for (uint32 i = 0; i < v8_array->Length(); ++i) {
+      for (uint32_t i = 0; i < v8_array->Length(); ++i) {
         v8::TryCatch try_catch(context->GetIsolate());
         v8::Local<v8::Value> child_v8 = v8_array->Get(i);
         if (try_catch.HasCaught())
@@ -554,7 +557,7 @@ bool V8VarConverter::FromV8ValueInternal(
       }
 
       v8::Local<v8::Array> property_names(v8_object->GetOwnPropertyNames());
-      for (uint32 i = 0; i < property_names->Length(); ++i) {
+      for (uint32_t i = 0; i < property_names->Length(); ++i) {
         v8::Local<v8::Value> key(property_names->Get(i));
 
         // Extend this test to cover more types as necessary and if sensible.

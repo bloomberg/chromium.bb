@@ -4,6 +4,7 @@
 
 #include "content/renderer/webscrollbarbehavior_impl_gtkoraura.h"
 
+#include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 

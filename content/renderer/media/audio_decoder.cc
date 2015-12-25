@@ -4,9 +4,10 @@
 
 #include "content/renderer/media/audio_decoder.h"
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -33,7 +34,7 @@ bool DecodeAudioFileData(
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   // Uses the FFmpeg library for audio file reading.
-  InMemoryUrlProtocol url_protocol(reinterpret_cast<const uint8*>(data),
+  InMemoryUrlProtocol url_protocol(reinterpret_cast<const uint8_t*>(data),
                                    data_size, false);
   AudioFileReader reader(&url_protocol);
 

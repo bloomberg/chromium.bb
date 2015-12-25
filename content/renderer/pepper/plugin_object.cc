@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/plugin_object.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"

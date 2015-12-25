@@ -21,11 +21,14 @@
 #ifndef CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_
 #define CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
@@ -79,7 +82,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   void OnFilterAdded(IPC::Sender* sender) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
 
   base::SingleThreadTaskRunner* task_runner();
 
@@ -97,7 +100,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
       const net::NetworkInterfaceList& networks,
       const net::IPAddressNumber& default_ipv4_local_address,
       const net::IPAddressNumber& default_ipv6_local_address);
-  void OnGetHostAddressResult(int32 request_id,
+  void OnGetHostAddressResult(int32_t request_id,
                               const net::IPAddressList& addresses);
   void OnSocketCreated(int socket_id,
                        const net::IPEndPoint& local_address,

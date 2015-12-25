@@ -4,6 +4,7 @@
 
 #include "content/renderer/memory_benchmarking_extension.h"
 
+#include "build/build_config.h"
 #include "content/common/memory_benchmark_messages.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/renderer/render_thread_impl.h"

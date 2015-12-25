@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -490,7 +491,7 @@ void VideoTrackAdapter::DeliverFrameOnIO(
 
 void VideoTrackAdapter::CheckFramesReceivedOnIO(
     const OnMutedCallback& set_muted_state_callback,
-    uint64 old_frame_counter_snapshot) {
+    uint64_t old_frame_counter_snapshot) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!monitoring_frame_rate_)

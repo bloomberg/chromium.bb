@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_RENDER_PROCESS_IMPL_H_
 #define CONTENT_RENDERER_RENDER_PROCESS_IMPL_H_
 
+#include "base/macros.h"
 #include "content/renderer/render_process.h"
 
 namespace content {

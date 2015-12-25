@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -40,7 +41,7 @@ class PpFrameWriter : public MediaStreamVideoSource,
 
   // FrameWriterInterface implementation.
   // This method will be called by the Pepper host from render thread.
-  void PutFrame(PPB_ImageData_Impl* image_data, int64 time_stamp_ns) override;
+  void PutFrame(PPB_ImageData_Impl* image_data, int64_t time_stamp_ns) override;
 
  protected:
   // MediaStreamVideoSource implementation.
@@ -145,7 +146,7 @@ void PpFrameWriter::StopSourceImpl() {
 // Note: PutFrame must copy or process image_data directly in this function,
 // because it may be overwritten as soon as we return from this function.
 void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
-                             int64 time_stamp_ns) {
+                             int64_t time_stamp_ns) {
   DCHECK(CalledOnValidThread());
   TRACE_EVENT0("video", "PpFrameWriter::PutFrame");
   DVLOG(3) << "PpFrameWriter::PutFrame()";
@@ -167,7 +168,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
     return;
   }
 
-  const uint8* src_data = static_cast<uint8*>(bitmap->getPixels());
+  const uint8_t* src_data = static_cast<uint8_t*>(bitmap->getPixels());
   const int src_stride = static_cast<int>(bitmap->rowBytes());
   const int width = bitmap->width();
   const int height = bitmap->height();
@@ -213,7 +214,8 @@ class PpFrameWriterProxy : public FrameWriterInterface {
 
   ~PpFrameWriterProxy() override {}
 
-  void PutFrame(PPB_ImageData_Impl* image_data, int64 time_stamp_ns) override {
+  void PutFrame(PPB_ImageData_Impl* image_data,
+                int64_t time_stamp_ns) override {
     writer_->PutFrame(image_data, time_stamp_ns);
   }
 

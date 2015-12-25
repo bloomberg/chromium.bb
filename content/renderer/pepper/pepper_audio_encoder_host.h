@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_AUDIO_ENCODER_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_AUDIO_ENCODER_HOST_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

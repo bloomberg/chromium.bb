@@ -5,13 +5,15 @@
 #ifndef CONTENT_RENDERER_MEDIA_CDM_PROXY_MEDIA_KEYS_H_
 #define CONTENT_RENDERER_MEDIA_CDM_PROXY_MEDIA_KEYS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"

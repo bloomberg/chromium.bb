@@ -20,8 +20,7 @@ WebStorageNamespaceImpl::WebStorageNamespaceImpl()
     : namespace_id_(kLocalStorageNamespaceId) {
 }
 
-WebStorageNamespaceImpl::WebStorageNamespaceImpl(
-    int64 namespace_id)
+WebStorageNamespaceImpl::WebStorageNamespaceImpl(int64_t namespace_id)
     : namespace_id_(namespace_id) {
   DCHECK_NE(kInvalidSessionStorageNamespaceId, namespace_id);
 }

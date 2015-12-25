@@ -5,18 +5,22 @@
 #ifndef CONTENT_RENDERER_RENDER_FRAME_IMPL_H_
 #define CONTENT_RENDERER_RENDER_FRAME_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/mojo/service_registry_impl.h"
@@ -189,12 +193,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // Used by content_layouttest_support to hook into the creation of
   // RenderFrameImpls.
   struct CreateParams {
-    CreateParams(RenderViewImpl* render_view, int32 routing_id)
+    CreateParams(RenderViewImpl* render_view, int32_t routing_id)
         : render_view(render_view), routing_id(routing_id) {}
     ~CreateParams() {}
 
     RenderViewImpl* render_view;
-    int32 routing_id;
+    int32_t routing_id;
   };
 
   using CreateRenderFrameImplFunction =
@@ -688,7 +692,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
   // Callers *must* call |SetWebFrame| immediately after creation.
-  static RenderFrameImpl* Create(RenderViewImpl* render_view, int32 routing_id);
+  static RenderFrameImpl* Create(RenderViewImpl* render_view,
+                                 int32_t routing_id);
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderFrameObserver* observer);
@@ -746,7 +751,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                                  int id,
                                                  bool notify_result,
                                                  int world_id);
-  void OnVisualStateRequest(uint64 key);
+  void OnVisualStateRequest(uint64_t key);
   void OnSetEditableSelectionOffsets(int start, int end);
   void OnSetCompositionFromExistingText(
       int start, int end,

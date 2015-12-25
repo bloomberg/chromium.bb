@@ -5,11 +5,15 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CLIENT_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -68,7 +72,7 @@ class ServiceWorkerContextClient
 
   // Called on the main thread.
   ServiceWorkerContextClient(int embedded_worker_id,
-                             int64 service_worker_version_id,
+                             int64_t service_worker_version_id,
                              const GURL& service_worker_scope,
                              const GURL& script_url,
                              int worker_devtools_agent_route_id);
@@ -222,7 +226,7 @@ class ServiceWorkerContextClient
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 
   const int embedded_worker_id_;
-  const int64 service_worker_version_id_;
+  const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
   const GURL script_url_;
   const int worker_devtools_agent_route_id_;

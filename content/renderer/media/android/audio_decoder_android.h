@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_ANDROID_AUDIO_DECODER_ANDROID_H_
 #define CONTENT_RENDERER_MEDIA_ANDROID_AUDIO_DECODER_ANDROID_H_
 
+#include <stddef.h>
+
 #include "content/child/thread_safe_sender.h"
 
 namespace blink {

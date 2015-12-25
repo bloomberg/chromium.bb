@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/common/clipboard_format.h"
 #include "content/public/common/drop_data.h"
 #include "content/renderer/clipboard_utils.h"
@@ -39,7 +40,7 @@ WebClipboardImpl::WebClipboardImpl(RendererClipboardDelegate* delegate)
 WebClipboardImpl::~WebClipboardImpl() {
 }
 
-uint64 WebClipboardImpl::sequenceNumber(Buffer buffer) {
+uint64_t WebClipboardImpl::sequenceNumber(Buffer buffer) {
   ui::ClipboardType clipboard_type;
   if (!ConvertBufferType(buffer, &clipboard_type))
     return 0;
@@ -103,8 +104,8 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
   base::string16 html_stdstr;
   GURL gurl;
   delegate_->ReadHTML(clipboard_type, &html_stdstr, &gurl,
-                      static_cast<uint32*>(fragment_start),
-                      static_cast<uint32*>(fragment_end));
+                      static_cast<uint32_t*>(fragment_start),
+                      static_cast<uint32_t*>(fragment_end));
   *source_url = gurl;
   return html_stdstr;
 }

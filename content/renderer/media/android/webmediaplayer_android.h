@@ -5,10 +5,12 @@
 #ifndef CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
 #define CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -253,15 +255,15 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
                   media::MediaKeys::KeyError error_code,
-                  uint32 system_code);
+                  uint32_t system_code);
   void OnKeyMessage(const std::string& session_id,
-                    const std::vector<uint8>& message,
+                    const std::vector<uint8_t>& message,
                     const GURL& destination_url);
 
   void OnMediaSourceOpened(blink::WebMediaSource* web_media_source);
 
   void OnEncryptedMediaInitData(media::EmeInitDataType init_data_type,
-                                const std::vector<uint8>& init_data);
+                                const std::vector<uint8_t>& init_data);
 
   // Called when a decoder detects that the key needed to decrypt the stream
   // is not available.

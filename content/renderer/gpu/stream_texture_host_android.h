@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_GPU_STREAM_TEXTURE_HOST_ANDROID_H_
 #define CONTENT_RENDERER_GPU_STREAM_TEXTURE_HOST_ANDROID_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "ipc/ipc_listener.h"
@@ -35,7 +38,7 @@ class StreamTextureHost : public IPC::Listener {
     virtual ~Listener() {}
   };
 
-  bool BindToCurrentThread(int32 stream_id, Listener* listener);
+  bool BindToCurrentThread(int32_t stream_id, Listener* listener);
 
   // IPC::Channel::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;

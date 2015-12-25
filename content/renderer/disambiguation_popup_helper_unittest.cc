@@ -4,6 +4,8 @@
 
 #include "content/renderer/disambiguation_popup_helper.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebVector.h"

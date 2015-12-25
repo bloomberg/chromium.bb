@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_PLUGIN_INSTANCE_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <set>
 #include <string>
@@ -12,10 +15,12 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/texture_layer_client.h"
@@ -458,14 +463,14 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                               PP_URLComponents_Dev* components) override;
 
   // PPB_ContentDecryptor_Private implementation.
-  void PromiseResolved(PP_Instance instance, uint32 promise_id) override;
+  void PromiseResolved(PP_Instance instance, uint32_t promise_id) override;
   void PromiseResolvedWithSession(PP_Instance instance,
-                                  uint32 promise_id,
+                                  uint32_t promise_id,
                                   PP_Var session_id_var) override;
   void PromiseRejected(PP_Instance instance,
-                       uint32 promise_id,
+                       uint32_t promise_id,
                        PP_CdmExceptionCode exception_code,
-                       uint32 system_code,
+                       uint32_t system_code,
                        PP_Var error_description_var) override;
   void SessionMessage(PP_Instance instance,
                       PP_Var session_id_var,
@@ -485,7 +490,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void LegacySessionError(PP_Instance instance,
                           PP_Var session_id_var,
                           PP_CdmExceptionCode exception_code,
-                          uint32 system_code,
+                          uint32_t system_code,
                           PP_Var error_description_var) override;
   void DeliverBlock(PP_Instance instance,
                     PP_Resource decrypted_block,

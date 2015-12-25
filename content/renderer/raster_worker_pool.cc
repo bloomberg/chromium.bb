@@ -4,6 +4,9 @@
 
 #include "content/renderer/raster_worker_pool.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/strings/stringprintf.h"

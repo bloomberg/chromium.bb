@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGEAREA_IMPL_H_
 #define CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGEAREA_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -20,7 +22,7 @@ class WebStorageAreaImpl : public blink::WebStorageArea {
  public:
   static WebStorageAreaImpl* FromConnectionId(int id);
 
-  WebStorageAreaImpl(int64 namespace_id, const GURL& origin);
+  WebStorageAreaImpl(int64_t namespace_id, const GURL& origin);
   ~WebStorageAreaImpl() override;
 
   // See WebStorageArea.h for documentation on these functions.

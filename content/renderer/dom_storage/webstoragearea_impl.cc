@@ -34,12 +34,11 @@ WebStorageAreaImpl* WebStorageAreaImpl::FromConnectionId(int id) {
   return g_all_areas_map.Pointer()->Lookup(id);
 }
 
-WebStorageAreaImpl::WebStorageAreaImpl(
-    int64 namespace_id, const GURL& origin)
+WebStorageAreaImpl::WebStorageAreaImpl(int64_t namespace_id, const GURL& origin)
     : connection_id_(g_all_areas_map.Pointer()->Add(this)),
-      cached_area_(dispatcher()->
-          OpenCachedArea(connection_id_, namespace_id, origin)) {
-}
+      cached_area_(dispatcher()->OpenCachedArea(connection_id_,
+                                                namespace_id,
+                                                origin)) {}
 
 WebStorageAreaImpl::~WebStorageAreaImpl() {
   g_all_areas_map.Pointer()->Remove(connection_id_);

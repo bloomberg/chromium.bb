@@ -4,8 +4,11 @@
 
 #include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -328,21 +331,21 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
     ppapi::MediaStreamBuffer::Video* pp_frame =
         &(buffer_manager()->GetBufferPointer(index)->video);
 
-    int32 y_stride = plugin_frame_size_.width();
-    int32 uv_stride = (plugin_frame_size_.width() + 1) / 2;
-    uint8* y_data = static_cast<uint8*>(pp_frame->data);
+    int32_t y_stride = plugin_frame_size_.width();
+    int32_t uv_stride = (plugin_frame_size_.width() + 1) / 2;
+    uint8_t* y_data = static_cast<uint8_t*>(pp_frame->data);
     // Default to I420
-    uint8* u_data = y_data + plugin_frame_size_.GetArea();
-    uint8* v_data = y_data + (plugin_frame_size_.GetArea() * 5 / 4);
+    uint8_t* u_data = y_data + plugin_frame_size_.GetArea();
+    uint8_t* v_data = y_data + (plugin_frame_size_.GetArea() * 5 / 4);
     if (plugin_frame_format_ == PP_VIDEOFRAME_FORMAT_YV12) {
       // Swap u and v for YV12.
-      uint8* tmp = u_data;
+      uint8_t* tmp = u_data;
       u_data = v_data;
       v_data = tmp;
     }
 
-    int64 ts_ms = static_cast<int64>(pp_frame->timestamp *
-                                     base::Time::kMillisecondsPerSecond);
+    int64_t ts_ms = static_cast<int64_t>(pp_frame->timestamp *
+                                         base::Time::kMillisecondsPerSecond);
     scoped_refptr<VideoFrame> frame = media::VideoFrame::WrapExternalYuvData(
         FromPpapiFormat(plugin_frame_format_),
         plugin_frame_size_,

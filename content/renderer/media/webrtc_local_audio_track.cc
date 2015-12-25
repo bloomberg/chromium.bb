@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc_local_audio_track.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "content/public/renderer/media_stream_audio_sink.h"
@@ -60,13 +62,14 @@ void WebRtcLocalAudioTrack::Capture(const media::AudioBus& audio_bus,
   // post-processed data that may be all zeros even though the signal contained
   // energy before the processing.  In this case, report nonzero energy even if
   // the energy of the data in |audio_bus| is zero.
-  const float minimum_signal_level = force_report_nonzero_energy ?
-      1.0f / std::numeric_limits<int16>::max() : 0.0f;
+  const float minimum_signal_level =
+      force_report_nonzero_energy ? 1.0f / std::numeric_limits<int16_t>::max()
+                                  : 0.0f;
   const float signal_level = std::max(
       minimum_signal_level,
       std::min(1.0f, level_calculator_->Calculate(audio_bus)));
   const int signal_level_as_pcm16 =
-      static_cast<int>(signal_level * std::numeric_limits<int16>::max() +
+      static_cast<int>(signal_level * std::numeric_limits<int16_t>::max() +
                        0.5f /* rounding to nearest int */);
   adapter_->SetSignalLevel(signal_level_as_pcm16);
 

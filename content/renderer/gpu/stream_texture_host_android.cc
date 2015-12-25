@@ -24,7 +24,7 @@ StreamTextureHost::~StreamTextureHost() {
     channel_->RemoveRoute(stream_id_);
 }
 
-bool StreamTextureHost::BindToCurrentThread(int32 stream_id,
+bool StreamTextureHost::BindToCurrentThread(int32_t stream_id,
                                             Listener* listener) {
   listener_ = listener;
   if (channel_.get() && stream_id && !stream_id_) {

@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_UMA_HISTOGRAMS_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_UMA_HISTOGRAMS_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"

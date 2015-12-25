@@ -35,7 +35,7 @@ namespace {
 // 4: approximately 64ms of content in 60 fps movies.
 const size_t kAccessUnitSizeForMediaSource = 4;
 
-const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
+const uint8_t kVorbisPadding[] = {0xff, 0xff, 0xff, 0xff};
 
 }  // namespace
 
@@ -668,7 +668,7 @@ void MediaSourceDelegate::OnDemuxerOpened() {
 
 void MediaSourceDelegate::OnEncryptedMediaInitData(
     media::EmeInitDataType init_data_type,
-    const std::vector<uint8>& init_data) {
+    const std::vector<uint8_t>& init_data) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (encrypted_media_init_data_cb_.is_null())
     return;

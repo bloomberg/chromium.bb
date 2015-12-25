@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_
 #define CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/memory/ref_counted.h"

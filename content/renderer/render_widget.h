@@ -5,16 +5,20 @@
 #ifndef CONTENT_RENDERER_RENDER_WIDGET_H_
 #define CONTENT_RENDERER_RENDER_WIDGET_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -104,7 +108,7 @@ class CONTENT_EXPORT RenderWidget
  public:
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
   // RenderView that this widget lives inside.
-  static RenderWidget* Create(int32 opener_id,
+  static RenderWidget* Create(int32_t opener_id,
                               CompositorDependencies* compositor_deps,
                               blink::WebPopupType popup_type,
                               const blink::WebScreenInfo& screen_info);
@@ -121,7 +125,7 @@ class CONTENT_EXPORT RenderWidget
   // https://crbug.com/545684
   virtual void CloseForFrame();
 
-  int32 routing_id() const { return routing_id_; }
+  int32_t routing_id() const { return routing_id_; }
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
   blink::WebWidget* webwidget() const { return webwidget_; }
   gfx::Size size() const { return size_; }
@@ -363,10 +367,10 @@ class CONTENT_EXPORT RenderWidget
   static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
 
   // Initializes this view with the given opener.
-  bool Init(int32 opener_id);
+  bool Init(int32_t opener_id);
 
   // Called by Init and subclasses to perform initialization.
-  bool DoInit(int32 opener_id,
+  bool DoInit(int32_t opener_id,
               blink::WebWidget* web_widget,
               IPC::SyncMessage* create_widget_message);
 
@@ -422,8 +426,8 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnWasHidden();
   virtual void OnWasShown(bool needs_repainting,
                           const ui::LatencyInfo& latency_info);
-  void OnCreateVideoAck(int32 video_id);
-  void OnUpdateVideoAck(int32 video_id);
+  void OnCreateVideoAck(int32_t video_id);
+  void OnUpdateVideoAck(int32_t video_id);
   void OnRequestMoveAck();
   virtual void OnImeSetComposition(
       const base::string16& text,
@@ -546,7 +550,7 @@ class CONTENT_EXPORT RenderWidget
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
-  int32 routing_id_;
+  int32_t routing_id_;
 
   // Dependencies for initializing a compositor, including flags for optional
   // features.
@@ -566,7 +570,7 @@ class CONTENT_EXPORT RenderWidget
   //
   // This ID may refer to an invalid view if that view is closed before this
   // view is.
-  int32 opener_id_;
+  int32_t opener_id_;
 
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;
@@ -704,7 +708,7 @@ class CONTENT_EXPORT RenderWidget
   std::queue<SyntheticGestureCompletionCallback>
       pending_synthetic_gesture_callbacks_;
 
-  uint32 next_output_surface_id_;
+  uint32_t next_output_surface_id_;
 
 #if defined(OS_ANDROID)
   // Indicates value in the focused text field is in dirty state, i.e. modified

@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_MEDIA_STREAM_TRACK_HOST_BASE_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_MEDIA_STREAM_TRACK_HOST_BASE_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/shared_impl/media_stream_buffer_manager.h"

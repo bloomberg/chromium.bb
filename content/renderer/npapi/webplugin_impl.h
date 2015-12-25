@@ -5,14 +5,18 @@
 #ifndef CONTENT_RENDERER_NPAPI_WEBPLUGIN_IMPL_H_
 #define CONTENT_RENDERER_NPAPI_WEBPLUGIN_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/common/content_export.h"
 #include "content/common/webplugin_geometry.h"
@@ -62,7 +66,7 @@ class WebPluginImpl : public WebPlugin,
   // Helper function for sorting post data.
   CONTENT_EXPORT static bool SetPostData(blink::WebURLRequest* request,
                                          const char* buf,
-                                         uint32 length);
+                                         uint32_t length);
 
   blink::WebFrame* webframe() { return webframe_; }
 
@@ -124,9 +128,9 @@ class WebPluginImpl : public WebPlugin,
   WebPluginAcceleratedSurface* GetAcceleratedSurface(
       gfx::GpuPreference gpu_preference) override;
   void AcceleratedPluginEnabledRendering() override;
-  void AcceleratedPluginAllocatedIOSurface(int32 width,
-                                           int32 height,
-                                           uint32 surface_id) override;
+  void AcceleratedPluginAllocatedIOSurface(int32_t width,
+                                           int32_t height,
+                                           uint32_t surface_id) override;
   void AcceleratedPluginSwappedIOSurface() override;
 #endif
 
@@ -231,9 +235,9 @@ class WebPluginImpl : public WebPlugin,
   gfx::PluginWindowHandle window_;
 #if defined(OS_MACOSX)
   bool next_io_surface_allocated_;
-  int32 next_io_surface_width_;
-  int32 next_io_surface_height_;
-  uint32 next_io_surface_id_;
+  int32_t next_io_surface_width_;
+  int32_t next_io_surface_height_;
+  uint32_t next_io_surface_id_;
   scoped_refptr<cc::IOSurfaceLayer> io_surface_layer_;
   scoped_ptr<blink::WebLayer> web_layer_;
 #endif

@@ -5,6 +5,7 @@
 #include "device_light_event_pump.h"
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/device_sensors/device_light_hardware_buffer.h"

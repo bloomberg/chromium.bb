@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/renderer/media/media_stream_audio_track_sink.h"
 

@@ -215,7 +215,7 @@ ServiceWorkerContextClient::ThreadSpecificInstance() {
 
 ServiceWorkerContextClient::ServiceWorkerContextClient(
     int embedded_worker_id,
-    int64 service_worker_version_id,
+    int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url,
     int worker_devtools_agent_route_id)

@@ -4,7 +4,9 @@
 
 #include "content/renderer/speech_recognition_dispatcher.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/renderer/render_view_impl.h"
@@ -102,7 +104,7 @@ void SpeechRecognitionDispatcher::start(
   }
   msg_params.language =
       base::UTF16ToUTF8(base::StringPiece16(params.language()));
-  msg_params.max_hypotheses = static_cast<uint32>(params.maxAlternatives());
+  msg_params.max_hypotheses = static_cast<uint32_t>(params.maxAlternatives());
   msg_params.continuous = params.continuous();
   msg_params.interim_results = params.interimResults();
   msg_params.origin_url = params.origin().toString().utf8();

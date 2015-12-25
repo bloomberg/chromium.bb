@@ -6,7 +6,6 @@
 // Note that these tests rely on single-process mode, and hence may be
 // disabled in some configurations (check gyp files).
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"

@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_RTC_CERTIFICATE_H_
 #define CONTENT_RENDERER_MEDIA_RTC_CERTIFICATE_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebRTCCertificate.h"
 #include "third_party/WebKit/public/platform/WebRTCKeyParams.h"

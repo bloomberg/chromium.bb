@@ -4,8 +4,11 @@
 
 #include "content/renderer/pepper/pepper_plugin_instance_metrics.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "build/build_config.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 
 #if defined(OS_WIN)

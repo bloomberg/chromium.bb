@@ -5,7 +5,8 @@
 #ifndef CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_DISPATCHER_H_
 #define CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_DISPATCHER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 
 class GURL;
@@ -31,7 +32,7 @@ class DomStorageDispatcher {
 
   // Each call to open should be balanced with a call to close.
   scoped_refptr<DOMStorageCachedArea> OpenCachedArea(int connection_id,
-                                                     int64 namespace_id,
+                                                     int64_t namespace_id,
                                                      const GURL& origin);
   void CloseCachedArea(int connection_id, DOMStorageCachedArea* area);
 

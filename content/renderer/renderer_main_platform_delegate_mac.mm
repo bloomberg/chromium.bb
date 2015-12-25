@@ -7,6 +7,7 @@
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #include <objc/runtime.h>
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -71,11 +72,11 @@ void DisconnectCFNotificationCenter() {
     std::string port_address_std_string =
         base::SysCFStringRefToUTF8(port_address_string);
 #if __LP64__
-    uint64 port_address = 0;
+    uint64_t port_address = 0;
     if (!base::HexStringToUInt64(port_address_std_string, &port_address))
       continue;
 #else
-    uint32 port_address = 0;
+    uint32_t port_address = 0;
     if (!base::HexStringToUInt(port_address_std_string, &port_address))
       continue;
 #endif

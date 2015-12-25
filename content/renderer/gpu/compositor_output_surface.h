@@ -5,14 +5,17 @@
 #ifndef CONTENT_RENDERER_GPU_COMPOSITOR_OUTPUT_SURFACE_H_
 #define CONTENT_RENDERER_GPU_COMPOSITOR_OUTPUT_SURFACE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/output_surface.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
@@ -39,8 +42,8 @@ class CompositorOutputSurface
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   CompositorOutputSurface(
-      int32 routing_id,
-      uint32 output_surface_id,
+      int32_t routing_id,
+      uint32_t output_surface_id,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       const scoped_refptr<ContextProviderCommandBuffer>&
           worker_context_provider,
@@ -59,13 +62,13 @@ class CompositorOutputSurface
   void UpdateSmoothnessTakesPriority(bool prefer_smoothness) override;
 
  protected:
-  void ShortcutSwapAck(uint32 output_surface_id,
+  void ShortcutSwapAck(uint32_t output_surface_id,
                        scoped_ptr<cc::GLFrameData> gl_frame_data);
-  virtual void OnSwapAck(uint32 output_surface_id,
+  virtual void OnSwapAck(uint32_t output_surface_id,
                          const cc::CompositorFrameAck& ack);
-  virtual void OnReclaimResources(uint32 output_surface_id,
+  virtual void OnReclaimResources(uint32_t output_surface_id,
                                   const cc::CompositorFrameAck& ack);
-  uint32 output_surface_id_;
+  uint32_t output_surface_id_;
 
  private:
   class CompositorOutputSurfaceProxy :

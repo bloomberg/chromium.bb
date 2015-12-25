@@ -6,6 +6,8 @@
 #define CONTENT_RENDERER_NPAPI_PLUGIN_CHANNEL_HOST_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "content/child/npapi/np_channel_base.h"
 #include "ipc/ipc_channel_handle.h"
 

@@ -5,16 +5,16 @@
 #ifndef CONTENT_RENDERER_MEDIA_REMOTE_MEDIA_STREAM_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_REMOTE_MEDIA_STREAM_IMPL_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 namespace content {
 

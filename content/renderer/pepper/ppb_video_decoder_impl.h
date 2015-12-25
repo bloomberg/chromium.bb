@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPB_VIDEO_DECODER_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PPB_VIDEO_DECODER_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
@@ -42,14 +44,14 @@ class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
   void Destroy() override;
 
   // media::VideoDecodeAccelerator::Client implementation.
-  void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+  void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              const gfx::Size& dimensions,
-                             uint32 texture_target) override;
-  void DismissPictureBuffer(int32 picture_buffer_id) override;
+                             uint32_t texture_target) override;
+  void DismissPictureBuffer(int32_t picture_buffer_id) override;
   void PictureReady(const media::Picture& picture) override;
   void NotifyError(media::VideoDecodeAccelerator::Error error) override;
   void NotifyFlushDone() override;
-  void NotifyEndOfBitstreamBuffer(int32 buffer_id) override;
+  void NotifyEndOfBitstreamBuffer(int32_t buffer_id) override;
   void NotifyResetDone() override;
 
  private:

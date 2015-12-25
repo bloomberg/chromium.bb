@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -34,13 +35,13 @@ class StreamTextureProxyImpl
   ~StreamTextureProxyImpl() override;
 
   // StreamTextureProxy implementation:
-  void BindToLoop(int32 stream_id,
+  void BindToLoop(int32_t stream_id,
                   cc::VideoFrameProvider::Client* client,
                   scoped_refptr<base::SingleThreadTaskRunner> loop) override;
   void Release() override;
 
  private:
-  void BindOnThread(int32 stream_id);
+  void BindOnThread(int32_t stream_id);
   void OnFrameAvailable();
 
   // Protects access to |client_| and |loop_|.
@@ -84,7 +85,7 @@ void StreamTextureProxyImpl::Release() {
 }
 
 void StreamTextureProxyImpl::BindToLoop(
-    int32 stream_id,
+    int32_t stream_id,
     cc::VideoFrameProvider::Client* client,
     scoped_refptr<base::SingleThreadTaskRunner> loop) {
   DCHECK(loop.get());
@@ -108,7 +109,7 @@ void StreamTextureProxyImpl::BindToLoop(
                             stream_id));
 }
 
-void StreamTextureProxyImpl::BindOnThread(int32 stream_id) {
+void StreamTextureProxyImpl::BindOnThread(int32_t stream_id) {
   surface_texture_ = context_provider_->GetSurfaceTexture(stream_id);
   if (!surface_texture_.get()) {
     LOG(ERROR) << "Failed to get SurfaceTexture for stream.";
@@ -178,7 +179,7 @@ StreamTextureProxy* StreamTextureFactorySynchronousImpl::CreateProxy() {
   return new StreamTextureProxyImpl(context_provider_.get());
 }
 
-void StreamTextureFactorySynchronousImpl::EstablishPeer(int32 stream_id,
+void StreamTextureFactorySynchronousImpl::EstablishPeer(int32_t stream_id,
                                                         int player_id,
                                                         int frame_id) {
   DCHECK(context_provider_.get());
@@ -210,7 +211,7 @@ unsigned StreamTextureFactorySynchronousImpl::CreateStreamTexture(
 }
 
 void StreamTextureFactorySynchronousImpl::SetStreamTextureSize(
-    int32 stream_id,
+    int32_t stream_id,
     const gfx::Size& size) {}
 
 gpu::gles2::GLES2Interface* StreamTextureFactorySynchronousImpl::ContextGL() {

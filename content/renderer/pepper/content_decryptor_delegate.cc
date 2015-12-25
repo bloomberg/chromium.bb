@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -420,7 +421,7 @@ void ContentDecryptorDelegate::SetServerCertificate(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var certificate_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          base::checked_cast<uint32>(certificate.size()), certificate.data());
+          base::checked_cast<uint32_t>(certificate.size()), certificate.data());
   plugin_decryption_interface_->SetServerCertificate(
       pp_instance_, promise_id, certificate_array);
 }
@@ -433,7 +434,7 @@ void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          base::checked_cast<uint32>(init_data.size()), init_data.data());
+          base::checked_cast<uint32_t>(init_data.size()), init_data.data());
   plugin_decryption_interface_->CreateSessionAndGenerateRequest(
       pp_instance_, promise_id, MediaSessionTypeToPpSessionType(session_type),
       MediaInitDataTypeToPpInitDataType(init_data_type), init_data_array);
@@ -456,7 +457,7 @@ void ContentDecryptorDelegate::UpdateSession(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var response_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          base::checked_cast<uint32>(response.size()), response.data());
+          base::checked_cast<uint32_t>(response.size()), response.data());
   plugin_decryption_interface_->UpdateSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(session_id),
       response_array);
@@ -1214,8 +1215,8 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
   // Allocate space for the channel pointers given to AudioBuffer.
   std::vector<const uint8_t*> channel_ptrs(audio_channel_count_, nullptr);
   do {
-    int64 timestamp = 0;
-    int64 frame_size = -1;
+    int64_t timestamp = 0;
+    int64_t frame_size = -1;
     const size_t kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
 
     if (bytes_left < kHeaderSize)

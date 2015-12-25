@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_ANDROID_RENDERER_DATE_TIME_PICKER_H_
 #define CONTENT_RENDERER_ANDROID_RENDERER_DATE_TIME_PICKER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
 

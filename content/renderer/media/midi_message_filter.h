@@ -5,9 +5,13 @@
 #ifndef CONTENT_RENDERER_MEDIA_MIDI_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_MEDIA_MIDI_MESSAGE_FILTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "ipc/message_filter.h"
@@ -34,8 +38,8 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   // A client will only be able to call this method if it has a suitable
   // output port (from addOutputPort()).
-  void SendMidiData(uint32 port,
-                    const uint8* data,
+  void SendMidiData(uint32_t port,
+                    const uint8_t* data,
                     size_t length,
                     double timestamp);
 
@@ -58,8 +62,8 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
  private:
   void StartSessionOnIOThread();
 
-  void SendMidiDataOnIOThread(uint32 port,
-                              const std::vector<uint8>& data,
+  void SendMidiDataOnIOThread(uint32_t port,
+                              const std::vector<uint8_t>& data,
                               double timestamp);
 
   void EndSessionOnIOThread();
@@ -88,13 +92,13 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   // These functions are called to notify the recipient that a device that is
   // notified via OnAddInputPort() or OnAddOutputPort() gets disconnected, or
   // connected again.
-  void OnSetInputPortState(uint32 port, media::midi::MidiPortState state);
-  void OnSetOutputPortState(uint32 port, media::midi::MidiPortState state);
+  void OnSetInputPortState(uint32_t port, media::midi::MidiPortState state);
+  void OnSetOutputPortState(uint32_t port, media::midi::MidiPortState state);
 
   // Called when the browser process has sent MIDI data containing one or
   // more messages.
-  void OnDataReceived(uint32 port,
-                      const std::vector<uint8>& data,
+  void OnDataReceived(uint32_t port,
+                      const std::vector<uint8_t>& data,
                       double timestamp);
 
   // From time-to-time, the browser incrementally informs us of how many bytes
@@ -107,11 +111,12 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   void HandleAddInputPort(media::midi::MidiPortInfo info);
   void HandleAddOutputPort(media::midi::MidiPortInfo info);
-  void HandleSetInputPortState(uint32 port, media::midi::MidiPortState state);
-  void HandleSetOutputPortState(uint32 port, media::midi::MidiPortState state);
+  void HandleSetInputPortState(uint32_t port, media::midi::MidiPortState state);
+  void HandleSetOutputPortState(uint32_t port,
+                                media::midi::MidiPortState state);
 
-  void HandleDataReceived(uint32 port,
-                          const std::vector<uint8>& data,
+  void HandleDataReceived(uint32_t port,
+                          const std::vector<uint8_t>& data,
                           double timestamp);
 
   void HandleAckknowledgeSentData(size_t bytes_sent);

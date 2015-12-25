@@ -4,6 +4,8 @@
 
 #include "content/renderer/context_menu_params_builder.h"
 
+#include <stddef.h>
+
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/content_renderer_client.h"

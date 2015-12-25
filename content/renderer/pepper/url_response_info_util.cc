@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/url_response_info_util.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"

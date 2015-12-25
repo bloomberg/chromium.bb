@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_WEBPUBLICSUFFIXLIST_IMPL_H_
 #define CONTENT_RENDERER_WEBPUBLICSUFFIXLIST_IMPL_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebPublicSuffixList.h"
 

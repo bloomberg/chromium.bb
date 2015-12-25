@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #endif  // defined(OS_POSIX)
 
+#include "build/build_config.h"
 #include "content/test/mock_render_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

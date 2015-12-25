@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"

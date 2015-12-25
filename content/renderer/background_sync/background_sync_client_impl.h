@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_BACKGROUND_SYNC_BACKGROUND_SYNC_CLIENT_IMPL_H_
 #define CONTENT_RENDERER_BACKGROUND_SYNC_BACKGROUND_SYNC_CLIENT_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/compiler_specific.h"

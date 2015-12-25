@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_LIGHT_EVENT_PUMP_H_
 #define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_LIGHT_EVENT_PUMP_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/device_sensors/device_light_data.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"

@@ -41,8 +41,8 @@ namespace content {
 
 namespace {
 
-const int32 kCommandBufferSize = 1024 * 1024;
-const int32 kTransferBufferSize = 1024 * 1024;
+const int32_t kCommandBufferSize = 1024 * 1024;
+const int32_t kTransferBufferSize = 1024 * 1024;
 
 }  // namespace
 
@@ -171,7 +171,7 @@ gpu::GpuControl* PPB_Graphics3D_Impl::GetGpuControl() {
   return command_buffer_.get();
 }
 
-int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
+int32_t PPB_Graphics3D_Impl::DoSwapBuffers() {
   DCHECK(command_buffer_);
   // We do not have a GLES2 implementation when using an OOP proxy.
   // The plugin-side proxy is responsible for adding the SwapBuffers command
@@ -254,7 +254,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
     return false;
 
   gfx::Size surface_size;
-  std::vector<int32> attribs;
+  std::vector<int32_t> attribs;
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
   // TODO(alokp): Change GpuChannelHost::CreateOffscreenCommandBuffer()
   // interface to accept width and height in the attrib_list so that

@@ -90,7 +90,7 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   // webrtc::AudioTransport source. Keep reading until our internal buffer
   // is full.
   int accumulated_audio_frames = 0;
-  int16* audio_data = &render_buffer_[0];
+  int16_t* audio_data = &render_buffer_[0];
   while (accumulated_audio_frames < audio_bus->frames()) {
     // Get 10ms and append output to temporary byte buffer.
     int64_t elapsed_time_ms = -1;

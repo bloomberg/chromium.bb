@@ -4,6 +4,8 @@
 
 #include "content/renderer/dom_storage/dom_storage_cached_area.h"
 
+#include <stdint.h>
+
 #include <list>
 
 #include "base/bind.h"
@@ -118,7 +120,7 @@ class DOMStorageCachedAreaTest : public testing::Test {
       kPageUrl("http://dom_storage/page") {
   }
 
-  const int64 kNamespaceId;
+  const int64_t kNamespaceId;
   const GURL kOrigin;
   const base::string16 kKey;
   const base::string16 kValue;

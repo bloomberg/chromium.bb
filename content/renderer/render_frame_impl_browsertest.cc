@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/frame_load_waiter.h"
@@ -18,9 +21,9 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace {
-const int32 kSubframeRouteId = 20;
-const int32 kSubframeWidgetRouteId = 21;
-const int32 kFrameProxyRouteId = 22;
+const int32_t kSubframeRouteId = 20;
+const int32_t kSubframeWidgetRouteId = 21;
+const int32_t kFrameProxyRouteId = 22;
 }  // namespace
 
 namespace content {

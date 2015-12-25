@@ -5,9 +5,12 @@
 #ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
@@ -125,7 +128,7 @@ class CONTENT_EXPORT VideoCaptureImpl
       const media::VideoCaptureFormats& supported_formats) override;
   void OnDeviceFormatsInUseReceived(
       const media::VideoCaptureFormats& formats_in_use) override;
-  void OnDelegateAdded(int32 device_id) override;
+  void OnDelegateAdded(int32_t device_id) override;
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.
@@ -168,9 +171,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   std::vector<VideoCaptureDeviceFormatsCB> device_formats_in_use_cb_queue_;
 
   // Buffers available for sending to the client.
-  typedef std::map<int32, scoped_refptr<ClientBuffer>> ClientBufferMap;
+  typedef std::map<int32_t, scoped_refptr<ClientBuffer>> ClientBufferMap;
   ClientBufferMap client_buffers_;
-  typedef std::map<int32, scoped_refptr<ClientBuffer2>> ClientBuffer2Map;
+  typedef std::map<int32_t, scoped_refptr<ClientBuffer2>> ClientBuffer2Map;
   ClientBuffer2Map client_buffer2s_;
 
   ClientInfoMap clients_;

@@ -4,6 +4,8 @@
 
 #include "content/renderer/websharedworker_proxy.h"
 
+#include <stddef.h>
+
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/message_router.h"
 #include "content/common/view_messages.h"

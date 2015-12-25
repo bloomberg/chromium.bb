@@ -4,6 +4,8 @@
 
 #include "content/renderer/skia_benchmarking_extension.h"
 
+#include <stddef.h>
+
 #include "base/values.h"
 #include "skia/ext/benchmarking_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"

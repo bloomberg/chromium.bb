@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "ipc/ipc_test_sink.h"
@@ -52,7 +55,7 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   MOCK_METHOD1(OnDeviceFormatsInUseReceived,
                void(const media::VideoCaptureFormats& formats_in_use));
 
-  void OnDelegateAdded(int32 device_id) override {
+  void OnDelegateAdded(int32_t device_id) override {
     ASSERT_TRUE(device_id != 0);
     ASSERT_TRUE(device_id_ == 0);
     device_id_ = device_id;

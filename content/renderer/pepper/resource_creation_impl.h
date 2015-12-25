@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_RESOURCE_CREATION_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_RESOURCE_CREATION_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
 namespace content {

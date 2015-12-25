@@ -84,7 +84,7 @@ void RtcDataChannelHandler::Observer::OnStateChange() {
 }
 
 void RtcDataChannelHandler::Observer::OnBufferedAmountChange(
-    uint64 previous_amount) {
+    uint64_t previous_amount) {
   // Optimization: Only post a task if the change is a decrease, because the web
   // interface does not perform any action when there is an increase.
   if (previous_amount > channel_->buffered_amount()) {

@@ -8,8 +8,8 @@
 
 namespace content {
 
-uint32 AXStateFromBlink(const blink::WebAXObject& o) {
-  uint32 state = 0;
+uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
+  uint32_t state = 0;
   if (o.isChecked())
     state |= (1 << ui::AX_STATE_CHECKED);
 

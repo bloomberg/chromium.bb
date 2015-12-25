@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"

@@ -4,6 +4,8 @@
 
 #include "content/renderer/p2p/filtering_network_manager.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

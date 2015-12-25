@@ -4,6 +4,8 @@
 
 #include "content/renderer/usb/web_usb_client_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"

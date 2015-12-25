@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_CAMERA_DEVICE_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_CAMERA_DEVICE_HOST_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"

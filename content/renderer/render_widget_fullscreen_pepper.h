@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 #define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/fullscreen_container.h"
@@ -25,7 +28,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
                                      public FullscreenContainer {
  public:
   static RenderWidgetFullscreenPepper* Create(
-      int32 opener_id,
+      int32_t opener_id,
       CompositorDependencies* compositor_deps,
       PepperPluginInstanceImpl* plugin,
       const GURL& active_url,

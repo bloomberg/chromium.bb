@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_IDLE_USER_DETECTOR_H_
 #define CONTENT_RENDERER_IDLE_USER_DETECTOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace blink {

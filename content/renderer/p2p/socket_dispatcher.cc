@@ -80,7 +80,7 @@ void P2PSocketDispatcher::OnFilterRemoved() {
   sender_ = NULL;
 }
 
-void P2PSocketDispatcher::OnChannelConnected(int32 peer_id) {
+void P2PSocketDispatcher::OnChannelConnected(int32_t peer_id) {
   connected_ = true;
 }
 
@@ -133,7 +133,7 @@ void P2PSocketDispatcher::OnNetworkListChanged(
 }
 
 void P2PSocketDispatcher::OnGetHostAddressResult(
-    int32 request_id,
+    int32_t request_id,
     const net::IPAddressList& addresses) {
   P2PAsyncAddressResolver* request = host_address_requests_.Lookup(request_id);
   if (!request) {

@@ -4,6 +4,8 @@
 
 #include "content/renderer/browser_plugin/browser_plugin.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

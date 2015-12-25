@@ -5,11 +5,13 @@
 #ifndef CONTENT_RENDERER_WEBCLIPBOARD_IMPL_H_
 #define CONTENT_RENDERER_WEBCLIPBOARD_IMPL_H_
 
+#include <stdint.h>
+
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "ui/base/clipboard/clipboard.h"
-
-#include <string>
 
 namespace content {
 class RendererClipboardDelegate;
@@ -21,7 +23,7 @@ class WebClipboardImpl : public blink::WebClipboard {
   virtual ~WebClipboardImpl();
 
   // WebClipboard methods:
-  uint64 sequenceNumber(Buffer buffer) override;
+  uint64_t sequenceNumber(Buffer buffer) override;
   bool isFormatAvailable(Format format, Buffer buffer) override;
   blink::WebVector<blink::WebString> readAvailableTypes(
       Buffer buffer,

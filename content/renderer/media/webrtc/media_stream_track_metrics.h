@@ -5,7 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_TRACK_METRICS_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_MEDIA_STREAM_TRACK_METRICS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/scoped_vector.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
@@ -81,14 +82,14 @@ class CONTENT_EXPORT MediaStreamTrackMetrics : public base::NonThreadSafe {
   // |this| pointer to a 64-bit integer, which is usable as a unique
   // ID for the PeerConnection this object is attached to (since there
   // is a one-to-one relationship).
-  uint64 MakeUniqueIdImpl(uint64 pc_id,
-                          const std::string& track,
-                          StreamType stream_type);
+  uint64_t MakeUniqueIdImpl(uint64_t pc_id,
+                            const std::string& track,
+                            StreamType stream_type);
 
  private:
   // Make a unique ID for the given track, that is valid while the
   // track object and the PeerConnection it is attached to both exist.
-  uint64 MakeUniqueId(const std::string& track, StreamType stream_type);
+  uint64_t MakeUniqueId(const std::string& track, StreamType stream_type);
 
   typedef ScopedVector<MediaStreamTrackMetricsObserver> ObserverVector;
   ObserverVector observers_;

@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_ANDROID_ADDRESS_DETECTOR_H_
 #define CONTENT_RENDERER_ANDROID_ADDRESS_DETECTOR_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/renderer/android/content_detector.h"
 #include "url/gurl.h"
 

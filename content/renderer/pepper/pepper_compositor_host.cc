@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_compositor_host.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/logging.h"

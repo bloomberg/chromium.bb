@@ -45,7 +45,7 @@ void WebRtcAudioSinkAdapter::OnSetFormat(
   params_ = params;
   const int num_pcm16_data_elements =
       params_.frames_per_buffer() * params_.channels();
-  interleaved_data_.reset(new int16[num_pcm16_data_elements]);
+  interleaved_data_.reset(new int16_t[num_pcm16_data_elements]);
 }
 
 }  // namespace content

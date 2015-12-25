@@ -135,7 +135,7 @@ void PresentationDispatcher::sendString(
 void PresentationDispatcher::sendArrayBuffer(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId,
-    const uint8* data,
+    const uint8_t* data,
     size_t length) {
   DCHECK(data);
   if (length > kMaxPresentationSessionMessageSize) {
@@ -157,7 +157,7 @@ void PresentationDispatcher::sendArrayBuffer(
 void PresentationDispatcher::sendBlobData(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId,
-    const uint8* data,
+    const uint8_t* data,
     size_t length) {
   DCHECK(data);
   if (length > kMaxPresentationSessionMessageSize) {
@@ -480,7 +480,7 @@ PresentationDispatcher::CreateSendBinaryMessageRequest(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId,
     presentation::PresentationMessageType type,
-    const uint8* data,
+    const uint8_t* data,
     size_t length) {
   presentation::PresentationSessionInfoPtr session_info =
       presentation::PresentationSessionInfo::New();
@@ -490,7 +490,7 @@ PresentationDispatcher::CreateSendBinaryMessageRequest(
   presentation::SessionMessagePtr session_message =
       presentation::SessionMessage::New();
   session_message->type = type;
-  std::vector<uint8> tmp_data_vector(data, data + length);
+  std::vector<uint8_t> tmp_data_vector(data, data + length);
   session_message->data.Swap(&tmp_data_vector);
   return new SendMessageRequest(session_info.Pass(), session_message.Pass());
 }

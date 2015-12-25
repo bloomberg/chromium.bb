@@ -82,7 +82,7 @@ int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
   if (!frame_writer_.get())
     return PP_ERROR_FAILED;
 
-  // Convert PP_TimeTicks (a double, in seconds) to a video timestamp (int64,
+  // Convert PP_TimeTicks (a double, in seconds) to a video timestamp (int64_t,
   // nanoseconds).
   const int64_t timestamp_ns =
       static_cast<int64_t>(timestamp * base::Time::kNanosecondsPerSecond);

@@ -8,8 +8,8 @@
 #include <deque>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/media/webrtc_identity_messages.h"
 #include "content/public/renderer/render_process_observer.h"

@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_MOCK_DATA_CHANNEL_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_MOCK_DATA_CHANNEL_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

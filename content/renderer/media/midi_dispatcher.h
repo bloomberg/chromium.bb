@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_MIDI_DISPATCHER_H_
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/common/permission_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebMIDIClient.h"

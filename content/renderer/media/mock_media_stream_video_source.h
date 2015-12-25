@@ -7,6 +7,7 @@
 
 #include "content/renderer/media/media_stream_video_source.h"
 
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {

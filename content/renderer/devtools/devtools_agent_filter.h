@@ -5,10 +5,12 @@
 #ifndef CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_AGENT_FILTER_H_
 #define CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_AGENT_FILTER_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ipc/message_filter.h"
 
 struct DevToolsMessageData;
@@ -37,8 +39,8 @@ class DevToolsAgentFilter : public IPC::MessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Called on the main thread.
-  void AddEmbeddedWorkerRouteOnMainThread(int32 routing_id);
-  void RemoveEmbeddedWorkerRouteOnMainThread(int32 routing_id);
+  void AddEmbeddedWorkerRouteOnMainThread(int32_t routing_id);
+  void RemoveEmbeddedWorkerRouteOnMainThread(int32_t routing_id);
 
  protected:
   ~DevToolsAgentFilter() override;
@@ -47,14 +49,14 @@ class DevToolsAgentFilter : public IPC::MessageFilter {
   void OnDispatchOnInspectorBackend(int session_id, const std::string& message);
 
   // Called on IO thread
-  void AddEmbeddedWorkerRoute(int32 routing_id);
-  void RemoveEmbeddedWorkerRoute(int32 routing_id);
+  void AddEmbeddedWorkerRoute(int32_t routing_id);
+  void RemoveEmbeddedWorkerRoute(int32_t routing_id);
 
   base::MessageLoop* render_thread_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   int current_routing_id_;
 
-  std::set<int32> embedded_worker_routes_;
+  std::set<int32_t> embedded_worker_routes_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgentFilter);
 };

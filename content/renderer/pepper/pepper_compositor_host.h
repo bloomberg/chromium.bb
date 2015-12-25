@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_COMPOSITOR_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_COMPOSITOR_HOST_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/host/host_message_context.h"

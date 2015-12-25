@@ -176,7 +176,7 @@ void PPB_VideoDecoder_Impl::AssignPictureBuffers(
                            no_of_buffers);
 
   std::vector<media::PictureBuffer> wrapped_buffers;
-  for (uint32 i = 0; i < no_of_buffers; i++) {
+  for (uint32_t i = 0; i < no_of_buffers; i++) {
     PP_PictureBuffer_Dev in_buf = buffers[i];
     DCHECK_GE(in_buf.id, 0);
     media::PictureBuffer buffer(
@@ -234,9 +234,9 @@ void PPB_VideoDecoder_Impl::Destroy() {
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
-    uint32 requested_num_of_buffers,
+    uint32_t requested_num_of_buffers,
     const gfx::Size& dimensions,
-    uint32 texture_target) {
+    uint32_t texture_target) {
   DCHECK(RenderThreadImpl::current());
   if (!GetPPP())
     return;
@@ -260,7 +260,7 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   GetPPP()->PictureReady(pp_instance(), pp_resource(), &output);
 }
 
-void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
+void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32_t picture_buffer_id) {
   DCHECK(RenderThreadImpl::current());
   if (!GetPPP())
     return;
@@ -287,7 +287,7 @@ void PPB_VideoDecoder_Impl::NotifyResetDone() {
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfBitstreamBuffer(
-    int32 bitstream_buffer_id) {
+    int32_t bitstream_buffer_id) {
   DCHECK(RenderThreadImpl::current());
   RunBitstreamBufferCallback(bitstream_buffer_id, PP_OK);
 }

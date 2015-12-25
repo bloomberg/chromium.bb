@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/renderer/render_frame_observer.h"

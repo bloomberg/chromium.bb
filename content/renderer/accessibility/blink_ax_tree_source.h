@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_ACCESSIBILITY_BLINK_AX_TREE_SOURCE_H_
 #define CONTENT_RENDERER_ACCESSIBILITY_BLINK_AX_TREE_SOURCE_H_
 
+#include <stdint.h>
+
 #include "content/common/ax_content_node_data.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -39,8 +41,8 @@ class BlinkAXTreeSource
   // AXTreeSource implementation.
   AXContentTreeData GetTreeData() const override;
   blink::WebAXObject GetRoot() const override;
-  blink::WebAXObject GetFromId(int32 id) const override;
-  int32 GetId(blink::WebAXObject node) const override;
+  blink::WebAXObject GetFromId(int32_t id) const override;
+  int32_t GetId(blink::WebAXObject node) const override;
   void GetChildren(
       blink::WebAXObject node,
       std::vector<blink::WebAXObject>* out_children) const override;

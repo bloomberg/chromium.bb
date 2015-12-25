@@ -4,9 +4,12 @@
 
 #include "content/renderer/media/media_permission_dispatcher_proxy.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "url/gurl.h"
 

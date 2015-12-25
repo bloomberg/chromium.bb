@@ -7,12 +7,14 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <vector>
 
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_handle.h"
@@ -106,7 +108,7 @@ static float ConvertSampleToFloat(int16_t sample) {
 // basic guide to the WAVE file format.
 class WAVEDecoder {
  public:
-  WAVEDecoder(const uint8* data, size_t data_size);
+  WAVEDecoder(const uint8_t* data, size_t data_size);
   ~WAVEDecoder();
 
   // Try to decode the data as a WAVE file.  If the data is a supported

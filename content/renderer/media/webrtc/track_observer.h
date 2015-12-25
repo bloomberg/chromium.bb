@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_TRACK_OBSERVER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"

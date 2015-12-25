@@ -144,13 +144,13 @@ void PepperVideoCaptureHost::OnFrameReady(
         // TODO(ihf): handle size mismatches gracefully here.
         return;
       }
-      uint8* dst = reinterpret_cast<uint8*>(buffers_[i].data);
+      uint8_t* dst = reinterpret_cast<uint8_t*>(buffers_[i].data);
       static_assert(media::VideoFrame::kYPlane == 0, "y plane should be 0");
       static_assert(media::VideoFrame::kUPlane == 1, "u plane should be 1");
       static_assert(media::VideoFrame::kVPlane == 2, "v plane should be 2");
       for (size_t j = 0; j < media::VideoFrame::NumPlanes(frame->format());
            ++j) {
-        const uint8* src = frame->visible_data(j);
+        const uint8_t* src = frame->visible_data(j);
         const size_t row_bytes = frame->row_bytes(j);
         const size_t src_stride = frame->stride(j);
         for (int k = 0; k < frame->rows(j); ++k) {

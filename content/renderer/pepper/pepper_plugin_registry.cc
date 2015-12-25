@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_plugin_registry.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "content/common/pepper_plugin_list.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"

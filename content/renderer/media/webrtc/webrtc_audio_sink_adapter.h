@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_SINK_ADAPTER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_SINK_ADAPTER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/audio/audio_parameters.h"
@@ -37,7 +40,7 @@ class WebRtcAudioSinkAdapter : public MediaStreamAudioSink {
   webrtc::AudioTrackSinkInterface* const sink_;
 
   media::AudioParameters params_;
-  scoped_ptr<int16[]> interleaved_data_;
+  scoped_ptr<int16_t[]> interleaved_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioSinkAdapter);
 };

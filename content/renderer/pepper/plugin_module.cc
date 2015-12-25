@@ -4,6 +4,9 @@
 
 #include "content/renderer/pepper/plugin_module.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/bind.h"

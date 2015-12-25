@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -286,7 +287,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     EXPECT_EQ(kHeader, delegate->data());
   }
 
-  int32 render_view_routing_id_;
+  int32_t render_view_routing_id_;
 };
 
 // Test a fetch from the test server.

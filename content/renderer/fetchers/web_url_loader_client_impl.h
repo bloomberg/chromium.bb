@@ -5,8 +5,11 @@
 #ifndef CONTENT_RENDERER_FETCHERS_WEB_URL_LOADER_CLIENT_IMPL_H_
 #define CONTENT_RENDERER_FETCHERS_WEB_URL_LOADER_CLIENT_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"

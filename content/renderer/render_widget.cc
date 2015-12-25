@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
@@ -483,7 +484,7 @@ RenderWidget::~RenderWidget() {
 }
 
 // static
-RenderWidget* RenderWidget::Create(int32 opener_id,
+RenderWidget* RenderWidget::Create(int32_t opener_id,
                                    CompositorDependencies* compositor_deps,
                                    blink::WebPopupType popup_type,
                                    const blink::WebScreenInfo& screen_info) {
@@ -556,13 +557,13 @@ void RenderWidget::CloseForFrame() {
   OnClose();
 }
 
-bool RenderWidget::Init(int32 opener_id) {
+bool RenderWidget::Init(int32_t opener_id) {
   return DoInit(
       opener_id, RenderWidget::CreateWebWidget(this),
       new ViewHostMsg_CreateWidget(opener_id, popup_type_, &routing_id_));
 }
 
-bool RenderWidget::DoInit(int32 opener_id,
+bool RenderWidget::DoInit(int32_t opener_id,
                           WebWidget* web_widget,
                           IPC::SyncMessage* create_widget_message) {
   DCHECK(!webwidget_);
@@ -981,7 +982,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 #endif
   }
 
-  uint32 output_surface_id = next_output_surface_id_++;
+  uint32_t output_surface_id = next_output_surface_id_++;
   // Composite-to-mailbox is currently used for layout tests in order to cause
   // them to draw inside in the renderer to do the readback there. This should
   // no longer be the case when crbug.com/311404 is fixed.

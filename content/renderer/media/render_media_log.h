@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/media_log.h"

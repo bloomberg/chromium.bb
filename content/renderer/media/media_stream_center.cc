@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/media_stream_center.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/command_line.h"

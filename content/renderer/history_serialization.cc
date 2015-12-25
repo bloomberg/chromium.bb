@@ -4,6 +4,8 @@
 
 #include "content/renderer/history_serialization.h"
 
+#include <stddef.h>
+
 #include "content/common/page_state_serialization.h"
 #include "content/public/common/page_state.h"
 #include "content/renderer/history_entry.h"

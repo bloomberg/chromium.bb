@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 #include "content/renderer/media/peer_connection_tracker.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -270,7 +273,8 @@ static base::DictionaryValue* GetDictValueStats(const StatsReport& report) {
       case StatsReport::Value::kBool:
         values->AppendBoolean(value->bool_val());
         break;
-      case StatsReport::Value::kInt64:  // int64 isn't supported, so use string.
+      case StatsReport::Value::kInt64:  // int64_t isn't supported, so use
+                                        // string.
       case StatsReport::Value::kId:
       default:
         values->AppendString(value->ToString());

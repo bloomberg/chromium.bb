@@ -29,7 +29,7 @@ bool MainThreadInputEventFilter::OnMessageReceived(
 }
 
 bool MainThreadInputEventFilter::GetSupportedMessageClasses(
-    std::vector<uint32>* supported_message_classes) const {
+    std::vector<uint32_t>* supported_message_classes) const {
   supported_message_classes->push_back(InputMsgStart);
   return true;
 }

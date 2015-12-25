@@ -183,7 +183,7 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
 void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     scoped_ptr<cc::CompositorFrame> frame,
     int route_id,
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     int host_id,
     base::SharedMemoryHandle handle) {
   cc::DelegatedFrameData* frame_data = frame->delegated_frame_data.get();

@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/managed_memory_policy.h"
@@ -26,8 +27,8 @@
 namespace content {
 
 CompositorOutputSurface::CompositorOutputSurface(
-    int32 routing_id,
-    uint32 output_surface_id,
+    int32_t routing_id,
+    uint32_t output_surface_id,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     const scoped_refptr<ContextProviderCommandBuffer>& worker_context_provider,
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
@@ -38,8 +39,8 @@ CompositorOutputSurface::CompositorOutputSurface(
                     software_device.Pass()),
       output_surface_id_(output_surface_id),
       use_swap_compositor_frame_message_(use_swap_compositor_frame_message),
-      output_surface_filter_(
-          RenderThreadImpl::current()->compositor_message_filter()),
+      output_surface_filter_(RenderThreadImpl::current()
+                                 ->compositor_message_filter()),
       frame_swap_message_queue_(swap_frame_message_queue),
       routing_id_(routing_id),
 #if defined(OS_ANDROID)
@@ -92,7 +93,7 @@ void CompositorOutputSurface::DetachFromClient() {
 }
 
 void CompositorOutputSurface::ShortcutSwapAck(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     scoped_ptr<cc::GLFrameData> gl_frame_data) {
   if (!layout_test_previous_frame_ack_) {
     layout_test_previous_frame_ack_.reset(new cc::CompositorFrameAck);
@@ -175,7 +176,7 @@ void CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser(
   CommitVSyncParameters(timebase, interval);
 }
 
-void CompositorOutputSurface::OnSwapAck(uint32 output_surface_id,
+void CompositorOutputSurface::OnSwapAck(uint32_t output_surface_id,
                                         const cc::CompositorFrameAck& ack) {
   // Ignore message if it's a stale one coming from a different output surface
   // (e.g. after a lost context).
@@ -186,7 +187,7 @@ void CompositorOutputSurface::OnSwapAck(uint32 output_surface_id,
 }
 
 void CompositorOutputSurface::OnReclaimResources(
-    uint32 output_surface_id,
+    uint32_t output_surface_id,
     const cc::CompositorFrameAck& ack) {
   // Ignore message if it's a stale one coming from a different output surface
   // (e.g. after a lost context).

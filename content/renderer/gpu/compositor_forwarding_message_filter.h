@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"

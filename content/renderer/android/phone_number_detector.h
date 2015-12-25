@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_ANDROID_PHONE_NUMBER_DETECTOR_H_
 #define CONTENT_RENDERER_ANDROID_PHONE_NUMBER_DETECTOR_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/renderer/android/content_detector.h"
 

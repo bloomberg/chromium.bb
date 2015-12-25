@@ -5,8 +5,11 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_URL_LOADER_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_URL_LOADER_HOST_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"

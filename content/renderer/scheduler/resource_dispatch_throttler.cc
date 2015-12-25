@@ -23,7 +23,7 @@ ResourceDispatchThrottler::ResourceDispatchThrottler(
     IPC::Sender* proxied_sender,
     scheduler::RendererScheduler* scheduler,
     base::TimeDelta flush_period,
-    uint32 max_requests_per_flush)
+    uint32_t max_requests_per_flush)
     : proxied_sender_(proxied_sender),
       scheduler_(scheduler),
       flush_period_(flush_period),
@@ -104,9 +104,9 @@ void ResourceDispatchThrottler::Flush() {
   // If high-priority work is no longer anticipated, dispatch can be safely
   // accelerated. Avoid completely flushing in such case in the event that
   // a large number of requests have been throttled.
-  uint32 max_requests = scheduler_->IsHighPriorityWorkAnticipated()
-                            ? max_requests_per_flush_
-                            : max_requests_per_flush_ * 2;
+  uint32_t max_requests = scheduler_->IsHighPriorityWorkAnticipated()
+                              ? max_requests_per_flush_
+                              : max_requests_per_flush_ * 2;
 
   while (!throttled_messages_.empty() &&
          (sent_requests_since_last_flush_ < max_requests ||

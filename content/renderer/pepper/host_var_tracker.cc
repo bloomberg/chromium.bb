@@ -42,12 +42,12 @@ HostVarTracker::HostVarTracker()
 
 HostVarTracker::~HostVarTracker() {}
 
-ArrayBufferVar* HostVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
+ArrayBufferVar* HostVarTracker::CreateArrayBuffer(uint32_t size_in_bytes) {
   return new HostArrayBufferVar(size_in_bytes);
 }
 
 ArrayBufferVar* HostVarTracker::CreateShmArrayBuffer(
-    uint32 size_in_bytes,
+    uint32_t size_in_bytes,
     base::SharedMemoryHandle handle) {
   return new HostArrayBufferVar(size_in_bytes, handle);
 }
@@ -154,7 +154,7 @@ HostVarTracker::ObjectMap::iterator HostVarTracker::GetForV8Object(
 
 int HostVarTracker::TrackSharedMemoryHandle(PP_Instance instance,
                                             base::SharedMemoryHandle handle,
-                                            uint32 size_in_bytes) {
+                                            uint32_t size_in_bytes) {
   SharedMemoryMapEntry entry;
   entry.instance = instance;
   entry.handle = handle;
@@ -173,7 +173,7 @@ bool HostVarTracker::StopTrackingSharedMemoryHandle(
     int id,
     PP_Instance instance,
     base::SharedMemoryHandle* handle,
-    uint32* size_in_bytes) {
+    uint32_t* size_in_bytes) {
   SharedMemoryMap::iterator it = shared_memory_map_.find(id);
   if (it == shared_memory_map_.end())
     return false;

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"

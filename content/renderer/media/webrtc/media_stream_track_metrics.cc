@@ -366,9 +366,9 @@ void MediaStreamTrackMetrics::SendLifetimeMessage(const std::string& track_id,
   }
 }
 
-uint64 MediaStreamTrackMetrics::MakeUniqueIdImpl(uint64 pc_id,
-                                                 const std::string& track_id,
-                                                 StreamType stream_type) {
+uint64_t MediaStreamTrackMetrics::MakeUniqueIdImpl(uint64_t pc_id,
+                                                   const std::string& track_id,
+                                                   StreamType stream_type) {
   // We use a hash over the |track| pointer and the PeerConnection ID,
   // plus a boolean flag indicating whether the track is remote (since
   // you might conceivably have a remote track added back as a sent
@@ -389,15 +389,14 @@ uint64 MediaStreamTrackMetrics::MakeUniqueIdImpl(uint64 pc_id,
   base::MD5Digest digest;
   base::MD5Final(&digest, &ctx);
 
-  static_assert(sizeof(digest.a) > sizeof(uint64), "need a bigger digest");
-  return *reinterpret_cast<uint64*>(digest.a);
+  static_assert(sizeof(digest.a) > sizeof(uint64_t), "need a bigger digest");
+  return *reinterpret_cast<uint64_t*>(digest.a);
 }
 
-uint64 MediaStreamTrackMetrics::MakeUniqueId(const std::string& track_id,
-                                             StreamType stream_type) {
+uint64_t MediaStreamTrackMetrics::MakeUniqueId(const std::string& track_id,
+                                               StreamType stream_type) {
   return MakeUniqueIdImpl(
-      reinterpret_cast<uint64>(reinterpret_cast<void*>(this)),
-      track_id,
+      reinterpret_cast<uint64_t>(reinterpret_cast<void*>(this)), track_id,
       stream_type);
 }
 

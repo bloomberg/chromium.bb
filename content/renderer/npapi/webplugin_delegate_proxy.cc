@@ -4,13 +4,15 @@
 
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/auto_reset.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
@@ -18,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "cc/resources/shared_bitmap.h"
 #include "content/child/child_process.h"
 #include "content/child/child_shared_bitmap_manager.h"
@@ -110,8 +113,8 @@ class ResourceClientProxy : public WebPluginResourceClient {
 
   void DidReceiveResponse(const std::string& mime_type,
                           const std::string& headers,
-                          uint32 expected_length,
-                          uint32 last_modified,
+                          uint32_t expected_length,
+                          uint32_t last_modified,
                           bool request_is_seekable) override {
     DCHECK(channel_.get() != NULL);
     PluginMsg_DidReceiveResponseParams params;
@@ -493,11 +496,12 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
   // window_rect becomes either a window in native windowing system
   // coords, or a backing buffer.  In either case things will go bad
   // if the rectangle is very large.
-  if (window_rect.width() < 0  || window_rect.width() > kMaxPluginSideLength ||
+  if (window_rect.width() < 0 || window_rect.width() > kMaxPluginSideLength ||
       window_rect.height() < 0 || window_rect.height() > kMaxPluginSideLength ||
       // We know this won't overflow due to above checks.
-      static_cast<uint32>(window_rect.width()) *
-          static_cast<uint32>(window_rect.height()) > kMaxPluginSize) {
+      static_cast<uint32_t>(window_rect.width()) *
+              static_cast<uint32_t>(window_rect.height()) >
+          kMaxPluginSize) {
     return;
   }
 
@@ -552,7 +556,7 @@ static size_t BitmapSizeForPluginRect(const gfx::Rect& plugin_rect) {
 }
 
 bool WebPluginDelegateProxy::CreateLocalBitmap(
-    std::vector<uint8>* memory,
+    std::vector<uint8_t>* memory,
     scoped_ptr<skia::PlatformCanvas>* canvas) {
   const size_t size = BitmapSizeForPluginRect(plugin_rect_);
   memory->resize(size);
@@ -942,10 +946,10 @@ void WebPluginDelegateProxy::CopyFromBackBufferToFrontBuffer(
       skia::PlatformCanvasStrideForWidth(plugin_rect_.width());
   const size_t chunk_size = 4 * rect.width();
   DCHECK(back_buffer_bitmap() != NULL);
-  uint8* source_data =
+  uint8_t* source_data =
       back_buffer_bitmap()->pixels() + rect.y() * stride + 4 * rect.x();
   DCHECK(front_buffer_bitmap() != NULL);
-  uint8* target_data =
+  uint8_t* target_data =
       front_buffer_bitmap()->pixels() + rect.y() * stride + 4 * rect.x();
   for (int row = 0; row < rect.height(); ++row) {
     memcpy(target_data, source_data, chunk_size);
@@ -1037,9 +1041,9 @@ void WebPluginDelegateProxy::OnAcceleratedPluginEnabledRendering() {
 }
 
 void WebPluginDelegateProxy::OnAcceleratedPluginAllocatedIOSurface(
-    int32 width,
-    int32 height,
-    uint32 surface_id) {
+    int32_t width,
+    int32_t height,
+    uint32_t surface_id) {
   if (plugin_)
     plugin_->AcceleratedPluginAllocatedIOSurface(width, height, surface_id);
 }

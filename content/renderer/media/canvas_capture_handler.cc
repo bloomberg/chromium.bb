@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_thread.h"

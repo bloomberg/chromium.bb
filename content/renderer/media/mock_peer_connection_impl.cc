@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/mock_peer_connection_impl.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"

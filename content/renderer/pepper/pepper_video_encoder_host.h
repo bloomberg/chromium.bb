@@ -5,6 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_VIDEO_ENCODER_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_VIDEO_ENCODER_HOST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -59,7 +63,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
                                size_t output_buffer_size) override;
-  void BitstreamBufferReady(int32 bitstream_buffer_id,
+  void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
                             bool key_frame) override;
   void NotifyError(media::VideoEncodeAccelerator::Error error) override;
@@ -112,7 +116,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   void NotifyPepperError(int32_t error);
 
   // Helper method for VideoEncoderShim.
-  uint8_t* ShmHandleToAddress(int32 buffer_id);
+  uint8_t* ShmHandleToAddress(int32_t buffer_id);
 
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;

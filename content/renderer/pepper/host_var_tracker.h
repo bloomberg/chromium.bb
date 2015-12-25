@@ -5,11 +5,13 @@
 #ifndef CONTENT_RENDERER_PEPPER_HOST_VAR_TRACKER_H_
 #define CONTENT_RENDERER_PEPPER_HOST_VAR_TRACKER_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/pp_instance.h"
@@ -53,17 +55,17 @@ class HostVarTracker : public ppapi::VarTracker {
 
   int TrackSharedMemoryHandle(PP_Instance instance,
                               base::SharedMemoryHandle file,
-                              uint32 size_in_bytes) override;
+                              uint32_t size_in_bytes) override;
   bool StopTrackingSharedMemoryHandle(int id,
                                       PP_Instance instance,
                                       base::SharedMemoryHandle* handle,
-                                      uint32* size_in_bytes) override;
+                                      uint32_t* size_in_bytes) override;
 
  private:
   // VarTracker private implementation.
-  ppapi::ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) override;
+  ppapi::ArrayBufferVar* CreateArrayBuffer(uint32_t size_in_bytes) override;
   ppapi::ArrayBufferVar* CreateShmArrayBuffer(
-      uint32 size_in_bytes,
+      uint32_t size_in_bytes,
       base::SharedMemoryHandle handle) override;
 
   // Clear the reference count of the given object and remove it from
@@ -97,7 +99,7 @@ class HostVarTracker : public ppapi::VarTracker {
   struct SharedMemoryMapEntry {
     PP_Instance instance;
     base::SharedMemoryHandle handle;
-    uint32 size_in_bytes;
+    uint32_t size_in_bytes;
   };
   typedef std::map<int, SharedMemoryMapEntry> SharedMemoryMap;
   SharedMemoryMap shared_memory_map_;

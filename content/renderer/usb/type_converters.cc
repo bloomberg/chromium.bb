@@ -4,6 +4,8 @@
 
 #include "content/renderer/usb/type_converters.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 
 namespace mojo {

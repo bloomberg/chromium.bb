@@ -5,15 +5,18 @@
 #ifndef CONTENT_RENDERER_RENDER_VIEW_IMPL_H_
 #define CONTENT_RENDERER_RENDER_VIEW_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -615,7 +618,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
-  void OnCancelDownload(int32 download_id);
+  void OnCancelDownload(int32_t download_id);
   void OnClearFocusedElement();
   void OnClosePage();
   void OnClose();
@@ -846,11 +849,11 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Page IDs ------------------------------------------------------------------
   // See documentation in RenderView.
-  int32 page_id_;
+  int32_t page_id_;
 
   // The next available page ID to use for this RenderView.  These IDs are
   // specific to a given RenderView and the frames within it.
-  int32 next_page_id_;
+  int32_t next_page_id_;
 
   // The offset of the current item in the history list.
   int history_list_offset_;
@@ -1009,7 +1012,7 @@ class CONTENT_EXPORT RenderViewImpl
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and
   // uses it whenever asking the browser process to allocate new storage areas.
-  int64 session_storage_namespace_id_;
+  int64_t session_storage_namespace_id_;
 
   // Stores edit commands associated to the next key event.
   // Shall be cleared as soon as the next key event is processed.

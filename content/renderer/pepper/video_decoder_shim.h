@@ -5,11 +5,13 @@
 #ifndef CONTENT_RENDERER_PEPPER_VIDEO_DECODER_SHIM_H_
 #define CONTENT_RENDERER_PEPPER_VIDEO_DECODER_SHIM_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -54,7 +56,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
   void Destroy() override;

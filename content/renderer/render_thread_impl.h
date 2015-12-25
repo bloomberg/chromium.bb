@@ -5,11 +5,15 @@
 #ifndef CONTENT_RENDERER_RENDER_THREAD_IMPL_H_
 #define CONTENT_RENDERER_RENDER_THREAD_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics_action.h"
@@ -165,8 +169,8 @@ class CONTENT_EXPORT RenderThreadImpl
   std::string GetLocale() override;
   IPC::SyncMessageFilter* GetSyncMessageFilter() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOMessageLoopProxy() override;
-  void AddRoute(int32 routing_id, IPC::Listener* listener) override;
-  void RemoveRoute(int32 routing_id) override;
+  void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
+  void RemoveRoute(int32_t routing_id) override;
   int GenerateRoutingID() override;
   void AddFilter(IPC::MessageFilter* filter) override;
   void RemoveFilter(IPC::MessageFilter* filter) override;
@@ -181,11 +185,11 @@ class CONTENT_EXPORT RenderThreadImpl
       size_t buffer_size) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   void RegisterExtension(v8::Extension* extension) override;
-  void ScheduleIdleHandler(int64 initial_delay_ms) override;
+  void ScheduleIdleHandler(int64_t initial_delay_ms) override;
   void IdleHandler() override;
-  int64 GetIdleNotificationDelayInMs() const override;
+  int64_t GetIdleNotificationDelayInMs() const override;
   void SetIdleNotificationDelayInMs(
-      int64 idle_notification_delay_in_ms) override;
+      int64_t idle_notification_delay_in_ms) override;
   void UpdateHistograms(int sequence_number) override;
   int PostTaskToAllWebWorkers(const base::Closure& closure) override;
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
@@ -438,8 +442,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void WidgetHidden();
   void WidgetRestored();
 
-  void AddEmbeddedWorkerRoute(int32 routing_id, IPC::Listener* listener);
-  void RemoveEmbeddedWorkerRoute(int32 routing_id);
+  void AddEmbeddedWorkerRoute(int32_t routing_id, IPC::Listener* listener);
+  void RemoveEmbeddedWorkerRoute(int32_t routing_id);
 
   void RegisterPendingRenderFrameConnect(
       int routing_id,
@@ -464,9 +468,9 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
   CreateCommandBufferResult CreateViewCommandBuffer(
-      int32 surface_id,
+      int32_t surface_id,
       const GPUCreateCommandBufferConfig& init_params,
-      int32 route_id) override;
+      int32_t route_id) override;
 
   void Init();
 
@@ -566,7 +570,7 @@ class CONTENT_EXPORT RenderThreadImpl
   int hidden_widget_count_;
 
   // The current value of the idle notification timer delay.
-  int64 idle_notification_delay_in_ms_;
+  int64_t idle_notification_delay_in_ms_;
 
   // The number of idle handler calls that skip sending idle notifications.
   int idle_notifications_to_skip_;

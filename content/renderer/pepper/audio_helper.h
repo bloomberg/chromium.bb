@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_PEPPER_AUDIO_HELPER_H_
 #define CONTENT_RENDERER_PEPPER_AUDIO_HELPER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"

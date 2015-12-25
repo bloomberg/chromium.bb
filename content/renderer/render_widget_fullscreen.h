@@ -7,6 +7,8 @@
 
 #include "content/renderer/render_widget.h"
 
+#include <stdint.h>
+
 #include "third_party/WebKit/public/web/WebWidget.h"
 
 namespace content {
@@ -24,7 +26,7 @@ class RenderWidgetFullscreen : public RenderWidget {
 
   virtual blink::WebWidget* CreateWebWidget();
 
-  bool Init(int32 opener_id);
+  bool Init(int32_t opener_id);
 };
 
 }  // namespace content

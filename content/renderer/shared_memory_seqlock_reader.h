@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_SHARED_MEMORY_SEQLOCK_READER_H_
 #define CONTENT_RENDERER_SHARED_MEMORY_SEQLOCK_READER_H_
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/shared_memory_seqlock_buffer.h"

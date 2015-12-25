@@ -4,6 +4,9 @@
 
 #include "content/renderer/pepper/ppb_var_deprecated_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "content/renderer/pepper/host_globals.h"

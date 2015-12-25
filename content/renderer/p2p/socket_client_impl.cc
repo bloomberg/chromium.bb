@@ -17,7 +17,7 @@
 
 namespace {
 
-uint64_t GetUniqueId(uint32 random_socket_id, uint32 packet_id) {
+uint64_t GetUniqueId(uint32_t random_socket_id, uint32_t packet_id) {
   uint64_t uid = random_socket_id;
   uid <<= 32;
   uid |= packet_id;

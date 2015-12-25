@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_PEPPER_HOST_RESOURCE_VAR_H_
 #define CONTENT_RENDERER_PEPPER_HOST_RESOURCE_VAR_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_resource.h"

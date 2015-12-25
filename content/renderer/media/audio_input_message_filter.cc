@@ -39,7 +39,7 @@ class AudioInputMessageFilter::AudioInputIPCImpl
                     int session_id,
                     const media::AudioParameters& params,
                     bool automatic_gain_control,
-                    uint32 total_segments) override;
+                    uint32_t total_segments) override;
   void RecordStream() override;
   void SetVolume(double volume) override;
   void CloseStream() override;
@@ -126,8 +126,8 @@ void AudioInputMessageFilter::OnStreamCreated(
     int stream_id,
     base::SharedMemoryHandle handle,
     base::SyncSocket::TransitDescriptor socket_descriptor,
-    uint32 length,
-    uint32 total_segments) {
+    uint32_t length,
+    uint32_t total_segments) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   LogMessage(stream_id, "OnStreamCreated");
 
@@ -190,7 +190,7 @@ void AudioInputMessageFilter::AudioInputIPCImpl::CreateStream(
     int session_id,
     const media::AudioParameters& params,
     bool automatic_gain_control,
-    uint32 total_segments) {
+    uint32_t total_segments) {
   DCHECK(filter_->io_task_runner_->BelongsToCurrentThread());
   DCHECK(delegate);
 

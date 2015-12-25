@@ -5,6 +5,7 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"

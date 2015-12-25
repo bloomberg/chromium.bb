@@ -4,6 +4,8 @@
 
 #include "content/renderer/android/renderer_date_time_picker.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "content/common/date_time_suggestion.h"
 #include "content/common/view_messages.h"

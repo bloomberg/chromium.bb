@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_DEVTOOLS_LOCK_FREE_CIRCULAR_QUEUE_H_
 #define CONTENT_RENDERER_DEVTOOLS_LOCK_FREE_CIRCULAR_QUEUE_H_
 
+#include <stddef.h>
+
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 
 #define CACHELINE_ALIGNED ALIGNAS(64)

@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_RTC_VIDEO_RENDERER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"

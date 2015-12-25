@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webmediaplayer_ms_compositor.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/hash.h"
 #include "base/single_thread_task_runner.h"
@@ -59,7 +61,7 @@ scoped_refptr<media::VideoFrame> CopyFrameToI420(
       // GPU Process crashed.
       bitmap.eraseColor(SK_ColorTRANSPARENT);
     }
-    libyuv::ARGBToI420(reinterpret_cast<uint8*>(bitmap.getPixels()),
+    libyuv::ARGBToI420(reinterpret_cast<uint8_t*>(bitmap.getPixels()),
                        bitmap.rowBytes(),
                        new_frame->data(media::VideoFrame::kYPlane),
                        new_frame->stride(media::VideoFrame::kYPlane),
@@ -124,7 +126,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
   }
 
   // Just for logging purpose.
-  const uint32 hash_value = base::Hash(url.string().utf8());
+  const uint32_t hash_value = base::Hash(url.string().utf8());
   serial_ = (hash_value << 1) | (remote_video ? 1 : 0);
 }
 

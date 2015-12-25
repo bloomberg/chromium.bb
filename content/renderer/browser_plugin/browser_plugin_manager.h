@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_H_
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_sender.h"

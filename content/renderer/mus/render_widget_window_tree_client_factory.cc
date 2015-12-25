@@ -4,6 +4,8 @@
 
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"

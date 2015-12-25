@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/io_surface_layer.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
@@ -113,7 +114,7 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   // response.
   void didReceiveResponse(WebURLLoader*,
                           const WebURLResponse& response) override {
-    int64 byte_range_upper_bound, instance_size;
+    int64_t byte_range_upper_bound, instance_size;
     if (!MultipartResponseDelegate::ReadContentRanges(
             response,
             &byte_range_lower_bound_,
@@ -143,7 +144,7 @@ class MultiPartResponseClient : public WebURLLoaderClient {
 
  private:
   // The lower bound of the byte range.
-  int64 byte_range_lower_bound_;
+  int64_t byte_range_lower_bound_;
   // The handler for the data.
   WebPluginResourceClient* resource_client_;
 };
@@ -189,8 +190,8 @@ std::string GetAllHeaders(const WebURLResponse& response) {
 struct ResponseInfo {
   GURL url;
   std::string mime_type;
-  uint32 last_modified;
-  uint32 expected_length;
+  uint32_t last_modified;
+  uint32_t expected_length;
 };
 
 void GetResponseInfo(const WebURLResponse& response,
@@ -200,13 +201,13 @@ void GetResponseInfo(const WebURLResponse& response,
 
   // Measured in seconds since 12:00 midnight GMT, January 1, 1970.
   response_info->last_modified =
-      static_cast<uint32>(response.lastModifiedDate());
+      static_cast<uint32_t>(response.lastModifiedDate());
 
   // If the length comes in as -1, then it indicates that it was not
   // read off the HTTP headers. We replicate Safari webkit behavior here,
   // which is to set it to 0.
   response_info->expected_length =
-      static_cast<uint32>(std::max(response.expectedContentLength(), 0LL));
+      static_cast<uint32_t>(std::max(response.expectedContentLength(), 0LL));
 
   WebString content_encoding =
       response.httpHeaderField(WebString::fromUTF8("Content-Encoding"));
@@ -230,7 +231,7 @@ struct WebPluginImpl::ClientInfo {
   linked_ptr<blink::WebURLLoader> loader;
   bool notify_redirects;
   bool is_plugin_src_load;
-  int64 data_offset;
+  int64_t data_offset;
 };
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
@@ -568,8 +569,8 @@ void WebPluginImpl::CancelResource(unsigned long id) {
 }
 
 bool WebPluginImpl::SetPostData(WebURLRequest* request,
-                                const char *buf,
-                                uint32 length) {
+                                const char* buf,
+                                uint32_t length) {
   std::vector<std::string> names;
   std::vector<std::string> values;
   std::vector<char> body;
@@ -778,9 +779,9 @@ WebPluginAcceleratedSurface* WebPluginImpl::GetAcceleratedSurface(
 void WebPluginImpl::AcceleratedPluginEnabledRendering() {
 }
 
-void WebPluginImpl::AcceleratedPluginAllocatedIOSurface(int32 width,
-                                                        int32 height,
-                                                        uint32 surface_id) {
+void WebPluginImpl::AcceleratedPluginAllocatedIOSurface(int32_t width,
+                                                        int32_t height,
+                                                        uint32_t surface_id) {
   next_io_surface_allocated_ = true;
   next_io_surface_width_ = width;
   next_io_surface_height_ = height;

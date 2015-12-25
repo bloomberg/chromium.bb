@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "url/gurl.h"
 

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "build/build_config.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"

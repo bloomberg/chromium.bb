@@ -5,8 +5,8 @@
 #ifndef CONTENT_RENDERER_RENDER_VIEW_MOUSE_LOCK_DISPATCHER_H_
 #define CONTENT_RENDERER_RENDER_VIEW_MOUSE_LOCK_DISPATCHER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 

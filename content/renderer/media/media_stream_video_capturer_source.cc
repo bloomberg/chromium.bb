@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_constraints_util.h"

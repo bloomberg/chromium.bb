@@ -4,9 +4,13 @@
 
 #include "content/renderer/input/render_widget_input_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
+#include "build/build_config.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/input/input_event_ack.h"
@@ -47,7 +51,7 @@ namespace {
 // be spent in input hanlders before input starts getting throttled.
 const int kInputHandlingTimeThrottlingThresholdMicroseconds = 4166;
 
-int64 GetEventLatencyMicros(double event_timestamp, base::TimeTicks now) {
+int64_t GetEventLatencyMicros(double event_timestamp, base::TimeTicks now) {
   return (now - base::TimeDelta::FromSecondsD(event_timestamp))
       .ToInternalValue();
 }
@@ -120,7 +124,7 @@ void LogInputEventLatencyUma(const WebInputEvent& event,
   }
 }
 
-void LogPassiveLatency(int64 latency) {
+void LogPassiveLatency(int64_t latency) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency", latency, 1,
                               10000000, 100);
 }

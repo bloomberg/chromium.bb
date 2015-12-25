@@ -4,6 +4,8 @@
 
 #include "content/renderer/render_frame_proxy.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/command_line.h"
@@ -116,7 +118,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
 }
 
 // static
-RenderFrameProxy* RenderFrameProxy::FromRoutingID(int32 routing_id) {
+RenderFrameProxy* RenderFrameProxy::FromRoutingID(int32_t routing_id) {
   RoutingIDProxyMap* proxies = g_routing_id_proxy_map.Pointer();
   RoutingIDProxyMap::iterator it = proxies->find(routing_id);
   return it == proxies->end() ? NULL : it->second;

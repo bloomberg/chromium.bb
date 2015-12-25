@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 
+#include <stdint.h>
+
 #include "content/common/frame_messages.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 
@@ -18,13 +20,13 @@ RendererWebMediaPlayerDelegate::~RendererWebMediaPlayerDelegate() {}
 void RendererWebMediaPlayerDelegate::DidPlay(blink::WebMediaPlayer* player) {
   has_played_media_ = true;
   Send(new FrameHostMsg_MediaPlayingNotification(
-      routing_id(), reinterpret_cast<int64>(player), player->hasVideo(),
+      routing_id(), reinterpret_cast<int64_t>(player), player->hasVideo(),
       player->hasAudio(), player->isRemote()));
 }
 
 void RendererWebMediaPlayerDelegate::DidPause(blink::WebMediaPlayer* player) {
   Send(new FrameHostMsg_MediaPausedNotification(
-      routing_id(), reinterpret_cast<int64>(player)));
+      routing_id(), reinterpret_cast<int64_t>(player)));
 }
 
 void RendererWebMediaPlayerDelegate::PlayerGone(blink::WebMediaPlayer* player) {

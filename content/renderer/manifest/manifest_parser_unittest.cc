@@ -4,6 +4,9 @@
 
 #include "content/renderer/manifest/manifest_parser.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"

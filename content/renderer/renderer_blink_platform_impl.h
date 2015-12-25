@@ -5,9 +5,14 @@
 #ifndef CONTENT_RENDERER_RENDERER_BLINK_PLATFORM_IMPL_H_
 #define CONTENT_RENDERER_RENDERER_BLINK_PLATFORM_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
@@ -83,7 +88,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void createMessageChannel(blink::WebMessagePortChannel** channel1,
                             blink::WebMessagePortChannel** channel2) override;
   blink::WebPrescientNetworking* prescientNetworking() override;
-  void cacheMetadata(const blink::WebURL&, int64, const char*, size_t) override;
+  void cacheMetadata(const blink::WebURL&,
+                     int64_t,
+                     const char*,
+                     size_t) override;
   blink::WebString defaultLocale() override;
   void suddenTerminationChanged(bool enabled) override;
   blink::WebStorageNamespace* createLocalStorageNamespace() override;

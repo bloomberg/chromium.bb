@@ -7,6 +7,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "ipc/message_filter.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 

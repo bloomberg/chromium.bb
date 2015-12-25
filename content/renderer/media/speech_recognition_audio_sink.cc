@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/speech_recognition_audio_sink.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"

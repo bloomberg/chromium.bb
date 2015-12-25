@@ -5,9 +5,12 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_MEDIA_STREAM_AUDIO_TRACK_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_MEDIA_STREAM_AUDIO_TRACK_HOST_H_
 
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"

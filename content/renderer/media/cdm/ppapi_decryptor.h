@@ -5,10 +5,12 @@
 #ifndef CONTENT_RENDERER_MEDIA_CDM_PPAPI_DECRYPTOR_H_
 #define CONTENT_RENDERER_MEDIA_CDM_PPAPI_DECRYPTOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/media/cdm/pepper_cdm_wrapper.h"

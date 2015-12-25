@@ -5,7 +5,11 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_VIDEO_CAPTURE_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_VIDEO_CAPTURE_HOST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/media/video_capture.h"

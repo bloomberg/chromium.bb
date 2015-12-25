@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_CPU_THROTTLER_H_
 #define CONTENT_RENDERER_DEVTOOLS_DEVTOOLS_CPU_THROTTLER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 

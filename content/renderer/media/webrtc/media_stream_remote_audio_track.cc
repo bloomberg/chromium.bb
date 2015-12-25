@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc/media_stream_remote_audio_track.h"
 
+#include <stddef.h>
+
 #include <list>
 
 #include "base/logging.h"

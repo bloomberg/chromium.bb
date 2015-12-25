@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/debug/crash_logging.h"

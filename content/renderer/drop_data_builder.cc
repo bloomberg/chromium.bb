@@ -4,6 +4,8 @@
 
 #include "content/renderer/drop_data_builder.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "content/public/common/drop_data.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"

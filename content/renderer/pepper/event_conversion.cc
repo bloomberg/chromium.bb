@@ -4,7 +4,9 @@
 
 #include "content/renderer/pepper/event_conversion.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"

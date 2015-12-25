@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"

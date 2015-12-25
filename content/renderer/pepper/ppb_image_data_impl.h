@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPB_IMAGE_DATA_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PPB_IMAGE_DATA_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
@@ -173,7 +175,7 @@ class ImageDataSimpleBackend : public PPB_ImageData_Impl::Backend {
   // skia_bitmap_ is backed by shared_memory_.
   SkBitmap skia_bitmap_;
   scoped_ptr<SkCanvas> skia_canvas_;
-  uint32 map_count_;
+  uint32_t map_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDataSimpleBackend);
 };

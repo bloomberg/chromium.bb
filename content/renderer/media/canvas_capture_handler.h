@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_CANVAS_CAPTURE_HANDLER_H_
 #define CONTENT_RENDERER_MEDIA_CANVAS_CAPTURE_HANDLER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -73,7 +76,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
 
   const blink::WebSize size_;
   gfx::Size last_size;
-  std::vector<uint8> temp_data_;
+  std::vector<uint8_t> temp_data_;
   size_t row_bytes_;
   SkImageInfo image_info_;
   media::VideoFramePool frame_pool_;

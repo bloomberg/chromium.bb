@@ -5,8 +5,11 @@
 #ifndef CONTENT_RENDERER_SCHEDULER_RESOURCE_DISPATCH_THROTTLER_H_
 #define CONTENT_RENDERER_SCHEDULER_RESOURCE_DISPATCH_THROTTLER_H_
 
+#include <stdint.h>
+
 #include <deque>
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -35,7 +38,7 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
   ResourceDispatchThrottler(IPC::Sender* proxied_sender,
                             scheduler::RendererScheduler* scheduler,
                             base::TimeDelta flush_period,
-                            uint32 max_requests_per_flush);
+                            uint32_t max_requests_per_flush);
   ~ResourceDispatchThrottler() override;
 
   // IPC::Sender implementation:
@@ -57,11 +60,11 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
   IPC::Sender* const proxied_sender_;
   scheduler::RendererScheduler* const scheduler_;
   const base::TimeDelta flush_period_;
-  const uint32 max_requests_per_flush_;
+  const uint32_t max_requests_per_flush_;
 
   base::Timer flush_timer_;
   base::TimeTicks last_sent_request_time_;
-  uint32 sent_requests_since_last_flush_;
+  uint32_t sent_requests_since_last_flush_;
   std::deque<IPC::Message*> throttled_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatchThrottler);

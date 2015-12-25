@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/common/pepper_plugin_info.h"
 

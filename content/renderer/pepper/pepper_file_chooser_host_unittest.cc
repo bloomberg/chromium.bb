@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
@@ -82,7 +85,7 @@ TEST_F(PepperFileChooserHostTest, Show) {
 
   ppapi::proxy::ResourceMessageCallParams call_params(pp_resource, 0);
   ppapi::host::HostMessageContext context(call_params);
-  int32 result = chooser.OnResourceMessageReceived(show_msg, &context);
+  int32_t result = chooser.OnResourceMessageReceived(show_msg, &context);
   EXPECT_EQ(PP_OK_COMPLETIONPENDING, result);
 
   // The render view should have sent a chooser request to the browser
@@ -145,7 +148,7 @@ TEST_F(PepperFileChooserHostTest, NoUserGesture) {
 
   ppapi::proxy::ResourceMessageCallParams call_params(pp_resource, 0);
   ppapi::host::HostMessageContext context(call_params);
-  int32 result = chooser.OnResourceMessageReceived(show_msg, &context);
+  int32_t result = chooser.OnResourceMessageReceived(show_msg, &context);
   EXPECT_EQ(PP_ERROR_NO_USER_GESTURE, result);
 }
 

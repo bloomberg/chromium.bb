@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_DECODER_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_DECODER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
 
 namespace blink { class WebAudioBus; }
 

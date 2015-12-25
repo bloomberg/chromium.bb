@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
+#include "build/build_config.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/pepper_file_util.h"
@@ -421,7 +422,7 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
     AllocateVideoFrames();
 }
 
-void PepperVideoEncoderHost::BitstreamBufferReady(int32 buffer_id,
+void PepperVideoEncoderHost::BitstreamBufferReady(int32_t buffer_id,
                                                   size_t payload_size,
                                                   bool key_frame) {
   DCHECK(RenderThreadImpl::current());
@@ -499,7 +500,7 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
   if (!channel_)
     return false;
 
-  std::vector<int32> attribs(1, PP_GRAPHICS3DATTRIB_NONE);
+  std::vector<int32_t> attribs(1, PP_GRAPHICS3DATTRIB_NONE);
   command_buffer_ = channel_->CreateOffscreenCommandBuffer(
       gfx::Size(), nullptr, GpuChannelHost::kDefaultStreamId,
       GpuChannelHost::kDefaultStreamPriority, attribs, GURL::EmptyGURL(),
@@ -623,13 +624,13 @@ scoped_refptr<media::VideoFrame> PepperVideoEncoderHost::CreateVideoFrame(
 
   ppapi::MediaStreamBuffer* buffer = buffer_manager_.GetBufferPointer(frame_id);
   DCHECK(buffer);
-  uint32_t shm_offset = static_cast<uint8*>(buffer->video.data) -
-                        static_cast<uint8*>(buffer_manager_.shm()->memory());
+  uint32_t shm_offset = static_cast<uint8_t*>(buffer->video.data) -
+                        static_cast<uint8_t*>(buffer_manager_.shm()->memory());
 
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalSharedMemory(
           media_input_format_, input_coded_size_, gfx::Rect(input_coded_size_),
-          input_coded_size_, static_cast<uint8*>(buffer->video.data),
+          input_coded_size_, static_cast<uint8_t*>(buffer->video.data),
           buffer->video.data_size, buffer_manager_.shm()->handle(), shm_offset,
           base::TimeDelta());
   frame->AddDestructionObserver(
@@ -658,10 +659,10 @@ void PepperVideoEncoderHost::NotifyPepperError(int32_t error) {
       PpapiPluginMsg_VideoEncoder_NotifyError(encoder_last_error_));
 }
 
-uint8_t* PepperVideoEncoderHost::ShmHandleToAddress(int32 buffer_id) {
+uint8_t* PepperVideoEncoderHost::ShmHandleToAddress(int32_t buffer_id) {
   DCHECK(RenderThreadImpl::current());
   DCHECK_GE(buffer_id, 0);
-  DCHECK_LT(buffer_id, static_cast<int32>(shm_buffers_.size()));
+  DCHECK_LT(buffer_id, static_cast<int32_t>(shm_buffers_.size()));
   return static_cast<uint8_t*>(shm_buffers_[buffer_id]->shm->memory());
 }
 

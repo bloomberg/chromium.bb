@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -67,7 +70,7 @@ class PepperAudioEncoderHost::AudioEncoderImpl {
   void RequestBitrateChange(uint32_t bitrate);
 
  private:
-  scoped_ptr<uint8[]> encoder_memory_;
+  scoped_ptr<uint8_t[]> encoder_memory_;
   OpusEncoder* opus_encoder_;
 
   // Initialization parameters, only valid if |encoder_memory_| is not
@@ -111,7 +114,7 @@ bool PepperAudioEncoderHost::AudioEncoderImpl::Initialize(
   if (encoder_size < 1)
     return false;
 
-  scoped_ptr<uint8[]> encoder_memory(new uint8[encoder_size]);
+  scoped_ptr<uint8_t[]> encoder_memory(new uint8_t[encoder_size]);
   opus_encoder_ = reinterpret_cast<OpusEncoder*>(encoder_memory.get());
 
   if (opus_encoder_init(opus_encoder_, parameters.input_sample_rate,

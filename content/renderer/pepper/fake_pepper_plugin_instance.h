@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_PEPPER_FAKE_PEPPER_PLUGIN_INSTANCE_H_
 #define CONTENT_RENDERER_PEPPER_FAKE_PEPPER_PLUGIN_INSTANCE_H_
 
+#include <stdint.h>
+
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "url/gurl.h"
 

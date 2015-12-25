@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -10,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -606,7 +610,7 @@ class DomSerializerTests : public ContentBrowserTest,
   }
 
  private:
-  int32 render_view_routing_id_;
+  int32_t render_view_routing_id_;
   std::string serialized_contents_;
   bool serialization_reported_end_of_data_;
 };

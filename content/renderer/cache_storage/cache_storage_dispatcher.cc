@@ -4,6 +4,8 @@
 
 #include "content/renderer/cache_storage/cache_storage_dispatcher.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <utility>

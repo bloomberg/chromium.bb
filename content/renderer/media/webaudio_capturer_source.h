@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBAUDIO_CAPTURER_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_WEBAUDIO_CAPTURER_SOURCE_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"

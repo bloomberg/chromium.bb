@@ -211,7 +211,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
 #if defined(OS_MACOSX)
   bool loadFont(NSFont* src_font,
                 CGFontRef* container,
-                uint32* font_id) override;
+                uint32_t* font_id) override;
 #elif defined(OS_POSIX)
   void getFallbackFontForCharacter(
       blink::WebUChar32 character,
@@ -387,7 +387,7 @@ RendererBlinkPlatformImpl::prescientNetworking() {
 }
 
 void RendererBlinkPlatformImpl::cacheMetadata(const blink::WebURL& url,
-                                              int64 response_time,
+                                              int64_t response_time,
                                               const char* data,
                                               size_t size) {
   // Let the browser know we generated cacheable metadata for this resource. The
@@ -544,8 +544,8 @@ bool RendererBlinkPlatformImpl::FileUtilities::SendSyncMessageFromAnyThread(
 
 bool RendererBlinkPlatformImpl::SandboxSupport::loadFont(NSFont* src_font,
                                                          CGFontRef* out,
-                                                         uint32* font_id) {
-  uint32 font_data_size;
+                                                         uint32_t* font_id) {
+  uint32_t font_data_size;
   FontDescriptor src_font_descriptor(src_font);
   base::SharedMemoryHandle font_data;
   if (!RenderThread::Get()->Send(new RenderProcessHostMsg_LoadFont(
@@ -823,9 +823,7 @@ blink::WebString RendererBlinkPlatformImpl::signedPublicKeyAndChallengeString(
     const blink::WebURL& url) {
   std::string signed_public_key;
   RenderThread::Get()->Send(new RenderProcessHostMsg_Keygen(
-      static_cast<uint32>(key_size_index),
-      challenge.utf8(),
-      GURL(url),
+      static_cast<uint32_t>(key_size_index), challenge.utf8(), GURL(url),
       &signed_public_key));
   return WebString::fromUTF8(signed_public_key);
 }
@@ -1118,7 +1116,7 @@ void RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(
 
 void RendererBlinkPlatformImpl::vibrate(unsigned int milliseconds) {
   GetConnectedVibrationManagerService()->Vibrate(
-      base::checked_cast<int64>(milliseconds));
+      base::checked_cast<int64_t>(milliseconds));
   vibration_manager_.reset();
 }
 
@@ -1203,7 +1201,7 @@ void RendererBlinkPlatformImpl::startListening(
     observer = CreatePlatformEventObserverFromType(type);
     if (!observer)
       return;
-    platform_event_observers_.AddWithID(observer, static_cast<int32>(type));
+    platform_event_observers_.AddWithID(observer, static_cast<int32_t>(type));
   }
   observer->Start(listener);
 

@@ -5,8 +5,8 @@
 #ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_EXTERNAL_BEGIN_FRAME_SOURCE_H_
 #define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_EXTERNAL_BEGIN_FRAME_SOURCE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/scheduler/begin_frame_source.h"
 

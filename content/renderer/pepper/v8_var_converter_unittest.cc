@@ -4,6 +4,9 @@
 
 #include "content/renderer/pepper/v8_var_converter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cmath>
 
 #include "base/logging.h"
@@ -113,7 +116,7 @@ bool Equals(const PP_Var& var,
     v8::Local<v8::Array> v8_array = val.As<v8::Array>();
     if (v8_array->Length() != array_var->elements().size())
       return false;
-    for (uint32 i = 0; i < v8_array->Length(); ++i) {
+    for (uint32_t i = 0; i < v8_array->Length(); ++i) {
       v8::Local<v8::Value> child_v8 = v8_array->Get(i);
       if (!Equals(array_var->elements()[i].get(), child_v8, visited_ids))
         return false;
@@ -133,7 +136,7 @@ bool Equals(const PP_Var& var,
       v8::Local<v8::Array> property_names(v8_object->GetOwnPropertyNames());
       if (property_names->Length() != dict_var->key_value_map().size())
         return false;
-      for (uint32 i = 0; i < property_names->Length(); ++i) {
+      for (uint32_t i = 0; i < property_names->Length(); ++i) {
         v8::Local<v8::Value> key(property_names->Get(i));
 
         if (!key->IsString() && !key->IsNumber())

@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_NOTIFICATION_PERMISSION_DISPATCHER_H_
 #define CONTENT_RENDERER_NOTIFICATION_PERMISSION_DISPATCHER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/permission_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"

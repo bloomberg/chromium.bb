@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_TRACK_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_TRACK_H_
 
+#include "base/macros.h"
 #include "content/renderer/media/media_stream_track.h"
 
 namespace webrtc {

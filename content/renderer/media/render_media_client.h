@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_RENDER_MEDIA_CLIENT_H_
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"

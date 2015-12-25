@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_GPU_MAILBOX_OUTPUT_SURFACE_H_
 #define CONTENT_RENDERER_GPU_MAILBOX_OUTPUT_SURFACE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/memory/ref_counted.h"
@@ -27,8 +30,8 @@ class FrameSwapMessageQueue;
 class MailboxOutputSurface : public CompositorOutputSurface {
  public:
   MailboxOutputSurface(
-      int32 routing_id,
-      uint32 output_surface_id,
+      int32_t routing_id,
+      uint32_t output_surface_id,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       const scoped_refptr<ContextProviderCommandBuffer>&
           worker_context_provider,
@@ -46,18 +49,18 @@ class MailboxOutputSurface : public CompositorOutputSurface {
 
  private:
   // CompositorOutputSurface overrides.
-  void OnSwapAck(uint32 output_surface_id,
+  void OnSwapAck(uint32_t output_surface_id,
                  const cc::CompositorFrameAck& ack) override;
 
   size_t GetNumAcksPending();
 
   struct TransferableFrame {
     TransferableFrame();
-    TransferableFrame(uint32 texture_id,
+    TransferableFrame(uint32_t texture_id,
                       const gpu::Mailbox& mailbox,
                       const gfx::Size size);
 
-    uint32 texture_id;
+    uint32_t texture_id;
     gpu::Mailbox mailbox;
     gpu::SyncToken sync_token;
     gfx::Size size;
@@ -67,7 +70,7 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   std::deque<TransferableFrame> pending_textures_;
   std::queue<TransferableFrame> returned_textures_;
 
-  uint32 fbo_;
+  uint32_t fbo_;
   bool is_backbuffer_discarded_;
   cc::ResourceFormat format_;
 };

@@ -5,9 +5,12 @@
 #ifndef CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
 #define CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"

@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/user_media_client_impl.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/hash.h"

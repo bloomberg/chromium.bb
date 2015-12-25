@@ -67,7 +67,7 @@ void QueueMessageSwapPromise::PromiseCompleted() {
 #endif
 }
 
-int64 QueueMessageSwapPromise::TraceId() const {
+int64_t QueueMessageSwapPromise::TraceId() const {
   return 0;
 }
 

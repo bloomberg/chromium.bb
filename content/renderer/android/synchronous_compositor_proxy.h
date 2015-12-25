@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_PROXY_H_
 #define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_PROXY_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"

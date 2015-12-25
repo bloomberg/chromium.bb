@@ -5,9 +5,12 @@
 #ifndef CONTENT_RENDERER_CHILD_FRAME_COMPOSITING_HELPER_H_
 #define CONTENT_RENDERER_CHILD_FRAME_COMPOSITING_HELPER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
@@ -66,7 +69,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   void OnContainerDestroy();
   void OnCompositorFrameSwapped(scoped_ptr<cc::CompositorFrame> frame,
                                 int route_id,
-                                uint32 output_surface_id,
+                                uint32_t output_surface_id,
                                 int host_id,
                                 base::SharedMemoryHandle handle);
   void OnSetSurface(const cc::SurfaceId& surface_id,
@@ -126,7 +129,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
 
   int host_routing_id_;
   int last_route_id_;
-  uint32 last_output_surface_id_;
+  uint32_t last_output_surface_id_;
   int last_host_id_;
   bool ack_pending_;
   bool opaque_;

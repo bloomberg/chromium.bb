@@ -4,11 +4,14 @@
 
 #include "content/renderer/media/webmediaplayer_ms.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_frame_provider_client_impl.h"

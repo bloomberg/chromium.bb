@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_
 #define CONTENT_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "ui/gfx/geometry/point.h"

@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_SPEECH_RECOGNITION_AUDIO_SINK_H_
 #define CONTENT_RENDERER_MEDIA_SPEECH_RECOGNITION_AUDIO_SINK_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
@@ -103,7 +106,7 @@ class CONTENT_EXPORT SpeechRecognitionAudioSink
   bool track_stopped_;
 
   // Local counter of audio buffers for synchronization.
-  uint32 buffer_index_;
+  uint32_t buffer_index_;
 
   // Callback for the renderer client. Called when the audio track was stopped.
   const OnStoppedCB on_stopped_cb_;

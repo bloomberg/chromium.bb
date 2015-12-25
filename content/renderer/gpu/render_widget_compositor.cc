@@ -4,6 +4,8 @@
 
 #include "content/renderer/gpu/render_widget_compositor.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <string>
 
@@ -18,6 +20,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/base/switches.h"

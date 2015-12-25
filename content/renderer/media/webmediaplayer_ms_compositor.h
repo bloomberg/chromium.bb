@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_COMPOSITOR_H
 #define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_MS_COMPOSITOR_H
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 

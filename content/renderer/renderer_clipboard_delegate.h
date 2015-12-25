@@ -26,7 +26,7 @@ class RendererClipboardDelegate {
  public:
   RendererClipboardDelegate();
 
-  uint64 GetSequenceNumber(ui::ClipboardType type);
+  uint64_t GetSequenceNumber(ui::ClipboardType type);
   bool IsFormatAvailable(ClipboardFormat format, ui::ClipboardType type);
   void Clear(ui::ClipboardType type);
   void ReadAvailableTypes(ui::ClipboardType type,
@@ -36,8 +36,8 @@ class RendererClipboardDelegate {
   void ReadHTML(ui::ClipboardType type,
                 base::string16* markup,
                 GURL* url,
-                uint32* fragment_start,
-                uint32* fragment_end);
+                uint32_t* fragment_start,
+                uint32_t* fragment_end);
   void ReadRTF(ui::ClipboardType type, std::string* result);
   void ReadImage(ui::ClipboardType type, std::string* data);
   void ReadCustomData(ui::ClipboardType clipboard_type,

@@ -5,8 +5,11 @@
 #ifndef CONTENT_RENDERER_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_IMPL_H_
 #define CONTENT_RENDERER_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_IMPL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"

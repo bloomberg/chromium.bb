@@ -23,9 +23,9 @@
 
 namespace content {
 
-const int32 RTCVideoDecoder::ID_LAST = 0x3FFFFFFF;
-const int32 RTCVideoDecoder::ID_HALF = 0x20000000;
-const int32 RTCVideoDecoder::ID_INVALID = -1;
+const int32_t RTCVideoDecoder::ID_LAST = 0x3FFFFFFF;
+const int32_t RTCVideoDecoder::ID_HALF = 0x20000000;
+const int32_t RTCVideoDecoder::ID_INVALID = -1;
 
 // Maximum number of concurrent VDA::Decode() operations RVD will maintain.
 // Higher values allow better pipelining in the GPU, but also require more
@@ -38,7 +38,7 @@ static const size_t kNumSharedMemorySegments = 16;
 // Maximum number of pending WebRTC buffers that are waiting for shared memory.
 static const size_t kMaxNumOfPendingBuffers = 8;
 
-RTCVideoDecoder::BufferData::BufferData(int32 bitstream_buffer_id,
+RTCVideoDecoder::BufferData::BufferData(int32_t bitstream_buffer_id,
                                         uint32_t timestamp,
                                         size_t size,
                                         const gfx::Rect& visible_rect)
@@ -285,16 +285,16 @@ int32_t RTCVideoDecoder::Reset() {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-void RTCVideoDecoder::ProvidePictureBuffers(uint32 count,
+void RTCVideoDecoder::ProvidePictureBuffers(uint32_t count,
                                             const gfx::Size& size,
-                                            uint32 texture_target) {
+                                            uint32_t texture_target) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DVLOG(3) << "ProvidePictureBuffers. texture_target=" << texture_target;
 
   if (!vda_)
     return;
 
-  std::vector<uint32> texture_ids;
+  std::vector<uint32_t> texture_ids;
   std::vector<gpu::Mailbox> texture_mailboxes;
   decoder_texture_target_ = texture_target;
   if (!factories_->CreateTextures(count,
@@ -319,11 +319,11 @@ void RTCVideoDecoder::ProvidePictureBuffers(uint32 count,
   vda_->AssignPictureBuffers(picture_buffers);
 }
 
-void RTCVideoDecoder::DismissPictureBuffer(int32 id) {
+void RTCVideoDecoder::DismissPictureBuffer(int32_t id) {
   DVLOG(3) << "DismissPictureBuffer. id=" << id;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::map<int32, media::PictureBuffer>::iterator it =
+  std::map<int32_t, media::PictureBuffer>::iterator it =
       assigned_picture_buffers_.find(id);
   if (it == assigned_picture_buffers_.end()) {
     NOTREACHED() << "Missing picture buffer: " << id;
@@ -346,7 +346,7 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   DVLOG(3) << "PictureReady";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::map<int32, media::PictureBuffer>::iterator it =
+  std::map<int32_t, media::PictureBuffer>::iterator it =
       assigned_picture_buffers_.find(picture.picture_buffer_id());
   if (it == assigned_picture_buffers_.end()) {
     NOTREACHED() << "Missing picture buffer: " << picture.picture_buffer_id();
@@ -420,11 +420,11 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   return frame;
 }
 
-void RTCVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
+void RTCVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
   DVLOG(3) << "NotifyEndOfBitstreamBuffer. id=" << id;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::map<int32, base::SharedMemory*>::iterator it =
+  std::map<int32_t, base::SharedMemory*>::iterator it =
       bitstream_buffers_in_decoder_.find(id);
   if (it == bitstream_buffers_in_decoder_.end()) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
@@ -522,16 +522,17 @@ bool RTCVideoDecoder::CanMoreDecodeWorkBeDone() {
   return bitstream_buffers_in_decoder_.size() < kMaxInFlightDecodes;
 }
 
-bool RTCVideoDecoder::IsBufferAfterReset(int32 id_buffer, int32 id_reset) {
+bool RTCVideoDecoder::IsBufferAfterReset(int32_t id_buffer, int32_t id_reset) {
   if (id_reset == ID_INVALID)
     return true;
-  int32 diff = id_buffer - id_reset;
+  int32_t diff = id_buffer - id_reset;
   if (diff <= 0)
     diff += ID_LAST + 1;
   return diff < ID_HALF;
 }
 
-bool RTCVideoDecoder::IsFirstBufferAfterReset(int32 id_buffer, int32 id_reset) {
+bool RTCVideoDecoder::IsFirstBufferAfterReset(int32_t id_buffer,
+                                              int32_t id_reset) {
   if (id_reset == ID_INVALID)
     return id_buffer == 0;
   return id_buffer == ((id_reset + 1) & ID_LAST);
@@ -613,8 +614,8 @@ void RTCVideoDecoder::ResetInternal() {
 void RTCVideoDecoder::ReleaseMailbox(
     base::WeakPtr<RTCVideoDecoder> decoder,
     media::GpuVideoAcceleratorFactories* factories,
-    int64 picture_buffer_id,
-    uint32 texture_id,
+    int64_t picture_buffer_id,
+    uint32_t texture_id,
     const gpu::SyncToken& release_sync_token) {
   DCHECK(factories->GetTaskRunner()->BelongsToCurrentThread());
   factories->WaitSyncToken(release_sync_token);
@@ -628,14 +629,14 @@ void RTCVideoDecoder::ReleaseMailbox(
   factories->DeleteTexture(texture_id);
 }
 
-void RTCVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
+void RTCVideoDecoder::ReusePictureBuffer(int64_t picture_buffer_id) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DVLOG(3) << "ReusePictureBuffer. id=" << picture_buffer_id;
 
   DCHECK(!picture_buffers_at_display_.empty());
   PictureBufferTextureMap::iterator display_iterator =
       picture_buffers_at_display_.find(picture_buffer_id);
-  uint32 texture_id = display_iterator->second;
+  uint32_t texture_id = display_iterator->second;
   DCHECK(display_iterator != picture_buffers_at_display_.end());
   picture_buffers_at_display_.erase(display_iterator);
 
@@ -778,7 +779,7 @@ void RTCVideoDecoder::RecordBufferData(const BufferData& buffer_data) {
     input_buffer_data_.pop_back();
 }
 
-void RTCVideoDecoder::GetBufferData(int32 bitstream_buffer_id,
+void RTCVideoDecoder::GetBufferData(int32_t bitstream_buffer_id,
                                     uint32_t* timestamp,
                                     gfx::Rect* visible_rect) {
   for (const auto& buffer_data : input_buffer_data_) {

@@ -4,12 +4,15 @@
 
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/resources/texture_mailbox.h"
 #include "content/child/child_shared_bitmap_manager.h"
@@ -51,7 +54,7 @@ namespace content {
 
 namespace {
 
-const int64 kOffscreenCallbackDelayMs = 1000 / 30;  // 30 fps
+const int64_t kOffscreenCallbackDelayMs = 1000 / 30;  // 30 fps
 
 // Converts a rect inside an image of the given dimensions. The rect may be
 // NULL to indicate it should be the entire image. If the rect is outside of
@@ -70,13 +73,13 @@ bool ValidateAndConvertRect(const PP_Rect* rect,
       return false;
 
     // Check the max bounds, being careful of overflow.
-    if (static_cast<int64>(rect->point.x) +
-            static_cast<int64>(rect->size.width) >
-        static_cast<int64>(image_width))
+    if (static_cast<int64_t>(rect->point.x) +
+            static_cast<int64_t>(rect->size.width) >
+        static_cast<int64_t>(image_width))
       return false;
-    if (static_cast<int64>(rect->point.y) +
-            static_cast<int64>(rect->size.height) >
-        static_cast<int64>(image_height))
+    if (static_cast<int64_t>(rect->point.y) +
+            static_cast<int64_t>(rect->size.height) >
+        static_cast<int64_t>(image_height))
       return false;
 
     *dest = gfx::Rect(
@@ -255,12 +258,12 @@ bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
   // Validate the bitmap position.
   int x = top_left->x;
   if (x < 0 ||
-      static_cast<int64>(x) + static_cast<int64>(image_resource->width()) >
+      static_cast<int64_t>(x) + static_cast<int64_t>(image_resource->width()) >
           image_data_->width())
     return false;
   int y = top_left->y;
   if (y < 0 ||
-      static_cast<int64>(y) + static_cast<int64>(image_resource->height()) >
+      static_cast<int64_t>(y) + static_cast<int64_t>(image_resource->height()) >
           image_data_->height())
     return false;
 
@@ -430,14 +433,14 @@ int32_t PepperGraphics2DHost::OnHostMsgPaintImageData(
 
   // Validate the bitmap position using the previously-validated rect, there
   // should be no painted area outside of the image.
-  int64 x64 = static_cast<int64>(top_left.x);
-  int64 y64 = static_cast<int64>(top_left.y);
-  if (x64 + static_cast<int64>(operation.paint_src_rect.x()) < 0 ||
-      x64 + static_cast<int64>(operation.paint_src_rect.right()) >
+  int64_t x64 = static_cast<int64_t>(top_left.x);
+  int64_t y64 = static_cast<int64_t>(top_left.y);
+  if (x64 + static_cast<int64_t>(operation.paint_src_rect.x()) < 0 ||
+      x64 + static_cast<int64_t>(operation.paint_src_rect.right()) >
           image_data_->width())
     return PP_ERROR_BADARGUMENT;
-  if (y64 + static_cast<int64>(operation.paint_src_rect.y()) < 0 ||
-      y64 + static_cast<int64>(operation.paint_src_rect.bottom()) >
+  if (y64 + static_cast<int64_t>(operation.paint_src_rect.y()) < 0 ||
+      y64 + static_cast<int64_t>(operation.paint_src_rect.bottom()) >
           image_data_->height())
     return PP_ERROR_BADARGUMENT;
   operation.paint_x = top_left.x;
@@ -461,8 +464,8 @@ int32_t PepperGraphics2DHost::OnHostMsgScroll(
 
   // If we're being asked to scroll by more than the clip rect size, just
   // ignore this scroll command and say it worked.
-  int32 dx = amount.x;
-  int32 dy = amount.y;
+  int32_t dx = amount.x;
+  int32_t dy = amount.y;
   if (dx <= -image_data_->width() || dx >= image_data_->width() ||
       dy <= -image_data_->height() || dy >= image_data_->height())
     return PP_ERROR_BADARGUMENT;

@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_PPB_BUFFER_IMPL_H_
 #define CONTENT_RENDERER_PEPPER_PPB_BUFFER_IMPL_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"

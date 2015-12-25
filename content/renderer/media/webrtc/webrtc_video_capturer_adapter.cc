@@ -49,7 +49,7 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
     captured_frame_.rotation = webrtc::kVideoRotation_0;
     captured_frame_.data = NULL;
     captured_frame_.data_size = cricket::CapturedFrame::kUnknownDataSize;
-    captured_frame_.fourcc = static_cast<uint32>(cricket::FOURCC_ANY);
+    captured_frame_.fourcc = static_cast<uint32_t>(cricket::FOURCC_ANY);
 
     frame_ = frame;
   }
@@ -183,7 +183,7 @@ bool WebRtcVideoCapturerAdapter::IsRunning() {
 }
 
 bool WebRtcVideoCapturerAdapter::GetPreferredFourccs(
-    std::vector<uint32>* fourccs) {
+    std::vector<uint32_t>* fourccs) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!fourccs || fourccs->empty());
   if (fourccs)

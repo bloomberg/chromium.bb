@@ -4,6 +4,9 @@
 
 #include "content/renderer/pepper/url_request_info_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/child/request_extra_data.h"

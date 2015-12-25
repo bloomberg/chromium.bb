@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_MOUSE_LOCK_DISPATCHER_H_
 #define CONTENT_RENDERER_MOUSE_LOCK_DISPATCHER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace blink {

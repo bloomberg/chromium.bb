@@ -4,6 +4,8 @@
 
 #include "content/renderer/vr/vr_dispatcher.h"
 
+#include <stddef.h>
+
 #include "content/public/common/service_registry.h"
 #include "content/renderer/vr/vr_type_converters.h"
 

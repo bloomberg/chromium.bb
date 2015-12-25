@@ -36,6 +36,7 @@
 #define CONTENT_RENDERER_HISTORY_CONTROLLER_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/history_entry.h"

@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 
+#include <stddef.h>
+
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/pepper/url_request_info_util.h"

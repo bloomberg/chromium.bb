@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/media_stream_dispatcher.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"

@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_H_
 #define CONTENT_RENDERER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/id_map.h"
@@ -162,7 +164,7 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
   typedef IDMap<blink::WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks,
                 IDMapOwnPointer> StorageMatchCallbacksMap;
 
-  typedef base::hash_map<int32, base::TimeTicks> TimeMap;
+  typedef base::hash_map<int32_t, base::TimeTicks> TimeMap;
 
   typedef IDMap<blink::WebServiceWorkerCache::CacheMatchCallbacks,
                 IDMapOwnPointer> MatchCallbacksMap;
@@ -173,7 +175,7 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
   using BatchCallbacksMap =
       IDMap<blink::WebServiceWorkerCache::CacheBatchCallbacks, IDMapOwnPointer>;
 
-  static int32 CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
+  static int32_t CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
 
   void PopulateWebResponseFromResponse(
       const ServiceWorkerResponse& response,

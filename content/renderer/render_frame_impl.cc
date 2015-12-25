@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/appcache/appcache_dispatcher.h"
@@ -288,7 +289,7 @@ static base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
 typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
 base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
 
-int64 ExtractPostId(const WebHistoryItem& item) {
+int64_t ExtractPostId(const WebHistoryItem& item) {
   if (item.isNull() || item.httpBody().isNull())
     return -1;
 
@@ -614,7 +615,7 @@ bool IsContentWithCertificateErrorsRelevantToUI(
 
 // static
 RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
-                                         int32 routing_id) {
+                                         int32_t routing_id) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   CreateParams params(render_view, routing_id);
 
@@ -1119,7 +1120,7 @@ void RenderFrameImpl::OnImeConfirmComposition(
 
   if (!IsPepperAcceptingCompositionEvents()) {
     base::i18n::UTF16CharIterator iterator(&last_text);
-    int32 i = 0;
+    int32_t i = 0;
     while (iterator.Advance()) {
       blink::WebKeyboardEvent char_event;
       char_event.type = blink::WebInputEvent::Char;
@@ -1128,7 +1129,7 @@ void RenderFrameImpl::OnImeConfirmComposition(
       char_event.windowsKeyCode = last_text[i];
       char_event.nativeKeyCode = last_text[i];
 
-      const int32 char_start = i;
+      const int32_t char_start = i;
       for (; i < iterator.array_pos(); ++i) {
         char_event.text[i - char_start] = last_text[i];
         char_event.unmodifiedText[i - char_start] = last_text[i];
@@ -1769,7 +1770,7 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
   }
 }
 
-void RenderFrameImpl::OnVisualStateRequest(uint64 id) {
+void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
   GetRenderWidget()->QueueMessage(
       new FrameHostMsg_VisualStateResponse(routing_id_, id),
       MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
@@ -2637,20 +2638,15 @@ void RenderFrameImpl::didAddMessageToConsole(
   }
 
   if (shouldReportDetailedMessageForSource(source_name)) {
-    FOR_EACH_OBSERVER(
-        RenderFrameObserver, observers_,
-        DetailedConsoleMessageAdded(message.text,
-                                    source_name,
-                                    stack_trace,
-                                    source_line,
-                                    static_cast<int32>(log_severity)));
+    FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                      DetailedConsoleMessageAdded(
+                          message.text, source_name, stack_trace, source_line,
+                          static_cast<int32_t>(log_severity)));
   }
 
-  Send(new FrameHostMsg_AddMessageToConsole(routing_id_,
-                                            static_cast<int32>(log_severity),
-                                            message.text,
-                                            static_cast<int32>(source_line),
-                                            source_name));
+  Send(new FrameHostMsg_AddMessageToConsole(
+      routing_id_, static_cast<int32_t>(log_severity), message.text,
+      static_cast<int32_t>(source_line), source_name));
 }
 
 void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
@@ -4307,7 +4303,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   // Make navigation state a part of the DidCommitProvisionalLoad message so
   // that committed entry has it at all times.
-  int64 post_id = -1;
+  int64_t post_id = -1;
   if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     HistoryEntry* entry = render_view_->history_controller()->GetCurrentEntry();
     if (entry) {
