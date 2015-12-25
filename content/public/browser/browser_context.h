@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
@@ -104,7 +107,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void DeliverPushMessage(
       BrowserContext* browser_context,
       const GURL& origin,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const std::string& data,
       const base::Callback<void(PushDeliveryStatus)>& callback);
 

@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "content/public/browser/service_worker_usage_info.h"
 #include "url/gurl.h"

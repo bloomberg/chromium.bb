@@ -46,7 +46,7 @@ void CallClosureFromIO(const base::Closure& callback,
 
 void GetUserDataOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_wrapper,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const std::string& key,
     const PushMessagingService::StringCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -57,7 +57,8 @@ void GetUserDataOnIO(
 
 void SetNotificationsShownOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_wrapper,
-    int64 service_worker_registration_id, const GURL& origin,
+    int64_t service_worker_registration_id,
+    const GURL& origin,
     const std::string& data,
     const PushMessagingService::ResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -69,7 +70,7 @@ void SetNotificationsShownOnIO(
 
 void ClearPushSubscriptionIDOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -93,7 +94,7 @@ scoped_refptr<ServiceWorkerContextWrapper> GetServiceWorkerContext(
 // static
 void PushMessagingService::GetNotificationsShownByLastFewPushes(
     ServiceWorkerContext* service_worker_context,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const StringCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<ServiceWorkerContextWrapper> wrapper =
@@ -109,7 +110,7 @@ void PushMessagingService::GetNotificationsShownByLastFewPushes(
 // static
 void PushMessagingService::SetNotificationsShownByLastFewPushes(
     ServiceWorkerContext* service_worker_context,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const GURL& origin,
     const std::string& notifications_shown,
     const ResultCallback& callback) {
@@ -128,7 +129,7 @@ void PushMessagingService::SetNotificationsShownByLastFewPushes(
 // static
 void PushMessagingService::GetSenderId(BrowserContext* browser_context,
                                        const GURL& origin,
-                                       int64 service_worker_registration_id,
+                                       int64_t service_worker_registration_id,
                                        const StringCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
@@ -145,7 +146,7 @@ void PushMessagingService::GetSenderId(BrowserContext* browser_context,
 void PushMessagingService::ClearPushSubscriptionID(
     BrowserContext* browser_context,
     const GURL& origin,
-    int64 service_worker_registration_id,
+    int64_t service_worker_registration_id,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(

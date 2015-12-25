@@ -5,10 +5,11 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SESSION_STORAGE_NAMESPACE_H_
 #define CONTENT_PUBLIC_BROWSER_SESSION_STORAGE_NAMESPACE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
 namespace content {
@@ -20,7 +21,7 @@ class SessionStorageNamespace
  public:
   // Returns the ID of the |SessionStorageNamespace|. The ID is unique among all
   // SessionStorageNamespace objects, but not unique across browser runs.
-  virtual int64 id() const = 0;
+  virtual int64_t id() const = 0;
 
   // Returns the persistent ID for the |SessionStorageNamespace|. The ID is
   // unique across browser runs.

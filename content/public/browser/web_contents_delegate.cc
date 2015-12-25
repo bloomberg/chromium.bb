@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
@@ -74,9 +75,9 @@ bool WebContentsDelegate::ShouldPreserveAbortedURLs(WebContents* source) {
 }
 
 bool WebContentsDelegate::AddMessageToConsole(WebContents* source,
-                                              int32 level,
+                                              int32_t level,
                                               const base::string16& message,
-                                              int32 line_no,
+                                              int32_t line_no,
                                               const base::string16& source_id) {
   return false;
 }

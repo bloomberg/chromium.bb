@@ -5,8 +5,11 @@
 #ifndef CONTENT_PUBLIC_CHILD_FIXED_RECEIVED_DATA_H_
 #define CONTENT_PUBLIC_CHILD_FIXED_RECEIVED_DATA_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/child/request_peer.h"
 

@@ -4,6 +4,7 @@
 
 #include "content/public/common/renderer_preferences.h"
 
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_render_params.h"
 

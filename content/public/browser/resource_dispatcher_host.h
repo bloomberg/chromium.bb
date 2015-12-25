@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -58,7 +60,7 @@ class CONTENT_EXPORT ResourceDispatcherHost {
       bool prefer_cache,
       bool do_not_prompt_for_login,
       scoped_ptr<DownloadSaveInfo> save_info,
-      uint32 download_id,
+      uint32_t download_id,
       const DownloadStartedCallback& started_callback) = 0;
 
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.

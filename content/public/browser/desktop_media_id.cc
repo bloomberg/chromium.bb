@@ -4,9 +4,12 @@
 
 #include "content/public/browser/desktop_media_id.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -115,14 +118,14 @@ DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
     return DesktopMediaID();
   }
 
-  int64 id;
+  int64_t id;
   if (!base::StringToInt64(parts[1], &id))
     return DesktopMediaID();
 
   DesktopMediaID media_id(type, id);
 
 #if defined(USE_AURA)
-  int64 aura_id;
+  int64_t aura_id;
   if (!base::StringToInt64(parts[2], &aura_id))
     return DesktopMediaID();
   media_id.aura_id = aura_id;

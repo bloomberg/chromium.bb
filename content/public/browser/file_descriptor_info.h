@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_FILE_DESCRIPTOR_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_FILE_DESCRIPTOR_INFO_H_
 
+#include <stddef.h>
+
 #include "base/files/file.h"
 #include "base/process/launch.h"
 

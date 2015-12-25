@@ -5,7 +5,10 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_RENDER_PROCESS_HOST_H_
 #define CONTENT_PUBLIC_TEST_MOCK_RENDER_PROCESS_HOST_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "content/public/browser/render_process_host.h"
@@ -39,8 +42,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void EnableSendQueue() override;
   bool Init() override;
   int GetNextRoutingID() override;
-  void AddRoute(int32 routing_id, IPC::Listener* listener) override;
-  void RemoveRoute(int32 routing_id) override;
+  void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
+  void RemoveRoute(int32_t routing_id) override;
   void AddObserver(RenderProcessHostObserver* observer) override;
   void RemoveObserver(RenderProcessHostObserver* observer) override;
   void ShutdownForBadMessage() override;
@@ -107,7 +110,7 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   // IPC::Listener via RenderProcessHost.
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
 
   // Attaches the factory object so we can remove this object in its destructor
   // and prevent MockRenderProcessHostFacotry from deleting it.

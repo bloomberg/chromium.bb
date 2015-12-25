@@ -4,7 +4,6 @@
 
 #include "content/public/test/render_widget_test.h"
 
-#include "base/basictypes.h"
 #include "content/renderer/render_view_impl.h"
 
 namespace content {
@@ -16,7 +15,7 @@ const int RenderWidgetTest::kSmallWidth = 600;
 const int RenderWidgetTest::kSmallHeight = 450;
 const int RenderWidgetTest::kTextPositionX = 800;
 const int RenderWidgetTest::kTextPositionY = 600;
-const uint32 RenderWidgetTest::kRedARGB = 0xFFFF0000;
+const uint32_t RenderWidgetTest::kRedARGB = 0xFFFF0000;
 
 RenderWidgetTest::RenderWidgetTest() {}
 

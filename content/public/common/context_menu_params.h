@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"

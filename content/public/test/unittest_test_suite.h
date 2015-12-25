@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_UNITTEST_TEST_SUITE_H_
 #define CONTENT_PUBLIC_TEST_UNITTEST_TEST_SUITE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 
 namespace base {
 class TestSuite;

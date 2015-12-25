@@ -290,7 +290,7 @@ class TestDownloadRequestHandler : public base::NonThreadSafe {
   //
   // Note: Don't use this function to generate a cryptographically secure
   // pseudo-random sequence.
-  static void GetPatternBytes(int seed, int64 offset, int length, char* data);
+  static void GetPatternBytes(int seed, int64_t offset, int length, char* data);
 
  private:
   class Interceptor;

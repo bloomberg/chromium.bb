@@ -95,22 +95,21 @@ FileSystemURL SandboxFileSystemTestHelper::CreateURL(
   return file_system_context_->CreateCrackedFileSystemURL(origin_, type_, path);
 }
 
-int64 SandboxFileSystemTestHelper::GetCachedOriginUsage() const {
+int64_t SandboxFileSystemTestHelper::GetCachedOriginUsage() const {
   return file_system_context_->GetQuotaUtil(type_)
       ->GetOriginUsageOnFileTaskRunner(
           file_system_context_.get(), origin_, type_);
 }
 
-int64 SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
+int64_t SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
   usage_cache()->CloseCacheFiles();
-  int64 size = base::ComputeDirectorySize(GetOriginRootPath());
+  int64_t size = base::ComputeDirectorySize(GetOriginRootPath());
   if (base::PathExists(GetUsageCachePath()))
     size -= storage::FileSystemUsageCache::kUsageFileSize;
   return size;
 }
 
-int64
-SandboxFileSystemTestHelper::ComputeCurrentDirectoryDatabaseUsage() {
+int64_t SandboxFileSystemTestHelper::ComputeCurrentDirectoryDatabaseUsage() {
   return base::ComputeDirectorySize(
       GetOriginRootPath().AppendASCII("Paths"));
 }

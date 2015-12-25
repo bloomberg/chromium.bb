@@ -4,7 +4,6 @@
 
 #include "content/public/test/mock_storage_client.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -43,8 +42,9 @@ void MockStorageClient::Populate(
 
 MockStorageClient::~MockStorageClient() {}
 
-void MockStorageClient::AddOriginAndNotify(
-    const GURL& origin_url, StorageType type, int64 size) {
+void MockStorageClient::AddOriginAndNotify(const GURL& origin_url,
+                                           StorageType type,
+                                           int64_t size) {
   DCHECK(origin_data_.find(make_pair(origin_url, type)) == origin_data_.end());
   DCHECK_GE(size, 0);
   origin_data_[make_pair(origin_url, type)] = size;
@@ -52,8 +52,9 @@ void MockStorageClient::AddOriginAndNotify(
       id(), origin_url, type, size, IncrementMockTime());
 }
 
-void MockStorageClient::ModifyOriginAndNotify(
-    const GURL& origin_url, StorageType type, int64 delta) {
+void MockStorageClient::ModifyOriginAndNotify(const GURL& origin_url,
+                                              StorageType type,
+                                              int64_t delta) {
   OriginDataMap::iterator find = origin_data_.find(make_pair(origin_url, type));
   DCHECK(find != origin_data_.end());
   find->second += delta;
@@ -177,7 +178,7 @@ void MockStorageClient::RunDeleteOriginData(
   OriginDataMap::iterator itr =
       origin_data_.find(make_pair(origin_url, type));
   if (itr != origin_data_.end()) {
-    int64 delta = itr->second;
+    int64_t delta = itr->second;
     quota_manager_proxy_->
         NotifyStorageModified(id(), origin_url, type, -delta);
     origin_data_.erase(itr);

@@ -8,9 +8,10 @@
 // Provides access to the GPU information for the system
 // on which chrome is currently running.
 
+#include <stddef.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 

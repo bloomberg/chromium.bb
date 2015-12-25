@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
 namespace base {

@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_OBSERVER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"

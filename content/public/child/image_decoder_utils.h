@@ -5,7 +5,8 @@
 #ifndef CONTENT_PUBLIC_CHILD_IMAGE_DECODER_UTILS_H_
 #define CONTENT_PUBLIC_CHILD_IMAGE_DECODER_UTILS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "content/common/content_export.h"
 
 class SkBitmap;

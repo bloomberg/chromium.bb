@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
 #define CONTENT_PUBLIC_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string>
 

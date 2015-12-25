@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_TRACING_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_TRACING_CONTROLLER_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 

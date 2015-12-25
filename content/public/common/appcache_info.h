@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_APPCACHE_INFO_H_
 #define CONTENT_PUBLIC_COMMON_APPCACHE_INFO_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/time/time.h"
@@ -14,9 +16,9 @@
 namespace content {
 
 static const int kAppCacheNoHostId = 0;
-static const int64 kAppCacheNoCacheId = 0;
-static const int64 kAppCacheNoResponseId = 0;
-static const int64 kAppCacheUnknownCacheId = -1;
+static const int64_t kAppCacheNoCacheId = 0;
+static const int64_t kAppCacheNoResponseId = 0;
+static const int64_t kAppCacheUnknownCacheId = -1;
 
 enum AppCacheStatus {
   APPCACHE_STATUS_UNCACHED,
@@ -36,10 +38,10 @@ struct CONTENT_EXPORT AppCacheInfo {
   base::Time creation_time;
   base::Time last_update_time;
   base::Time last_access_time;
-  int64 cache_id;
-  int64 group_id;
+  int64_t cache_id;
+  int64_t group_id;
   AppCacheStatus status;
-  int64 size;
+  int64_t size;
   bool is_complete;
 };
 

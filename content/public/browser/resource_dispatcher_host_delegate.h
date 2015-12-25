@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"

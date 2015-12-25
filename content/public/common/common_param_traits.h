@@ -14,9 +14,12 @@
 #ifndef CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
 #define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -93,7 +96,7 @@ struct ParamTraits<gfx::NativeWindow> {
   static bool Read(const Message* m, base::PickleIterator* iter,
                    param_type* r) {
 #if defined(OS_WIN)
-    return iter->ReadUInt32(reinterpret_cast<uint32*>(r));
+    return iter->ReadUInt32(reinterpret_cast<uint32_t*>(r));
 #else
     const char *data;
     int data_size = 0;

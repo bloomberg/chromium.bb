@@ -4,6 +4,8 @@
 
 #include "content/public/common/page_state.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"

@@ -5,12 +5,15 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_ENTRY_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_ENTRY_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
@@ -101,7 +104,7 @@ class NavigationEntry {
   // renderer generated for the page and is how we can tell new versus
   // renavigations.
   virtual void SetPageID(int page_id) = 0;
-  virtual int32 GetPageID() const = 0;
+  virtual int32_t GetPageID() const = 0;
 
   // Page-related helpers ------------------------------------------------------
 
@@ -146,8 +149,8 @@ class NavigationEntry {
   virtual bool GetHasPostData() const = 0;
 
   // The Post identifier associated with the page.
-  virtual void SetPostID(int64 post_id) = 0;
-  virtual int64 GetPostID() const = 0;
+  virtual void SetPostID(int64_t post_id) = 0;
+  virtual int64_t GetPostID() const = 0;
 
   // Holds the raw post data of a browser initiated post request.
   // For efficiency, this should be cleared when content_state is populated

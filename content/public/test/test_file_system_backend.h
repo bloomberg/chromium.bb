@@ -5,7 +5,10 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_
 #define CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
@@ -55,13 +58,13 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
       storage::FileSystemType type) const override;
   scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const storage::FileSystemURL& url,
-      int64 offset,
-      int64 max_bytes_to_read,
+      int64_t offset,
+      int64_t max_bytes_to_read,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context) const override;
   scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
       const storage::FileSystemURL& url,
-      int64 offset,
+      int64_t offset,
       storage::FileSystemContext* context) const override;
   storage::FileSystemQuotaUtil* GetQuotaUtil() override;
   const storage::UpdateObserverList* GetUpdateObservers(

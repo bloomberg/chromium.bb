@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_SYNCHRONOUS_COMPOSITOR_ANDROID_H_
 #define CONTENT_PUBLIC_TEST_TEST_SYNCHRONOUS_COMPOSITOR_ANDROID_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"

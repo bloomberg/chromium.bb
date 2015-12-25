@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_EVENT_LISTENER_H_
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_EVENT_LISTENER_H_
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/common/speech_recognition_result.h"
 

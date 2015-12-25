@@ -5,6 +5,7 @@
 #include "content/public/common/media_stream_request.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace content {
 

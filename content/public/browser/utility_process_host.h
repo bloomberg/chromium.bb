@@ -8,6 +8,7 @@
 #include "base/environment.h"
 #include "base/process/launch.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
 

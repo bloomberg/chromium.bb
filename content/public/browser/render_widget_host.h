@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -103,7 +105,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
  public:
   // Returns the RenderWidgetHost given its ID and the ID of its render process.
   // Returns nullptr if the IDs do not correspond to a live RenderWidgetHost.
-  static RenderWidgetHost* FromID(int32 process_id, int32 routing_id);
+  static RenderWidgetHost* FromID(int32_t process_id, int32_t routing_id);
 
   // Returns an iterator to iterate over the global list of active render widget
   // hosts.

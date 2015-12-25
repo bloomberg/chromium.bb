@@ -5,9 +5,12 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_NOTIFICATION_TRACKER_H_
 #define CONTENT_PUBLIC_TEST_TEST_NOTIFICATION_TRACKER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

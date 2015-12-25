@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDERER_GAMEPAD_PROVIDER_H_
 #define CONTENT_PUBLIC_RENDERER_RENDERER_GAMEPAD_PROVIDER_H_
 
+#include "base/macros.h"
 #include "content/public/renderer/platform_event_observer.h"
 
 namespace blink {

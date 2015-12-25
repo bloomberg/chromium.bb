@@ -32,6 +32,7 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 #define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_BUNDLE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {

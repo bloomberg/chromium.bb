@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SERVICE_WORKER_USAGE_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_SERVICE_WORKER_USAGE_INFO_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "content/common/content_export.h"

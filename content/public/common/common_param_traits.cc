@@ -68,7 +68,7 @@ bool ParamTraits<url::Origin>::Read(const Message* m,
   bool unique;
   std::string scheme;
   std::string host;
-  uint16 port;
+  uint16_t port;
   if (!ReadParam(m, iter, &unique) || !ReadParam(m, iter, &scheme) ||
       !ReadParam(m, iter, &host) || !ReadParam(m, iter, &port)) {
     *p = url::Origin();
@@ -101,7 +101,7 @@ bool ParamTraits<net::HostPortPair>::Read(const Message* m,
                                           base::PickleIterator* iter,
                                           param_type* r) {
   std::string host;
-  uint16 port;
+  uint16_t port;
   if (!ReadParam(m, iter, &host) || !ReadParam(m, iter, &port))
     return false;
 
@@ -123,7 +123,7 @@ bool ParamTraits<net::IPEndPoint>::Read(const Message* m,
                                         base::PickleIterator* iter,
                                         param_type* p) {
   net::IPAddressNumber address;
-  uint16 port;
+  uint16_t port;
   if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
     return false;
   if (address.size() &&

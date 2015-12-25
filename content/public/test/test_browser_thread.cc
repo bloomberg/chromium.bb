@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_browser_thread.h"
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"

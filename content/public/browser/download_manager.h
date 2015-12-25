@@ -27,10 +27,11 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -146,7 +147,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
   virtual DownloadItem* CreateDownloadItem(
-      uint32 id,
+      uint32_t id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
@@ -157,8 +158,8 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       const base::Time& end_time,
       const std::string& etag,
       const std::string& last_modified,
-      int64 received_bytes,
-      int64 total_bytes,
+      int64_t received_bytes,
+      int64_t total_bytes,
       DownloadItem::DownloadState state,
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
@@ -184,7 +185,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
 
   // Get the download item for |id| if present, no matter what type of download
   // it is or state it's in.
-  virtual DownloadItem* GetDownload(uint32 id) = 0;
+  virtual DownloadItem* GetDownload(uint32_t id) = 0;
 };
 
 }  // namespace content

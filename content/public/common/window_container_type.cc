@@ -4,6 +4,8 @@
 
 #include "content/public/common/window_container_type.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"

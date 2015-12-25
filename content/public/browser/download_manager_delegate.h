@@ -5,7 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_MANAGER_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -51,7 +52,7 @@ typedef base::Callback<void(bool)> DownloadOpenDelayedCallback;
 // Called with the result of CheckForFileExistence().
 typedef base::Callback<void(bool result)> CheckForFileExistenceCallback;
 
-typedef base::Callback<void(uint32)> DownloadIdCallback;
+typedef base::Callback<void(uint32_t)> DownloadIdCallback;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManagerDelegate {

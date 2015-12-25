@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 

@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_PROCESS_OBSERVER_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_PROCESS_OBSERVER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace IPC {

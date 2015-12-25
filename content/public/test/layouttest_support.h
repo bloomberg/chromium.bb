@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
 #define CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_RENDER_VIEW_TEST_H_
 #define CONTENT_PUBLIC_TEST_RENDER_VIEW_TEST_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/command_line.h"
@@ -12,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/test/test_io_thread.h"
+#include "build/build_config.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/page_state.h"
@@ -137,7 +140,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   void Reload(const GURL& url);
 
   // Returns the IPC message ID of the navigation message.
-  uint32 GetNavigationIPCType();
+  uint32_t GetNavigationIPCType();
 
   // Resize the view.
   void Resize(gfx::Size new_size,

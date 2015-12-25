@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
 #define CONTENT_PUBLIC_TEST_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
@@ -66,12 +68,12 @@ class SandboxFileSystemTestHelper {
   }
 
   // This returns cached usage size returned by QuotaUtil.
-  int64 GetCachedOriginUsage() const;
+  int64_t GetCachedOriginUsage() const;
 
   // This doesn't work with OFSFU.
-  int64 ComputeCurrentOriginUsage();
+  int64_t ComputeCurrentOriginUsage();
 
-  int64 ComputeCurrentDirectoryDatabaseUsage();
+  int64_t ComputeCurrentDirectoryDatabaseUsage();
 
   storage::FileSystemOperationRunner* operation_runner();
   storage::FileSystemOperationContext* NewOperationContext();

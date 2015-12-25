@@ -10,6 +10,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
@@ -93,21 +94,22 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
     NOTREACHED();
   }
 
-  int64 GetOriginUsageOnFileTaskRunner(FileSystemContext* context,
-                                       const GURL& origin_url,
-                                       storage::FileSystemType type) override {
+  int64_t GetOriginUsageOnFileTaskRunner(
+      FileSystemContext* context,
+      const GURL& origin_url,
+      storage::FileSystemType type) override {
     return usage_;
   }
 
   // FileUpdateObserver overrides.
   void OnStartUpdate(const FileSystemURL& url) override {}
-  void OnUpdate(const FileSystemURL& url, int64 delta) override {
+  void OnUpdate(const FileSystemURL& url, int64_t delta) override {
     usage_ += delta;
   }
   void OnEndUpdate(const FileSystemURL& url) override {}
 
  private:
-  int64 usage_;
+  int64_t usage_;
   DISALLOW_COPY_AND_ASSIGN(QuotaUtil);
 };
 
@@ -196,8 +198,8 @@ bool TestFileSystemBackend::HasInplaceCopyImplementation(
 scoped_ptr<storage::FileStreamReader>
 TestFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
-    int64 offset,
-    int64 max_bytes_to_read,
+    int64_t offset,
+    int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   return scoped_ptr<storage::FileStreamReader>(
@@ -208,7 +210,7 @@ TestFileSystemBackend::CreateFileStreamReader(
 scoped_ptr<storage::FileStreamWriter>
 TestFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
-    int64 offset,
+    int64_t offset,
     FileSystemContext* context) const {
   return scoped_ptr<storage::FileStreamWriter>(
       new storage::SandboxFileStreamWriter(

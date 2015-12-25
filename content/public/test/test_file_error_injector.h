@@ -5,13 +5,16 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_FILE_ERROR_INJECTOR_H_
 #define CONTENT_PUBLIC_TEST_TEST_FILE_ERROR_INJECTOR_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
 
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "url/gurl.h"
 

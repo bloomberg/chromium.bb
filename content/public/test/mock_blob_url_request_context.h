@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_BLOB_URL_REQUEST_CONTEXT_H_
 #define CONTENT_PUBLIC_TEST_MOCK_BLOB_URL_REQUEST_CONTEXT_H_
 
+#include "base/macros.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"

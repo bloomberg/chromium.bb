@@ -6,6 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -79,11 +80,9 @@ MockRenderThread::GetIOMessageLoopProxy() {
   return scoped_refptr<base::SingleThreadTaskRunner>();
 }
 
-void MockRenderThread::AddRoute(int32 routing_id, IPC::Listener* listener) {
-}
+void MockRenderThread::AddRoute(int32_t routing_id, IPC::Listener* listener) {}
 
-void MockRenderThread::RemoveRoute(int32 routing_id) {
-}
+void MockRenderThread::RemoveRoute(int32_t routing_id) {}
 
 int MockRenderThread::GenerateRoutingID() {
   NOTREACHED();
@@ -150,19 +149,17 @@ void MockRenderThread::RegisterExtension(v8::Extension* extension) {
   blink::WebScriptController::registerExtension(extension);
 }
 
-void MockRenderThread::ScheduleIdleHandler(int64 initial_delay_ms) {
-}
+void MockRenderThread::ScheduleIdleHandler(int64_t initial_delay_ms) {}
 
 void MockRenderThread::IdleHandler() {
 }
 
-int64 MockRenderThread::GetIdleNotificationDelayInMs() const {
+int64_t MockRenderThread::GetIdleNotificationDelayInMs() const {
   return 0;
 }
 
 void MockRenderThread::SetIdleNotificationDelayInMs(
-    int64 idle_notification_delay_in_ms) {
-}
+    int64_t idle_notification_delay_in_ms) {}
 
 void MockRenderThread::UpdateHistograms(int sequence_number) {
 }

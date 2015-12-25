@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_INDEXED_DB_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_INDEXED_DB_INFO_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -14,7 +17,7 @@ namespace content {
 
 struct CONTENT_EXPORT IndexedDBInfo {
   IndexedDBInfo(const GURL& origin,
-                int64 size,
+                int64_t size,
                 const base::Time& last_modified,
                 size_t connection_count)
       : origin(origin),
@@ -23,7 +26,7 @@ struct CONTENT_EXPORT IndexedDBInfo {
         connection_count(connection_count) {}
 
   GURL origin;
-  int64 size;
+  int64_t size;
   base::Time last_modified;
   size_t connection_count;
 };

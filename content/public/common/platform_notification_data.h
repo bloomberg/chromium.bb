@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_PLATFORM_NOTIFICATION_DATA_H_
 #define CONTENT_PUBLIC_COMMON_PLATFORM_NOTIFICATION_DATA_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

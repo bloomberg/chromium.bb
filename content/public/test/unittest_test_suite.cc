@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 #if defined(USE_AURA)

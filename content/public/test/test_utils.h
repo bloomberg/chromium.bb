@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_TEST_UTILS_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"

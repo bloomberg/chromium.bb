@@ -4,6 +4,8 @@
 
 #include "content/public/browser/notification_registrar.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/logging.h"

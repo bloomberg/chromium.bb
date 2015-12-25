@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/page_transition_types.h"

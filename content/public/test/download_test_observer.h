@@ -5,11 +5,14 @@
 #ifndef CONTENT_PUBLIC_TEST_DOWNLOAD_TEST_OBSERVER_H_
 #define CONTENT_PUBLIC_TEST_DOWNLOAD_TEST_OBSERVER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
@@ -116,10 +119,10 @@ class DownloadTestObserver : public DownloadManager::Observer,
   void SignalIfFinished();
 
   // Fake user click on "Accept".
-  void AcceptDangerousDownload(uint32 download_id);
+  void AcceptDangerousDownload(uint32_t download_id);
 
   // Fake user click on "Deny".
-  void DenyDangerousDownload(uint32 download_id);
+  void DenyDangerousDownload(uint32_t download_id);
 
   // The observed download manager.
   DownloadManager* download_manager_;
@@ -160,7 +163,7 @@ class DownloadTestObserver : public DownloadManager::Observer,
   DangerousDownloadAction dangerous_download_action_;
 
   // Holds the download ids which were dangerous.
-  std::set<uint32> dangerous_downloads_seen_;
+  std::set<uint32_t> dangerous_downloads_seen_;
 
   base::WeakPtrFactory<DownloadTestObserver> weak_factory_;
 
@@ -278,7 +281,7 @@ class DownloadTestItemCreationObserver
 
   void WaitForDownloadItemCreation();
 
-  uint32 download_id() const { return download_id_; }
+  uint32_t download_id() const { return download_id_; }
   DownloadInterruptReason interrupt_reason() const { return interrupt_reason_; }
   bool started() const { return called_back_count_ > 0; }
   bool succeeded() const {
@@ -296,7 +299,7 @@ class DownloadTestItemCreationObserver
                                     DownloadInterruptReason interrupt_reason);
 
   // The download creation information we received.
-  uint32 download_id_;
+  uint32_t download_id_;
   DownloadInterruptReason interrupt_reason_;
 
   // Count of callbacks.

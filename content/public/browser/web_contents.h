@@ -5,14 +5,16 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_H_
 
+#include <stdint.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -293,11 +295,11 @@ class WebContents : public PageNavigator,
   // this WebContents.  Page IDs are specific to a given SiteInstance and
   // WebContents, corresponding to a specific RenderView in the renderer.
   // Page IDs increase with each new page that is loaded by a tab.
-  virtual int32 GetMaxPageID() = 0;
+  virtual int32_t GetMaxPageID() = 0;
 
   // The max page ID for any page that the given SiteInstance has loaded in
   // this WebContents.
-  virtual int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
+  virtual int32_t GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
 
   // Returns the SiteInstance associated with the current page.
   virtual SiteInstance* GetSiteInstance() const = 0;
@@ -324,8 +326,8 @@ class WebContents : public PageNavigator,
   virtual const base::string16& GetLoadStateHost() const = 0;
 
   // Returns the upload progress.
-  virtual uint64 GetUploadSize() const = 0;
-  virtual uint64 GetUploadPosition() const = 0;
+  virtual uint64_t GetUploadSize() const = 0;
+  virtual uint64_t GetUploadPosition() const = 0;
 
   // Returns the character encoding of the page.
   virtual const std::string& GetEncoding() const = 0;
@@ -524,8 +526,7 @@ class WebContents : public PageNavigator,
   // Generate an MHTML representation of the current page in the given file.
   virtual void GenerateMHTML(
       const base::FilePath& file,
-      const base::Callback<void(
-          int64 /* size of the file */)>& callback) = 0;
+      const base::Callback<void(int64_t /* size of the file */)>& callback) = 0;
 
   // Returns the contents MIME type after a navigation.
   virtual const std::string& GetContentsMimeType() const = 0;

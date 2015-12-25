@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_RENDERER_PLATFORM_EVENT_OBSERVER_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_thread.h"
 

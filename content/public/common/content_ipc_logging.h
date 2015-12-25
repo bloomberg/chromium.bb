@@ -7,6 +7,8 @@
 
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 
+#include <stdint.h>
+
 #include "content/common/content_export.h"
 #include "ipc/ipc_logging.h"
 
@@ -21,7 +23,7 @@ namespace content {
 //       content::RegisterIPCLogger(msg_id, logger)
 //
 // to register IPC messages with the logging system.
-CONTENT_EXPORT void RegisterIPCLogger(uint32 msg_id, LogFunction logger);
+CONTENT_EXPORT void RegisterIPCLogger(uint32_t msg_id, LogFunction logger);
 
 #endif
 

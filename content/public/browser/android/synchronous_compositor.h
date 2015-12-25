@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
 
+#include <stddef.h>
+
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"

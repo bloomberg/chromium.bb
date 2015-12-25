@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -99,7 +100,7 @@ class TestDownloadRequestHandler::PartialResponseJob
   // URLRequestJob
   void Start() override;
   void GetResponseInfo(net::HttpResponseInfo* response_info) override;
-  int64 GetTotalReceivedBytes() const override;
+  int64_t GetTotalReceivedBytes() const override;
   bool GetMimeType(std::string* mime_type) const override;
   int GetResponseCode() const override;
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
@@ -246,7 +247,7 @@ void TestDownloadRequestHandler::PartialResponseJob::GetResponseInfo(
   *response_info = response_info_;
 }
 
-int64 TestDownloadRequestHandler::PartialResponseJob::GetTotalReceivedBytes()
+int64_t TestDownloadRequestHandler::PartialResponseJob::GetTotalReceivedBytes()
     const {
   return offset_of_next_read_ - requested_range_begin_;
 }

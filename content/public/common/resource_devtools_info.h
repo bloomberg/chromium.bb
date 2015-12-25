@@ -5,10 +5,11 @@
 #ifndef CONTENT_PUBLIC_COMMON_RESOURCE_DEVTOOLS_INFO_H_
 #define CONTENT_PUBLIC_COMMON_RESOURCE_DEVTOOLS_INFO_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_split.h"
 #include "content/common/content_export.h"
@@ -24,7 +25,7 @@ struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
 
   scoped_refptr<ResourceDevToolsInfo> DeepCopy() const;
 
-  int32 http_status_code;
+  int32_t http_status_code;
   std::string http_status_text;
   HeadersVector request_headers;
   HeadersVector response_headers;

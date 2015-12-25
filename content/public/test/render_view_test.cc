@@ -4,11 +4,14 @@
 
 #include "content/public/test/render_view_test.h"
 
+#include <stddef.h>
+
 #include <cctype>
 
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -60,14 +63,14 @@ using blink::WebURLRequest;
 
 namespace {
 
-const int32 kRouteId = 5;
-const int32 kMainFrameRouteId = 6;
+const int32_t kRouteId = 5;
+const int32_t kMainFrameRouteId = 6;
 // TODO(avi): Widget routing IDs should be distinct from the view routing IDs,
 // once RenderWidgetHost is distilled from RenderViewHostImpl.
 // https://crbug.com/545684
 const int32_t kMainFrameWidgetRouteId = 5;
-const int32 kNewWindowRouteId = 7;
-const int32 kNewFrameRouteId = 10;
+const int32_t kNewWindowRouteId = 7;
+const int32_t kNewFrameRouteId = 10;
 const int32_t kNewFrameWidgetRouteId = 7;
 
 // Converts |ascii_character| into |key_code| and returns true on success.
@@ -487,7 +490,7 @@ void RenderViewTest::Reload(const GURL& url) {
   FrameLoadWaiter(frame).Wait();
 }
 
-uint32 RenderViewTest::GetNavigationIPCType() {
+uint32_t RenderViewTest::GetNavigationIPCType() {
   return FrameHostMsg_DidCommitProvisionalLoad::ID;
 }
 

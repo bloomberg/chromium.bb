@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 

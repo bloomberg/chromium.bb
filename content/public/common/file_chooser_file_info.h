@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_FILE_CHOOSER_FILE_INFO_H_
 #define CONTENT_PUBLIC_COMMON_FILE_CHOOSER_FILE_INFO_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -25,7 +27,7 @@ struct CONTENT_EXPORT FileChooserFileInfo {
   // For non-native files.
   GURL file_system_url;
   base::Time modification_time;
-  int64 length;
+  int64_t length;
 
   bool is_directory;
 };

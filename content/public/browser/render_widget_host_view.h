@@ -5,14 +5,14 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;

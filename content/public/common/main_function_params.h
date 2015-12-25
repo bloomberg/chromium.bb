@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/command_line.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 namespace sandbox {

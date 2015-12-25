@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_CACHE_STORAGE_USAGE_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_CACHE_STORAGE_USAGE_INFO_H_
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
@@ -14,7 +16,7 @@ namespace content {
 // Used to report per-origin storage info for Cache Storage API usage.
 struct CONTENT_EXPORT CacheStorageUsageInfo {
   CacheStorageUsageInfo(const GURL& origin,
-                        int64 total_size_bytes,
+                        int64_t total_size_bytes,
                         const base::Time& last_modified)
       : origin(origin),
         total_size_bytes(total_size_bytes),
@@ -24,7 +26,7 @@ struct CONTENT_EXPORT CacheStorageUsageInfo {
   GURL origin;
 
   // The total size, including resources, in bytes.
-  int64 total_size_bytes;
+  int64_t total_size_bytes;
 
   // Last modification time of the data for this origin.
   base::Time last_modified;

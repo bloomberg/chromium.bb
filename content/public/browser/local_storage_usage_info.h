@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_LOCAL_STORAGE_USAGE_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_LOCAL_STORAGE_USAGE_INFO_H_
 
+#include <stddef.h>
+
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"

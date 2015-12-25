@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_LOGIN_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_LOGIN_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 

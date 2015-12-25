@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_H_
 #define CONTENT_PUBLIC_TEST_TEST_BROWSER_THREAD_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 

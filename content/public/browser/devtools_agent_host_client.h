@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 
 namespace content {

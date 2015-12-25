@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_BROWSER_PLUGIN_GUEST_MODE_H_
 #define CONTENT_PUBLIC_COMMON_BROWSER_PLUGIN_GUEST_MODE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace content {

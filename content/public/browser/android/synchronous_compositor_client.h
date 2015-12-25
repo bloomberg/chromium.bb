@@ -5,8 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"

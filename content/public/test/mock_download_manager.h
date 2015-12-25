@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_MANAGER_H_
 #define CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_MANAGER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -28,7 +30,7 @@ class MockDownloadManager : public DownloadManager {
   // Structure to make it possible to match more than 10 arguments on
   // CreateDownloadItem.
   struct CreateDownloadItemAdapter {
-    uint32 id;
+    uint32_t id;
     base::FilePath current_path;
     base::FilePath target_path;
     std::vector<GURL> url_chain;
@@ -39,31 +41,30 @@ class MockDownloadManager : public DownloadManager {
     base::Time end_time;
     std::string etag;
     std::string last_modified;
-    int64 received_bytes;
-    int64 total_bytes;
+    int64_t received_bytes;
+    int64_t total_bytes;
     DownloadItem::DownloadState state;
     DownloadDangerType danger_type;
     DownloadInterruptReason interrupt_reason;
     bool opened;
 
-    CreateDownloadItemAdapter(
-      uint32 id,
-      const base::FilePath& current_path,
-      const base::FilePath& target_path,
-      const std::vector<GURL>& url_chain,
-      const GURL& referrer_url,
-      const std::string& mime_type,
-      const std::string& original_mime_type,
-      const base::Time& start_time,
-      const base::Time& end_time,
-      const std::string& etag,
-      const std::string& last_modified,
-      int64 received_bytes,
-      int64 total_bytes,
-      DownloadItem::DownloadState state,
-      DownloadDangerType danger_type,
-      DownloadInterruptReason interrupt_reason,
-      bool opened);
+    CreateDownloadItemAdapter(uint32_t id,
+                              const base::FilePath& current_path,
+                              const base::FilePath& target_path,
+                              const std::vector<GURL>& url_chain,
+                              const GURL& referrer_url,
+                              const std::string& mime_type,
+                              const std::string& original_mime_type,
+                              const base::Time& start_time,
+                              const base::Time& end_time,
+                              const std::string& etag,
+                              const std::string& last_modified,
+                              int64_t received_bytes,
+                              int64_t total_bytes,
+                              DownloadItem::DownloadState state,
+                              DownloadDangerType danger_type,
+                              DownloadInterruptReason interrupt_reason,
+                              bool opened);
     // Required by clang compiler.
     CreateDownloadItemAdapter(const CreateDownloadItemAdapter& rhs);
     ~CreateDownloadItemAdapter();
@@ -105,24 +106,23 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
 
   // Redirects to mock method to get around gmock 10 argument limit.
-  DownloadItem* CreateDownloadItem(
-      uint32 id,
-      const base::FilePath& current_path,
-      const base::FilePath& target_path,
-      const std::vector<GURL>& url_chain,
-      const GURL& referrer_url,
-      const std::string& mime_type,
-      const std::string& original_mime_type,
-      const base::Time& start_time,
-      const base::Time& end_time,
-      const std::string& etag,
-      const std::string& last_modified,
-      int64 received_bytes,
-      int64 total_bytes,
-      DownloadItem::DownloadState state,
-      DownloadDangerType danger_type,
-      DownloadInterruptReason interrupt_reason,
-      bool opened) override;
+  DownloadItem* CreateDownloadItem(uint32_t id,
+                                   const base::FilePath& current_path,
+                                   const base::FilePath& target_path,
+                                   const std::vector<GURL>& url_chain,
+                                   const GURL& referrer_url,
+                                   const std::string& mime_type,
+                                   const std::string& original_mime_type,
+                                   const base::Time& start_time,
+                                   const base::Time& end_time,
+                                   const std::string& etag,
+                                   const std::string& last_modified,
+                                   int64_t received_bytes,
+                                   int64_t total_bytes,
+                                   DownloadItem::DownloadState state,
+                                   DownloadDangerType danger_type,
+                                   DownloadInterruptReason interrupt_reason,
+                                   bool opened) override;
 
   MOCK_METHOD1(MockCreateDownloadItem,
                DownloadItem*(CreateDownloadItemAdapter adapter));
@@ -131,7 +131,7 @@ class MockDownloadManager : public DownloadManager {
   MOCK_CONST_METHOD0(NonMaliciousInProgressCount, int());
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_METHOD0(CheckForHistoryFilesRemoval, void());
-  MOCK_METHOD1(GetDownload, DownloadItem*(uint32 id));
+  MOCK_METHOD1(GetDownload, DownloadItem*(uint32_t id));
 };
 
 }  // namespace content

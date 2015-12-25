@@ -5,7 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_RENDER_WIDGET_TEST_H_
 #define CONTENT_PUBLIC_TEST_RENDER_WIDGET_TEST_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "content/public/test/render_view_test.h"
 
@@ -35,7 +36,7 @@ class RenderWidgetTest : public RenderViewTest {
   static const int kSmallHeight;
   static const int kTextPositionX;
   static const int kTextPositionY;
-  static const uint32 kRedARGB;
+  static const uint32_t kRedARGB;
 };
 
 }  // namespace content

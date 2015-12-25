@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_FRAME_NAVIGATE_PARAMS_H_
 #define CONTENT_PUBLIC_COMMON_FRAME_NAVIGATE_PARAMS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -25,7 +27,7 @@ struct CONTENT_EXPORT FrameNavigateParams {
   // anytime a new session history entry is created. This means you'll get new
   // page IDs for user actions, and the old page IDs will be reloaded when
   // iframes are loaded automatically.
-  int32 page_id;
+  int32_t page_id;
 
   // The unique ID of the NavigationEntry for browser-initiated navigations.
   // This value was given to the render process in the HistoryNavigationParams
@@ -39,13 +41,13 @@ struct CONTENT_EXPORT FrameNavigateParams {
   // The item sequence number identifies each stop in the session history.  It
   // is unique within the renderer process and makes a best effort to be unique
   // across browser sessions (using a renderer process timestamp).
-  int64 item_sequence_number;
+  int64_t item_sequence_number;
 
   // The document sequence number is used to identify cross-document navigations
   // in session history.  It increments for each new document and is unique in
   // the same way as |item_sequence_number|.  In-page navigations get a new item
   // sequence number but the same document sequence number.
-  int64 document_sequence_number;
+  int64_t document_sequence_number;
 
   // URL of the page being loaded.
   GURL url;

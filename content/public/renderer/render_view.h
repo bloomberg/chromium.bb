@@ -5,10 +5,12 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_VIEW_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_VIEW_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_sender.h"

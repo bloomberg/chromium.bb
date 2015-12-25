@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_OVERSCROLL_CONFIGURATION_H_
 #define CONTENT_PUBLIC_BROWSER_OVERSCROLL_CONFIGURATION_H_
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 
 namespace content {

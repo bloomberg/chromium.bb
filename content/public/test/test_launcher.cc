@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_launcher.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -15,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -27,6 +30,7 @@
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_switches.h"

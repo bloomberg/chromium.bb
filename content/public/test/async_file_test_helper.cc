@@ -73,11 +73,11 @@ void ReadDirectoryCallback(base::RunLoop* run_loop,
 }
 
 void DidGetUsageAndQuota(storage::QuotaStatusCode* status_out,
-                         int64* usage_out,
-                         int64* quota_out,
+                         int64_t* usage_out,
+                         int64_t* quota_out,
                          storage::QuotaStatusCode status,
-                         int64 usage,
-                         int64 quota) {
+                         int64_t usage,
+                         int64_t quota) {
   if (status_out)
     *status_out = status;
   if (usage_out)
@@ -88,7 +88,7 @@ void DidGetUsageAndQuota(storage::QuotaStatusCode* status_out,
 
 }  // namespace
 
-const int64 AsyncFileTestHelper::kDontCheckSize = -1;
+const int64_t AsyncFileTestHelper::kDontCheckSize = -1;
 
 base::File::Error AsyncFileTestHelper::Copy(
     storage::FileSystemContext* context,
@@ -239,7 +239,7 @@ base::File::Error AsyncFileTestHelper::GetPlatformPath(
 
 bool AsyncFileTestHelper::FileExists(storage::FileSystemContext* context,
                                      const storage::FileSystemURL& url,
-                                     int64 expected_size) {
+                                     int64_t expected_size) {
   base::File::Info file_info;
   base::File::Error result = GetMetadata(context, url, &file_info);
   if (result != base::File::FILE_OK || file_info.is_directory)
@@ -258,8 +258,8 @@ storage::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
     storage::QuotaManager* quota_manager,
     const GURL& origin,
     storage::FileSystemType type,
-    int64* usage,
-    int64* quota) {
+    int64_t* usage,
+    int64_t* quota) {
   storage::QuotaStatusCode status = storage::kQuotaStatusUnknown;
   quota_manager->GetUsageAndQuota(
       origin,

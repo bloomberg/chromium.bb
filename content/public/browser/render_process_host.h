@@ -5,9 +5,11 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
@@ -78,8 +80,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Used for refcounting, each holder of this object must AddRoute and
   // RemoveRoute. This object should be allocated on the heap; when no
   // listeners own it any more, it will delete itself.
-  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) = 0;
-  virtual void RemoveRoute(int32 routing_id) = 0;
+  virtual void AddRoute(int32_t routing_id, IPC::Listener* listener) = 0;
+  virtual void RemoveRoute(int32_t routing_id) = 0;
 
   // Add and remove observers for lifecycle events. The order in which
   // notifications are sent to observers is undefined. Observers must be sure to
@@ -233,7 +235,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) = 0;
 
-  typedef base::Callback<void(scoped_ptr<uint8[]> packet_header,
+  typedef base::Callback<void(scoped_ptr<uint8_t[]> packet_header,
                               size_t header_length,
                               size_t packet_length,
                               bool incoming)> WebRtcRtpPacketCallback;

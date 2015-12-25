@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_ASYNC_FILE_TEST_HELPER_H_
 #define CONTENT_PUBLIC_TEST_ASYNC_FILE_TEST_HELPER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/quota/quota_status_code.h"
@@ -28,7 +30,7 @@ class AsyncFileTestHelper {
   typedef storage::FileSystemOperation::CopyProgressCallback
       CopyProgressCallback;
 
-  static const int64 kDontCheckSize;
+  static const int64_t kDontCheckSize;
 
   // Performs Copy from |src| to |dest| and returns the status code.
   static base::File::Error Copy(storage::FileSystemContext* context,
@@ -92,7 +94,7 @@ class AsyncFileTestHelper {
   // existence).
   static bool FileExists(storage::FileSystemContext* context,
                          const storage::FileSystemURL& url,
-                         int64 size);
+                         int64_t size);
 
   // Returns true if a directory exists at |url|.
   static bool DirectoryExists(storage::FileSystemContext* context,
@@ -103,8 +105,8 @@ class AsyncFileTestHelper {
       storage::QuotaManager* quota_manager,
       const GURL& origin,
       storage::FileSystemType type,
-      int64* usage,
-      int64* quota);
+      int64_t* usage,
+      int64_t* quota);
 };
 
 }  // namespace content

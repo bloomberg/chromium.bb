@@ -5,9 +5,13 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_
 #define CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
@@ -49,8 +53,8 @@ class MockRenderThread : public RenderThread {
   std::string GetLocale() override;
   IPC::SyncMessageFilter* GetSyncMessageFilter() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOMessageLoopProxy() override;
-  void AddRoute(int32 routing_id, IPC::Listener* listener) override;
-  void RemoveRoute(int32 routing_id) override;
+  void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
+  void RemoveRoute(int32_t routing_id) override;
   int GenerateRoutingID() override;
   void AddFilter(IPC::MessageFilter* filter) override;
   void RemoveFilter(IPC::MessageFilter* filter) override;
@@ -65,11 +69,11 @@ class MockRenderThread : public RenderThread {
       size_t buffer_size) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   void RegisterExtension(v8::Extension* extension) override;
-  void ScheduleIdleHandler(int64 initial_delay_ms) override;
+  void ScheduleIdleHandler(int64_t initial_delay_ms) override;
   void IdleHandler() override;
-  int64 GetIdleNotificationDelayInMs() const override;
+  int64_t GetIdleNotificationDelayInMs() const override;
   void SetIdleNotificationDelayInMs(
-      int64 idle_notification_delay_in_ms) override;
+      int64_t idle_notification_delay_in_ms) override;
   void UpdateHistograms(int sequence_number) override;
   int PostTaskToAllWebWorkers(const base::Closure& closure) override;
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
@@ -83,25 +87,17 @@ class MockRenderThread : public RenderThread {
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
 
-  void set_routing_id(int32 id) {
-    routing_id_ = id;
-  }
+  void set_routing_id(int32_t id) { routing_id_ = id; }
 
-  int32 opener_id() const {
-    return opener_id_;
-  }
+  int32_t opener_id() const { return opener_id_; }
 
-  void set_new_window_routing_id(int32 id) {
-    new_window_routing_id_ = id;
-  }
+  void set_new_window_routing_id(int32_t id) { new_window_routing_id_ = id; }
 
   void set_new_window_main_frame_widget_routing_id(int32_t id) {
     new_window_main_frame_widget_routing_id_ = id;
   }
 
-  void set_new_frame_routing_id(int32 id) {
-    new_frame_routing_id_ = id;
-  }
+  void set_new_frame_routing_id(int32_t id) { new_frame_routing_id_ = id; }
 
   // Simulates the Widget receiving a close message. This should result
   // on releasing the internal reference counts and destroying the internal
@@ -146,16 +142,16 @@ class MockRenderThread : public RenderThread {
   IPC::TestSink sink_;
 
   // Routing id what will be assigned to the Widget.
-  int32 routing_id_;
+  int32_t routing_id_;
 
   // Opener id reported by the Widget.
-  int32 opener_id_;
+  int32_t opener_id_;
 
   // Routing id that will be assigned to a CreateWindow Widget.
-  int32 new_window_routing_id_;
-  int32 new_window_main_frame_routing_id_;
+  int32_t new_window_routing_id_;
+  int32_t new_window_main_frame_routing_id_;
   int32_t new_window_main_frame_widget_routing_id_;
-  int32 new_frame_routing_id_;
+  int32_t new_frame_routing_id_;
 
   // The last known good deserializer for sync messages.
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;

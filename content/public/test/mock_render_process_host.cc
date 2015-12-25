@@ -82,7 +82,7 @@ void MockRenderProcessHost::SimulateCrash() {
   // predictable order for unittests which may assert against the order, we sort
   // the listeners by descending routing ID, instead of using the arbitrary
   // hash-map order like RenderProcessHostImpl.
-  std::vector<std::pair<int32, IPC::Listener*>> sorted_listeners_;
+  std::vector<std::pair<int32_t, IPC::Listener*>> sorted_listeners_;
   IDMap<IPC::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
     sorted_listeners_.push_back(
@@ -109,13 +109,12 @@ int MockRenderProcessHost::GetNextRoutingID() {
   return ++prev_routing_id_;
 }
 
-void MockRenderProcessHost::AddRoute(
-    int32 routing_id,
-    IPC::Listener* listener) {
+void MockRenderProcessHost::AddRoute(int32_t routing_id,
+                                     IPC::Listener* listener) {
   listeners_.AddWithID(listener, routing_id);
 }
 
-void MockRenderProcessHost::RemoveRoute(int32 routing_id) {
+void MockRenderProcessHost::RemoveRoute(int32_t routing_id) {
   DCHECK(listeners_.Lookup(routing_id) != NULL);
   listeners_.Remove(routing_id);
   Cleanup();
@@ -347,8 +346,7 @@ bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-void MockRenderProcessHost::OnChannelConnected(int32 peer_pid) {
-}
+void MockRenderProcessHost::OnChannelConnected(int32_t peer_pid) {}
 
 MockRenderProcessHostFactory::MockRenderProcessHostFactory() {}
 

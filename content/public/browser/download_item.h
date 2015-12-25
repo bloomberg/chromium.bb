@@ -17,6 +17,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -78,7 +80,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // Callback used with AcquireFileAndDeleteDownload().
   typedef base::Callback<void(const base::FilePath&)> AcquireFileCallback;
 
-  static const uint32 kInvalidId;
+  static const uint32_t kInvalidId;
 
   static const char kEmptyFileHash[];
 
@@ -152,7 +154,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // State accessors -----------------------------------------------------------
 
-  virtual uint32 GetId() const = 0;
+  virtual uint32_t GetId() const = 0;
   virtual DownloadState GetState() const = 0;
 
   // Returns the most recent interrupt reason for this download. Returns
@@ -266,7 +268,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual bool TimeRemaining(base::TimeDelta* remaining) const = 0;
 
   // Simple speed estimate in bytes/s
-  virtual int64 CurrentSpeed() const = 0;
+  virtual int64_t CurrentSpeed() const = 0;
 
   // Rough percent complete, -1 means we don't know (== we didn't receive a
   // total size).
@@ -275,8 +277,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // Returns true if this download has saved all of its data.
   virtual bool AllDataSaved() const = 0;
 
-  virtual int64 GetTotalBytes() const = 0;
-  virtual int64 GetReceivedBytes() const = 0;
+  virtual int64_t GetTotalBytes() const = 0;
+  virtual int64_t GetReceivedBytes() const = 0;
   virtual base::Time GetStartTime() const = 0;
   virtual base::Time GetEndTime() const = 0;
 

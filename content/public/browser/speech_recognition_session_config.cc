@@ -5,7 +5,7 @@
 #include "content/public/browser/speech_recognition_session_config.h"
 
 namespace {
-const uint32 kDefaultMaxHypotheses = 1;
+const uint32_t kDefaultMaxHypotheses = 1;
 }
 
 namespace content {

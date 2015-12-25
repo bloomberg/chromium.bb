@@ -5,9 +5,10 @@
 #ifndef CONTENT_PUBLIC_BROWSER_STORAGE_PARTITION_H_
 #define CONTENT_PUBLIC_BROWSER_STORAGE_PARTITION_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
@@ -79,7 +80,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
 
-  enum : uint32 {
+  enum : uint32_t {
     REMOVE_DATA_MASK_APPCACHE = 1 << 0,
     REMOVE_DATA_MASK_COOKIES = 1 << 1,
     REMOVE_DATA_MASK_FILE_SYSTEMS = 1 << 2,
@@ -114,8 +115,8 @@ class CONTENT_EXPORT StoragePartition {
   // about.  This will no longer be the case when we resolve
   // http://crbug.com/159193. Remove |request_context_getter| when that bug
   // is fixed.
-  virtual void ClearDataForOrigin(uint32 remove_mask,
-                                  uint32 quota_storage_remove_mask,
+  virtual void ClearDataForOrigin(uint32_t remove_mask,
+                                  uint32_t quota_storage_remove_mask,
                                   const GURL& storage_origin,
                                   net::URLRequestContextGetter* rq_context,
                                   const base::Closure& callback) = 0;
@@ -133,8 +134,8 @@ class CONTENT_EXPORT StoragePartition {
   // otherwise the callback can be null (base::Callback::is_null() == true).
   // |callback| is called when data deletion is done or at least the deletion is
   // scheduled.
-  virtual void ClearData(uint32 remove_mask,
-                         uint32 quota_storage_remove_mask,
+  virtual void ClearData(uint32_t remove_mask,
+                         uint32_t quota_storage_remove_mask,
                          const GURL& storage_origin,
                          const OriginMatcherFunction& origin_matcher,
                          const base::Time begin,

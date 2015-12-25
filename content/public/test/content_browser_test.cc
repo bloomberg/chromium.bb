@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"

@@ -5,9 +5,10 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_SESSION_CONFIG_H_
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_SESSION_CONFIG_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -34,7 +35,7 @@ struct CONTENT_EXPORT SpeechRecognitionSessionConfig {
   bool filter_profanities;
   bool continuous;
   bool interim_results;
-  uint32 max_hypotheses;
+  uint32_t max_hypotheses;
   std::string auth_token;
   std::string auth_scope;
   scoped_refptr<SpeechRecognitionSessionPreamble> preamble;

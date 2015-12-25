@@ -4,10 +4,13 @@
 
 #include "content/public/test/browser_test_utils.h"
 
+#include <stddef.h>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"

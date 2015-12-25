@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_DESTINATION_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_DESTINATION_OBSERVER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -23,8 +25,8 @@ namespace content {
 // Note that this interface does not deal with cross-thread lifetime issues.
 class DownloadDestinationObserver {
  public:
-  virtual void DestinationUpdate(int64 bytes_so_far,
-                                 int64 bytes_per_sec,
+  virtual void DestinationUpdate(int64_t bytes_so_far,
+                                 int64_t bytes_per_sec,
                                  const std::string& hash_state) = 0;
 
   virtual void DestinationError(DownloadInterruptReason reason) = 0;

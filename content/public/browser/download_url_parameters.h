@@ -5,11 +5,13 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_URL_PARAMETERS_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_URL_PARAMETERS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
@@ -84,7 +86,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void set_prefer_cache(bool prefer_cache) {
     prefer_cache_ = prefer_cache;
   }
-  void set_post_id(int64 post_id) { post_id_ = post_id; }
+  void set_post_id(int64_t post_id) { post_id_ = post_id; }
   void set_callback(const OnStartedCallback& callback) {
     callback_ = callback;
   }
@@ -94,7 +96,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void set_suggested_name(const base::string16& suggested_name) {
     save_info_.suggested_name = suggested_name;
   }
-  void set_offset(int64 offset) { save_info_.offset = offset; }
+  void set_offset(int64_t offset) { save_info_.offset = offset; }
   void set_hash_state(const std::string& hash_state) {
     save_info_.hash_state = hash_state;
   }
@@ -112,7 +114,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   const std::string& etag() const { return etag_; }
   const std::string& method() const { return method_; }
   const std::string& post_body() const { return post_body_; }
-  int64 post_id() const { return post_id_; }
+  int64_t post_id() const { return post_id_; }
   bool prefer_cache() const { return prefer_cache_; }
   const Referrer& referrer() const { return referrer_; }
   const std::string& referrer_encoding() const { return referrer_encoding_; }
@@ -136,7 +138,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   const base::string16& suggested_name() const {
     return save_info_.suggested_name;
   }
-  int64 offset() const { return save_info_.offset; }
+  int64_t offset() const { return save_info_.offset; }
   const std::string& hash_state() const { return save_info_.hash_state; }
   bool prompt() const { return save_info_.prompt_for_save_location; }
   const GURL& url() const { return url_; }
@@ -154,7 +156,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   std::string etag_;
   std::string method_;
   std::string post_body_;
-  int64 post_id_;
+  int64_t post_id_;
   bool prefer_cache_;
   Referrer referrer_;
   std::string referrer_encoding_;

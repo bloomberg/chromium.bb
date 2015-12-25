@@ -5,9 +5,10 @@
 #ifndef CONTENT_PUBLIC_COMMON_SOCKET_PERMISSION_REQUEST_H_
 #define CONTENT_PUBLIC_COMMON_SOCKET_PERMISSION_REQUEST_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 
 namespace content {
 
@@ -29,15 +30,12 @@ struct SocketPermissionRequest {
 
   SocketPermissionRequest(OperationType type,
                           const std::string& host,
-                          uint16 port)
-    : type(type),
-      host(host),
-      port(port) {
-  }
+                          uint16_t port)
+      : type(type), host(host), port(port) {}
 
   OperationType type;
   std::string host;
-  uint16 port;
+  uint16_t port;
 };
 
 }  // namespace content

@@ -5,6 +5,7 @@
 #include "content/public/test/test_renderer_host.h"
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"

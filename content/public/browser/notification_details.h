@@ -8,7 +8,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_DETAILS_H_
 #define CONTENT_PUBLIC_BROWSER_NOTIFICATION_DETAILS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "content/common/content_export.h"
 
 namespace content {

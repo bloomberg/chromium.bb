@@ -5,8 +5,10 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_FRAME_OBSERVER_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_FRAME_OBSERVER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
@@ -94,8 +96,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DetailedConsoleMessageAdded(const base::string16& message,
                                            const base::string16& source,
                                            const base::string16& stack_trace,
-                                           int32 line_number,
-                                           int32 severity_level) {}
+                                           int32_t line_number,
+                                           int32_t severity_level) {}
 
   // Called when an interesting (from document lifecycle perspective),
   // compositor-driven layout had happened. This is a reasonable hook to use

@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_H_
 #define CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_H_
 
+#include <stdint.h>
+
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -37,7 +39,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // This value is used as the tracing id of the browser process for identifying
   // cross-process shared memory segments when tracing.
   // Note: In single-process mode all the clients of tracing will use this id.
-  static uint64 kBrowserTracingProcessId;
+  static uint64_t kBrowserTracingProcessId;
 
   // Used to create a child process host. The delegate must outlive this object.
   static ChildProcessHost* Create(ChildProcessHostDelegate* delegate);

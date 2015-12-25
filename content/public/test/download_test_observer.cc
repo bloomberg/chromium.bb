@@ -219,7 +219,7 @@ void DownloadTestObserver::SignalIfFinished() {
     base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
-void DownloadTestObserver::AcceptDangerousDownload(uint32 download_id) {
+void DownloadTestObserver::AcceptDangerousDownload(uint32_t download_id) {
   // Download manager was shutdown before the UI thread could accept the
   // download.
   if (!download_manager_)
@@ -229,7 +229,7 @@ void DownloadTestObserver::AcceptDangerousDownload(uint32 download_id) {
     download->ValidateDangerousDownload();
 }
 
-void DownloadTestObserver::DenyDangerousDownload(uint32 download_id) {
+void DownloadTestObserver::DenyDangerousDownload(uint32_t download_id) {
   // Download manager was shutdown before the UI thread could deny the
   // download.
   if (!download_manager_)

@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_SESSION_MESSAGE_H_
 #define CONTENT_PUBLIC_BROWSER_PRESENTATION_SESSION_MESSAGE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_zoom.h"

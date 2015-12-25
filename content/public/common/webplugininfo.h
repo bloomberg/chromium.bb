@@ -5,10 +5,11 @@
 #ifndef CONTENT_PUBLIC_COMMON_WEBPLUGININFO_H_
 #define CONTENT_PUBLIC_COMMON_WEBPLUGININFO_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
 
@@ -90,7 +91,7 @@ struct CONTENT_EXPORT WebPluginInfo {
   int type;
 
   // When type is PLUGIN_TYPE_PEPPER_* this indicates the permission bits.
-  int32 pepper_permissions;
+  int32_t pepper_permissions;
 };
 
 }  // namespace content

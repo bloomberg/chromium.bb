@@ -5,11 +5,12 @@
 #ifndef CONTENT_PUBLIC_COMMON_MEDIA_STREAM_REQUEST_H_
 #define CONTENT_PUBLIC_COMMON_MEDIA_STREAM_REQUEST_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"

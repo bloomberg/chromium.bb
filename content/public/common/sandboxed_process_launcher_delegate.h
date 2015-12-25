@@ -8,6 +8,7 @@
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/sandbox_type.h"
 

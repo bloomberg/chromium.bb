@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_sink.h"

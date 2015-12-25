@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"

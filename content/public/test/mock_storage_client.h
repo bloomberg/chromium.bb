@@ -5,12 +5,16 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_STORAGE_CLIENT_H_
 #define CONTENT_PUBLIC_TEST_MOCK_STORAGE_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/quota/quota_client.h"
@@ -29,7 +33,7 @@ namespace content {
 struct MockOriginData {
   const char* origin;
   StorageType type;
-  int64 usage;
+  int64_t usage;
 };
 
 // Mock storage class for testing.
@@ -42,10 +46,12 @@ class MockStorageClient : public QuotaClient {
   ~MockStorageClient() override;
 
   // To add or modify mock data in this client.
-  void AddOriginAndNotify(
-      const GURL& origin_url, StorageType type, int64 size);
-  void ModifyOriginAndNotify(
-      const GURL& origin_url, StorageType type, int64 delta);
+  void AddOriginAndNotify(const GURL& origin_url,
+                          StorageType type,
+                          int64_t size);
+  void ModifyOriginAndNotify(const GURL& origin_url,
+                             StorageType type,
+                             int64_t delta);
   void TouchAllOriginsAndNotify();
 
   void AddOriginToErrorSet(const GURL& origin_url, StorageType type);
@@ -86,7 +92,7 @@ class MockStorageClient : public QuotaClient {
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const ID id_;
 
-  typedef std::map<std::pair<GURL, StorageType>, int64> OriginDataMap;
+  typedef std::map<std::pair<GURL, StorageType>, int64_t> OriginDataMap;
   OriginDataMap origin_data_;
   typedef std::set<std::pair<GURL, StorageType> > ErrorOriginSet;
   ErrorOriginSet error_origins_;

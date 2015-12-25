@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_REQUEST_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_REQUEST_INFO_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"

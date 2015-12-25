@@ -8,6 +8,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 #define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 
+#include "build/build_config.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/security_style.h"

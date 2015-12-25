@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_RENDERER_CONTENT_RENDERER_CLIENT_H_
 #define CONTENT_PUBLIC_RENDERER_CONTENT_RENDERER_CLIENT_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

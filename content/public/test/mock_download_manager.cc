@@ -10,7 +10,7 @@
 namespace content {
 
 MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
-    uint32 id,
+    uint32_t id,
     const base::FilePath& current_path,
     const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
@@ -21,8 +21,8 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
     const base::Time& end_time,
     const std::string& etag,
     const std::string& last_modified,
-    int64 received_bytes,
-    int64 total_bytes,
+    int64_t received_bytes,
+    int64_t total_bytes,
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
@@ -96,7 +96,7 @@ void MockDownloadManager::StartDownload(
 }
 
 DownloadItem* MockDownloadManager::CreateDownloadItem(
-    uint32 id,
+    uint32_t id,
     const base::FilePath& current_path,
     const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
@@ -107,8 +107,8 @@ DownloadItem* MockDownloadManager::CreateDownloadItem(
     const base::Time& end_time,
     const std::string& etag,
     const std::string& last_modified,
-    int64 received_bytes,
-    int64 total_bytes,
+    int64_t received_bytes,
+    int64_t total_bytes,
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,

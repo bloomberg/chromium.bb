@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_content_client_initializer.h"
 
+#include "build/build_config.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/mock_render_process_host.h"

@@ -4,6 +4,8 @@
 
 #include "content/public/app/content_main_delegate.h"
 
+#include "build/build_config.h"
+
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 #include "content/public/browser/content_browser_client.h"
 #endif

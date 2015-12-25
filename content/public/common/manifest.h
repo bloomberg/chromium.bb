@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_COMMON_MANIFEST_H_
 #define CONTENT_PUBLIC_COMMON_MANIFEST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/strings/nullable_string16.h"

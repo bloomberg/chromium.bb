@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_TRACE_UPLOADER_H_
 #define CONTENT_PUBLIC_BROWSER_TRACE_UPLOADER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -21,7 +23,7 @@ class TraceUploader {
   typedef base::Callback<void(bool, const std::string&)> UploadDoneCallback;
   // Call this to update the progress UI with the current bytes uploaded,
   // as well as the total.
-  typedef base::Callback<void(int64, int64)> UploadProgressCallback;
+  typedef base::Callback<void(int64_t, int64_t)> UploadProgressCallback;
 
   virtual ~TraceUploader() {}
 

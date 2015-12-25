@@ -5,8 +5,12 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_MESSAGE_FILTER_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_MESSAGE_FILTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -33,8 +37,8 @@ class CONTENT_EXPORT BrowserMessageFilter
           BrowserMessageFilter, BrowserMessageFilterTraits>,
       public IPC::Sender {
  public:
-  explicit BrowserMessageFilter(uint32 message_class_to_filter);
-  BrowserMessageFilter(const uint32* message_classes_to_filter,
+  explicit BrowserMessageFilter(uint32_t message_class_to_filter);
+  BrowserMessageFilter(const uint32_t* message_classes_to_filter,
                        size_t num_message_classes_to_filter);
 
   // These match the corresponding IPC::MessageFilter methods and are always
@@ -42,7 +46,7 @@ class CONTENT_EXPORT BrowserMessageFilter
   virtual void OnFilterAdded(IPC::Sender* sender) {}
   virtual void OnFilterRemoved() {}
   virtual void OnChannelClosing() {}
-  virtual void OnChannelConnected(int32 peer_pid) {}
+  virtual void OnChannelConnected(int32_t peer_pid) {}
 
   // Called when the message filter is about to be deleted.  This gives
   // derived classes the option of controlling which thread they're deleted
@@ -97,7 +101,7 @@ class CONTENT_EXPORT BrowserMessageFilter
   // error details to UMA, so use the bad_message.h for your module instead.
   virtual void ShutdownForBadMessage();
 
-  const std::vector<uint32>& message_classes_to_filter() const {
+  const std::vector<uint32_t>& message_classes_to_filter() const {
     return message_classes_to_filter_;
   }
 
@@ -127,7 +131,7 @@ class CONTENT_EXPORT BrowserMessageFilter
   IPC::Sender* sender_;
   base::Process peer_process_;
 
-  std::vector<uint32> message_classes_to_filter_;
+  std::vector<uint32_t> message_classes_to_filter_;
 };
 
 struct BrowserMessageFilterTraits {

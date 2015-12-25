@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_CHILD_CHILD_THREAD_H_
 #define CONTENT_PUBLIC_CHILD_CHILD_THREAD_H_
 
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
 

@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_THREAD_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_THREAD_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/user_metrics_action.h"
@@ -57,8 +59,8 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
 
   // Called to add or remove a listener for a particular message routing ID.
   // These methods normally get delegated to a MessageRouter.
-  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) = 0;
-  virtual void RemoveRoute(int32 routing_id) = 0;
+  virtual void AddRoute(int32_t routing_id, IPC::Listener* listener) = 0;
+  virtual void RemoveRoute(int32_t routing_id) = 0;
   virtual int GenerateRoutingID() = 0;
 
   // These map to IPC::ChannelProxy methods.
@@ -107,15 +109,15 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual void RegisterExtension(v8::Extension* extension) = 0;
 
   // Schedule a call to IdleHandler with the given initial delay.
-  virtual void ScheduleIdleHandler(int64 initial_delay_ms) = 0;
+  virtual void ScheduleIdleHandler(int64_t initial_delay_ms) = 0;
 
   // A task we invoke periodically to assist with idle cleanup.
   virtual void IdleHandler() = 0;
 
   // Get/Set the delay for how often the idle handler is called.
-  virtual int64 GetIdleNotificationDelayInMs() const = 0;
+  virtual int64_t GetIdleNotificationDelayInMs() const = 0;
   virtual void SetIdleNotificationDelayInMs(
-      int64 idle_notification_delay_in_ms) = 0;
+      int64_t idle_notification_delay_in_ms) = 0;
 
   virtual void UpdateHistograms(int sequence_number) = 0;
 

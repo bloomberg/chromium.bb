@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_CONTENT_DESCRIPTORS_H_
 #define CONTENT_PUBLIC_COMMON_CONTENT_DESCRIPTORS_H_
 
+#include "build/build_config.h"
 #include "ipc/ipc_descriptors.h"
 
 // This is a list of global descriptor keys to be used with the

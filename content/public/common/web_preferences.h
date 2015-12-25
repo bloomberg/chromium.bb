@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ui/base/touch/touch_device.h"
 #include "url/gurl.h"

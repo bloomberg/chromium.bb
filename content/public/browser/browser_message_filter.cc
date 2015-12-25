@@ -8,8 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
+#include "build/build_config.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
@@ -45,7 +47,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
     filter_->OnChannelClosing();
   }
 
-  void OnChannelConnected(int32 peer_pid) override {
+  void OnChannelConnected(int32_t peer_pid) override {
     filter_->peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
     filter_->OnChannelConnected(peer_pid);
   }
@@ -80,7 +82,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   }
 
   bool GetSupportedMessageClasses(
-      std::vector<uint32>* supported_message_classes) const override {
+      std::vector<uint32_t>* supported_message_classes) const override {
     supported_message_classes->assign(
         filter_->message_classes_to_filter().begin(),
         filter_->message_classes_to_filter().end());
@@ -100,13 +102,13 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(Internal);
 };
 
-BrowserMessageFilter::BrowserMessageFilter(uint32 message_class_to_filter)
+BrowserMessageFilter::BrowserMessageFilter(uint32_t message_class_to_filter)
     : internal_(nullptr),
       sender_(nullptr),
       message_classes_to_filter_(1, message_class_to_filter) {}
 
 BrowserMessageFilter::BrowserMessageFilter(
-    const uint32* message_classes_to_filter,
+    const uint32_t* message_classes_to_filter,
     size_t num_message_classes_to_filter)
     : internal_(nullptr),
       sender_(nullptr),

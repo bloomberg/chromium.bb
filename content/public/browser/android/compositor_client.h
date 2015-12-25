@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_COMPOSITOR_CLIENT_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_COMPOSITOR_CLIENT_H_
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace content {

@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_FRAME_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_FRAME_H_
 
+#include <stddef.h>
+
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"

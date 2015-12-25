@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SITE_INSTANCE_H_
 #define CONTENT_PUBLIC_BROWSER_SITE_INSTANCE_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
@@ -72,7 +74,7 @@ class RenderProcessHost;
 class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
  public:
   // Returns a unique ID for this SiteInstance.
-  virtual int32 GetId() = 0;
+  virtual int32_t GetId() = 0;
 
   // Whether this SiteInstance has a running process associated with it.
   // This may return true before the first call to GetProcess(), in cases where

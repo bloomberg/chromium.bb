@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_BROWSER_HISTOGRAM_FETCHER_H_
 #define CONTENT_PUBLIC_BROWSER_HISTOGRAM_FETCHER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"

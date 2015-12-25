@@ -5,6 +5,7 @@
 #include "content/public/browser/navigation_controller.h"
 
 #include "base/memory/ref_counted_memory.h"
+#include "build/build_config.h"
 
 namespace content {
 

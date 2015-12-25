@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 #include "url/origin.h"

@@ -4,15 +4,19 @@
 
 #include "content/public/test/browser_test_base.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"

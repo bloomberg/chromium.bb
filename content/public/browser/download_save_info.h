@@ -5,8 +5,11 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -32,7 +35,7 @@ struct CONTENT_EXPORT DownloadSaveInfo {
   base::File file;
 
   // The file offset at which to start the download.  May be 0.
-  int64 offset;
+  int64_t offset;
 
   // The state of the hash at the start of the download.  May be empty.
   std::string hash_state;

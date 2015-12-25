@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H_
 
 #include <string>
-#include "base/basictypes.h"
 #include "content/public/common/resource_type.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"

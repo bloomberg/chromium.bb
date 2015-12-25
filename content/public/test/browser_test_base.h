@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"

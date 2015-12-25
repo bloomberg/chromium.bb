@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BACKGROUND_SYNC_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_BACKGROUND_SYNC_CONTROLLER_H_
 
+#include <stdint.h>
+
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
