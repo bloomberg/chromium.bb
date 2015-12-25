@@ -5,9 +5,13 @@
 #ifndef CONTENT_BROWSER_MEDIA_MIDI_HOST_H_
 #define CONTENT_BROWSER_MEDIA_MIDI_HOST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -41,12 +45,12 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   void CompleteStartSession(media::midi::Result result) override;
   void AddInputPort(const media::midi::MidiPortInfo& info) override;
   void AddOutputPort(const media::midi::MidiPortInfo& info) override;
-  void SetInputPortState(uint32 port,
+  void SetInputPortState(uint32_t port,
                          media::midi::MidiPortState state) override;
-  void SetOutputPortState(uint32 port,
+  void SetOutputPortState(uint32_t port,
                           media::midi::MidiPortState state) override;
-  void ReceiveMidiData(uint32 port,
-                       const uint8* data,
+  void ReceiveMidiData(uint32_t port,
+                       const uint8_t* data,
                        size_t length,
                        double timestamp) override;
   void AccumulateMidiBytesSent(size_t n) override;
@@ -56,8 +60,8 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   void OnStartSession();
 
   // Data to be sent to a MIDI output port.
-  void OnSendData(uint32 port,
-                  const std::vector<uint8>& data,
+  void OnSendData(uint32_t port,
+                  const std::vector<uint8_t>& data,
                   double timestamp);
 
   void OnEndSession();
@@ -75,7 +79,7 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   // - |data| must be any number of complete MIDI messages (data abbreviation
   //    called "running status" is disallowed).
   // - 1-byte MIDI realtime messages can be placed at any position of |data|.
-  static bool IsValidWebMIDIData(const std::vector<uint8>& data);
+  static bool IsValidWebMIDIData(const std::vector<uint8_t>& data);
 
   int renderer_process_id_;
 
@@ -111,7 +115,7 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   base::Lock in_flight_lock_;
 
   // How many output port exists.
-  uint32 output_port_count_;
+  uint32_t output_port_count_;
 
   // Protects access to |output_port_count_|.
   base::Lock output_port_count_lock_;

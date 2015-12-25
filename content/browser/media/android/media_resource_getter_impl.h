@@ -6,8 +6,10 @@
 #define CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_RESOURCE_GETTER_IMPL_H_
 
 #include <jni.h>
+#include <stdint.h>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
@@ -56,8 +58,8 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
                             const std::string& user_agent,
                             const ExtractMediaMetadataCB& callback) override;
   void ExtractMediaMetadata(const int fd,
-                            const int64 offset,
-                            const int64 size,
+                            const int64_t offset,
+                            const int64_t size,
                             const ExtractMediaMetadataCB& callback) override;
 
   static bool RegisterMediaResourceGetter(JNIEnv* env);

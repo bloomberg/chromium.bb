@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -135,7 +136,9 @@ static void GetMediaMetadata(
 // Gets the metadata from a file descriptor. When finished, a task is posted to
 // the UI thread to run the callback function.
 static void GetMediaMetadataFromFd(
-    const int fd, const int64 offset, const int64 size,
+    const int fd,
+    const int64_t offset,
+    const int64_t size,
     const media::MediaResourceGetter::ExtractMediaMetadataCB& callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
@@ -365,7 +368,9 @@ void MediaResourceGetterImpl::ExtractMediaMetadata(
 }
 
 void MediaResourceGetterImpl::ExtractMediaMetadata(
-    const int fd, const int64 offset, const int64 size,
+    const int fd,
+    const int64_t offset,
+    const int64_t size,
     const ExtractMediaMetadataCB& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();

@@ -4,9 +4,12 @@
 
 #include "content/browser/media/android/media_session.h"
 
+#include <stddef.h>
+
 #include <list>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"

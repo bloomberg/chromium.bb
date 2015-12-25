@@ -6,9 +6,11 @@
 #define CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_H_
 
 #include <jni.h>
+#include <stddef.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/browser/media/android/media_session_uma_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"

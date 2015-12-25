@@ -4,7 +4,10 @@
 
 #include "content/browser/media/webrtc_internals.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/browser_thread.h"

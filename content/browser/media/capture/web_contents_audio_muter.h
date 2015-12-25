@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_AUDIO_MUTER_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_AUDIO_MUTER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace content {

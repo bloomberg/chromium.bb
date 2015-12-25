@@ -4,7 +4,9 @@
 
 #include "content/browser/media/capture/web_contents_capture_util.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

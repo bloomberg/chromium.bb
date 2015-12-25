@@ -4,6 +4,8 @@
 
 #include "content/browser/media/capture/cursor_renderer_aura.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 
@@ -158,12 +160,12 @@ void CursorRendererAura::RenderOnVideoFrame(
   scaled_cursor_bitmap_.lockPixels();
   for (int y = rect.y(); y < rect.bottom(); ++y) {
     int cursor_y = y - cursor_position_in_frame_.y();
-    uint8* yplane = target->data(media::VideoFrame::kYPlane) +
-                    y * target->row_bytes(media::VideoFrame::kYPlane);
-    uint8* uplane = target->data(media::VideoFrame::kUPlane) +
-                    (y / 2) * target->row_bytes(media::VideoFrame::kUPlane);
-    uint8* vplane = target->data(media::VideoFrame::kVPlane) +
-                    (y / 2) * target->row_bytes(media::VideoFrame::kVPlane);
+    uint8_t* yplane = target->data(media::VideoFrame::kYPlane) +
+                      y * target->row_bytes(media::VideoFrame::kYPlane);
+    uint8_t* uplane = target->data(media::VideoFrame::kUPlane) +
+                      (y / 2) * target->row_bytes(media::VideoFrame::kUPlane);
+    uint8_t* vplane = target->data(media::VideoFrame::kVPlane) +
+                      (y / 2) * target->row_bytes(media::VideoFrame::kVPlane);
     for (int x = rect.x(); x < rect.right(); ++x) {
       int cursor_x = x - cursor_position_in_frame_.x();
       SkColor color = scaled_cursor_bitmap_.getColor(cursor_x, cursor_y);

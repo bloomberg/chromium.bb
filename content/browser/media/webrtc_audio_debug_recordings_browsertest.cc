@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/browser/media/webrtc_internals.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
@@ -124,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                                                             render_process_id);
 
   EXPECT_TRUE(base::PathExists(aec_dump_file));
-  int64 file_size = 0;
+  int64_t file_size = 0;
   EXPECT_TRUE(base::GetFileSize(aec_dump_file, &file_size));
   EXPECT_GT(file_size, 0);
 
@@ -255,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
         GetExpectedAecDumpFileName(base_file, render_process_id);
 
     EXPECT_TRUE(base::PathExists(aec_dump_file));
-    int64 file_size = 0;
+    int64_t file_size = 0;
     EXPECT_TRUE(base::GetFileSize(aec_dump_file, &file_size));
     EXPECT_GT(file_size, 0);
 

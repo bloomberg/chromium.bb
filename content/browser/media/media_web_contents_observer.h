@@ -5,12 +5,16 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_WEB_CONTENTS_OBSERVER_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_WEB_CONTENTS_OBSERVER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"

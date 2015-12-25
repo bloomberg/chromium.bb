@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"

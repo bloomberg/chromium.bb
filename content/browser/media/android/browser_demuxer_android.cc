@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/browser_demuxer_android.h"
 
+#include "base/macros.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "media/base/android/media_task_runner.h"
 #include "media/base/media_switches.h"

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_AURA_WINDOW_CAPTURE_MACHINE_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_AURA_WINDOW_CAPTURE_MACHINE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"

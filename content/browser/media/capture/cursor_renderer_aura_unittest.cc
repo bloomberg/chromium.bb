@@ -4,6 +4,8 @@
 
 #include "content/browser/media/capture/cursor_renderer_aura.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -104,12 +106,12 @@ class CursorRendererAuraTest : public AuraTestBase {
                              gfx::Rect rect) {
     bool y_found = false, u_found = false, v_found = false;
     for (int y = rect.y(); y < rect.bottom(); ++y) {
-      uint8* yplane = frame->data(media::VideoFrame::kYPlane) +
-                      y * frame->row_bytes(media::VideoFrame::kYPlane);
-      uint8* uplane = frame->data(media::VideoFrame::kUPlane) +
-                      (y / 2) * frame->row_bytes(media::VideoFrame::kUPlane);
-      uint8* vplane = frame->data(media::VideoFrame::kVPlane) +
-                      (y / 2) * frame->row_bytes(media::VideoFrame::kVPlane);
+      uint8_t* yplane = frame->data(media::VideoFrame::kYPlane) +
+                        y * frame->row_bytes(media::VideoFrame::kYPlane);
+      uint8_t* uplane = frame->data(media::VideoFrame::kUPlane) +
+                        (y / 2) * frame->row_bytes(media::VideoFrame::kUPlane);
+      uint8_t* vplane = frame->data(media::VideoFrame::kVPlane) +
+                        (y / 2) * frame->row_bytes(media::VideoFrame::kVPlane);
       for (int x = rect.x(); x < rect.right(); ++x) {
         if (yplane[x] != 0)
           y_found = true;

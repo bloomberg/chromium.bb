@@ -4,14 +4,19 @@
 
 #include "content/browser/media/capture/desktop_capture_device.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -334,9 +339,9 @@ void DesktopCaptureDevice::Core::CaptureFrameAndScheduleNext() {
 
   // Limit frame-rate to reduce CPU consumption.
   base::TimeDelta capture_period = std::max(
-    (last_capture_duration * 100) / kMaximumCpuConsumptionPercentage,
-    base::TimeDelta::FromMicroseconds(static_cast<int64>(
-        1000000.0 / requested_frame_rate_ + 0.5 /* round to nearest int */)));
+      (last_capture_duration * 100) / kMaximumCpuConsumptionPercentage,
+      base::TimeDelta::FromMicroseconds(static_cast<int64_t>(
+          1000000.0 / requested_frame_rate_ + 0.5 /* round to nearest int */)));
 
   // Schedule a task for the next frame.
   capture_timer_.Start(FROM_HERE, capture_period - last_capture_duration,

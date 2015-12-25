@@ -4,12 +4,17 @@
 
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind_helpers.h"
 #include "base/debug/debugger.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
@@ -73,9 +78,9 @@ void RunCurrentLoopWithDeadline() {
 }
 
 SkColor ConvertRgbToYuv(SkColor rgb) {
-  uint8 yuv[3];
-  media::ConvertRGB32ToYUV(reinterpret_cast<uint8*>(&rgb),
-                           yuv, yuv + 1, yuv + 2, 1, 1, 1, 1, 1);
+  uint8_t yuv[3];
+  media::ConvertRGB32ToYUV(reinterpret_cast<uint8_t*>(&rgb), yuv, yuv + 1,
+                           yuv + 2, 1, 1, 1, 1, 1);
   return SkColorSetRGB(yuv[0], yuv[1], yuv[2]);
 }
 
@@ -249,8 +254,8 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
   CaptureTestRenderViewHost(SiteInstance* instance,
                             RenderViewHostDelegate* delegate,
                             RenderWidgetHostDelegate* widget_delegate,
-                            int32 routing_id,
-                            int32 main_frame_routing_id,
+                            int32_t routing_id,
+                            int32_t main_frame_routing_id,
                             bool swapped_out,
                             CaptureTestSourceController* controller)
       : TestRenderViewHost(instance,
@@ -310,8 +315,8 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,
-      int32 routing_id,
-      int32 main_frame_routing_id,
+      int32_t routing_id,
+      int32_t main_frame_routing_id,
       bool swapped_out) override {
     return new CaptureTestRenderViewHost(instance, delegate, widget_delegate,
                                          routing_id, main_frame_routing_id,
@@ -338,15 +343,15 @@ class StubClient : public media::VideoCaptureDevice::Client {
   ~StubClient() override {}
 
   MOCK_METHOD5(OnIncomingCapturedData,
-               void(const uint8* data,
+               void(const uint8_t* data,
                     int length,
                     const media::VideoCaptureFormat& frame_format,
                     int rotation,
                     const base::TimeTicks& timestamp));
   MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void(const uint8* y_data,
-                    const uint8* u_data,
-                    const uint8* v_data,
+               void(const uint8_t* y_data,
+                    const uint8_t* u_data,
+                    const uint8_t* v_data,
                     size_t y_stride,
                     size_t u_stride,
                     size_t v_stride,

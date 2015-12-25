@@ -4,11 +4,15 @@
 
 #include "content/browser/media/webrtc_identity_store.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/threading/worker_pool.h"
 #include "content/browser/media/webrtc_identity_store_backend.h"
@@ -55,7 +59,7 @@ static void GenerateIdentityWorker(const std::string& common_name,
     return;
   }
 
-  std::vector<uint8> private_key_info;
+  std::vector<uint8_t> private_key_info;
   if (!key->ExportPrivateKey(&private_key_info)) {
     DLOG(ERROR) << "Unable to export private key";
     result->error = net::ERR_PRIVATE_KEY_EXPORT_FAILED;

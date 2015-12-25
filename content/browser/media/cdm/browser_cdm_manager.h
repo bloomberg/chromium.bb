@@ -5,12 +5,14 @@
 #ifndef CONTENT_BROWSER_MEDIA_CDM_BROWSER_CDM_MANAGER_H_
 #define CONTENT_BROWSER_MEDIA_CDM_BROWSER_CDM_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -92,7 +94,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
                         int cdm_id,
                         const std::string& session_id,
                         media::MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message,
+                        const std::vector<uint8_t>& message,
                         const GURL& legacy_destination_url);
   void OnSessionClosed(int render_frame_id,
                        int cdm_id,
@@ -134,7 +136,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
                        int cdm_id,
                        uint32_t promise_id,
                        const std::string& session_id,
-                       const std::vector<uint8>& response);
+                       const std::vector<uint8_t>& response);
   void OnCloseSession(int render_frame_id,
                       int cdm_id,
                       uint32_t promise_id,
@@ -157,7 +159,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   void RemoveAllCdmForFrame(int render_frame_id);
 
   // Removes the CDM with the specified id.
-  void RemoveCdm(uint64 id);
+  void RemoveCdm(uint64_t id);
 
   using PermissionStatusCB = base::Callback<void(bool)>;
 
@@ -181,7 +183,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
       int cdm_id,
       media::MediaKeys::SessionType session_type,
       media::EmeInitDataType init_data_type,
-      const std::vector<uint8>& init_data,
+      const std::vector<uint8_t>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise,
       bool permission_was_allowed);
 
@@ -206,11 +208,11 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // |cdm_id|.
 
   // Map of managed CDMs.
-  typedef std::map<uint64, scoped_refptr<media::MediaKeys>> CdmMap;
+  typedef std::map<uint64_t, scoped_refptr<media::MediaKeys>> CdmMap;
   CdmMap cdm_map_;
 
   // Map of CDM's security origin.
-  std::map<uint64, GURL> cdm_security_origin_map_;
+  std::map<uint64_t, GURL> cdm_security_origin_map_;
 
   base::WeakPtrFactory<BrowserCdmManager> weak_ptr_factory_;
 

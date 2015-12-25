@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "media/base/android/demuxer_android.h"
 

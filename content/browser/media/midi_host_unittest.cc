@@ -4,6 +4,10 @@
 
 #include "content/browser/media/midi_host.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -15,23 +19,23 @@
 namespace content {
 namespace {
 
-const uint8 kGMOn[] = { 0xf0, 0x7e, 0x7f, 0x09, 0x01, 0xf7 };
-const uint8 kGSOn[] = {
-  0xf0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41, 0xf7,
+const uint8_t kGMOn[] = {0xf0, 0x7e, 0x7f, 0x09, 0x01, 0xf7};
+const uint8_t kGSOn[] = {
+    0xf0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41, 0xf7,
 };
-const uint8 kNoteOn[] = { 0x90, 0x3c, 0x7f };
-const uint8 kNoteOnWithRunningStatus[] = {
-  0x90, 0x3c, 0x7f, 0x3c, 0x7f, 0x3c, 0x7f,
+const uint8_t kNoteOn[] = {0x90, 0x3c, 0x7f};
+const uint8_t kNoteOnWithRunningStatus[] = {
+    0x90, 0x3c, 0x7f, 0x3c, 0x7f, 0x3c, 0x7f,
 };
-const uint8 kChannelPressure[] = { 0xd0, 0x01 };
-const uint8 kChannelPressureWithRunningStatus[] = {
-  0xd0, 0x01, 0x01, 0x01,
+const uint8_t kChannelPressure[] = {0xd0, 0x01};
+const uint8_t kChannelPressureWithRunningStatus[] = {
+    0xd0, 0x01, 0x01, 0x01,
 };
-const uint8 kTimingClock[] = { 0xf8 };
-const uint8 kBrokenData1[] = { 0x90 };
-const uint8 kBrokenData2[] = { 0xf7 };
-const uint8 kBrokenData3[] = { 0xf2, 0x00 };
-const uint8 kDataByte0[] = { 0x00 };
+const uint8_t kTimingClock[] = {0xf8};
+const uint8_t kBrokenData1[] = {0x90};
+const uint8_t kBrokenData2[] = {0xf7};
+const uint8_t kBrokenData3[] = {0xf2, 0x00};
+const uint8_t kDataByte0[] = {0x00};
 
 const int kRenderProcessId = 0;
 
@@ -53,8 +57,8 @@ enum MidiEventType {
 
 struct MidiEvent {
   MidiEvent(MidiEventType in_type,
-            uint32 in_port_index,
-            const std::vector<uint8>& in_data,
+            uint32_t in_port_index,
+            const std::vector<uint8_t>& in_data,
             double in_timestamp)
       : type(in_type),
         port_index(in_port_index),
@@ -62,16 +66,16 @@ struct MidiEvent {
         timestamp(in_timestamp) {}
 
   MidiEventType type;
-  uint32 port_index;
-  std::vector<uint8> data;
+  uint32_t port_index;
+  std::vector<uint8_t> data;
   double timestamp;
 };
 
 class FakeMidiManager : public media::midi::MidiManager {
  public:
   void DispatchSendMidiData(media::midi::MidiManagerClient* client,
-                            uint32 port_index,
-                            const std::vector<uint8>& data,
+                            uint32_t port_index,
+                            const std::vector<uint8_t>& data,
                             double timestamp) override {
     events_.push_back(MidiEvent(DISPATCH_SEND_MIDI_DATA,
                                 port_index,
@@ -121,7 +125,7 @@ class MidiHostTest : public testing::Test {
     host_->AddOutputPort(info);
   }
 
-  void OnSendData(uint32 port) {
+  void OnSendData(uint32_t port) {
     scoped_ptr<IPC::Message> message(
         new MidiHostMsg_SendData(port, data_, 0.0));
     host_->OnMessageReceived(*message.get());
@@ -131,7 +135,7 @@ class MidiHostTest : public testing::Test {
     return manager_.events_.size();
   }
 
-  void CheckSendEventAt(size_t at, uint32 port) {
+  void CheckSendEventAt(size_t at, uint32_t port) {
     EXPECT_EQ(DISPATCH_SEND_MIDI_DATA, manager_.events_[at].type);
     EXPECT_EQ(port, manager_.events_[at].port_index);
     EXPECT_EQ(data_, manager_.events_[at].data);
@@ -149,8 +153,8 @@ class MidiHostTest : public testing::Test {
 
   FakeMidiManager manager_;
   scoped_refptr<MidiHostForTesting> host_;
-  std::vector<uint8> data_;
-  int32 port_id_;
+  std::vector<uint8_t> data_;
+  int32_t port_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiHostTest);
 };
@@ -177,7 +181,7 @@ TEST_F(MidiHostTest, IsValidWebMIDIData) {
 
   // Multiple messages are allowed as long as each of them is complete.
   {
-    std::vector<uint8> buffer;
+    std::vector<uint8_t> buffer;
     PushToVector(kGMOn, &buffer);
     PushToVector(kNoteOn, &buffer);
     PushToVector(kGSOn, &buffer);
@@ -190,14 +194,14 @@ TEST_F(MidiHostTest, IsValidWebMIDIData) {
 
   // MIDI realtime message can be placed at any position.
   {
-    const uint8 kNoteOnWithRealTimeClock[] = {
-      0x90, 0xf8, 0x3c, 0x7f, 0x90, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8,
+    const uint8_t kNoteOnWithRealTimeClock[] = {
+        0x90, 0xf8, 0x3c, 0x7f, 0x90, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8,
     };
     EXPECT_TRUE(MidiHost::IsValidWebMIDIData(
         AsVector(kNoteOnWithRealTimeClock)));
 
-    const uint8 kGMOnWithRealTimeClock[] = {
-      0xf0, 0xf8, 0x7e, 0x7f, 0x09, 0x01, 0xf8, 0xf7,
+    const uint8_t kGMOnWithRealTimeClock[] = {
+        0xf0, 0xf8, 0x7e, 0x7f, 0x09, 0x01, 0xf8, 0xf7,
     };
     EXPECT_TRUE(MidiHost::IsValidWebMIDIData(
         AsVector(kGMOnWithRealTimeClock)));
@@ -210,14 +214,14 @@ TEST_F(MidiHostTest, OutputPortCheck) {
   AddOutputPort();
 
   // Sending data to port 0 should be delivered.
-  uint32 port0 = 0;
+  uint32_t port0 = 0;
   OnSendData(port0);
   RunLoopUntilIdle();
   EXPECT_EQ(1U, GetEventSize());
   CheckSendEventAt(0, port0);
 
   // Sending data to port 1 should not be delivered.
-  uint32 port1 = 1;
+  uint32_t port1 = 1;
   OnSendData(port1);
   RunLoopUntilIdle();
   EXPECT_EQ(1U, GetEventSize());

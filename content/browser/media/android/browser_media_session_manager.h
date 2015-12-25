@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_SESSION_MANAGER_H_
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_SESSION_MANAGER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace IPC {
 class Message;

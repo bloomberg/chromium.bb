@@ -4,10 +4,14 @@
 
 #include "content/browser/media/webrtc_identity_store_backend.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <tuple>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -75,7 +79,7 @@ struct WebRTCIdentityStoreBackend::Identity {
   Identity(const std::string& common_name,
            const std::string& certificate,
            const std::string& private_key,
-           int64 creation_time)
+           int64_t creation_time)
       : common_name(common_name),
         certificate(certificate),
         private_key(private_key),
@@ -84,7 +88,7 @@ struct WebRTCIdentityStoreBackend::Identity {
   std::string common_name;
   std::string certificate;
   std::string private_key;
-  int64 creation_time;
+  int64_t creation_time;
 };
 
 struct WebRTCIdentityStoreBackend::PendingFindRequest {
@@ -413,7 +417,7 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Load(IdentityMap* out_map) {
     std::string cert, private_key;
     stmt.ColumnBlobAsString(3, &cert);
     stmt.ColumnBlobAsString(4, &private_key);
-    int64 creation_time = stmt.ColumnInt64(5);
+    int64_t creation_time = stmt.ColumnInt64(5);
     std::pair<IdentityMap::iterator, bool> result =
         out_map->insert(std::pair<IdentityKey, Identity>(
             key, Identity(common_name, cert, private_key, creation_time)));

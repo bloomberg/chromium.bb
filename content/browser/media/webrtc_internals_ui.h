@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_UI_H_
 #define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_UI_H_
 
+#include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace content {

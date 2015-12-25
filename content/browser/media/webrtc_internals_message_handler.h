@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
 #define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_MESSAGE_HANDLER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"

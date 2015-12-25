@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -63,7 +67,7 @@ struct StatsUnit {
     return ss.str();
   }
 
-  int64 timestamp;
+  int64_t timestamp;
   std::map<string, string> values;
 };
 
@@ -137,7 +141,7 @@ class UserMediaRequestEntry {
   std::string video_constraints;
 };
 
-static const int64 FAKE_TIME_STAMP = 3600000;
+static const int64_t FAKE_TIME_STAMP = 3600000;
 
 #if defined(OS_WIN)
 // All tests are flaky on Windows: crbug.com/277322.

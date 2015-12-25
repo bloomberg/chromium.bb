@@ -4,6 +4,8 @@
 
 #include "content/browser/media/cdm/browser_cdm_manager.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -11,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -45,13 +48,13 @@ const size_t kAndroidKeyIdBytes = 128 / 8;
 // The ID used in this class is a concatenation of |render_frame_id| and
 // |cdm_id|, i.e. (render_frame_id << 32) + cdm_id.
 
-uint64 GetId(int render_frame_id, int cdm_id) {
-  return (static_cast<uint64>(render_frame_id) << 32) +
-         static_cast<uint64>(cdm_id);
+uint64_t GetId(int render_frame_id, int cdm_id) {
+  return (static_cast<uint64_t>(render_frame_id) << 32) +
+         static_cast<uint64_t>(cdm_id);
 }
 
-bool IdBelongsToFrame(uint64 id, int render_frame_id) {
-  return (id >> 32) == static_cast<uint64>(render_frame_id);
+bool IdBelongsToFrame(uint64_t id, int render_frame_id) {
+  return (id >> 32) == static_cast<uint64_t>(render_frame_id);
 }
 
 // media::CdmPromiseTemplate implementation backed by a BrowserCdmManager.
@@ -300,7 +303,7 @@ void BrowserCdmManager::OnSessionMessage(int render_frame_id,
                                          int cdm_id,
                                          const std::string& session_id,
                                          MediaKeys::MessageType message_type,
-                                         const std::vector<uint8>& message,
+                                         const std::vector<uint8_t>& message,
                                          const GURL& legacy_destination_url) {
   GURL verified_gurl = legacy_destination_url;
   if (!verified_gurl.is_valid() && !verified_gurl.is_empty()) {
@@ -325,7 +328,7 @@ void BrowserCdmManager::OnLegacySessionError(
     int cdm_id,
     const std::string& session_id,
     MediaKeys::Exception exception_code,
-    uint32 system_code,
+    uint32_t system_code,
     const std::string& error_message) {
   Send(new CdmMsg_LegacySessionError(render_frame_id, cdm_id, session_id,
                                      exception_code, system_code,
@@ -432,7 +435,7 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
 
   int render_frame_id = params.render_frame_id;
   int cdm_id = params.cdm_id;
-  const std::vector<uint8>& init_data = params.init_data;
+  const std::vector<uint8_t>& init_data = params.init_data;
   scoped_ptr<NewSessionPromise> promise(
       new NewSessionPromise(weak_ptr_factory_.GetWeakPtr(),
                             render_frame_id, cdm_id, params.promise_id));
@@ -513,7 +516,7 @@ void BrowserCdmManager::OnUpdateSession(int render_frame_id,
                                         int cdm_id,
                                         uint32_t promise_id,
                                         const std::string& session_id,
-                                        const std::vector<uint8>& response) {
+                                        const std::vector<uint8_t>& response) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   scoped_ptr<SimplePromise> promise(new SimplePromise(
@@ -594,7 +597,7 @@ void BrowserCdmManager::OnCdmCreated(
     return;
   }
 
-  uint64 id = GetId(render_frame_id, cdm_id);
+  uint64_t id = GetId(render_frame_id, cdm_id);
   cdm_map_[id] = cdm;
   cdm_security_origin_map_[id] = security_origin;
   promise->resolve();
@@ -603,7 +606,7 @@ void BrowserCdmManager::OnCdmCreated(
 void BrowserCdmManager::RemoveAllCdmForFrame(int render_frame_id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  std::vector<uint64> ids_to_remove;
+  std::vector<uint64_t> ids_to_remove;
   for (const auto& entry : cdm_map_) {
     if (IdBelongsToFrame(entry.first, render_frame_id))
       ids_to_remove.push_back(entry.first);
@@ -613,7 +616,7 @@ void BrowserCdmManager::RemoveAllCdmForFrame(int render_frame_id) {
     RemoveCdm(id_to_remove);
 }
 
-void BrowserCdmManager::RemoveCdm(uint64 id) {
+void BrowserCdmManager::RemoveCdm(uint64_t id) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   cdm_map_.erase(id);
@@ -628,7 +631,7 @@ void BrowserCdmManager::CheckPermissionStatus(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   GURL security_origin;
-  std::map<uint64, GURL>::const_iterator iter =
+  std::map<uint64_t, GURL>::const_iterator iter =
       cdm_security_origin_map_.find(GetId(render_frame_id, cdm_id));
   DCHECK(iter != cdm_security_origin_map_.end());
   if (iter != cdm_security_origin_map_.end())
@@ -681,7 +684,7 @@ void BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted(
     int cdm_id,
     media::MediaKeys::SessionType session_type,
     media::EmeInitDataType init_data_type,
-    const std::vector<uint8>& init_data,
+    const std::vector<uint8_t>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise,
     bool permission_was_allowed) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());

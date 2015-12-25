@@ -52,11 +52,13 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
@@ -65,6 +67,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/media/capture/cursor_renderer.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
@@ -572,10 +575,8 @@ void RenderVideoFrame(
 
     SkAutoLockPixels scaled_bitmap_locker(scaled_bitmap);
     media::CopyRGBToVideoFrame(
-        reinterpret_cast<uint8*>(scaled_bitmap.getPixels()),
-        scaled_bitmap.rowBytes(),
-        region_in_yv12_frame,
-        output.get());
+        reinterpret_cast<uint8_t*>(scaled_bitmap.getPixels()),
+        scaled_bitmap.rowBytes(), region_in_yv12_frame, output.get());
   }
 
   // The result is now ready.
