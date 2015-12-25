@@ -54,22 +54,22 @@
 
 namespace blink {
 
-class WorkerScriptController::WorkerGlobalScopeExecutionState final {
+class WorkerScriptController::ExecutionState final {
     STACK_ALLOCATED();
 public:
-    explicit WorkerGlobalScopeExecutionState(WorkerScriptController* controller)
+    explicit ExecutionState(WorkerScriptController* controller)
         : hadException(false)
         , lineNumber(0)
         , columnNumber(0)
         , m_controller(controller)
-        , m_outerState(controller->m_globalScopeExecutionState)
+        , m_outerState(controller->m_executionState)
     {
-        m_controller->m_globalScopeExecutionState = this;
+        m_controller->m_executionState = this;
     }
 
-    ~WorkerGlobalScopeExecutionState()
+    ~ExecutionState()
     {
-        m_controller->m_globalScopeExecutionState = m_outerState;
+        m_controller->m_executionState = m_outerState;
     }
 
     DEFINE_INLINE_TRACE()
@@ -86,19 +86,19 @@ public:
     ScriptValue exception;
     RefPtrWillBeMember<ErrorEvent> m_errorEventFromImportedScript;
 
-    // A WorkerGlobalScopeExecutionState context is stack allocated by
+    // A ExecutionState context is stack allocated by
     // WorkerScriptController::evaluate(), with the contoller using it
     // during script evaluation. To handle nested evaluate() uses,
-    // WorkerGlobalScopeExecutionStates are chained together;
+    // ExecutionStates are chained together;
     // |m_outerState| keeps a pointer to the context object one level out
     // (or 0, if outermost.) Upon return from evaluate(), the
-    // WorkerScriptController's WorkerGlobalScopeExecutionState is popped
-    // and the previous one restored (see above dtor.)
+    // WorkerScriptController's ExecutionState is popped and the previous one
+    // restored (see above dtor.)
     //
     // With Oilpan, |m_outerState| isn't traced. It'll be "up the stack"
     // and its fields will be traced when scanning the stack.
     RawPtrWillBeMember<WorkerScriptController> m_controller;
-    WorkerGlobalScopeExecutionState* m_outerState;
+    ExecutionState* m_outerState;
 };
 
 PassOwnPtrWillBeRawPtr<WorkerScriptController> WorkerScriptController::create(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
@@ -111,7 +111,7 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope* workerGlobalSc
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
     , m_rejectedPromises(RejectedPromises::create())
-    , m_globalScopeExecutionState(0)
+    , m_executionState(0)
 {
     ASSERT(isolate);
     m_world = DOMWrapperWorld::create(isolate, WorkerWorldId);
@@ -205,22 +205,22 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     if (block.HasCaught()) {
         v8::Local<v8::Message> message = block.Message();
-        m_globalScopeExecutionState->hadException = true;
-        m_globalScopeExecutionState->errorMessage = toCoreString(message->Get());
-        if (v8Call(message->GetLineNumber(m_scriptState->context()), m_globalScopeExecutionState->lineNumber)
-            && v8Call(message->GetStartColumn(m_scriptState->context()), m_globalScopeExecutionState->columnNumber)) {
-            ++m_globalScopeExecutionState->columnNumber;
+        m_executionState->hadException = true;
+        m_executionState->errorMessage = toCoreString(message->Get());
+        if (v8Call(message->GetLineNumber(m_scriptState->context()), m_executionState->lineNumber)
+            && v8Call(message->GetStartColumn(m_scriptState->context()), m_executionState->columnNumber)) {
+            ++m_executionState->columnNumber;
         } else {
-            m_globalScopeExecutionState->lineNumber = 0;
-            m_globalScopeExecutionState->columnNumber = 0;
+            m_executionState->lineNumber = 0;
+            m_executionState->columnNumber = 0;
         }
 
         TOSTRING_DEFAULT(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName(), ScriptValue());
-        m_globalScopeExecutionState->sourceURL = sourceURL;
-        m_globalScopeExecutionState->exception = ScriptValue(m_scriptState.get(), block.Exception());
+        m_executionState->sourceURL = sourceURL;
+        m_executionState->exception = ScriptValue(m_scriptState.get(), block.Exception());
         block.Reset();
     } else {
-        m_globalScopeExecutionState->hadException = false;
+        m_executionState->hadException = false;
     }
 
     v8::Local<v8::Value> result;
@@ -235,7 +235,7 @@ bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
     if (isExecutionForbidden())
         return false;
 
-    WorkerGlobalScopeExecutionState state(this);
+    ExecutionState state(this);
     evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition(), cacheHandler, v8CacheOptions);
     if (isExecutionForbidden())
         return false;
@@ -301,8 +301,8 @@ void WorkerScriptController::disableEval(const String& errorMessage)
 void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent> errorEvent, ExceptionState& exceptionState)
 {
     const String& errorMessage = errorEvent->message();
-    if (m_globalScopeExecutionState)
-        m_globalScopeExecutionState->m_errorEventFromImportedScript = errorEvent;
+    if (m_executionState)
+        m_executionState->m_errorEventFromImportedScript = errorEvent;
     exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(isolate(), errorMessage));
 }
 

@@ -96,7 +96,7 @@ public:
 
 private:
     WorkerScriptController(WorkerGlobalScope*, v8::Isolate*);
-    class WorkerGlobalScopeExecutionState;
+    class ExecutionState;
 
     v8::Isolate* isolate() const;
 
@@ -113,14 +113,13 @@ private:
 
     RefPtrWillBeMember<RejectedPromises> m_rejectedPromises;
 
-    // |m_globalScopeExecutionState| refers to a stack object
-    // that evaluate() allocates; evaluate() ensuring that the
-    // pointer reference to it is removed upon returning. Hence
-    // kept as a bare pointer here, and not a Persistent with
+    // |m_executionState| refers to a stack object that evaluate() allocates;
+    // evaluate() ensuring that the pointer reference to it is removed upon
+    // returning. Hence kept as a bare pointer here, and not a Persistent with
     // Oilpan enabled; stack scanning will visit the object and
     // trace its on-heap fields.
     GC_PLUGIN_IGNORE("394615")
-    WorkerGlobalScopeExecutionState* m_globalScopeExecutionState;
+    ExecutionState* m_executionState;
 };
 
 } // namespace blink
