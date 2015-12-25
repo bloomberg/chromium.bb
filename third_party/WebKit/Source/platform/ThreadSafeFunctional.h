@@ -26,80 +26,13 @@ namespace blink {
 //     bind(func1, 42, str);
 //     bind(func1, 42, str.isolatedCopy());
 
-template<typename... FreeVariableTypes, typename FunctionType>
-PassOwnPtr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...)>> threadSafeBind(
-    FunctionType function)
-{
-    return bind<FreeVariableTypes...>(function);
-}
-
-template<typename... FreeVariableTypes, typename FunctionType, typename P1>
+template<typename... FreeVariableTypes, typename FunctionType, typename... Ps>
 PassOwnPtr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...)>> threadSafeBind(
     FunctionType function,
-    const P1& parameter1)
+    const Ps&... parameters)
 {
     return bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1));
-}
-
-template<typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2>
-PassOwnPtr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...)>> threadSafeBind(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2)
-{
-    return bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2));
-}
-
-template<typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2, typename P3>
-PassOwnPtr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...)>> threadSafeBind(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3)
-{
-    return bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2),
-        CrossThreadCopier<P3>::copy(parameter3));
-}
-
-template<typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2, typename P3, typename P4>
-PassOwnPtr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...)>> threadSafeBind(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4)
-{
-    return bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2),
-        CrossThreadCopier<P3>::copy(parameter3),
-        CrossThreadCopier<P4>::copy(parameter4));
-}
-
-template<typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2, typename P3, typename P4, typename P5>
-PassOwnPtr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...)>> threadSafeBind(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5)
-{
-    return bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2),
-        CrossThreadCopier<P3>::copy(parameter3),
-        CrossThreadCopier<P4>::copy(parameter4),
-        CrossThreadCopier<P5>::copy(parameter5));
-}
-
-template<typename... FreeVariableTypes, typename FunctionType, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-PassOwnPtr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...)>> threadSafeBind(
-    FunctionType function,
-    const P1& parameter1, const P2& parameter2, const P3& parameter3, const P4& parameter4, const P5& parameter5, const P6& parameter6)
-{
-    return bind<FreeVariableTypes...>(function,
-        CrossThreadCopier<P1>::copy(parameter1),
-        CrossThreadCopier<P2>::copy(parameter2),
-        CrossThreadCopier<P3>::copy(parameter3),
-        CrossThreadCopier<P4>::copy(parameter4),
-        CrossThreadCopier<P5>::copy(parameter5),
-        CrossThreadCopier<P6>::copy(parameter6));
+        CrossThreadCopier<Ps>::copy(parameters)...);
 }
 
 } // namespace blink
