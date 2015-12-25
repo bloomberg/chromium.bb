@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_switches.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/variations/variations_associated_data.h"

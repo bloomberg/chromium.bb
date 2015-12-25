@@ -5,6 +5,7 @@
 #include "components/crash/content/tools/crash_service.h"
 
 #include <windows.h>
+#include <stddef.h>
 
 #include <sddl.h>
 #include <fstream>
@@ -13,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"

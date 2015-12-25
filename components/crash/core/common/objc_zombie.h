@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_CRASH_CORE_COMMON_OBJC_ZOMBIE_H_
 #define COMPONENTS_CRASH_CORE_COMMON_OBJC_ZOMBIE_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "build/build_config.h"
 
 // You should think twice every single time you use anything from this
 // namespace.

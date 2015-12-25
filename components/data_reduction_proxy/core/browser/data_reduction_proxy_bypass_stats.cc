@@ -241,7 +241,7 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
     const net::URLRequest& request,
     bool data_reduction_proxy_enabled,
     const net::ProxyConfig& data_reduction_proxy_config) {
-  int64 content_length = request.received_response_content_length();
+  int64_t content_length = request.received_response_content_length();
 
   // Only record histograms when the data reduction proxy is enabled.
   if (!data_reduction_proxy_enabled)
@@ -386,7 +386,7 @@ void DataReductionProxyBypassStats::OnNetworkChanged(
 void DataReductionProxyBypassStats::RecordBypassedBytes(
     DataReductionProxyBypassType bypass_type,
     DataReductionProxyBypassStats::BypassedBytesType bypassed_bytes_type,
-    int64 content_length) {
+    int64_t content_length) {
   // Individual histograms are needed to count the bypassed bytes for each
   // bypass type so that we can see the size of requests. This helps us
   // remove outliers that would skew the sum of bypassed bytes for each type.

@@ -4,6 +4,7 @@
 
 #include "url_request_adapter.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/bind.h"
@@ -64,7 +65,7 @@ void URLRequestAdapter::SetUploadContent(const char* bytes, int bytes_len) {
       net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0);
 }
 
-void URLRequestAdapter::SetUploadChannel(JNIEnv* env, int64 content_length) {
+void URLRequestAdapter::SetUploadChannel(JNIEnv* env, int64_t content_length) {
   scoped_ptr<net::UploadElementReader> reader(
       new WrappedChannelElementReader(delegate_, content_length));
   upload_data_stream_ =

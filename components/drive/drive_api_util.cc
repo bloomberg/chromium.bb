@@ -4,10 +4,14 @@
 
 #include "components/drive/drive_api_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -143,7 +147,7 @@ std::string GetMd5Digest(const base::FilePath& file_path,
   base::MD5Context context;
   base::MD5Init(&context);
 
-  int64 offset = 0;
+  int64_t offset = 0;
   scoped_ptr<char[]> buffer(new char[kMd5DigestBufferSize]);
   while (true) {
     if (cancellation_flag && cancellation_flag->IsSet()) {  // Cancelled.

@@ -6,6 +6,7 @@
 
 #include <linux/input.h>
 #include <fcntl.h>
+#include <stddef.h>
 
 #include <string>
 

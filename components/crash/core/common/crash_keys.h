@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_
 #define COMPONENTS_CRASH_CORE_COMMON_CRASH_KEYS_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

@@ -4,6 +4,8 @@
 
 #include "components/bookmarks/browser/bookmark_storage.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -61,7 +63,7 @@ void LoadCallback(const base::FilePath& path,
     if (root.get()) {
       // Building the index can take a while, so we do it on the background
       // thread.
-      int64 max_node_id = 0;
+      int64_t max_node_id = 0;
       BookmarkCodec codec;
       TimeTicks start_time = TimeTicks::Now();
       codec.Decode(details->bb_node(), details->other_folder_node(),
@@ -119,7 +121,7 @@ BookmarkLoadDetails::BookmarkLoadDetails(
     BookmarkPermanentNode* mobile_folder_node,
     const LoadExtraCallback& load_extra_callback,
     BookmarkIndex* index,
-    int64 max_id)
+    int64_t max_id)
     : bb_node_(bb_node),
       other_folder_node_(other_folder_node),
       mobile_folder_node_(mobile_folder_node),
@@ -128,8 +130,7 @@ BookmarkLoadDetails::BookmarkLoadDetails(
       model_sync_transaction_version_(
           BookmarkNode::kInvalidSyncTransactionVersion),
       max_id_(max_id),
-      ids_reassigned_(false) {
-}
+      ids_reassigned_(false) {}
 
 BookmarkLoadDetails::~BookmarkLoadDetails() {
 }

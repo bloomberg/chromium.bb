@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_SERVICE_H_
 #define COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_SERVICE_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/devtools_service/devtools_registry_impl.h"

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -18,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
@@ -70,7 +74,7 @@ const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 // Maximum write buffer size of devtools http/websocket connections.
 // TODO(rmcilroy/pfieldman): Reduce this back to 100Mb when we have
 // added back pressure on the TraceComplete message protocol - crbug.com/456845.
-const int32 kSendBufferSizeForDevTools = 256 * 1024 * 1024;  // 256Mb
+const int32_t kSendBufferSizeForDevTools = 256 * 1024 * 1024;  // 256Mb
 
 }  // namespace
 

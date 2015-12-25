@@ -4,6 +4,8 @@
 
 #include "components/enhanced_bookmarks/bookmark_server_cluster_service.h"
 
+#include <stddef.h>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"

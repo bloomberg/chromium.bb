@@ -4,10 +4,13 @@
 
 #include "components/content_settings/core/browser/content_settings_policy_provider.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"

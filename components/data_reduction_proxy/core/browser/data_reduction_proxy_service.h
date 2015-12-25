@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SERVICE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SERVICE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -83,8 +85,8 @@ class DataReductionProxyService
       const base::TimeDelta& commit_delay);
 
   // Records daily data savings statistics in |compression_stats_|.
-  void UpdateContentLengths(int64 data_used,
-                            int64 original_size,
+  void UpdateContentLengths(int64_t data_used,
+                            int64_t original_size,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type,
                             const std::string& data_usage_host,
@@ -96,7 +98,7 @@ class DataReductionProxyService
   void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> event,
                                         SecureProxyCheckState state) override;
   void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
-                                int64 expiration_ticks) override;
+                                int64_t expiration_ticks) override;
 
   // Records whether the Data Reduction Proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
@@ -111,8 +113,8 @@ class DataReductionProxyService
   // Initializes the Lo-Fi implicit opt out prefs.
   void InitializeLoFiPrefs();
 
-  // Stores an int64 value in |prefs_|.
-  void SetInt64Pref(const std::string& pref_path, int64 value);
+  // Stores an int64_t value in |prefs_|.
+  void SetInt64Pref(const std::string& pref_path, int64_t value);
 
   // Stores a string value in |prefs_|.
   void SetStringPref(const std::string& pref_path, const std::string& value);

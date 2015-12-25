@@ -24,7 +24,7 @@ LocalFileReader::~LocalFileReader() {
 }
 
 void LocalFileReader::Open(const base::FilePath& file_path,
-                           int64 offset,
+                           int64_t offset,
                            const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
@@ -47,7 +47,7 @@ void LocalFileReader::Read(net::IOBuffer* in_buffer,
 }
 
 void LocalFileReader::DidOpen(const net::CompletionCallback& callback,
-                              int64 offset,
+                              int64_t offset,
                               int error) {
   if (error != net::OK)
     return callback.Run(error);
@@ -59,8 +59,8 @@ void LocalFileReader::DidOpen(const net::CompletionCallback& callback,
 }
 
 void LocalFileReader::DidSeek(const net::CompletionCallback& callback,
-                              int64 offset,
-                              int64 error) {
+                              int64_t offset,
+                              int64_t error) {
   callback.Run(error == offset ? net::OK : net::ERR_FAILED);
 }
 

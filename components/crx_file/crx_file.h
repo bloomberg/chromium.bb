@@ -8,8 +8,9 @@
 #include <string>
 #include <vector>
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -32,9 +33,9 @@ class CrxFile {
   // a struct without manual parsing.
   struct Header {
     char magic[kCrxFileHeaderMagicSize];
-    uint32 version;
-    uint32 key_size;  // The size of the public key, in bytes.
-    uint32 signature_size;  // The size of the signature, in bytes.
+    uint32_t version;
+    uint32_t key_size;        // The size of the public key, in bytes.
+    uint32_t signature_size;  // The size of the signature, in bytes.
     // An ASN.1-encoded PublicKeyInfo structure follows.
     // The signature follows.
   };
@@ -59,8 +60,8 @@ class CrxFile {
   // additional information.
   // Use this constructor and then .header() to obtain the Header
   // for writing out to a CRX file.
-  static scoped_ptr<CrxFile> Create(const uint32 key_size,
-                                    const uint32 signature_size,
+  static scoped_ptr<CrxFile> Create(const uint32_t key_size,
+                                    const uint32_t signature_size,
                                     Error* error);
 
   // Returns the header structure for writing out to a CRX file.

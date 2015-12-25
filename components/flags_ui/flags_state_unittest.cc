@@ -4,6 +4,8 @@
 
 #include "components/flags_ui/flags_state.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -11,12 +13,14 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/flags_ui_switches.h"

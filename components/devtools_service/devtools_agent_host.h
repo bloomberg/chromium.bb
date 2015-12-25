@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_AGENT_HOST_H_
 #define COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_AGENT_HOST_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"

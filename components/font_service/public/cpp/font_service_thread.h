@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_FONT_SERVICE_PUBLIC_CPP_FONT_SERVICE_THREAD_H_
 #define COMPONENTS_FONT_SERVICE_PUBLIC_CPP_FONT_SERVICE_THREAD_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/threading/thread.h"
 #include "components/font_service/public/interfaces/font_service.mojom.h"
 #include "third_party/skia/include/core/SkStream.h"

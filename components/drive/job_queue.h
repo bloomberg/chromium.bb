@@ -5,10 +5,14 @@
 #ifndef COMPONENTS_DRIVE_JOB_QUEUE_H_
 #define COMPONENTS_DRIVE_JOB_QUEUE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/drive/job_list.h"
 
 namespace drive {
@@ -30,7 +34,7 @@ class JobQueue {
   // are pushed continuously, there will be popped at the same time unless the
   // number of jobs exceeds |num_max_batch_jobs_| or the sum of |job_size|
   // exceeds or |max_batch_size_|.
-  void Push(JobID id, int priority, bool batchable, uint64 job_size);
+  void Push(JobID id, int priority, bool batchable, uint64_t job_size);
 
   // Pops the first job which meets |accepted_priority| (i.e. the first job in
   // the queue with equal or higher priority (lower value)), and the limit of
@@ -67,11 +71,11 @@ class JobQueue {
   // runs next.
   struct Item {
     Item();
-    Item(JobID id, bool batchable, uint64 size);
+    Item(JobID id, bool batchable, uint64_t size);
     ~Item();
     JobID id;
     bool batchable;
-    uint64 size;
+    uint64_t size;
   };
 
   const size_t num_max_concurrent_jobs_;

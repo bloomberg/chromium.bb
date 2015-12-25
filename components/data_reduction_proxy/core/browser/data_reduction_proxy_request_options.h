@@ -5,13 +5,18 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_AUTH_REQUEST_HANDLER_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_AUTH_REQUEST_HANDLER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace net {
 class HostPortPair;
@@ -113,8 +118,7 @@ class DataReductionProxyRequestOptions {
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
   // the data reduction proxy feature isn't available.
-  static base::string16 AuthHashForSalt(int64 salt,
-                                        const std::string& key);
+  static base::string16 AuthHashForSalt(int64_t salt, const std::string& key);
   // Visible for testing.
   virtual base::Time Now() const;
   virtual void RandBytes(void* output, size_t length) const;

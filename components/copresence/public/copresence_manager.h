@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "components/copresence/public/copresence_delegate.h"
 
 namespace copresence {

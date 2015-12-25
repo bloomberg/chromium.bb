@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
 #define COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"

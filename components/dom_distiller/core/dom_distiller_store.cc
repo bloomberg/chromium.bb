@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/dom_distiller_store.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"

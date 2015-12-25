@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/dom_distiller/core/article_entry.h"
 
 namespace dom_distiller {

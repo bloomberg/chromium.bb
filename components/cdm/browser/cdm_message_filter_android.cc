@@ -4,9 +4,12 @@
 
 #include "components/cdm/browser/cdm_message_filter_android.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/cdm/common/cdm_messages_android.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/media_codec_util.h"

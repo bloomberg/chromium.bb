@@ -4,6 +4,8 @@
 
 #include "components/drive/service/fake_drive_service.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_util.h"
@@ -101,8 +103,8 @@ bool EntryMatchWithQuery(const ChangeResource& entry,
 }
 
 void ScheduleUploadRangeCallback(const UploadRangeCallback& callback,
-                                 int64 start_position,
-                                 int64 end_position,
+                                 int64_t start_position,
+                                 int64_t end_position,
                                  DriveApiErrorCode error,
                                  scoped_ptr<FileResource> entry) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -170,7 +172,7 @@ struct CallResumeUpload {
   }
 
   base::WeakPtr<FakeDriveService> service;
-  int64 content_length;
+  int64_t content_length;
   std::string content_type;
   base::FilePath local_file_path;
   FileResourceCallback callback;
@@ -197,33 +199,31 @@ struct FakeDriveService::EntryInfo {
 
 struct FakeDriveService::UploadSession {
   std::string content_type;
-  int64 content_length;
+  int64_t content_length;
   std::string parent_resource_id;
   std::string resource_id;
   std::string etag;
   std::string title;
 
-  int64 uploaded_size;
+  int64_t uploaded_size;
 
   UploadSession()
       : content_length(0),
         uploaded_size(0) {}
 
-  UploadSession(
-      std::string content_type,
-      int64 content_length,
-      std::string parent_resource_id,
-      std::string resource_id,
-      std::string etag,
-      std::string title)
-    : content_type(content_type),
-      content_length(content_length),
-      parent_resource_id(parent_resource_id),
-      resource_id(resource_id),
-      etag(etag),
-      title(title),
-      uploaded_size(0) {
-  }
+  UploadSession(std::string content_type,
+                int64_t content_length,
+                std::string parent_resource_id,
+                std::string resource_id,
+                std::string etag,
+                std::string title)
+      : content_type(content_type),
+        content_length(content_length),
+        parent_resource_id(parent_resource_id),
+        resource_id(resource_id),
+        etag(etag),
+        title(title),
+        uploaded_size(0) {}
 };
 
 FakeDriveService::FakeDriveService()
@@ -327,7 +327,7 @@ bool FakeDriveService::HasApp(const std::string& app_id) const {
   return false;
 }
 
-void FakeDriveService::SetQuotaValue(int64 used, int64 total) {
+void FakeDriveService::SetQuotaValue(int64_t used, int64_t total) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   about_resource_->set_quota_bytes_used_aggregate(used);
@@ -458,7 +458,7 @@ CancelCallback FakeDriveService::SearchByTitle(
 }
 
 CancelCallback FakeDriveService::GetChangeList(
-    int64 start_changestamp,
+    int64_t start_changestamp,
     const ChangeListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -488,7 +488,7 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
   DCHECK_EQ(next_link.host(), "localhost");
   DCHECK_EQ(next_link.path(), "/");
 
-  int64 start_changestamp = 0;
+  int64_t start_changestamp = 0;
   std::string search_query;
   std::string directory_resource_id;
   int start_offset = 0;
@@ -762,13 +762,13 @@ CancelCallback FakeDriveService::DownloadFile(
 
   const FileResource* file = entry->change_resource.file();
   const std::string& content_data = entry->content_data;
-  int64 file_size = file->file_size();
+  int64_t file_size = file->file_size();
   DCHECK_EQ(static_cast<size_t>(file_size), content_data.size());
 
   if (!get_content_callback.is_null()) {
-    const int64 kBlockSize = 5;
-    for (int64 i = 0; i < file_size; i += kBlockSize) {
-      const int64 size = std::min(kBlockSize, file_size - i);
+    const int64_t kBlockSize = 5;
+    for (int64_t i = 0; i < file_size; i += kBlockSize) {
+      const int64_t size = std::min(kBlockSize, file_size - i);
       scoped_ptr<std::string> content_for_callback(
           new std::string(content_data.substr(i, size)));
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1047,7 +1047,7 @@ CancelCallback FakeDriveService::AddNewDirectory(
 
 CancelCallback FakeDriveService::InitiateUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const UploadNewFileOptions& options,
@@ -1086,7 +1086,7 @@ CancelCallback FakeDriveService::InitiateUploadNewFile(
 
 CancelCallback FakeDriveService::InitiateUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const UploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) {
@@ -1140,7 +1140,7 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
 
 CancelCallback FakeDriveService::GetUploadStatus(
     const GURL& upload_url,
-    int64 content_length,
+    int64_t content_length,
     const UploadRangeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -1148,14 +1148,14 @@ CancelCallback FakeDriveService::GetUploadStatus(
 }
 
 CancelCallback FakeDriveService::ResumeUpload(
-      const GURL& upload_url,
-      int64 start_position,
-      int64 end_position,
-      int64 content_length,
-      const std::string& content_type,
-      const base::FilePath& local_file_path,
-      const UploadRangeCallback& callback,
-      const ProgressCallback& progress_callback) {
+    const GURL& upload_url,
+    int64_t start_position,
+    int64_t end_position,
+    int64_t content_length,
+    const std::string& content_type,
+    const base::FilePath& local_file_path,
+    const UploadRangeCallback& callback,
+    const ProgressCallback& progress_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -1189,7 +1189,7 @@ CancelCallback FakeDriveService::ResumeUpload(
     // works fine even if the callback is invoked more than once; it is the
     // crucial difference of the progress callback from others.
     // Note that progress is notified in the relative offset in each chunk.
-    const int64 chunk_size = end_position - start_position;
+    const int64_t chunk_size = end_position - start_position;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(progress_callback, chunk_size / 2, chunk_size));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1265,7 +1265,7 @@ CancelCallback FakeDriveService::ResumeUpload(
 
 CancelCallback FakeDriveService::MultipartUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const base::FilePath& local_file_path,
@@ -1291,7 +1291,7 @@ CancelCallback FakeDriveService::MultipartUploadNewFile(
 
 CancelCallback FakeDriveService::MultipartUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const UploadExistingFileOptions& options,
@@ -1667,7 +1667,7 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
 }
 
 void FakeDriveService::GetChangeListInternal(
-    int64 start_changestamp,
+    int64_t start_changestamp,
     const std::string& search_query,
     const std::string& directory_resource_id,
     int start_offset,

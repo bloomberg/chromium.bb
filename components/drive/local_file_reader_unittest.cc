@@ -4,6 +4,9 @@
 
 #include "components/drive/local_file_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
@@ -93,8 +96,8 @@ TEST_F(LocalFileReaderTest, OpenWithOffset) {
   expected_content.erase(0, offset);
 
   net::TestCompletionCallback callback;
-  file_reader_->Open(
-      test_file, static_cast<int64>(offset), callback.callback());
+  file_reader_->Open(test_file, static_cast<int64_t>(offset),
+                     callback.callback());
   ASSERT_EQ(net::OK, callback.WaitForResult());
 
   LocalFileReaderAdapter adapter(file_reader_.get());

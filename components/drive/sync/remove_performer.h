@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_DRIVE_SYNC_REMOVE_PERFORMER_H_
 #define COMPONENTS_DRIVE_SYNC_REMOVE_PERFORMER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

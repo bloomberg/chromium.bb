@@ -29,7 +29,7 @@ scoped_ptr<base::Value> BuildDataReductionProxyEvent(
   return entry_value;
 }
 
-int64 GetExpirationTicks(int bypass_seconds) {
+int64_t GetExpirationTicks(int bypass_seconds) {
   base::TimeTicks expiration_ticks =
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(bypass_seconds);
   return (expiration_ticks - base::TimeTicks()).InMilliseconds();
@@ -76,7 +76,7 @@ scoped_ptr<base::Value> UrlBypassActionCallback(
     const GURL& url,
     bool should_retry,
     int bypass_seconds,
-    int64 expiration_ticks,
+    int64_t expiration_ticks,
     net::NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("bypass_action_type", action);
@@ -97,7 +97,7 @@ scoped_ptr<base::Value> UrlBypassTypeCallback(
     const GURL& url,
     bool should_retry,
     int bypass_seconds,
-    int64 expiration_ticks,
+    int64_t expiration_ticks,
     net::NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("bypass_type", bypass_type);
@@ -143,8 +143,8 @@ scoped_ptr<base::Value> EndConfigRequestCallback(
     int http_response_code,
     int failure_count,
     const std::vector<net::ProxyServer>& proxies_for_http,
-    int64 refresh_duration_minutes,
-    int64 expiration_ticks,
+    int64_t refresh_duration_minutes,
+    int64_t expiration_ticks,
     net::NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::ListValue> http_proxy_list(new base::ListValue());
   for (const auto& proxy : proxies_for_http)
@@ -203,7 +203,7 @@ void DataReductionProxyEventCreator::AddBypassActionEvent(
     bool should_retry,
     const base::TimeDelta& bypass_duration) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  int64 expiration_ticks = GetExpirationTicks(bypass_duration.InSeconds());
+  int64_t expiration_ticks = GetExpirationTicks(bypass_duration.InSeconds());
   const net::NetLog::ParametersCallback& parameters_callback =
       base::Bind(&UrlBypassActionCallback, bypass_action, request_method, url,
                  should_retry, bypass_duration.InSeconds(), expiration_ticks);
@@ -220,7 +220,7 @@ void DataReductionProxyEventCreator::AddBypassTypeEvent(
     bool should_retry,
     const base::TimeDelta& bypass_duration) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  int64 expiration_ticks = GetExpirationTicks(bypass_duration.InSeconds());
+  int64_t expiration_ticks = GetExpirationTicks(bypass_duration.InSeconds());
   const net::NetLog::ParametersCallback& parameters_callback =
       base::Bind(&UrlBypassTypeCallback, bypass_type, request_method, url,
                  should_retry, bypass_duration.InSeconds(), expiration_ticks);
@@ -289,8 +289,8 @@ void DataReductionProxyEventCreator::EndConfigRequest(
     const std::vector<net::ProxyServer>& proxies_for_http,
     const base::TimeDelta& refresh_duration,
     const base::TimeDelta& retry_delay) {
-  int64 refresh_duration_minutes = refresh_duration.InMinutes();
-  int64 expiration_ticks = GetExpirationTicks(retry_delay.InSeconds());
+  int64_t refresh_duration_minutes = refresh_duration.InMinutes();
+  int64_t expiration_ticks = GetExpirationTicks(retry_delay.InSeconds());
   const net::NetLog::ParametersCallback& parameters_callback = base::Bind(
       &EndConfigRequestCallback, net_error, http_response_code, failure_count,
       proxies_for_http, refresh_duration_minutes, expiration_ticks);
@@ -330,7 +330,7 @@ void DataReductionProxyEventCreator::PostBoundNetLogBypassEvent(
     const net::BoundNetLog& net_log,
     net::NetLog::EventType type,
     net::NetLog::EventPhase phase,
-    int64 expiration_ticks,
+    int64_t expiration_ticks,
     const net::NetLog::ParametersCallback& callback) {
   scoped_ptr<base::Value> event =
       BuildDataReductionProxyEvent(type, net_log.source(), phase, callback);

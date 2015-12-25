@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "components/copresence/handlers/gcm_handler.h"
 #include "components/copresence/public/copresence_constants.h"
 #include "components/gcm_driver/gcm_app_handler.h"

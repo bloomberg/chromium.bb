@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DRIVE_SERVICE_DUMMY_DRIVE_SERVICE_H_
 #define COMPONENTS_DRIVE_SERVICE_DUMMY_DRIVE_SERVICE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "components/drive/service/drive_service_interface.h"
@@ -44,7 +46,7 @@ class DummyDriveService : public DriveServiceInterface {
       const std::string& directory_resource_id,
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetChangeList(
-      int64 start_changestamp,
+      int64_t start_changestamp,
       const google_apis::ChangeListCallback& callback) override;
   google_apis::CancelCallback GetRemainingChangeList(
       const GURL& next_link,
@@ -105,33 +107,33 @@ class DummyDriveService : public DriveServiceInterface {
       const google_apis::FileResourceCallback& callback) override;
   google_apis::CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& parent_resource_id,
       const std::string& title,
       const UploadNewFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) override;
   google_apis::CancelCallback InitiateUploadExistingFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& resource_id,
       const UploadExistingFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) override;
   google_apis::CancelCallback ResumeUpload(
       const GURL& upload_url,
-      int64 start_position,
-      int64 end_position,
-      int64 content_length,
+      int64_t start_position,
+      int64_t end_position,
+      int64_t content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path,
       const google_apis::drive::UploadRangeCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback GetUploadStatus(
       const GURL& upload_url,
-      int64 content_length,
+      int64_t content_length,
       const google_apis::drive::UploadRangeCallback& callback) override;
   google_apis::CancelCallback MultipartUploadNewFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& parent_resource_id,
       const std::string& title,
       const base::FilePath& local_file_path,
@@ -140,7 +142,7 @@ class DummyDriveService : public DriveServiceInterface {
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback MultipartUploadExistingFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const UploadExistingFileOptions& options,

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"

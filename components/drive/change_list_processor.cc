@@ -4,6 +4,8 @@
 
 #include "components/drive/change_list_processor.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -130,7 +132,7 @@ FileError ChangeListProcessor::Apply(
     bool is_delta_update) {
   DCHECK(about_resource);
 
-  int64 largest_changestamp = 0;
+  int64_t largest_changestamp = 0;
   if (is_delta_update) {
     if (!change_lists.empty()) {
       // The changestamp appears in the first page of the change list.
@@ -199,7 +201,7 @@ FileError ChangeListProcessor::Apply(
 }
 
 FileError ChangeListProcessor::ApplyEntryMap(
-    int64 changestamp,
+    int64_t changestamp,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(about_resource);
 

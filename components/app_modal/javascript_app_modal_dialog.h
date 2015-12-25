@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/app_modal/app_modal_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 

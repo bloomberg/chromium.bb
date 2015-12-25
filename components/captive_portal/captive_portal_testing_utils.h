@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 

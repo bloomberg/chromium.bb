@@ -4,8 +4,11 @@
 
 #include "components/content_settings/core/browser/content_settings_utils.h"
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

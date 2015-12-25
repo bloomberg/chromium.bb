@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/page_features.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/json/json_reader.h"

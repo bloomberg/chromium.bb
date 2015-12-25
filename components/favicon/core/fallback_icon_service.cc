@@ -4,6 +4,8 @@
 
 #include "components/favicon/core/fallback_icon_service.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "components/favicon/core/fallback_icon_client.h"

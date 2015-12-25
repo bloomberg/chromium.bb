@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
 #define COMPONENTS_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
@@ -88,7 +91,7 @@ class StoragePartitionHttpCacheDataRemover {
   // Stores the cache size computation result before it can be returned
   // via a callback. This is either the sum of size of the the two cache
   // backends, or an error code if the calculation failed.
-  int64 calculation_result_;
+  int64_t calculation_result_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionHttpCacheDataRemover);
 };

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_COPRESENCE_TIMED_MAP_H_
 #define COMPONENTS_COPRESENCE_TIMED_MAP_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <queue>
 #include <utility>

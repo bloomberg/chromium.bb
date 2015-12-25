@@ -4,6 +4,9 @@
 
 #include "components/drive/service/fake_drive_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -98,7 +101,7 @@ class FakeDriveServiceTest : public testing::Test {
     return false;
   }
 
-  int64 GetLargestChangeByAboutResource() {
+  int64_t GetLargestChangeByAboutResource() {
     DriveApiErrorCode error;
     scoped_ptr<AboutResource> about_resource;
     fake_service_.GetAboutResource(
@@ -388,7 +391,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
 
 TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
-  const int64 old_largest_change_id =
+  const int64_t old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
   // Add a new directory in the root directory.
@@ -432,7 +435,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
 TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   ASSERT_TRUE(Exists("2_file_resource_id"));
-  const int64 old_largest_change_id =
+  const int64_t old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -467,7 +470,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_DeletedEntry) {
 TEST_F(FakeDriveServiceTest, GetChangeList_TrashedEntry) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   ASSERT_TRUE(Exists("2_file_resource_id"));
-  const int64 old_largest_change_id =
+  const int64_t old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -641,7 +644,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_Search) {
 TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetChangeList) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
   fake_service_.set_default_max_results(2);
-  const int64 old_largest_change_id =
+  const int64_t old_largest_change_id =
       fake_service_.about_resource().largest_change_id();
 
   // Add 5 new directory in the root directory.
@@ -1057,7 +1060,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
 
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "2_file_resource_id";
   const std::string kParentResourceId = "2_folder_resource_id";
@@ -1104,7 +1107,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_NonExisting) {
 TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "2_file_resource_id";
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
@@ -1154,7 +1157,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
 
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "2_file_resource_id";
   const std::string kParentResourceId = "2_folder_resource_id";
@@ -1202,7 +1205,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_NonExisting) {
 TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "2_file_resource_id";
 
@@ -1268,7 +1271,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Forbidden) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "2_file_resource_id";
   const std::string kOldParentResourceId = fake_service_.GetRootResourceId();
@@ -1299,7 +1302,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "subdirectory_file_1_id";
   const std::string kOldParentResourceId = "1_folder_resource_id";
@@ -1346,7 +1349,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "1_orphanfile_resource_id";
   const std::string kNewParentResourceId = "1_folder_resource_id";
@@ -1393,7 +1396,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "subdirectory_file_1_id";
   const std::string kParentResourceId = "1_folder_resource_id";
@@ -1474,7 +1477,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
@@ -1498,7 +1501,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_EmptyParent) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
@@ -1521,7 +1524,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
@@ -1546,7 +1549,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kParentResourceId = "1_folder_resource_id";
 
@@ -1841,7 +1844,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
-  EXPECT_GE(static_cast<int64>(contents.size() / 2),
+  EXPECT_GE(static_cast<int64_t>(contents.size() / 2),
             upload_progress_values.back().first);
 
   upload_progress_values.clear();
@@ -1856,12 +1859,12 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, response.code);
   EXPECT_TRUE(entry.get());
-  EXPECT_EQ(static_cast<int64>(contents.size()), entry->file_size());
+  EXPECT_EQ(static_cast<int64_t>(contents.size()), entry->file_size());
   EXPECT_TRUE(Exists(entry->file_id()));
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
-  EXPECT_GE(static_cast<int64>(contents.size() - contents.size() / 2),
+  EXPECT_GE(static_cast<int64_t>(contents.size() - contents.size() / 2),
             upload_progress_values.back().first);
   EXPECT_EQ(base::MD5String(contents), entry->md5_checksum());
 }
@@ -1906,7 +1909,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
-  EXPECT_GE(static_cast<int64>(contents.size() / 2),
+  EXPECT_GE(static_cast<int64_t>(contents.size() / 2),
             upload_progress_values.back().first);
 
   upload_progress_values.clear();
@@ -1921,12 +1924,12 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 
   EXPECT_EQ(HTTP_CREATED, response.code);
   EXPECT_TRUE(entry.get());
-  EXPECT_EQ(static_cast<int64>(contents.size()), entry->file_size());
+  EXPECT_EQ(static_cast<int64_t>(contents.size()), entry->file_size());
   EXPECT_TRUE(Exists(entry->file_id()));
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
-  EXPECT_GE(static_cast<int64>(contents.size() - contents.size() / 2),
+  EXPECT_GE(static_cast<int64_t>(contents.size() - contents.size() / 2),
             upload_progress_values.back().first);
   EXPECT_EQ(base::MD5String(contents), entry->md5_checksum());
 }
@@ -1934,7 +1937,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kContentType = "text/plain";
   const std::string kContentData = "This is some test content.";
@@ -1954,7 +1957,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kContentType, entry->mime_type());
-  EXPECT_EQ(static_cast<int64>(kContentData.size()), entry->file_size());
+  EXPECT_EQ(static_cast<int64_t>(kContentData.size()), entry->file_size());
   EXPECT_EQ("resource_id_1", entry->file_id());
   EXPECT_EQ(kTitle, entry->title());
   EXPECT_TRUE(HasParent(entry->file_id(), fake_service_.GetRootResourceId()));
@@ -1966,7 +1969,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kContentType = "text/plain";
   const std::string kContentData = "This is some test content.";
@@ -1986,7 +1989,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kContentType, entry->mime_type());
-  EXPECT_EQ(static_cast<int64>(kContentData.size()), entry->file_size());
+  EXPECT_EQ(static_cast<int64_t>(kContentData.size()), entry->file_size());
   EXPECT_EQ("resource_id_1", entry->file_id());
   EXPECT_EQ(kTitle, entry->title());
   EXPECT_TRUE(HasParent(entry->file_id(), fake_service_.GetRootResourceId()));
@@ -2000,7 +2003,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
 TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kContentType = "text/plain";
   const std::string kContentData = "This is some test content.";
@@ -2021,7 +2024,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kContentType, entry->mime_type());
-  EXPECT_EQ(static_cast<int64>(kContentData.size()), entry->file_size());
+  EXPECT_EQ(static_cast<int64_t>(kContentData.size()), entry->file_size());
   EXPECT_EQ("resource_id_1", entry->file_id());
   EXPECT_EQ(kTitle, entry->title());
   EXPECT_TRUE(HasParent(entry->file_id(), kParentResourceId));
@@ -2085,7 +2088,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
   const std::string kContentData = "This is some test content.";
   const std::string kTitle = "new file";
 
-  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+  int64_t old_largest_change_id = GetLargestChangeByAboutResource();
 
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
@@ -2101,7 +2104,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kContentType, entry->mime_type());
-  EXPECT_EQ(static_cast<int64>(kContentData.size()), entry->file_size());
+  EXPECT_EQ(static_cast<int64_t>(kContentData.size()), entry->file_size());
   EXPECT_EQ("resource_id_1", entry->file_id());
   EXPECT_EQ(kTitle, entry->title());
   EXPECT_TRUE(HasParent(entry->file_id(), fake_service_.GetRootResourceId()));

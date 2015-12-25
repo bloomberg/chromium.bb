@@ -97,8 +97,8 @@ void DataReductionProxyService::EnableCompressionStatisticsLogging(
 }
 
 void DataReductionProxyService::UpdateContentLengths(
-    int64 data_used,
-    int64 original_size,
+    int64_t data_used,
+    int64_t original_size,
     bool data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
     const std::string& data_usage_host,
@@ -131,7 +131,7 @@ void DataReductionProxyService::AddEventAndSecureProxyCheckState(
 
 void DataReductionProxyService::AddAndSetLastBypassEvent(
     scoped_ptr<base::Value> event,
-    int64 expiration_ticks) {
+    int64_t expiration_ticks) {
   DCHECK(CalledOnValidThread());
   event_store_->AddAndSetLastBypassEvent(event.Pass(), expiration_ticks);
 }
@@ -234,7 +234,7 @@ void DataReductionProxyService::RecordLoFiSessionState(LoFiSessionState state) {
 }
 
 void DataReductionProxyService::SetInt64Pref(const std::string& pref_path,
-                                             int64 value) {
+                                             int64_t value) {
   if (prefs_)
     prefs_->SetInt64(pref_path, value);
 }

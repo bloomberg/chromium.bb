@@ -4,15 +4,19 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cstring>
 
 #include "base/base64.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
@@ -81,7 +85,7 @@ namespace data_reduction_proxy {
 bool DataReductionProxyTamperDetection::DetectAndReport(
     const net::HttpResponseHeaders* headers,
     bool scheme_is_https,
-    int64 content_length) {
+    int64_t content_length) {
   if (headers == nullptr) {
     return false;
   }
@@ -111,7 +115,7 @@ bool DataReductionProxyTamperDetection::DetectAndReport(
   // Chrome-Proxy header has not been tampered with, and thus other
   // fingerprints are valid.
   bool tampered = false;
-  int64 original_content_length = -1;
+  int64_t original_content_length = -1;
   std::string fingerprint;
 
   if (GetDataReductionProxyActionFingerprintVia(headers, &fingerprint)) {
@@ -172,7 +176,7 @@ DataReductionProxyTamperDetection::DataReductionProxyTamperDetection(
 DataReductionProxyTamperDetection::~DataReductionProxyTamperDetection() {};
 
 void DataReductionProxyTamperDetection::ReportUMAForTamperDetectionCount(
-    int64 original_content_length) const {
+    int64_t original_content_length) const {
   REPORT_TAMPER_DETECTION_UMA(
       scheme_is_https_, "DataReductionProxy.HeaderTamperDetectionHTTPS",
       "DataReductionProxy.HeaderTamperDetectionHTTP", carrier_id_);
@@ -388,8 +392,8 @@ void DataReductionProxyTamperDetection::
 
 bool DataReductionProxyTamperDetection::ValidateContentLength(
     const std::string& fingerprint,
-    int64 content_length,
-    int64* original_content_length) const {
+    int64_t content_length,
+    int64_t* original_content_length) const {
   DCHECK(original_content_length);
   // Abort, if Content-Length value from the Data Reduction Proxy does not
   // exist or it cannot be converted to an integer.
@@ -400,8 +404,8 @@ bool DataReductionProxyTamperDetection::ValidateContentLength(
 }
 
 void DataReductionProxyTamperDetection::ReportUMAForContentLength(
-    int64 content_length,
-    int64 original_content_length) const {
+    int64_t content_length,
+    int64_t original_content_length) const {
   // Gets MIME type of the response and reports to UMA histograms separately.
   // Divides MIME types into 4 groups: JavaScript, CSS, Images, and others.
   REPORT_TAMPER_DETECTION_UMA(

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BITMAP_UPLOADER_BITMAP_UPLOADER_H_
 #define COMPONENTS_BITMAP_UPLOADER_BITMAP_UPLOADER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"

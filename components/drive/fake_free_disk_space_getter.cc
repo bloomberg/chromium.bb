@@ -15,15 +15,15 @@ FakeFreeDiskSpaceGetter::FakeFreeDiskSpaceGetter()
 FakeFreeDiskSpaceGetter::~FakeFreeDiskSpaceGetter() {
 }
 
-void FakeFreeDiskSpaceGetter::PushFakeValue(int64 value) {
+void FakeFreeDiskSpaceGetter::PushFakeValue(int64_t value) {
   fake_values_.push_back(value);
 }
 
-int64 FakeFreeDiskSpaceGetter::AmountOfFreeDiskSpace() {
+int64_t FakeFreeDiskSpaceGetter::AmountOfFreeDiskSpace() {
   if (fake_values_.empty())
     return default_value_;
 
-  const int64 value = fake_values_.front();
+  const int64_t value = fake_values_.front();
   fake_values_.pop_front();
   return value;
 }

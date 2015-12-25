@@ -4,11 +4,15 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/testing_pref_service.h"
@@ -326,7 +330,7 @@ TEST_F(DataReductionProxyBypassStatsTest, RecordMissingViaHeaderBytes) {
       "DataReductionProxy.MissingViaHeader.Bytes.4xx";
   const std::string kOtherHistogramName =
       "DataReductionProxy.MissingViaHeader.Bytes.Other";
-  const int64 kResponseContentLength = 100;
+  const int64_t kResponseContentLength = 100;
 
   struct TestCase {
     bool was_proxy_used;

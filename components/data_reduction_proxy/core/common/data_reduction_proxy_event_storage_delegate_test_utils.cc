@@ -4,7 +4,6 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate_test_utils.h"
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
@@ -40,7 +39,7 @@ void TestDataReductionProxyEventStorageDelegate::AddEnabledEvent(
 
 void TestDataReductionProxyEventStorageDelegate::AddAndSetLastBypassEvent(
     scoped_ptr<base::Value> event,
-    int64 expiration_ticks) {
+    int64_t expiration_ticks) {
   if (delegate_)
     delegate_->AddAndSetLastBypassEvent(event.Pass(), expiration_ticks);
 }

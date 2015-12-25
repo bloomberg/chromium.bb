@@ -4,10 +4,12 @@
 
 #include "components/enhanced_bookmarks/image_store_util.h"
 
+#include <stddef.h>
 #import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_analysis.h"
 

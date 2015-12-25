@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 
 namespace data_reduction_proxy {
@@ -76,7 +78,7 @@ const char kDailyContentLengthWithDataReductionProxyEnabledUnknown[] =
     "data_reduction.daily_received_length_with_data_reduction_proxy_enabled_"
     "unknown";
 
-// An int64 pref that contains an internal representation of midnight on the
+// An int64_t pref that contains an internal representation of midnight on the
 // date of the last update to |kDailyHttp{Original,Received}ContentLength|.
 const char kDailyHttpContentLengthLastUpdateDate[] =
     "data_reduction.last_update_date";
@@ -183,11 +185,11 @@ const char kDataUsageReportingEnabled[] = "data_usage_reporting.enabled";
 const char kDataReductionProxyWasEnabledBefore[] =
     "spdy_proxy.was_enabled_before";
 
-// An int64 pref that contains the total size of all HTTP content received from
-// the network.
+// An int64_t pref that contains the total size of all HTTP content received
+// from the network.
 const char kHttpReceivedContentLength[] = "http_received_content_length";
 
-// An int64 pref that contains the total original size of all HTTP content
+// An int64_t pref that contains the total original size of all HTTP content
 // received over the network.
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 

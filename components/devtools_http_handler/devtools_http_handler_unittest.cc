@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -24,7 +26,7 @@ using content::BrowserThread;
 namespace devtools_http_handler {
 namespace {
 
-const uint16 kDummyPort = 4321;
+const uint16_t kDummyPort = 4321;
 const base::FilePath::CharType kDevToolsActivePortFileName[] =
     FILE_PATH_LITERAL("DevToolsActivePort");
 

@@ -4,6 +4,7 @@
 
 #include "components/constrained_window/constrained_window_views.h"
 
+#include "base/macros.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"

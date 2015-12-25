@@ -4,6 +4,8 @@
 
 #include "components/drive/file_system/truncate_operation.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
@@ -33,7 +35,7 @@ TEST_F(TruncateOperationTest, Truncate) {
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   // Make sure the file has at least 2 bytes.
   ASSERT_GE(file_size, 2);
@@ -59,7 +61,7 @@ TEST_F(TruncateOperationTest, Truncate) {
   ASSERT_EQ(FILE_ERROR_OK, error);
 
   // The local file should be truncated.
-  int64 local_file_size = 0;
+  int64_t local_file_size = 0;
   base::GetFileSize(local_path, &local_file_size);
   EXPECT_EQ(1, local_file_size);
 }
@@ -68,7 +70,7 @@ TEST_F(TruncateOperationTest, NegativeSize) {
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   // Make sure the file has at least 2 bytes.
   ASSERT_GE(file_size, 2);
@@ -99,7 +101,7 @@ TEST_F(TruncateOperationTest, Extend) {
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   FileError error = FILE_ERROR_FAILED;
   operation_->Truncate(
@@ -125,7 +127,7 @@ TEST_F(TruncateOperationTest, Extend) {
   std::string content;
   ASSERT_TRUE(base::ReadFileToString(local_path, &content));
 
-  EXPECT_EQ(file_size + 10, static_cast<int64>(content.size()));
+  EXPECT_EQ(file_size + 10, static_cast<int64_t>(content.size()));
   // All trailing 10 bytes should be '\0'.
   EXPECT_EQ(std::string(10, '\0'), content.substr(file_size));
 }

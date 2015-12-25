@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DRIVE_SEARCH_METADATA_H_
 #define COMPONENTS_DRIVE_SEARCH_METADATA_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/memory/scoped_vector.h"

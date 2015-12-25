@@ -4,6 +4,9 @@
 
 #include "components/browser_watcher/exit_funnel_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/command_line.h"
@@ -26,7 +29,7 @@ const wchar_t kRegistryPath[] = L"Software\\ExitFunnelWinTest";
 class ExitFunnelWinTest : public testing::Test {
  public:
   typedef testing::Test Super;
-  typedef std::map<base::string16, int64> EventMap;
+  typedef std::map<base::string16, int64_t> EventMap;
 
   void SetUp() override {
     Super::SetUp();
@@ -59,7 +62,7 @@ class ExitFunnelWinTest : public testing::Test {
     for (size_t i = 0; i < key.GetValueCount(); ++i) {
       base::string16 name;
       EXPECT_EQ(key.GetValueNameAt(i, &name), ERROR_SUCCESS);
-      int64 value = 0;
+      int64_t value = 0;
       EXPECT_EQ(key.ReadInt64(name.c_str(), &value), ERROR_SUCCESS);
 
       events[name] = value;

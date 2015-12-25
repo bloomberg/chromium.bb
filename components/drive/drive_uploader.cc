@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
@@ -39,10 +40,10 @@ namespace {
 // The value must be a multiple of 512KB according to the spec of GData WAPI and
 // Drive API v2. It is set to a smaller value than 2^31 for working around
 // server side error (crbug.com/264089).
-const int64 kUploadChunkSize = (1LL << 30);  // 1GB
+const int64_t kUploadChunkSize = (1LL << 30);  // 1GB
 // Maximum file size to be uploaded by multipart requests. The file that is
 // larger than the size is processed by resumable upload.
-const int64 kMaxMultipartUploadSize = (1LL << 20);  // 1MB
+const int64_t kMaxMultipartUploadSize = (1LL << 20);  // 1MB
 
 // Drive upload protocol. This is used to back a histogram. Sync this with UMA
 // enum "DriveUploadProtocol" and treat this as append-only.
@@ -136,9 +137,9 @@ struct DriveUploader::UploadFileInfo {
   GURL upload_location;
 
   // Header content-Length.
-  int64 content_length;
+  int64_t content_length;
 
-  int64 next_start_position;
+  int64_t next_start_position;
 
   // Blocks system suspend while upload is in progress.
   scoped_ptr<content::PowerSaveBlocker> power_save_blocker;
@@ -408,9 +409,9 @@ void DriveUploader::UploadNextChunk(
   }
 
   // Limit the size of data uploaded per each request by kUploadChunkSize.
-  const int64 end_position = std::min(
-      upload_file_info->content_length,
-      upload_file_info->next_start_position + kUploadChunkSize);
+  const int64_t end_position =
+      std::min(upload_file_info->content_length,
+               upload_file_info->next_start_position + kUploadChunkSize);
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   info_ptr->cancel_callback = drive_service_->ResumeUpload(
@@ -485,10 +486,10 @@ void DriveUploader::OnUploadRangeResponseReceived(
 }
 
 void DriveUploader::OnUploadProgress(const ProgressCallback& callback,
-                                     int64 start_position,
-                                     int64 total_size,
-                                     int64 progress_of_chunk,
-                                     int64 total_of_chunk) {
+                                     int64_t start_position,
+                                     int64_t total_size,
+                                     int64_t progress_of_chunk,
+                                     int64_t total_of_chunk) {
   if (!callback.is_null())
     callback.Run(start_position + progress_of_chunk, total_size);
 }

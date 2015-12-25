@@ -4,6 +4,8 @@
 
 #include "components/drive/file_system/search_operation.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -59,7 +61,7 @@ void DataReductionProxySettingsTestBase::SetUp() {
                                  prefs::kDailyHttpOriginalContentLength);
   ListPrefUpdate received_update(test_context_->pref_service(),
                                  prefs::kDailyHttpReceivedContentLength);
-  for (int64 i = 0; i < kNumDaysInHistory; i++) {
+  for (int64_t i = 0; i < kNumDaysInHistory; i++) {
     original_update->Insert(0,
                             new base::StringValue(base::Int64ToString(2 * i)));
     received_update->Insert(0, new base::StringValue(base::Int64ToString(i)));

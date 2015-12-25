@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/distillable_page_detector.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "grit/components_resources.h"
 #include "ui/base/resource/resource_bundle.h"

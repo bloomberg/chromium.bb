@@ -4,9 +4,12 @@
 
 #include "components/compression/compression_utils.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
 #include "third_party/zlib/zlib.h"
@@ -111,9 +114,9 @@ int GzipUncompressHelper(Bytef* dest,
 }
 
 // Returns the uncompressed size from GZIP-compressed |compressed_data|.
-uint32 GetUncompressedSize(const std::string& compressed_data) {
+uint32_t GetUncompressedSize(const std::string& compressed_data) {
   // The uncompressed size is stored in the last 4 bytes of |input| in LE.
-  uint32 size;
+  uint32_t size;
   if (compressed_data.length() < sizeof(size))
     return 0;
   memcpy(&size, &compressed_data[compressed_data.length() - sizeof(size)],

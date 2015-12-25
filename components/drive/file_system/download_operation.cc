@@ -4,10 +4,13 @@
 
 #include "components/drive/file_system/download_operation.h"
 
+#include <stdint.h>
+
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/task_runner_util.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_cache.h"
@@ -43,7 +46,7 @@ bool GeneratesUniquePathWithExtension(
 // If succeeded, returns FILE_ERROR_OK with |temp_download_file| storing the
 // path to the file in the cache.
 FileError PrepareForDownloadFile(internal::FileCache* cache,
-                                 int64 expected_file_size,
+                                 int64_t expected_file_size,
                                  const base::FilePath& temporary_file_directory,
                                  base::FilePath* temp_download_file) {
   DCHECK(cache);

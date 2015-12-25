@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_SCHEDULER_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_SCHEDULER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/callback.h"

@@ -4,6 +4,8 @@
 
 #include "components/drive/job_queue.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "components/audio_modem/audio_player.h"
 #include "components/audio_modem/audio_recorder.h"

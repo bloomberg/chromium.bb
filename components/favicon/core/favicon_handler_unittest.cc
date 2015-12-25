@@ -7,6 +7,9 @@
 #include<set>
 #include<vector>
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_DRIVE_CHANGE_LIST_LOADER_H_
 #define COMPONENTS_DRIVE_CHANGE_LIST_LOADER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -177,10 +180,10 @@ class ChangeListLoader {
   // Starts the resource metadata loading and calls |callback| when it's done.
   void Load(const FileOperationCallback& callback);
   void LoadAfterGetLargestChangestamp(bool is_initial_load,
-                                      const int64* local_changestamp,
+                                      const int64_t* local_changestamp,
                                       FileError error);
   void LoadAfterGetAboutResource(
-      int64 local_changestamp,
+      int64_t local_changestamp,
       google_apis::DriveApiErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
@@ -199,7 +202,7 @@ class ChangeListLoader {
   // Part of LoadFromServerIfNeeded().
   // Starts loading the change list since |start_changestamp|, or the full
   // resource list if |start_changestamp| is zero.
-  void LoadChangeListFromServer(int64 start_changestamp);
+  void LoadChangeListFromServer(int64_t start_changestamp);
 
   // Part of LoadChangeListFromServer().
   // Called when the entire change list is loaded.

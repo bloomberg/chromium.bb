@@ -6,6 +6,7 @@
 #define COMPONENTS_CRONET_ANDROID_CRONET_URL_REQUEST_CONTEXT_ADAPTER_H_
 
 #include <jni.h>
+#include <stdint.h>
 
 #include <queue>
 #include <string>

@@ -4,6 +4,8 @@
 
 #include "components/bookmarks/browser/bookmark_index.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -13,6 +15,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
+#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_node.h"

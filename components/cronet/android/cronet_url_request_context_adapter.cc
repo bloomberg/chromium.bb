@@ -4,6 +4,8 @@
 
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/android/jni_android.h"
@@ -14,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
@@ -358,15 +361,15 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         continue;
       }
 
-      if (quic_hint.port <= std::numeric_limits<uint16>::min() ||
-          quic_hint.port > std::numeric_limits<uint16>::max()) {
+      if (quic_hint.port <= std::numeric_limits<uint16_t>::min() ||
+          quic_hint.port > std::numeric_limits<uint16_t>::max()) {
         LOG(ERROR) << "Invalid QUIC hint port: "
                    << quic_hint.port;
         continue;
       }
 
-      if (quic_hint.alternate_port <= std::numeric_limits<uint16>::min() ||
-          quic_hint.alternate_port > std::numeric_limits<uint16>::max()) {
+      if (quic_hint.alternate_port <= std::numeric_limits<uint16_t>::min() ||
+          quic_hint.alternate_port > std::numeric_limits<uint16_t>::max()) {
         LOG(ERROR) << "Invalid QUIC hint alternate port: "
                    << quic_hint.alternate_port;
         continue;
@@ -376,7 +379,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
                                                  quic_hint.port);
       net::AlternativeService alternative_service(
           net::AlternateProtocol::QUIC, "",
-          static_cast<uint16>(quic_hint.alternate_port));
+          static_cast<uint16_t>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
           quic_hint_host_port_pair, alternative_service, 1.0f,
           base::Time::Max());
@@ -654,7 +657,7 @@ static ScopedJavaLocalRef<jbyteArray> GetHistogramDeltas(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   base::StatisticsRecorder::Initialize();
-  std::vector<uint8> data;
+  std::vector<uint8_t> data;
   if (!HistogramManager::GetInstance()->GetDeltas(&data))
     return ScopedJavaLocalRef<jbyteArray>();
   return base::android::ToJavaByteArray(env, &data[0], data.size());

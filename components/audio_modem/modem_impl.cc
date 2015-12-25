@@ -4,6 +4,8 @@
 
 #include "components/audio_modem/modem_impl.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <vector>
@@ -18,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/audio_modem/audio_modem_switches.h"
 #include "components/audio_modem/audio_player_impl.h"
 #include "components/audio_modem/audio_recorder_impl.h"

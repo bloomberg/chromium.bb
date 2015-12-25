@@ -8,8 +8,8 @@
 #include <queue>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"

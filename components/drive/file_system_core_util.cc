@@ -4,10 +4,12 @@
 
 #include "components/drive/file_system_core_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -33,8 +35,8 @@ namespace {
 
 std::string ReadStringFromGDocFile(const base::FilePath& file_path,
                                    const std::string& key) {
-  const int64 kMaxGDocSize = 4096;
-  int64 file_size = 0;
+  const int64_t kMaxGDocSize = 4096;
+  int64_t file_size = 0;
   if (!base::GetFileSize(file_path, &file_size) || file_size > kMaxGDocSize) {
     LOG(WARNING) << "File too large to be a GDoc file " << file_path.value();
     return std::string();

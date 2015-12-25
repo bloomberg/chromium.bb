@@ -4,6 +4,8 @@
 
 #include "components/content_settings/core/common/content_settings_pattern_parser.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "url/url_constants.h"
 

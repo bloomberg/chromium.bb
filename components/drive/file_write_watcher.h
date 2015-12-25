@@ -6,6 +6,7 @@
 #define COMPONENTS_DRIVE_FILE_WRITE_WATCHER_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_system_core_util.h"

@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/threading/thread_checker.h"
@@ -143,14 +145,14 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.
-  int64 GetDataReductionLastUpdateTime();
+  int64_t GetDataReductionLastUpdateTime();
 
   // Returns aggregate received and original content lengths over the specified
   // number of days, as well as the time these stats were last updated.
   void GetContentLengths(unsigned int days,
-                         int64* original_content_length,
-                         int64* received_content_length,
-                         int64* last_update_time);
+                         int64_t* original_content_length,
+                         int64_t* received_content_length,
+                         int64_t* last_update_time);
 
   // Records that the data reduction proxy is unreachable or not.
   void SetUnreachable(bool unreachable);

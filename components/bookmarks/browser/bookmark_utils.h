@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UTILS_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_UTILS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -101,7 +104,8 @@ const BookmarkNode* GetParentForNewNodes(
     int* index);
 
 // Deletes the bookmark folders for the given list of |ids|.
-void DeleteBookmarkFolders(BookmarkModel* model, const std::vector<int64>& ids);
+void DeleteBookmarkFolders(BookmarkModel* model,
+                           const std::vector<int64_t>& ids);
 
 // If there are no user bookmarks for url, a bookmark is created.
 void AddIfNotBookmarked(BookmarkModel* model,
@@ -148,7 +152,7 @@ bool CanAllBeEditedByUser(BookmarkClient* client,
 bool IsBookmarkedByUser(BookmarkModel* model, const GURL& url);
 
 // Returns the node with |id|, or NULL if there is no node with |id|.
-const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64 id);
+const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64_t id);
 
 // Returns true if |node| is a descendant of |root|.
 bool IsDescendantOf(const BookmarkNode* node, const BookmarkNode* root);

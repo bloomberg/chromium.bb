@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_FEEDBACK_FEEDBACK_COMMON_H_
 #define COMPONENTS_FEEDBACK_FEEDBACK_COMMON_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 

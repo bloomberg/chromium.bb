@@ -4,6 +4,8 @@
 
 #include "components/drive/drive_app_registry.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"

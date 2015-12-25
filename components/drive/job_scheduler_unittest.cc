@@ -4,6 +4,9 @@
 
 #include "components/drive/job_scheduler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/bind.h"
@@ -30,7 +33,7 @@ namespace drive {
 namespace {
 
 // Dummy value passed for the |expected_file_size| parameter of DownloadFile().
-const int64 kDummyDownloadFileSize = 0;
+const int64_t kDummyDownloadFileSize = 0;
 
 void CopyTitleFromFileResourceCallback(
     std::vector<std::string>* title_list_out,
@@ -65,7 +68,7 @@ class JobListLogger : public JobListObserver {
   }
 
   // Gets the progress event information of the specified type.
-  void GetProgressInfo(JobType job_type, std::vector<int64>* progress) {
+  void GetProgressInfo(JobType job_type, std::vector<int64_t>* progress) {
     for (size_t i = 0; i < events.size(); ++i) {
       if (events[i].type == UPDATED && events[i].info.job_type == job_type)
         progress->push_back(events[i].info.num_completed_bytes);
@@ -105,7 +108,7 @@ class CancelTestableFakeDriveService : public FakeDriveService {
 
   google_apis::CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& parent_resource_id,
       const std::string& title,
       const UploadNewFileOptions& options,
@@ -266,7 +269,7 @@ TEST_F(JobSchedulerTest, Search) {
 TEST_F(JobSchedulerTest, GetChangeList) {
   ConnectToWifi();
 
-  int64 old_largest_change_id =
+  int64_t old_largest_change_id =
       fake_drive_service_->about_resource().largest_change_id();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
@@ -916,7 +919,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       google_apis::GetContentCallback());
   base::RunLoop().RunUntilIdle();
 
-  std::vector<int64> download_progress;
+  std::vector<int64_t> download_progress;
   logger.GetProgressInfo(TYPE_DOWNLOAD_FILE, &download_progress);
   ASSERT_TRUE(!download_progress.empty());
   EXPECT_TRUE(base::STLIsSorted(download_progress));
@@ -937,7 +940,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       google_apis::test_util::CreateCopyResultCallback(&upload_error, &entry));
   base::RunLoop().RunUntilIdle();
 
-  std::vector<int64> upload_progress;
+  std::vector<int64_t> upload_progress;
   logger.GetProgressInfo(TYPE_UPLOAD_NEW_FILE, &upload_progress);
   ASSERT_TRUE(!upload_progress.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress));

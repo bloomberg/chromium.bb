@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORTER_H_
 #define COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORTER_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
@@ -40,8 +42,8 @@ class ErrorReporter {
   // the ErrorReporter.
   ErrorReporter(
       const GURL& upload_url,
-      const uint8 server_public_key[/* 32 */],
-      const uint32 server_public_key_version,
+      const uint8_t server_public_key[/* 32 */],
+      const uint32_t server_public_key_version,
       scoped_ptr<net::CertificateReportSender> certificate_report_sender);
 
   virtual ~ErrorReporter();
@@ -69,7 +71,7 @@ class ErrorReporter {
 #if defined(USE_OPENSSL)
   // Used by tests.
   static bool DecryptErrorReport(
-      const uint8 server_private_key[32],
+      const uint8_t server_private_key[32],
       const EncryptedCertLoggerRequest& encrypted_report,
       std::string* decrypted_serialized_report);
 #endif
@@ -79,8 +81,8 @@ class ErrorReporter {
 
   const GURL upload_url_;
 
-  const uint8* server_public_key_;
-  const uint32 server_public_key_version_;
+  const uint8_t* server_public_key_;
+  const uint32_t server_public_key_version_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorReporter);
 };

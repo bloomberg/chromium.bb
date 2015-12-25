@@ -4,6 +4,9 @@
 
 #include "components/favicon_base/fallback_icon_url_parser.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "testing/gtest/include/gtest/gtest.h"

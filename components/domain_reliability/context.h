@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_CONTEXT_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_CONTEXT_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "components/exo/buffer.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/test/exo_test_base.h"

@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_DRIVE_EVENT_LOGGER_H_
 #define COMPONENTS_DRIVE_EVENT_LOGGER_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 

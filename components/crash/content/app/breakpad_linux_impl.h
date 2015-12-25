@@ -8,9 +8,10 @@
 #ifndef COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_LINUX_IMPL_H_
 #define COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_LINUX_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 
-#include "base/basictypes.h"
 #include "breakpad/src/common/simple_string_dictionary.h"
 #include "components/crash/content/app/breakpad_linux.h"
 

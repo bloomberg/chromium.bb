@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

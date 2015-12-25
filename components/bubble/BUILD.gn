@@ -30,6 +30,7 @@ source_set("test_support") {
 
   deps = [
     ":bubble",
+    "//base",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -45,6 +46,7 @@ source_set("unit_tests") {
   deps = [
     ":bubble",
     ":test_support",
+    "//base",
     "//testing/gmock",
     "//testing/gtest",
   ]

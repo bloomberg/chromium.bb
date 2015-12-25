@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/task_tracker.h"
 
+#include <stddef.h>
+
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"

@@ -4,6 +4,8 @@
 
 #include "components/drive/file_system.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/prefs/pref_service.h"
@@ -151,11 +153,10 @@ void RunMarkMountedCallback(const MarkMountedCallback& callback,
 
 // Callback for ResourceMetadata::GetLargestChangestamp.
 // |callback| must not be null.
-void OnGetLargestChangestamp(
-    FileSystemMetadata metadata,  // Will be modified.
-    const GetFilesystemMetadataCallback& callback,
-    const int64* largest_changestamp,
-    FileError error) {
+void OnGetLargestChangestamp(FileSystemMetadata metadata,  // Will be modified.
+                             const GetFilesystemMetadataCallback& callback,
+                             const int64_t* largest_changestamp,
+                             FileError error) {
   DCHECK(!callback.is_null());
 
   metadata.largest_changestamp = *largest_changestamp;
@@ -204,7 +205,7 @@ void GetPathFromResourceIdAfterGetPath(base::FilePath* file_path,
 }
 
 bool FreeDiskSpaceIfNeededForOnBlockingPool(internal::FileCache* cache,
-                                            int64 num_bytes) {
+                                            int64_t num_bytes) {
   return cache->FreeDiskSpaceIfNeededFor(num_bytes);
 }
 
@@ -520,7 +521,7 @@ void FileSystem::TouchFile(const base::FilePath& file_path,
 }
 
 void FileSystem::TruncateFile(const base::FilePath& file_path,
-                              int64 length,
+                              int64_t length,
                               const FileOperationCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -901,7 +902,7 @@ void FileSystem::GetMetadata(
   metadata.last_update_check_time = last_update_check_time_;
   metadata.last_update_check_error = last_update_check_error_;
 
-  int64* largest_changestamp = new int64(0);
+  int64_t* largest_changestamp = new int64_t(0);
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -1039,7 +1040,7 @@ void FileSystem::GetPathFromResourceId(const std::string& resource_id,
 }
 
 void FileSystem::FreeDiskSpaceIfNeededFor(
-    int64 num_bytes,
+    int64_t num_bytes,
     const FreeDiskSpaceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());

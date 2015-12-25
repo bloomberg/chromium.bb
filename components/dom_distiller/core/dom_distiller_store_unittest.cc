@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/dom_distiller_store.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -184,7 +186,7 @@ class DomDistillerStoreTest : public testing::Test {
   FakeDB<ArticleEntry>* fake_db_;
   FakeSyncChangeProcessor* fake_sync_processor_;
 
-  int64 next_sync_id_;
+  int64_t next_sync_id_;
 };
 
 AssertionResult AreEntriesEqual(const DomDistillerStore::EntryVector& entries,

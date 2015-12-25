@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/string.h"
 
 #if defined(OS_WIN)
@@ -22,28 +23,28 @@
 // module filesystem has various constants which must line up with enum values
 // in base::File::Flags.
 static_assert(filesystem::kFlagOpen ==
-                  static_cast<uint32>(base::File::FLAG_OPEN),
+                  static_cast<uint32_t>(base::File::FLAG_OPEN),
               "");
 static_assert(filesystem::kFlagCreate ==
-                  static_cast<uint32>(base::File::FLAG_CREATE),
+                  static_cast<uint32_t>(base::File::FLAG_CREATE),
               "");
 static_assert(filesystem::kFlagOpenAlways ==
-                  static_cast<uint32>(base::File::FLAG_OPEN_ALWAYS),
+                  static_cast<uint32_t>(base::File::FLAG_OPEN_ALWAYS),
               "");
 static_assert(filesystem::kCreateAlways ==
-                  static_cast<uint32>(base::File::FLAG_CREATE_ALWAYS),
+                  static_cast<uint32_t>(base::File::FLAG_CREATE_ALWAYS),
               "");
 static_assert(filesystem::kFlagOpenTruncated ==
-                  static_cast<uint32>(base::File::FLAG_OPEN_TRUNCATED),
+                  static_cast<uint32_t>(base::File::FLAG_OPEN_TRUNCATED),
               "");
 static_assert(filesystem::kFlagRead ==
-                  static_cast<uint32>(base::File::FLAG_READ),
+                  static_cast<uint32_t>(base::File::FLAG_READ),
               "");
 static_assert(filesystem::kFlagWrite ==
-                  static_cast<uint32>(base::File::FLAG_WRITE),
+                  static_cast<uint32_t>(base::File::FLAG_WRITE),
               "");
 static_assert(filesystem::kFlagAppend ==
-                  static_cast<uint32>(base::File::FLAG_APPEND),
+                  static_cast<uint32_t>(base::File::FLAG_APPEND),
               "");
 
 // filesystem.Error in types.mojom must be the same as base::File::Error.

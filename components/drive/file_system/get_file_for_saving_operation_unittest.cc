@@ -4,6 +4,8 @@
 
 #include "components/drive/file_system/get_file_for_saving_operation.h"
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -129,7 +131,7 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_NotExist) {
   // Checks that the file is created and retrieved.
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(drive_path, &src_entry));
-  int64 size = -1;
+  int64_t size = -1;
   EXPECT_TRUE(base::GetFileSize(local_path, &size));
   EXPECT_EQ(0, size);
 }

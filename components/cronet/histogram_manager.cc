@@ -51,7 +51,7 @@ void HistogramManager::InconsistencyDetectedInLoggedCount(int amount) {
                        std::abs(amount));
 }
 
-bool HistogramManager::GetDeltas(std::vector<uint8>* data) {
+bool HistogramManager::GetDeltas(std::vector<uint8_t>* data) {
   // Clear the protobuf between calls.
   uma_proto_.Clear();
   histogram_snapshot_manager_.PrepareDeltas(

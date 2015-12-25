@@ -4,11 +4,15 @@
 
 #include "components/cronet/android/url_request_context_adapter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -180,15 +184,15 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
         continue;
       }
 
-      if (quic_hint.port <= std::numeric_limits<uint16>::min() ||
-          quic_hint.port > std::numeric_limits<uint16>::max()) {
+      if (quic_hint.port <= std::numeric_limits<uint16_t>::min() ||
+          quic_hint.port > std::numeric_limits<uint16_t>::max()) {
         LOG(ERROR) << "Invalid QUIC hint port: "
                    << quic_hint.port;
         continue;
       }
 
-      if (quic_hint.alternate_port <= std::numeric_limits<uint16>::min() ||
-          quic_hint.alternate_port > std::numeric_limits<uint16>::max()) {
+      if (quic_hint.alternate_port <= std::numeric_limits<uint16_t>::min() ||
+          quic_hint.alternate_port > std::numeric_limits<uint16_t>::max()) {
         LOG(ERROR) << "Invalid QUIC hint alternate port: "
                    << quic_hint.alternate_port;
         continue;
@@ -198,7 +202,7 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
                                                  quic_hint.port);
       net::AlternativeService alternative_service(
           net::AlternateProtocol::QUIC, "",
-          static_cast<uint16>(quic_hint.alternate_port));
+          static_cast<uint16_t>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
           quic_hint_host_port_pair, alternative_service, 1.0f,
           base::Time::Max());

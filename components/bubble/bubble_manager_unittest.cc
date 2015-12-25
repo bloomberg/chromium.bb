@@ -4,6 +4,7 @@
 
 #include "components/bubble/bubble_manager.h"
 
+#include "base/macros.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_manager_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"

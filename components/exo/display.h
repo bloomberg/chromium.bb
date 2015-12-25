@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_EXO_DISPLAY_H_
 #define COMPONENTS_EXO_DISPLAY_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 

@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "content/public/browser/url_data_source.h"

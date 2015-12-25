@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_METADATA_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_METADATA_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "components/drive/file_errors.h"
 
@@ -18,7 +19,7 @@ struct FileSystemMetadata {
 
   // The largest changestamp that the file system holds (may be different
   // from the one on the server)
-  int64 largest_changestamp;
+  int64_t largest_changestamp;
 
   // True if the resource metadata is now being fetched from the server.
   bool refreshing;

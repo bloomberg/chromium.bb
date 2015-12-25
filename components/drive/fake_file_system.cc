@@ -4,6 +4,8 @@
 
 #include "components/drive/fake_file_system.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -100,7 +102,7 @@ void FakeFileSystem::TouchFile(const base::FilePath& file_path,
 }
 
 void FakeFileSystem::TruncateFile(const base::FilePath& file_path,
-                                  int64 length,
+                                  int64_t length,
                                   const FileOperationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -245,7 +247,7 @@ void FakeFileSystem::GetPathFromResourceId(
 }
 
 void FakeFileSystem::FreeDiskSpaceIfNeededFor(
-    int64 num_bytes,
+    int64_t num_bytes,
     const FreeDiskSpaceCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

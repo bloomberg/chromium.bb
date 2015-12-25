@@ -4,6 +4,8 @@
 
 #include "components/favicon/core/favicon_service.h"
 
+#include <stddef.h>
+
 #include <cmath>
 
 #include "base/hash.h"

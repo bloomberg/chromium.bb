@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/scheduler.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/config.h"

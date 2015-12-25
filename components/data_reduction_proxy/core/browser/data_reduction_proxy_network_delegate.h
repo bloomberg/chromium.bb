@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_NETWORK_DELEGATE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_NETWORK_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
@@ -109,17 +111,17 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // Posts to the UI thread to UpdateContentLengthPrefs in the data reduction
   // proxy metrics and updates |received_content_length_| and
   // |original_content_length_|.
-  void AccumulateDataUsage(int64 data_used,
-                           int64 original_size,
+  void AccumulateDataUsage(int64_t data_used,
+                           int64_t original_size,
                            DataReductionProxyRequestType request_type,
                            const std::string& data_usage_host,
                            const std::string& mime_type);
 
   // Total size of all content that has been received over the network.
-  int64 total_received_bytes_;
+  int64_t total_received_bytes_;
 
   // Total original size of all content before it was transferred.
-  int64 total_original_received_bytes_;
+  int64_t total_original_received_bytes_;
 
   // All raw Data Reduction Proxy pointers must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;

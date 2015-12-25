@@ -4,6 +4,8 @@
 
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -90,7 +92,7 @@ void CrashDumpManager::ProcessMinidump(
     base::android::ApplicationState app_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CHECK(instance_);
-  int64 file_size = 0;
+  int64_t file_size = 0;
   int r = base::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump "
             << minidump_path.value();
@@ -147,7 +149,7 @@ void CrashDumpManager::ProcessMinidump(
     NOTREACHED() << "Failed to retrieve the crash dump directory.";
     return;
   }
-  const uint64 rand = base::RandUint64();
+  const uint64_t rand = base::RandUint64();
   const std::string filename =
       base::StringPrintf("chromium-renderer-minidump-%016" PRIx64 ".dmp%d",
                          rand, pid);

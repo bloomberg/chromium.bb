@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_STORAGE_DELEGATE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_STORAGE_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -32,7 +33,7 @@ class DataReductionProxyEventStorageDelegate {
 
   // Stores a DATA_REDUCTION_PROXY_BYPASS_REQUESTED event.
   virtual void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
-                                        int64 expiration_ticks) = 0;
+                                        int64_t expiration_ticks) = 0;
 
   // Stores a DATA_REDUCTION_PROXY_CANARY_REQUEST event.
   virtual void AddEventAndSecureProxyCheckState(

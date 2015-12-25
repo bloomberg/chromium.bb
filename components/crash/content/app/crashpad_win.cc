@@ -4,6 +4,8 @@
 
 #include "components/crash/content/app/crashpad.h"
 
+#include <stddef.h>
+
 #include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"

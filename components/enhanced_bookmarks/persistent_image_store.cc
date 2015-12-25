@@ -4,6 +4,8 @@
 
 #include "components/enhanced_bookmarks/persistent_image_store.h"
 
+#include <stddef.h>
+
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "components/enhanced_bookmarks/image_store_util.h"
@@ -307,7 +309,7 @@ void PersistentImageStore::ClearAll() {
   statement.Run();
 }
 
-int64 PersistentImageStore::GetStoreSizeInBytes() {
+int64_t PersistentImageStore::GetStoreSizeInBytes() {
   base::File file(path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
   return file.IsValid() ? file.GetLength() : -1;
 }

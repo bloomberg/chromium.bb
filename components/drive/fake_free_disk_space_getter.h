@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_DRIVE_FAKE_FREE_DISK_SPACE_GETTER_H_
 #define COMPONENTS_DRIVE_FAKE_FREE_DISK_SPACE_GETTER_H_
 
+#include <stdint.h>
+
 #include <list>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/drive/file_cache.h"
 
 namespace drive {
@@ -19,7 +21,7 @@ class FakeFreeDiskSpaceGetter : public internal::FreeDiskSpaceGetterInterface {
   FakeFreeDiskSpaceGetter();
   ~FakeFreeDiskSpaceGetter() override;
 
-  void set_default_value(int64 value) { default_value_ = value; }
+  void set_default_value(int64_t value) { default_value_ = value; }
 
   // Pushes the given value to the back of the fake value list.
   //
@@ -27,14 +29,14 @@ class FakeFreeDiskSpaceGetter : public internal::FreeDiskSpaceGetterInterface {
   // |default_value_| repeatedly.
   // Otherwise, AmountOfFreeDiskSpace() will return the value at the front of
   // the list and removes it from the list.
-  void PushFakeValue(int64 value);
+  void PushFakeValue(int64_t value);
 
   // FreeDiskSpaceGetterInterface overrides.
-  int64 AmountOfFreeDiskSpace() override;
+  int64_t AmountOfFreeDiskSpace() override;
 
  private:
-  std::list<int64> fake_values_;
-  int64 default_value_;
+  std::list<int64_t> fake_values_;
+  int64_t default_value_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFreeDiskSpaceGetter);
 };

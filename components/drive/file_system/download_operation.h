@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_DOWNLOAD_OPERATION_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_DOWNLOAD_OPERATION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"

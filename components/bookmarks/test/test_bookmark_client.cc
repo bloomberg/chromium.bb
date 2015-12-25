@@ -4,6 +4,8 @@
 
 #include "components/bookmarks/test/test_bookmark_client.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -84,7 +86,7 @@ bool TestBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
 // static
 BookmarkPermanentNodeList TestBookmarkClient::LoadExtraNodes(
     BookmarkPermanentNodeList extra_nodes,
-    int64* next_id) {
+    int64_t* next_id) {
   return extra_nodes.Pass();
 }
 

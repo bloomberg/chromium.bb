@@ -4,10 +4,13 @@
 
 #include "components/cdm/renderer/widevine_key_systems.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "media/base/eme_constants.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.

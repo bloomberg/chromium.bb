@@ -4,6 +4,8 @@
 
 #include "components/error_page/renderer/net_error_helper_core.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -16,12 +18,14 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/common/url_constants.h"

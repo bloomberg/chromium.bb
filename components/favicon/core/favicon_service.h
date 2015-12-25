@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_FAVICON_CORE_FAVICON_SERVICE_H_
 #define COMPONENTS_FAVICON_CORE_FAVICON_SERVICE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -209,7 +212,7 @@ class FaviconService : public KeyedService {
   void ClearUnableToDownloadFavicons();
 
  private:
-  typedef uint32 MissingFaviconURLHash;
+  typedef uint32_t MissingFaviconURLHash;
 
   // Helper function for GetFaviconImageForPageURL(), GetRawFaviconForPageURL()
   // and GetFaviconForPageURL().

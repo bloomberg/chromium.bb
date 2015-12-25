@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DRIVE_SERVICE_DRIVE_SERVICE_INTERFACE_H_
 #define COMPONENTS_DRIVE_SERVICE_DRIVE_SERVICE_INTERFACE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/time/time.h"
@@ -113,7 +115,7 @@ class DriveServiceBatchOperationsInterface {
   // uploaded.  |callback| must not be null. |progress_callback| may be null.
   virtual google_apis::CancelCallback MultipartUploadNewFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& parent_resource_id,
       const std::string& title,
       const base::FilePath& local_file_path,
@@ -127,7 +129,7 @@ class DriveServiceBatchOperationsInterface {
   // uploaded.  |callback| must not be null. |progress_callback| may be null.
   virtual google_apis::CancelCallback MultipartUploadExistingFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const UploadExistingFileOptions& options,
@@ -247,7 +249,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   //
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetChangeList(
-      int64 start_changestamp,
+      int64_t start_changestamp,
       const google_apis::ChangeListCallback& callback) = 0;
 
   // The result of GetChangeList() may be paged.
@@ -402,7 +404,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |callback| must not be null.
   virtual google_apis::CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& parent_resource_id,
       const std::string& title,
       const UploadNewFileOptions& options,
@@ -414,7 +416,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |callback| must not be null.
   virtual google_apis::CancelCallback InitiateUploadExistingFile(
       const std::string& content_type,
-      int64 content_length,
+      int64_t content_length,
       const std::string& resource_id,
       const UploadExistingFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) = 0;
@@ -423,9 +425,9 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |callback| must not be null. |progress_callback| may be null.
   virtual google_apis::CancelCallback ResumeUpload(
       const GURL& upload_url,
-      int64 start_position,
-      int64 end_position,
-      int64 content_length,
+      int64_t start_position,
+      int64_t end_position,
+      int64_t content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path,
       const google_apis::drive::UploadRangeCallback& callback,
@@ -437,7 +439,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetUploadStatus(
       const GURL& upload_url,
-      int64 content_length,
+      int64_t content_length,
       const google_apis::drive::UploadRangeCallback& callback) = 0;
 
   // Authorizes a Drive app with the id |app_id| to open the given file.

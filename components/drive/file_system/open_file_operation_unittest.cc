@@ -4,6 +4,8 @@
 
 #include "components/drive/file_system/open_file_operation.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/files/file_path.h"
@@ -40,7 +42,7 @@ TEST_F(OpenFileOperationTest, OpenExistingFile) {
       FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
@@ -55,7 +57,7 @@ TEST_F(OpenFileOperationTest, OpenExistingFile) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
-  int64 local_file_size;
+  int64_t local_file_size;
   ASSERT_TRUE(base::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
 
@@ -123,7 +125,7 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
-  int64 local_file_size;
+  int64_t local_file_size;
   ASSERT_TRUE(base::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(0, local_file_size);  // Should be an empty file.
 
@@ -138,7 +140,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
       FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
@@ -157,7 +159,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
-  int64 local_file_size;
+  int64_t local_file_size;
   ASSERT_TRUE(base::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
 
@@ -188,7 +190,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
-  int64 local_file_size;
+  int64_t local_file_size;
   ASSERT_TRUE(base::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(0, local_file_size);  // Should be an empty file.
 
@@ -203,7 +205,7 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
       FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
@@ -218,7 +220,7 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
-  int64 local_file_size;
+  int64_t local_file_size;
   ASSERT_TRUE(base::GetFileSize(file_path, &local_file_size));
   EXPECT_EQ(file_size, local_file_size);
 

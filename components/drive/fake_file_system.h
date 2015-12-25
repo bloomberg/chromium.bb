@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_DRIVE_FAKE_FILE_SYSTEM_H_
 #define COMPONENTS_DRIVE_FAKE_FILE_SYSTEM_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_interface.h"
@@ -76,7 +78,7 @@ class FakeFileSystem : public FileSystemInterface {
                  const base::Time& last_modified_time,
                  const FileOperationCallback& callback) override;
   void TruncateFile(const base::FilePath& file_path,
-                    int64 length,
+                    int64_t length,
                     const FileOperationCallback& callback) override;
   void Pin(const base::FilePath& file_path,
            const FileOperationCallback& callback) override;
@@ -126,7 +128,7 @@ class FakeFileSystem : public FileSystemInterface {
   void Reset(const FileOperationCallback& callback) override;
   void GetPathFromResourceId(const std::string& resource_id,
                              const GetFilePathCallback& callback) override;
-  void FreeDiskSpaceIfNeededFor(int64 num_bytes,
+  void FreeDiskSpaceIfNeededFor(int64_t num_bytes,
                                 const FreeDiskSpaceCallback& callback) override;
   void CalculateEvictableCacheSize(
       const EvictableCacheSizeCallback& callback) override;

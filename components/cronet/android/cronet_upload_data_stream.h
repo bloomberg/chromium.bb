@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_H_
 #define COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -55,7 +56,7 @@ class CronetUploadDataStream : public net::UploadDataStream {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  CronetUploadDataStream(Delegate* delegate, int64 size);
+  CronetUploadDataStream(Delegate* delegate, int64_t size);
   ~CronetUploadDataStream() override;
 
   // Failure is handled at the Java layer. These two success callbacks are
@@ -74,7 +75,7 @@ class CronetUploadDataStream : public net::UploadDataStream {
   void StartRewind();
 
   // Size of the upload. -1 if chunked.
-  const int64 size_;
+  const int64_t size_;
 
   // True if ReadInternal has been called, the read hasn't completed, and there
   // hasn't been a ResetInternal call yet.

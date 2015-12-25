@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_GET_FILE_FOR_SAVING_OPERATION_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_GET_FILE_FOR_SAVING_OPERATION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

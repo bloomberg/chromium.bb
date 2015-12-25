@@ -4,12 +4,14 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"

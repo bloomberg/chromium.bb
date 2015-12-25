@@ -57,6 +57,7 @@ source_set("test_support") {
   ]
   public_deps = [
     ":copresence",
+    "//base",
     "//components/copresence/proto",
   ]
 }

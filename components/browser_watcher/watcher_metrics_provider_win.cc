@@ -4,6 +4,8 @@
 
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <vector>
 

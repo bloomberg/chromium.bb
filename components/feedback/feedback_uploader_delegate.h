@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "components/feedback/feedback_uploader.h"
 #include "net/url_request/url_fetcher_delegate.h"
 

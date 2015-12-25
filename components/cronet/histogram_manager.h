@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_CRONET_HISTOGRAM_MANAGER_H_
 #define COMPONENTS_CRONET_HISTOGRAM_MANAGER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,7 +30,7 @@ class HistogramManager : public base::HistogramFlattener {
   // Snapshot all histograms to record the delta into |uma_proto_| and then
   // returns the serialized protobuf representation of the record in |data|.
   // Returns true if it was successfully serialized.
-  bool GetDeltas(std::vector<uint8>* data);
+  bool GetDeltas(std::vector<uint8_t>* data);
 
   // TODO(mef): Hang Histogram Manager off java object instead of singleton.
   static HistogramManager* GetInstance();

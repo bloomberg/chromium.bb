@@ -4,6 +4,7 @@
 
 #include "components/devtools_service/devtools_http_server.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include <string>
@@ -11,6 +12,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

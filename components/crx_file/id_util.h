@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CRX_FILE_ID_UTIL_H_
 #define COMPONENTS_CRX_FILE_ID_UTIL_H_
 
+#include <stddef.h>
+
 #include <string>
 
 namespace base {

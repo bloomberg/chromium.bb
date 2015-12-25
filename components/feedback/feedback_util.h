@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include "base/sys_info.h"

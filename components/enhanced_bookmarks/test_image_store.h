@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_ENHANCED_BOOKMARKS_TEST_IMAGE_STORE_H_
 #define COMPONENTS_ENHANCED_BOOKMARKS_TEST_IMAGE_STORE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/enhanced_bookmarks/image_store.h"
 
 // The TestImageStore is an implementation of ImageStore that keeps all its
@@ -23,7 +26,7 @@ class TestImageStore : public ImageStore {
   gfx::Size GetSize(const GURL& page_url) override;
   void GetAllPageUrls(std::set<GURL>* urls) override;
   void ClearAll() override;
-  int64 GetStoreSizeInBytes() override;
+  int64_t GetStoreSizeInBytes() override;
 
  protected:
   ~TestImageStore() override;

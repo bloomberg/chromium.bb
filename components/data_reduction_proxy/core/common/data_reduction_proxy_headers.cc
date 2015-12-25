@@ -4,6 +4,9 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -44,7 +47,7 @@ const int kMediumBypassMaxSeconds = 300;
 
 // Returns a random bypass duration between 1 and 5 minutes.
 base::TimeDelta GetDefaultBypassDuration() {
-  const int64 delta_ms =
+  const int64_t delta_ms =
       base::RandInt(base::TimeDelta::FromMinutes(1).InMilliseconds(),
                     base::TimeDelta::FromMinutes(5).InMilliseconds());
   return TimeDelta::FromMilliseconds(delta_ms);
@@ -110,7 +113,7 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
     if (value.size() > prefix.size()) {
       if (base::StartsWith(value, prefix,
                            base::CompareCase::INSENSITIVE_ASCII)) {
-        int64 seconds;
+        int64_t seconds;
         if (!base::StringToInt64(
                 StringPiece(value.begin() + prefix.size(), value.end()),
                 &seconds) || seconds < 0) {

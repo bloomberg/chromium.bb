@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_MONITOR_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_MONITOR_H_
 
+#include <stddef.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

@@ -4,9 +4,13 @@
 
 #include "components/drive/search_metadata.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/string_search.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -132,7 +136,7 @@ class SearchMetadataTest : public testing::Test {
 
   ResourceEntry GetFileEntry(const std::string& name,
                              const std::string& resource_id,
-                             int64 last_accessed,
+                             int64_t last_accessed,
                              const std::string& parent_local_id) {
     ResourceEntry entry;
     entry.set_title(name);
@@ -144,7 +148,7 @@ class SearchMetadataTest : public testing::Test {
 
   ResourceEntry GetDirectoryEntry(const std::string& name,
                                   const std::string& resource_id,
-                                  int64 last_accessed,
+                                  int64_t last_accessed,
                                   const std::string& parent_local_id) {
     ResourceEntry entry;
     entry.set_title(name);

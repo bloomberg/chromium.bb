@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 
+#include "base/macros.h"
 #include "components/favicon_base/favicon_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"

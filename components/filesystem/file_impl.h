@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FILESYSTEM_FILE_IMPL_H_
 #define COMPONENTS_FILESYSTEM_FILE_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -22,7 +24,7 @@ class FileImpl : public File {
  public:
   FileImpl(mojo::InterfaceRequest<File> request,
            const base::FilePath& path,
-           uint32 flags);
+           uint32_t flags);
   FileImpl(mojo::InterfaceRequest<File> request, base::File file);
   ~FileImpl() override;
 

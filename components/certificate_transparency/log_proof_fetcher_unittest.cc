@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/safe_json/testing_json_parser.h"
 #include "net/base/net_errors.h"

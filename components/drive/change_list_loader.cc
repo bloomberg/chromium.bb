@@ -4,10 +4,13 @@
 
 #include "components/drive/change_list_loader.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -104,11 +107,10 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
 // Fetches the delta changes since |start_change_id|.
 class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
  public:
-  DeltaFeedFetcher(JobScheduler* scheduler, int64 start_change_id)
+  DeltaFeedFetcher(JobScheduler* scheduler, int64_t start_change_id)
       : scheduler_(scheduler),
         start_change_id_(start_change_id),
-        weak_ptr_factory_(this) {
-  }
+        weak_ptr_factory_(this) {}
 
   ~DeltaFeedFetcher() override {}
 
@@ -154,7 +156,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   }
 
   JobScheduler* scheduler_;
-  int64 start_change_id_;
+  int64_t start_change_id_;
   ScopedVector<ChangeList> change_lists_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<DeltaFeedFetcher> weak_ptr_factory_;
@@ -378,7 +380,7 @@ void ChangeListLoader::Load(const FileOperationCallback& callback) {
     return;
 
   // Check the current status of local metadata, and start loading if needed.
-  int64* local_changestamp = new int64(0);
+  int64_t* local_changestamp = new int64_t(0);
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -393,7 +395,7 @@ void ChangeListLoader::Load(const FileOperationCallback& callback) {
 
 void ChangeListLoader::LoadAfterGetLargestChangestamp(
     bool is_initial_load,
-    const int64* local_changestamp,
+    const int64_t* local_changestamp,
     FileError error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -419,7 +421,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
 }
 
 void ChangeListLoader::LoadAfterGetAboutResource(
-    int64 local_changestamp,
+    int64_t local_changestamp,
     google_apis::DriveApiErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -432,8 +434,8 @@ void ChangeListLoader::LoadAfterGetAboutResource(
 
   DCHECK(about_resource);
 
-  int64 remote_changestamp = about_resource->largest_change_id();
-  int64 start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
+  int64_t remote_changestamp = about_resource->largest_change_id();
+  int64_t start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
   if (local_changestamp >= remote_changestamp) {
     if (local_changestamp > remote_changestamp) {
       LOG(WARNING) << "Local resource metadata is fresher than server, "
@@ -489,7 +491,7 @@ void ChangeListLoader::OnAboutResourceUpdated(
                base::Int64ToString(resource->largest_change_id()).c_str());
 }
 
-void ChangeListLoader::LoadChangeListFromServer(int64 start_changestamp) {
+void ChangeListLoader::LoadChangeListFromServer(int64_t start_changestamp) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!change_feed_fetcher_);
   DCHECK(about_resource_loader_->cached_about_resource());

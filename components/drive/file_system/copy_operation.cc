@@ -4,6 +4,8 @@
 
 #include "components/drive/file_system/copy_operation.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/task_runner_util.h"
@@ -122,7 +124,7 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
 
   // Copy locally.
   ResourceEntry entry;
-  const int64 now = base::Time::Now().ToInternalValue();
+  const int64_t now = base::Time::Now().ToInternalValue();
   entry.set_title(params->dest_file_path.BaseName().AsUTF8Unsafe());
   entry.set_parent_local_id(params->parent_entry.local_id());
   entry.mutable_file_specific_info()->set_content_mime_type(

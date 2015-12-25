@@ -5,9 +5,9 @@
 #include "components/crash/content/app/hard_error_handler_win.h"
 
 #include <DelayIMP.h>
+#include <stddef.h>
 #include <winternl.h>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 

@@ -7,7 +7,10 @@
 
 #include "components/enhanced_bookmarks/image_store.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
@@ -29,7 +32,7 @@ class PersistentImageStore : public ImageStore {
   gfx::Size GetSize(const GURL& page_url) override;
   void GetAllPageUrls(std::set<GURL>* urls) override;
   void ClearAll() override;
-  int64 GetStoreSizeInBytes() override;
+  int64_t GetStoreSizeInBytes() override;
 
  protected:
   ~PersistentImageStore() override;

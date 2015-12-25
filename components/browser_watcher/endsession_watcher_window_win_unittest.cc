@@ -5,6 +5,7 @@
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 
 #include <windows.h>
+#include <stddef.h>
 #include <vector>
 
 #include "base/bind.h"

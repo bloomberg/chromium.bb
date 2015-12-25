@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUDIO_MODEM_AUDIO_PLAYER_IMPL_H_
 #define COMPONENTS_AUDIO_MODEM_AUDIO_PLAYER_IMPL_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/gtest_prod_util.h"

@@ -4,6 +4,8 @@
 
 #include "components/crash/core/common/crash_keys.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 

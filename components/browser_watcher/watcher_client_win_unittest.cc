@@ -4,6 +4,7 @@
 
 #include "components/browser_watcher/watcher_client_win.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FONT_SERVICE_PUBLIC_CPP_MAPPED_FONT_FILE_H_
 #define COMPONENTS_FONT_SERVICE_PUBLIC_CPP_MAPPED_FONT_FILE_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/ref_counted.h"

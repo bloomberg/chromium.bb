@@ -4,6 +4,8 @@
 
 #include "components/filesystem/file_system_impl.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -11,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/file_system_app.h"
 #include "mojo/application/public/cpp/application_connection.h"

@@ -4,18 +4,23 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/base64.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "net/http/http_response_headers.h"
@@ -468,8 +473,8 @@ TEST_F(DataReductionProxyTamperDetectionTest, ContentLength) {
   struct {
     std::string label;
     std::string received_fingerprint;
-    int64 actual_content_length;
-    int64 expected_original_content_length;
+    int64_t actual_content_length;
+    int64_t expected_original_content_length;
     bool expected_tampered_with;
   } test[] = {
     {
@@ -496,7 +501,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, ContentLength) {
 
     DataReductionProxyTamperDetection tamper_detection(headers.get(), true, 0);
 
-    int64 original_content_length;
+    int64_t original_content_length;
     bool tampered = tamper_detection.ValidateContentLength(
         test[i].received_fingerprint,
         test[i].actual_content_length,
@@ -768,7 +773,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
   struct {
     std::string label;
     std::string raw_header;
-    int64 content_length;
+    int64_t content_length;
     bool expected_tampered_with;
   } test[] = {
     {

@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_DRIVE_JOB_SCHEDULER_H_
 #define COMPONENTS_DRIVE_JOB_SCHEDULER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -101,7 +104,7 @@ class JobScheduler
 
   // Adds a GetChangeList operation to the queue.
   // |callback| must not be null.
-  void GetChangeList(int64 start_changestamp,
+  void GetChangeList(int64_t start_changestamp,
                      const google_apis::ChangeListCallback& callback);
 
   // Adds GetRemainingChangeList operation to the queue.
@@ -172,7 +175,7 @@ class JobScheduler
   // detail. The actual operation never refers these values.
   JobID DownloadFile(
       const base::FilePath& virtual_path,
-      int64 expected_file_size,
+      int64_t expected_file_size,
       const base::FilePath& local_cache_path,
       const std::string& resource_id,
       const ClientContext& context,
@@ -181,7 +184,7 @@ class JobScheduler
 
   // Adds an UploadNewFile operation to the queue.
   void UploadNewFile(const std::string& parent_resource_id,
-                     int64 expected_file_size,
+                     int64_t expected_file_size,
                      const base::FilePath& drive_file_path,
                      const base::FilePath& local_file_path,
                      const std::string& title,
@@ -192,7 +195,7 @@ class JobScheduler
 
   // Adds an UploadExistingFile operation to the queue.
   void UploadExistingFile(const std::string& resource_id,
-                          int64 expected_file_size,
+                          int64_t expected_file_size,
                           const base::FilePath& drive_file_path,
                           const base::FilePath& local_file_path,
                           const std::string& content_type,
@@ -343,7 +346,7 @@ class JobScheduler
       scoped_ptr<google_apis::FileResource> entry);
 
   // Updates the progress status of the specified job.
-  void UpdateProgress(JobID job_id, int64 progress, int64 total);
+  void UpdateProgress(JobID job_id, int64_t progress, int64_t total);
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
   void OnConnectionTypeChanged(

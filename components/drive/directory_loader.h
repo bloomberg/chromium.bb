@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_DRIVE_DIRECTORY_LOADER_H_
 #define COMPONENTS_DRIVE_DIRECTORY_LOADER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -90,7 +93,7 @@ class DirectoryLoader {
       scoped_ptr<google_apis::AboutResource> about_resource,
       const std::string& local_id,
       const ResourceEntry* entry,
-      const int64* local_changestamp,
+      const int64_t* local_changestamp,
       FileError error);
 
   // Part of ReadDirectory().

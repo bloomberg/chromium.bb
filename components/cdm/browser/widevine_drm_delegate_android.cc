@@ -4,6 +4,7 @@
 
 #include "components/cdm/browser/widevine_drm_delegate_android.h"
 
+#include "base/macros.h"
 #include "media/cdm/cenc_utils.h"
 
 namespace cdm {

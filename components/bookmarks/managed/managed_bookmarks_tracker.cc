@@ -47,9 +47,9 @@ ManagedBookmarksTracker::GetInitialManagedBookmarks() {
 }
 
 // static
-int64 ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
-                                           const base::ListValue* list,
-                                           int64 next_node_id) {
+int64_t ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
+                                             const base::ListValue* list,
+                                             int64_t next_node_id) {
   for (size_t i = 0; i < list->GetSize(); ++i) {
     // Extract the data for the next bookmark from the |list|.
     base::string16 title;

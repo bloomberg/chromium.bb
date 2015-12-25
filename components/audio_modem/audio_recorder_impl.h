@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUDIO_MODEM_AUDIO_RECORDER_IMPL_H_
 #define COMPONENTS_AUDIO_MODEM_AUDIO_RECORDER_IMPL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -73,7 +75,7 @@ class AudioRecorderImpl final
   // implementation should return as soon as possible.
   void OnData(media::AudioInputStream* stream,
               const media::AudioBus* source,
-              uint32 hardware_delay_bytes,
+              uint32_t hardware_delay_bytes,
               double volume) override;
   void OnError(media::AudioInputStream* stream) override;
 

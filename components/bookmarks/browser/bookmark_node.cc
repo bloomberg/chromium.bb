@@ -26,15 +26,14 @@ const base::char16 kInvalidChars[] = {
 
 // BookmarkNode ---------------------------------------------------------------
 
-const int64 BookmarkNode::kInvalidSyncTransactionVersion = -1;
+const int64_t BookmarkNode::kInvalidSyncTransactionVersion = -1;
 
 BookmarkNode::BookmarkNode(const GURL& url)
     : url_(url) {
   Initialize(0);
 }
 
-BookmarkNode::BookmarkNode(int64 id, const GURL& url)
-    : url_(url) {
+BookmarkNode::BookmarkNode(int64_t id, const GURL& url) : url_(url) {
   Initialize(id);
 }
 
@@ -104,7 +103,7 @@ const BookmarkNode::MetaInfoMap* BookmarkNode::GetMetaInfoMap() const {
   return meta_info_map_.get();
 }
 
-void BookmarkNode::Initialize(int64 id) {
+void BookmarkNode::Initialize(int64_t id) {
   id_ = id;
   type_ = url_.is_empty() ? FOLDER : URL;
   date_added_ = base::Time::Now();
@@ -124,10 +123,8 @@ void BookmarkNode::InvalidateFavicon() {
 
 // BookmarkPermanentNode -------------------------------------------------------
 
-BookmarkPermanentNode::BookmarkPermanentNode(int64 id)
-    : BookmarkNode(id, GURL()),
-      visible_(true) {
-}
+BookmarkPermanentNode::BookmarkPermanentNode(int64_t id)
+    : BookmarkNode(id, GURL()), visible_(true) {}
 
 BookmarkPermanentNode::~BookmarkPermanentNode() {
 }

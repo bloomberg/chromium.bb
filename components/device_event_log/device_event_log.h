@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_DEVICE_EVENT_LOG_DEVICE_EVENT_LOG_H_
 #define COMPONENTS_DEVICE_EVENT_LOG_DEVICE_EVENT_LOG_H_
 
+#include <stddef.h>
+
 #include <cstring>
 #include <sstream>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/device_event_log/device_event_log_export.h"
 

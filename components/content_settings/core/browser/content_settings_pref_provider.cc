@@ -4,6 +4,8 @@
 
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <utility>

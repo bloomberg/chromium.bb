@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CDM_BROWSER_WIDEVINE_DRM_DELEGATE_ANDROID_H_
 #define COMPONENTS_CDM_BROWSER_WIDEVINE_DRM_DELEGATE_ANDROID_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
 

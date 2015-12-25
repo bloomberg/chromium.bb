@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DRIVE_DRIVE_TEST_UTIL_H_
 #define COMPONENTS_DRIVE_DRIVE_TEST_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "components/drive/file_cache.h"
@@ -26,7 +28,7 @@ namespace drive {
 namespace test_util {
 
 // Disk space size used by FakeFreeDiskSpaceGetter.
-const int64 kLotsOfSpace = drive::internal::kMinFreeSpaceInBytes * 10;
+const int64_t kLotsOfSpace = drive::internal::kMinFreeSpaceInBytes * 10;
 
 // Helper to destroy objects which needs Destroy() to be called on destruction.
 // Note: When using this helper, you should destruct objects before

@@ -4,9 +4,13 @@
 
 #include "components/enhanced_bookmarks/image_store.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/enhanced_bookmarks/image_record.h"
 #include "components/enhanced_bookmarks/image_store_util.h"
 #include "components/enhanced_bookmarks/persistent_image_store.h"
@@ -310,7 +314,7 @@ TYPED_TEST(ImageStoreUnitTest, GetSize) {
       new enhanced_bookmarks::ImageRecord(
           GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK));
 
-  int64 size = 0;
+  int64_t size = 0;
   if (this->use_persistent_store()) {
     // File shouldn't exist before we actually start using it since we do lazy
     // initialization.

@@ -5,11 +5,14 @@
 #ifndef COMPONENTS_DRIVE_RESOURCE_METADATA_H_
 #define COMPONENTS_DRIVE_RESOURCE_METADATA_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -52,10 +55,10 @@ class ResourceMetadata {
   FileError Reset();
 
   // Returns the largest changestamp.
-  FileError GetLargestChangestamp(int64* out_value);
+  FileError GetLargestChangestamp(int64_t* out_value);
 
   // Sets the largest changestamp.
-  FileError SetLargestChangestamp(int64 value);
+  FileError SetLargestChangestamp(int64_t value);
 
   // Adds |entry| to the metadata tree based on its parent_local_id.
   FileError AddEntry(const ResourceEntry& entry, std::string* out_id);

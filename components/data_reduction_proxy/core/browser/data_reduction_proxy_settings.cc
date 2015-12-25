@@ -143,7 +143,7 @@ void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
   }
 }
 
-int64 DataReductionProxySettings::GetDataReductionLastUpdateTime() {
+int64_t DataReductionProxySettings::GetDataReductionLastUpdateTime() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_reduction_proxy_service_->compression_stats());
   return
@@ -366,9 +366,9 @@ DataReductionProxySettings::GetDailyContentLengths(const char* pref_name) {
 
 void DataReductionProxySettings::GetContentLengths(
     unsigned int days,
-    int64* original_content_length,
-    int64* received_content_length,
-    int64* last_update_time) {
+    int64_t* original_content_length,
+    int64_t* received_content_length,
+    int64_t* last_update_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_reduction_proxy_service_->compression_stats());
 

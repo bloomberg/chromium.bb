@@ -276,8 +276,8 @@ void DataReductionProxyIOData::SetLoFiModeOff() {
 }
 
 void DataReductionProxyIOData::UpdateContentLengths(
-    int64 data_used,
-    int64 original_size,
+    int64_t data_used,
+    int64_t original_size,
     bool data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
     const std::string& data_usage_host,
@@ -326,7 +326,7 @@ void DataReductionProxyIOData::AddEventAndSecureProxyCheckState(
 
 void DataReductionProxyIOData::AddAndSetLastBypassEvent(
     scoped_ptr<base::Value> event,
-    int64 expiration_ticks) {
+    int64_t expiration_ticks) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
@@ -343,7 +343,7 @@ void DataReductionProxyIOData::SetUnreachable(bool unreachable) {
 }
 
 void DataReductionProxyIOData::SetInt64Pref(const std::string& pref_path,
-                                            int64 value) {
+                                            int64_t value) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DataReductionProxyService::SetInt64Pref, service_,

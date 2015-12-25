@@ -4,6 +4,9 @@
 
 #include "components/domain_reliability/google_configs.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/domain_reliability/config.h"
 

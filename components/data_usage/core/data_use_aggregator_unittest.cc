@@ -4,6 +4,7 @@
 
 #include "components/data_usage/core/data_use_aggregator.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
@@ -11,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"

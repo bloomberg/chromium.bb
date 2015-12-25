@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_PRINTER_DESCRIPTION_H_
 #define COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_PRINTER_DESCRIPTION_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/logging.h"
@@ -71,31 +73,31 @@ enum MarginsType {
 struct Margins {
   Margins();
   Margins(MarginsType type,
-          int32 top_um,
-          int32 right_um,
-          int32 bottom_um,
-          int32 left_um);
+          int32_t top_um,
+          int32_t right_um,
+          int32_t bottom_um,
+          int32_t left_um);
 
   bool operator==(const Margins& other) const;
   bool operator!=(const Margins& other) const { return !(*this == other); }
 
   MarginsType type;
-  int32 top_um;
-  int32 right_um;
-  int32 bottom_um;
-  int32 left_um;
+  int32_t top_um;
+  int32_t right_um;
+  int32_t bottom_um;
+  int32_t left_um;
 };
 
 struct Dpi {
   Dpi();
-  Dpi(int32 horizontal, int32 vertical);
+  Dpi(int32_t horizontal, int32_t vertical);
 
   bool IsValid() const;
   bool operator==(const Dpi& other) const;
   bool operator!=(const Dpi& other) const { return !(*this == other); }
 
-  int32 horizontal;
-  int32 vertical;
+  int32_t horizontal;
+  int32_t vertical;
 };
 
 enum FitToPageType {
@@ -289,12 +291,12 @@ struct Media {
 
   explicit Media(MediaType type);
 
-  Media(MediaType type, int32 width_um, int32 height_um);
+  Media(MediaType type, int32_t width_um, int32_t height_um);
 
   Media(const std::string& custom_display_name,
         const std::string& vendor_id,
-        int32 width_um,
-        int32 height_um);
+        int32_t width_um,
+        int32_t height_um);
 
   bool MatchBySize();
 
@@ -303,8 +305,8 @@ struct Media {
   bool operator!=(const Media& other) const { return !(*this == other); }
 
   MediaType type;
-  int32 width_um;
-  int32 height_um;
+  int32_t width_um;
+  int32_t height_um;
   bool is_continuous_feed;
   std::string custom_display_name;
   std::string vendor_id;
@@ -312,14 +314,14 @@ struct Media {
 
 struct Interval {
   Interval();
-  Interval(int32 start, int32 end);
-  explicit Interval(int32 start);
+  Interval(int32_t start, int32_t end);
+  explicit Interval(int32_t start);
 
   bool operator==(const Interval& other) const;
   bool operator!=(const Interval& other) const { return !(*this == other); }
 
-  int32 start;
-  int32 end;
+  int32_t start;
+  int32_t end;
 };
 
 typedef std::vector<Interval> PageRange;
@@ -362,7 +364,7 @@ typedef TicketItem<Margins, MarginsTraits> MarginsTicketItem;
 typedef TicketItem<Dpi, DpiTraits> DpiTicketItem;
 typedef TicketItem<FitToPageType, FitToPageTraits> FitToPageTicketItem;
 typedef TicketItem<Media, MediaTraits> MediaTicketItem;
-typedef TicketItem<int32, CopiesTraits> CopiesTicketItem;
+typedef TicketItem<int32_t, CopiesTraits> CopiesTicketItem;
 typedef TicketItem<PageRange, PageRangeTraits> PageRangeTicketItem;
 typedef TicketItem<bool, CollateTraits> CollateTicketItem;
 typedef TicketItem<bool, ReverseTraits> ReverseTicketItem;

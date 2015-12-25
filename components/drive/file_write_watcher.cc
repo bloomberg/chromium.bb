@@ -4,12 +4,16 @@
 
 #include "components/drive/file_write_watcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path_watcher.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "google_apis/drive/task_util.h"
@@ -18,7 +22,7 @@ namespace drive {
 namespace internal {
 
 namespace {
-const int64 kWriteEventDelayInSeconds = 5;
+const int64_t kWriteEventDelayInSeconds = 5;
 }  // namespace
 
 // base::FileWatcher needs to live in a thread that is allowed to do File IO

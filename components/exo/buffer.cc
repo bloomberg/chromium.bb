@@ -7,10 +7,12 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
 
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/context_provider.h"
@@ -131,7 +133,7 @@ gpu::SyncToken Buffer::Texture::BindTexImage() {
   // Create and return a sync token that can be used to ensure that the
   // BindTexImage2DCHROMIUM call is processed before issuing any commands
   // that will read from the texture on a different context.
-  uint64 fence_sync = gles2->InsertFenceSyncCHROMIUM();
+  uint64_t fence_sync = gles2->InsertFenceSyncCHROMIUM();
   gles2->OrderingBarrierCHROMIUM();
   gpu::SyncToken sync_token;
   gles2->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());

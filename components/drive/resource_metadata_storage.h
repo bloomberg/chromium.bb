@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_DRIVE_RESOURCE_METADATA_STORAGE_H_
 #define COMPONENTS_DRIVE_RESOURCE_METADATA_STORAGE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/drive/drive.pb.h"
@@ -101,10 +103,10 @@ class ResourceMetadataStorage {
   void RecoverCacheInfoFromTrashedResourceMap(RecoveredCacheInfoMap* out_info);
 
   // Sets the largest changestamp.
-  FileError SetLargestChangestamp(int64 largest_changestamp);
+  FileError SetLargestChangestamp(int64_t largest_changestamp);
 
   // Gets the largest changestamp.
-  FileError GetLargestChangestamp(int64* largest_changestamp);
+  FileError GetLargestChangestamp(int64_t* largest_changestamp);
 
   // Puts the entry to this storage.
   FileError PutEntry(const ResourceEntry& entry);

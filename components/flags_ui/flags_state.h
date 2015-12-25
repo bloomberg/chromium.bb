@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FLAGS_UI_FLAGS_STATE_H_
 #define COMPONENTS_FLAGS_UI_FLAGS_STATE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>

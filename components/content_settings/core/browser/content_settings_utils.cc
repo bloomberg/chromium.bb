@@ -4,9 +4,12 @@
 
 #include "components/content_settings/core/browser/content_settings_utils.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"

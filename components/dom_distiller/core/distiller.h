@@ -5,11 +5,14 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"

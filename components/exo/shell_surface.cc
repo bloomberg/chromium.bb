@@ -8,6 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_state.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"

@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -119,7 +122,7 @@ class FileSystem : public FileSystemInterface,
                  const base::Time& last_modified_time,
                  const FileOperationCallback& callback) override;
   void TruncateFile(const base::FilePath& file_path,
-                    int64 length,
+                    int64_t length,
                     const FileOperationCallback& callback) override;
   void Pin(const base::FilePath& file_path,
            const FileOperationCallback& callback) override;
@@ -160,7 +163,7 @@ class FileSystem : public FileSystemInterface,
   void Reset(const FileOperationCallback& callback) override;
   void GetPathFromResourceId(const std::string& resource_id,
                              const GetFilePathCallback& callback) override;
-  void FreeDiskSpaceIfNeededFor(int64 num_bytes,
+  void FreeDiskSpaceIfNeededFor(int64_t num_bytes,
                                 const FreeDiskSpaceCallback& callback) override;
   void CalculateEvictableCacheSize(
       const EvictableCacheSizeCallback& callback) override;

@@ -8,6 +8,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "components/enhanced_bookmarks/image_record.h"
 #include "components/enhanced_bookmarks/image_store_util.h"
 #include "components/enhanced_bookmarks/persistent_image_store.h"

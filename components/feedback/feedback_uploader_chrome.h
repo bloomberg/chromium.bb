@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_CHROME_H_
 #define COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_CHROME_H_
 
+#include "base/macros.h"
 #include "components/feedback/feedback_uploader.h"
 #include "components/keyed_service/core/keyed_service.h"
 

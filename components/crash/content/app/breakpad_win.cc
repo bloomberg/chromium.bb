@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <shellapi.h>
+#include <stddef.h>
 #include <tchar.h>
 #include <userenv.h>
 #include <winnt.h>
@@ -15,11 +16,11 @@
 #include <vector>
 
 #include "base/base_switches.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"

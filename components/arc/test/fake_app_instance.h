@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/arc/common/app.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"

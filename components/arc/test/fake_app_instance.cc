@@ -4,6 +4,8 @@
 
 #include "components/arc/test/fake_app_instance.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

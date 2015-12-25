@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_HTTP_SERVER_H_
 #define COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_HTTP_SERVER_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/macros.h"

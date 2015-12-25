@@ -4,9 +4,10 @@
 
 #include "components/cronet/histogram_manager.h"
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,13 +20,13 @@ TEST(HistogramManager, HistogramBucketFields) {
   base::StatisticsRecorder::Initialize();
   // Capture histograms at the start of the test to avoid later GetDeltas()
   // calls picking them up.
-  std::vector<uint8> data_init;
+  std::vector<uint8_t> data_init;
   HistogramManager::GetInstance()->GetDeltas(&data_init);
 
   // kNoFlags filter should record all histograms.
   UMA_HISTOGRAM_ENUMERATION("UmaHistogramManager", 1, 2);
 
-  std::vector<uint8> data;
+  std::vector<uint8_t> data;
   EXPECT_TRUE(HistogramManager::GetInstance()->GetDeltas(&data));
   EXPECT_FALSE(data.empty());
   ChromeUserMetricsExtension uma_proto;
@@ -41,7 +42,7 @@ TEST(HistogramManager, HistogramBucketFields) {
   EXPECT_EQ(1, histogram_proto.bucket(0).count());
 
   UMA_HISTOGRAM_ENUMERATION("UmaHistogramManager2", 2, 3);
-  std::vector<uint8> data2;
+  std::vector<uint8_t> data2;
   EXPECT_TRUE(HistogramManager::GetInstance()->GetDeltas(&data2));
   EXPECT_FALSE(data2.empty());
   ChromeUserMetricsExtension uma_proto2;

@@ -85,6 +85,7 @@ source_set("test_support") {
 
   public_deps = [
     ":enhanced_bookmarks",
+    "//base",
     "//skia",
     "//testing/gtest",
     "//ui/gfx/geometry",

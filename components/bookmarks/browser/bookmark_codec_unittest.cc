@@ -4,6 +4,9 @@
 
 #include "components/bookmarks/browser/bookmark_codec.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -163,7 +166,7 @@ class BookmarkCodecTest : public testing::Test {
   bool Decode(BookmarkCodec* codec,
               BookmarkModel* model,
               const base::Value& value) {
-    int64 max_id;
+    int64_t max_id;
     bool result = codec->Decode(AsMutable(model->bookmark_bar_node()),
                                 AsMutable(model->other_node()),
                                 AsMutable(model->mobile_node()),
@@ -209,9 +212,9 @@ class BookmarkCodecTest : public testing::Test {
     return model.release();
   }
 
-  void CheckIDs(const BookmarkNode* node, std::set<int64>* assigned_ids) {
+  void CheckIDs(const BookmarkNode* node, std::set<int64_t>* assigned_ids) {
     DCHECK(node);
-    int64 node_id = node->id();
+    int64_t node_id = node->id();
     EXPECT_TRUE(assigned_ids->find(node_id) == assigned_ids->end());
     assigned_ids->insert(node_id);
     for (int i = 0; i < node->child_count(); ++i)
@@ -219,7 +222,7 @@ class BookmarkCodecTest : public testing::Test {
   }
 
   void ExpectIDsUnique(BookmarkModel* model) {
-    std::set<int64> assigned_ids;
+    std::set<int64_t> assigned_ids;
     CheckIDs(model->bookmark_bar_node(), &assigned_ids);
     CheckIDs(model->other_node(), &assigned_ids);
     CheckIDs(model->mobile_node(), &assigned_ids);

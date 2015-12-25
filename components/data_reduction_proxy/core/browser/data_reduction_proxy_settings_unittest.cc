@@ -4,7 +4,11 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_samples.h"
@@ -89,9 +93,9 @@ TEST_F(DataReductionProxySettingsTest, TestCanUseDataReductionProxy) {
 }
 
 TEST_F(DataReductionProxySettingsTest, TestResetDataReductionStatistics) {
-  int64 original_content_length;
-  int64 received_content_length;
-  int64 last_update_time;
+  int64_t original_content_length;
+  int64_t received_content_length;
+  int64_t last_update_time;
   settings_->ResetDataReductionStatistics();
   settings_->GetContentLengths(kNumDaysInHistory,
                                &original_content_length,
@@ -103,9 +107,9 @@ TEST_F(DataReductionProxySettingsTest, TestResetDataReductionStatistics) {
 }
 
 TEST_F(DataReductionProxySettingsTest, TestContentLengths) {
-  int64 original_content_length;
-  int64 received_content_length;
-  int64 last_update_time;
+  int64_t original_content_length;
+  int64_t received_content_length;
+  int64_t last_update_time;
 
   // Request |kNumDaysInHistory| days.
   settings_->GetContentLengths(kNumDaysInHistory,
@@ -114,7 +118,7 @@ TEST_F(DataReductionProxySettingsTest, TestContentLengths) {
                                &last_update_time);
   const unsigned int days = kNumDaysInHistory;
   // Received content length history values are 0 to |kNumDaysInHistory - 1|.
-  int64 expected_total_received_content_length = (days - 1L) * days / 2;
+  int64_t expected_total_received_content_length = (days - 1L) * days / 2;
   // Original content length history values are 0 to
   // |2 * (kNumDaysInHistory - 1)|.
   long expected_total_original_content_length = (days - 1L) * days;

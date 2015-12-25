@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_DRIVE_FILE_CHANGE_H_
 #define COMPONENTS_DRIVE_FILE_CHANGE_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 
 namespace drive {

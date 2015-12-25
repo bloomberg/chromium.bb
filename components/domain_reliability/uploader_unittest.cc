@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/uploader.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"

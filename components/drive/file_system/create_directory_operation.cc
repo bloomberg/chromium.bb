@@ -4,6 +4,8 @@
 
 #include "components/drive/file_system/create_directory_operation.h"
 
+#include <stddef.h>
+
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_system/operation_delegate.h"

@@ -5,6 +5,7 @@
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 
 #include <errno.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -30,6 +31,7 @@
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
+#include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 #include "content/public/browser/browser_thread.h"
 

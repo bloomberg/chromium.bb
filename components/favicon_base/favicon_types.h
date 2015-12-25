@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_
 #define COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_
 
+#include <stdint.h>
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
@@ -15,7 +17,7 @@ namespace favicon_base {
 
 struct FallbackIconStyle;
 
-typedef int64 FaviconID;
+typedef int64_t FaviconID;
 
 // Defines the icon types. They are also stored in icon_type field of favicons
 // table.

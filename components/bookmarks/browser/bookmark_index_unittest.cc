@@ -4,6 +4,8 @@
 
 #include "components/bookmarks/browser/bookmark_index.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

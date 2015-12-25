@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_system_core_util.h"
@@ -86,7 +87,7 @@ bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
   return cache_file_directory_.IsParent(path);
 }
 
-bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
+bool FileCache::FreeDiskSpaceIfNeededFor(int64_t num_bytes) {
   AssertOnSequencedWorkerPool();
 
   // Do nothing and return if we have enough space.
@@ -113,11 +114,11 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   }
 
   // Check available space again. If we have enough space here, do nothing.
-  const int64 available_space = GetAvailableSpace();
+  const int64_t available_space = GetAvailableSpace();
   if (available_space >= num_bytes)
     return true;
 
-  const int64 requested_space = num_bytes - available_space;
+  const int64_t requested_space = num_bytes - available_space;
 
   // Put all entries in priority queue where latest entry becomes top.
   std::priority_queue<CacheInfo, std::vector<CacheInfo>, CacheInfoLatestCompare>
@@ -158,7 +159,7 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   }
 
   // Update DB and delete files with accessing to the vector in ascending order.
-  int64 evicted_cache_size = 0;
+  int64_t evicted_cache_size = 0;
   auto iter = cache_info_list.rbegin();
   while (evicted_cache_size < requested_space &&
          iter != cache_info_list.rend()) {
@@ -230,7 +231,7 @@ FileError FileCache::Store(const std::string& id,
   if (error != FILE_ERROR_OK)
     return error;
 
-  int64 file_size = 0;
+  int64_t file_size = 0;
   if (file_operation_type == FILE_OPERATION_COPY) {
     if (!base::GetFileSize(source_path, &file_size)) {
       LOG(WARNING) << "Couldn't get file size for: " << source_path.value();
@@ -640,8 +641,8 @@ FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {
   return FILE_ERROR_OK;
 }
 
-int64 FileCache::GetAvailableSpace() {
-  int64 free_space = 0;
+int64_t FileCache::GetAvailableSpace() {
+  int64_t free_space = 0;
   if (free_disk_space_getter_)
     free_space = free_disk_space_getter_->AmountOfFreeDiskSpace();
   else

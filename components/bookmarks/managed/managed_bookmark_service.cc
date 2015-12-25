@@ -4,6 +4,7 @@
 
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <vector>
 
@@ -41,7 +42,7 @@ class BookmarkPermanentNodeLoader {
   // Initializes |node_| from |initial_bookmarks_| and |title_id_| and returns
   // it. The ids are assigned starting at |next_node_id| and the value is
   // updated as a side-effect.
-  scoped_ptr<BookmarkPermanentNode> Load(int64* next_node_id) {
+  scoped_ptr<BookmarkPermanentNode> Load(int64_t* next_node_id) {
     node_->set_id(*next_node_id);
     *next_node_id = ManagedBookmarksTracker::LoadInitial(
         node_.get(), initial_bookmarks_.get(), node_->id() + 1);
@@ -63,7 +64,7 @@ class BookmarkPermanentNodeLoader {
 // this method.
 BookmarkPermanentNodeList LoadExtraNodes(
     ScopedVector<BookmarkPermanentNodeLoader> loaders,
-    int64* next_node_id) {
+    int64_t* next_node_id) {
   BookmarkPermanentNodeList extra_nodes;
   for (const auto& loader : loaders)
     extra_nodes.push_back(loader->Load(next_node_id).release());

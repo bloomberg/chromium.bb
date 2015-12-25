@@ -14,9 +14,8 @@ namespace drive {
 JobQueue::Item::Item() : batchable(false), size(0) {
 }
 
-JobQueue::Item::Item(JobID id, bool batchable, uint64 size)
-    : id(id), batchable(batchable), size(size) {
-}
+JobQueue::Item::Item(JobID id, bool batchable, uint64_t size)
+    : id(id), batchable(batchable), size(size) {}
 
 JobQueue::Item::~Item() {
 }
@@ -43,7 +42,7 @@ void JobQueue::PopForRun(int accepted_priority, std::vector<JobID>* jobs) {
     return;
 
   // Looks up the queue in the order of priority upto |accepted_priority|.
-  uint64 total_size = 0;
+  uint64_t total_size = 0;
   bool batchable = true;
   for (int priority = 0; priority <= accepted_priority; ++priority) {
     while (!queue_[priority].empty()) {
@@ -69,7 +68,7 @@ void JobQueue::GetQueuedJobs(int priority, std::vector<JobID>* jobs) const {
   }
 }
 
-void JobQueue::Push(JobID id, int priority, bool batchable, uint64 size) {
+void JobQueue::Push(JobID id, int priority, bool batchable, uint64_t size) {
   DCHECK_LT(priority, static_cast<int>(queue_.size()));
   queue_[priority].push_back(Item(id, batchable, size));
 }

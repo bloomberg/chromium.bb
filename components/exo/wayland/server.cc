@@ -5,6 +5,8 @@
 #include "components/exo/wayland/server.h"
 
 #include <linux/input.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
@@ -13,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"

@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/macros.h"
 #include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
 
 namespace external_video_surface {

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "components/audio_modem/public/modem.h"
 
 namespace audio_modem {

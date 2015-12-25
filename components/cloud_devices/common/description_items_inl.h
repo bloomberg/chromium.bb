@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CLOUD_DEVICES_COMMON_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
 #define COMPONENTS_CLOUD_DEVICES_COMMON_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/numerics/safe_conversions.h"

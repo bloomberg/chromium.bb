@@ -4,6 +4,8 @@
 
 #include "components/drive/sync/entry_update_performer.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/callback_helpers.h"
@@ -30,7 +32,7 @@ struct EntryUpdatePerformer::LocalState {
   ResourceEntry parent_entry;
   base::FilePath drive_file_path;
   base::FilePath cache_file_path;
-  int64 cache_file_size;
+  int64_t cache_file_size;
   bool should_content_update;
 };
 

@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"

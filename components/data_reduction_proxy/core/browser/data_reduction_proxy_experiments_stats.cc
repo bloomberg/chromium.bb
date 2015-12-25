@@ -46,8 +46,8 @@ void DataReductionProxyExperimentsStats::InitializeOnIOThread() {
 void DataReductionProxyExperimentsStats::RecordBytes(
     const base::Time& request_time,
     DataReductionProxyRequestType request_type,
-    int64 received_content_length,
-    int64 original_content_length) {
+    int64_t received_content_length,
+    int64_t original_content_length) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (config_retrieval_params_) {
     // Only measure requests which flowed through the Data Reduction Proxy.

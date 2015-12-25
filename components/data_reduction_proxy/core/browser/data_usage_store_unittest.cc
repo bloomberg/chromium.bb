@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -48,7 +50,7 @@ class DataUsageStoreTest : public testing::Test {
     return data_usage_store_->current_bucket_index_;
   }
 
-  int64 current_bucket_last_updated() const {
+  int64_t current_bucket_last_updated() const {
     return data_usage_store_->current_bucket_last_updated_.ToInternalValue();
   }
 

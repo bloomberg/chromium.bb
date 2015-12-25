@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FAVICON_BASE_FALLBACK_ICON_URL_PARSER_H_
 #define COMPONENTS_FAVICON_BASE_FALLBACK_ICON_URL_PARSER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/gtest_prod_util.h"

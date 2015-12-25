@@ -4,6 +4,8 @@
 
 #include "components/browser_watcher/window_hang_monitor_win.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/base_switches.h"

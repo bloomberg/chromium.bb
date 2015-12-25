@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_EXPERIMENTS_STATS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_EXPERIMENTS_STATS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,7 +24,7 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyConfigRetrievalParams;
 
-typedef base::Callback<void(const std::string&, int64)> Int64ValueSetter;
+typedef base::Callback<void(const std::string&, int64_t)> Int64ValueSetter;
 
 // Collects statistics specific to experiments of which a client may be part.
 // Any calls into this class should be as lightweight as possible such that if
@@ -47,8 +48,8 @@ class DataReductionProxyExperimentsStats {
   // Collect received bytes for the experiment.
   void RecordBytes(const base::Time& request_time,
                    DataReductionProxyRequestType request_type,
-                   int64 received_content_length,
-                   int64 original_content_length);
+                   int64_t received_content_length,
+                   int64_t original_content_length);
 
  private:
   // Updates the simulated expiration of the Data Reduction Proxy configuration

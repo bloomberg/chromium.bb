@@ -8,10 +8,13 @@
 // Defines common templates that could be used to create device specific
 // capabilities and print tickets.
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 

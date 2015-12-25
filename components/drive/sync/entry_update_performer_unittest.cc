@@ -4,6 +4,8 @@
 
 #include "components/drive/sync/entry_update_performer.h"
 
+#include <stdint.h>
+
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/md5.h"
@@ -263,7 +265,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
   const std::string kTestFileContent = "I'm being uploaded! Yay!";
   EXPECT_EQ(FILE_ERROR_OK, StoreAndMarkDirty(local_id, kTestFileContent));
 
-  int64 original_changestamp =
+  int64_t original_changestamp =
       fake_service()->about_resource().largest_change_id();
 
   // The callback will be called upon completion of UpdateEntry().
@@ -288,7 +290,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
                                                        &server_entry));
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
-  EXPECT_EQ(static_cast<int64>(kTestFileContent.size()),
+  EXPECT_EQ(static_cast<int64_t>(kTestFileContent.size()),
             server_entry->file_size());
 
   // Make sure that the cache is no longer dirty.
@@ -307,7 +309,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
   const std::string kTestFileContent = "I'm being uploaded! Yay!";
   EXPECT_EQ(FILE_ERROR_OK, StoreAndMarkDirty(local_id, kTestFileContent));
 
-  int64 original_changestamp =
+  int64_t original_changestamp =
       fake_service()->about_resource().largest_change_id();
 
   // The callback will be called upon completion of UpdateEntry().
@@ -332,7 +334,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
                                                        &server_entry));
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
-  EXPECT_EQ(static_cast<int64>(kTestFileContent.size()),
+  EXPECT_EQ(static_cast<int64_t>(kTestFileContent.size()),
             server_entry->file_size());
 
   // Make sure that the cache is no longer dirty.

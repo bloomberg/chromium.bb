@@ -4,6 +4,7 @@
 
 #include "components/app_modal/javascript_app_modal_dialog.h"
 
+#include "build/build_config.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
 #include "content/public/browser/web_contents.h"

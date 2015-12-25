@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_LOCAL_SHARED_OBJECTS_COUNTER_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_LOCAL_SHARED_OBJECTS_COUNTER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 
 class GURL;
 

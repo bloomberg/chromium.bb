@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_H_
 #define COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"

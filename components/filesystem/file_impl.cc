@@ -4,12 +4,14 @@
 
 #include "components/filesystem/file_impl.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <limits>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/filesystem/util.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 
@@ -25,7 +27,7 @@ const size_t kMaxReadSize = 1 * 1024 * 1024;  // 1 MB.
 
 FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
                    const base::FilePath& path,
-                   uint32 flags)
+                   uint32_t flags)
     : binding_(this, request.Pass()), file_(path, flags) {
   DCHECK(file_.IsValid());
 }
@@ -158,13 +160,14 @@ void FileImpl::Seek(int64_t offset,
     return;
   }
 
-  int64 position = file_.Seek(static_cast<base::File::Whence>(whence), offset);
+  int64_t position =
+      file_.Seek(static_cast<base::File::Whence>(whence), offset);
   if (position < 0) {
     callback.Run(FILE_ERROR_FAILED, 0);
     return;
   }
 
-  callback.Run(FILE_ERROR_OK, static_cast<int64>(position));
+  callback.Run(FILE_ERROR_OK, static_cast<int64_t>(position));
 }
 
 void FileImpl::Stat(const StatCallback& callback) {

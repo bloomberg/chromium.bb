@@ -4,7 +4,7 @@
 
 // Multiply-included file, no traditional include guard.
 
-#include "base/basictypes.h"  // for OS_ANDROID and some basic types.
+#include "build/build_config.h"
 
 #if defined(OS_ANDROID)
 #include "components/cdm/common/cdm_messages_android.h"

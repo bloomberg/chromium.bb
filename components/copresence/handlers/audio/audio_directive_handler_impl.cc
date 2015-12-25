@@ -4,6 +4,8 @@
 
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

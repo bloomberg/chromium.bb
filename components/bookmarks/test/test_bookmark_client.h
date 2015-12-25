@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_BOOKMARKS_TEST_TEST_BOOKMARK_CLIENT_H_
 #define COMPONENTS_BOOKMARKS_TEST_TEST_BOOKMARK_CLIENT_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 
@@ -48,7 +51,7 @@ class TestBookmarkClient : public BookmarkClient {
   // Helpers for GetLoadExtraNodesCallback().
   static BookmarkPermanentNodeList LoadExtraNodes(
       BookmarkPermanentNodeList extra_nodes,
-      int64* next_id);
+      int64_t* next_id);
 
   BookmarkPermanentNodeList extra_nodes_to_load_;
   std::vector<BookmarkPermanentNode*> extra_nodes_;

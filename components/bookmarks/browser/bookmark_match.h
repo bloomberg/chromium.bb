@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_TITLE_MATCH_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_TITLE_MATCH_H_
 
+#include <stddef.h>
+
 #include <cstddef>
 #include <utility>
 #include <vector>

@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/scheduler.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/metrics/field_trial.h"
@@ -28,7 +30,7 @@ const char* kUploadRetryIntervalFieldTrialName = "DomRel-UploadRetryInterval";
 // Fixed elements of backoff policy
 const double kMultiplyFactor = 2.0;
 const double kJitterFactor = 0.1;
-const int64 kMaximumBackoffMs = 60 * 1000 * 1000;
+const int64_t kMaximumBackoffMs = 60 * 1000 * 1000;
 
 unsigned GetUnsignedFieldTrialValueOrDefault(std::string field_trial_name,
                                              unsigned default_value) {

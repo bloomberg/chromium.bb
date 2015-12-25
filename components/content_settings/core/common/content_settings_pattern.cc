@@ -4,8 +4,11 @@
 
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

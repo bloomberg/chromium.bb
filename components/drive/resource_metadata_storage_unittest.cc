@@ -4,10 +4,14 @@
 
 #include "components/drive/resource_metadata_storage.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/thread_task_runner_handle.h"
@@ -70,10 +74,10 @@ class ResourceMetadataStorageTest : public testing::Test {
 };
 
 TEST_F(ResourceMetadataStorageTest, LargestChangestamp) {
-  const int64 kLargestChangestamp = 1234567890;
+  const int64_t kLargestChangestamp = 1234567890;
   EXPECT_EQ(FILE_ERROR_OK,
             storage_->SetLargestChangestamp(kLargestChangestamp));
-  int64 value = 0;
+  int64_t value = 0;
   EXPECT_EQ(FILE_ERROR_OK, storage_->GetLargestChangestamp(&value));
   EXPECT_EQ(kLargestChangestamp, value);
 }
@@ -284,7 +288,7 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
 }
 
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
-  const int64 kLargestChangestamp = 1234567890;
+  const int64_t kLargestChangestamp = 1234567890;
   const std::string title = "title";
 
   // Construct M29 version DB.
@@ -321,7 +325,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
             storage_->GetIdByResourceId("abcd", &id));  // "file:" is dropped.
 
   // Data is erased, except cache entries.
-  int64 largest_changestamp = 0;
+  int64_t largest_changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK,
             storage_->GetLargestChangestamp(&largest_changestamp));
   EXPECT_EQ(0, largest_changestamp);
@@ -331,7 +335,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M29) {
 }
 
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
-  const int64 kLargestChangestamp = 1234567890;
+  const int64_t kLargestChangestamp = 1234567890;
   const std::string title = "title";
   const std::string resource_id = "abcd";
   const std::string local_id = "local-abcd";
@@ -371,7 +375,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
   std::string id;
   EXPECT_EQ(FILE_ERROR_OK, storage_->GetIdByResourceId(resource_id, &id));
   EXPECT_EQ(local_id, id);
-  int64 largest_changestamp = 0;
+  int64_t largest_changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK,
             storage_->GetLargestChangestamp(&largest_changestamp));
   EXPECT_EQ(0, largest_changestamp);
@@ -381,7 +385,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M32) {
 }
 
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M33) {
-  const int64 kLargestChangestamp = 1234567890;
+  const int64_t kLargestChangestamp = 1234567890;
   const std::string title = "title";
   const std::string resource_id = "abcd";
   const std::string local_id = "local-abcd";
@@ -429,7 +433,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M33) {
   ASSERT_TRUE(storage_->Initialize());
 
   // No data is lost.
-  int64 largest_changestamp = 0;
+  int64_t largest_changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK,
             storage_->GetLargestChangestamp(&largest_changestamp));
   EXPECT_EQ(kLargestChangestamp, largest_changestamp);
@@ -448,7 +452,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_M33) {
 }
 
 TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
-  const int64 kLargestChangestamp = 1234567890;
+  const int64_t kLargestChangestamp = 1234567890;
   const std::string key1 = "abcd";
 
   // Put some data.
@@ -467,7 +471,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased because of the incompatible version.
-  int64 largest_changestamp = 0;
+  int64_t largest_changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK,
             storage_->GetLargestChangestamp(&largest_changestamp));
   EXPECT_EQ(0, largest_changestamp);

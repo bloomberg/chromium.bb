@@ -4,6 +4,8 @@
 
 #include "components/feedback/feedback_uploader.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/bind.h"
@@ -11,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/feedback/feedback_uploader_chrome.h"
 #include "components/feedback/feedback_uploader_factory.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"

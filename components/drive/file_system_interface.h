@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_INTERFACE_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_INTERFACE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -119,8 +121,8 @@ typedef base::Callback<void(FileError error,
 
 // Used to get available space for the account from Drive.
 typedef base::Callback<void(FileError error,
-                            int64 bytes_total,
-                            int64 bytes_used)> GetAvailableSpaceCallback;
+                            int64_t bytes_total,
+                            int64_t bytes_used)> GetAvailableSpaceCallback;
 
 // Used to get the url to the sharing dialog.
 typedef base::Callback<void(FileError error,
@@ -308,7 +310,7 @@ class FileSystemInterface {
   //
   // |callback| must not be null.
   virtual void TruncateFile(const base::FilePath& file_path,
-                            int64 length,
+                            int64_t length,
                             const FileOperationCallback& callback) = 0;
 
   // Pins a file at |file_path|.
@@ -460,7 +462,7 @@ class FileSystemInterface {
   // Free drive caches if needed to secure given available spaces. |callback|
   // takes whether given bytes are available or not.
   virtual void FreeDiskSpaceIfNeededFor(
-      int64 num_bytes,
+      int64_t num_bytes,
       const FreeDiskSpaceCallback& callback) = 0;
 
   // Calculates evictable cache size.

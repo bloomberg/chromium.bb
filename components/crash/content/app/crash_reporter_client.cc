@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace crash_reporter {
 

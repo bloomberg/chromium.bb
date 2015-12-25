@@ -4,11 +4,15 @@
 
 #include "components/copresence/rpc/rpc_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 
 // TODO(ckehoe): time.h includes windows.h, which #defines DeviceCapabilities
 // to DeviceCapabilitiesW. This breaks the pb.h headers below. For now,
@@ -138,7 +142,7 @@ scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
 
 // TODO(ckehoe): We're keeping this code in a separate function for now
 // because we get a version string from Chrome, but the proto expects
-// an int64 version. We should probably change the version proto
+// an int64_t version. We should probably change the version proto
 // to handle a more detailed version.
 ClientVersion* CreateVersion(const std::string& client,
                              const std::string& version_name) {

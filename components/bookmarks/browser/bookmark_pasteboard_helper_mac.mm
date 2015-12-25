@@ -5,6 +5,8 @@
 #include "components/bookmarks/browser/bookmark_pasteboard_helper_mac.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/files/file_path.h"
 #include "base/strings/sys_string_conversions.h"
@@ -62,7 +64,7 @@ void ConvertPlistToElements(NSArray* input,
   for (NSUInteger i = 0; i < len; ++i) {
     NSDictionary* pboardBookmark = [input objectAtIndex:i];
     scoped_ptr<BookmarkNode> new_node(new BookmarkNode(GURL()));
-    int64 node_id =
+    int64_t node_id =
         [[pboardBookmark objectForKey:kChromiumBookmarkId] longLongValue];
     new_node->set_id(node_id);
 
@@ -179,7 +181,7 @@ NSArray* GetPlistForBookmarkList(
     if (element.is_url) {
       NSString* title = base::SysUTF16ToNSString(element.title);
       NSString* url = base::SysUTF8ToNSString(element.url.spec());
-      int64 elementId = element.id();
+      int64_t elementId = element.id();
       NSNumber* idNum = [NSNumber numberWithLongLong:elementId];
       NSDictionary* uriDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
               title, @"title", nil];
@@ -194,7 +196,7 @@ NSArray* GetPlistForBookmarkList(
     } else {
       NSString* title = base::SysUTF16ToNSString(element.title);
       NSArray* children = GetPlistForBookmarkList(element.children);
-      int64 elementId = element.id();
+      int64_t elementId = element.id();
       NSNumber* idNum = [NSNumber numberWithLongLong:elementId];
       NSDictionary* object = [NSDictionary dictionaryWithObjectsAndKeys:
           title, @"Title",

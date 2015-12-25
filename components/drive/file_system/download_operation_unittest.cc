@@ -4,6 +4,9 @@
 
 #include "components/drive/file_system/download_operation.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
 #include "components/drive/fake_free_disk_space_getter.h"
@@ -38,7 +41,7 @@ TEST_F(DownloadOperationTest,
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   // Pretend we have enough space.
   fake_free_disk_space_getter()->set_default_value(
@@ -93,7 +96,7 @@ TEST_F(DownloadOperationTest,
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   // Make another file cached.
   // This file's cache file will be removed to free up the disk space.
@@ -154,7 +157,7 @@ TEST_F(DownloadOperationTest,
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
-  const int64 file_size = src_entry.file_info().size();
+  const int64_t file_size = src_entry.file_info().size();
 
   // Pretend we have enough space first (checked before downloading a file),
   // but then start reporting we have not enough space. This is to emulate that
@@ -334,7 +337,7 @@ TEST_F(DownloadOperationTest,
     EXPECT_FALSE(cancel_download.is_null());
     // The content is available from the cache file.
     EXPECT_TRUE(get_content_callback.data().empty());
-    int64 local_file_size = 0;
+    int64_t local_file_size = 0;
     base::GetFileSize(local_path, &local_file_size);
     EXPECT_EQ(entry->file_info().size(), local_file_size);
     EXPECT_EQ(FILE_ERROR_OK, completion_error);
@@ -429,8 +432,8 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   // Check that the result of local modification is propagated.
-  EXPECT_EQ(static_cast<int64>(dirty_size), init_entry->file_info().size());
-  EXPECT_EQ(static_cast<int64>(dirty_size), entry->file_info().size());
+  EXPECT_EQ(static_cast<int64_t>(dirty_size), init_entry->file_info().size());
+  EXPECT_EQ(static_cast<int64_t>(dirty_size), entry->file_info().size());
 }
 
 TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_LocallyCreatedFile) {
@@ -469,9 +472,9 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_LocallyCreatedFile) {
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  int64 cache_file_size = 0;
+  int64_t cache_file_size = 0;
   EXPECT_TRUE(base::GetFileSize(cache_file_path, &cache_file_size));
-  EXPECT_EQ(static_cast<int64>(0), cache_file_size);
+  EXPECT_EQ(static_cast<int64_t>(0), cache_file_size);
   ASSERT_TRUE(entry);
   EXPECT_EQ(cache_file_size, entry->file_info().size());
 }

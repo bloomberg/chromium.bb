@@ -68,10 +68,10 @@ void TestImageStore::ClearAll() {
   store_.clear();
 }
 
-int64 TestImageStore::GetStoreSizeInBytes() {
+int64_t TestImageStore::GetStoreSizeInBytes() {
   // Not 100% accurate, but it's for testing so the actual value is not
   // important.
-  int64 size = sizeof(store_);
+  int64_t size = sizeof(store_);
   for (ImageMap::const_iterator it = store_.begin(); it != store_.end(); ++it) {
     size += sizeof(it->first);
     size += it->first.spec().length();

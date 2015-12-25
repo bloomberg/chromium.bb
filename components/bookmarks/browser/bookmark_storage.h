@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_STORAGE_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_STORAGE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -32,7 +35,7 @@ typedef ScopedVector<BookmarkPermanentNode> BookmarkPermanentNodeList;
 // A callback that generates a BookmarkPermanentNodeList, given a max ID to
 // use. The max ID argument will be updated after any new nodes have been
 // created and assigned IDs.
-typedef base::Callback<BookmarkPermanentNodeList(int64*)> LoadExtraCallback;
+typedef base::Callback<BookmarkPermanentNodeList(int64_t*)> LoadExtraCallback;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including
@@ -49,7 +52,7 @@ class BookmarkLoadDetails {
                       BookmarkPermanentNode* mobile_folder_node,
                       const LoadExtraCallback& load_extra_callback,
                       BookmarkIndex* index,
-                      int64 max_id);
+                      int64_t max_id);
   ~BookmarkLoadDetails();
 
   void LoadExtraNodes();
@@ -84,16 +87,16 @@ class BookmarkLoadDetails {
     model_meta_info_map_ = meta_info_map;
   }
 
-  int64 model_sync_transaction_version() const {
+  int64_t model_sync_transaction_version() const {
     return model_sync_transaction_version_;
   }
-  void set_model_sync_transaction_version(int64 sync_transaction_version) {
+  void set_model_sync_transaction_version(int64_t sync_transaction_version) {
     model_sync_transaction_version_ = sync_transaction_version;
   }
 
   // Max id of the nodes.
-  void set_max_id(int64 max_id) { max_id_ = max_id; }
-  int64 max_id() const { return max_id_; }
+  void set_max_id(int64_t max_id) { max_id_ = max_id; }
+  int64_t max_id() const { return max_id_; }
 
   // Computed checksum.
   void set_computed_checksum(const std::string& value) {
@@ -122,8 +125,8 @@ class BookmarkLoadDetails {
   BookmarkPermanentNodeList extra_nodes_;
   scoped_ptr<BookmarkIndex> index_;
   BookmarkNode::MetaInfoMap model_meta_info_map_;
-  int64 model_sync_transaction_version_;
-  int64 max_id_;
+  int64_t model_sync_transaction_version_;
+  int64_t max_id_;
   std::string computed_checksum_;
   std::string stored_checksum_;
   bool ids_reassigned_;

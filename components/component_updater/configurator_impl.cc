@@ -4,6 +4,8 @@
 
 #include "components/component_updater/configurator_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/command_line.h"

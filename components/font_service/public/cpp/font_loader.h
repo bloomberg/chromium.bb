@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_FONT_SERVICE_PUBLIC_CPP_FONT_LOADER_H_
 #define COMPONENTS_FONT_SERVICE_PUBLIC_CPP_FONT_LOADER_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "components/font_service/public/cpp/mapped_font_file.h"

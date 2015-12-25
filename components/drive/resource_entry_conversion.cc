@@ -4,6 +4,8 @@
 
 #include "components/drive/resource_entry_conversion.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/logging.h"
@@ -107,15 +109,15 @@ bool ConvertFileResourceToResourceEntry(
     if (!input.alternate_link().is_empty())
       file_specific_info->set_alternate_url(input.alternate_link().spec());
 
-    const int64 image_width = input.image_media_metadata().width();
+    const int64_t image_width = input.image_media_metadata().width();
     if (image_width != -1)
       file_specific_info->set_image_width(image_width);
 
-    const int64 image_height = input.image_media_metadata().height();
+    const int64_t image_height = input.image_media_metadata().height();
     if (image_height != -1)
       file_specific_info->set_image_height(image_height);
 
-    const int64 image_rotation = input.image_media_metadata().rotation();
+    const int64_t image_rotation = input.image_media_metadata().rotation();
     if (image_rotation != -1)
       file_specific_info->set_image_rotation(image_rotation);
   }

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUDIO_MODEM_TEST_RANDOM_SAMPLES_H_
 #define COMPONENTS_AUDIO_MODEM_TEST_RANDOM_SAMPLES_H_
 
-#include <cstddef>
+#include <stddef.h>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

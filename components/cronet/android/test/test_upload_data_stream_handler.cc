@@ -4,6 +4,8 @@
 
 #include "test_upload_data_stream_handler.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/android/jni_android.h"

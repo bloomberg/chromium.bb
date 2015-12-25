@@ -6,6 +6,7 @@
 #define COMPONENTS_CRONET_ANDROID_URL_REQUEST_ADAPTER_H_
 
 #include <jni.h>
+#include <stdint.h>
 
 #include <string>
 
@@ -61,7 +62,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   void SetUploadContent(const char* bytes, int bytes_len);
 
   // Sets the request to streaming upload.
-  void SetUploadChannel(JNIEnv* env, int64 content_length);
+  void SetUploadChannel(JNIEnv* env, int64_t content_length);
 
   // Disables redirect. Note that redirect is enabled by default.
   void DisableRedirects();
@@ -101,7 +102,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   }
 
   // Returns the value of the content-length response header.
-  int64 content_length() const { return expected_size_; }
+  int64_t content_length() const { return expected_size_; }
 
   // Returns the value of the content-type response header.
   std::string content_type() const { return content_type_; }
@@ -162,7 +163,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   std::string http_status_text_;
   std::string content_type_;
   bool canceled_;
-  int64 expected_size_;
+  int64_t expected_size_;
   bool chunked_upload_;
   // Indicates whether redirect has been disabled.
   bool disable_redirect_;

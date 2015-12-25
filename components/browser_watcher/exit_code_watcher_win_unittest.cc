@@ -4,6 +4,8 @@
 
 #include "components/browser_watcher/exit_code_watcher_win.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -84,7 +86,7 @@ class ExitCodeWatcherTest : public testing::Test {
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
   }
 
-  base::Process OpenSelfWithAccess(uint32 access) {
+  base::Process OpenSelfWithAccess(uint32_t access) {
     return base::Process::OpenWithAccess(base::GetCurrentProcId(), access);
   }
 

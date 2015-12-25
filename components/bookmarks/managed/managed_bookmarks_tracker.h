@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARKS_TRACKER_H_
 #define COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARKS_TRACKER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -52,9 +54,9 @@ class ManagedBookmarksTracker {
   // Loads the initial managed/supervised bookmarks in |list| into |folder|.
   // New nodes will be assigned IDs starting at |next_node_id|.
   // Returns the next node ID to use.
-  static int64 LoadInitial(BookmarkNode* folder,
-                           const base::ListValue* list,
-                           int64 next_node_id);
+  static int64_t LoadInitial(BookmarkNode* folder,
+                             const base::ListValue* list,
+                             int64_t next_node_id);
 
   // Starts tracking the pref for updates to the managed/supervised bookmarks.
   // Should be called after loading the initial bookmarks.

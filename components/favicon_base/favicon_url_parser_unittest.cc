@@ -4,6 +4,7 @@
 
 #include "components/favicon_base/favicon_url_parser.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/favicon_base/favicon_types.h"
 #include "testing/gtest/include/gtest/gtest.h"

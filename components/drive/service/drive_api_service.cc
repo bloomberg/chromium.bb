@@ -4,6 +4,8 @@
 
 #include "components/drive/service/drive_api_service.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -181,7 +183,7 @@ BatchRequestConfigurator::~BatchRequestConfigurator() {
 
 google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const base::FilePath& local_file_path,
@@ -209,7 +211,7 @@ google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
 google_apis::CancelCallback
 BatchRequestConfigurator::MultipartUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const UploadExistingFileOptions& options,
@@ -382,7 +384,7 @@ CancelCallback DriveAPIService::SearchByTitle(
 }
 
 CancelCallback DriveAPIService::GetChangeList(
-    int64 start_changestamp,
+    int64_t start_changestamp,
     const ChangeListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -624,7 +626,7 @@ CancelCallback DriveAPIService::RemoveResourceFromDirectory(
 
 CancelCallback DriveAPIService::InitiateUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const UploadNewFileOptions& options,
@@ -648,7 +650,7 @@ CancelCallback DriveAPIService::InitiateUploadNewFile(
 
 CancelCallback DriveAPIService::InitiateUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const UploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) {
@@ -673,9 +675,9 @@ CancelCallback DriveAPIService::InitiateUploadExistingFile(
 
 CancelCallback DriveAPIService::ResumeUpload(
     const GURL& upload_url,
-    int64 start_position,
-    int64 end_position,
-    int64 content_length,
+    int64_t start_position,
+    int64_t end_position,
+    int64_t content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path,
     const UploadRangeCallback& callback,
@@ -690,7 +692,7 @@ CancelCallback DriveAPIService::ResumeUpload(
 
 CancelCallback DriveAPIService::GetUploadStatus(
     const GURL& upload_url,
-    int64 content_length,
+    int64_t content_length,
     const UploadRangeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -701,7 +703,7 @@ CancelCallback DriveAPIService::GetUploadStatus(
 
 CancelCallback DriveAPIService::MultipartUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const base::FilePath& local_file_path,
@@ -724,7 +726,7 @@ CancelCallback DriveAPIService::MultipartUploadNewFile(
 
 CancelCallback DriveAPIService::MultipartUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const drive::UploadExistingFileOptions& options,

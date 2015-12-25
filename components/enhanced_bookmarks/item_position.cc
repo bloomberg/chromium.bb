@@ -5,6 +5,7 @@
 #include "components/enhanced_bookmarks/item_position.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace {
 const unsigned kPositionBase = 64;

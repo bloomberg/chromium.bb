@@ -5,14 +5,19 @@
 #ifndef COMPONENTS_DRIVE_FILE_CACHE_H_
 #define COMPONENTS_DRIVE_FILE_CACHE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/resource_metadata_storage.h"
 #if defined(OS_CHROMEOS)
@@ -29,9 +34,9 @@ namespace drive {
 namespace internal {
 
 #if defined(OS_CHROMEOS)
-  const int64 kMinFreeSpaceInBytes = cryptohome::kMinFreeSpaceInBytes;
+const int64_t kMinFreeSpaceInBytes = cryptohome::kMinFreeSpaceInBytes;
 #else
-  const int64 kMinFreeSpaceInBytes = 512ull * 1024ull * 1024ull;  // 512MB
+const int64_t kMinFreeSpaceInBytes = 512ull * 1024ull * 1024ull;  // 512MB
 #endif
 
 // Interface class used for getting the free disk space. Tests can inject an
@@ -39,7 +44,7 @@ namespace internal {
 class FreeDiskSpaceGetterInterface {
  public:
   virtual ~FreeDiskSpaceGetterInterface() {}
-  virtual int64 AmountOfFreeDiskSpace() = 0;
+  virtual int64_t AmountOfFreeDiskSpace() = 0;
 };
 
 // FileCache is used to maintain cache states of FileSystem.
@@ -83,7 +88,7 @@ class FileCache {
   // keeping drive::internal::kMinFreeSpaceInBytes bytes on the disk, if needed.
   // Returns true if we successfully manage to have enough space, otherwise
   // false.
-  bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
+  bool FreeDiskSpaceIfNeededFor(int64_t num_bytes);
 
   // Calculates and returns evictable cache size. In error case, this returns 0.
   uint64_t CalculateEvictableCacheSize();
@@ -171,7 +176,7 @@ class FileCache {
 
   // Returns available space, while keeping
   // drive::internal::kMinFreeSpaceInBytes bytes on the disk.
-  int64 GetAvailableSpace();
+  int64_t GetAvailableSpace();
 
   // Renames cache files from old "prefix:id.md5" format to the new format.
   // TODO(hashimoto): Remove this method at some point.

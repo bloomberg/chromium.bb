@@ -4,13 +4,15 @@
 
 #include "components/device_event_log/device_event_log_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"

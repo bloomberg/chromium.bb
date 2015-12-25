@@ -4,7 +4,6 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 
-#include "base/basictypes.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/base/load_flags.h"
@@ -60,10 +59,10 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   return UNKNOWN_TYPE;
 }
 
-int64 GetAdjustedOriginalContentLength(
+int64_t GetAdjustedOriginalContentLength(
     DataReductionProxyRequestType request_type,
-    int64 original_content_length,
-    int64 received_content_length) {
+    int64_t original_content_length,
+    int64_t received_content_length) {
   // Since there was no indication of the original content length, presume
   // it is no different from the number of bytes read.
   if (original_content_length == -1 ||

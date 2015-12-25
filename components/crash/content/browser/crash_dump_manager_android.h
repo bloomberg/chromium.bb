@@ -10,6 +10,7 @@
 #include "base/android/application_status_listener.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"

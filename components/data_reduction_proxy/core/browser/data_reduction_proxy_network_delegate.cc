@@ -36,8 +36,8 @@ namespace {
 // |freshness_lifetime| contains information on how long the resource will be
 // fresh for and how long is the usability.
 void RecordContentLengthHistograms(bool lofi_low_header_added,
-                                   int64 received_content_length,
-                                   int64 original_content_length,
+                                   int64_t received_content_length,
+                                   int64_t original_content_length,
                                    const base::TimeDelta& freshness_lifetime) {
   // Add the current resource to these histograms only when a valid
   // X-Original-Content-Length header is present.
@@ -203,12 +203,12 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   // For better accuracy, we use the actual bytes read instead of the length
   // specified with the Content-Length header, which may be inaccurate,
   // or missing, as is the case with chunked encoding.
-  int64 received_content_length = request->received_response_content_length();
+  int64_t received_content_length = request->received_response_content_length();
   if (!request->was_cached() &&   // Don't record cached content
       received_content_length &&  // Zero-byte responses aren't useful.
       request->response_info().network_accessed &&  // Network was accessed.
       request->url().SchemeIsHTTPOrHTTPS()) {
-    int64 original_content_length =
+    int64_t original_content_length =
         request->response_info().headers->GetInt64HeaderValue(
             "x-original-content-length");
     base::TimeDelta freshness_lifetime =
@@ -219,17 +219,15 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
                                          configurator_->GetProxyConfig(),
                                          *data_reduction_proxy_config_);
 
-    int64 adjusted_original_content_length =
-        GetAdjustedOriginalContentLength(request_type,
-                                         original_content_length,
-                                         received_content_length);
-    int64 data_used = request->GetTotalReceivedBytes();
+    int64_t adjusted_original_content_length = GetAdjustedOriginalContentLength(
+        request_type, original_content_length, received_content_length);
+    int64_t data_used = request->GetTotalReceivedBytes();
     // TODO(kundaji): Investigate why |compressed_size| can sometimes be
     // less than |received_content_length|. Bug http://crbug/536139.
     if (data_used < received_content_length)
       data_used = received_content_length;
 
-    int64 original_size = data_used;
+    int64_t original_size = data_used;
     if (request_type == VIA_DATA_REDUCTION_PROXY) {
       // TODO(kundaji): Remove headers added by data reduction proxy when
       // computing original size. http://crbug/535701.
@@ -278,8 +276,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
 }
 
 void DataReductionProxyNetworkDelegate::AccumulateDataUsage(
-    int64 data_used,
-    int64 original_size,
+    int64_t data_used,
+    int64_t original_size,
     DataReductionProxyRequestType request_type,
     const std::string& data_usage_host,
     const std::string& mime_type) {

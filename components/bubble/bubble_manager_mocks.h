@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_MANAGER_MOCKS_H_
 #define COMPONENTS_BUBBLE_BUBBLE_MANAGER_MOCKS_H_
 
+#include "base/macros.h"
 #include "components/bubble/bubble_delegate.h"
 #include "components/bubble/bubble_reference.h"
 #include "components/bubble/bubble_ui.h"

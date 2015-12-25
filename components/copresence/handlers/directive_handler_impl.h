@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 #include "components/copresence/public/copresence_constants.h"

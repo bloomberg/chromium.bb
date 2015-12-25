@@ -163,7 +163,7 @@ void AudioRecorderImpl::FinalizeOnAudioThread() {
 
 void AudioRecorderImpl::OnData(media::AudioInputStream* stream,
                                const media::AudioBus* source,
-                               uint32 /* hardware_delay_bytes */,
+                               uint32_t /* hardware_delay_bytes */,
                                double /* volume */) {
   // source->frames() == source_params.frames_per_buffer(), so we only have
   // one chunk of data in the source; correspondingly set the destination

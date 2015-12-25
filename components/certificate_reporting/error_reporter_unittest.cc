@@ -4,6 +4,9 @@
 
 #include "components/certificate_reporting/error_reporter.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include <set>
 #include <string>
 
@@ -22,7 +25,7 @@ namespace {
 const char kDummyHttpReportUri[] = "http://example.test";
 const char kDummyHttpsReportUri[] = "https://example.test";
 const char kDummyReport[] = "a dummy report";
-const uint32 kServerPublicKeyTestVersion = 16;
+const uint32_t kServerPublicKeyTestVersion = 16;
 
 // A mock CertificateReportSender that keeps track of the last report
 // sent.

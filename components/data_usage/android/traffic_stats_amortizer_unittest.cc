@@ -4,6 +4,7 @@
 
 #include "components/data_usage/android/traffic_stats_amortizer.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

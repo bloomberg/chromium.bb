@@ -5,6 +5,7 @@
 #include "components/browser_watcher/exit_funnel_win.h"
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -54,7 +55,7 @@ bool ExitFunnel::RecordEvent(const base::char16* event_name) {
   if (!key_.Valid())
     return false;
 
-  int64 now = base::Time::Now().ToInternalValue();
+  int64_t now = base::Time::Now().ToInternalValue();
 
   LONG res = key_.WriteValue(event_name, &now, sizeof(now), REG_QWORD);
   if (res != ERROR_SUCCESS) {

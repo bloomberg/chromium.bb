@@ -10,7 +10,7 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"

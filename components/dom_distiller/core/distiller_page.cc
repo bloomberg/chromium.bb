@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/distiller_page.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"

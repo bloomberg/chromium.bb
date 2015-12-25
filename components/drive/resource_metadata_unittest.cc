@@ -4,6 +4,9 @@
 
 #include "components/drive/resource_metadata.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -26,7 +29,7 @@ namespace {
 
 // The changestamp of the resource metadata used in
 // ResourceMetadataTest.
-const int64 kTestChangestamp = 100;
+const int64_t kTestChangestamp = 100;
 
 // Returns the sorted base names from |entries|.
 std::vector<std::string> GetSortedBaseNames(
@@ -170,10 +173,10 @@ class ResourceMetadataTest : public testing::Test {
 };
 
 TEST_F(ResourceMetadataTest, LargestChangestamp) {
-  const int64 kChangestamp = 123456;
+  const int64_t kChangestamp = 123456;
   EXPECT_EQ(FILE_ERROR_OK,
             resource_metadata_->SetLargestChangestamp(kChangestamp));
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK,
             resource_metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(kChangestamp, changestamp);
@@ -672,7 +675,7 @@ TEST_F(ResourceMetadataTest, Reset) {
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->Reset());
 
   // change stamp should be reset.
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK,
             resource_metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(0, changestamp);

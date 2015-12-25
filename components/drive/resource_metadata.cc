@@ -4,6 +4,8 @@
 
 #include "components/drive/resource_metadata.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
@@ -24,7 +26,8 @@ namespace {
 // Returns true if enough disk space is available for DB operation.
 // TODO(hashimoto): Merge this with FileCache's FreeDiskSpaceGetterInterface.
 bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
-  const int64 kRequiredDiskSpaceInMB = 128;  // 128 MB seems to be large enough.
+  const int64_t kRequiredDiskSpaceInMB =
+      128;  // 128 MB seems to be large enough.
   return base::SysInfo::AmountOfFreeDiskSpace(path) >=
       kRequiredDiskSpaceInMB * (1 << 20);
 }
@@ -207,12 +210,12 @@ void ResourceMetadata::DestroyOnBlockingPool() {
   delete this;
 }
 
-FileError ResourceMetadata::GetLargestChangestamp(int64* out_value) {
+FileError ResourceMetadata::GetLargestChangestamp(int64_t* out_value) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   return storage_->GetLargestChangestamp(out_value);
 }
 
-FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
+FileError ResourceMetadata::SetLargestChangestamp(int64_t value) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))

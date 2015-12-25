@@ -4,6 +4,8 @@
 
 #include "components/drive/drive_app_registry.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <utility>

@@ -4,6 +4,8 @@
 
 #include "components/feedback/feedback_uploader.h"
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -18,7 +20,7 @@ namespace {
 const char kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
 
-const int64 kRetryDelayMinutes = 60;
+const int64_t kRetryDelayMinutes = 60;
 
 const base::FilePath::CharType kFeedbackReportPath[] =
     FILE_PATH_LITERAL("Feedback Reports");

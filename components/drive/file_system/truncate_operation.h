@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_TRUNCATE_OPERATION_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_TRUNCATE_OPERATION_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -50,12 +52,13 @@ class TruncateOperation {
   // |length| bytes. Invokes |callback| when finished with the result of the
   // operation. |callback| must not be null.
   void Truncate(const base::FilePath& file_path,
-                int64 length,
+                int64_t length,
                 const FileOperationCallback& callback);
+
  private:
   // Part of Truncate(). Called after EnsureFileDownloadedByPath() is complete.
   void TruncateAfterEnsureFileDownloadedByPath(
-      int64 length,
+      int64_t length,
       const FileOperationCallback& callback,
       FileError error,
       const base::FilePath& local_file_path,

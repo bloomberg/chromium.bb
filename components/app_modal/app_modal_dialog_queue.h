@@ -7,7 +7,7 @@
 
 #include <deque>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 template <typename T> struct DefaultSingletonTraits;

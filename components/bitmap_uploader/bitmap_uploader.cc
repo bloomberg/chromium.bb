@@ -4,6 +4,8 @@
 
 #include "components/bitmap_uploader/bitmap_uploader.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/mus/public/cpp/window.h"

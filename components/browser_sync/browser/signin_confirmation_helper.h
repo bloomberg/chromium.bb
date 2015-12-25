@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BROWSER_SYNC_BROWSER_SIGNIN_CONFIRMATION_HELPER_
 #define COMPONENTS_BROWSER_SYNC_BROWSER_SIGNIN_CONFIRMATION_HELPER_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"

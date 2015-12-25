@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_FAVICON_BASE_SELECT_FAVICON_FRAMES_H_
 #define COMPONENTS_FAVICON_BASE_SELECT_FAVICON_FRAMES_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 
 class SkBitmap;
 

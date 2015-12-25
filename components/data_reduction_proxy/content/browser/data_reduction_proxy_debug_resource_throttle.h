@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CONTENT_BROWSER_DATA_REDUCTION_PROXY_DEBUG_RESOURCE_THROTTLE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CONTENT_BROWSER_DATA_REDUCTION_PROXY_DEBUG_RESOURCE_THROTTLE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.h"

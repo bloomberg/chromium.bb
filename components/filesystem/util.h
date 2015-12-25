@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FILESYSTEM_UTIL_H_
 #define COMPONENTS_FILESYSTEM_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
 

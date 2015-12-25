@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FAVICON_BASE_FAVICON_URL_PARSER_H_
 #define COMPONENTS_FAVICON_BASE_FAVICON_URL_PARSER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 namespace chrome {

@@ -7,7 +7,8 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -30,7 +31,7 @@ class TestDataReductionProxyEventStorageDelegate
   void AddEvent(scoped_ptr<base::Value> event) override;
   void AddEnabledEvent(scoped_ptr<base::Value> event, bool enabled) override;
   void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
-                                int64 expiration_ticks) override;
+                                int64_t expiration_ticks) override;
   void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> event,
                                         SecureProxyCheckState state) override;
 

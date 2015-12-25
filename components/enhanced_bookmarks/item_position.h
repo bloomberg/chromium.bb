@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_ENHANCED_BOOKMARKS_ITEM_POSITION_H_
 #define COMPONENTS_ENHANCED_BOOKMARKS_ITEM_POSITION_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

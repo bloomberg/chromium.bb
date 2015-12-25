@@ -4,8 +4,12 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
@@ -130,7 +134,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
   const struct {
      const char* headers;
      bool expected_result;
-     int64 expected_retry_delay;
+     int64_t expected_retry_delay;
      bool expected_bypass_all;
      bool expected_mark_proxies_as_bad;
   } tests[] = {

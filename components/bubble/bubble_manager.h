@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_MANAGER_H_
 #define COMPONENTS_BUBBLE_BUBBLE_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"

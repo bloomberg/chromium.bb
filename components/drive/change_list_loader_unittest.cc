@@ -4,8 +4,11 @@
 
 #include "components/drive/change_list_loader.h"
 
+#include <stdint.h>
+
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -159,7 +162,7 @@ TEST_F(ChangeListLoaderTest, AboutResourceLoader) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error[0]);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error[1]);
-  const int64 first_changestamp = about[0]->largest_change_id();
+  const int64_t first_changestamp = about[0]->largest_change_id();
   EXPECT_EQ(first_changestamp, about[1]->largest_change_id());
   ASSERT_TRUE(about_resource_loader_->cached_about_resource());
   EXPECT_EQ(
@@ -222,7 +225,7 @@ TEST_F(ChangeListLoaderTest, Load) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_LT(0, changestamp);
   EXPECT_EQ(1, drive_service_->file_list_load_count());
@@ -276,7 +279,7 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   EXPECT_EQ(1, observer.initial_load_complete_count());
 
   // Update should be checked by Load().
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(drive_service_->about_resource().largest_change_id(), changestamp);
   EXPECT_EQ(1, drive_service_->change_list_load_count());
@@ -301,7 +304,7 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_FAILED,
             check_for_updates_error);  // Callback was not run.
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(0, changestamp);
   EXPECT_EQ(0, drive_service_->file_list_load_count());
@@ -326,7 +329,7 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_LT(0, changestamp);
   EXPECT_EQ(1, drive_service_->file_list_load_count());
 
-  int64 previous_changestamp = 0;
+  int64_t previous_changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK,
             metadata_->GetLargestChangestamp(&previous_changestamp));
   // CheckForUpdates() results in no update.

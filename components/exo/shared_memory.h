@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_EXO_SHARED_MEMORY_H_
 #define COMPONENTS_EXO_SHARED_MEMORY_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "ui/gfx/buffer_types.h"

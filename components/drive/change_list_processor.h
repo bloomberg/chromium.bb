@@ -5,11 +5,14 @@
 #ifndef COMPONENTS_DRIVE_CHANGE_LIST_PROCESSOR_H_
 #define COMPONENTS_DRIVE_CHANGE_LIST_PROCESSOR_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/drive/file_errors.h"
@@ -42,11 +45,10 @@ class DirectoryFetchInfo {
   DirectoryFetchInfo() : changestamp_(0) {}
   DirectoryFetchInfo(const std::string& local_id,
                      const std::string& resource_id,
-                     int64 changestamp)
+                     int64_t changestamp)
       : local_id_(local_id),
         resource_id_(resource_id),
-        changestamp_(changestamp) {
-  }
+        changestamp_(changestamp) {}
 
   // Returns true if the object is empty.
   bool empty() const { return local_id_.empty(); }
@@ -59,7 +61,7 @@ class DirectoryFetchInfo {
 
   // Changestamp of the directory. The changestamp is used to determine if
   // the directory contents should be fetched.
-  int64 changestamp() const { return changestamp_; }
+  int64_t changestamp() const { return changestamp_; }
 
   // Returns a string representation of this object.
   std::string ToString() const;
@@ -67,7 +69,7 @@ class DirectoryFetchInfo {
  private:
   const std::string local_id_;
   const std::string resource_id_;
-  const int64 changestamp_;
+  const int64_t changestamp_;
 };
 
 // Class to represent a change list.
@@ -87,9 +89,9 @@ class ChangeList {
     return &parent_resource_ids_;
   }
   const GURL& next_url() const { return next_url_; }
-  int64 largest_changestamp() const { return largest_changestamp_; }
+  int64_t largest_changestamp() const { return largest_changestamp_; }
 
-  void set_largest_changestamp(int64 largest_changestamp) {
+  void set_largest_changestamp(int64_t largest_changestamp) {
     largest_changestamp_ = largest_changestamp;
   }
 
@@ -97,7 +99,7 @@ class ChangeList {
   std::vector<ResourceEntry> entries_;
   std::vector<std::string> parent_resource_ids_;
   GURL next_url_;
-  int64 largest_changestamp_;
+  int64_t largest_changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeList);
 };
@@ -146,7 +148,7 @@ class ChangeListProcessor {
   // Applies the pre-processed metadata from entry_map_ onto the resource
   // metadata. |about_resource| must not be null.
   FileError ApplyEntryMap(
-      int64 changestamp,
+      int64_t changestamp,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Apply |entry| to resource_metadata_.

@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_DRIVE_DRIVE_UPLOADER_H_
 #define COMPONENTS_DRIVE_DRIVE_UPLOADER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -205,10 +207,10 @@ class DriveUploader : public DriveUploaderInterface {
       const google_apis::UploadRangeResponse& response,
       scoped_ptr<google_apis::FileResource> entry);
   void OnUploadProgress(const google_apis::ProgressCallback& callback,
-                        int64 start_position,
-                        int64 total_size,
-                        int64 progress_of_chunk,
-                        int64 total_of_chunk);
+                        int64_t start_position,
+                        int64_t total_size,
+                        int64_t progress_of_chunk,
+                        int64_t total_of_chunk);
 
   // Handles failed uploads.
   void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,

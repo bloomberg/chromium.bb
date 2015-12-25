@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_METRICS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_METRICS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 
 namespace net {
 class ProxyConfig;
@@ -56,10 +57,10 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
 // Returns |received_content_length| as adjusted original content length if
 // |original_content_length| has the invalid value (-1) or |request_type|
 // is not |VIA_DATA_REDUCTION_PROXY|.
-int64 GetAdjustedOriginalContentLength(
+int64_t GetAdjustedOriginalContentLength(
     DataReductionProxyRequestType request_type,
-    int64 original_content_length,
-    int64 received_content_length);
+    int64_t original_content_length,
+    int64_t received_content_length);
 
 }  // namespace data_reduction_proxy
 

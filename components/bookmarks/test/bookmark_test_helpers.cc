@@ -4,6 +4,8 @@
 
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"

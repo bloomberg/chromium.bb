@@ -4,6 +4,9 @@
 
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cstdlib>
 
 #include "base/process/process_handle.h"
@@ -59,7 +62,7 @@ class WatcherMetricsProviderWinTest : public testing::Test {
     return key.GetValueCount();
   }
 
-  void AddExitFunnelEvent(int pid, const base::char16* name, int64 value) {
+  void AddExitFunnelEvent(int pid, const base::char16* name, int64_t value) {
     base::string16 key_name =
         base::StringPrintf(L"%ls\\%d-%d", kRegistryPath, pid, pid);
 

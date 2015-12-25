@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/macros.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 
 class PrefService;

@@ -4,10 +4,13 @@
 
 #include "components/cloud_devices/common/printer_description.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/cloud_devices/common/cloud_device_description_consts.h"
@@ -19,7 +22,7 @@ namespace printer {
 
 namespace {
 
-const int32 kMaxPageNumber = 1000000;
+const int32_t kMaxPageNumber = 1000000;
 
 const char kSectionPrint[] = "print";
 const char kSectionPrinter[] = "printer";
@@ -152,9 +155,9 @@ const struct DocumentSheetBackNames {
       {MANUAL_TUMBLE, kTypeDocumentSheetBackManualTumble},
       {FLIPPED, kTypeDocumentSheetBackFlipped}};
 
-const int32 kInchToUm = 25400;
-const int32 kMmToUm = 1000;
-const int32 kSizeTrasholdUm = 1000;
+const int32_t kInchToUm = 25400;
+const int32_t kMmToUm = 1000;
+const int32_t kSizeTrasholdUm = 1000;
 
 #define MAP_CLOUD_PRINT_MEDIA_TYPE(type, width, height, unit_um) \
   {                                                              \
@@ -344,11 +347,12 @@ const MediaDefinition& FindMediaByType(MediaType type) {
   return kMediaDefinitions[0];
 }
 
-const MediaDefinition* FindMediaBySize(int32 width_um, int32 height_um) {
+const MediaDefinition* FindMediaBySize(int32_t width_um, int32_t height_um) {
   const MediaDefinition* result = NULL;
   for (size_t i = 0; i < arraysize(kMediaDefinitions); ++i) {
-    int32 diff = std::max(std::abs(width_um - kMediaDefinitions[i].width_um),
-                          std::abs(height_um - kMediaDefinitions[i].height_um));
+    int32_t diff =
+        std::max(std::abs(width_um - kMediaDefinitions[i].width_um),
+                 std::abs(height_um - kMediaDefinitions[i].height_um));
     if (diff < kSizeTrasholdUm)
       result = &kMediaDefinitions[i];
   }
@@ -406,16 +410,15 @@ Margins::Margins()
 }
 
 Margins::Margins(MarginsType type,
-                 int32 top_um,
-                 int32 right_um,
-                 int32 bottom_um,
-                 int32 left_um)
+                 int32_t top_um,
+                 int32_t right_um,
+                 int32_t bottom_um,
+                 int32_t left_um)
     : type(type),
       top_um(top_um),
       right_um(right_um),
       bottom_um(bottom_um),
-      left_um(left_um) {
-}
+      left_um(left_um) {}
 
 bool Margins::operator==(const Margins& other) const {
   return type == other.type && top_um == other.top_um &&
@@ -425,9 +428,8 @@ bool Margins::operator==(const Margins& other) const {
 Dpi::Dpi() : horizontal(0), vertical(0) {
 }
 
-Dpi::Dpi(int32 horizontal, int32 vertical)
-    : horizontal(horizontal), vertical(vertical) {
-}
+Dpi::Dpi(int32_t horizontal, int32_t vertical)
+    : horizontal(horizontal), vertical(vertical) {}
 
 bool Dpi::IsValid() const {
   return horizontal > 0 && vertical > 0;
@@ -452,24 +454,22 @@ Media::Media(MediaType type)
   is_continuous_feed = width_um <= 0 || height_um <= 0;
 }
 
-Media::Media(MediaType type, int32 width_um, int32 height_um)
+Media::Media(MediaType type, int32_t width_um, int32_t height_um)
     : type(type),
       width_um(width_um),
       height_um(height_um),
-      is_continuous_feed(width_um <= 0 || height_um <= 0) {
-}
+      is_continuous_feed(width_um <= 0 || height_um <= 0) {}
 
 Media::Media(const std::string& custom_display_name,
              const std::string& vendor_id,
-             int32 width_um,
-             int32 height_um)
+             int32_t width_um,
+             int32_t height_um)
     : type(CUSTOM_MEDIA),
       width_um(width_um),
       height_um(height_um),
       is_continuous_feed(width_um <= 0 || height_um <= 0),
       custom_display_name(custom_display_name),
-      vendor_id(vendor_id) {
-}
+      vendor_id(vendor_id) {}
 
 bool Media::MatchBySize() {
   const MediaDefinition* media = FindMediaBySize(width_um, height_um);
@@ -499,11 +499,9 @@ bool Media::operator==(const Media& other) const {
 Interval::Interval() : start(0), end(0) {
 }
 
-Interval::Interval(int32 start, int32 end) : start(start), end(end) {
-}
+Interval::Interval(int32_t start, int32_t end) : start(start), end(end) {}
 
-Interval::Interval(int32 start) : start(start), end(kMaxPageNumber) {
-}
+Interval::Interval(int32_t start) : start(start), end(kMaxPageNumber) {}
 
 bool Interval::operator==(const Interval& other) const {
   return start == other.start && end == other.end;
@@ -635,13 +633,13 @@ class OrientationTraits : public NoValueValidation,
 
 class CopiesTraits : public ItemsTraits<kOptionCopies> {
  public:
-  static bool IsValid(int32 option) { return option >= 1; }
+  static bool IsValid(int32_t option) { return option >= 1; }
 
-  static bool Load(const base::DictionaryValue& dict, int32* option) {
+  static bool Load(const base::DictionaryValue& dict, int32_t* option) {
     return dict.GetInteger(kOptionCopies, option);
   }
 
-  static void Save(int32 option, base::DictionaryValue* dict) {
+  static void Save(int32_t option, base::DictionaryValue* dict) {
     dict->SetInteger(kOptionCopies, option);
   }
 };
@@ -833,7 +831,7 @@ template class TicketItem<Margins, MarginsTraits>;
 template class TicketItem<Dpi, DpiTraits>;
 template class TicketItem<FitToPageType, FitToPageTraits>;
 template class TicketItem<Media, MediaTraits>;
-template class TicketItem<int32, CopiesTraits>;
+template class TicketItem<int32_t, CopiesTraits>;
 template class TicketItem<PageRange, PageRangeTraits>;
 template class TicketItem<bool, CollateTraits>;
 template class TicketItem<bool, ReverseTraits>;

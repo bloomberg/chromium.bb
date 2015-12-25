@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_DRIVE_LOCAL_FILE_READER_H_
 #define COMPONENTS_DRIVE_LOCAL_FILE_READER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
@@ -37,7 +39,7 @@ class LocalFileReader {
   // Upon completion, |callback| will be called.
   // |callback| must not be null.
   void Open(const base::FilePath& file_path,
-            int64 offset,
+            int64_t offset,
             const net::CompletionCallback& callback);
 
   // Reads the file and copies the data into |buffer|. |buffer_length|
@@ -50,11 +52,11 @@ class LocalFileReader {
 
  private:
   void DidOpen(const net::CompletionCallback& callback,
-               int64 offset,
+               int64_t offset,
                int error);
   void DidSeek(const net::CompletionCallback& callback,
-               int64 offset,
-               int64 error);
+               int64_t offset,
+               int64_t error);
 
   net::FileStream file_stream_;
 

@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_FONT_SERVICE_FONT_SERVICE_APP_H_
 #define COMPONENTS_FONT_SERVICE_FONT_SERVICE_APP_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/font_service/public/interfaces/font_service.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"

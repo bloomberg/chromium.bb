@@ -4,6 +4,8 @@
 
 #include "components/exo/shared_memory.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/exo/buffer.h"

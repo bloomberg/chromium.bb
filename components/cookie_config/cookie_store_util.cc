@@ -5,6 +5,7 @@
 #include "components/cookie_config/cookie_store_util.h"
 
 #include "base/lazy_instance.h"
+#include "build/build_config.h"
 #include "components/os_crypt/os_crypt.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 

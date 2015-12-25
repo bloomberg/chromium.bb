@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "components/data_usage/core/data_use.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_change_notifier.h"

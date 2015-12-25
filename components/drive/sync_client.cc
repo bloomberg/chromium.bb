@@ -4,6 +4,8 @@
 
 #include "components/drive/sync_client.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"

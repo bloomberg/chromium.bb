@@ -53,7 +53,7 @@ bool GetVariationBoolWithDefault(const char* group,
                                  bool default_value) {
   std::string variation_value =
       variations::GetVariationParamValue(group, variation);
-  int64 variation_numeric;
+  int64_t variation_numeric;
   if (variation_value.empty() ||
       !base::StringToInt64(variation_value, &variation_numeric)) {
     return default_value;
@@ -62,17 +62,17 @@ bool GetVariationBoolWithDefault(const char* group,
   return variation_numeric != 0;
 }
 
-// Retrieves the int64 stored in |variation| from the field trial group
+// Retrieves the int64_t stored in |variation| from the field trial group
 // |group|. If the value is not present, cannot be parsed, or is less than
 // |min_value|, returns |default_value|.
-int64 GetVariationInt64WithDefault(const char* group,
-                                   const char* variation,
-                                   int64 default_value,
-                                   int64 min_value) {
+int64_t GetVariationInt64WithDefault(const char* group,
+                                     const char* variation,
+                                     int64_t default_value,
+                                     int64_t min_value) {
   DCHECK(default_value >= min_value);
   std::string variation_value =
       variations::GetVariationParamValue(group, variation);
-  int64 variation_numeric;
+  int64_t variation_numeric;
   if (variation_value.empty() ||
       !base::StringToInt64(variation_value, &variation_numeric) ||
       variation_numeric < min_value) {
@@ -140,14 +140,14 @@ DataReductionProxyConfigRetrievalParams::Create(PrefService* pref_service) {
   if (config_always_stale) {
     config_retrieve = base::Time();
   } else {
-    int64 config_retrieve_value =
+    int64_t config_retrieve_value =
         pref_service->GetInt64(prefs::kSimulatedConfigRetrieveTime);
     config_retrieve = base::Time::FromInternalValue(config_retrieve_value);
     if (config_retrieve > now)
       config_retrieve = base::Time();
   }
 
-  int64 config_expiration_interval_seconds = GetVariationInt64WithDefault(
+  int64_t config_expiration_interval_seconds = GetVariationInt64WithDefault(
       kConfigFetchTrialGroup, kConfigExpirationSecondsParam,
       kConfigFetchDefaultExpirationSeconds,
       kConfigFetchMinimumExpirationSeconds);
@@ -159,13 +159,13 @@ DataReductionProxyConfigRetrievalParams::Create(PrefService* pref_service) {
   if (expired_config) {
     config_expiration = now + config_expiration_interval;
 
-    int64 config_roundtrip_milliseconds = GetVariationInt64WithDefault(
+    int64_t config_roundtrip_milliseconds = GetVariationInt64WithDefault(
         kConfigFetchTrialGroup, kConfigRoundtripMillisecondsBaseParam,
         kConfigFetchDefaultRoundtripMillisecondsBase, 0);
     double config_roundtrip_multiplier = GetVariationDoubleWithDefault(
         kConfigFetchTrialGroup, kConfigRoundtripMultiplierParam,
         kConfigFetchDefaultRoundtripMultiplier, 1.0);
-    int64 roundtrip_milliseconds_increment = GetVariationInt64WithDefault(
+    int64_t roundtrip_milliseconds_increment = GetVariationInt64WithDefault(
         kConfigFetchTrialGroup, kConfigRoundtripMillisecondsIncrementParam,
         kConfigFetchDefaultRoundtripMillisecondsIncrement, 0);
 
@@ -212,11 +212,12 @@ DataReductionProxyConfigRetrievalParams::Variation::GetState(
 }
 
 void DataReductionProxyConfigRetrievalParams::Variation::RecordStats(
-    int64 received_content_length,
-    int64 original_content_length) const {
+    int64_t received_content_length,
+    int64_t original_content_length) const {
   lost_bytes_rcl_->Add(received_content_length);
   lost_bytes_ocl_->Add(original_content_length);
-  int64 content_length_diff = original_content_length - received_content_length;
+  int64_t content_length_diff =
+      original_content_length - received_content_length;
   if (content_length_diff > 0)
     lost_bytes_diff_->Add(content_length_diff);
 }
@@ -247,8 +248,8 @@ DataReductionProxyConfigRetrievalParams::
 
 void DataReductionProxyConfigRetrievalParams::RecordStats(
     const base::Time& request_time,
-    int64 received_content_length,
-    int64 original_content_length) const {
+    int64_t received_content_length,
+    int64_t original_content_length) const {
   for (const auto& variation : variations_) {
     switch (variation.GetState(request_time, config_expiration_)) {
       case VALID:

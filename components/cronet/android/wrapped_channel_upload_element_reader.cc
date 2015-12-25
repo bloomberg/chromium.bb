@@ -13,9 +13,8 @@ namespace cronet {
 
 WrappedChannelElementReader::WrappedChannelElementReader(
     scoped_refptr<URLRequestAdapter::URLRequestAdapterDelegate> delegate,
-    uint64 length)
-    : length_(length), offset_(0), delegate_(delegate) {
-}
+    uint64_t length)
+    : length_(length), offset_(0), delegate_(delegate) {}
 
 WrappedChannelElementReader::~WrappedChannelElementReader() {
 }
@@ -26,11 +25,11 @@ int WrappedChannelElementReader::Init(const net::CompletionCallback& callback) {
   return net::OK;
 }
 
-uint64 WrappedChannelElementReader::GetContentLength() const {
+uint64_t WrappedChannelElementReader::GetContentLength() const {
   return length_;
 }
 
-uint64 WrappedChannelElementReader::BytesRemaining() const {
+uint64_t WrappedChannelElementReader::BytesRemaining() const {
   return length_ - offset_;
 }
 

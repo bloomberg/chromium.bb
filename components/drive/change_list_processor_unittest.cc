@@ -4,7 +4,11 @@
 
 #include "components/drive/change_list_processor.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -25,7 +29,7 @@ namespace internal {
 
 namespace {
 
-const int64 kBaseResourceListChangestamp = 123;
+const int64_t kBaseResourceListChangestamp = 123;
 const char kRootId[] = "fake_root";
 
 enum FileOrDirectory {
@@ -212,7 +216,7 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
               entry->file_info().is_directory() ? DIRECTORY : FILE);
   }
 
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(kBaseResourceListChangestamp, changestamp);
 }
@@ -244,7 +248,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyChangeList(change_lists.Pass(), &changed_files));
 
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16730, changestamp);
   EXPECT_TRUE(GetResourceEntry("drive/root/New Directory"));
@@ -279,7 +283,7 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyChangeList(change_lists.Pass(), &changed_files));
 
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16809, changestamp);
   EXPECT_FALSE(GetResourceEntry("drive/root/Directory 1"));
@@ -315,7 +319,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyChangeList(change_lists.Pass(), &changed_files));
 
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16815, changestamp);
   EXPECT_FALSE(GetResourceEntry(
@@ -353,7 +357,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
       "drive/root/Directory 1/New SubDirectory File 1.txt")));
 
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16767, changestamp);
   EXPECT_FALSE(GetResourceEntry(
@@ -387,7 +391,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyChangeList(change_lists.Pass(), &changed_files));
 
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16683, changestamp);
   EXPECT_TRUE(GetResourceEntry("drive/root/Added file.txt"));
@@ -435,7 +439,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyChangeList(change_lists.Pass(), &changed_files));
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16730, changestamp);
   EXPECT_TRUE(GetResourceEntry("drive/root/Directory 1/Added file.txt"));
@@ -498,7 +502,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyChangeList(change_lists.Pass(), &changed_files));
 
-  int64 changestamp = 0;
+  int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16730, changestamp);
   EXPECT_FALSE(GetResourceEntry("drive/root/New Directory/new_pdf_file.pdf"));
@@ -532,7 +536,7 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory) {
   ResourceEntry root;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath(), &root));
-  const int64 kNewChangestamp = 12345;
+  const int64_t kNewChangestamp = 12345;
   ResourceEntryVector refreshed_entries;
   EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
       metadata_.get(),
@@ -569,7 +573,7 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
   ResourceEntry root;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath(), &root));
-  const int64 kNewChangestamp = 12345;
+  const int64_t kNewChangestamp = 12345;
   ResourceEntryVector refreshed_entries;
   EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
       metadata_.get(),

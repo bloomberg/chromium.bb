@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_CHROME_APPS_CHROME_APPS_RESOURCE_UTIL_H_
 #define COMPONENTS_CHROME_APPS_CHROME_APPS_RESOURCE_UTIL_H_
 
-#include <cstddef>
+#include <stddef.h>
 
 #include "components/chrome_apps/chrome_apps_export.h"
 

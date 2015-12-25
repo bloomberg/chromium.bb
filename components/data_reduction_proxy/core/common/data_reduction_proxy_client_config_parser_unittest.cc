@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/time/time.h"
@@ -36,8 +38,8 @@ TEST_F(DataReductionProxyClientConfigParserTest, TimeDeltaToFromDuration) {
   const struct {
     std::string test_name;
     base::TimeDelta time_delta;
-    int64 seconds;
-    int32 nanos;
+    int64_t seconds;
+    int32_t nanos;
   } tests[] = {
       {
           "Second", base::TimeDelta::FromSeconds(1), 1, 0,

@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_STORE_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_STORE_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
@@ -59,7 +61,7 @@ class DataReductionProxyEventStore
   // Put |entry| on a deque of events to store and set |last_bypass_event_| and
   // |expiration_ticks_|
   void AddAndSetLastBypassEvent(scoped_ptr<base::Value> entry,
-                                int64 expiration_ticks) override;
+                                int64_t expiration_ticks) override;
 
   // Returns the list of proxy servers for HTTP origins.
   std::string GetHttpProxyList() const;
@@ -85,7 +87,7 @@ class DataReductionProxyEventStore
   // The last seen data reduction proxy bypass event.
   scoped_ptr<base::Value> last_bypass_event_;
   // The expiration time of the |last_bypass_event_|.
-  int64 expiration_ticks_;
+  int64_t expiration_ticks_;
 
   // Enforce usage on the UI thread.
   base::ThreadChecker thread_checker_;

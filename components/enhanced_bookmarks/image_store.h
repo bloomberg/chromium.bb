@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_ENHANCED_BOOKMARKS_IMAGE_STORE_H_
 #define COMPONENTS_ENHANCED_BOOKMARKS_IMAGE_STORE_H_
 
+#include <stdint.h>
+
 #include <set>
 
+#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "components/enhanced_bookmarks/image_record.h"
 #include "ui/gfx/geometry/size.h"
@@ -57,7 +60,7 @@ class ImageStore {
 
   // Returns the saved images storage size in bytes. If the storage doesn't
   // exist yet or failed to read, returns -1.
-  virtual int64 GetStoreSizeInBytes() = 0;
+  virtual int64_t GetStoreSizeInBytes() = 0;
 
  protected:
   base::SequenceChecker sequence_checker_;

@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_CRONET_ANDROID_WRAPPED_CHANNEL_UPLOAD_ELEMENT_READER_H_
 #define COMPONENTS_CRONET_ANDROID_WRAPPED_CHANNEL_UPLOAD_ELEMENT_READER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/cronet/android/url_request_adapter.h"
 #include "net/base/completion_callback.h"
 #include "net/base/upload_element_reader.h"
@@ -25,21 +27,21 @@ class WrappedChannelElementReader : public net::UploadElementReader {
  public:
   WrappedChannelElementReader(
       scoped_refptr<URLRequestAdapter::URLRequestAdapterDelegate> delegate,
-      uint64 length);
+      uint64_t length);
   ~WrappedChannelElementReader() override;
 
   // UploadElementReader overrides:
   int Init(const net::CompletionCallback& callback) override;
-  uint64 GetContentLength() const override;
-  uint64 BytesRemaining() const override;
+  uint64_t GetContentLength() const override;
+  uint64_t BytesRemaining() const override;
   bool IsInMemory() const override;
   int Read(net::IOBuffer* buf,
            int buf_length,
            const net::CompletionCallback& callback) override;
 
  private:
-  const uint64 length_;
-  uint64 offset_;
+  const uint64_t length_;
+  uint64_t offset_;
   scoped_refptr<URLRequestAdapter::URLRequestAdapterDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WrappedChannelElementReader);

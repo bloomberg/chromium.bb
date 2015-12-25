@@ -5,6 +5,7 @@
 #import "components/crash/core/common/objc_zombie.h"
 
 #include <AvailabilityMacros.h>
+#include <string.h>
 
 #include <execinfo.h>
 #import <objc/runtime.h>
@@ -18,6 +19,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "components/crash/core/common/crash_keys.h"
 
 #if !defined(OS_IOS) && (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6)

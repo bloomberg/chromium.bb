@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_CLIPBOARD_CLIPBOARD_STANDALONE_IMPL_H_
 #define COMPONENTS_CLIPBOARD_CLIPBOARD_STANDALONE_IMPL_H_
 
-#include <base/memory/scoped_ptr.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

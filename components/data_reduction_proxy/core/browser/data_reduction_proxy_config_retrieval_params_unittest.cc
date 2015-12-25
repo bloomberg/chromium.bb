@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_retrieval_params.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/message_loop/message_loop.h"
@@ -18,7 +20,7 @@
 namespace {
 
 // Test value for how long a Data Reduction Proxy configuration should be valid.
-const int64 kConfigExpirationSeconds = 60 * 60 * 24;
+const int64_t kConfigExpirationSeconds = 60 * 60 * 24;
 
 // Checks that |actual| falls in the range of |min| + |delta| and
 // |max| + |delta|.
@@ -43,10 +45,10 @@ class DataReductionProxyConfigRetrievalParamsTest : public testing::Test {
   void SetConfigExperimentValues(
       bool enabled,
       const base::TimeDelta& retrieve_offset_from_now,
-      int64 roundtrip_milliseconds_base,
+      int64_t roundtrip_milliseconds_base,
       double roundtrip_multiplier,
-      int64 roundtrip_milliseconds_increment,
-      int64 expiration_seconds,
+      int64_t roundtrip_milliseconds_increment,
+      int64_t expiration_seconds,
       bool always_stale) {
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
@@ -79,10 +81,10 @@ TEST_F(DataReductionProxyConfigRetrievalParamsTest, ExpectedVariations) {
   struct {
     bool experiment_enabled;
     base::TimeDelta retrieve_offset_from_now;
-    int64 expiration_seconds;
-    int64 roundtrip_milliseconds_base;
+    int64_t expiration_seconds;
+    int64_t roundtrip_milliseconds_base;
     double roundtrip_multiplier;
-    int64 roundtrip_milliseconds_increment;
+    int64_t roundtrip_milliseconds_increment;
     bool always_stale;
     bool expected_has_variations;
     base::TimeDelta expected_config_expiration_from_now;

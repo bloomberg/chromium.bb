@@ -4,6 +4,8 @@
 
 #include "components/drive/job_scheduler.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/files/file_util.h"
@@ -138,7 +140,8 @@ google_apis::CancelCallback RunResumeUploadFile(
 
 // Collects information about sizes of files copied or moved from or to Drive
 // Otherwise does nothing. Temporary for crbug.com/229650.
-void CollectCopyHistogramSample(const std::string& histogram_name, int64 size) {
+void CollectCopyHistogramSample(const std::string& histogram_name,
+                                int64_t size) {
   base::HistogramBase* const counter =
       base::Histogram::FactoryGet(histogram_name,
                                   1,
@@ -335,7 +338,7 @@ void JobScheduler::Search(const std::string& search_query,
 }
 
 void JobScheduler::GetChangeList(
-    int64 start_changestamp,
+    int64_t start_changestamp,
     const google_apis::ChangeListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -575,7 +578,7 @@ void JobScheduler::AddNewDirectory(
 
 JobID JobScheduler::DownloadFile(
     const base::FilePath& virtual_path,
-    int64 expected_file_size,
+    int64_t expected_file_size,
     const base::FilePath& local_cache_path,
     const std::string& resource_id,
     const ClientContext& context,
@@ -611,7 +614,7 @@ JobID JobScheduler::DownloadFile(
 
 void JobScheduler::UploadNewFile(
     const std::string& parent_resource_id,
-    int64 expected_file_size,
+    int64_t expected_file_size,
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& title,
@@ -655,7 +658,7 @@ void JobScheduler::UploadNewFile(
 
 void JobScheduler::UploadExistingFile(
     const std::string& resource_id,
-    int64 expected_file_size,
+    int64_t expected_file_size,
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& content_type,
@@ -1079,7 +1082,9 @@ void JobScheduler::OnResumeUploadFileDone(
     callback.Run(error, entry.Pass());
 }
 
-void JobScheduler::UpdateProgress(JobID job_id, int64 progress, int64 total) {
+void JobScheduler::UpdateProgress(JobID job_id,
+                                  int64_t progress,
+                                  int64_t total) {
   JobEntry* job_entry = job_map_.Lookup(job_id);
   DCHECK(job_entry);
 

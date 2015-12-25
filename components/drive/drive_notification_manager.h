@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_
 #define COMPONENTS_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"

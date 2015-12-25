@@ -4,6 +4,9 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -62,8 +65,8 @@ namespace {
 
 // Creates a new ClientConfig from the given parameters.
 ClientConfig CreateConfig(const std::string& session_key,
-                          int64 expire_duration_seconds,
-                          int64 expire_duration_nanoseconds,
+                          int64_t expire_duration_seconds,
+                          int64_t expire_duration_nanoseconds,
                           ProxyServer_ProxyScheme primary_scheme,
                           const std::string& primary_host,
                           int primary_port,

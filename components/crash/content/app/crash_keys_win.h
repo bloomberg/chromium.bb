@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CRASH_CONTENT_APP_CRASH_KEYS_WIN_H_
 #define COMPONENTS_CRASH_CONTENT_APP_CRASH_KEYS_WIN_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

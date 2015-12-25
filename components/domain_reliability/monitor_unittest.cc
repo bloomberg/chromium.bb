@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/monitor.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 #include <vector>

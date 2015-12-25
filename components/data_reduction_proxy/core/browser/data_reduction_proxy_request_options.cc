@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -151,7 +152,7 @@ void DataReductionProxyRequestOptions::UpdateExperiments() {
 
 // static
 base::string16 DataReductionProxyRequestOptions::AuthHashForSalt(
-    int64 salt,
+    int64_t salt,
     const std::string& key) {
   std::string salted_key =
       base::StringPrintf("%lld%s%lld",
@@ -212,10 +213,9 @@ void DataReductionProxyRequestOptions::ComputeCredentials(
     std::string* credentials) const {
   DCHECK(session);
   DCHECK(credentials);
-  int64 timestamp =
-      (now - base::Time::UnixEpoch()).InMilliseconds() / 1000;
+  int64_t timestamp = (now - base::Time::UnixEpoch()).InMilliseconds() / 1000;
 
-  int32 rand[3];
+  int32_t rand[3];
   RandBytes(rand, 3 * sizeof(rand[0]));
   *session = base::StringPrintf("%lld-%u-%u-%u",
                                 static_cast<long long>(timestamp),

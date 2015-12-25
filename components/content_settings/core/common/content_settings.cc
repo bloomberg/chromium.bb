@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 
 ContentSetting IntToContentSetting(int content_setting) {
   return ((content_setting < 0) ||

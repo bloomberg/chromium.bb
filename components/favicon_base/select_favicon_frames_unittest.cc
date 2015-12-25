@@ -4,6 +4,10 @@
 
 #include "components/favicon_base/select_favicon_frames.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"

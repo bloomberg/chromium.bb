@@ -4,6 +4,9 @@
 
 #include "components/drive/file_cache.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -167,7 +170,7 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);
   fake_free_disk_space_getter_->PushFakeValue(0);
   fake_free_disk_space_getter_->PushFakeValue(0);
-  const int64 kNeededBytes = 1;
+  const int64_t kNeededBytes = 1;
   EXPECT_TRUE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
 
   // Only 'temporary' file gets removed.
@@ -218,7 +221,7 @@ TEST_F(FileCacheTest, EvictDriveCacheInLRU) {
   fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);
   fake_free_disk_space_getter_->PushFakeValue(kMinFreeSpaceInBytes);
   fake_free_disk_space_getter_->PushFakeValue(kMinFreeSpaceInBytes);
-  const int64 kNeededBytes = kTemporaryFileSizeInBytes * 3 / 2;
+  const int64_t kNeededBytes = kTemporaryFileSizeInBytes * 3 / 2;
   EXPECT_TRUE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
 
   // Entry A is evicted.
@@ -269,7 +272,7 @@ TEST_F(FileCacheTest, EvictInvalidCacheFile) {
   // Run FreeDiskSpaceIfNeededFor.
   fake_free_disk_space_getter_->set_default_value(test_util::kLotsOfSpace);
   fake_free_disk_space_getter_->PushFakeValue(kMinFreeSpaceInBytes);
-  const int64 kNeededBytes = 1;
+  const int64_t kNeededBytes = 1;
   EXPECT_TRUE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
 
   // Entry A is not evicted.
@@ -295,7 +298,7 @@ TEST_F(FileCacheTest, TooManyCacheFiles) {
 
   // Add kNumOfTestFiles=kMaxNumOfEvictedCacheFiles*2 entries.
   std::vector<base::FilePath> paths;
-  const int32 kNumOfTestFiles = kMaxNumOfEvictedCacheFiles * 2;
+  const int32_t kNumOfTestFiles = kMaxNumOfEvictedCacheFiles * 2;
   for (int i = 0; i < kNumOfTestFiles; ++i) {
     // Set last accessed in reverse order to the file name. i.e. If you sort
     // files in name-asc order, they will be last access desc order.
@@ -316,11 +319,11 @@ TEST_F(FileCacheTest, TooManyCacheFiles) {
   fake_free_disk_space_getter_->PushFakeValue(
       kMinFreeSpaceInBytes +
       (kMaxNumOfEvictedCacheFiles * kTemporaryFileSizeInBytes));
-  const int64 kNeededBytes =
+  const int64_t kNeededBytes =
       (kMaxNumOfEvictedCacheFiles * 3 / 2) * kTemporaryFileSizeInBytes;
   EXPECT_FALSE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
 
-  for (uint32 i = 0; i < kNumOfTestFiles; ++i) {
+  for (uint32_t i = 0; i < kNumOfTestFiles; ++i) {
     // Assert that only first kMaxNumOfEvictedCacheFiles exist.
     ASSERT_EQ(i < kMaxNumOfEvictedCacheFiles, base::PathExists(paths[i]));
   }

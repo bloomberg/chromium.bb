@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CRASH_CONTENT_APP_CRASH_REPORTER_CLIENT_H_
 #define COMPONENTS_CRASH_CONTENT_APP_CRASH_REPORTER_CLIENT_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/strings/string16.h"

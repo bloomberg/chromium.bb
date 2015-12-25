@@ -6,8 +6,10 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"

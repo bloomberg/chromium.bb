@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/error_page/common/offline_page_types.h"
 #include "url/gurl.h"

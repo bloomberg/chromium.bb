@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/copresence/handlers/directive_handler.h"
 
 namespace copresence {

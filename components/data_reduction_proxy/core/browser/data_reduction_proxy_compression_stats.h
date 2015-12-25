@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_COMPRESSION_STATS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_COMPRESSION_STATS_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
@@ -77,8 +78,8 @@ class DataReductionProxyCompressionStats
   // Records detailed data usage broken down by connection type and domain. Also
   // records daily data savings statistics to prefs and reports data savings
   // UMA. |compressed_size| and |original_size| are measured in bytes.
-  void UpdateContentLengths(int64 compressed_size,
-                            int64 original_size,
+  void UpdateContentLengths(int64_t compressed_size,
+                            int64_t original_size,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type,
                             const std::string& data_usage_host,
@@ -91,7 +92,7 @@ class DataReductionProxyCompressionStats
 
   // Returns the time in milliseconds since epoch that the last update was made
   // to the daily original and received content lengths.
-  int64 GetLastUpdateTime();
+  int64_t GetLastUpdateTime();
 
   // Resets daily content length statistics.
   void ResetStatistics();
@@ -105,9 +106,9 @@ class DataReductionProxyCompressionStats
   // Returns aggregate received and original content lengths over the specified
   // number of days, as well as the time these stats were last updated.
   void GetContentLengths(unsigned int days,
-                         int64* original_content_length,
-                         int64* received_content_length,
-                         int64* last_update_time);
+                         int64_t* original_content_length,
+                         int64_t* received_content_length,
+                         int64_t* last_update_time);
 
   // Calls |get_data_usage_callback| with full data usage history. In-memory
   // data usage stats are flushed to storage before querying for full history.
@@ -139,7 +140,7 @@ class DataReductionProxyCompressionStats
 
   friend class DataReductionProxyCompressionStatsTest;
 
-  typedef std::map<const char*, int64> DataReductionProxyPrefMap;
+  typedef std::map<const char*, int64_t> DataReductionProxyPrefMap;
   typedef base::ScopedPtrHashMap<const char*, scoped_ptr<base::ListValue>>
       DataReductionProxyListPrefMap;
 
@@ -157,12 +158,12 @@ class DataReductionProxyCompressionStats
 
   void OnUpdateContentLengths();
 
-  // Gets the int64 pref at |pref_path| from the |DataReductionProxyPrefMap|.
-  int64 GetInt64(const char* pref_path);
+  // Gets the int64_t pref at |pref_path| from the |DataReductionProxyPrefMap|.
+  int64_t GetInt64(const char* pref_path);
 
   // Updates the pref value in the |DataReductionProxyPrefMap| map.
   // The pref is later written to |pref service_|.
-  void SetInt64(const char* pref_path, int64 pref_value);
+  void SetInt64(const char* pref_path, int64_t pref_value);
 
   // Increments the pref value in the |DataReductionProxyPrefMap| map.
   // The pref is later written to |pref service_|.
@@ -184,13 +185,14 @@ class DataReductionProxyCompressionStats
   void TransferList(const base::ListValue& from_list,
                     base::ListValue* to_list);
 
-  // Gets an int64, stored as a string, in a ListPref at the specified
+  // Gets an int64_t, stored as a string, in a ListPref at the specified
   // index.
-  int64 GetListPrefInt64Value(const base::ListValue& list_update, size_t index);
+  int64_t GetListPrefInt64Value(const base::ListValue& list_update,
+                                size_t index);
 
   // Records content length updates to prefs.
-  void RecordRequestSizePrefs(int64 compressed_size,
-                              int64 original_size,
+  void RecordRequestSizePrefs(int64_t compressed_size,
+                              int64_t original_size,
                               bool with_data_reduction_proxy_enabled,
                               DataReductionProxyRequestType request_type,
                               const std::string& mime_type,
@@ -216,8 +218,8 @@ class DataReductionProxyCompressionStats
   // is the time at which the data usage occurred. This method should be called
   // in real time, so |time| is expected to be |Time::Now()|.
   void RecordDataUsage(const std::string& data_usage_host,
-                       int64 original_request_size,
-                       int64 data_used,
+                       int64_t original_request_size,
+                       int64_t data_used,
                        const base::Time& time);
 
   // Persists the in memory data usage information to storage and clears all

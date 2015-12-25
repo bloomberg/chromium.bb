@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/macros.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
 
 namespace bookmarks {

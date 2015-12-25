@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -18,9 +20,9 @@ using testing::IsEmpty;
 
 namespace {
 
-const int64 kMaxUnlabeledTtl = 60000;  // 1 minute
-const int64 kExcessiveUnlabeledTtl = 120000;  // 2 minutes
-const int64 kDefaultTtl = 600000;  // 10 minutes
+const int64_t kMaxUnlabeledTtl = 60000;         // 1 minute
+const int64_t kExcessiveUnlabeledTtl = 120000;  // 2 minutes
+const int64_t kDefaultTtl = 600000;             // 10 minutes
 
 }  // namespace
 
@@ -29,7 +31,7 @@ namespace copresence {
 const Directive CreateDirective(const std::string& publish_id,
                                 const std::string& subscribe_id,
                                 const std::string& token,
-                                int64 ttl_ms) {
+                                int64_t ttl_ms) {
   Directive directive;
   directive.set_instruction_type(TOKEN);
   directive.set_published_message_id(publish_id);
@@ -83,9 +85,7 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
     return added_tokens_;
   }
 
-  const std::vector<int64>& added_ttls() const {
-    return added_ttls_;
-  }
+  const std::vector<int64_t>& added_ttls() const { return added_ttls_; }
 
   const std::vector<std::string>& removed_operations() const {
     return removed_operations_;
@@ -93,7 +93,7 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
 
  private:
   std::vector<std::string> added_tokens_;
-  std::vector<int64> added_ttls_;
+  std::vector<int64_t> added_ttls_;
   std::vector<std::string> removed_operations_;
 };
 

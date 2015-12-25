@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_INDEX_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_INDEX_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>

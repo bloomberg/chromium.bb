@@ -29,7 +29,7 @@ FileError TruncateOnBlockingPool(internal::ResourceMetadata* metadata,
                                  internal::FileCache* cache,
                                  const std::string& local_id,
                                  const base::FilePath& local_cache_path,
-                                 int64 length) {
+                                 int64_t length) {
   DCHECK(metadata);
   DCHECK(cache);
 
@@ -75,7 +75,7 @@ TruncateOperation::~TruncateOperation() {
 }
 
 void TruncateOperation::Truncate(const base::FilePath& file_path,
-                                 int64 length,
+                                 int64_t length,
                                  const FileOperationCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -99,7 +99,7 @@ void TruncateOperation::Truncate(const base::FilePath& file_path,
 }
 
 void TruncateOperation::TruncateAfterEnsureFileDownloadedByPath(
-    int64 length,
+    int64_t length,
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& local_file_path,

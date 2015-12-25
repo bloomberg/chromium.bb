@@ -463,7 +463,7 @@ void BookmarkModel::AddNonClonedKey(const std::string& key) {
 
 void BookmarkModel::SetNodeSyncTransactionVersion(
     const BookmarkNode* node,
-    int64 sync_transaction_version) {
+    int64_t sync_transaction_version) {
   DCHECK(client_->CanSyncNode(node));
 
   if (sync_transaction_version == node->sync_transaction_version())
@@ -1089,7 +1089,7 @@ void BookmarkModel::PopulateNodesByURL(BookmarkNode* node) {
     PopulateNodesByURL(node->GetChild(i));
 }
 
-int64 BookmarkModel::generate_next_node_id() {
+int64_t BookmarkModel::generate_next_node_id() {
   return next_node_id_++;
 }
 

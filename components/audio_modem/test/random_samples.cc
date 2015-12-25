@@ -6,6 +6,7 @@
 
 #include <cstdlib>
 
+#include "build/build_config.h"
 #include "media/base/audio_bus.h"
 
 namespace audio_modem {

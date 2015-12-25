@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_DRIVE_JOB_LIST_H_
 #define COMPONENTS_DRIVE_JOB_LIST_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "components/drive/file_errors.h"
 
@@ -56,7 +57,7 @@ enum JobState {
 std::string JobStateToString(JobState state);
 
 // Unique ID assigned to each job.
-typedef int32 JobID;
+typedef int32_t JobID;
 
 // Information about a specific job that is visible to other systems.
 struct JobInfo {
@@ -75,10 +76,10 @@ struct JobInfo {
   // TYPE_DOWNLOAD_FILE, TYPE_UPLOAD_NEW_FILE, or TYPE_UPLOAD_EXISTING_FILE.
 
   // Number of bytes completed.
-  int64 num_completed_bytes;
+  int64_t num_completed_bytes;
 
   // Total bytes of this operation.
-  int64 num_total_bytes;
+  int64_t num_total_bytes;
 
   // Drive path of the file that this job acts on.
   base::FilePath file_path;

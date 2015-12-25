@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_NODE_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_NODE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -39,12 +42,12 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 
   typedef std::map<std::string, std::string> MetaInfoMap;
 
-  static const int64 kInvalidSyncTransactionVersion;
+  static const int64_t kInvalidSyncTransactionVersion;
 
   // Creates a new node with an id of 0 and |url|.
   explicit BookmarkNode(const GURL& url);
   // Creates a new node with |id| and |url|.
-  BookmarkNode(int64 id, const GURL& url);
+  BookmarkNode(int64_t id, const GURL& url);
 
   ~BookmarkNode() override;
 
@@ -56,8 +59,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Returns an unique id for this node.
   // For bookmark nodes that are managed by the bookmark model, the IDs are
   // persisted across sessions.
-  int64 id() const { return id_; }
-  void set_id(int64 id) { id_ = id; }
+  int64_t id() const { return id_; }
+  void set_id(int64_t id) { id_ = id; }
 
   const GURL& url() const { return url_; }
   void set_url(const GURL& url) { url_ = url; }
@@ -106,12 +109,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Returns NULL if there are no values in the map.
   const MetaInfoMap* GetMetaInfoMap() const;
 
-  void set_sync_transaction_version(int64 sync_transaction_version) {
+  void set_sync_transaction_version(int64_t sync_transaction_version) {
     sync_transaction_version_ = sync_transaction_version;
   }
-  int64 sync_transaction_version() const {
-    return sync_transaction_version_;
-  }
+  int64_t sync_transaction_version() const { return sync_transaction_version_; }
 
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
@@ -120,7 +121,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   friend class BookmarkModel;
 
   // A helper function to initialize various fields during construction.
-  void Initialize(int64 id);
+  void Initialize(int64_t id);
 
   // Called when the favicon becomes invalid.
   void InvalidateFavicon();
@@ -150,7 +151,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   }
 
   // The unique identifier for this node.
-  int64 id_;
+  int64_t id_;
 
   // The URL of this node. BookmarkModel maintains maps off this URL, so changes
   // to the URL must be done through the BookmarkModel.
@@ -186,7 +187,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   scoped_ptr<MetaInfoMap> meta_info_map_;
 
   // The sync transaction version. Defaults to kInvalidSyncTransactionVersion.
-  int64 sync_transaction_version_;
+  int64_t sync_transaction_version_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
 };
@@ -196,7 +197,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 // Node used for the permanent folders (excluding the root).
 class BookmarkPermanentNode : public BookmarkNode {
  public:
-  explicit BookmarkPermanentNode(int64 id);
+  explicit BookmarkPermanentNode(int64_t id);
   ~BookmarkPermanentNode() override;
 
   // WARNING: this code is used for other projects. Contact noyau@ for details.

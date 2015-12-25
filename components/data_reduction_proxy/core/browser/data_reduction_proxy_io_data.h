@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -97,8 +99,8 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   void SetLoFiModeOff();
 
   // Bridge methods to safely call to the UI thread objects.
-  void UpdateContentLengths(int64 data_used,
-                            int64 original_size,
+  void UpdateContentLengths(int64_t data_used,
+                            int64_t original_size,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type,
                             const std::string& data_usage_host,
@@ -112,7 +114,7 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> event,
                                         SecureProxyCheckState state) override;
   void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
-                                int64 expiration_ticks) override;
+                                int64_t expiration_ticks) override;
 
   // Returns true if the Data Reduction Proxy is enabled and false otherwise.
   bool IsEnabled() const;
@@ -191,8 +193,8 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Records that the data reduction proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
 
-  // Stores an int64 value in preferences storage.
-  void SetInt64Pref(const std::string& pref_path, int64 value);
+  // Stores an int64_t value in preferences storage.
+  void SetInt64Pref(const std::string& pref_path, int64_t value);
 
   // Stores a string value in preferences storage.
   void SetStringPref(const std::string& pref_path, const std::string& value);

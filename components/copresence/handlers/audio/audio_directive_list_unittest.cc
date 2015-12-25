@@ -4,6 +4,8 @@
 
 #include "components/copresence/handlers/audio/audio_directive_list.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
@@ -13,9 +15,9 @@ using testing::IsNull;
 
 namespace copresence {
 
-static const int64 kTtl = 10;
+static const int64_t kTtl = 10;
 
-const Directive CreateDirective(int64 ttl) {
+const Directive CreateDirective(int64_t ttl) {
   Directive directive;
   directive.set_ttl_millis(ttl);
   return directive;

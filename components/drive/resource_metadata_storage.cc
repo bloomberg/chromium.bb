@@ -4,6 +4,8 @@
 
 #include "components/drive/resource_metadata_storage.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 
@@ -12,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner.h"
@@ -693,7 +696,7 @@ void ResourceMetadataStorage::RecoverCacheInfoFromTrashedResourceMap(
 }
 
 FileError ResourceMetadataStorage::SetLargestChangestamp(
-    int64 largest_changestamp) {
+    int64_t largest_changestamp) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   ResourceMetadataHeader header;
@@ -707,7 +710,7 @@ FileError ResourceMetadataStorage::SetLargestChangestamp(
 }
 
 FileError ResourceMetadataStorage::GetLargestChangestamp(
-    int64* largest_changestamp) {
+    int64_t* largest_changestamp) {
   base::ThreadRestrictions::AssertIOAllowed();
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);

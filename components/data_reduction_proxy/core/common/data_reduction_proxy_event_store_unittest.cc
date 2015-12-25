@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

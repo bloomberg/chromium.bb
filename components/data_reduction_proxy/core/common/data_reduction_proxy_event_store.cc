@@ -4,12 +4,13 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -181,7 +182,7 @@ void DataReductionProxyEventStore::AddEventAndSecureProxyCheckState(
 
 void DataReductionProxyEventStore::AddAndSetLastBypassEvent(
     scoped_ptr<base::Value> event,
-    int64 expiration_ticks) {
+    int64_t expiration_ticks) {
   DCHECK(thread_checker_.CalledOnValidThread());
   last_bypass_event_.reset(event->DeepCopy());
   expiration_ticks_ = expiration_ticks;

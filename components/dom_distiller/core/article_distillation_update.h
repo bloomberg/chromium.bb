@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_DISTILLATION_UPDATE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_DISTILLATION_UPDATE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/ref_counted.h"

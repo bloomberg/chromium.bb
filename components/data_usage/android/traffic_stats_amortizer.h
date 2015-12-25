@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DATA_USAGE_ANDROID_TRAFFIC_STATS_AMORTIZER_H_
 #define COMPONENTS_DATA_USAGE_ANDROID_TRAFFIC_STATS_AMORTIZER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <utility>

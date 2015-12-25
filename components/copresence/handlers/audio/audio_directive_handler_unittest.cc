@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -29,7 +32,7 @@ namespace {
 
 const Directive CreateDirective(TokenInstructionType type,
                                 bool audible,
-                                int64 ttl) {
+                                int64_t ttl) {
   Directive directive;
   directive.mutable_token_instruction()->set_token_instruction_type(type);
   directive.mutable_token_instruction()->set_token_id("token");
@@ -89,7 +92,7 @@ class AudioDirectiveHandlerTest : public testing::Test {
 };
 
 TEST_F(AudioDirectiveHandlerTest, Basic) {
-  const int64 kTtl = 10;
+  const int64_t kTtl = 10;
   directive_handler_->AddInstruction(CreateDirective(TRANSMIT, true, kTtl),
                                      "op_id1");
   directive_handler_->AddInstruction(CreateDirective(TRANSMIT, false, kTtl),

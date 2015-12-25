@@ -69,8 +69,10 @@ CancelCallback DummyDriveService::SearchByTitle(
     const FileListCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::GetChangeList(
-    int64 start_changestamp,
-    const ChangeListCallback& callback) { return CancelCallback(); }
+    int64_t start_changestamp,
+    const ChangeListCallback& callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetRemainingChangeList(
     const GURL& next_link,
@@ -147,7 +149,7 @@ CancelCallback DummyDriveService::AddNewDirectory(
 
 CancelCallback DummyDriveService::InitiateUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const UploadNewFileOptions& options,
@@ -157,7 +159,7 @@ CancelCallback DummyDriveService::InitiateUploadNewFile(
 
 CancelCallback DummyDriveService::InitiateUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const UploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) {
@@ -166,22 +168,26 @@ CancelCallback DummyDriveService::InitiateUploadExistingFile(
 
 CancelCallback DummyDriveService::ResumeUpload(
     const GURL& upload_url,
-    int64 start_position,
-    int64 end_position,
-    int64 content_length,
+    int64_t start_position,
+    int64_t end_position,
+    int64_t content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path,
     const UploadRangeCallback& callback,
-    const ProgressCallback& progress_callback) { return CancelCallback(); }
+    const ProgressCallback& progress_callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetUploadStatus(
     const GURL& upload_url,
-    int64 content_length,
-    const UploadRangeCallback& callback) { return CancelCallback(); }
+    int64_t content_length,
+    const UploadRangeCallback& callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::MultipartUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const base::FilePath& local_file_path,
@@ -193,7 +199,7 @@ CancelCallback DummyDriveService::MultipartUploadNewFile(
 
 CancelCallback DummyDriveService::MultipartUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const UploadExistingFileOptions& options,

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CERTIFICATE_TRANSPARENCY_LOG_PROOF_FETCHER_H_
 #define COMPONENTS_CERTIFICATE_TRANSPARENCY_LOG_PROOF_FETCHER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 

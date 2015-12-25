@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_CREATOR_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_CREATOR_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -125,7 +126,7 @@ class DataReductionProxyEventCreator {
       const net::BoundNetLog& net_log,
       net::NetLog::EventType type,
       net::NetLog::EventPhase phase,
-      int64 expiration_ticks,
+      int64_t expiration_ticks,
       const net::NetLog::ParametersCallback& callback);
 
   // Prepare and post a secure proxy check event for the event store on a

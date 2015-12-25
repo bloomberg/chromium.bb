@@ -4,6 +4,8 @@
 
 #include "components/bookmarks/browser/bookmark_codec.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/json/json_string_value_serializer.h"

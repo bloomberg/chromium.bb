@@ -4,6 +4,8 @@
 
 #include "components/crash/content/app/crash_keys_win.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"

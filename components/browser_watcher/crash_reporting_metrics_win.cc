@@ -4,10 +4,13 @@
 
 #include "components/browser_watcher/crash_reporting_metrics_win.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include "base/atomicops.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

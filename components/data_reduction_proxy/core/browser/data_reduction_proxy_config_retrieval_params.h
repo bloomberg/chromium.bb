@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_RETRIEVAL_PARAMS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_RETRIEVAL_PARAMS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
@@ -77,8 +78,8 @@ class DataReductionProxyConfigRetrievalParams {
 
     // Records content length statistics if potentially uncompressed bytes have
     // been detected for this variation.
-    void RecordStats(int64 received_content_length,
-                     int64 original_content_length) const;
+    void RecordStats(int64_t received_content_length,
+                     int64_t original_content_length) const;
 
     // Visible for testing.
     const base::Time& simulated_config_retrieved() const {
@@ -104,8 +105,8 @@ class DataReductionProxyConfigRetrievalParams {
   // Records content length statistics against any variations for which
   // potentially uncompressed bytes have been detected.
   void RecordStats(const base::Time& request_time,
-                   int64 received_content_length,
-                   int64 original_content_length) const;
+                   int64_t received_content_length,
+                   int64_t original_content_length) const;
 
   // Simulates retrieving a new configuration.
   void RefreshConfig();
