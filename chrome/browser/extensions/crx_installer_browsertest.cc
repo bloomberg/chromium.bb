@@ -587,11 +587,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, NonStrictManifestCheck) {
   EXPECT_TRUE(mock_prompt->did_succeed());
 }
 
+#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
+  // kiosk_only is whitelisted from non-chromeos.
   base::FilePath crx_path =
       test_data_dir_.AppendASCII("kiosk/kiosk_only.crx");
   EXPECT_FALSE(InstallExtension(crx_path, 0));
-#if defined(OS_CHROMEOS)
   // Simulate ChromeOS kiosk mode. |scoped_user_manager| will take over
   // lifetime of |user_manager|.
   chromeos::FakeChromeUserManager* fake_user_manager =
@@ -601,10 +602,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
   fake_user_manager->LoginUser(account_id);
   chromeos::ScopedUserManagerEnabler scoped_user_manager(fake_user_manager);
   EXPECT_TRUE(InstallExtension(crx_path, 1));
-#endif
 }
 
-#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kEnableExtensionAssetsSharing);

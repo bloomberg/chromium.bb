@@ -192,7 +192,8 @@
     "channel": "stable",
     "extension_types": [
       "platform_app"
-    ]
+    ],
+    "platforms": ["chromeos"]
   },
   "kiosk_secondary_apps": {
     "channel": "stable",
