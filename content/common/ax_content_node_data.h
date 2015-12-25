@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_AX_CONTENT_NODE_DATA_H_
 #define CONTENT_COMMON_AX_CONTENT_NODE_DATA_H_
 
+#include <stdint.h>
+
 #include "content/common/content_export.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -39,7 +41,7 @@ struct CONTENT_EXPORT AXContentNodeData : public ui::AXNodeData {
 
   // This is a simple serializable struct. All member variables should be
   // public and copyable.
-  std::vector<std::pair<AXContentIntAttribute, int32> > content_int_attributes;
+  std::vector<std::pair<AXContentIntAttribute, int32_t>> content_int_attributes;
 };
 
 // A subclass of AXTreeData that contains extra fields for

@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_GPU_SURFACE_LOOKUP_H_
 #define CONTENT_COMMON_GPU_GPU_SURFACE_LOOKUP_H_
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 

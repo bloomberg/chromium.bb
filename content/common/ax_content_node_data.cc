@@ -61,8 +61,8 @@ bool AXContentNodeData::GetContentIntAttribute(
   return false;
 }
 
-void AXContentNodeData::AddContentIntAttribute(
-    AXContentIntAttribute attribute, int32 value) {
+void AXContentNodeData::AddContentIntAttribute(AXContentIntAttribute attribute,
+                                               int32_t value) {
   content_int_attributes.push_back(std::make_pair(attribute, value));
 }
 

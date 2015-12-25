@@ -5,6 +5,7 @@
 #include "content/public/common/origin_util.h"
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "content/public/common/content_client.h"
 #include "net/base/net_util.h"

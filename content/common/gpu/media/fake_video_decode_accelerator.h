@@ -5,9 +5,12 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_FAKE_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_FAKE_VIDEO_DECODE_ACCELERATOR_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
@@ -29,7 +32,7 @@ class CONTENT_EXPORT FakeVideoDecodeAccelerator
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
   void Destroy() override;

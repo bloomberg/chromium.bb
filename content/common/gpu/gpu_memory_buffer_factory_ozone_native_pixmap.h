@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"

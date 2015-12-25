@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VP8_PICTURE_H_
 #define CONTENT_COMMON_GPU_MEDIA_VP8_PICTURE_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace content {

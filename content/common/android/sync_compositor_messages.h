@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/memory/shared_memory_handle.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"

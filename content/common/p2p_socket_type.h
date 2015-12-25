@@ -8,6 +8,8 @@
 #ifndef CONTENT_COMMON_P2P_SOCKET_TYPE_H_
 #define CONTENT_COMMON_P2P_SOCKET_TYPE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/time/time.h"

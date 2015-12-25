@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <signal.h>
+#include <stddef.h>
 #include <sys/prctl.h>
 #include <unistd.h>
 

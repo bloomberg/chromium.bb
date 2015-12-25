@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "base/atomic_ref_count.h"
+#include "base/macros.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

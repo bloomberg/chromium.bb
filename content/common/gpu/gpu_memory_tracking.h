@@ -5,7 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_TRACKING_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_TRACKING_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -19,16 +20,12 @@ class GpuMemoryManager;
 class CONTENT_EXPORT GpuMemoryTrackingGroup {
  public:
   ~GpuMemoryTrackingGroup();
-  void TrackMemoryAllocatedChange(
-      uint64 old_size,
-      uint64 new_size);
-  bool EnsureGPUMemoryAvailable(uint64 size_needed);
+  void TrackMemoryAllocatedChange(uint64_t old_size, uint64_t new_size);
+  bool EnsureGPUMemoryAvailable(uint64_t size_needed);
   base::ProcessId GetPid() const {
     return pid_;
   }
-  uint64 GetSize() const {
-    return size_;
-  }
+  uint64_t GetSize() const { return size_; }
   gpu::gles2::MemoryTracker* GetMemoryTracker() const {
     return memory_tracker_;
   }
@@ -41,7 +38,7 @@ class CONTENT_EXPORT GpuMemoryTrackingGroup {
                          GpuMemoryManager* memory_manager);
 
   base::ProcessId pid_;
-  uint64 size_;
+  uint64_t size_;
 
   // Set and used only during the Manage function, to determine which
   // non-surface clients should be hibernated.

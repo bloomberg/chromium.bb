@@ -13,11 +13,13 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "media/base/media_switches.h"
 #include "media/filters/h264_parser.h"
@@ -59,14 +61,14 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
       scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
       base::SharedMemory* shm,
       size_t size,
-      int32 input_id);
+      int32_t input_id);
   ~BitstreamBufferRef();
   const base::WeakPtr<Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
   const scoped_ptr<base::SharedMemory> shm;
   const size_t size;
   size_t bytes_used;
-  const int32 input_id;
+  const int32_t input_id;
 };
 
 struct V4L2VideoDecodeAccelerator::EGLSyncKHRRef {
@@ -88,14 +90,13 @@ V4L2VideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
     base::SharedMemory* shm,
     size_t size,
-    int32 input_id)
+    int32_t input_id)
     : client(client),
       client_task_runner(client_task_runner),
       shm(shm),
       size(size),
       bytes_used(0),
-      input_id(input_id) {
-}
+      input_id(input_id) {}
 
 V4L2VideoDecodeAccelerator::BitstreamBufferRef::~BitstreamBufferRef() {
   if (input_id >= 0) {
@@ -394,7 +395,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
   pictures_assigned_.Signal();
 }
 
-void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
+void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   DVLOG(3) << "ReusePictureBuffer(): picture_buffer_id=" << picture_buffer_id;
   // Must be run on child thread, as we'll insert a sync in the EGL context.
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -557,7 +558,7 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
   const size_t size = decoder_current_bitstream_buffer_->size;
   size_t decoded_size = 0;
   if (size == 0) {
-    const int32 input_id = decoder_current_bitstream_buffer_->input_id;
+    const int32_t input_id = decoder_current_bitstream_buffer_->input_id;
     if (input_id >= 0) {
       // This is a buffer queued from the client that has zero size.  Skip.
       schedule_task = true;
@@ -587,8 +588,8 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
     }
   } else {
     // This is a buffer queued from the client, with actual contents.  Decode.
-    const uint8* const data =
-        reinterpret_cast<const uint8*>(
+    const uint8_t* const data =
+        reinterpret_cast<const uint8_t*>(
             decoder_current_bitstream_buffer_->shm->memory()) +
         decoder_current_bitstream_buffer_->bytes_used;
     const size_t data_size =
@@ -625,7 +626,7 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
     if (decoder_current_bitstream_buffer_->bytes_used ==
         decoder_current_bitstream_buffer_->size) {
       // Our current bitstream buffer is done; return it.
-      int32 input_id = decoder_current_bitstream_buffer_->input_id;
+      int32_t input_id = decoder_current_bitstream_buffer_->input_id;
       DVLOG(3) << "DecodeBufferTask(): finished input_id=" << input_id;
       // BitstreamBufferRef destructor calls NotifyEndOfBitstreamBuffer().
       decoder_current_bitstream_buffer_.reset();
@@ -634,10 +635,9 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
   }
 }
 
-bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(
-    const uint8* data,
-    size_t size,
-    size_t* endpos) {
+bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(const uint8_t* data,
+                                                      size_t size,
+                                                      size_t* endpos) {
   if (video_profile_ >= media::H264PROFILE_MIN &&
       video_profile_ <= media::H264PROFILE_MAX) {
     // For H264, we need to feed HW one frame at a time.  This is going to take
@@ -856,10 +856,9 @@ bool V4L2VideoDecodeAccelerator::AppendToInputFrame(
     NOTIFY_ERROR(UNREADABLE_INPUT);
     return false;
   }
-  memcpy(
-      reinterpret_cast<uint8*>(input_record.address) + input_record.bytes_used,
-      data,
-      size);
+  memcpy(reinterpret_cast<uint8_t*>(input_record.address) +
+             input_record.bytes_used,
+         data, size);
   input_record.bytes_used += size;
 
   return true;
@@ -1212,7 +1211,8 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
 }
 
 void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
-    int32 picture_buffer_id, scoped_ptr<EGLSyncKHRRef> egl_sync_ref) {
+    int32_t picture_buffer_id,
+    scoped_ptr<EGLSyncKHRRef> egl_sync_ref) {
   DVLOG(3) << "ReusePictureBufferTask(): picture_buffer_id="
            << picture_buffer_id;
   DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());

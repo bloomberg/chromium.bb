@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SANDBOX_LINUX_ANDROID_SANDBOX_BPF_BASE_POLICY_ANDROID_H_
 #define CONTENT_COMMON_SANDBOX_LINUX_ANDROID_SANDBOX_BPF_BASE_POLICY_ANDROID_H_
 
+#include "base/macros.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 
 namespace content {

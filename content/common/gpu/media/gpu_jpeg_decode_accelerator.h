@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_GPU_JPEG_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_GPU_JPEG_DECODE_ACCELERATOR_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
@@ -31,9 +34,9 @@ class GpuJpegDecodeAccelerator
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~GpuJpegDecodeAccelerator() override;
 
-  void AddClient(int32 route_id, IPC::Message* reply_msg);
+  void AddClient(int32_t route_id, IPC::Message* reply_msg);
 
-  void NotifyDecodeStatus(int32 route_id,
+  void NotifyDecodeStatus(int32_t route_id,
                           int32_t bitstream_buffer_id,
                           media::JpegDecodeAccelerator::Error error);
 

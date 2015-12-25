@@ -5,9 +5,13 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_JPEG_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_JPEG_DECODE_ACCELERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

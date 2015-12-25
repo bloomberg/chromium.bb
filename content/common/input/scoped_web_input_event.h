@@ -5,7 +5,6 @@
 #ifndef CONTENT_COMMON_INPUT_SCOPED_WEB_INPUT_EVENT_H_
 #define CONTENT_COMMON_INPUT_SCOPED_WEB_INPUT_EVENT_H_
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 

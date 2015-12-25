@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_OZONE_NATIVE_PIXMAP_H_
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_OZONE_NATIVE_PIXMAP_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 

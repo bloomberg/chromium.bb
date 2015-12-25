@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,7 +34,7 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
   const std::string kOriginId("origin_id");
   const base::string16 kName(ASCIIToUTF16("database_name"));
   const base::string16 kName2(ASCIIToUTF16("database_name2"));
-  const int64 kSize = 1000;
+  const int64_t kSize = 1000;
 
   DatabaseConnections connections;
 

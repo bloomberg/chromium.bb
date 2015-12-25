@@ -4,7 +4,10 @@
 
 #include "content/common/gpu/media/vaapi_jpeg_decoder.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/filters/jpeg_parser.h"
 
 namespace {

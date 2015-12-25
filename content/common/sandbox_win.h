@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_SANDBOX_WIN_H_
 #define CONTENT_COMMON_SANDBOX_WIN_H_
 
+#include <stdint.h>
+
 #include "content/common/content_export.h"
 #include "sandbox/win/src/security_level.h"
 

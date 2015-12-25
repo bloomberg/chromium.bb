@@ -5,7 +5,6 @@
 // IPC messages for accessibility.
 // Multiply-included message file, hence no include guard.
 
-#include "base/basictypes.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
 #include "content/common/view_message_enums.h"

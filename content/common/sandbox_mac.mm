@@ -5,6 +5,8 @@
 #include "content/common/sandbox_mac.h"
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <CoreFoundation/CFTimeZone.h>
 extern "C" {
@@ -13,7 +15,6 @@ extern "C" {
 #include <signal.h>
 #include <sys/param.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -24,6 +25,7 @@ extern "C" {
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -346,7 +348,7 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
 
   { // Gestalt() tries to read /System/Library/CoreServices/SystemVersion.plist
     // on 10.5.6
-    int32 tmp;
+    int32_t tmp;
     base::SysInfo::OperatingSystemVersionNumbers(&tmp, &tmp, &tmp);
   }
 

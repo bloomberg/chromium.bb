@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_ZYGOTE_COMMANDS_LINUX_H_
 #define CONTENT_COMMON_ZYGOTE_COMMANDS_LINUX_H_
 
+#include <stddef.h>
+
 #include "base/posix/global_descriptors.h"
 #include "ipc/ipc_descriptors.h"
 

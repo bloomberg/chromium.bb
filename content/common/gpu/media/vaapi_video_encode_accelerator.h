@@ -5,9 +5,13 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_VIDEO_ENCODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_VAAPI_VIDEO_ENCODE_ACCELERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <queue>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
@@ -34,13 +38,13 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   bool Initialize(media::VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
-                  uint32 initial_bitrate,
+                  uint32_t initial_bitrate,
                   Client* client) override;
   void Encode(const scoped_refptr<media::VideoFrame>& frame,
               bool force_keyframe) override;
   void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer) override;
-  void RequestEncodingParametersChange(uint32 bitrate,
-                                       uint32 framerate) override;
+  void RequestEncodingParametersChange(uint32_t bitrate,
+                                       uint32_t framerate) override;
   void Destroy() override;
 
  private:
@@ -91,7 +95,8 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   void EncodeTask(const scoped_refptr<media::VideoFrame>& frame,
                   bool force_keyframe);
   void UseOutputBitstreamBufferTask(scoped_ptr<BitstreamBufferRef> buffer_ref);
-  void RequestEncodingParametersChangeTask(uint32 bitrate, uint32 framerate);
+  void RequestEncodingParametersChangeTask(uint32_t bitrate,
+                                           uint32_t framerate);
   void DestroyTask();
 
   // Prepare and schedule an encode job if we have an input to encode
@@ -101,7 +106,7 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   // Fill current_sps_/current_pps_ with current values.
   void UpdateSPS();
   void UpdatePPS();
-  void UpdateRates(uint32 bitrate, uint32 framerate);
+  void UpdateRates(uint32_t bitrate, uint32_t framerate);
 
   // Generate packed SPS and PPS in packed_sps_/packed_pps_, using
   // values in current_sps_/current_pps_.

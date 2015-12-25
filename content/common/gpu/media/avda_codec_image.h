@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_AVDA_CODEC_IMAGE_H_
 #define CONTENT_COMMON_GPU_MEDIA_AVDA_CODEC_IMAGE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/common/gpu/media/avda_shared_state.h"
 #include "ui/gl/gl_image.h"
 

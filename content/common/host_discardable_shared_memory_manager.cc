@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,6 +22,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/discardable_shared_memory_heap.h"
 #include "content/public/common/child_process_host.h"
@@ -204,7 +206,7 @@ bool HostDiscardableSharedMemoryManager::OnMemoryDump(
       // corresponding dump for the same segment, this will avoid to
       // double-count them in tracing. If, instead, no other process will emit a
       // dump with the same guid, the segment will be accounted to the browser.
-      const uint64 child_tracing_process_id =
+      const uint64_t child_tracing_process_id =
           ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
               child_process_id);
       base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
@@ -225,7 +227,7 @@ bool HostDiscardableSharedMemoryManager::OnMemoryDump(
         pmd->GetSharedGlobalAllocatorDump(shared_segment_guid)
             ->AddScalar("resident_size",
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                        static_cast<uint64>(resident_size));
+                        static_cast<uint64_t>(resident_size));
       }
 #endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)
     }

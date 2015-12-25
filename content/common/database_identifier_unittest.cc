@@ -4,7 +4,9 @@
 
 #include "storage/common/database/database_identifier.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

@@ -6,7 +6,8 @@
 
 // Multiply-included message file, hence no include guard.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
@@ -24,7 +25,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::GinJavaBridgeError,
 // Object IDs are generated on the browser side.
 IPC_MESSAGE_ROUTED2(GinJavaBridgeMsg_AddNamedObject,
                     std::string /* name */,
-                    int32 /* object_id */)
+                    int32_t /* object_id */)
 
 // Sent from browser to renderer to remove a Java object with the given name.
 IPC_MESSAGE_ROUTED1(GinJavaBridgeMsg_RemoveNamedObject,
@@ -34,13 +35,13 @@ IPC_MESSAGE_ROUTED1(GinJavaBridgeMsg_RemoveNamedObject,
 // the given object. The query will only succeed if inspection of injected
 // objects is enabled on the browser side.
 IPC_SYNC_MESSAGE_ROUTED1_1(GinJavaBridgeHostMsg_GetMethods,
-                           int32 /* object_id */,
+                           int32_t /* object_id */,
                            std::set<std::string> /* returned_method_names */)
 
 // Sent from renderer to browser to find out, if an object has a method with
 // the given name.
 IPC_SYNC_MESSAGE_ROUTED2_1(GinJavaBridgeHostMsg_HasMethod,
-                           int32 /* object_id */,
+                           int32_t /* object_id */,
                            std::string /* method_name */,
                            bool /* result */)
 
@@ -54,7 +55,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GinJavaBridgeHostMsg_HasMethod,
 // Some special value types that are not supported by base::Value are encoded
 // as BinaryValues via GinJavaBridgeValue.
 IPC_SYNC_MESSAGE_ROUTED3_2(GinJavaBridgeHostMsg_InvokeMethod,
-                           int32 /* object_id */,
+                           int32_t /* object_id */,
                            std::string /* method_name */,
                            base::ListValue /* arguments */,
                            base::ListValue /* result */,
@@ -71,4 +72,4 @@ IPC_SYNC_MESSAGE_ROUTED3_2(GinJavaBridgeHostMsg_InvokeMethod,
 //     the renderer side. Sending of this message informs the browser whether
 //     this expectation has failed.
 IPC_MESSAGE_ROUTED1(GinJavaBridgeHostMsg_ObjectWrapperDeleted,
-                    int32 /* object_id */)
+                    int32_t /* object_id */)

@@ -5,6 +5,7 @@
 #include "content/common/cursors/webcursor.h"
 
 #import <AppKit/AppKit.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"

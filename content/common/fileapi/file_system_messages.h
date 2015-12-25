@@ -5,6 +5,8 @@
 // IPC messages for the file system.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "storage/common/fileapi/directory_entry.h"
@@ -60,7 +62,7 @@ IPC_MESSAGE_CONTROL3(FileSystemMsg_DidReadDirectory,
                      bool /* has_more */)
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidWrite,
                      int /* request_id */,
-                     int64 /* byte count */,
+                     int64_t /* byte count */,
                      bool /* complete */)
 IPC_MESSAGE_CONTROL2(FileSystemMsg_DidFail,
                      int /* request_id */,
@@ -132,13 +134,13 @@ IPC_MESSAGE_CONTROL4(FileSystemHostMsg_Write,
                      int /* request id */,
                      GURL /* file path */,
                      std::string /* blob uuid */,
-                     int64 /* position */)
+                     int64_t /* position */)
 
 // WebFileWriter::truncate() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Truncate,
                      int /* request id */,
                      GURL /* file path */,
-                     int64 /* length */)
+                     int64_t /* length */)
 
 // Pepper's Touch() message.
 IPC_MESSAGE_CONTROL4(FileSystemHostMsg_TouchFile,

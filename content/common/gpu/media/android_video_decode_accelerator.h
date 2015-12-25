@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_ANDROID_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_ANDROID_VIDEO_DECODE_ACCELERATOR_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <queue>
@@ -35,7 +37,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     : public media::VideoDecodeAccelerator,
       public AVDAStateProvider {
  public:
-  typedef std::map<int32, media::PictureBuffer> OutputBufferMap;
+  typedef std::map<int32_t, media::PictureBuffer> OutputBufferMap;
 
   // A BackingStrategy is responsible for making a PictureBuffer's texture
   // contain the image that a MediaCodec decoder buffer tells it to.
@@ -52,7 +54,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     virtual void Cleanup(const OutputBufferMap& buffer_map) = 0;
 
     // Return the GL texture target that the PictureBuffer textures use.
-    virtual uint32 GetTextureTarget() const = 0;
+    virtual uint32_t GetTextureTarget() const = 0;
 
     // Create and return a surface texture for the MediaCodec to use.
     virtual scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() = 0;
@@ -60,7 +62,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // Make the provided PictureBuffer draw the image that is represented by
     // the decoded output buffer at codec_buffer_index.
     virtual void UseCodecBufferForPictureBuffer(
-        int32 codec_buffer_index,
+        int32_t codec_buffer_index,
         const media::PictureBuffer& picture_buffer) = 0;
 
     // Notify strategy that a picture buffer has been assigned.
@@ -96,7 +98,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
   void Destroy() override;
@@ -123,7 +125,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   bool ConfigureMediaCodec();
 
   // Sends the current picture on the surface to the client.
-  void SendCurrentSurfaceToClient(int32 codec_buffer_index, int32 bitstream_id);
+  void SendCurrentSurfaceToClient(int32_t codec_buffer_index,
+                                  int32_t bitstream_id);
 
   // Does pending IO tasks if any. Once this is called, it polls |media_codec_|
   // until it finishes pending tasks. For the polling, |kDecodePollDelay| is
@@ -195,12 +198,12 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // This keeps the free picture buffer ids which can be used for sending
   // decoded frames to the client.
-  std::queue<int32> free_picture_ids_;
+  std::queue<int32_t> free_picture_ids_;
 
   // Picture buffer ids which have been dismissed and not yet re-assigned.  Used
   // to ignore ReusePictureBuffer calls that were in flight when the
   // DismissPictureBuffer call was made.
-  std::set<int32> dismissed_picture_ids_;
+  std::set<int32_t> dismissed_picture_ids_;
 
   // The low-level decoder which Android SDK provides.
   scoped_ptr<media::VideoCodecBridge> media_codec_;
@@ -225,11 +228,11 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // buffers that have been submitted to the decoder but haven't yet produced an
   // output frame with the same timestamp. Note: there will only be one entry
   // for multiple bitstream buffers that have the same presentation timestamp.
-  std::map<base::TimeDelta, int32> bitstream_buffers_in_decoder_;
+  std::map<base::TimeDelta, int32_t> bitstream_buffers_in_decoder_;
 
   // Keeps track of bitstream ids notified to the client with
   // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
-  std::list<int32> bitstreams_notified_in_advance_;
+  std::list<int32_t> bitstreams_notified_in_advance_;
 
   // Owner of the GL context. Used to restore the context state.
   base::WeakPtr<gpu::gles2::GLES2Decoder> gl_decoder_;

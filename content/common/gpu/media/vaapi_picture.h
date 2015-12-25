@@ -10,7 +10,10 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_PICTURE_H_
 #define CONTENT_COMMON_GPU_MEDIA_VAAPI_PICTURE_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
@@ -33,8 +36,8 @@ class VaapiPicture : public base::NonThreadSafe {
   // Try to allocate the underlying resources for the picture.
   virtual bool Initialize() = 0;
 
-  int32 picture_buffer_id() const { return picture_buffer_id_; }
-  uint32 texture_id() const { return texture_id_; }
+  int32_t picture_buffer_id() const { return picture_buffer_id_; }
+  uint32_t texture_id() const { return texture_id_; }
   const gfx::Size& size() const { return size_; }
 
   virtual bool AllowOverlay() const;
@@ -53,25 +56,25 @@ class VaapiPicture : public base::NonThreadSafe {
   static linked_ptr<VaapiPicture> CreatePicture(
       const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
       const base::Callback<bool(void)> make_context_current,
-      int32 picture_buffer_id,
-      uint32 texture_id,
+      int32_t picture_buffer_id,
+      uint32_t texture_id,
       const gfx::Size& size);
 
   // Get the texture target used to bind EGLImages (either
   // GL_TEXTURE_2D on X11 or GL_TEXTURE_EXTERNAL_OES on DRM).
-  static uint32 GetGLTextureTarget();
+  static uint32_t GetGLTextureTarget();
 
  protected:
-  VaapiPicture(int32 picture_buffer_id,
-               uint32 texture_id,
+  VaapiPicture(int32_t picture_buffer_id,
+               uint32_t texture_id,
                const gfx::Size& size)
       : picture_buffer_id_(picture_buffer_id),
         texture_id_(texture_id),
         size_(size) {}
 
  private:
-  int32 picture_buffer_id_;
-  uint32 texture_id_;
+  int32_t picture_buffer_id_;
+  uint32_t texture_id_;
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiPicture);

@@ -10,9 +10,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"

@@ -5,13 +5,15 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_MANAGER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/gpu_memory_stats.h"
@@ -36,7 +38,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   GpuMemoryTrackingGroup* CreateTrackingGroup(
       base::ProcessId pid, gpu::gles2::MemoryTracker* memory_tracker);
 
-  uint64 GetTrackerMemoryUsage(gpu::gles2::MemoryTracker* tracker) const;
+  uint64_t GetTrackerMemoryUsage(gpu::gles2::MemoryTracker* tracker) const;
 
  private:
   friend class GpuMemoryManagerTest;
@@ -50,17 +52,14 @@ class CONTENT_EXPORT GpuMemoryManager :
   void SendUmaStatsToBrowser();
 
   // Get the current number of bytes allocated.
-  uint64 GetCurrentUsage() const {
-    return bytes_allocated_current_;
-  }
+  uint64_t GetCurrentUsage() const { return bytes_allocated_current_; }
 
   // GpuMemoryTrackingGroup interface
-  void TrackMemoryAllocatedChange(
-      GpuMemoryTrackingGroup* tracking_group,
-      uint64 old_size,
-      uint64 new_size);
+  void TrackMemoryAllocatedChange(GpuMemoryTrackingGroup* tracking_group,
+                                  uint64_t old_size,
+                                  uint64_t new_size);
   void OnDestroyTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
-  bool EnsureGPUMemoryAvailable(uint64 size_needed);
+  bool EnsureGPUMemoryAvailable(uint64_t size_needed);
 
   GpuChannelManager* channel_manager_;
 
@@ -68,8 +67,8 @@ class CONTENT_EXPORT GpuMemoryManager :
   TrackingGroupMap tracking_groups_;
 
   // The current total memory usage, and historical maximum memory usage
-  uint64 bytes_allocated_current_;
-  uint64 bytes_allocated_historical_max_;
+  uint64_t bytes_allocated_current_;
+  uint64_t bytes_allocated_historical_max_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
 };

@@ -23,14 +23,13 @@ GpuMemoryTrackingGroup::~GpuMemoryTrackingGroup() {
   memory_manager_->OnDestroyTrackingGroup(this);
 }
 
-void GpuMemoryTrackingGroup::TrackMemoryAllocatedChange(
-    uint64 old_size,
-    uint64 new_size) {
+void GpuMemoryTrackingGroup::TrackMemoryAllocatedChange(uint64_t old_size,
+                                                        uint64_t new_size) {
   memory_manager_->TrackMemoryAllocatedChange(
       this, old_size, new_size);
 }
 
-bool GpuMemoryTrackingGroup::EnsureGPUMemoryAvailable(uint64 size_needed) {
+bool GpuMemoryTrackingGroup::EnsureGPUMemoryAvailable(uint64_t size_needed) {
   return memory_manager_->EnsureGPUMemoryAvailable(size_needed);
 }
 

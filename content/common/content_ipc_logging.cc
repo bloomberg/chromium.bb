@@ -4,6 +4,8 @@
 
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 
+#include <stdint.h>
+
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
 #include "content/public/common/content_ipc_logging.h"
@@ -21,12 +23,12 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<base::hash_map<uint32, LogFunction> >::Leaky
+base::LazyInstance<base::hash_map<uint32_t, LogFunction>>::Leaky
     g_log_function_mapping = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-void RegisterIPCLogger(uint32 msg_id, LogFunction logger) {
+void RegisterIPCLogger(uint32_t msg_id, LogFunction logger) {
   if (g_log_function_mapping == NULL)
     IPC::Logging::set_log_function_map(g_log_function_mapping.Pointer());
   g_log_function_mapping.Get()[msg_id] = logger;

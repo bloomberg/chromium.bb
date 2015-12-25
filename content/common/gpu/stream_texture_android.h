@@ -5,7 +5,9 @@
 #ifndef CONTENT_COMMON_GPU_STREAM_TEXTURE_ANDROID_H_
 #define CONTENT_COMMON_GPU_STREAM_TEXTURE_ANDROID_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
@@ -23,13 +25,13 @@ class StreamTexture : public gl::GLImage,
                       public GpuCommandBufferStub::DestructionObserver {
  public:
   static bool Create(GpuCommandBufferStub* owner_stub,
-                     uint32 client_texture_id,
+                     uint32_t client_texture_id,
                      int stream_id);
 
  private:
   StreamTexture(GpuCommandBufferStub* owner_stub,
-                int32 route_id,
-                uint32 texture_id);
+                int32_t route_id,
+                uint32_t texture_id);
   ~StreamTexture() override;
 
   // gl::GLImage implementation:
@@ -62,7 +64,7 @@ class StreamTexture : public gl::GLImage,
 
   // IPC message handlers:
   void OnStartListening();
-  void OnEstablishPeer(int32 primary_id, int32 secondary_id);
+  void OnEstablishPeer(int32_t primary_id, int32_t secondary_id);
   void OnSetSize(const gfx::Size& size) { size_ = size; }
 
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
@@ -80,9 +82,9 @@ class StreamTexture : public gl::GLImage,
   bool has_pending_frame_;
 
   GpuCommandBufferStub* owner_stub_;
-  int32 route_id_;
+  int32_t route_id_;
   bool has_listener_;
-  uint32 texture_id_;
+  uint32_t texture_id_;
 
   base::WeakPtrFactory<StreamTexture> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(StreamTexture);

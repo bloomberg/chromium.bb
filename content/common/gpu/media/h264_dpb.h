@@ -8,9 +8,11 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_H264_DPB_H_
 #define CONTENT_COMMON_GPU_MEDIA_H264_DPB_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/filters/h264_parser.h"
 

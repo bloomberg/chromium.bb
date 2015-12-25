@@ -5,9 +5,13 @@
 // IPC messages for page rendering.
 // Multiply-included message file, hence no include guard.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
@@ -302,7 +306,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   IPC_STRUCT_MEMBER(WindowContainerType, window_container_type)
 
   // The session storage namespace ID this view should use.
-  IPC_STRUCT_MEMBER(int64, session_storage_namespace_id)
+  IPC_STRUCT_MEMBER(int64_t, session_storage_namespace_id)
 
   // The name of the resulting frame that should be created (empty if none
   // has been specified). UTF8 encoded string.
@@ -356,7 +360,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Reply)
   IPC_STRUCT_MEMBER(int32_t, main_frame_widget_route_id, MSG_ROUTING_NONE)
 
   // TODO(dcheng): No clue. This is kind of duplicated from ViewMsg_New_Params.
-  IPC_STRUCT_MEMBER(int64, cloned_session_storage_namespace_id)
+  IPC_STRUCT_MEMBER(int64_t, cloned_session_storage_namespace_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
@@ -520,7 +524,7 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   IPC_STRUCT_MEMBER(int32_t, main_frame_widget_routing_id, MSG_ROUTING_NONE)
 
   // The session storage namespace ID this view should use.
-  IPC_STRUCT_MEMBER(int64, session_storage_namespace_id)
+  IPC_STRUCT_MEMBER(int64_t, session_storage_namespace_id)
 
   // The route ID of the opener RenderFrame or RenderFrameProxy, if we need to
   // set one (MSG_ROUTING_NONE otherwise).
@@ -551,7 +555,7 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The initial page ID to use for this view, which must be larger than any
   // existing navigation that might be loaded in the view.  Page IDs are unique
   // to a view and are only updated by the renderer after this initial value.
-  IPC_STRUCT_MEMBER(int32, next_page_id)
+  IPC_STRUCT_MEMBER(int32_t, next_page_id)
 
   // The initial renderer size.
   IPC_STRUCT_MEMBER(ViewMsg_Resize_Params, initial_size)
@@ -960,13 +964,13 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PluginImeCompositionCompleted,
 
 // Sent by the browser as a reply to ViewHostMsg_SwapCompositorFrame.
 IPC_MESSAGE_ROUTED2(ViewMsg_SwapCompositorFrameAck,
-                    uint32 /* output_surface_id */,
+                    uint32_t /* output_surface_id */,
                     cc::CompositorFrameAck /* ack */)
 
 // Sent by browser to tell renderer compositor that some resources that were
 // given to the browser in a swap are not being used anymore.
 IPC_MESSAGE_ROUTED2(ViewMsg_ReclaimCompositorResources,
-                    uint32 /* output_surface_id */,
+                    uint32_t /* output_surface_id */,
                     cc::CompositorFrameAck /* ack */)
 
 // Sent by browser to give renderer compositor a new namespace ID for any
@@ -1092,7 +1096,7 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_ClosePage_ACK)
 // Notifies the browser that we have session history information.
 // page_id: unique ID that allows us to distinguish between history entries.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateState,
-                    int32 /* page_id */,
+                    int32_t /* page_id */,
                     content::PageState /* state */)
 
 // Notifies the browser that we want to show a destination url for a potential
@@ -1150,8 +1154,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateWorker,
 // detached. The browser will use this to constrain the lifecycle of worker
 // processes (SharedWorkers are shut down when their last associated document
 // is detached).
-IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached,
-                     uint64 /* document_id */)
+IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached, uint64_t /* document_id */)
 
 // Wraps an IPC message that's destined to the worker on the renderer->browser
 // hop.
@@ -1281,7 +1284,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
 
 IPC_MESSAGE_ROUTED3(
     ViewHostMsg_SwapCompositorFrame,
-    uint32 /* output_surface_id */,
+    uint32_t /* output_surface_id */,
     cc::CompositorFrame /* frame */,
     std::vector<IPC::Message> /* messages_to_deliver_with_frame */)
 

@@ -5,11 +5,15 @@
 #ifndef CONTENT_COMMON_HOST_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
 #define CONTENT_COMMON_HOST_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/memory/memory_pressure_listener.h"

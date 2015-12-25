@@ -5,7 +5,6 @@
 // IPC messages for the Media Session API.
 // Multiply-included message file, hence no include guard.
 
-#include "base/basictypes.h"
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"

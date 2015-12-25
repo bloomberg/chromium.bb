@@ -4,6 +4,8 @@
 
 #include "content/common/discardable_shared_memory_heap.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>

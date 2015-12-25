@@ -10,11 +10,15 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_WRAPPER_H_
 #define CONTENT_COMMON_GPU_MEDIA_VAAPI_WRAPPER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
@@ -198,7 +202,7 @@ class CONTENT_EXPORT VaapiWrapper
   // to the encode job.
   bool DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
                                      VASurfaceID sync_surface_id,
-                                     uint8* target_ptr,
+                                     uint8_t* target_ptr,
                                      size_t target_size,
                                      size_t* coded_data_size);
 

@@ -4,10 +4,12 @@
 
 // Multiply-included message file, so no include guard.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/webplugininfo.h"

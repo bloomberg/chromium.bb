@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 

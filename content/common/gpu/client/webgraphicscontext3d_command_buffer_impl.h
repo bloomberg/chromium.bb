@@ -5,10 +5,14 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
 #define CONTENT_COMMON_GPU_CLIENT_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -191,7 +195,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   // State needed by MaybeInitializeGL.
   scoped_refptr<GpuChannelHost> host_;
-  int32 surface_id_;
+  int32_t surface_id_;
   GURL active_url_;
   CommandBufferContextType context_type_;
 

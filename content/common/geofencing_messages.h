@@ -4,6 +4,8 @@
 
 // IPC message for geofencing
 
+#include <stdint.h>
+
 #include "content/common/geofencing_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
@@ -38,18 +40,18 @@ IPC_MESSAGE_CONTROL5(GeofencingHostMsg_RegisterRegion,
                      int /* request_id */,
                      std::string /* region_id */,
                      blink::WebCircularGeofencingRegion /* region */,
-                     int64 /* serviceworker_registration_id */)
+                     int64_t /* serviceworker_registration_id */)
 
 IPC_MESSAGE_CONTROL4(GeofencingHostMsg_UnregisterRegion,
                      int /* thread_id */,
                      int /* request_id */,
                      std::string /* region_id */,
-                     int64 /* serviceworker_registration_id */)
+                     int64_t /* serviceworker_registration_id */)
 
 IPC_MESSAGE_CONTROL3(GeofencingHostMsg_GetRegisteredRegions,
                      int /* thread_id */,
                      int /* request_id */,
-                     int64 /* serviceworker_registration_id */)
+                     int64_t /* serviceworker_registration_id */)
 
 IPC_MESSAGE_CONTROL1(GeofencingHostMsg_SetMockProvider,
                      content::GeofencingMockState /* mock_state */)

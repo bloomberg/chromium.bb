@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -417,7 +418,7 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
   // to avoid double-counting segments when both browser and child process emit
   // them. In the special case of single-process-mode, this will be the only
   // dumper active and the single ownership edge will become a no-op in the UI.
-  const uint64 tracing_process_id =
+  const uint64_t tracing_process_id =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
   base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
@@ -439,8 +440,9 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
 
 // static
 base::trace_event::MemoryAllocatorDumpGuid
-DiscardableSharedMemoryHeap::GetSegmentGUIDForTracing(uint64 tracing_process_id,
-                                                      int32 segment_id) {
+DiscardableSharedMemoryHeap::GetSegmentGUIDForTracing(
+    uint64_t tracing_process_id,
+    int32_t segment_id) {
   return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
       "discardable-x-process/%" PRIx64 "/%d", tracing_process_id, segment_id));
 }

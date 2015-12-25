@@ -5,9 +5,12 @@
 // Common IPC messages used for render processes.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/shared_memory.h"
+#include "build/build_config.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "url/gurl.h"
@@ -38,7 +41,7 @@ IPC_STRUCT_TRAITS_END()
 // certificate from a CA (<keygen> tag), and returns the signed public
 // key and challenge string.
 IPC_SYNC_MESSAGE_CONTROL3_1(RenderProcessHostMsg_Keygen,
-                            uint32 /* key size index */,
+                            uint32_t /* key size index */,
                             std::string /* challenge string */,
                             GURL /* URL of requestor */,
                             std::string /* signed public key and challenge */)
@@ -59,9 +62,9 @@ IPC_MESSAGE_CONTROL1(RenderProcessHostMsg_SuddenTerminationChanged,
 // Request that the browser load a font into shared memory for us.
 IPC_SYNC_MESSAGE_CONTROL1_3(RenderProcessHostMsg_LoadFont,
                             FontDescriptor /* font to load */,
-                            uint32 /* buffer size */,
+                            uint32_t /* buffer size */,
                             base::SharedMemoryHandle /* font data */,
-                            uint32 /* font id */)
+                            uint32_t /* font id */)
 #elif defined(OS_WIN)
 // Request that the given font characters be loaded by the browser so it's
 // cached by the OS. Please see RenderMessageFilter::OnPreCacheFontCharacters

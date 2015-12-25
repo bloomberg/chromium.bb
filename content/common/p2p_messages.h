@@ -5,6 +5,8 @@
 // IPC messages for the P2P Transport API.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/p2p_socket_type.h"
@@ -64,7 +66,7 @@ IPC_MESSAGE_CONTROL3(P2PMsg_NetworkListChanged,
                      net::IPAddressNumber /* default_ipv6_local_address */)
 
 IPC_MESSAGE_CONTROL2(P2PMsg_GetHostAddressResult,
-                     int32 /* request_id */,
+                     int32_t /* request_id */,
                      net::IPAddressList /* address list*/)
 
 IPC_MESSAGE_CONTROL3(P2PMsg_OnSocketCreated,
@@ -98,8 +100,8 @@ IPC_MESSAGE_CONTROL0(P2PHostMsg_StartNetworkNotifications)
 IPC_MESSAGE_CONTROL0(P2PHostMsg_StopNetworkNotifications)
 
 IPC_MESSAGE_CONTROL2(P2PHostMsg_GetHostAddress,
-                    std::string /* host_name */,
-                    int32 /* request_id */)
+                     std::string /* host_name */,
+                     int32_t /* request_id */)
 
 IPC_MESSAGE_CONTROL4(P2PHostMsg_CreateSocket,
                      content::P2PSocketType /* type */,
@@ -118,7 +120,7 @@ IPC_MESSAGE_CONTROL5(P2PHostMsg_Send,
                      net::IPEndPoint /* socket_address */,
                      std::vector<char> /* data */,
                      rtc::PacketOptions /* packet options */,
-                     uint64 /* packet_id */)
+                     uint64_t /* packet_id */)
 
 IPC_MESSAGE_CONTROL1(P2PHostMsg_DestroySocket,
                      int /* socket_id */)

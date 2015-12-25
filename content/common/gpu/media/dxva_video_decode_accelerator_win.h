@@ -7,15 +7,17 @@
 
 #include <d3d11.h>
 #include <d3d9.h>
+#include <stdint.h>
 // Work around bug in this header by disabling the relevant warning for it.
 // https://connect.microsoft.com/VisualStudio/feedback/details/911260/dxva2api-h-in-win8-sdk-triggers-c4201-with-w4
 #pragma warning(push)
 #pragma warning(disable:4201)
 #include <dxva2api.h>
 #pragma warning(pop)
+#include <mfidl.h>
+
 #include <list>
 #include <map>
-#include <mfidl.h>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -68,7 +70,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
   void Destroy() override;
@@ -117,7 +119,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Passes a command message to the decoder. This includes commands like
   // start of stream, end of stream, flush, drain the decoder, etc.
-  bool SendMFTMessage(MFT_MESSAGE_TYPE msg, int32 param);
+  bool SendMFTMessage(MFT_MESSAGE_TYPE msg, int32_t param);
 
   // The bulk of the decoding happens here. This function handles errors,
   // format changes and processes decoded output.
@@ -173,13 +175,13 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   void HandleResolutionChanged(int width, int height);
 
   struct DXVAPictureBuffer;
-  typedef std::map<int32, linked_ptr<DXVAPictureBuffer> > OutputBuffers;
+  typedef std::map<int32_t, linked_ptr<DXVAPictureBuffer>> OutputBuffers;
 
   // Tells the client to dismiss the stale picture buffers passed in.
   void DismissStaleBuffers();
 
   // Called after the client indicates we can recycle a stale picture buffer.
-  void DeferredDismissStaleBuffer(int32 picture_buffer_id);
+  void DeferredDismissStaleBuffer(int32_t picture_buffer_id);
 
   // Sets the state of the decoder. Called from the main thread and the decoder
   // thread. The state is changed on the main thread.
@@ -266,12 +268,12 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // holds onto the token and attempts to access it if the underlying device
   // changes.
   // TODO(ananta): This needs to be verified.
-  uint32 dev_manager_reset_token_;
+  uint32_t dev_manager_reset_token_;
 
   // Reset token for the DX11 device manager.
-  uint32 dx11_dev_manager_reset_token_;
+  uint32_t dx11_dev_manager_reset_token_;
 
-  uint32 dx11_dev_manager_reset_token_format_conversion_;
+  uint32_t dx11_dev_manager_reset_token_format_conversion_;
 
   // The EGL config to use for decoded frames.
   EGLConfig egl_config_;
@@ -284,10 +286,10 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Contains information about a decoded sample.
   struct PendingSampleInfo {
-    PendingSampleInfo(int32 buffer_id, IMFSample* sample);
+    PendingSampleInfo(int32_t buffer_id, IMFSample* sample);
     ~PendingSampleInfo();
 
-    int32 input_buffer_id;
+    int32_t input_buffer_id;
 
     // The target picture buffer id where the frame would be copied to.
     // Defaults to -1.

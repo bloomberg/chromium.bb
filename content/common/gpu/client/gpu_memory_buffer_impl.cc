@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 
 #if defined(OS_MACOSX)

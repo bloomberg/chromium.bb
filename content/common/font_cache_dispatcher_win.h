@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"

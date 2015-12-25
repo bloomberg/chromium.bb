@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <cmath>
 #include <string>
@@ -16,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -24,6 +27,7 @@
 #include "base/test/test_suite.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gl_helper_readback_support.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
@@ -154,7 +158,7 @@ class GLHelperTest : public testing::Test {
   // bitmaps.  Clamp x/y.
   int Channel(SkBitmap* pixels, int x, int y, int c) {
     if (pixels->bytesPerPixel() == 4) {
-      uint32* data =
+      uint32_t* data =
           pixels->getAddr32(std::max(0, std::min(x, pixels->width() - 1)),
                             std::max(0, std::min(y, pixels->height() - 1)));
       return (*data) >> (c * 8) & 0xff;
@@ -174,13 +178,13 @@ class GLHelperTest : public testing::Test {
     DCHECK_LT(x, pixels->width());
     DCHECK_LT(y, pixels->height());
     if (pixels->bytesPerPixel() == 4) {
-      uint32* data = pixels->getAddr32(x, y);
+      uint32_t* data = pixels->getAddr32(x, y);
       v = std::max(0, std::min(v, 255));
       *data = (*data & ~(0xffu << (c * 8))) | (v << (c * 8));
     } else {
       DCHECK_EQ(pixels->bytesPerPixel(), 1);
       DCHECK_EQ(c, 0);
-      uint8* data = pixels->getAddr8(x, y);
+      uint8_t* data = pixels->getAddr8(x, y);
       v = std::max(0, std::min(v, 255));
       *data = v;
     }
@@ -1260,7 +1264,7 @@ class GLHelperTest : public testing::Test {
     // Initialize the output bitmap with Green color.
     // When the readback is over output bitmap should have the red color.
     output_pixels.eraseColor(SK_ColorGREEN);
-    uint8* pixels = static_cast<uint8*>(output_pixels.getPixels());
+    uint8_t* pixels = static_cast<uint8_t*>(output_pixels.getPixels());
     ReadBackTexture(src_texture, src_size, pixels, color_type, async);
     bool result = IsEqual(input_pixels, output_pixels);
     if (!result) {
@@ -1420,9 +1424,9 @@ class GLHelperTest : public testing::Test {
     unsigned char* Y = truth_frame->visible_data(media::VideoFrame::kYPlane);
     unsigned char* U = truth_frame->visible_data(media::VideoFrame::kUPlane);
     unsigned char* V = truth_frame->visible_data(media::VideoFrame::kVPlane);
-    int32 y_stride = truth_frame->stride(media::VideoFrame::kYPlane);
-    int32 u_stride = truth_frame->stride(media::VideoFrame::kUPlane);
-    int32 v_stride = truth_frame->stride(media::VideoFrame::kVPlane);
+    int32_t y_stride = truth_frame->stride(media::VideoFrame::kYPlane);
+    int32_t u_stride = truth_frame->stride(media::VideoFrame::kUPlane);
+    int32_t v_stride = truth_frame->stride(media::VideoFrame::kVPlane);
     memset(Y, 0x00, y_stride * output_ysize);
     memset(U, 0x80, u_stride * output_ysize / 2);
     memset(V, 0x80, v_stride * output_ysize / 2);

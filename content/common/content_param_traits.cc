@@ -4,6 +4,8 @@
 
 #include "content/common/content_param_traits.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "net/base/ip_endpoint.h"

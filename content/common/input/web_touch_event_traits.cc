@@ -4,6 +4,8 @@
 
 #include "content/common/input/web_touch_event_traits.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 
 using blink::WebInputEvent;

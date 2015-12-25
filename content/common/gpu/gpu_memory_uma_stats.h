@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_GPU_GPU_MEMORY_UMA_STATS_H_
 #define CONTENT_COMMON_GPU_GPU_MEMORY_UMA_STATS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
 
 namespace content {
 

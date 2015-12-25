@@ -4,6 +4,7 @@
 
 #include "content/common/navigation_params.h"
 
+#include "build/build_config.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 
@@ -135,7 +136,7 @@ RequestNavigationParams::RequestNavigationParams(
     bool can_load_local_resources,
     base::Time request_time,
     const PageState& page_state,
-    int32 page_id,
+    int32_t page_id,
     int nav_entry_id,
     bool is_same_document_history_load,
     bool has_committed_real_load,

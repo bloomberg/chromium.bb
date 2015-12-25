@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_PLUGIN_CONSTANTS_WIN_H_
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 
 #if !defined(OS_WIN)
 #error "Windows-only header"

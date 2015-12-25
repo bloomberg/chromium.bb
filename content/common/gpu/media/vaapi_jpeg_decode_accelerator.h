@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_JPEG_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_VAAPI_JPEG_DECODE_ACCELERATOR_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"

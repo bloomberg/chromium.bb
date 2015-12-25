@@ -5,9 +5,13 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_IMAGE_PROCESSOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_IMAGE_PROCESSOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -127,8 +131,8 @@ class CONTENT_EXPORT V4L2ImageProcessor {
 
   media::VideoPixelFormat input_format_;
   media::VideoPixelFormat output_format_;
-  uint32 input_format_fourcc_;
-  uint32 output_format_fourcc_;
+  uint32_t input_format_fourcc_;
+  uint32_t output_format_fourcc_;
 
   size_t input_planes_count_;
   size_t output_planes_count_;

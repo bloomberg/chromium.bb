@@ -80,7 +80,7 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
     media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate,
+    uint32_t initial_bitrate,
     Client* client) {
   DCHECK(CalledOnValidThread());
   client_ = client;
@@ -89,7 +89,7 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
     return false;
   }
 
-  int32 route_id = channel_->GenerateRouteID();
+  int32_t route_id = channel_->GenerateRouteID();
   channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
 
   bool succeeded = false;
@@ -153,8 +153,8 @@ void GpuVideoEncodeAcceleratorHost::UseOutputBitstreamBuffer(
 }
 
 void GpuVideoEncodeAcceleratorHost::RequestEncodingParametersChange(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   DCHECK(CalledOnValidThread());
   if (!channel_)
     return;
@@ -252,7 +252,7 @@ void GpuVideoEncodeAcceleratorHost::PostNotifyError(
 
 void GpuVideoEncodeAcceleratorHost::Send(IPC::Message* message) {
   DCHECK(CalledOnValidThread());
-  uint32 message_type = message->type();
+  uint32_t message_type = message->type();
   if (!channel_->Send(message)) {
     PostNotifyError(FROM_HERE, kPlatformFailureError,
                     base::StringPrintf("Send(%d) failed", message_type));
@@ -260,9 +260,9 @@ void GpuVideoEncodeAcceleratorHost::Send(IPC::Message* message) {
 }
 
 void GpuVideoEncodeAcceleratorHost::OnRequireBitstreamBuffers(
-    uint32 input_count,
+    uint32_t input_count,
     const gfx::Size& input_coded_size,
-    uint32 output_buffer_size) {
+    uint32_t output_buffer_size) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "OnRequireBitstreamBuffers(): input_count=" << input_count
            << ", input_coded_size=" << input_coded_size.ToString()
@@ -273,7 +273,7 @@ void GpuVideoEncodeAcceleratorHost::OnRequireBitstreamBuffers(
   }
 }
 
-void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32 frame_id) {
+void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32_t frame_id) {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << "OnNotifyInputDone(): frame_id=" << frame_id;
   // Fun-fact: std::hash_map is not spec'd to be re-entrant; since freeing a
@@ -294,8 +294,8 @@ void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32 frame_id) {
 }
 
 void GpuVideoEncodeAcceleratorHost::OnBitstreamBufferReady(
-    int32 bitstream_buffer_id,
-    uint32 payload_size,
+    int32_t bitstream_buffer_id,
+    uint32_t payload_size,
     bool key_frame) {
   DCHECK(CalledOnValidThread());
   DVLOG(3) << "OnBitstreamBufferReady(): "

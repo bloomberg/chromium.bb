@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GL_HELPER_READBACK_SUPPORT_H_
 #define CONTENT_COMMON_GPU_CLIENT_GL_HELPER_READBACK_SUPPORT_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "content/common/gpu/client/gl_helper.h"

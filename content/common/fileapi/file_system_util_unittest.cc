@@ -4,7 +4,10 @@
 
 #include "storage/common/fileapi/file_system_util.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

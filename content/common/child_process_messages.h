@@ -5,12 +5,15 @@
 // Common IPC messages used for child processes.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/memory/shared_memory.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
@@ -174,19 +177,19 @@ IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
 // Asks the browser to create a block of shared memory for the child process to
 // fill in and pass back to the browser.
 IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_SyncAllocateSharedMemory,
-                            uint32 /* buffer size */,
+                            uint32_t /* buffer size */,
                             base::SharedMemoryHandle)
 
 // Asks the browser to create a block of shared memory for the child process to
 // fill in and pass back to the browser.
 IPC_SYNC_MESSAGE_CONTROL2_1(ChildProcessHostMsg_SyncAllocateSharedBitmap,
-                            uint32 /* buffer size */,
+                            uint32_t /* buffer size */,
                             cc::SharedBitmapId,
                             base::SharedMemoryHandle)
 
 // Informs the browser that the child allocated a shared bitmap.
 IPC_MESSAGE_CONTROL3(ChildProcessHostMsg_AllocatedSharedBitmap,
-                     uint32 /* buffer size */,
+                     uint32_t /* buffer size */,
                      base::SharedMemoryHandle,
                      cc::SharedBitmapId)
 
@@ -197,8 +200,8 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_DeletedSharedBitmap,
 // Asks the browser to create a gpu memory buffer.
 IPC_SYNC_MESSAGE_CONTROL5_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
                             gfx::GpuMemoryBufferId /* new_id */,
-                            uint32 /* width */,
-                            uint32 /* height */,
+                            uint32_t /* width */,
+                            uint32_t /* height */,
                             gfx::BufferFormat,
                             gfx::BufferUsage,
                             gfx::GpuMemoryBufferHandle)
@@ -212,7 +215,7 @@ IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
 // child process.
 IPC_SYNC_MESSAGE_CONTROL2_1(
     ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory,
-    uint32 /* size */,
+    uint32_t /* size */,
     content::DiscardableSharedMemoryId,
     base::SharedMemoryHandle)
 

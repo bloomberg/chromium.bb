@@ -4,6 +4,8 @@
 //
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
@@ -38,9 +40,8 @@ IPC_MESSAGE_CONTROL0(PluginProcessMsg_NotifyRenderersOfPendingShutdown)
 
 IPC_MESSAGE_CONTROL3(PluginProcessMsg_ClearSiteData,
                      std::string /* site */,
-                     uint64 /* flags */,
-                     uint64 /* max_age */)
-
+                     uint64_t /* flags */,
+                     uint64_t /* max_age */)
 
 //-----------------------------------------------------------------------------
 // PluginProcessHost messages
@@ -70,13 +71,13 @@ IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
 
 // Notifies the browser that the plugin has shown a window.
 IPC_MESSAGE_CONTROL3(PluginProcessHostMsg_PluginShowWindow,
-                     uint32 /* window ID */,
+                     uint32_t /* window ID */,
                      gfx::Rect /* window rect */,
                      bool /* modal */)
 
 // Notifies the browser that the plugin has hidden a window.
 IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginHideWindow,
-                     uint32 /* window ID */,
+                     uint32_t /* window ID */,
                      gfx::Rect /* window rect */)
 
 // Notifies the browser that a plugin instance has requested a cursor

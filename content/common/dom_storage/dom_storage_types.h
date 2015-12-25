@@ -5,9 +5,11 @@
 #ifndef CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_TYPES_H_
 #define CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_TYPES_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -29,12 +31,12 @@ const size_t kPerStorageAreaOverQuotaAllowance = 100 * 1024;
 
 // Value to indicate the localstorage namespace vs non-zero
 // values for sessionstorage namespaces.
-const int64 kLocalStorageNamespaceId = 0;
+const int64_t kLocalStorageNamespaceId = 0;
 
-const int64 kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;
+const int64_t kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;
 
 // Start purging memory if the number of in-memory areas exceeds this.
-const int64 kMaxInMemoryStorageAreas = 100;
+const int64_t kMaxInMemoryStorageAreas = 100;
 
 }  // namespace content
 

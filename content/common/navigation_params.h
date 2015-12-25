@@ -5,10 +5,12 @@
 #ifndef CONTENT_COMMON_NAVIGATION_PARAMS_H_
 #define CONTENT_COMMON_NAVIGATION_PARAMS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/public/common/page_state.h"
@@ -212,7 +214,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           bool can_load_local_resources,
                           base::Time request_time,
                           const PageState& page_state,
-                          int32 page_id,
+                          int32_t page_id,
                           int nav_entry_id,
                           bool is_same_document_history_load,
                           bool has_committed_real_load,
@@ -247,7 +249,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // Forward, and Reload navigations should have a valid page_id.  If the load
   // succeeds, then this page_id will be reflected in the resultant
   // FrameHostMsg_DidCommitProvisionalLoad message.
-  int32 page_id;
+  int32_t page_id;
 
   // For browser-initiated navigations, this is the unique id of the
   // NavigationEntry being navigated to. (For renderer-initiated navigations it

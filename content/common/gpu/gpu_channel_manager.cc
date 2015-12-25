@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
@@ -114,15 +115,15 @@ int GpuChannelManager::GenerateRouteID() {
   return ++last_id;
 }
 
-void GpuChannelManager::AddRoute(int32 routing_id, IPC::Listener* listener) {
+void GpuChannelManager::AddRoute(int32_t routing_id, IPC::Listener* listener) {
   router_.AddRoute(routing_id, listener);
 }
 
-void GpuChannelManager::RemoveRoute(int32 routing_id) {
+void GpuChannelManager::RemoveRoute(int32_t routing_id) {
   router_.RemoveRoute(routing_id);
 }
 
-GpuChannel* GpuChannelManager::LookupChannel(int32 client_id) const {
+GpuChannel* GpuChannelManager::LookupChannel(int32_t client_id) const {
   const auto& it = gpu_channels_.find(client_id);
   return it != gpu_channels_.end() ? it->second : nullptr;
 }
@@ -196,9 +197,9 @@ void GpuChannelManager::OnCloseChannel(
 
 void GpuChannelManager::OnCreateViewCommandBuffer(
     const gfx::GLSurfaceHandle& window,
-    int32 client_id,
+    int32_t client_id,
     const GPUCreateCommandBufferConfig& init_params,
-    int32 route_id) {
+    int32_t route_id) {
   CreateCommandBufferResult result = CREATE_COMMAND_BUFFER_FAILED;
 
   auto it = gpu_channels_.find(client_id);

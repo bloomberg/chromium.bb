@@ -24,9 +24,11 @@ using gpu::MemoryAllocation;
 namespace content {
 namespace {
 
-const uint64 kBytesAllocatedStep = 16 * 1024 * 1024;
+const uint64_t kBytesAllocatedStep = 16 * 1024 * 1024;
 
-void TrackValueChanged(uint64 old_size, uint64 new_size, uint64* total_size) {
+void TrackValueChanged(uint64_t old_size,
+                       uint64_t new_size,
+                       uint64_t* total_size) {
   DCHECK(new_size > old_size || *total_size >= (old_size - new_size));
   *total_size += (new_size - old_size);
 }
@@ -45,8 +47,8 @@ GpuMemoryManager::~GpuMemoryManager() {
 
 void GpuMemoryManager::TrackMemoryAllocatedChange(
     GpuMemoryTrackingGroup* tracking_group,
-    uint64 old_size,
-    uint64 new_size) {
+    uint64_t old_size,
+    uint64_t new_size) {
   TrackValueChanged(old_size, new_size, &tracking_group->size_);
   TrackValueChanged(old_size, new_size, &bytes_allocated_current_);
 
@@ -59,12 +61,12 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
   }
 }
 
-bool GpuMemoryManager::EnsureGPUMemoryAvailable(uint64 /* size_needed */) {
+bool GpuMemoryManager::EnsureGPUMemoryAvailable(uint64_t /* size_needed */) {
   // TODO: Check if there is enough space. Lose contexts until there is.
   return true;
 }
 
-uint64 GpuMemoryManager::GetTrackerMemoryUsage(
+uint64_t GpuMemoryManager::GetTrackerMemoryUsage(
     gpu::gles2::MemoryTracker* tracker) const {
   TrackingGroupMap::const_iterator tracking_group_it =
       tracking_groups_.find(tracker);

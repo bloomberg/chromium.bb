@@ -57,7 +57,7 @@ static bool MakeDecoderContextCurrent(
   return true;
 }
 
-GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(int32 host_route_id,
+GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(int32_t host_route_id,
                                                      GpuCommandBufferStub* stub)
     : host_route_id_(host_route_id),
       stub_(stub),
@@ -79,7 +79,7 @@ void GpuVideoEncodeAccelerator::Initialize(
     media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate,
+    uint32_t initial_bitrate,
     IPC::Message* init_done_msg) {
   DVLOG(2) << "GpuVideoEncodeAccelerator::Initialize(): "
               "input_format=" << input_format
@@ -153,9 +153,10 @@ void GpuVideoEncodeAccelerator::RequireBitstreamBuffers(
   output_buffer_size_ = output_buffer_size;
 }
 
-void GpuVideoEncodeAccelerator::BitstreamBufferReady(int32 bitstream_buffer_id,
-                                                     size_t payload_size,
-                                                     bool key_frame) {
+void GpuVideoEncodeAccelerator::BitstreamBufferReady(
+    int32_t bitstream_buffer_id,
+    size_t payload_size,
+    bool key_frame) {
   Send(new AcceleratedVideoEncoderHostMsg_BitstreamBufferReady(
       host_route_id_, bitstream_buffer_id, payload_size, key_frame));
 }
@@ -259,7 +260,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
     return;
   }
 
-  const uint32 aligned_offset =
+  const uint32_t aligned_offset =
       params.buffer_offset % base::SysInfo::VMAllocationGranularity();
   base::CheckedNumeric<off_t> map_offset = params.buffer_offset;
   map_offset -= aligned_offset;
@@ -280,7 +281,8 @@ void GpuVideoEncodeAccelerator::OnEncode(
     return;
   }
 
-  uint8* shm_memory = reinterpret_cast<uint8*>(shm->memory()) + aligned_offset;
+  uint8_t* shm_memory =
+      reinterpret_cast<uint8_t*>(shm->memory()) + aligned_offset;
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalSharedMemory(
           input_format_,
@@ -318,8 +320,8 @@ void GpuVideoEncodeAccelerator::OnEncode2(
             params.gpu_memory_buffer_handles.size());
 
   bool map_result = true;
-  uint8* data[media::VideoFrame::kMaxPlanes];
-  int32 strides[media::VideoFrame::kMaxPlanes];
+  uint8_t* data[media::VideoFrame::kMaxPlanes];
+  int32_t strides[media::VideoFrame::kMaxPlanes];
   ScopedVector<gfx::GpuMemoryBuffer> buffers;
   const auto& handles = params.gpu_memory_buffer_handles;
   for (size_t i = 0; i < handles.size(); ++i) {
@@ -340,7 +342,7 @@ void GpuVideoEncodeAccelerator::OnEncode2(
       continue;
     }
 
-    data[i] = reinterpret_cast<uint8*>(buffer->memory(0));
+    data[i] = reinterpret_cast<uint8_t*>(buffer->memory(0));
     strides[i] = buffer->stride(0);
     buffers.push_back(buffer.release());
   }
@@ -389,9 +391,9 @@ void GpuVideoEncodeAccelerator::OnEncode2(
 }
 
 void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
-    int32 buffer_id,
+    int32_t buffer_id,
     base::SharedMemoryHandle buffer_handle,
-    uint32 buffer_size) {
+    uint32_t buffer_size) {
   DVLOG(3) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
               "buffer_id=" << buffer_id
            << ", buffer_size=" << buffer_size;
@@ -419,8 +421,8 @@ void GpuVideoEncodeAccelerator::OnDestroy() {
 }
 
 void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   DVLOG(2) << "GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(): "
               "bitrate=" << bitrate
            << ", framerate=" << framerate;
@@ -430,7 +432,7 @@ void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
 }
 
 void GpuVideoEncodeAccelerator::EncodeFrameFinished(
-    int32 frame_id,
+    int32_t frame_id,
     scoped_ptr<base::SharedMemory> shm) {
   Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
                                                           frame_id));
@@ -438,7 +440,7 @@ void GpuVideoEncodeAccelerator::EncodeFrameFinished(
 }
 
 void GpuVideoEncodeAccelerator::EncodeFrameFinished2(
-    int32 frame_id,
+    int32_t frame_id,
     ScopedVector<gfx::GpuMemoryBuffer> buffers) {
   // TODO(emircan): Consider calling Unmap() in dtor.
   for (const auto& buffer : buffers)

@@ -4,6 +4,8 @@
 
 #include "content/common/inter_process_time_ticks_converter.h"
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,19 +16,19 @@ namespace content {
 namespace {
 
 struct TestParams {
-  int64 local_lower_bound;
-  int64 remote_lower_bound;
-  int64 remote_upper_bound;
-  int64 local_upper_bound;
-  int64 test_time;
-  int64 test_delta;
+  int64_t local_lower_bound;
+  int64_t remote_lower_bound;
+  int64_t remote_upper_bound;
+  int64_t local_upper_bound;
+  int64_t test_time;
+  int64_t test_delta;
 };
 
 struct TestResults {
-  int64 result_time;
-  int32 result_delta;
+  int64_t result_time;
+  int32_t result_delta;
   bool is_skew_additive;
-  int64 skew;
+  int64_t skew;
 };
 
 TestResults RunTest(const TestParams& params) {

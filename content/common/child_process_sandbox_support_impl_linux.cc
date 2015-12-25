@@ -4,11 +4,11 @@
 
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 
+#include <stddef.h>
 #include <sys/stat.h>
 
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
@@ -74,7 +74,7 @@ void GetRenderStyleForStrike(const char* family,
   const bool bold = size_and_style & 1;
   const bool italic = size_and_style & 2;
   const int pixel_size = size_and_style >> 2;
-  if (pixel_size > std::numeric_limits<uint16>::max())
+  if (pixel_size > std::numeric_limits<uint16_t>::max())
     return;
 
   base::Pickle request;

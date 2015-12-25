@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
 #define CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
 
+#include "base/macros.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
 
 namespace content {

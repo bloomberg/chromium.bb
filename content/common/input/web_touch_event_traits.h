@@ -5,7 +5,6 @@
 #ifndef CONTENT_COMMON_INPUT_WEB_TOUCH_EVENT_TRAITS_H_
 #define CONTENT_COMMON_INPUT_WEB_TOUCH_EVENT_TRAITS_H_
 
-#include "base/basictypes.h"
 #include "content/common/input/scoped_web_input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 

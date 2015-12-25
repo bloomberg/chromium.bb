@@ -4,10 +4,10 @@
 
 #include "content/common/cross_site_document_classifier.h"
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_switches.h"
@@ -137,6 +137,8 @@ bool CrossSiteDocumentClassifier::SniffForHTML(StringPiece data) {
   // signatures. This can weaken our document block policy, but we can
   // break less websites.
   // TODO(dsjang): parameterize |net::SniffForHTML| with an option
+#include <stddef.h>
+
   // that decides whether to include <!-- or not, so that we can
   // remove this function.
   // TODO(dsjang): Once CrossSiteDocumentClassifier is moved into the browser

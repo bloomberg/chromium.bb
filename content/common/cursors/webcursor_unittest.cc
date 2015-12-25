@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include <stddef.h>
 
 #include "base/pickle.h"
+#include "build/build_config.h"
 #include "content/common/cursors/webcursor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 using blink::WebCursorInfo;
 

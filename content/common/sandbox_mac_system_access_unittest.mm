@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <openssl/rand.h>
+#include <stdint.h>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"

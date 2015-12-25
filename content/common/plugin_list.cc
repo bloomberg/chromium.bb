@@ -4,6 +4,8 @@
 
 #include "content/common/plugin_list.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/command_line.h"
@@ -13,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/mime_util.h"
 #include "url/gurl.h"

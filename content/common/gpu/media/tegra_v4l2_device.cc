@@ -19,22 +19,24 @@ const char kDecoderDevice[] = "/dev/tegra_avpchannel";
 const char kEncoderDevice[] = "/dev/nvhost-msenc";
 }
 
-typedef int32 (*TegraV4L2Open)(const char* name, int32 flags);
-typedef int32 (*TegraV4L2Close)(int32 fd);
-typedef int32 (*TegraV4L2Ioctl)(int32 fd, unsigned long cmd, ...);
-typedef int32 (*TegraV4L2Poll)(int32 fd, bool poll_device, bool* event_pending);
-typedef int32 (*TegraV4L2SetDevicePollInterrupt)(int32 fd);
-typedef int32 (*TegraV4L2ClearDevicePollInterrupt)(int32 fd);
+typedef int32_t (*TegraV4L2Open)(const char* name, int32_t flags);
+typedef int32_t (*TegraV4L2Close)(int32_t fd);
+typedef int32_t (*TegraV4L2Ioctl)(int32_t fd, unsigned long cmd, ...);
+typedef int32_t (*TegraV4L2Poll)(int32_t fd,
+                                 bool poll_device,
+                                 bool* event_pending);
+typedef int32_t (*TegraV4L2SetDevicePollInterrupt)(int32_t fd);
+typedef int32_t (*TegraV4L2ClearDevicePollInterrupt)(int32_t fd);
 typedef void* (*TegraV4L2Mmap)(void* addr,
                                size_t length,
                                int prot,
                                int flags,
                                int fd,
                                unsigned int offset);
-typedef int32 (*TegraV4L2Munmap)(void* addr, size_t length);
-typedef int32 (*TegraV4L2UseEglImage)(int fd,
-                                      unsigned int buffer_index,
-                                      void* egl_image);
+typedef int32_t (*TegraV4L2Munmap)(void* addr, size_t length);
+typedef int32_t (*TegraV4L2UseEglImage)(int fd,
+                                        unsigned int buffer_index,
+                                        void* egl_image);
 
 #define TEGRAV4L2_SYM(name) TegraV4L2##name TegraV4L2_##name = NULL
 
@@ -213,7 +215,7 @@ EGLBoolean TegraV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
 
 GLenum TegraV4L2Device::GetTextureTarget() { return GL_TEXTURE_2D; }
 
-uint32 TegraV4L2Device::PreferredInputFormat() {
+uint32_t TegraV4L2Device::PreferredInputFormat() {
   // TODO(posciak): We should support "dontcare" returns here once we
   // implement proper handling (fallback, negotiation) for this in users.
   CHECK_EQ(type_, kEncoder);

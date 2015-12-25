@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_MAP_H_
 #define CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_MAP_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/memory/ref_counted.h"

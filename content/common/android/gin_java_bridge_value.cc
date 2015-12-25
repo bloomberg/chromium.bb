@@ -14,12 +14,12 @@ namespace {
 // else than holding GinJavaBridgeValues.  If a need for such scenario ever
 // emerges, the best solution would be to extend GinJavaBridgeValue to be able
 // to wrap raw BinaryValues.
-const uint32 kHeaderMagic = 0xBEEFCAFE;
+const uint32_t kHeaderMagic = 0xBEEFCAFE;
 
 #pragma pack(push, 4)
 struct Header : public base::Pickle::Header {
-  uint32 magic;
-  int32 type;
+  uint32_t magic;
+  int32_t type;
 };
 #pragma pack(pop)
 
@@ -47,7 +47,7 @@ scoped_ptr<base::BinaryValue> GinJavaBridgeValue::CreateNonFiniteValue(
 
 // static
 scoped_ptr<base::BinaryValue> GinJavaBridgeValue::CreateObjectIDValue(
-    int32 in_value) {
+    int32_t in_value) {
   GinJavaBridgeValue gin_value(TYPE_OBJECT_ID);
   gin_value.pickle_.WriteInt(in_value);
   return make_scoped_ptr(gin_value.SerializeToBinaryValue());
@@ -99,7 +99,7 @@ bool GinJavaBridgeValue::GetAsNonFinite(float* out_value) const {
   }
 }
 
-bool GinJavaBridgeValue::GetAsObjectID(int32* out_object_id) const {
+bool GinJavaBridgeValue::GetAsObjectID(int32_t* out_object_id) const {
   if (GetType() == TYPE_OBJECT_ID) {
     base::PickleIterator iter(pickle_);
     return iter.ReadInt(out_object_id);

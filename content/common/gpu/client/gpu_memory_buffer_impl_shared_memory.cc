@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/memory.h"

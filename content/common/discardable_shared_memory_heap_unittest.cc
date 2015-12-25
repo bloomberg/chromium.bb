@@ -4,6 +4,8 @@
 
 #include "content/common/discardable_shared_memory_heap.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/process/process_metrics.h"

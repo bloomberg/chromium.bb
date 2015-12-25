@@ -6,8 +6,8 @@
 #define CONTENT_COMMON_GPU_CLIENT_GL_HELPER_H_
 
 #include "base/atomicops.h"
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

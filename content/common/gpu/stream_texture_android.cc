@@ -24,10 +24,9 @@ using gpu::gles2::TextureManager;
 using gpu::gles2::TextureRef;
 
 // static
-bool StreamTexture::Create(
-    GpuCommandBufferStub* owner_stub,
-    uint32 client_texture_id,
-    int stream_id) {
+bool StreamTexture::Create(GpuCommandBufferStub* owner_stub,
+                           uint32_t client_texture_id,
+                           int stream_id) {
   GLES2Decoder* decoder = owner_stub->decoder();
   TextureManager* texture_manager =
       decoder->GetContextGroup()->texture_manager();
@@ -55,8 +54,8 @@ bool StreamTexture::Create(
 }
 
 StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
-                             int32 route_id,
-                             uint32 texture_id)
+                             int32_t route_id,
+                             uint32_t texture_id)
     : surface_texture_(gfx::SurfaceTexture::Create(texture_id)),
       size_(0, 0),
       has_valid_frame_(false),
@@ -208,7 +207,7 @@ void StreamTexture::OnStartListening() {
   has_listener_ = true;
 }
 
-void StreamTexture::OnEstablishPeer(int32 primary_id, int32 secondary_id) {
+void StreamTexture::OnEstablishPeer(int32_t primary_id, int32_t secondary_id) {
   if (!owner_stub_)
     return;
 

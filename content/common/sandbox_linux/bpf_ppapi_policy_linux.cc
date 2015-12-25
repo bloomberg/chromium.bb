@@ -6,7 +6,6 @@
 
 #include <errno.h>
 
-#include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"

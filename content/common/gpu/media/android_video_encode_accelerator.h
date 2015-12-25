@@ -5,12 +5,14 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_ANDROID_VIDEO_ENCODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_ANDROID_VIDEO_ENCODE_ACCELERATOR_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <list>
 #include <queue>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"

@@ -10,11 +10,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/webplugininfo.h"
 

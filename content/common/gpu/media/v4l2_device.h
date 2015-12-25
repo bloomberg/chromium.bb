@@ -9,6 +9,9 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_DEVICE_H_
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_DEVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "media/base/video_decoder_config.h"
@@ -29,10 +32,11 @@ class CONTENT_EXPORT V4L2Device
     : public base::RefCountedThreadSafe<V4L2Device> {
  public:
   // Utility format conversion functions
-  static media::VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32 format);
-  static uint32 VideoPixelFormatToV4L2PixFmt(media::VideoPixelFormat format);
-  static uint32 VideoCodecProfileToV4L2PixFmt(media::VideoCodecProfile profile,
-                                              bool slice_based);
+  static media::VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32_t format);
+  static uint32_t VideoPixelFormatToV4L2PixFmt(media::VideoPixelFormat format);
+  static uint32_t VideoCodecProfileToV4L2PixFmt(
+      media::VideoCodecProfile profile,
+      bool slice_based);
   static uint32_t V4L2PixFmtToDrmFormat(uint32_t format);
   // Convert format requirements requested by a V4L2 device to gfx::Size.
   static gfx::Size CodedSizeFromV4L2Format(struct v4l2_format format);
@@ -107,7 +111,7 @@ class CONTENT_EXPORT V4L2Device
   virtual GLenum GetTextureTarget() = 0;
 
   // Returns the preferred V4L2 input format or 0 if don't care.
-  virtual uint32 PreferredInputFormat() = 0;
+  virtual uint32_t PreferredInputFormat() = 0;
 
   // Get minimum and maximum resolution for fourcc |pixelformat| and store to
   // |min_resolution| and |max_resolution|.

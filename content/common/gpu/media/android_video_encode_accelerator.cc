@@ -329,7 +329,7 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
   }
   scoped_refptr<VideoFrame> frame = base::get<0>(input);
 
-  uint8* buffer = NULL;
+  uint8_t* buffer = NULL;
   size_t capacity = 0;
   media_codec_->GetInputBuffer(input_buf_index, &buffer, &capacity);
 
@@ -339,10 +339,11 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
                     "Failed to get input buffer: " << input_buf_index,
                     kPlatformFailureError);
 
-  uint8* dst_y = buffer;
+  uint8_t* dst_y = buffer;
   int dst_stride_y = frame->stride(VideoFrame::kYPlane);
-  uint8* dst_uv = buffer + frame->stride(VideoFrame::kYPlane) *
-                               frame->rows(VideoFrame::kYPlane);
+  uint8_t* dst_uv =
+      buffer +
+      frame->stride(VideoFrame::kYPlane) * frame->rows(VideoFrame::kYPlane);
   int dst_stride_uv = frame->stride(VideoFrame::kUPlane) * 2;
   // Why NV12?  Because COLOR_FORMAT_YUV420_SEMIPLANAR.  See comment at other
   // mention of that constant.

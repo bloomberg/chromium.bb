@@ -5,7 +5,6 @@
 // IPC messages for mojo.
 // Multiply-included message file, hence no include guard.
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"

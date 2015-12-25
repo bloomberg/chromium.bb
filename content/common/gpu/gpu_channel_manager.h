@@ -5,11 +5,14 @@
 #ifndef CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <string>
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -86,8 +89,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   void LoseAllContexts();
 
   int GenerateRouteID();
-  void AddRoute(int32 routing_id, IPC::Listener* listener);
-  void RemoveRoute(int32 routing_id);
+  void AddRoute(int32_t routing_id, IPC::Listener* listener);
+  void RemoveRoute(int32_t routing_id);
 
   gpu::gles2::ProgramCache* program_cache();
   gpu::gles2::ShaderTranslatorCache* shader_translator_cache();
@@ -95,7 +98,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 
   GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
 
-  GpuChannel* LookupChannel(int32 client_id) const;
+  GpuChannel* LookupChannel(int32_t client_id) const;
 
   gfx::GLSurface* GetDefaultOffscreenSurface();
 
@@ -140,19 +143,21 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   // These objects manage channels to individual renderer processes there is
   // one channel for each renderer process that has connected to this GPU
   // process.
-  base::ScopedPtrHashMap<int32, scoped_ptr<GpuChannel>> gpu_channels_;
+  base::ScopedPtrHashMap<int32_t, scoped_ptr<GpuChannel>> gpu_channels_;
 
  private:
   // Message handlers.
   bool OnControlMessageReceived(const IPC::Message& msg);
   void OnEstablishChannel(const GpuMsg_EstablishChannel_Params& params);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
-  void OnVisibilityChanged(int32 render_view_id, int32 client_id, bool visible);
+  void OnVisibilityChanged(int32_t render_view_id,
+                           int32_t client_id,
+                           bool visible);
   void OnCreateViewCommandBuffer(
       const gfx::GLSurfaceHandle& window,
-      int32 client_id,
+      int32_t client_id,
       const GPUCreateCommandBufferConfig& init_params,
-      int32 route_id);
+      int32_t route_id);
   void OnLoadedShader(const std::string& shader);
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
   void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id, int client_id);

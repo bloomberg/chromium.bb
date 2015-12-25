@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_test_common.h"
@@ -23,8 +26,8 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
 };
 
 TEST_F(GpuChannelManagerTest, EstablishChannel) {
-  int32 kClientId = 1;
-  uint64 kClientTracingId = 1;
+  int32_t kClientId = 1;
+  uint64_t kClientTracingId = 1;
 
   ASSERT_TRUE(channel_manager());
 
@@ -52,10 +55,10 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
 }
 
 TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
-  int32 kClientId1 = 111;
-  uint64 kClientTracingId1 = 11111;
-  int32 kClientId2 = 222;
-  uint64 kClientTracingId2 = 22222;
+  int32_t kClientId1 = 111;
+  uint64_t kClientTracingId1 = 11111;
+  int32_t kClientId2 = 222;
+  uint64_t kClientTracingId2 = 22222;
   ValueState value_state1;
   value_state1.int_value[0] = 1111;
   value_state1.int_value[1] = 0;

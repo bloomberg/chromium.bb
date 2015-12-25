@@ -5,7 +5,8 @@
 // IPC messages for access to MIDI hardware.
 // Multiply-included message file, hence no include guard.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
@@ -36,8 +37,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::midi::Result, media::midi::Result::MAX)
 IPC_MESSAGE_CONTROL0(MidiHostMsg_StartSession)
 
 IPC_MESSAGE_CONTROL3(MidiHostMsg_SendData,
-                     uint32 /* port */,
-                     std::vector<uint8> /* data */,
+                     uint32_t /* port */,
+                     std::vector<uint8_t> /* data */,
                      double /* timestamp */)
 
 IPC_MESSAGE_CONTROL0(MidiHostMsg_EndSession)
@@ -51,19 +52,18 @@ IPC_MESSAGE_CONTROL1(MidiMsg_AddOutputPort,
                      media::midi::MidiPortInfo /* output port */)
 
 IPC_MESSAGE_CONTROL2(MidiMsg_SetInputPortState,
-                     uint32 /* port */,
+                     uint32_t /* port */,
                      media::midi::MidiPortState /* state */)
 
 IPC_MESSAGE_CONTROL2(MidiMsg_SetOutputPortState,
-                     uint32 /* port */,
+                     uint32_t /* port */,
                      media::midi::MidiPortState /* state */)
 
 IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted, media::midi::Result /* result */)
 
 IPC_MESSAGE_CONTROL3(MidiMsg_DataReceived,
-                     uint32 /* port */,
-                     std::vector<uint8> /* data */,
+                     uint32_t /* port */,
+                     std::vector<uint8_t> /* data */,
                      double /* timestamp */)
 
-IPC_MESSAGE_CONTROL1(MidiMsg_AcknowledgeSentData,
-                     uint32 /* bytes sent */)
+IPC_MESSAGE_CONTROL1(MidiMsg_AcknowledgeSentData, uint32_t /* bytes sent */)

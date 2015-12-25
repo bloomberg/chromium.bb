@@ -5,8 +5,11 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
 #define CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
@@ -40,7 +43,7 @@ class GpuVideoDecodeAcceleratorHost
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
   void Destroy() override;
@@ -60,18 +63,18 @@ class GpuVideoDecodeAcceleratorHost
   // IPC handlers, proxying media::VideoDecodeAccelerator::Client for the GPU
   // process.  Should not be called directly.
   void OnCdmAttached(bool success);
-  void OnBitstreamBufferProcessed(int32 bitstream_buffer_id);
-  void OnProvidePictureBuffer(uint32 num_requested_buffers,
+  void OnBitstreamBufferProcessed(int32_t bitstream_buffer_id);
+  void OnProvidePictureBuffer(uint32_t num_requested_buffers,
                               const gfx::Size& dimensions,
-                              uint32 texture_target);
-  void OnDismissPictureBuffer(int32 picture_buffer_id);
-  void OnPictureReady(int32 picture_buffer_id,
-                      int32 bitstream_buffer_id,
+                              uint32_t texture_target);
+  void OnDismissPictureBuffer(int32_t picture_buffer_id);
+  void OnPictureReady(int32_t picture_buffer_id,
+                      int32_t bitstream_buffer_id,
                       const gfx::Rect& visible_rect,
                       bool allow_overlay);
   void OnFlushDone();
   void OnResetDone();
-  void OnNotifyError(uint32 error);
+  void OnNotifyError(uint32_t error);
 
   // Unowned reference to the GpuChannelHost to send IPC messages to the GPU
   // process.  |channel_| outlives |impl_|, so the reference is always valid as
@@ -79,7 +82,7 @@ class GpuVideoDecodeAcceleratorHost
   GpuChannelHost* channel_;
 
   // Route ID for the associated decoder in the GPU process.
-  int32 decoder_route_id_;
+  int32_t decoder_route_id_;
 
   // The client that will receive callbacks from the decoder.
   Client* client_;

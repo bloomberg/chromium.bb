@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_INTER_PROCESS_TIME_TICKS_CONVERTER_H_
 #define CONTENT_COMMON_INTER_PROCESS_TIME_TICKS_CONVERTER_H_
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 
@@ -72,16 +74,16 @@ class CONTENT_EXPORT InterProcessTimeTicksConverter {
   base::TimeDelta GetSkewForMetrics() const;
 
  private:
-  int64 Convert(int64 value) const;
+  int64_t Convert(int64_t value) const;
 
   // The local time which |remote_lower_bound_| is mapped to.
-  int64 local_base_time_;
+  int64_t local_base_time_;
 
-  int64 numerator_;
-  int64 denominator_;
+  int64_t numerator_;
+  int64_t denominator_;
 
-  int64 remote_lower_bound_;
-  int64 remote_upper_bound_;
+  int64_t remote_lower_bound_;
+  int64_t remote_upper_bound_;
 };
 
 class CONTENT_EXPORT LocalTimeDelta {
@@ -114,9 +116,9 @@ class CONTENT_EXPORT LocalTimeTicks {
  private:
   friend class InterProcessTimeTicksConverter;
 
-  LocalTimeTicks(int64 value) : value_(value) {}
+  LocalTimeTicks(int64_t value) : value_(value) {}
 
-  int64 value_;
+  int64_t value_;
 };
 
 class CONTENT_EXPORT RemoteTimeDelta {
@@ -147,9 +149,9 @@ class CONTENT_EXPORT RemoteTimeTicks {
  private:
   friend class InterProcessTimeTicksConverter;
 
-  RemoteTimeTicks(int64 value) : value_(value) {}
+  RemoteTimeTicks(int64_t value) : value_(value) {}
 
-  int64 value_;
+  int64_t value_;
 };
 
 }  // namespace content

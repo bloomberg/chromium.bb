@@ -8,6 +8,10 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_TEGRA_V4L2_DEVICE_H_
 #define CONTENT_COMMON_GPU_MEDIA_TEGRA_V4L2_DEVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "content/common/gpu/media/v4l2_device.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -42,7 +46,7 @@ class TegraV4L2Device : public V4L2Device {
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
                              EGLImageKHR egl_image) override;
   GLenum GetTextureTarget() override;
-  uint32 PreferredInputFormat() override;
+  uint32_t PreferredInputFormat() override;
 
  private:
   ~TegraV4L2Device() override;

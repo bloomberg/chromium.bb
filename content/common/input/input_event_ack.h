@@ -5,7 +5,8 @@
 #ifndef CONTENT_COMMON_INPUT_INPUT_EVENT_ACK_H_
 #define CONTENT_COMMON_INPUT_INPUT_EVENT_ACK_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/input/did_overscroll_params.h"
@@ -21,14 +22,14 @@ struct CONTENT_EXPORT InputEventAck {
                 InputEventAckState state,
                 const ui::LatencyInfo& latency,
                 scoped_ptr<content::DidOverscrollParams> overscroll,
-                uint32 unique_touch_event_id);
+                uint32_t unique_touch_event_id);
   InputEventAck(blink::WebInputEvent::Type type,
                 InputEventAckState state,
                 const ui::LatencyInfo& latency,
-                uint32 unique_touch_event_id);
+                uint32_t unique_touch_event_id);
   InputEventAck(blink::WebInputEvent::Type type,
                 InputEventAckState state,
-                uint32 unique_touch_event_id);
+                uint32_t unique_touch_event_id);
   InputEventAck(blink::WebInputEvent::Type type, InputEventAckState state);
   InputEventAck();
   ~InputEventAck();
@@ -37,7 +38,7 @@ struct CONTENT_EXPORT InputEventAck {
   InputEventAckState state;
   ui::LatencyInfo latency;
   scoped_ptr<content::DidOverscrollParams> overscroll;
-  uint32 unique_touch_event_id;
+  uint32_t unique_touch_event_id;
 };
 
 }  // namespace content

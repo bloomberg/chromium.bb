@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/client/gl_helper_scaling.h"
 
+#include <stddef.h>
+
 #include <deque>
 #include <string>
 #include <vector>
@@ -11,6 +13,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"

@@ -4,6 +4,8 @@
 
 #include "content/common/set_process_title.h"
 
+#include <stddef.h>
+
 #include "build/build_config.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS)

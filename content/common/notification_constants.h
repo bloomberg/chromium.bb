@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_NOTIFICATION_CONSTANTS_H_
 #define CONTENT_COMMON_NOTIFICATION_CONSTANTS_H_
 
+#include <stddef.h>
+
 namespace content {
 
 // Maximum number of actions on a Platform Notification.

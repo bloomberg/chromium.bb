@@ -12,11 +12,13 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -158,8 +160,8 @@ RenderingHelperParams::RenderingHelperParams()
 
 RenderingHelperParams::~RenderingHelperParams() {}
 
-VideoFrameTexture::VideoFrameTexture(uint32 texture_target,
-                                     uint32 texture_id,
+VideoFrameTexture::VideoFrameTexture(uint32_t texture_target,
+                                     uint32_t texture_id,
                                      const base::Closure& no_longer_needed_cb)
     : texture_target_(texture_target),
       texture_id_(texture_id),
@@ -552,8 +554,8 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   done->Signal();
 }
 
-void RenderingHelper::CreateTexture(uint32 texture_target,
-                                    uint32* texture_id,
+void RenderingHelper::CreateTexture(uint32_t texture_target,
+                                    uint32_t* texture_id,
                                     const gfx::Size& size,
                                     base::WaitableEvent* done) {
   if (base::MessageLoop::current() != message_loop_) {
@@ -594,8 +596,8 @@ static inline void GLSetViewPort(const gfx::Rect& area) {
   glScissor(area.x(), area.y(), area.width(), area.height());
 }
 
-void RenderingHelper::RenderThumbnail(uint32 texture_target,
-                                      uint32 texture_id) {
+void RenderingHelper::RenderThumbnail(uint32_t texture_target,
+                                      uint32_t texture_id) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
   const int width = thumbnail_size_.width();
   const int height = thumbnail_size_.height();
@@ -640,7 +642,8 @@ void RenderingHelper::QueueVideoFrame(
   }
 }
 
-void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
+void RenderingHelper::RenderTexture(uint32_t texture_target,
+                                    uint32_t texture_id) {
   // The ExternalOES sampler is bound to GL_TEXTURE1 and the Texture2D sampler
   // is bound to GL_TEXTURE0.
   if (texture_target == GL_TEXTURE_2D) {
@@ -654,7 +657,7 @@ void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-void RenderingHelper::DeleteTexture(uint32 texture_id) {
+void RenderingHelper::DeleteTexture(uint32_t texture_id) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
   glDeleteTextures(1, &texture_id);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
@@ -875,7 +878,7 @@ void RenderingHelper::ScheduleNextRenderContent() {
     // |scheduled_render_time_|.
     target = std::max(now + vsync_interval_, scheduled_render_time_);
 
-    int64 intervals = (target - vsync_timebase_) / vsync_interval_;
+    int64_t intervals = (target - vsync_timebase_) / vsync_interval_;
     target = vsync_timebase_ + intervals * vsync_interval_;
   } else {
     target = std::max(now, scheduled_render_time_);

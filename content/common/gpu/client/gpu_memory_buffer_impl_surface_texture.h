@@ -6,7 +6,9 @@
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
 
 #include <android/native_window.h>
+#include <stddef.h>
 
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 

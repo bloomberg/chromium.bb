@@ -4,9 +4,10 @@
 
 #include "content/common/plugin_list.h"
 
+#include <stddef.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
 #include "base/files/file_util.h"
@@ -21,6 +22,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "content/common/plugin_constants_win.h"
 
 namespace content {

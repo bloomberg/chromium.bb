@@ -4,6 +4,8 @@
 
 #include "content/public/common/user_agent.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -45,9 +47,9 @@ std::string BuildOSCpuInfo() {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS) ||\
     defined(OS_ANDROID)
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
+  int32_t os_major_version = 0;
+  int32_t os_minor_version = 0;
+  int32_t os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                &os_minor_version,
                                                &os_bugfix_version);
@@ -61,7 +63,7 @@ std::string BuildOSCpuInfo() {
   std::string cputype;
   // special case for biarch systems
   if (strcmp(unixinfo.machine, "x86_64") == 0 &&
-      sizeof(void*) == sizeof(int32)) {  // NOLINT
+      sizeof(void*) == sizeof(int32_t)) {  // NOLINT
     cputype.assign("i686 (x86_64)");
   } else {
     cputype.assign(unixinfo.machine);

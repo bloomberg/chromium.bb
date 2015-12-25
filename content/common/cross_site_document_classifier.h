@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_CROSS_SITE_DOCUMENT_CLASSIFIER_H_
 #define CONTENT_COMMON_CROSS_SITE_DOCUMENT_CLASSIFIER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"

@@ -5,6 +5,8 @@
 // IPC messages for HTML5 Blob and Stream.
 // Multiply-included message file, hence no include guard.
 
+#include <stddef.h>
+
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"

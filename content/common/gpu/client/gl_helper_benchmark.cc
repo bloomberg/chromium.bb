@@ -8,6 +8,7 @@
 // but cannot really "fail". There is no point in making these tests part
 // of any test automation run.
 
+#include <stddef.h>
 #include <stdio.h>
 #include <cmath>
 #include <string>
@@ -20,8 +21,10 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
 #include "content/public/test/unittest_test_suite.h"

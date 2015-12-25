@@ -5,6 +5,9 @@
 // Multiply-included message file, hence no include guard.
 
 #include "ipc/ipc_message_macros.h"
+
+#include <stdint.h>
+
 #include "content/common/appcache_interfaces.h"
 
 #define IPC_MESSAGE_START AppCacheMsgStart
@@ -74,9 +77,9 @@ IPC_MESSAGE_CONTROL2(AppCacheHostMsg_SetSpawningHostId,
 // 'opt_manifest_url' the manifest url specified in the <html> tag if any
 IPC_MESSAGE_CONTROL4(AppCacheHostMsg_SelectCache,
                      int /* host_id */,
-                     GURL  /* document_url */,
-                     int64 /* appcache_document_was_loaded_from */,
-                     GURL  /* opt_manifest_url */)
+                     GURL /* document_url */,
+                     int64_t /* appcache_document_was_loaded_from */,
+                     GURL /* opt_manifest_url */)
 
 // Initiates worker specific cache selection algorithm for the given host.
 IPC_MESSAGE_CONTROL3(AppCacheHostMsg_SelectCacheForWorker,
@@ -85,13 +88,13 @@ IPC_MESSAGE_CONTROL3(AppCacheHostMsg_SelectCacheForWorker,
                      int /* parent_host_id */)
 IPC_MESSAGE_CONTROL2(AppCacheHostMsg_SelectCacheForSharedWorker,
                      int /* host_id */,
-                     int64 /* appcache_id */)
+                     int64_t /* appcache_id */)
 
 // Informs the browser of a 'foreign' entry in an appcache.
 IPC_MESSAGE_CONTROL3(AppCacheHostMsg_MarkAsForeignEntry,
                      int /* host_id */,
-                     GURL  /* document_url */,
-                     int64 /* appcache_document_was_loaded_from */)
+                     GURL /* document_url */,
+                     int64_t /* appcache_document_was_loaded_from */)
 
 // Returns the status of the appcache associated with host_id.
 IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheHostMsg_GetStatus,

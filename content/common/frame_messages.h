@@ -5,6 +5,10 @@
 // IPC messages for interacting with frames.
 // Multiply-included message file, hence no include guard.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "build/build_config.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "content/common/content_export.h"
@@ -210,7 +214,7 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   IPC_STRUCT_MEMBER(bool, is_post)
 
   // The POST body identifier. -1 if it doesn't exist.
-  IPC_STRUCT_MEMBER(int64, post_id)
+  IPC_STRUCT_MEMBER(int64_t, post_id)
 
   // Whether the frame navigation resulted in no change to the documents within
   // the page. For example, the navigation may have just resulted in scrolling
@@ -525,7 +529,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdateOpener, int /* opener_routing_id */)
 
 // Requests that the RenderFrame send back a response after waiting for the
 // commit, activation and frame swap of the current DOM tree in blink.
-IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64 /* id */)
+IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 
 // Instructs the renderer to create a new RenderFrame object.
 IPC_MESSAGE_CONTROL1(FrameMsg_NewFrame, FrameMsg_NewFrame_Params /* params */)
@@ -794,10 +798,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
 // Blink and JavaScript error messages to log to the console
 // or debugger UI.
 IPC_MESSAGE_ROUTED4(FrameHostMsg_AddMessageToConsole,
-                    int32, /* log level */
+                    int32_t,        /* log level */
                     base::string16, /* msg */
-                    int32, /* line number */
-                    base::string16 /* source id */ )
+                    int32_t,        /* line number */
+                    base::string16 /* source id */)
 
 // Sent by the renderer when a child frame is created in the renderer.
 //
@@ -805,12 +809,12 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_AddMessageToConsole,
 // sent when the frame is detached from the DOM.
 IPC_SYNC_MESSAGE_CONTROL5_1(
     FrameHostMsg_CreateChildFrame,
-    int32 /* parent_routing_id */,
+    int32_t /* parent_routing_id */,
     blink::WebTreeScopeType /* scope */,
     std::string /* frame_name */,
     blink::WebSandboxFlags /* sandbox flags */,
     blink::WebFrameOwnerProperties /* frame_owner_properties */,
-    int32 /* new_routing_id */)
+    int32_t /* new_routing_id */)
 
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
 // detached from the DOM.
@@ -905,19 +909,18 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidAccessInitialDocument)
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeOpener, int /* opener_routing_id */)
 
 // Notifies the browser that a page id was assigned.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAssignPageId,
-                    int32 /* page_id */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAssignPageId, int32_t /* page_id */)
 
 // Notifies the browser that sandbox flags have changed for a subframe of this
 // frame.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeSandboxFlags,
-                    int32 /* subframe_routing_id */,
+                    int32_t /* subframe_routing_id */,
                     blink::WebSandboxFlags /* updated_flags */)
 
 // Notifies the browser that frame owner properties have changed for a subframe
 // of this frame.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeFrameOwnerProperties,
-                    int32 /* subframe_routing_id */,
+                    int32_t /* subframe_routing_id */,
                     blink::WebFrameOwnerProperties /* frame_owner_properties */)
 
 // Changes the title for the page in the UI when the page is navigated or the
@@ -1062,13 +1065,13 @@ IPC_SYNC_MESSAGE_CONTROL1_3(FrameHostMsg_OpenChannelToPepperPlugin,
 // Message from the renderer to the browser indicating the in-process instance
 // has been created.
 IPC_MESSAGE_CONTROL2(FrameHostMsg_DidCreateInProcessInstance,
-                     int32 /* instance */,
+                     int32_t /* instance */,
                      content::PepperRendererInstanceData /* instance_data */)
 
 // Message from the renderer to the browser indicating the in-process instance
 // has been destroyed.
 IPC_MESSAGE_CONTROL1(FrameHostMsg_DidDeleteInProcessInstance,
-                     int32 /* instance */)
+                     int32_t /* instance */)
 
 // Notification that a plugin has created a new plugin instance. The parameters
 // indicate:
@@ -1087,7 +1090,7 @@ IPC_MESSAGE_CONTROL1(FrameHostMsg_DidDeleteInProcessInstance,
 IPC_SYNC_MESSAGE_CONTROL4_0(
     FrameHostMsg_DidCreateOutOfProcessPepperInstance,
     int /* plugin_child_id */,
-    int32 /* pp_instance */,
+    int32_t /* pp_instance */,
     content::PepperRendererInstanceData /* creation_data */,
     bool /* is_external */)
 
@@ -1095,7 +1098,7 @@ IPC_SYNC_MESSAGE_CONTROL4_0(
 // the "DidCreate" message above.
 IPC_MESSAGE_CONTROL3(FrameHostMsg_DidDeleteOutOfProcessPepperInstance,
                      int /* plugin_child_id */,
-                     int32 /* pp_instance */,
+                     int32_t /* pp_instance */,
                      bool /* is_external */)
 
 // A renderer sends this to the browser process when it wants to
@@ -1111,7 +1114,7 @@ IPC_MESSAGE_CONTROL2(FrameHostMsg_OpenChannelToPpapiBroker,
 // a plugin instance for the Plugin Power Saver feature.
 IPC_MESSAGE_CONTROL3(FrameHostMsg_PluginInstanceThrottleStateChange,
                      int /* plugin_child_id */,
-                     int32 /* pp_instance */,
+                     int32_t /* pp_instance */,
                      bool /* is_throttled */)
 #endif  // defined(ENABLE_PLUGINS)
 
@@ -1211,13 +1214,13 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SetSelectedColorInColorChooser,
 
 // Notifies the browser that media has started/stopped playing.
 IPC_MESSAGE_ROUTED4(FrameHostMsg_MediaPlayingNotification,
-                    int64 /* player_cookie, distinguishes instances */,
+                    int64_t /* player_cookie, distinguishes instances */,
                     bool /* has_video */,
                     bool /* has_audio */,
                     bool /* is_remote */)
 
 IPC_MESSAGE_ROUTED1(FrameHostMsg_MediaPausedNotification,
-                    int64 /* player_cookie, distinguishes instances */)
+                    int64_t /* player_cookie, distinguishes instances */)
 
 // Notify browser the theme color has been changed.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeThemeColor,
@@ -1263,7 +1266,7 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_BeginNavigation,
 
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64 /* id */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
 
 // Puts the browser into "tab fullscreen" mode for the sending renderer.
 // See the comment in chrome/browser/ui/browser.h for more details.

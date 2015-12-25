@@ -19,8 +19,8 @@ namespace content {
 linked_ptr<VaapiPicture> VaapiPicture::CreatePicture(
     const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
     const base::Callback<bool(void)> make_context_current,
-    int32 picture_buffer_id,
-    uint32 texture_id,
+    int32_t picture_buffer_id,
+    uint32_t texture_id,
     const gfx::Size& size) {
   linked_ptr<VaapiPicture> picture;
 #if defined(USE_X11)
@@ -42,7 +42,7 @@ bool VaapiPicture::AllowOverlay() const {
 }
 
 // static
-uint32 VaapiPicture::GetGLTextureTarget() {
+uint32_t VaapiPicture::GetGLTextureTarget() {
 #if defined(USE_OZONE)
   return GL_TEXTURE_EXTERNAL_OES;
 #else

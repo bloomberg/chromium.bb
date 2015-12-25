@@ -28,10 +28,11 @@
 // The channel ID value is stored in the routing ID member which is available
 // when we use the IPC_MESSAGE_ROUTED macro though it's unintended use.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/common/websocket.h"
 #include "ipc/ipc_message_macros.h"
@@ -135,8 +136,7 @@ IPC_MESSAGE_ROUTED3(WebSocketMsg_SendFrame,
 // Both sides start a new channel with a quota of 0, and must wait for a
 // FlowControl message before calling SendFrame. The total available quota on
 // one side must never exceed 0x7FFFFFFFFFFFFFFF tokens.
-IPC_MESSAGE_ROUTED1(WebSocketMsg_FlowControl,
-                    int64 /* quota */)
+IPC_MESSAGE_ROUTED1(WebSocketMsg_FlowControl, int64_t /* quota */)
 
 // Drop the channel.
 //

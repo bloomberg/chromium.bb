@@ -16,8 +16,8 @@ InterProcessTimeTicksConverter::InterProcessTimeTicksConverter(
     const RemoteTimeTicks& remote_upper_bound)
     : remote_lower_bound_(remote_lower_bound.value_),
       remote_upper_bound_(remote_upper_bound.value_) {
-  int64 target_range = local_upper_bound.value_ - local_lower_bound.value_;
-  int64 source_range = remote_upper_bound.value_ - remote_lower_bound.value_;
+  int64_t target_range = local_upper_bound.value_ - local_lower_bound.value_;
+  int64_t source_range = remote_upper_bound.value_ - remote_lower_bound.value_;
   DCHECK_GE(target_range, 0);
   DCHECK_GE(source_range, 0);
   if (source_range <= target_range) {
@@ -65,7 +65,7 @@ LocalTimeDelta InterProcessTimeTicksConverter::ToLocalTimeDelta(
   return LocalTimeDelta(Convert(remote_delta.value_));
 }
 
-int64 InterProcessTimeTicksConverter::Convert(int64 value) const {
+int64_t InterProcessTimeTicksConverter::Convert(int64_t value) const {
   if (value <= 0) {
     return value;
   }

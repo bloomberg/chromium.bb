@@ -4,6 +4,7 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>

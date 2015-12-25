@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ipc/ipc_message_macros.h"
@@ -82,7 +83,7 @@ class GpuJpegDecodeAccelerator::Client
     : public media::JpegDecodeAccelerator::Client,
       public base::NonThreadSafe {
  public:
-  Client(content::GpuJpegDecodeAccelerator* owner, int32 route_id)
+  Client(content::GpuJpegDecodeAccelerator* owner, int32_t route_id)
       : owner_(owner->AsWeakPtr()), route_id_(route_id) {}
 
   ~Client() override { DCHECK(CalledOnValidThread()); }
@@ -116,7 +117,7 @@ class GpuJpegDecodeAccelerator::Client
 
  private:
   base::WeakPtr<content::GpuJpegDecodeAccelerator> owner_;
-  int32 route_id_;
+  int32_t route_id_;
   scoped_ptr<media::JpegDecodeAccelerator> accelerator_;
 };
 
@@ -136,7 +137,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   void OnFilterAdded(IPC::Sender* sender) override { sender_ = sender; }
 
   bool OnMessageReceived(const IPC::Message& msg) override {
-    const int32 route_id = msg.routing_id();
+    const int32_t route_id = msg.routing_id();
     if (client_map_.find(route_id) == client_map_.end())
       return false;
 
@@ -159,7 +160,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
     return sender_->Send(message);
   }
 
-  void AddClientOnIOThread(int32 route_id,
+  void AddClientOnIOThread(int32_t route_id,
                            Client* client,
                            IPC::Message* reply_msg) {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -170,7 +171,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
     SendOnIOThread(reply_msg);
   }
 
-  void OnDestroyOnIOThread(const int32* route_id) {
+  void OnDestroyOnIOThread(const int32_t* route_id) {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
     const auto& it = client_map_.find(*route_id);
     DCHECK(it != client_map_.end());
@@ -189,7 +190,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
       owner_->ClientRemoved();
   }
 
-  void NotifyDecodeStatusOnIOThread(int32 route_id,
+  void NotifyDecodeStatusOnIOThread(int32_t route_id,
                                     int32_t buffer_id,
                                     media::JpegDecodeAccelerator::Error error) {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -198,7 +199,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   }
 
   void OnDecodeOnIOThread(
-      const int32* route_id,
+      const int32_t* route_id,
       const AcceleratedJpegDecoderMsg_Decode_Params& params) {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
     DCHECK(route_id);
@@ -283,7 +284,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   }
 
  private:
-  using ClientMap = base::hash_map<int32, Client*>;
+  using ClientMap = base::hash_map<int32_t, Client*>;
 
   // Must be static because this method runs after destructor.
   static void DeleteClientMapOnChildThread(scoped_ptr<ClientMap> client_map) {
@@ -323,7 +324,7 @@ GpuJpegDecodeAccelerator::~GpuJpegDecodeAccelerator() {
   }
 }
 
-void GpuJpegDecodeAccelerator::AddClient(int32 route_id,
+void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
                                          IPC::Message* reply_msg) {
   DCHECK(CalledOnValidThread());
 
@@ -375,7 +376,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32 route_id,
 }
 
 void GpuJpegDecodeAccelerator::NotifyDecodeStatus(
-    int32 route_id,
+    int32_t route_id,
     int32_t buffer_id,
     media::JpegDecodeAccelerator::Error error) {
   DCHECK(CalledOnValidThread());

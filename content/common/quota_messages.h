@@ -4,7 +4,8 @@
 
 // Multiply-included message file, hence no include guard.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "content/public/common/storage_quota_params.h"
 #include "ipc/ipc_message_macros.h"
 #include "storage/common/quota/quota_types.h"
@@ -28,13 +29,13 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_MESSAGE_CONTROL3(QuotaMsg_DidGrantStorageQuota,
                      int /* request_id */,
-                     int64 /* current_usage */,
-                     int64 /* granted_quota */)
+                     int64_t /* current_usage */,
+                     int64_t /* granted_quota */)
 
 IPC_MESSAGE_CONTROL3(QuotaMsg_DidQueryStorageUsageAndQuota,
                      int /* request_id */,
-                     int64 /* current_usage */,
-                     int64 /* current_quota */)
+                     int64_t /* current_usage */,
+                     int64_t /* current_quota */)
 
 IPC_MESSAGE_CONTROL2(QuotaMsg_DidFail,
                      int /* request_id */,

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/process/process.h"
 #include "cc/surfaces/surface.h"
 #include "content/common/content_export.h"

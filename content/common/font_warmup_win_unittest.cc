@@ -4,6 +4,9 @@
 
 #include "content/common/font_warmup_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"

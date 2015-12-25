@@ -13,8 +13,10 @@
 #include <sys/mman.h>
 
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/common/gpu/media/generic_v4l2_device.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -101,7 +103,7 @@ void GenericV4L2Device::Munmap(void* addr, unsigned int len) {
 bool GenericV4L2Device::SetDevicePollInterrupt() {
   DVLOG(3) << "SetDevicePollInterrupt()";
 
-  const uint64 buf = 1;
+  const uint64_t buf = 1;
   if (HANDLE_EINTR(write(device_poll_interrupt_fd_.get(), &buf, sizeof(buf))) ==
       -1) {
     DPLOG(ERROR) << "SetDevicePollInterrupt(): write() failed";
@@ -113,7 +115,7 @@ bool GenericV4L2Device::SetDevicePollInterrupt() {
 bool GenericV4L2Device::ClearDevicePollInterrupt() {
   DVLOG(3) << "ClearDevicePollInterrupt()";
 
-  uint64 buf;
+  uint64_t buf;
   if (HANDLE_EINTR(read(device_poll_interrupt_fd_.get(), &buf, sizeof(buf))) ==
       -1) {
     if (errno == EAGAIN) {
@@ -283,7 +285,7 @@ EGLBoolean GenericV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
 
 GLenum GenericV4L2Device::GetTextureTarget() { return GL_TEXTURE_EXTERNAL_OES; }
 
-uint32 GenericV4L2Device::PreferredInputFormat() {
+uint32_t GenericV4L2Device::PreferredInputFormat() {
   // TODO(posciak): We should support "dontcare" returns here once we
   // implement proper handling (fallback, negotiation) for this in users.
   CHECK_EQ(type_, kEncoder);

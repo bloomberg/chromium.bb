@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/message_port_types.h"

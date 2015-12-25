@@ -5,12 +5,15 @@
 #ifndef CONTENT_COMMON_CHILD_PROCESS_HOST_IMPL_H_
 #define CONTENT_COMMON_CHILD_PROCESS_HOST_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "build/build_config.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
@@ -71,7 +74,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   // Never returns MemoryDumpManager::kInvalidTracingProcessId.
   // Returns only ChildProcessHost::kBrowserTracingProcessId in single-process
   // mode.
-  static uint64 ChildProcessUniqueIdToTracingProcessId(int child_process_id);
+  static uint64_t ChildProcessUniqueIdToTracingProcessId(int child_process_id);
 
   // ChildProcessHost implementation
   bool Send(IPC::Message* message) override;
@@ -90,17 +93,17 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
 
   // IPC::Listener methods:
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
   void OnBadMessageReceived(const IPC::Message& message) override;
 
   // Message handlers:
   void OnShutdownRequest();
-  void OnAllocateSharedMemory(uint32 buffer_size,
+  void OnAllocateSharedMemory(uint32_t buffer_size,
                               base::SharedMemoryHandle* handle);
   void OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                 uint32 width,
-                                 uint32 height,
+                                 uint32_t width,
+                                 uint32_t height,
                                  gfx::BufferFormat format,
                                  gfx::BufferUsage usage,
                                  gfx::GpuMemoryBufferHandle* handle);

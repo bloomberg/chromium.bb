@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SANDBOX_LINUX_BPF_PPAPI_POLICY_LINUX_H_
 #define CONTENT_COMMON_SANDBOX_LINUX_BPF_PPAPI_POLICY_LINUX_H_
 
+#include "base/macros.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 
 namespace content {

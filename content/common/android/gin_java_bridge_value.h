@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_ANDROID_GIN_JAVA_BRIDGE_VALUE_H_
 #define CONTENT_COMMON_ANDROID_GIN_JAVA_BRIDGE_VALUE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/values.h"
@@ -36,7 +39,7 @@ class GinJavaBridgeValue {
   CONTENT_EXPORT static scoped_ptr<base::BinaryValue> CreateNonFiniteValue(
       double in_value);
   CONTENT_EXPORT static scoped_ptr<base::BinaryValue> CreateObjectIDValue(
-      int32 in_value);
+      int32_t in_value);
 
   // De-serialization
   CONTENT_EXPORT static bool ContainsGinJavaBridgeValue(
@@ -48,7 +51,7 @@ class GinJavaBridgeValue {
   CONTENT_EXPORT bool IsType(Type type) const;
 
   CONTENT_EXPORT bool GetAsNonFinite(float* out_value) const;
-  CONTENT_EXPORT bool GetAsObjectID(int32* out_object_id) const;
+  CONTENT_EXPORT bool GetAsObjectID(int32_t* out_object_id) const;
 
  private:
   explicit GinJavaBridgeValue(Type type);

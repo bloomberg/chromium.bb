@@ -5,8 +5,12 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_GPU_VIDEO_ENCODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_GPU_VIDEO_ENCODE_ACCELERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
@@ -32,7 +36,7 @@ class GpuVideoEncodeAccelerator
       public media::VideoEncodeAccelerator::Client,
       public GpuCommandBufferStub::DestructionObserver {
  public:
-  GpuVideoEncodeAccelerator(int32 host_route_id, GpuCommandBufferStub* stub);
+  GpuVideoEncodeAccelerator(int32_t host_route_id, GpuCommandBufferStub* stub);
   ~GpuVideoEncodeAccelerator() override;
 
   // Initialize this accelerator with the given parameters and send
@@ -40,7 +44,7 @@ class GpuVideoEncodeAccelerator
   void Initialize(media::VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
-                  uint32 initial_bitrate,
+                  uint32_t initial_bitrate,
                   IPC::Message* init_done_msg);
 
   // IPC::Listener implementation
@@ -50,7 +54,7 @@ class GpuVideoEncodeAccelerator
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
                                size_t output_buffer_size) override;
-  void BitstreamBufferReady(int32 bitstream_buffer_id,
+  void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
                             bool key_frame) override;
   void NotifyError(media::VideoEncodeAccelerator::Error error) override;
@@ -77,15 +81,16 @@ class GpuVideoEncodeAccelerator
   // process.
   void OnEncode(const AcceleratedVideoEncoderMsg_Encode_Params& params);
   void OnEncode2(const AcceleratedVideoEncoderMsg_Encode_Params2& params);
-  void OnUseOutputBitstreamBuffer(int32 buffer_id,
+  void OnUseOutputBitstreamBuffer(int32_t buffer_id,
                                   base::SharedMemoryHandle buffer_handle,
-                                  uint32 buffer_size);
-  void OnRequestEncodingParametersChange(uint32 bitrate, uint32 framerate);
+                                  uint32_t buffer_size);
+  void OnRequestEncodingParametersChange(uint32_t bitrate, uint32_t framerate);
 
   void OnDestroy();
 
-  void EncodeFrameFinished(int32 frame_id, scoped_ptr<base::SharedMemory> shm);
-  void EncodeFrameFinished2(int32 frame_id,
+  void EncodeFrameFinished(int32_t frame_id,
+                           scoped_ptr<base::SharedMemory> shm);
+  void EncodeFrameFinished2(int32_t frame_id,
                             ScopedVector<gfx::GpuMemoryBuffer> buffers);
   void Send(IPC::Message* message);
   // Helper for replying to the creation request.

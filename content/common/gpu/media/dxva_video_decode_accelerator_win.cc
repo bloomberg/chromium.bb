@@ -14,6 +14,7 @@
 #include <mfapi.h>
 #include <mferror.h>
 #include <ntverp.h>
+#include <stddef.h>
 #include <wmcodecdsp.h>
 
 #include "base/base_paths_win.h"
@@ -24,12 +25,14 @@
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/video/video_decode_accelerator.h"
@@ -204,8 +207,10 @@ static IMFSample* CreateEmptySampleWithBuffer(int buffer_length, int align) {
 // If duration and sample time are not known, provide 0.
 // |min_size| specifies the minimum size of the buffer (might be required by
 // the decoder for input). If no alignment is required, provide 0.
-static IMFSample* CreateInputSample(const uint8* stream, int size,
-                                    int min_size, int alignment) {
+static IMFSample* CreateInputSample(const uint8_t* stream,
+                                    int size,
+                                    int min_size,
+                                    int alignment) {
   CHECK(stream);
   CHECK_GT(size, 0);
   base::win::ScopedComPtr<IMFSample> sample;
@@ -219,7 +224,7 @@ static IMFSample* CreateInputSample(const uint8* stream, int size,
 
   DWORD max_length = 0;
   DWORD current_length = 0;
-  uint8* destination = NULL;
+  uint8_t* destination = NULL;
   hr = buffer->Lock(&destination, &max_length, &current_length);
   RETURN_ON_HR_FAILURE(hr, "Failed to lock buffer", NULL);
 
@@ -244,10 +249,8 @@ static IMFSample* CreateSampleFromInputBuffer(
   RETURN_ON_FAILURE(shm.Map(bitstream_buffer.size()),
                     "Failed in base::SharedMemory::Map", NULL);
 
-  return CreateInputSample(reinterpret_cast<const uint8*>(shm.memory()),
-                           bitstream_buffer.size(),
-                           stream_size,
-                           alignment);
+  return CreateInputSample(reinterpret_cast<const uint8_t*>(shm.memory()),
+                           bitstream_buffer.size(), stream_size, alignment);
 }
 
 // Helper function to create a COM object instance from a DLL. The alternative
@@ -595,9 +598,9 @@ void DXVAVideoDecodeAccelerator::DXVAPictureBuffer::CopySurfaceComplete(
 }
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
-    int32 buffer_id, IMFSample* sample)
-    : input_buffer_id(buffer_id),
-      picture_buffer_id(-1) {
+    int32_t buffer_id,
+    IMFSample* sample)
+    : input_buffer_id(buffer_id), picture_buffer_id(-1) {
   output_sample.Attach(sample);
 }
 
@@ -917,8 +920,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
   }
 }
 
-void DXVAVideoDecodeAccelerator::ReusePictureBuffer(
-    int32 picture_buffer_id) {
+void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   State state = GetState();
@@ -1267,9 +1269,8 @@ bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
     const GUID& subtype) {
   base::win::ScopedComPtr<IMFMediaType> out_media_type;
 
-  for (uint32 i = 0;
-       SUCCEEDED(decoder_->GetOutputAvailableType(0, i,
-                                                  out_media_type.Receive()));
+  for (uint32_t i = 0; SUCCEEDED(
+           decoder_->GetOutputAvailableType(0, i, out_media_type.Receive()));
        ++i) {
     GUID out_subtype = {0};
     HRESULT hr = out_media_type->GetGUID(MF_MT_SUBTYPE, &out_subtype);
@@ -1286,7 +1287,7 @@ bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
 }
 
 bool DXVAVideoDecodeAccelerator::SendMFTMessage(MFT_MESSAGE_TYPE msg,
-                                                int32 param) {
+                                                int32_t param) {
   HRESULT hr = decoder_->ProcessMessage(msg, param);
   return SUCCEEDED(hr);
 }
@@ -1817,7 +1818,7 @@ void DXVAVideoDecodeAccelerator::DismissStaleBuffers() {
 }
 
 void DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer(
-    int32 picture_buffer_id) {
+    int32_t picture_buffer_id) {
   OutputBuffers::iterator it = stale_output_picture_buffers_.find(
       picture_buffer_id);
   DCHECK(it != stale_output_picture_buffers_.end());
@@ -2224,10 +2225,10 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
 
   base::win::ScopedComPtr<IMFMediaType> out_media_type;
 
-  for (uint32 i = 0;
-        SUCCEEDED(video_format_converter_mft_->GetOutputAvailableType(0, i,
-                                                  out_media_type.Receive()));
-        ++i) {
+  for (uint32_t i = 0;
+       SUCCEEDED(video_format_converter_mft_->GetOutputAvailableType(
+           0, i, out_media_type.Receive()));
+       ++i) {
     GUID out_subtype = {0};
     hr = out_media_type->GetGUID(MF_MT_SUBTYPE, &out_subtype);
     RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get output major type",

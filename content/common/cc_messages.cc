@@ -4,6 +4,8 @@
 
 #include "content/common/cc_messages.h"
 
+#include <stddef.h>
+
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/draw_quad.h"

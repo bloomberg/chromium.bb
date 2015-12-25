@@ -492,7 +492,8 @@ bool WebInputEventTraits::WillReceiveAckFromRenderer(
   }
 }
 
-uint32 WebInputEventTraits::GetUniqueTouchEventId(const WebInputEvent& event) {
+uint32_t WebInputEventTraits::GetUniqueTouchEventId(
+    const WebInputEvent& event) {
   if (WebInputEvent::isTouchEventType(event.type)) {
     return static_cast<const WebTouchEvent&>(event).uniqueTouchEventId;
   }

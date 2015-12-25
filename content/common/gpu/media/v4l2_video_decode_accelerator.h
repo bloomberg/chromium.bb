@@ -9,10 +9,14 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DECODE_ACCELERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -87,7 +91,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
   void Destroy() override;
@@ -147,7 +151,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
     void* address;          // mmap() address.
     size_t length;          // mmap() length.
     off_t bytes_used;       // bytes filled in the mmap() segment.
-    int32 input_id;         // triggering input_id as given to Decode().
+    int32_t input_id;       // triggering input_id as given to Decode().
   };
 
   // Record for output buffers.
@@ -158,7 +162,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
     bool at_client;         // held by client.
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.
     EGLSyncKHR egl_sync;    // sync the compositor's use of the EGLImage.
-    int32 picture_id;       // picture buffer id as returned to PictureReady().
+    int32_t picture_id;     // picture buffer id as returned to PictureReady().
     bool cleared;           // Whether the texture is cleared and safe to render
                             // from. See TextureManager for details.
   };
@@ -176,7 +180,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // DecodeBufferInitial() or DecodeBufferContinue() as appropriate.
   void DecodeBufferTask();
   // Advance to the next fragment that begins a frame.
-  bool AdvanceFrameFragment(const uint8* data, size_t size, size_t* endpos);
+  bool AdvanceFrameFragment(const uint8_t* data, size_t size, size_t* endpos);
   // Schedule another DecodeBufferTask() if we're behind.
   void ScheduleDecodeBufferTaskIfNeeded();
 
@@ -210,7 +214,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // Process a ReusePictureBuffer() API call.  The API call create an EGLSync
   // object on the main (GPU process) thread; we will record this object so we
   // can wait on it before reusing the buffer.
-  void ReusePictureBufferTask(int32 picture_buffer_id,
+  void ReusePictureBufferTask(int32_t picture_buffer_id,
                               scoped_ptr<EGLSyncKHRRef> egl_sync_ref);
 
   // Flush() task.  Child thread should not submit any more buffers until it

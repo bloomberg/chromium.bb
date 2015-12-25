@@ -5,8 +5,11 @@
 #ifndef CONTENT_COMMON_ANDROID_ADDRESS_PARSER_INTERNAL_H_
 #define CONTENT_COMMON_ANDROID_ADDRESS_PARSER_INTERNAL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string_tokenizer.h"
 #include "content/common/content_export.h"
 

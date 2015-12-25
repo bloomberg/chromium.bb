@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_CONTENT_SWITCHES_INTERNAL_H_
 #define CONTENT_COMMON_CONTENT_SWITCHES_INTERNAL_H_
 
+#include "build/build_config.h"
 #include "content/public/common/web_preferences.h"
 
 namespace content {

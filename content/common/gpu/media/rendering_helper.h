@@ -5,13 +5,17 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_RENDERING_HELPER_H_
 #define CONTENT_COMMON_GPU_MEDIA_RENDERING_HELPER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -31,18 +35,18 @@ namespace content {
 
 class VideoFrameTexture : public base::RefCounted<VideoFrameTexture> {
  public:
-  uint32 texture_id() const { return texture_id_; }
-  uint32 texture_target() const { return texture_target_; }
+  uint32_t texture_id() const { return texture_id_; }
+  uint32_t texture_target() const { return texture_target_; }
 
-  VideoFrameTexture(uint32 texture_target,
-                    uint32 texture_id,
+  VideoFrameTexture(uint32_t texture_target,
+                    uint32_t texture_id,
                     const base::Closure& no_longer_needed_cb);
 
  private:
   friend class base::RefCounted<VideoFrameTexture>;
 
-  uint32 texture_target_;
-  uint32 texture_id_;
+  uint32_t texture_target_;
+  uint32_t texture_id_;
   base::Closure no_longer_needed_cb_;
 
   ~VideoFrameTexture();
@@ -107,14 +111,14 @@ class RenderingHelper {
 
   // Return a newly-created GLES2 texture id of the specified size, and
   // signal |*done|.
-  void CreateTexture(uint32 texture_target,
-                     uint32* texture_id,
+  void CreateTexture(uint32_t texture_target,
+                     uint32_t* texture_id,
                      const gfx::Size& size,
                      base::WaitableEvent* done);
 
   // Render thumbnail in the |texture_id| to the FBO buffer using target
   // |texture_target|.
-  void RenderThumbnail(uint32 texture_target, uint32 texture_id);
+  void RenderThumbnail(uint32_t texture_target, uint32_t texture_id);
 
   // Queues the |video_frame| for rendering.
   void QueueVideoFrame(size_t window_id,
@@ -125,7 +129,7 @@ class RenderingHelper {
   void Flush(size_t window_id);
 
   // Delete |texture_id|.
-  void DeleteTexture(uint32 texture_id);
+  void DeleteTexture(uint32_t texture_id);
 
   // Get the platform specific handle to the OpenGL display.
   void* GetGLDisplay();
@@ -181,7 +185,7 @@ class RenderingHelper {
 
   // Render |texture_id| to the current view port of the screen using target
   // |texture_target|.
-  void RenderTexture(uint32 texture_target, uint32 texture_id);
+  void RenderTexture(uint32_t texture_target, uint32_t texture_id);
 
   base::MessageLoop* message_loop_;
 

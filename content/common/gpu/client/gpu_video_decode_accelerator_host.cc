@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -89,7 +90,7 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(const Config& config,
   if (!impl_)
     return false;
 
-  int32 route_id = channel_->GenerateRouteID();
+  int32_t route_id = channel_->GenerateRouteID();
   channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
 
   bool succeeded = false;
@@ -144,9 +145,9 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
   if (!channel_)
     return;
   // Rearrange data for IPC command.
-  std::vector<int32> buffer_ids;
-  std::vector<uint32> texture_ids;
-  for (uint32 i = 0; i < buffers.size(); i++) {
+  std::vector<int32_t> buffer_ids;
+  std::vector<uint32_t> texture_ids;
+  for (uint32_t i = 0; i < buffers.size(); i++) {
     const media::PictureBuffer& buffer = buffers[i];
     if (buffer.size() != picture_buffer_dimensions_) {
       DLOG(ERROR) << "buffer.size() invalid: expected "
@@ -163,7 +164,7 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
 }
 
 void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
-    int32 picture_buffer_id) {
+    int32_t picture_buffer_id) {
   DCHECK(CalledOnValidThread());
   if (!channel_)
     return;
@@ -211,7 +212,7 @@ void GpuVideoDecodeAcceleratorHost::PostNotifyError(Error error) {
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   DCHECK(CalledOnValidThread());
-  uint32 message_type = message->type();
+  uint32_t message_type = message->type();
   if (!channel_->Send(message)) {
     DLOG(ERROR) << "Send(" << message_type << ") failed";
     PostNotifyError(PLATFORM_FAILURE);
@@ -225,16 +226,16 @@ void GpuVideoDecodeAcceleratorHost::OnCdmAttached(bool success) {
 }
 
 void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
-    int32 bitstream_buffer_id) {
+    int32_t bitstream_buffer_id) {
   DCHECK(CalledOnValidThread());
   if (client_)
     client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
-    uint32 num_requested_buffers,
+    uint32_t num_requested_buffers,
     const gfx::Size& dimensions,
-    uint32 texture_target) {
+    uint32_t texture_target) {
   DCHECK(CalledOnValidThread());
   picture_buffer_dimensions_ = dimensions;
   if (client_) {
@@ -244,15 +245,15 @@ void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
 }
 
 void GpuVideoDecodeAcceleratorHost::OnDismissPictureBuffer(
-    int32 picture_buffer_id) {
+    int32_t picture_buffer_id) {
   DCHECK(CalledOnValidThread());
   if (client_)
     client_->DismissPictureBuffer(picture_buffer_id);
 }
 
 void GpuVideoDecodeAcceleratorHost::OnPictureReady(
-    int32 picture_buffer_id,
-    int32 bitstream_buffer_id,
+    int32_t picture_buffer_id,
+    int32_t bitstream_buffer_id,
     const gfx::Rect& visible_rect,
     bool allow_overlay) {
   DCHECK(CalledOnValidThread());
@@ -275,7 +276,7 @@ void GpuVideoDecodeAcceleratorHost::OnResetDone() {
     client_->NotifyResetDone();
 }
 
-void GpuVideoDecodeAcceleratorHost::OnNotifyError(uint32 error) {
+void GpuVideoDecodeAcceleratorHost::OnNotifyError(uint32_t error) {
   DCHECK(CalledOnValidThread());
   if (!client_)
     return;

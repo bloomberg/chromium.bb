@@ -5,9 +5,10 @@
 // IPC messages for the audio.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/common/content_export.h"
@@ -39,7 +40,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
 IPC_STRUCT_BEGIN(AudioInputHostMsg_CreateStream_Config)
   IPC_STRUCT_MEMBER(media::AudioParameters, params)
   IPC_STRUCT_MEMBER(bool, automatic_gain_control)
-  IPC_STRUCT_MEMBER(uint32, shared_memory_count)
+  IPC_STRUCT_MEMBER(uint32_t, shared_memory_count)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
@@ -58,22 +59,22 @@ IPC_MESSAGE_CONTROL3(AudioMsg_NotifyDeviceAuthorized,
 // it uses to communicate with the browser process about the state of the
 // buffered audio data.
 IPC_MESSAGE_CONTROL4(
-   AudioMsg_NotifyStreamCreated,
-   int /* stream id */,
-   base::SharedMemoryHandle /* handle */,
-   base::SyncSocket::TransitDescriptor /* socket descriptor */,
-   uint32 /* length */)
+    AudioMsg_NotifyStreamCreated,
+    int /* stream id */,
+    base::SharedMemoryHandle /* handle */,
+    base::SyncSocket::TransitDescriptor /* socket descriptor */,
+    uint32_t /* length */)
 
 // Tell the renderer process that an audio input stream has been created.
 // The renderer process would be given a SyncSocket that it should read
 // from from then on. It is also given number of segments in shared memory.
 IPC_MESSAGE_CONTROL5(
-   AudioInputMsg_NotifyStreamCreated,
-   int /* stream id */,
-   base::SharedMemoryHandle /* handle */,
-   base::SyncSocket::TransitDescriptor /* socket descriptor */,
-   uint32 /* length */,
-   uint32 /* segment count */)
+    AudioInputMsg_NotifyStreamCreated,
+    int /* stream id */,
+    base::SharedMemoryHandle /* handle */,
+    base::SyncSocket::TransitDescriptor /* socket descriptor */,
+    uint32_t /* length */,
+    uint32_t /* segment count */)
 
 // Notification message sent from AudioRendererHost to renderer for state
 // update after the renderer has requested a Create/Start/Close.

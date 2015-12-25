@@ -4,6 +4,8 @@
 
 // Message definition file, included multiple times, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -143,13 +145,13 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UpdateServiceWorker,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* provider_id */,
-                     int64 /* registration_id */)
+                     int64_t /* registration_id */)
 
 IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UnregisterServiceWorker,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* provider_id */,
-                     int64 /* registration_id */)
+                     int64_t /* registration_id */)
 
 IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_GetRegistration,
                      int /* thread_id */,
@@ -217,7 +219,7 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
 // |version_id| identifies which ServiceWorkerVersion.
 IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_SetVersionId,
                      int /* provider_id */,
-                     int64 /* version_id */)
+                     int64_t /* version_id */)
 
 // Informs the browser that event handling has finished.
 // Routed to the target ServiceWorkerVersion.

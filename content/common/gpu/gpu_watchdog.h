@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_GPU_WATCHDOG_H_
 #define CONTENT_COMMON_GPU_GPU_WATCHDOG_H_
 
+#include "base/macros.h"
+
 namespace content {
 
 // Interface for objects that monitor the a GPUProcessor's progress. The

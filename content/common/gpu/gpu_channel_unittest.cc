@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/test/test_simple_task_runner.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
@@ -16,9 +18,9 @@ class GpuChannelTest : public GpuChannelTestCommon {
   GpuChannelTest() : GpuChannelTestCommon() {}
   ~GpuChannelTest() override {}
 
-  GpuChannel* CreateChannel(int32 client_id, bool allow_real_time_streams) {
+  GpuChannel* CreateChannel(int32_t client_id, bool allow_real_time_streams) {
     DCHECK(channel_manager());
-    uint64 kClientTracingId = 1;
+    uint64_t kClientTracingId = 1;
     GpuMsg_EstablishChannel_Params params;
     params.client_id = client_id;
     params.client_tracing_id = kClientTracingId;
@@ -33,12 +35,12 @@ class GpuChannelTest : public GpuChannelTestCommon {
 };
 
 TEST_F(GpuChannelTest, CreateViewCommandBuffer) {
-  int32 kClientId = 1;
+  int32_t kClientId = 1;
   GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   gfx::GLSurfaceHandle surface_handle;
-  int32 kRouteId = 1;
+  int32_t kRouteId = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
@@ -65,13 +67,13 @@ TEST_F(GpuChannelTest, CreateViewCommandBuffer) {
 }
 
 TEST_F(GpuChannelTest, IncompatibleStreamIds) {
-  int32 kClientId = 1;
+  int32_t kClientId = 1;
   GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kRouteId1 = 1;
-  int32 kStreamId1 = 1;
+  int32_t kRouteId1 = 1;
+  int32_t kStreamId1 = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId1;
@@ -97,8 +99,8 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   ASSERT_TRUE(stub);
 
   // Create second context in same share group but different stream.
-  int32 kRouteId2 = 2;
-  int32 kStreamId2 = 2;
+  int32_t kRouteId2 = 2;
+  int32_t kStreamId2 = 2;
 
   init_params.share_group_id = kRouteId1;
   init_params.stream_id = kStreamId2;
@@ -123,13 +125,13 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
 }
 
 TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
-  int32 kClientId = 1;
+  int32_t kClientId = 1;
   GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kRouteId1 = 1;
-  int32 kStreamId1 = 1;
+  int32_t kRouteId1 = 1;
+  int32_t kStreamId1 = 1;
   GpuStreamPriority kStreamPriority1 = GpuStreamPriority::NORMAL;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -156,8 +158,8 @@ TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
   ASSERT_TRUE(stub);
 
   // Create second context in same share group but different stream.
-  int32 kRouteId2 = 2;
-  int32 kStreamId2 = kStreamId1;
+  int32_t kRouteId2 = 2;
+  int32_t kStreamId2 = kStreamId1;
   GpuStreamPriority kStreamPriority2 = GpuStreamPriority::LOW;
 
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -183,13 +185,13 @@ TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
 }
 
 TEST_F(GpuChannelTest, StreamLifetime) {
-  int32 kClientId = 1;
+  int32_t kClientId = 1;
   GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kRouteId1 = 1;
-  int32 kStreamId1 = 1;
+  int32_t kRouteId1 = 1;
+  int32_t kStreamId1 = 1;
   GpuStreamPriority kStreamPriority1 = GpuStreamPriority::NORMAL;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -228,8 +230,8 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   ASSERT_FALSE(stub);
 
   // Create second context in same share group but different stream.
-  int32 kRouteId2 = 2;
-  int32 kStreamId2 = 2;
+  int32_t kRouteId2 = 2;
+  int32_t kStreamId2 = 2;
   GpuStreamPriority kStreamPriority2 = GpuStreamPriority::LOW;
 
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -255,14 +257,14 @@ TEST_F(GpuChannelTest, StreamLifetime) {
 }
 
 TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
-  int32 kClientId = 1;
+  int32_t kClientId = 1;
   bool allow_real_time_streams = false;
   GpuChannel* channel = CreateChannel(kClientId, allow_real_time_streams);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kRouteId = 1;
-  int32 kStreamId = 1;
+  int32_t kRouteId = 1;
+  int32_t kStreamId = 1;
   GpuStreamPriority kStreamPriority = GpuStreamPriority::REAL_TIME;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -290,14 +292,14 @@ TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
 }
 
 TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
-  int32 kClientId = 1;
+  int32_t kClientId = 1;
   bool allow_real_time_streams = true;
   GpuChannel* channel = CreateChannel(kClientId, allow_real_time_streams);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kRouteId = 1;
-  int32 kStreamId = 1;
+  int32_t kRouteId = 1;
+  int32_t kStreamId = 1;
   GpuStreamPriority kStreamPriority = GpuStreamPriority::REAL_TIME;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;

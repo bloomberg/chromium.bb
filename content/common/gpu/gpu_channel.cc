@@ -27,6 +27,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -54,20 +55,20 @@ namespace {
 
 // Number of milliseconds between successive vsync. Many GL commands block
 // on vsync, so thresholds for preemption should be multiples of this.
-const int64 kVsyncIntervalMs = 17;
+const int64_t kVsyncIntervalMs = 17;
 
 // Amount of time that we will wait for an IPC to be processed before
 // preempting. After a preemption, we must wait this long before triggering
 // another preemption.
-const int64 kPreemptWaitTimeMs = 2 * kVsyncIntervalMs;
+const int64_t kPreemptWaitTimeMs = 2 * kVsyncIntervalMs;
 
 // Once we trigger a preemption, the maximum duration that we will wait
 // before clearing the preemption.
-const int64 kMaxPreemptTimeMs = kVsyncIntervalMs;
+const int64_t kMaxPreemptTimeMs = kVsyncIntervalMs;
 
 // Stop the preemption once the time for the longest pending IPC drops
 // below this threshold.
-const int64 kStopPreemptThresholdMs = kVsyncIntervalMs;
+const int64_t kStopPreemptThresholdMs = kVsyncIntervalMs;
 
 }  // anonymous namespace
 
@@ -255,7 +256,7 @@ void GpuChannelMessageFilter::OnFilterRemoved() {
   timer_ = nullptr;
 }
 
-void GpuChannelMessageFilter::OnChannelConnected(int32 peer_pid) {
+void GpuChannelMessageFilter::OnChannelConnected(int32_t peer_pid) {
   DCHECK(peer_pid_ == base::kNullProcessId);
   peer_pid_ = peer_pid;
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
@@ -525,19 +526,19 @@ void GpuChannelMessageFilter::TransitionToWouldPreemptDescheduled() {
   UpdatePreemptionState();
 }
 
-GpuChannel::StreamState::StreamState(int32 id, GpuStreamPriority priority)
+GpuChannel::StreamState::StreamState(int32_t id, GpuStreamPriority priority)
     : id_(id), priority_(priority) {}
 
 GpuChannel::StreamState::~StreamState() {}
 
-void GpuChannel::StreamState::AddRoute(int32 route_id) {
+void GpuChannel::StreamState::AddRoute(int32_t route_id) {
   routes_.insert(route_id);
 }
-void GpuChannel::StreamState::RemoveRoute(int32 route_id) {
+void GpuChannel::StreamState::RemoveRoute(int32_t route_id) {
   routes_.erase(route_id);
 }
 
-bool GpuChannel::StreamState::HasRoute(int32 route_id) const {
+bool GpuChannel::StreamState::HasRoute(int32_t route_id) const {
   return routes_.find(route_id) != routes_.end();
 }
 
@@ -694,17 +695,17 @@ void GpuChannel::OnStubSchedulingChanged(GpuCommandBufferStub* stub,
 CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
     const gfx::GLSurfaceHandle& window,
     const GPUCreateCommandBufferConfig& init_params,
-    int32 route_id) {
+    int32_t route_id) {
   TRACE_EVENT1("gpu", "GpuChannel::CreateViewCommandBuffer", "route_id",
                route_id);
 
-  int32 share_group_id = init_params.share_group_id;
+  int32_t share_group_id = init_params.share_group_id;
   GpuCommandBufferStub* share_group = stubs_.get(share_group_id);
 
   if (!share_group && share_group_id != MSG_ROUTING_NONE)
     return CREATE_COMMAND_BUFFER_FAILED;
 
-  int32 stream_id = init_params.stream_id;
+  int32_t stream_id = init_params.stream_id;
   GpuStreamPriority stream_priority = init_params.stream_priority;
 
   if (share_group && stream_id != share_group->stream_id())
@@ -748,7 +749,7 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
   return CREATE_COMMAND_BUFFER_SUCCEEDED;
 }
 
-GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32 route_id) {
+GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32_t route_id) {
   return stubs_.get(route_id);
 }
 
@@ -761,11 +762,11 @@ void GpuChannel::MarkAllContextsLost() {
     kv.second->MarkContextLost();
 }
 
-bool GpuChannel::AddRoute(int32 route_id, IPC::Listener* listener) {
+bool GpuChannel::AddRoute(int32_t route_id, IPC::Listener* listener) {
   return router_.AddRoute(route_id, listener);
 }
 
-void GpuChannel::RemoveRoute(int32 route_id) {
+void GpuChannel::RemoveRoute(int32_t route_id) {
   router_.RemoveRoute(route_id);
 }
 
@@ -904,12 +905,12 @@ const GpuCommandBufferStub* GpuChannel::GetOneStub() const {
 void GpuChannel::OnCreateOffscreenCommandBuffer(
     const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,
-    int32 route_id,
+    int32_t route_id,
     bool* succeeded) {
   TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer", "route_id",
                route_id);
 
-  int32 share_group_id = init_params.share_group_id;
+  int32_t share_group_id = init_params.share_group_id;
   GpuCommandBufferStub* share_group = stubs_.get(share_group_id);
 
   if (!share_group && share_group_id != MSG_ROUTING_NONE) {
@@ -917,7 +918,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
     return;
   }
 
-  int32 stream_id = init_params.stream_id;
+  int32_t stream_id = init_params.stream_id;
   GpuStreamPriority stream_priority = init_params.stream_priority;
 
   if (share_group && stream_id != share_group->stream_id()) {
@@ -967,7 +968,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
   *succeeded = true;
 }
 
-void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
+void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   TRACE_EVENT1("gpu", "GpuChannel::OnDestroyCommandBuffer",
                "route_id", route_id);
 
@@ -978,7 +979,7 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 
   router_.RemoveRoute(route_id);
 
-  int32 stream_id = stub->stream_id();
+  int32_t stream_id = stub->stream_id();
   auto stream_it = streams_.find(stream_id);
   DCHECK(stream_it != streams_.end());
   stream_it->second.RemoveRoute(route_id);
@@ -993,7 +994,8 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
   }
 }
 
-void GpuChannel::OnCreateJpegDecoder(int32 route_id, IPC::Message* reply_msg) {
+void GpuChannel::OnCreateJpegDecoder(int32_t route_id,
+                                     IPC::Message* reply_msg) {
   if (!jpeg_decoder_) {
     jpeg_decoder_.reset(new GpuJpegDecodeAccelerator(this, io_task_runner_));
   }
@@ -1018,14 +1020,14 @@ void GpuChannel::RemoveFilter(IPC::MessageFilter* filter) {
                             filter_, make_scoped_refptr(filter)));
 }
 
-uint64 GpuChannel::GetMemoryUsage() {
+uint64_t GpuChannel::GetMemoryUsage() {
   // Collect the unique memory trackers in use by the |stubs_|.
   std::set<gpu::gles2::MemoryTracker*> unique_memory_trackers;
   for (auto& kv : stubs_)
     unique_memory_trackers.insert(kv.second->GetMemoryTracker());
 
   // Sum the memory usage for all unique memory trackers.
-  uint64 size = 0;
+  uint64_t size = 0;
   for (auto* tracker : unique_memory_trackers) {
     size += gpu_channel_manager()->gpu_memory_manager()->GetTrackerMemoryUsage(
         tracker);
@@ -1038,7 +1040,7 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    uint32 internalformat) {
+    uint32_t internalformat) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
       if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))

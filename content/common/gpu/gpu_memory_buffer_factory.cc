@@ -5,6 +5,7 @@
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"

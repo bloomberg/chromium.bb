@@ -5,7 +5,6 @@
 // IPC messages for android media player.
 // Multiply-included message file, hence no include guard.
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_player_messages_enums_android.h"

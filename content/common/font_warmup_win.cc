@@ -5,12 +5,14 @@
 #include "content/common/font_warmup_win.h"
 
 #include <dwrite.h>
+#include <stdint.h>
 #include <map>
 
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"

@@ -4,12 +4,14 @@
 
 #include "content/common/gpu/image_transport_surface_overlay_mac.h"
 
-#include <algorithm>
 #include <CoreGraphics/CoreGraphics.h>
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/CGLRenderers.h>
 #include <OpenGL/CGLTypes.h>
 #include <OpenGL/gl.h>
+#include <stddef.h>
+
+#include <algorithm>
 
 // This type consistently causes problem on Mac, and needs to be dealt with
 // in a systemic way.

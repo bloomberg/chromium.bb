@@ -19,7 +19,8 @@ void ResourceRequestBody::AppendBytes(const char* bytes, int bytes_len) {
 
 void ResourceRequestBody::AppendFileRange(
     const base::FilePath& file_path,
-    uint64 offset, uint64 length,
+    uint64_t offset,
+    uint64_t length,
     const base::Time& expected_modification_time) {
   elements_.push_back(Element());
   elements_.back().SetToFilePathRange(file_path, offset, length,
@@ -32,7 +33,9 @@ void ResourceRequestBody::AppendBlob(const std::string& uuid) {
 }
 
 void ResourceRequestBody::AppendFileSystemFileRange(
-    const GURL& url, uint64 offset, uint64 length,
+    const GURL& url,
+    uint64_t offset,
+    uint64_t length,
     const base::Time& expected_modification_time) {
   elements_.push_back(Element());
   elements_.back().SetToFileSystemUrlRange(url, offset, length,

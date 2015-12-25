@@ -5,9 +5,11 @@
 #ifndef CONTENT_COMMON_RESOURCE_REQUEST_BODY_H_
 #define CONTENT_COMMON_RESOURCE_REQUEST_BODY_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
@@ -32,10 +34,13 @@ class CONTENT_EXPORT ResourceRequestBody
 
   void AppendBytes(const char* bytes, int bytes_len);
   void AppendFileRange(const base::FilePath& file_path,
-                       uint64 offset, uint64 length,
+                       uint64_t offset,
+                       uint64_t length,
                        const base::Time& expected_modification_time);
   void AppendBlob(const std::string& uuid);
-  void AppendFileSystemFileRange(const GURL& url, uint64 offset, uint64 length,
+  void AppendFileSystemFileRange(const GURL& url,
+                                 uint64_t offset,
+                                 uint64_t length,
                                  const base::Time& expected_modification_time);
 
   const std::vector<Element>* elements() const { return &elements_; }
@@ -47,15 +52,15 @@ class CONTENT_EXPORT ResourceRequestBody
   // Identifies a particular upload instance, which is used by the cache to
   // formulate a cache key.  This value should be unique across browser
   // sessions.  A value of 0 is used to indicate an unspecified identifier.
-  void set_identifier(int64 id) { identifier_ = id; }
-  int64 identifier() const { return identifier_; }
+  void set_identifier(int64_t id) { identifier_ = id; }
+  int64_t identifier() const { return identifier_; }
 
  private:
   friend class base::RefCountedThreadSafe<ResourceRequestBody>;
   ~ResourceRequestBody() override;
 
   std::vector<Element> elements_;
-  int64 identifier_;
+  int64_t identifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestBody);
 };

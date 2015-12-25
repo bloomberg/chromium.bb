@@ -5,10 +5,14 @@
 #ifndef CONTENT_COMMON_GPU_GPU_COMMAND_BUFFER_STUB_H_
 #define CONTENT_COMMON_GPU_GPU_COMMAND_BUFFER_STUB_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -82,10 +86,10 @@ class GpuCommandBufferStub
       gpu::ValueStateMap* pending_valuebuffer_state,
       const gfx::Size& size,
       const gpu::gles2::DisallowedFeatures& disallowed_features,
-      const std::vector<int32>& attribs,
+      const std::vector<int32_t>& attribs,
       gfx::GpuPreference gpu_preference,
-      int32 stream_id,
-      int32 route_id,
+      int32_t stream_id,
+      int32_t route_id,
       bool offscreen,
       GpuWatchdog* watchdog,
       const GURL& active_url);
@@ -115,17 +119,17 @@ class GpuCommandBufferStub
 
   // Identifies the various GpuCommandBufferStubs in the GPU process belonging
   // to the same renderer process.
-  int32 route_id() const { return route_id_; }
+  int32_t route_id() const { return route_id_; }
 
   // Identifies the stream for this command buffer.
-  int32 stream_id() const { return stream_id_; }
+  int32_t stream_id() const { return stream_id_; }
 
   gfx::GpuPreference gpu_preference() { return gpu_preference_; }
 
-  int32 GetRequestedAttribute(int attr) const;
+  int32_t GetRequestedAttribute(int attr) const;
 
   // Sends a message to the console.
-  void SendConsoleMessage(int32 id, const std::string& message);
+  void SendConsoleMessage(int32_t id, const std::string& message);
 
   void SendCachedShader(const std::string& key, const std::string& shader);
 
@@ -136,7 +140,7 @@ class GpuCommandBufferStub
 
   // Associates a sync point to this stub. When the stub is destroyed, it will
   // retire all sync points that haven't been previously retired.
-  void InsertSyncPoint(uint32 sync_point, bool retire);
+  void InsertSyncPoint(uint32_t sync_point, bool retire);
 
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback);
 
@@ -163,42 +167,43 @@ class GpuCommandBufferStub
   // Message handlers:
   void OnInitialize(base::SharedMemoryHandle shared_state_shm,
                     IPC::Message* reply_message);
-  void OnSetGetBuffer(int32 shm_id, IPC::Message* reply_message);
+  void OnSetGetBuffer(int32_t shm_id, IPC::Message* reply_message);
   void OnProduceFrontBuffer(const gpu::Mailbox& mailbox);
   void OnGetState(IPC::Message* reply_message);
-  void OnWaitForTokenInRange(int32 start,
-                             int32 end,
+  void OnWaitForTokenInRange(int32_t start,
+                             int32_t end,
                              IPC::Message* reply_message);
-  void OnWaitForGetOffsetInRange(int32 start,
-                                 int32 end,
+  void OnWaitForGetOffsetInRange(int32_t start,
+                                 int32_t end,
                                  IPC::Message* reply_message);
-  void OnAsyncFlush(int32 put_offset, uint32 flush_count,
+  void OnAsyncFlush(int32_t put_offset,
+                    uint32_t flush_count,
                     const std::vector<ui::LatencyInfo>& latency_info);
-  void OnRegisterTransferBuffer(int32 id,
+  void OnRegisterTransferBuffer(int32_t id,
                                 base::SharedMemoryHandle transfer_buffer,
-                                uint32 size);
-  void OnDestroyTransferBuffer(int32 id);
-  void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
+                                uint32_t size);
+  void OnDestroyTransferBuffer(int32_t id);
+  void OnGetTransferBuffer(int32_t id, IPC::Message* reply_message);
 
   void OnCreateVideoDecoder(const media::VideoDecodeAccelerator::Config& config,
-                            int32 route_id,
+                            int32_t route_id,
                             IPC::Message* reply_message);
   void OnCreateVideoEncoder(media::VideoPixelFormat input_format,
                             const gfx::Size& input_visible_size,
                             media::VideoCodecProfile output_profile,
-                            uint32 initial_bitrate,
-                            int32 route_id,
+                            uint32_t initial_bitrate,
+                            int32_t route_id,
                             IPC::Message* reply_message);
 
   void OnEnsureBackbuffer();
 
-  void OnRetireSyncPoint(uint32 sync_point);
-  bool OnWaitSyncPoint(uint32 sync_point);
-  void OnWaitSyncPointCompleted(uint32 sync_point);
-  void OnSignalSyncPoint(uint32 sync_point, uint32 id);
-  void OnSignalSyncToken(const gpu::SyncToken& sync_token, uint32 id);
-  void OnSignalAck(uint32 id);
-  void OnSignalQuery(uint32 query, uint32 id);
+  void OnRetireSyncPoint(uint32_t sync_point);
+  bool OnWaitSyncPoint(uint32_t sync_point);
+  void OnWaitSyncPointCompleted(uint32_t sync_point);
+  void OnSignalSyncPoint(uint32_t sync_point, uint32_t id);
+  void OnSignalSyncToken(const gpu::SyncToken& sync_token, uint32_t id);
+  void OnSignalAck(uint32_t id);
+  void OnSignalQuery(uint32_t query, uint32_t id);
 
   void OnFenceSyncRelease(uint64_t release);
   bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
@@ -209,9 +214,9 @@ class GpuCommandBufferStub
                                 uint64_t release);
 
   void OnCreateImage(const GpuCommandBufferMsg_CreateImage_Params& params);
-  void OnDestroyImage(int32 id);
-  void OnCreateStreamTexture(uint32 texture_id,
-                             int32 stream_id,
+  void OnDestroyImage(int32_t id);
+  void OnCreateStreamTexture(uint32_t texture_id,
+                             int32_t stream_id,
                              bool* succeeded);
 
   void OnCommandProcessed();
@@ -257,14 +262,14 @@ class GpuCommandBufferStub
   gfx::GLSurfaceHandle handle_;
   gfx::Size initial_size_;
   gpu::gles2::DisallowedFeatures disallowed_features_;
-  std::vector<int32> requested_attribs_;
+  std::vector<int32_t> requested_attribs_;
   gfx::GpuPreference gpu_preference_;
   bool use_virtualized_gl_context_;
   const uint64_t command_buffer_id_;
-  const int32 stream_id_;
-  const int32 route_id_;
+  const int32_t stream_id_;
+  const int32_t route_id_;
   const bool offscreen_;
-  uint32 last_flush_count_;
+  uint32_t last_flush_count_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
@@ -277,7 +282,7 @@ class GpuCommandBufferStub
   base::ObserverList<DestructionObserver> destruction_observers_;
 
   // A queue of sync points associated with this stub.
-  std::deque<uint32> sync_points_;
+  std::deque<uint32_t> sync_points_;
   bool waiting_for_sync_point_;
 
   base::TimeTicks process_delayed_work_time_;

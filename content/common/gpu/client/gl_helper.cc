@@ -4,12 +4,16 @@
 
 #include "content/common/gpu/client/gl_helper.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -160,14 +164,15 @@ class GLHelper::CopyTextureToImpl
 
   // Reads back bytes from the currently bound frame buffer.
   // Note that dst_size is specified in bytes, not pixels.
-  void ReadbackAsync(const gfx::Size& dst_size,
-                     int32 bytes_per_row,     // generally dst_size.width() * 4
-                     int32 row_stride_bytes,  // generally dst_size.width() * 4
-                     unsigned char* out,
-                     GLenum format,
-                     GLenum type,
-                     size_t bytes_per_pixel,
-                     const base::Callback<void(bool)>& callback);
+  void ReadbackAsync(
+      const gfx::Size& dst_size,
+      int32_t bytes_per_row,     // generally dst_size.width() * 4
+      int32_t row_stride_bytes,  // generally dst_size.width() * 4
+      unsigned char* out,
+      GLenum format,
+      GLenum type,
+      size_t bytes_per_pixel,
+      const base::Callback<void(bool)>& callback);
 
   void ReadbackPlane(TextureFrameBufferPair* source,
                      const scoped_refptr<media::VideoFrame>& target,
@@ -211,8 +216,8 @@ class GLHelper::CopyTextureToImpl
   // must be deleted by the main thread gl.
   struct Request {
     Request(const gfx::Size& size_,
-            int32 bytes_per_row_,
-            int32 row_stride_bytes_,
+            int32_t bytes_per_row_,
+            int32_t row_stride_bytes_,
             unsigned char* pixels_,
             const base::Callback<void(bool)>& callback_)
         : done(false),
@@ -485,8 +490,8 @@ GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
 
 void GLHelper::CopyTextureToImpl::ReadbackAsync(
     const gfx::Size& dst_size,
-    int32 bytes_per_row,
-    int32 row_stride_bytes,
+    int32_t bytes_per_row,
+    int32_t row_stride_bytes,
     unsigned char* out,
     GLenum format,
     GLenum type,
@@ -612,9 +617,9 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
                             texture,
                             0);
 
-  int32 bytes_per_row = out_color_type == kAlpha_8_SkColorType
-                            ? dst_size.width()
-                            : dst_size.width() * bytes_per_pixel;
+  int32_t bytes_per_row = out_color_type == kAlpha_8_SkColorType
+                              ? dst_size.width()
+                              : dst_size.width() * bytes_per_pixel;
 
   ReadbackAsync(readback_texture_size,
                 bytes_per_row,

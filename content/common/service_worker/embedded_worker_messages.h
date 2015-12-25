@@ -4,6 +4,8 @@
 
 // Message definition file, included multiple times, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "content/public/common/web_preferences.h"
@@ -20,7 +22,7 @@
 // Parameters structure for EmbeddedWorkerMsg_StartWorker.
 IPC_STRUCT_BEGIN(EmbeddedWorkerMsg_StartWorker_Params)
   IPC_STRUCT_MEMBER(int, embedded_worker_id)
-  IPC_STRUCT_MEMBER(int64, service_worker_version_id)
+  IPC_STRUCT_MEMBER(int64_t, service_worker_version_id)
   IPC_STRUCT_MEMBER(GURL, scope)
   IPC_STRUCT_MEMBER(GURL, script_url)
   IPC_STRUCT_MEMBER(int, worker_devtools_agent_route_id)

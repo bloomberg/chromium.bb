@@ -5,10 +5,11 @@
 // IPC messages for content decryption module (CDM) implementation.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/common/media/cdm_messages_enums.h"
 #include "ipc/ipc_message_macros.h"

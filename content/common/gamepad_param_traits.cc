@@ -4,6 +4,9 @@
 
 #include "content/common/gamepad_param_traits.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

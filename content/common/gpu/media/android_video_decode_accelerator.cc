@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -292,7 +294,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
 
   bool eos = false;
   base::TimeDelta presentation_timestamp;
-  int32 buf_index = 0;
+  int32_t buf_index = 0;
   bool should_try_again = false;
   do {
     size_t offset = 0;
@@ -316,7 +318,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         return false;
 
       case media::MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
-        int32 width, height;
+        int32_t width, height;
         media_codec_->GetOutputFormat(&width, &height);
 
         if (!picturebuffers_requested_) {
@@ -372,7 +374,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
                    weak_this_factory_.GetWeakPtr()));
   } else {
-    const int32 bitstream_buffer_id = it->second;
+    const int32_t bitstream_buffer_id = it->second;
     bitstream_buffers_in_decoder_.erase(bitstream_buffers_in_decoder_.begin(),
                                         ++it);
     SendCurrentSurfaceToClient(buf_index, bitstream_buffer_id);
@@ -399,8 +401,8 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
 }
 
 void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
-    int32 codec_buffer_index,
-    int32 bitstream_id) {
+    int32_t codec_buffer_index,
+    int32_t bitstream_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(bitstream_id, -1);
   DCHECK(!free_picture_ids_.empty());
@@ -410,7 +412,7 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
                     "Failed to make this decoder's GL context current.",
                     PLATFORM_FAILURE);
 
-  int32 picture_buffer_id = free_picture_ids_.front();
+  int32_t picture_buffer_id = free_picture_ids_.front();
   free_picture_ids_.pop();
   TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
@@ -467,7 +469,7 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     RETURN_ON_FAILURE(this, buffers[i].size() == size_,
                       "Invalid picture buffer size was passed.",
                       INVALID_ARGUMENT);
-    int32 id = buffers[i].id();
+    int32_t id = buffers[i].id();
     output_picture_buffers_.insert(std::make_pair(id, buffers[i]));
     free_picture_ids_.push(id);
     // Since the client might be re-using |picture_buffer_id| values, forget
@@ -486,7 +488,7 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
-    int32 picture_buffer_id) {
+    int32_t picture_buffer_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // This ReusePictureBuffer() might have been in a pipe somewhere (queued in
@@ -540,7 +542,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
   TRACE_EVENT0("media", "AVDA::Reset");
 
   while (!pending_bitstream_buffers_.empty()) {
-    int32 bitstream_buffer_id = pending_bitstream_buffers_.front().first.id();
+    int32_t bitstream_buffer_id = pending_bitstream_buffers_.front().first.id();
     pending_bitstream_buffers_.pop();
 
     if (bitstream_buffer_id != -1) {
@@ -561,7 +563,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
     dismissed_picture_ids_.insert(it->first);
   }
   output_picture_buffers_.clear();
-  std::queue<int32> empty;
+  std::queue<int32_t> empty;
   std::swap(free_picture_ids_, empty);
   CHECK(free_picture_ids_.empty());
   picturebuffers_requested_ = false;

@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_SITE_ISOLATION_POLICY_H_
 #define CONTENT_COMMON_SITE_ISOLATION_POLICY_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 

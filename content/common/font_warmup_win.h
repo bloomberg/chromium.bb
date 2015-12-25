@@ -5,7 +5,10 @@
 #ifndef CONTENT_COMMON_FONT_WARMUP_WIN_H_
 #define CONTENT_COMMON_FONT_WARMUP_WIN_H_
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 
 class SkFontMgr;

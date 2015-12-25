@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/common/gpu/media/h264_dpb.h"
@@ -96,9 +97,11 @@ struct VaapiVideoEncodeAccelerator::InputFrameRef {
 };
 
 struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32 id, scoped_ptr<base::SharedMemory> shm, size_t size)
+  BitstreamBufferRef(int32_t id,
+                     scoped_ptr<base::SharedMemory> shm,
+                     size_t size)
       : id(id), shm(shm.Pass()), size(size) {}
-  const int32 id;
+  const int32_t id;
   const scoped_ptr<base::SharedMemory> shm;
   const size_t size;
 };
@@ -155,7 +158,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     media::VideoPixelFormat format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate,
+    uint32_t initial_bitrate,
     Client* client) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!encoder_thread_.IsRunning());
@@ -533,7 +536,7 @@ void VaapiVideoEncodeAccelerator::TryToReturnBitstreamBuffer() {
   linked_ptr<BitstreamBufferRef> buffer = available_bitstream_buffers_.front();
   available_bitstream_buffers_.pop();
 
-  uint8* target_data = reinterpret_cast<uint8*>(buffer->shm->memory());
+  uint8_t* target_data = reinterpret_cast<uint8_t*>(buffer->shm->memory());
 
   linked_ptr<EncodeJob> encode_job = submitted_encode_jobs_.front();
   submitted_encode_jobs_.pop();
@@ -689,8 +692,8 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
 }
 
 void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   DVLOGF(2) << "bitrate: " << bitrate << " framerate: " << framerate;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -701,8 +704,8 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
           base::Unretained(this), bitrate, framerate));
 }
 
-void VaapiVideoEncodeAccelerator::UpdateRates(uint32 bitrate,
-                                              uint32 framerate) {
+void VaapiVideoEncodeAccelerator::UpdateRates(uint32_t bitrate,
+                                              uint32_t framerate) {
   if (encoder_thread_.IsRunning())
     DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(bitrate, 0u);
@@ -713,8 +716,8 @@ void VaapiVideoEncodeAccelerator::UpdateRates(uint32 bitrate,
 }
 
 void VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   DVLOGF(2) << "bitrate: " << bitrate << " framerate: " << framerate;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);

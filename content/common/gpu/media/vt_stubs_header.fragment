@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <stddef.h>
+#include <stdint.h>
 
 extern "C" {
 

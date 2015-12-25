@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_ONE_WRITER_SEQLOCK_H_
 
 #include "base/atomicops.h"
+#include "base/macros.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/content_export.h"
 

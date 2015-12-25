@@ -4,10 +4,13 @@
 
 #include "content/common/cc_messages.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include <algorithm>
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message.h"

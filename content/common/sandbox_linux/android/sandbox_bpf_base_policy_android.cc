@@ -7,6 +7,7 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 
+#include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 
 using sandbox::bpf_dsl::Allow;

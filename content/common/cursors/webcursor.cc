@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/pickle.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 
 using blink::WebCursorInfo;

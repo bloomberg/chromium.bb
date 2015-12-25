@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_ACCELERATED_VIDEO_DECODER_H_
 #define CONTENT_COMMON_GPU_MEDIA_ACCELERATED_VIDEO_DECODER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"

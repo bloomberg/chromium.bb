@@ -8,6 +8,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -48,9 +49,11 @@
 namespace content {
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32 id, scoped_ptr<base::SharedMemory> shm, size_t size)
+  BitstreamBufferRef(int32_t id,
+                     scoped_ptr<base::SharedMemory> shm,
+                     size_t size)
       : id(id), shm(shm.Pass()), size(size) {}
-  const int32 id;
+  const int32_t id;
   const scoped_ptr<base::SharedMemory> shm;
   const size_t size;
 };
@@ -102,7 +105,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(
     media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate,
+    uint32_t initial_bitrate,
     Client* client) {
   DVLOG(3) << __func__
            << ": input_format=" << media::VideoPixelFormatToString(input_format)
@@ -237,8 +240,8 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void V4L2VideoEncodeAccelerator::RequestEncodingParametersChange(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   DVLOG(3) << "RequestEncodingParametersChange(): bitrate=" << bitrate
            << ", framerate=" << framerate;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -557,13 +560,13 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
     DCHECK_LE(output_size, output_buffer_byte_size_);
     if (output_size > output_buffer_byte_size_)
       output_size = output_buffer_byte_size_;
-    uint8* target_data =
-        reinterpret_cast<uint8*>(output_record.buffer_ref->shm->memory());
+    uint8_t* target_data =
+        reinterpret_cast<uint8_t*>(output_record.buffer_ref->shm->memory());
     if (output_format_fourcc_ == V4L2_PIX_FMT_H264) {
       if (stream_header_size_ == 0) {
         // Assume that the first buffer dequeued is the stream header.
         stream_header_size_ = output_size;
-        stream_header_.reset(new uint8[stream_header_size_]);
+        stream_header_.reset(new uint8_t[stream_header_size_]);
         memcpy(stream_header_.get(), output_data, stream_header_size_);
       }
       if (key_frame &&
@@ -802,8 +805,8 @@ void V4L2VideoEncodeAccelerator::SetErrorState(Error error) {
 }
 
 void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
-    uint32 bitrate,
-    uint32 framerate) {
+    uint32_t bitrate,
+    uint32_t framerate) {
   DVLOG(3) << "RequestEncodingParametersChangeTask(): bitrate=" << bitrate
            << ", framerate=" << framerate;
   DCHECK_EQ(encoder_thread_.message_loop(), base::MessageLoop::current());
@@ -879,7 +882,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   device_input_format_ = media::PIXEL_FORMAT_UNKNOWN;
   input_planes_count_ = 0;
 
-  uint32 input_format_fourcc =
+  uint32_t input_format_fourcc =
       V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format);
   if (!input_format_fourcc) {
     LOG(ERROR) << "Unsupported input format";

@@ -4,6 +4,8 @@
 
 #include "content/common/ssl_status_serialization.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/pickle.h"
 
@@ -88,7 +90,7 @@ bool DeserializeSecurityInfo(const std::string& state, SSLStatus* ssl_status) {
 
   for (; num_scts_to_read > 0; --num_scts_to_read) {
     int id;
-    uint16 status;
+    uint16_t status;
     if (!iter.ReadInt(&id) || !iter.ReadUInt16(&status)) {
       *ssl_status = SSLStatus();
       return false;

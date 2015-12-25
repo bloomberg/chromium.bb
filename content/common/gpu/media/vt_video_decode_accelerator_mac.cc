@@ -7,11 +7,13 @@
 #include <CoreVideo/CoreVideo.h>
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/gl.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
@@ -290,7 +292,7 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
     const base::Callback<bool(void)>& make_context_current,
-    const base::Callback<void(uint32, uint32, scoped_refptr<gl::GLImage>)>&
+    const base::Callback<void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>&
         bind_image)
     : make_context_current_(make_context_current),
       bind_image_(bind_image),

@@ -11,26 +11,23 @@ InputEventAck::InputEventAck(
     InputEventAckState state,
     const ui::LatencyInfo& latency,
     scoped_ptr<content::DidOverscrollParams> overscroll,
-    uint32 unique_touch_event_id)
+    uint32_t unique_touch_event_id)
     : type(type),
       state(state),
       latency(latency),
       overscroll(overscroll.Pass()),
-      unique_touch_event_id(unique_touch_event_id) {
-}
+      unique_touch_event_id(unique_touch_event_id) {}
 
 InputEventAck::InputEventAck(blink::WebInputEvent::Type type,
                              InputEventAckState state,
                              const ui::LatencyInfo& latency,
-                             uint32 unique_touch_event_id)
-    : InputEventAck(type, state, latency, nullptr, unique_touch_event_id) {
-}
+                             uint32_t unique_touch_event_id)
+    : InputEventAck(type, state, latency, nullptr, unique_touch_event_id) {}
 
 InputEventAck::InputEventAck(blink::WebInputEvent::Type type,
                              InputEventAckState state,
-                             uint32 unique_touch_event_id)
-    : InputEventAck(type, state, ui::LatencyInfo(), unique_touch_event_id) {
-}
+                             uint32_t unique_touch_event_id)
+    : InputEventAck(type, state, ui::LatencyInfo(), unique_touch_event_id) {}
 
 InputEventAck::InputEventAck(blink::WebInputEvent::Type type,
                              InputEventAckState state)

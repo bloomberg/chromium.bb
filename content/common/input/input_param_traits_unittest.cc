@@ -4,6 +4,8 @@
 
 #include "content/common/input/input_param_traits.h"
 
+#include <stddef.h>
+
 #include "content/common/input/input_event.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"

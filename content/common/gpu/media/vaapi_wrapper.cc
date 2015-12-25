@@ -10,8 +10,10 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 // Auto-generated for dlopen libva libraries
 #include "content/common/gpu/media/va_stubs.h"
 #include "content/common/gpu/media/vaapi_picture.h"
@@ -985,18 +987,16 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
   int ret = 0;
   {
     base::AutoUnlock auto_unlock(*va_lock_);
-    ret = libyuv::I420ToNV12(frame->data(media::VideoFrame::kYPlane),
-                             frame->stride(media::VideoFrame::kYPlane),
-                             frame->data(media::VideoFrame::kUPlane),
-                             frame->stride(media::VideoFrame::kUPlane),
-                             frame->data(media::VideoFrame::kVPlane),
-                             frame->stride(media::VideoFrame::kVPlane),
-                             static_cast<uint8*>(image_ptr) + image.offsets[0],
-                             image.pitches[0],
-                             static_cast<uint8*>(image_ptr) + image.offsets[1],
-                             image.pitches[1],
-                             image.width,
-                             image.height);
+    ret = libyuv::I420ToNV12(
+        frame->data(media::VideoFrame::kYPlane),
+        frame->stride(media::VideoFrame::kYPlane),
+        frame->data(media::VideoFrame::kUPlane),
+        frame->stride(media::VideoFrame::kUPlane),
+        frame->data(media::VideoFrame::kVPlane),
+        frame->stride(media::VideoFrame::kVPlane),
+        static_cast<uint8_t*>(image_ptr) + image.offsets[0], image.pitches[0],
+        static_cast<uint8_t*>(image_ptr) + image.offsets[1], image.pitches[1],
+        image.width, image.height);
   }
 
   va_res = vaUnmapBuffer(va_display_, image.buf);
@@ -1007,7 +1007,7 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
 
 bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
                                                  VASurfaceID sync_surface_id,
-                                                 uint8* target_ptr,
+                                                 uint8_t* target_ptr,
                                                  size_t target_size,
                                                  size_t* coded_data_size) {
   base::AutoLock auto_lock(*va_lock_);

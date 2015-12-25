@@ -79,6 +79,9 @@
 // """
 
 #include "ipc/ipc_message_macros.h"
+
+#include <stdint.h>
+
 #include "content/common/bluetooth/bluetooth_device.h"
 #include "content/common/bluetooth/bluetooth_scan_filter.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
@@ -155,7 +158,7 @@ IPC_MESSAGE_CONTROL4(BluetoothMsg_GetCharacteristicSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      std::string /* characteristic_instance_id */,
-                     uint32 /* characteristic_properties */)
+                     uint32_t /* characteristic_properties */)
 
 // Informs the renderer that the characteristic request |request_id| failed.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicError,

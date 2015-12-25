@@ -5,9 +5,11 @@
 #ifndef CONTENT_COMMON_INPUT_WEB_INPUT_EVENT_TRAITS_H_
 #define CONTENT_COMMON_INPUT_WEB_INPUT_EVENT_TRAITS_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "content/common/input/scoped_web_input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -28,7 +30,7 @@ class CONTENT_EXPORT WebInputEventTraits {
   static bool WillReceiveAckFromRenderer(const blink::WebInputEvent& event);
 
   // Return uniqueTouchEventId for WebTouchEvent, otherwise return 0.
-  static uint32 GetUniqueTouchEventId(const blink::WebInputEvent& event);
+  static uint32_t GetUniqueTouchEventId(const blink::WebInputEvent& event);
 };
 
 }  // namespace content

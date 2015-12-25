@@ -4,11 +4,12 @@
 
 #include "content/common/sandbox_util.h"
 
+#include "build/build_config.h"
+#include "content/public/common/sandbox_init.h"
+
 #if defined(OS_POSIX)
 #include <unistd.h>
 #endif
-
-#include "content/public/common/sandbox_init.h"
 
 namespace content {
 

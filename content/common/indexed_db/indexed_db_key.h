@@ -5,10 +5,11 @@
 #ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"

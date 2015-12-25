@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -39,12 +41,12 @@ class MockVideoDecodeAcceleratorClient
   ~MockVideoDecodeAcceleratorClient() override {}
 
   // VideoDecodeAccelerator::Client implementation.
-  void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+  void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              const gfx::Size& dimensions,
-                             uint32 texture_target) override {}
-  void DismissPictureBuffer(int32 picture_buffer_id) override {}
+                             uint32_t texture_target) override {}
+  void DismissPictureBuffer(int32_t picture_buffer_id) override {}
   void PictureReady(const media::Picture& picture) override {}
-  void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) override {}
+  void NotifyEndOfBitstreamBuffer(int32_t bitstream_buffer_id) override {}
   void NotifyFlushDone() override {}
   void NotifyResetDone() override {}
   void NotifyError(media::VideoDecodeAccelerator::Error error) override {}

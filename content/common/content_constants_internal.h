@@ -5,23 +5,25 @@
 #ifndef CONTENT_COMMON_CONTENT_CONSTANTS_INTERNAL_H_
 #define CONTENT_COMMON_CONTENT_CONSTANTS_INTERNAL_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "content/common/content_export.h"
 
 namespace content {
 
 // How long to wait before we consider a renderer hung.
-CONTENT_EXPORT extern const int64 kHungRendererDelayMs;
+CONTENT_EXPORT extern const int64_t kHungRendererDelayMs;
 
 // How long to wait for newly loaded content to send a compositor frame
 // before clearing previously displayed graphics.
-extern const int64 kNewContentRenderingDelayMs;
+extern const int64_t kNewContentRenderingDelayMs;
 
 // The maximum plugin width and height.
-extern const uint16 kMaxPluginSideLength;
+extern const uint16_t kMaxPluginSideLength;
 // The maximum plugin size, defined as the number of pixels occupied by the
 // plugin.
-extern const uint32 kMaxPluginSize;
+extern const uint32_t kMaxPluginSize;
 
 // The maximum length of string as data url.
 extern const size_t kMaxLengthOfDataURLString;

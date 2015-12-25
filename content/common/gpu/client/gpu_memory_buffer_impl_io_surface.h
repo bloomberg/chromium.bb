@@ -6,8 +6,11 @@
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
 
 #include <IOSurface/IOSurface.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 

@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/gpu/media/v4l2_slice_video_decode_accelerator.h"
@@ -58,7 +59,7 @@ class V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface
  public:
   using ReleaseCB = base::Callback<void(int)>;
 
-  V4L2DecodeSurface(int32 bitstream_id,
+  V4L2DecodeSurface(int32_t bitstream_id,
                     int input_record,
                     int output_record,
                     const ReleaseCB& release_cb);
@@ -68,7 +69,7 @@ class V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface
   void SetDecoded();
   bool decoded() const { return decoded_; }
 
-  int32 bitstream_id() const { return bitstream_id_; }
+  int32_t bitstream_id() const { return bitstream_id_; }
   int input_record() const { return input_record_; }
   int output_record() const { return output_record_; }
   uint32_t config_store() const { return config_store_; }
@@ -84,7 +85,7 @@ class V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface
   friend class base::RefCounted<V4L2DecodeSurface>;
   ~V4L2DecodeSurface();
 
-  int32 bitstream_id_;
+  int32_t bitstream_id_;
   int input_record_;
   int output_record_;
   uint32_t config_store_;
@@ -98,7 +99,7 @@ class V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface
 };
 
 V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::V4L2DecodeSurface(
-    int32 bitstream_id,
+    int32_t bitstream_id,
     int input_record,
     int output_record,
     const ReleaseCB& release_cb)
@@ -107,8 +108,7 @@ V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::V4L2DecodeSurface(
       output_record_(output_record),
       config_store_(input_record + 1),
       decoded_(false),
-      release_cb_(release_cb) {
-}
+      release_cb_(release_cb) {}
 
 V4L2SliceVideoDecodeAccelerator::V4L2DecodeSurface::~V4L2DecodeSurface() {
   DVLOGF(5) << "Releasing output record id=" << output_record_;
@@ -165,14 +165,14 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
       base::SharedMemory* shm,
       size_t size,
-      int32 input_id);
+      int32_t input_id);
   ~BitstreamBufferRef();
   const base::WeakPtr<VideoDecodeAccelerator::Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
   const scoped_ptr<base::SharedMemory> shm;
   const size_t size;
   off_t bytes_used;
-  const int32 input_id;
+  const int32_t input_id;
 };
 
 V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
@@ -180,14 +180,13 @@ V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
     base::SharedMemory* shm,
     size_t size,
-    int32 input_id)
+    int32_t input_id)
     : client(client),
       client_task_runner(client_task_runner),
       shm(shm),
       size(size),
       bytes_used(0),
-      input_id(input_id) {
-}
+      input_id(input_id) {}
 
 V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::~BitstreamBufferRef() {
   if (input_id >= 0) {
@@ -776,7 +775,7 @@ void V4L2SliceVideoDecodeAccelerator::DestroyInputBuffers() {
 }
 
 void V4L2SliceVideoDecodeAccelerator::DismissPictures(
-    std::vector<int32> picture_buffer_ids,
+    std::vector<int32_t> picture_buffer_ids,
     base::WaitableEvent* done) {
   DVLOGF(3);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -1340,7 +1339,7 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
   DVLOGF(3);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   std::vector<EGLImageKHR> egl_images_to_destroy;
-  std::vector<int32> picture_buffers_to_dismiss;
+  std::vector<int32_t> picture_buffers_to_dismiss;
 
   if (output_buffer_map_.empty())
     return true;
@@ -1498,7 +1497,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
-    int32 picture_buffer_id) {
+    int32_t picture_buffer_id) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
 
@@ -1526,7 +1525,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
-    int32 picture_buffer_id,
+    int32_t picture_buffer_id,
     scoped_ptr<EGLSyncKHRRef> egl_sync_ref) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());

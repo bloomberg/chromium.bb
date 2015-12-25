@@ -4,7 +4,10 @@
 
 #include "content/common/gpu/client/grcontext_for_webgraphicscontext3d.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/client/gles2_lib.h"

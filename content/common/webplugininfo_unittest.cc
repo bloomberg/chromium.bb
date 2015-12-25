@@ -4,9 +4,12 @@
 
 #include "content/public/common/webplugininfo.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"

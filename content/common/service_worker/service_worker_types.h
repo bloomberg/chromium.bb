@@ -5,10 +5,11 @@
 #ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "content/common/content_export.h"
 #include "content/public/common/referrer.h"
@@ -42,9 +43,9 @@ extern const char kFetchScriptError[];
 static const int kInvalidServiceWorkerHandleId = -1;
 static const int kInvalidServiceWorkerRegistrationHandleId = -1;
 static const int kInvalidServiceWorkerProviderId = -1;
-static const int64 kInvalidServiceWorkerRegistrationId = -1;
-static const int64 kInvalidServiceWorkerVersionId = -1;
-static const int64 kInvalidServiceWorkerResourceId = -1;
+static const int64_t kInvalidServiceWorkerRegistrationId = -1;
+static const int64_t kInvalidServiceWorkerVersionId = -1;
+static const int64_t kInvalidServiceWorkerResourceId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
 
 // The HTTP cache is bypassed for Service Worker scripts if the last network
@@ -131,7 +132,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   std::string method;
   ServiceWorkerHeaderMap headers;
   std::string blob_uuid;
-  uint64 blob_size;
+  uint64_t blob_size;
   Referrer referrer;
   FetchCredentialsMode credentials_mode;
   FetchRedirectMode redirect_mode;
@@ -147,7 +148,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
                         blink::WebServiceWorkerResponseType response_type,
                         const ServiceWorkerHeaderMap& headers,
                         const std::string& blob_uuid,
-                        uint64 blob_size,
+                        uint64_t blob_size,
                         const GURL& stream_url,
                         blink::WebServiceWorkerResponseError error);
   ~ServiceWorkerResponse();
@@ -158,7 +159,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   blink::WebServiceWorkerResponseType response_type;
   ServiceWorkerHeaderMap headers;
   std::string blob_uuid;
-  uint64 blob_size;
+  uint64_t blob_size;
   GURL stream_url;
   blink::WebServiceWorkerResponseError error;
 };
@@ -169,14 +170,14 @@ struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   int handle_id;
   GURL url;
   blink::WebServiceWorkerState state;
-  int64 version_id;
+  int64_t version_id;
 };
 
 struct CONTENT_EXPORT ServiceWorkerRegistrationObjectInfo {
   ServiceWorkerRegistrationObjectInfo();
   int handle_id;
   GURL scope;
-  int64 registration_id;
+  int64_t registration_id;
 };
 
 struct ServiceWorkerVersionAttributes {

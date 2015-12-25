@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/gfx/display.h"

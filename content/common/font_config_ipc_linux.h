@@ -7,11 +7,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
+
+#include <stddef.h>
 
 #include <string>
 

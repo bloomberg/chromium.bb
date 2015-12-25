@@ -5,6 +5,10 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VP8_DECODER_H_
 #define CONTENT_COMMON_GPU_MEDIA_VP8_DECODER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/media/accelerated_video_decoder.h"

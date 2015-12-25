@@ -41,7 +41,7 @@ void AndroidCopyingBackingStrategy::Cleanup(
     glDeleteTextures(1, &surface_texture_id_);
 }
 
-uint32 AndroidCopyingBackingStrategy::GetTextureTarget() const {
+uint32_t AndroidCopyingBackingStrategy::GetTextureTarget() const {
   return GL_TEXTURE_2D;
 }
 
@@ -64,7 +64,7 @@ AndroidCopyingBackingStrategy::CreateSurfaceTexture() {
 }
 
 void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
-    int32 codec_buf_index,
+    int32_t codec_buf_index,
     const media::PictureBuffer& picture_buffer) {
   // Make sure that the decoder is available.
   RETURN_ON_FAILURE(state_provider_, state_provider_->GetGlDecoder().get(),
@@ -101,7 +101,7 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
   float transfrom_matrix[16];
   surface_texture_->GetTransformMatrix(transfrom_matrix);
 
-  uint32 picture_buffer_texture_id = picture_buffer.texture_id();
+  uint32_t picture_buffer_texture_id = picture_buffer.texture_id();
 
   // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
   // needed because it takes 10s of milliseconds to initialize.

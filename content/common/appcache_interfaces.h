@@ -5,9 +5,10 @@
 #ifndef CONTENT_COMMON_APPCACHE_INTERFACES_H_
 #define CONTENT_COMMON_APPCACHE_INTERFACES_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "content/public/common/appcache_info.h"
 
@@ -64,14 +65,14 @@ struct CONTENT_EXPORT AppCacheResourceInfo {
   ~AppCacheResourceInfo();
 
   GURL url;
-  int64 size;
+  int64_t size;
   bool is_master;
   bool is_manifest;
   bool is_intercept;
   bool is_fallback;
   bool is_foreign;
   bool is_explicit;
-  int64 response_id;
+  int64_t response_id;
 };
 
 struct CONTENT_EXPORT AppCacheErrorDetails {
@@ -141,17 +142,16 @@ class CONTENT_EXPORT AppCacheBackend {
   virtual void SetSpawningHostId(int host_id, int spawning_host_id) = 0;
   virtual void SelectCache(int host_id,
                            const GURL& document_url,
-                           const int64 cache_document_was_loaded_from,
+                           const int64_t cache_document_was_loaded_from,
                            const GURL& manifest_url) = 0;
   virtual void SelectCacheForWorker(
                            int host_id,
                            int parent_process_id,
                            int parent_host_id) = 0;
-  virtual void SelectCacheForSharedWorker(
-                           int host_id,
-                           int64 appcache_id) = 0;
-  virtual void MarkAsForeignEntry(int host_id, const GURL& document_url,
-                                  int64 cache_document_was_loaded_from) = 0;
+  virtual void SelectCacheForSharedWorker(int host_id, int64_t appcache_id) = 0;
+  virtual void MarkAsForeignEntry(int host_id,
+                                  const GURL& document_url,
+                                  int64_t cache_document_was_loaded_from) = 0;
   virtual AppCacheStatus GetStatus(int host_id) = 0;
   virtual bool StartUpdate(int host_id) = 0;
   virtual bool SwapCache(int host_id) = 0;

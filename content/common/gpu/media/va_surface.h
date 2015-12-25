@@ -9,6 +9,7 @@
 #define CONTENT_COMMON_GPU_MEDIA_VA_SURFACE_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/libva/va/va.h"

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 
 namespace sandbox {

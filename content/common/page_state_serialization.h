@@ -5,9 +5,12 @@
 #ifndef CONTENT_COMMON_PAGE_STATE_SERIALIZATION_H_
 #define CONTENT_COMMON_PAGE_STATE_SERIALIZATION_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/strings/nullable_string16.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"
@@ -23,8 +26,8 @@ struct CONTENT_EXPORT ExplodedHttpBodyElement {
   std::string data;
   base::NullableString16 file_path;
   GURL filesystem_url;
-  int64 file_start;
-  int64 file_length;
+  int64_t file_start;
+  int64_t file_length;
   double file_modification_time;
   std::string blob_uuid;
 
@@ -35,7 +38,7 @@ struct CONTENT_EXPORT ExplodedHttpBodyElement {
 struct CONTENT_EXPORT ExplodedHttpBody {
   base::NullableString16 http_content_type;
   std::vector<ExplodedHttpBodyElement> elements;
-  int64 identifier;
+  int64_t identifier;
   bool contains_passwords;
   bool is_null;
 
@@ -52,8 +55,8 @@ struct CONTENT_EXPORT ExplodedFrameState {
   blink::WebHistoryScrollRestorationType scroll_restoration_type;
   gfx::PointF visual_viewport_scroll_offset;
   gfx::Point scroll_offset;
-  int64 item_sequence_number;
-  int64 document_sequence_number;
+  int64_t item_sequence_number;
+  int64_t document_sequence_number;
   double page_scale_factor;
   blink::WebReferrerPolicy referrer_policy;
   ExplodedHttpBody http_body;

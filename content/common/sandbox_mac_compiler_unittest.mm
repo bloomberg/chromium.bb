@@ -5,8 +5,9 @@
 #include "content/common/sandbox_mac.h"
 
 #include <fcntl.h>
-#include <unistd.h>
+#include <stdint.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "base/process/kill.h"
 #include "base/test/multiprocess_test.h"

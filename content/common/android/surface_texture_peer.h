@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
 #define CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
 
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "ui/gl/android/surface_texture.h"
 

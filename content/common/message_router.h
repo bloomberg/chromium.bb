@@ -5,7 +5,10 @@
 #ifndef CONTENT_COMMON_MESSAGE_ROUTER_H_
 #define CONTENT_COMMON_MESSAGE_ROUTER_H_
 
+#include <stdint.h>
+
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -51,10 +54,10 @@ class CONTENT_EXPORT MessageRouter : public IPC::Listener, public IPC::Sender {
 
   // Called to add a listener for a particular message routing ID.
   // Returns true if succeeded.
-  bool AddRoute(int32 routing_id, IPC::Listener* listener);
+  bool AddRoute(int32_t routing_id, IPC::Listener* listener);
 
   // Called to remove a listener for a particular message routing ID.
-  void RemoveRoute(int32 routing_id);
+  void RemoveRoute(int32_t routing_id);
 
  private:
   // A list of all listeners with assigned routing IDs.

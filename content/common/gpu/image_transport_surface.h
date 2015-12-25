@@ -5,13 +5,17 @@
 #ifndef CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_H_
 #define CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
@@ -148,7 +152,7 @@ class ImageTransportHelper
   GpuChannelManager* manager_;
 
   base::WeakPtr<GpuCommandBufferStub> stub_;
-  int32 route_id_;
+  int32_t route_id_;
   gfx::PluginWindowHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageTransportHelper);

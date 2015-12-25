@@ -4,6 +4,9 @@
 
 #include "content/common/host_discardable_shared_memory_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/threading/simple_thread.h"
 #include "content/public/common/child_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +70,7 @@ class HostDiscardableSharedMemoryManagerTest : public testing::Test {
 
 TEST_F(HostDiscardableSharedMemoryManagerTest, AllocateForChild) {
   const int kDataSize = 1024;
-  uint8 data[kDataSize];
+  uint8_t data[kDataSize];
   memset(data, 0x80, kDataSize);
 
   base::SharedMemoryHandle shared_handle;

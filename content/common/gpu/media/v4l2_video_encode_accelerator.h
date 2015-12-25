@@ -6,9 +6,12 @@
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_ENCODE_ACCELERATOR_H_
 
 #include <linux/videodev2.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <list>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
@@ -45,14 +48,14 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   bool Initialize(media::VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
-                  uint32 initial_bitrate,
+                  uint32_t initial_bitrate,
                   Client* client) override;
   void Encode(const scoped_refptr<media::VideoFrame>& frame,
               bool force_keyframe) override;
   void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer)
       override;
-  void RequestEncodingParametersChange(uint32 bitrate,
-                                       uint32 framerate) override;
+  void RequestEncodingParametersChange(uint32_t bitrate,
+                                       uint32_t framerate) override;
   void Destroy() override;
 
  private:
@@ -158,7 +161,8 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   //
 
   // Change encoding parameters.
-  void RequestEncodingParametersChangeTask(uint32 bitrate, uint32 framerate);
+  void RequestEncodingParametersChangeTask(uint32_t bitrate,
+                                           uint32_t framerate);
 
   // Set up formats and initialize the device for them.
   bool SetFormats(media::VideoPixelFormat input_format,
@@ -197,7 +201,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // Formats for input frames and the output stream.
   media::VideoPixelFormat device_input_format_;
   size_t input_planes_count_;
-  uint32 output_format_fourcc_;
+  uint32_t output_format_fourcc_;
 
   //
   // Encoder state, owned and operated by encoder_thread_.
@@ -211,7 +215,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
 
   // We need to provide the stream header with every keyframe, to allow
   // midstream decoding restarts.  Store it here.
-  scoped_ptr<uint8[]> stream_header_;
+  scoped_ptr<uint8_t[]> stream_header_;
   size_t stream_header_size_;
 
   // Video frames ready to be encoded.

@@ -109,7 +109,7 @@ bool ParamTraits<storage::DataElement>::Read(const Message* m,
       break;
     }
     case storage::DataElement::TYPE_BYTES_DESCRIPTION: {
-      uint64 length;
+      uint64_t length;
       if (!ReadParam(m, iter, &length))
         return false;
       r->SetToBytesDescription(length);
@@ -117,7 +117,7 @@ bool ParamTraits<storage::DataElement>::Read(const Message* m,
     }
     case storage::DataElement::TYPE_FILE: {
       base::FilePath file_path;
-      uint64 offset, length;
+      uint64_t offset, length;
       base::Time expected_modification_time;
       if (!ReadParam(m, iter, &file_path))
         return false;
@@ -133,7 +133,7 @@ bool ParamTraits<storage::DataElement>::Read(const Message* m,
     }
     case storage::DataElement::TYPE_FILE_FILESYSTEM: {
       GURL file_system_url;
-      uint64 offset, length;
+      uint64_t offset, length;
       base::Time expected_modification_time;
       if (!ReadParam(m, iter, &file_system_url))
         return false;
@@ -149,7 +149,7 @@ bool ParamTraits<storage::DataElement>::Read(const Message* m,
     }
     case storage::DataElement::TYPE_BLOB: {
       std::string blob_uuid;
-      uint64 offset, length;
+      uint64_t offset, length;
       if (!ReadParam(m, iter, &blob_uuid))
         return false;
       if (!ReadParam(m, iter, &offset))
@@ -326,7 +326,7 @@ bool ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Read(
   std::vector<storage::DataElement> elements;
   if (!ReadParam(m, iter, &elements))
     return false;
-  int64 identifier;
+  int64_t identifier;
   if (!ReadParam(m, iter, &identifier))
     return false;
   *r = new content::ResourceRequestBody;

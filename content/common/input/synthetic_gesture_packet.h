@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_INPUT_SYNTHETIC_GESTURE_PACKET_H_
 #define CONTENT_COMMON_INPUT_SYNTHETIC_GESTURE_PACKET_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"

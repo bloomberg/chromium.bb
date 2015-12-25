@@ -8,6 +8,9 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
 #define CONTENT_COMMON_GPU_MEDIA_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <queue>
@@ -15,6 +18,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -52,8 +56,8 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
 
   VaapiVideoDecodeAccelerator(
       const base::Callback<bool(void)>& make_context_current,
-      const base::Callback<void(uint32, uint32, scoped_refptr<gl::GLImage>)>&
-          bind_image);
+      const base::Callback<
+          void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>& bind_image);
   ~VaapiVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -61,7 +65,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
   void Destroy() override;
@@ -137,7 +141,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   // Puts contents of |va_surface| into given |picture|, releases the
   // surface and passes the resulting picture to client for output.
   void OutputPicture(const scoped_refptr<VASurface>& va_surface,
-                     int32 input_id,
+                     int32_t input_id,
                      VaapiPicture* picture);
 
   // Try to OutputPicture() if we have both a ready surface and picture.
@@ -205,7 +209,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
     InputBuffer();
     ~InputBuffer();
 
-    int32 id;
+    int32_t id;
     size_t size;
     scoped_ptr<base::SharedMemory> shm;
   };
@@ -220,12 +224,12 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   linked_ptr<InputBuffer> curr_input_buffer_;
 
   // Queue for incoming output buffers (texture ids).
-  typedef std::queue<int32> OutputBuffers;
+  typedef std::queue<int32_t> OutputBuffers;
   OutputBuffers output_buffers_;
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  typedef std::map<int32, linked_ptr<VaapiPicture>> Pictures;
+  typedef std::map<int32_t, linked_ptr<VaapiPicture>> Pictures;
   // All allocated Pictures, regardless of their current state.
   // Pictures are allocated once and destroyed at the end of decode.
   // Comes after vaapi_wrapper_ to ensure all pictures are destroyed
@@ -233,7 +237,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   Pictures pictures_;
 
   // Return a VaapiPicture associated with given client-provided id.
-  VaapiPicture* PictureById(int32 picture_buffer_id);
+  VaapiPicture* PictureById(int32_t picture_buffer_id);
 
   // VA Surfaces no longer in use that can be passed back to the decoder for
   // reuse, once it requests them.
@@ -303,7 +307,8 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
 
   // Binds the provided GLImage to a givenr client texture ID & texture target
   // combination in GLES.
-  base::Callback<void(uint32, uint32, scoped_refptr<gl::GLImage>)> bind_image_;
+  base::Callback<void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>
+      bind_image_;
 
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<VaapiVideoDecodeAccelerator> weak_this_factory_;

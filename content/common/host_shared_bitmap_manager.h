@@ -5,12 +5,14 @@
 #ifndef CONTENT_COMMON_HOST_SHARED_BITMAP_MANAGER_H_
 #define CONTENT_COMMON_HOST_SHARED_BITMAP_MANAGER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/hash.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"

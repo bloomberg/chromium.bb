@@ -5,9 +5,13 @@
 #ifndef CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
 #define CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/linked_list.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -93,8 +97,8 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // Returns a unique identifier for a given tuple of (process id, segment id)
   // that can be used to match memory dumps across different processes.
   static base::trace_event::MemoryAllocatorDumpGuid GetSegmentGUIDForTracing(
-      uint64 tracing_process_id,
-      int32 segment_id);
+      uint64_t tracing_process_id,
+      int32_t segment_id);
 
   // Returns a MemoryAllocatorDump for a given span on |pmd| with the size of
   // the span.

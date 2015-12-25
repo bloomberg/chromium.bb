@@ -6,6 +6,7 @@
 
 #include "content/common/child_process_messages.h"
 
+#include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/appcache_messages.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
