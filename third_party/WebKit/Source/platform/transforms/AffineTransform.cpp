@@ -37,7 +37,8 @@ namespace blink {
 
 AffineTransform::AffineTransform()
 {
-    setMatrix(1, 0, 0, 1, 0, 0);
+    const Transform identity = IDENTITY_TRANSFORM;
+    setMatrix(identity);
 }
 
 AffineTransform::AffineTransform(double a, double b, double c, double d, double e, double f)

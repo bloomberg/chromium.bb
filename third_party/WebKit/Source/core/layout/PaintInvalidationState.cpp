@@ -87,7 +87,7 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
 
     if (m_cachedOffsetsEnabled && layoutObject.isSVGRoot()) {
         const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(layoutObject);
-        m_svgTransform = adoptPtr(new AffineTransform(svgRoot.localToBorderBoxTransform()));
+        m_svgTransform = AffineTransform(svgRoot.localToBorderBoxTransform());
         if (svgRoot.shouldApplyViewportClip())
             addClipRectRelativeToPaintOffset(LayoutSize(svgRoot.pixelSnappedSize()));
     }
@@ -111,7 +111,7 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, con
     ASSERT(layoutObject != m_paintInvalidationContainer);
 
     if (m_cachedOffsetsEnabled)
-        m_svgTransform = adoptPtr(new AffineTransform(next.svgTransform() * layoutObject.localToParentTransform()));
+        m_svgTransform = AffineTransform(next.svgTransform() * layoutObject.localToParentTransform());
 }
 
 void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutSize& clipSize)

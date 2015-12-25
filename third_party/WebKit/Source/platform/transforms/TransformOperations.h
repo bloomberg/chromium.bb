@@ -27,15 +27,22 @@
 
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/TransformOperation.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 class FloatBox;
+
+class PLATFORM_EXPORT EmptyTransformOperations final {
+    DISALLOW_NEW();
+};
+
 class PLATFORM_EXPORT TransformOperations {
-    USING_FAST_MALLOC(TransformOperations);
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     explicit TransformOperations(bool makeIdentity = false);
+    TransformOperations(const EmptyTransformOperations&) { }
 
     bool operator==(const TransformOperations& o) const;
     bool operator!=(const TransformOperations& o) const

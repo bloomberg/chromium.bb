@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT PerspectiveTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT PerspectiveTransformOperation final : public TransformOperation {
 public:
     static PassRefPtr<PerspectiveTransformOperation> create(double p)
     {

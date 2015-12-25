@@ -31,7 +31,7 @@ public:
 
     const LayoutRect& clipRect() const { return m_clipRect; }
     const LayoutSize& paintOffset() const { return m_paintOffset; }
-    const AffineTransform& svgTransform() const { ASSERT(m_svgTransform); return *m_svgTransform; }
+    const AffineTransform& svgTransform() const { return m_svgTransform; }
 
     bool cachedOffsetsEnabled() const { return m_cachedOffsetsEnabled; }
     bool isClipped() const { return m_clipped; }
@@ -82,7 +82,7 @@ private:
     // Transform from the initial viewport coordinate system of an outermost
     // SVG root to the userspace _before_ the relevant element. Combining this
     // with |m_paintOffset| yields the "final" offset.
-    OwnPtr<AffineTransform> m_svgTransform;
+    AffineTransform m_svgTransform;
 
     Vector<LayoutObject*>& m_pendingDelayedPaintInvalidations;
 };

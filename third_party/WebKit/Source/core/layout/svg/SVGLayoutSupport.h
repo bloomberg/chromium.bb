@@ -27,6 +27,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/style/SVGComputedStyleDefs.h"
 #include "platform/graphics/DashArray.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -118,7 +119,10 @@ public:
     SubtreeContentTransformScope(const AffineTransform&);
     ~SubtreeContentTransformScope();
 
+    static AffineTransform currentContentTransformation() { return AffineTransform(s_currentContentTransformation); }
+
 private:
+    static AffineTransform::Transform s_currentContentTransformation;
     AffineTransform m_savedContentTransformation;
 };
 

@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT Matrix3DTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT Matrix3DTransformOperation final : public TransformOperation {
 public:
     static PassRefPtr<Matrix3DTransformOperation> create(const TransformationMatrix& matrix)
     {

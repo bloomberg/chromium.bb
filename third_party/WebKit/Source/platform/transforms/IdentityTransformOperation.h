@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT IdentityTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT IdentityTransformOperation final : public TransformOperation {
 public:
     static PassRefPtr<IdentityTransformOperation> create()
     {

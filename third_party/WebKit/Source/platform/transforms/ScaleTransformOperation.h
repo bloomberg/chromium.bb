@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT ScaleTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT ScaleTransformOperation final : public TransformOperation {
 public:
     static PassRefPtr<ScaleTransformOperation> create(double sx, double sy, OperationType type)
     {

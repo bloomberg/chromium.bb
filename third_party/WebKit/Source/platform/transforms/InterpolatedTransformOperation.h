@@ -37,7 +37,7 @@
 namespace blink {
 
 // This class is an implementation detail for deferred interpolations.
-class PLATFORM_EXPORT InterpolatedTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT InterpolatedTransformOperation final : public TransformOperation {
 public:
     static PassRefPtr<InterpolatedTransformOperation> create(const TransformOperations& from, const TransformOperations& to, double progress)
     {

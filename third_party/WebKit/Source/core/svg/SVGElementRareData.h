@@ -22,6 +22,7 @@
 
 #include "core/svg/SVGElement.h"
 #include "platform/heap/Handle.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
@@ -107,7 +108,7 @@ private:
     RefPtrWillBeMember<MutableStylePropertySet> m_animatedSMILStyleProperties;
     RefPtr<ComputedStyle> m_overrideComputedStyle;
     // Used by <animateMotion>
-    OwnPtr<AffineTransform> m_animateMotionTransform;
+    AffineTransform m_animateMotionTransform;
 };
 
 }

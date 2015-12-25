@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT SkewTransformOperation : public TransformOperation {
+class PLATFORM_EXPORT SkewTransformOperation final : public TransformOperation {
 public:
     static PassRefPtr<SkewTransformOperation> create(double angleX, double angleY, OperationType type)
     {

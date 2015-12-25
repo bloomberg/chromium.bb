@@ -35,6 +35,7 @@ namespace blink {
 // CSS Transforms (may become part of CSS3)
 
 class PLATFORM_EXPORT TransformOperation : public RefCounted<TransformOperation> {
+    WTF_MAKE_NONCOPYABLE(TransformOperation);
 public:
     enum OperationType {
         ScaleX, ScaleY, Scale,
@@ -52,6 +53,7 @@ public:
         Identity, None
     };
 
+    TransformOperation() { }
     virtual ~TransformOperation() { }
 
     virtual bool operator==(const TransformOperation&) const = 0;

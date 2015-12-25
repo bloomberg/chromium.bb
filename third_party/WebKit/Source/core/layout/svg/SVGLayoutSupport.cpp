@@ -418,22 +418,18 @@ bool SVGLayoutSupport::isIsolationRequired(const LayoutObject* object)
     return willIsolateBlendingDescendantsForObject(object) && object->hasNonIsolatedBlendingDescendants();
 }
 
-static AffineTransform& currentContentTransformation()
-{
-    DEFINE_STATIC_LOCAL(AffineTransform, s_currentContentTransformation, ());
-    return s_currentContentTransformation;
-}
+AffineTransform::Transform SubtreeContentTransformScope::s_currentContentTransformation = IDENTITY_TRANSFORM;
 
 SubtreeContentTransformScope::SubtreeContentTransformScope(const AffineTransform& subtreeContentTransformation)
+    : m_savedContentTransformation(s_currentContentTransformation)
 {
-    AffineTransform& contentTransformation = currentContentTransformation();
-    m_savedContentTransformation = contentTransformation;
-    contentTransformation = subtreeContentTransformation * contentTransformation;
+    AffineTransform contentTransformation = subtreeContentTransformation * AffineTransform(s_currentContentTransformation);
+    contentTransformation.copyTransformTo(s_currentContentTransformation);
 }
 
 SubtreeContentTransformScope::~SubtreeContentTransformScope()
 {
-    currentContentTransformation() = m_savedContentTransformation;
+    m_savedContentTransformation.copyTransformTo(s_currentContentTransformation);
 }
 
 AffineTransform SVGLayoutSupport::deprecatedCalculateTransformToLayer(const LayoutObject* layoutObject)
@@ -474,7 +470,7 @@ float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject*
 
     // FIXME: trying to compute a device space transform at record time is wrong. All clients
     // should be updated to avoid relying on this information, and the method should be removed.
-    AffineTransform ctm = deprecatedCalculateTransformToLayer(layoutObject) * currentContentTransformation();
+    AffineTransform ctm = deprecatedCalculateTransformToLayer(layoutObject) * SubtreeContentTransformScope::currentContentTransformation();
     ctm.scale(layoutObject->document().frameHost()->deviceScaleFactor());
 
     return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));

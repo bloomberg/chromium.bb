@@ -139,12 +139,9 @@ void LayoutSVGShape::updateLocalTransform()
 {
     SVGGraphicsElement* graphicsElement = toSVGGraphicsElement(element());
     if (graphicsElement->hasAnimatedLocalTransform()) {
-        if (m_localTransform)
-            m_localTransform->setTransform(graphicsElement->calculateAnimatedLocalTransform());
-        else
-            m_localTransform = adoptPtr(new AffineTransform(graphicsElement->calculateAnimatedLocalTransform()));
+        m_localTransform.setTransform(graphicsElement->calculateAnimatedLocalTransform());
     } else {
-        m_localTransform = 0;
+        m_localTransform = AffineTransform();
     }
 }
 
