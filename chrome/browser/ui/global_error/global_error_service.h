@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GlobalError;

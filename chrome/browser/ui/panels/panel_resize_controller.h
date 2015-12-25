@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_RESIZE_CONTROLLER_H_
 
 #include <set>
-#include "base/basictypes.h"
+
+#include "base/macros.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"

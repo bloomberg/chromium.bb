@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"

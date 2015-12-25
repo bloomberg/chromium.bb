@@ -9,14 +9,15 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/app_list/speech_recognizer_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/web_contents.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"

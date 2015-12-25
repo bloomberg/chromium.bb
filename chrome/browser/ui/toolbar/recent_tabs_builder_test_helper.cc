@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/toolbar/recent_tabs_builder_test_helper.h"
 
+#include <stddef.h>
+
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

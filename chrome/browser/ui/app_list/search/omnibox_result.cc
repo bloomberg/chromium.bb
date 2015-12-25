@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"

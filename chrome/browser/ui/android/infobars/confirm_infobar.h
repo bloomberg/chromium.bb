@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"

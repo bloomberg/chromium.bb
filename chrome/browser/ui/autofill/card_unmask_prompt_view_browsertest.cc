@@ -4,8 +4,10 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view_tester.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/browser.h"

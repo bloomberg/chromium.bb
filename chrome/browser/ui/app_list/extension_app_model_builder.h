@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_MODEL_BUILDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_MODEL_BUILDER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/ui/app_list/app_list_model_builder.h"

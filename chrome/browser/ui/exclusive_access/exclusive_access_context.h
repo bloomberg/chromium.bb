@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_CONTEXT_H_
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_CONTEXT_H_
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 
 class GURL;

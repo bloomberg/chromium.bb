@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"

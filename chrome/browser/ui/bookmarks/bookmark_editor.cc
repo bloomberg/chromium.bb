@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"

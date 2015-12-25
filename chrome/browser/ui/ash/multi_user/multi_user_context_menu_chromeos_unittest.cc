@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"

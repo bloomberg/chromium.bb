@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 

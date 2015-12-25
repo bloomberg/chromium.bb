@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_CONTEXTUAL_MENU_H_
 #define CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_CONTEXTUAL_MENU_H_
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
 

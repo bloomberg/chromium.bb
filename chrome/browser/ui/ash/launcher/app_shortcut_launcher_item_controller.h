@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "url/gurl.h"

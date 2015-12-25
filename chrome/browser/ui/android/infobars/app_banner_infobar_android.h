@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "url/gurl.h"
 

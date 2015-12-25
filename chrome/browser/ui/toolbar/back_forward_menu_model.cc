@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/prefs/pref_service.h"

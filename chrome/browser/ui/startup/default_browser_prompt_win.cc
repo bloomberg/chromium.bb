@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile.h"

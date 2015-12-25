@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"

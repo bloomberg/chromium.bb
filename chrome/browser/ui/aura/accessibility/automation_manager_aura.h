@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_AURA_ACCESSIBILITY_AUTOMATION_MANAGER_AURA_H_
 #define CHROME_BROWSER_UI_AURA_ACCESSIBILITY_AUTOMATION_MANAGER_AURA_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
@@ -50,14 +52,14 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter {
   void HandleAlert(content::BrowserContext* context, const std::string& text);
 
   // AutomationActionAdapter implementation.
-  void DoDefault(int32 id) override;
-  void Focus(int32 id) override;
-  void MakeVisible(int32 id) override;
-  void SetSelection(int32 anchor_id,
-                    int32 anchor_offset,
-                    int32 focus_id,
-                    int32 focus_offset) override;
-  void ShowContextMenu(int32 id) override;
+  void DoDefault(int32_t id) override;
+  void Focus(int32_t id) override;
+  void MakeVisible(int32_t id) override;
+  void SetSelection(int32_t anchor_id,
+                    int32_t anchor_offset,
+                    int32_t focus_id,
+                    int32_t focus_offset) override;
+  void ShowContextMenu(int32_t id) override;
 
  private:
   friend struct base::DefaultSingletonTraits<AutomationManagerAura>;

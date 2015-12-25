@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 
+#include <stddef.h>
+
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"

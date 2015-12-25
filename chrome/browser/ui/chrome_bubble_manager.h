@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_CHROME_BUBBLE_MANAGER_H_
 #define CHROME_BROWSER_UI_CHROME_BUBBLE_MANAGER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/bubble/bubble_manager.h"
 #include "content/public/browser/web_contents_observer.h"

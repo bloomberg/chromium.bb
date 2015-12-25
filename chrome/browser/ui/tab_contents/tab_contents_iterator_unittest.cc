@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 
+#include <stddef.h>
+
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

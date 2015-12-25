@@ -7,9 +7,10 @@
 
 #include "ash/shelf/shelf_alignment_menu.h"
 #include "ash/shelf/shelf_item_types.h"
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class ChromeLauncherController;

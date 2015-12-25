@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 
+#include <stdint.h>
+
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -42,7 +45,7 @@ const int kMatchTabbed                  = 1 << 2;
 bool BrowserMatches(Browser* browser,
                     Profile* profile,
                     Browser::WindowFeature window_feature,
-                    uint32 match_types) {
+                    uint32_t match_types) {
   if ((match_types & kMatchCanSupportWindowFeature) &&
       !browser->CanSupportWindowFeature(window_feature)) {
     return false;
@@ -97,7 +100,7 @@ Browser* FindBrowserMatching(const T& begin,
                              const T& end,
                              Profile* profile,
                              Browser::WindowFeature window_feature,
-                             uint32 match_types) {
+                             uint32_t match_types) {
   for (T i = begin; i != end; ++i) {
     if (BrowserMatches(*i, profile, window_feature, match_types))
       return *i;
@@ -112,7 +115,7 @@ Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
   BrowserList* browser_list_impl = BrowserList::GetInstance(desktop_type);
   if (!browser_list_impl)
     return NULL;
-  uint32 match_types = kMatchAny;
+  uint32_t match_types = kMatchAny;
   if (match_tabbed)
     match_types |= kMatchTabbed;
   if (match_original_profiles)
@@ -132,7 +135,7 @@ Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
 
 size_t GetBrowserCountImpl(Profile* profile,
                            chrome::HostDesktopType desktop_type,
-                           uint32 match_types) {
+                           uint32_t match_types) {
   BrowserList* browser_list_impl = BrowserList::GetInstance(desktop_type);
   size_t count = 0;
   if (browser_list_impl) {

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_H_
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"

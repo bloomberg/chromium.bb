@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/app_list/search_result.h"
 #include "url/gurl.h"
 

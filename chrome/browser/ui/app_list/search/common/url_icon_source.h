@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_URL_ICON_SOURCE_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_URL_ICON_SOURCE_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/image_decoder.h"

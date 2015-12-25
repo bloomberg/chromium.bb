@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_stub.h"
 
 #if defined(OS_CHROMEOS)

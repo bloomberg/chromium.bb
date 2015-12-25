@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

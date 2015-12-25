@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_
 #define CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "components/content_settings/core/common/content_settings_types.h"

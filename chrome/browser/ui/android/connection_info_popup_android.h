@@ -8,7 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 

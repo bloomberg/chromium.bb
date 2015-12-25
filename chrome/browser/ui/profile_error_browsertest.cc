@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

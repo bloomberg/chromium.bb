@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_BUBBLE_LINKS_DELEGATE_H_
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_BUBBLE_LINKS_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
 
 class Browser;

@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "ash/test/ash_test_base.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "testing/gtest/include/gtest/gtest.h"

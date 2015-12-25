@@ -8,7 +8,7 @@
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_STATE_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_STATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 

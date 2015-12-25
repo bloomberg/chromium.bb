@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"

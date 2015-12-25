@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_LIST_H_
 #define CHROME_BROWSER_UI_BROWSER_LIST_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 

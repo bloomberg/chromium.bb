@@ -8,9 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_tab.h"

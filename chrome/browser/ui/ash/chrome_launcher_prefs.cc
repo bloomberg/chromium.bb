@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"

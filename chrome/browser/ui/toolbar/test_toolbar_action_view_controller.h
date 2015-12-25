@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_ACTION_VIEW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_ACTION_VIEW_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 
 // A minimalistic and configurable ToolbarActionViewController for use in

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/base_paths.h"
@@ -11,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
@@ -43,7 +46,7 @@ const char kMetroPinMetric[] = "Metro.SecondaryTilePin";
 // Generate an ID for the tile based on |url_str|. The ID is simply a hash of
 // the URL.
 base::string16 GenerateTileId(const base::string16& url_str) {
-  uint8 hash[crypto::kSHA256Length];
+  uint8_t hash[crypto::kSHA256Length];
   crypto::SHA256HashString(base::UTF16ToUTF8(url_str), hash, sizeof(hash));
   std::string hash_str = base::HexEncode(hash, sizeof(hash));
   return base::UTF8ToUTF16(hash_str);

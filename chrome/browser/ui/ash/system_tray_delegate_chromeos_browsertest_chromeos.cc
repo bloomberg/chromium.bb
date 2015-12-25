@@ -12,6 +12,7 @@
 #include "ash/system/date/date_view.h"
 #include "ash/system/date/tray_date.h"
 #include "ash/test/display_manager_test_api.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"

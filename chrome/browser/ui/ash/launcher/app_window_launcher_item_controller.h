@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_ITEM_CONTROLLER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"

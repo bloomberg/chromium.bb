@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -174,7 +178,7 @@ class TabStripModel {
   // WebContents was closed immediately, false if it was not closed (we
   // may be waiting for a response from an onunload handler, or waiting for the
   // user to confirm closure).
-  bool CloseWebContentsAt(int index, uint32 close_types);
+  bool CloseWebContentsAt(int index, uint32_t close_types);
 
   // Replaces the WebContents at |index| with |new_contents|. The
   // WebContents that was at |index| is returned and its ownership returns
@@ -458,8 +462,7 @@ class TabStripModel {
   //
   // Returns true if the WebContentses were closed immediately, false if we
   // are waiting for the result of an onunload handler.
-  bool InternalCloseTabs(const std::vector<int>& indices,
-                         uint32 close_types);
+  bool InternalCloseTabs(const std::vector<int>& indices, uint32_t close_types);
 
   // Invoked from InternalCloseTabs and when an extension is removed for an app
   // tab. Notifies observers of TabClosingAt and deletes |contents|. If

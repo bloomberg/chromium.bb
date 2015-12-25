@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_VIEWS_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_VIEWS_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_impl.h"
 
 class AppListServiceViews;

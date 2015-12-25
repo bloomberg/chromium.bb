@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
 
+#include "base/macros.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 class InfoBarService;

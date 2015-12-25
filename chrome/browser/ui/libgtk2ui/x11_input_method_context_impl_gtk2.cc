@@ -7,6 +7,7 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkx.h>
+#include <stddef.h>
 
 #include <gtk/gtk.h>
 

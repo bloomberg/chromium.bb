@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_INFOBAR_DELEGATE_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/omnibox/browser/autocomplete_match.h"

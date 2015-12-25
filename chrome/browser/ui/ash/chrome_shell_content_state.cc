@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_context.h"
 

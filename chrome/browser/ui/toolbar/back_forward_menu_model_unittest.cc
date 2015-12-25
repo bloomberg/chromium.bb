@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"

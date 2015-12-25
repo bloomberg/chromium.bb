@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONTROLLER_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONTROLLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

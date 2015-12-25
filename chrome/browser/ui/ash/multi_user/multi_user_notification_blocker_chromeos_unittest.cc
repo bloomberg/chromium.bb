@@ -8,6 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"

@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_ENCODING_MENU_CONTROLLER_H_
 #define CHROME_BROWSER_UI_TOOLBAR_ENCODING_MENU_CONTROLLER_H_
 
-#include <utility>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "base/basictypes.h"  // For DISALLOW_COPY_AND_ASSIGN
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 class Profile;

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 
-#include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"

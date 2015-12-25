@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_EXTERNAL_PROTOCOL_DIALOG_DELEGATE_H_
 #define CHROME_BROWSER_UI_EXTERNAL_PROTOCOL_DIALOG_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/protocol_dialog_delegate.h"
 #include "url/gurl.h"

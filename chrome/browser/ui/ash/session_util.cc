@@ -7,6 +7,7 @@
 #include "ash/content/shell_content_state.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_context.h"

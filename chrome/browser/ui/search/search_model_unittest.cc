@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"

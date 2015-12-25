@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "url/gurl.h"
 

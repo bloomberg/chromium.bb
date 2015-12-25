@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_CHROME_SHELL_CONTENT_STATE_H_
 
 #include "ash/content/shell_content_state.h"
+#include "base/macros.h"
 
 class ChromeShellContentState : public ash::ShellContentState {
  public:

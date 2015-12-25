@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_SYNC_TAB_CONTENTS_SYNCED_TAB_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"

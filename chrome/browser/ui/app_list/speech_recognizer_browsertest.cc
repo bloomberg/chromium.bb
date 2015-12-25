@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/app_list/speech_recognizer.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"

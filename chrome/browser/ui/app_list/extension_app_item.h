@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"

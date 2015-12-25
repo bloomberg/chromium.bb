@@ -7,6 +7,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "content/public/browser/host_zoom_map.h"

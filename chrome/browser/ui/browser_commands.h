@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/host_desktop.h"

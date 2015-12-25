@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"

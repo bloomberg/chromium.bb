@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/pdf/pdf_unsupported_feature.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_metadata.h"

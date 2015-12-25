@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/android_about_app_info.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/strings/stringprintf.h"
@@ -13,9 +15,9 @@ std::string AndroidAboutAppInfo::GetOsInfo() {
   std::string android_info_str;
 
   // Append information about the OS version.
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
+  int32_t os_major_version = 0;
+  int32_t os_minor_version = 0;
+  int32_t os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                &os_minor_version,
                                                &os_bugfix_version);

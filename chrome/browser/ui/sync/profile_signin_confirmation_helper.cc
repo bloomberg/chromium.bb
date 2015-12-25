@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"

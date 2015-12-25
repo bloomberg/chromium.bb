@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/search/search_ipc_router.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/command_line.h"
@@ -145,7 +147,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
         make_scoped_ptr(new MockSearchIPCRouterPolicy));
   }
 
-  bool MessageWasSent(uint32 id) {
+  bool MessageWasSent(uint32_t id) {
     return process()->sink().GetFirstMessageMatching(id) != NULL;
   }
 

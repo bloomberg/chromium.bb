@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/android/autofill/autofill_dialog_controller_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"

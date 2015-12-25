@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_SEARCH_PRERENDERER_H_
 #define CHROME_BROWSER_UI_SEARCH_INSTANT_SEARCH_PRERENDERER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/common/instant_types.h"

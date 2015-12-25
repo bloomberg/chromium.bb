@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"

@@ -4,16 +4,20 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"

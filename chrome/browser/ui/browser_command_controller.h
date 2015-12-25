@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/command_updater.h"

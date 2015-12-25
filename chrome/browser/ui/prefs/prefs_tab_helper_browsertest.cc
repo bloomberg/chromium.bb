@@ -5,6 +5,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"

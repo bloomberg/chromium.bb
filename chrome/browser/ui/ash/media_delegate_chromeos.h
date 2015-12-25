@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_MEDIA_DELEGATE_CHROMEOS_H_
 
 #include "ash/media_delegate.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 

@@ -7,7 +7,8 @@
 
 #include <list>
 #include <vector>
-#include "base/basictypes.h"
+
+#include "base/macros.h"
 #include "chrome/browser/ui/panels/native_panel_stack_window.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_constants.h"

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 class Profile;

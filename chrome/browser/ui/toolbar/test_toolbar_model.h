@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_MODEL_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
 

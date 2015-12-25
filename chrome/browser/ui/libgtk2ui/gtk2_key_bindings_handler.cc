@@ -6,11 +6,13 @@
 
 #include <gdk/gdkkeysyms.h>
 #include <X11/Xlib.h>
+#include <stddef.h>
 #include <X11/XKBlib.h>
 
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"

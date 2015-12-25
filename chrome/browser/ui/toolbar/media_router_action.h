@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_H_
 #define CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_H_
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/local_media_routes_observer.h"

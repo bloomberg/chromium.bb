@@ -7,6 +7,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

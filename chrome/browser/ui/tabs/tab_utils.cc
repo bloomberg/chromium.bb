@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/themes/theme_properties.h"

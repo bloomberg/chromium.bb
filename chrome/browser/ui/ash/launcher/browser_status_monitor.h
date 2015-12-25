@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_BROWSER_STATUS_MONITOR_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_BROWSER_STATUS_MONITOR_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "ash/shelf/scoped_observer_with_duplicated_sources.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_list_observer.h"

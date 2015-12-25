@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_DELEGATE_CHROMEOS_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
 
 class ChromeNewWindowDelegateChromeos : public ChromeNewWindowDelegate {

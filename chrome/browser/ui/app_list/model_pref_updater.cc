@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/model_pref_updater.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/app_list/app_list_prefs.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "ui/app_list/app_list_folder_item.h"

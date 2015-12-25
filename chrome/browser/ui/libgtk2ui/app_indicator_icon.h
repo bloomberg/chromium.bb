@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_APP_INDICATOR_ICON_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/nix/xdg_util.h"

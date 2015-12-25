@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_observer.h"

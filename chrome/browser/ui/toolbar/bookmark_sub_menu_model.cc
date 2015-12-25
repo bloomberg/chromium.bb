@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/grit/generated_resources.h"
 

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PDF_PDF_UNSUPPORTED_FEATURE_H_
 #define CHROME_BROWSER_UI_PDF_PDF_UNSUPPORTED_FEATURE_H_
 
-#include "base/basictypes.h"
 
 namespace content {
 class WebContents;

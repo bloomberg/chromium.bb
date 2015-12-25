@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_HOST_DESKTOP_H_
 #define CHROME_BROWSER_UI_HOST_DESKTOP_H_
 
+#include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;

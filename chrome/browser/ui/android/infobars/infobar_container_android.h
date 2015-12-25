@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_INFOBAR_CONTAINER_ANDROID_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_INFOBAR_CONTAINER_ANDROID_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/infobars/core/infobar_container.h"
 
 class InfoBarAndroid;

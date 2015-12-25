@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"

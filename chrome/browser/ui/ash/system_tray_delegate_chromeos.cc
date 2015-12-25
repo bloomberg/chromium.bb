@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <string>

@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "content/public/common/favicon_url.h"
 
 class GURL;

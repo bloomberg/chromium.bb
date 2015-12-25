@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 
 class AccountId;

@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -239,9 +243,9 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
       observer.Wait();
     }
     EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
-    std::map<int32, GURL> blocked_requests =
+    std::map<int32_t, GURL> blocked_requests =
         popup_blocker_helper->GetBlockedPopupRequests();
-    std::map<int32, GURL>::const_iterator iter = blocked_requests.begin();
+    std::map<int32_t, GURL>::const_iterator iter = blocked_requests.begin();
     popup_blocker_helper->ShowBlockedPopup(iter->first);
 
     observer.Wait();

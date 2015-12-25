@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESOURCE_MANAGER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESOURCE_MANAGER_H_
 
+#include "base/macros.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 
 class Profile;

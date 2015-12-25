@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_HOST_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_HOST_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_delegate.h"

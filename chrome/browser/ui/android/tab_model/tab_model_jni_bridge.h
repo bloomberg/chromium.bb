@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 
 class Profile;

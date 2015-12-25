@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/chromeos/network/network_connect.h"
 
 namespace chromeos {

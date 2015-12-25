@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -85,7 +88,7 @@ class LauncherSearchIconImageLoader {
 
   // Returns truncated icon url. Since max_size includes trailing ..., it should
   // be larger than 3.
-  std::string GetTruncatedIconUrl(const uint32 max_size);
+  std::string GetTruncatedIconUrl(const uint32_t max_size);
 
   scoped_ptr<chromeos::launcher_search_provider::ErrorReporter> error_reporter_;
 

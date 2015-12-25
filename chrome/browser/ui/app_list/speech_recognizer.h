@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 namespace content {

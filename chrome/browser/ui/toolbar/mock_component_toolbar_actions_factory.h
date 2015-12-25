@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_MOCK_COMPONENT_TOOLBAR_ACTIONS_FACTORY_H_
 #define CHROME_BROWSER_UI_TOOLBAR_MOCK_COMPONENT_TOOLBAR_ACTIONS_FACTORY_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 

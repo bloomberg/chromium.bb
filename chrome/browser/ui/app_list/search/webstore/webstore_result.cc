@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"

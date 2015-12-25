@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_H_
 #define CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_BUBBLE_MODEL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -58,13 +60,13 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     ListItem(const gfx::Image& image,
              const std::string& title,
              bool has_link,
-             int32 item_id)
+             int32_t item_id)
         : image(image), title(title), has_link(has_link), item_id(item_id) {}
 
     gfx::Image image;
     std::string title;
     bool has_link;
-    int32 item_id;
+    int32_t item_id;
   };
   typedef std::vector<ListItem> ListItems;
 

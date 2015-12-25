@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 
+#include <stddef.h>
+
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/values.h"

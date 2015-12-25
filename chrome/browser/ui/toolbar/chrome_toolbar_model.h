@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_CHROME_TOOLBAR_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_CHROME_TOOLBAR_MODEL_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #include "components/toolbar/toolbar_model.h"
 

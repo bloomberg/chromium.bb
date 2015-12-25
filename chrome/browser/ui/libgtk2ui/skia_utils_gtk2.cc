@@ -6,7 +6,6 @@
 
 #include <gdk/gdk.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
@@ -105,11 +104,11 @@ GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap& bitmap) {
 
   // SkBitmaps are premultiplied, we need to unpremultiply them.
   const int kBytesPerPixel = 4;
-  uint8* divided = gdk_pixbuf_get_pixels(pixbuf);
+  uint8_t* divided = gdk_pixbuf_get_pixels(pixbuf);
 
   for (int y = 0, i = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
-      uint32 pixel = bitmap.getAddr32(0, y)[x];
+      uint32_t pixel = bitmap.getAddr32(0, y)[x];
 
       int alpha = SkColorGetA(pixel);
       if (alpha != 0 && alpha != 255) {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"

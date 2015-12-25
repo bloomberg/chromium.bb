@@ -8,7 +8,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace {

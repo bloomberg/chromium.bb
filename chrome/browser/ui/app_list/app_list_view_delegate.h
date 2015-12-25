@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -134,7 +136,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Overridden from app_list::StartPageObserver:
   void OnSpeechResult(const base::string16& result, bool is_final) override;
-  void OnSpeechSoundLevelChanged(int16 level) override;
+  void OnSpeechSoundLevelChanged(int16_t level) override;
   void OnSpeechRecognitionStateChanged(
       app_list::SpeechRecognitionState new_state) override;
 

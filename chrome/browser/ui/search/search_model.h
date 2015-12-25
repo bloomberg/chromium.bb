@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_MODEL_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_MODEL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/common/search_types.h"
 

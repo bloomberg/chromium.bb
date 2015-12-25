@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "build/build_config.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

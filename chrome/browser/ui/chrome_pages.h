@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_CHROME_PAGES_H_
 #define CHROME_BROWSER_UI_CHROME_PAGES_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
@@ -37,7 +40,7 @@ enum HelpSource {
 
 
 void ShowBookmarkManager(Browser* browser);
-void ShowBookmarkManagerForNode(Browser* browser, int64 node_id);
+void ShowBookmarkManagerForNode(Browser* browser, int64_t node_id);
 void ShowHistory(Browser* browser);
 void ShowDownloads(Browser* browser);
 void ShowExtensions(Browser* browser,

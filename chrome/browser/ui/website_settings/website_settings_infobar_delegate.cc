@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"

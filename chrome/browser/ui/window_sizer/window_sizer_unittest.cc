@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test that the window is sized appropriately for the first run experience

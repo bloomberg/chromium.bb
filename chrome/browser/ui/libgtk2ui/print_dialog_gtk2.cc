@@ -16,6 +16,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"

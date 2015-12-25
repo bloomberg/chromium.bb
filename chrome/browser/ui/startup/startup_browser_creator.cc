@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 
+#include <stddef.h>
+
 #include <algorithm>   // For max().
 #include <set>
 
@@ -18,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
@@ -30,6 +33,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"

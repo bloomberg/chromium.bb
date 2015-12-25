@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
 
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"

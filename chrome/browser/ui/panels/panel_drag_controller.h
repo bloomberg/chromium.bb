@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_DRAG_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_DRAG_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "ui/gfx/geometry/vector2d.h"

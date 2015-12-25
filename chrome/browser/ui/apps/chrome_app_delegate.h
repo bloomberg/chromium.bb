@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APPS_CHROME_APP_DELEGATE_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile.h"

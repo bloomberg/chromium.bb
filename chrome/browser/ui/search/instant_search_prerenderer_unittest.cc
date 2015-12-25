@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -193,7 +196,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
     return GetInstantSearchPrerenderer()->prerender_contents();
   }
 
-  bool MessageWasSent(uint32 id) {
+  bool MessageWasSent(uint32_t id) {
     content::MockRenderProcessHost* process =
         static_cast<content::MockRenderProcessHost*>(
             prerender_contents()->GetRenderViewHost()->GetProcess());

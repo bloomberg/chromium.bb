@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"

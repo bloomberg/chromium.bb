@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "components/password_manager/core/browser/password_manager.h"

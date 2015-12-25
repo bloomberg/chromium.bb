@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 
 #include <pk11pub.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/logging.h"

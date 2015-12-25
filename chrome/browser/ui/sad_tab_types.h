@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_SAD_TAB_TYPES_H_
 #define CHROME_BROWSER_UI_SAD_TAB_TYPES_H_
 
+#include "build/build_config.h"
+
 namespace chrome {
 
 enum SadTabKind {

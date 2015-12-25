@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/window_event_dispatcher.h"

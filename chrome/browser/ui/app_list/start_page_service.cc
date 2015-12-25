@@ -4,15 +4,19 @@
 
 #include "chrome/browser/ui/app_list/start_page_service.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"

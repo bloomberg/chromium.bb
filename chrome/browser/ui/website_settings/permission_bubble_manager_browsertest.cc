@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"

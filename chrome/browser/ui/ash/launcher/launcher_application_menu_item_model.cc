@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 

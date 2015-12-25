@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/fast_show_pickler.h"
 
+#include <stddef.h>
+
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/gfx/image/image_skia_rep.h"

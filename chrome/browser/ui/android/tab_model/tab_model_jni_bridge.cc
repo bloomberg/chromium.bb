@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
@@ -153,7 +155,7 @@ void TabModelJniBridge::BroadcastSessionRestoreComplete(
 }
 
 inline static base::TimeDelta GetTimeDelta(jlong ms) {
-  return base::TimeDelta::FromMilliseconds(static_cast<int64>(ms));
+  return base::TimeDelta::FromMilliseconds(static_cast<int64_t>(ms));
 }
 
 void LogFromCloseMetric(JNIEnv* env,

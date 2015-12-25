@@ -7,8 +7,9 @@
 
 #include <list>
 #include <vector>
-#include "base/basictypes.h"
+
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"

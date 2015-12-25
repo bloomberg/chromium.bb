@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/cast_config_delegate_media_router.h"
 
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_router.h"

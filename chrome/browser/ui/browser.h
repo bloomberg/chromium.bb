@@ -5,20 +5,23 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_H_
 #define CHROME_BROWSER_UI_BROWSER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"

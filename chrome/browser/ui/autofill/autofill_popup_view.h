@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_VIEW_H_
 
+#include <stddef.h>
+
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

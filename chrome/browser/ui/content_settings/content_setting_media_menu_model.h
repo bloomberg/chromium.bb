@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/base/models/simple_menu_model.h"
 

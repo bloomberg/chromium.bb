@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_MULTI_PROFILE_APP_WINDOW_LAUNCHER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_MULTI_PROFILE_APP_WINDOW_LAUNCHER_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 
 // Inherits from AppWindowLauncherController and overwrites the AppWindow

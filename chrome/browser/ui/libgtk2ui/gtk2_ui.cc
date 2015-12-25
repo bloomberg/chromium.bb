@@ -14,6 +14,7 @@
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"

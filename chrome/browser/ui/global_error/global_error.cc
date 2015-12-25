@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

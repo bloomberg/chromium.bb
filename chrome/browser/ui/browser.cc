@@ -4,10 +4,7 @@
 
 #include "chrome/browser/ui/browser.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <shellapi.h>
-#endif  // defined(OS_WIN)
+#include <stddef.h>
 
 #include <algorithm>
 #include <string>
@@ -18,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/process_info.h"
@@ -31,6 +29,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -213,6 +212,8 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
+#include <shellapi.h>
 #include "base/win/metro.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/view_ids.h"

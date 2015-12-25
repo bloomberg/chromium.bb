@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 
+#include "base/macros.h"
 #include "ui/gfx/display.h"
 
 namespace autofill {

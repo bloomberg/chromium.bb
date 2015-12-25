@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"

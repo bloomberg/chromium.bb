@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/docked_panel_collection.h"

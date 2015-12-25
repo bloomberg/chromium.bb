@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 
+#include <stddef.h>
+
 #include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"

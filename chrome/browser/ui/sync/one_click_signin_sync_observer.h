@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_SYNC_OBSERVER_H_
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_SYNC_OBSERVER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/web_contents_observer.h"

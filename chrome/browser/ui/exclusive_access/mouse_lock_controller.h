@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_MOUSE_LOCK_CONTROLLER_H_
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_MOUSE_LOCK_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_controller_base.h"
 #include "components/content_settings/core/common/content_settings.h"
 

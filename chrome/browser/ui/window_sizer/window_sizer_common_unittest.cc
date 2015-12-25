@@ -4,8 +4,12 @@
 
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
 
+#include <stddef.h>
+
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"

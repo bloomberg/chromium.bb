@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/browser_command_controller.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/command_line.h"
 #include "base/debug/debugging_flags.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"

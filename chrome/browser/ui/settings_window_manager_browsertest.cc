@@ -4,9 +4,13 @@
 
 #include "chrome/browser/ui/settings_window_manager.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"

@@ -6,6 +6,7 @@
 
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#include <stddef.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>

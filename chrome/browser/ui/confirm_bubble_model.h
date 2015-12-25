@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_CONFIRM_BUBBLE_MODEL_H_
 #define CHROME_BROWSER_UI_CONFIRM_BUBBLE_MODEL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 

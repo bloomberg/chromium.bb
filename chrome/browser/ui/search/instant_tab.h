@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_TAB_H_
 #define CHROME_BROWSER_UI_SEARCH_INSTANT_TAB_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/search/instant_page.h"
 
 class Profile;

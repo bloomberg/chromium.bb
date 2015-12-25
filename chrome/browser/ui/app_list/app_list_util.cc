@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_list_util.h"
 
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/pref_names.h"

@@ -7,9 +7,11 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"

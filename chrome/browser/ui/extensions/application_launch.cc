@@ -7,7 +7,9 @@
 #include <string>
 
 #include "apps/launcher.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
 #include "chrome/browser/apps/per_app_settings_service_factory.h"

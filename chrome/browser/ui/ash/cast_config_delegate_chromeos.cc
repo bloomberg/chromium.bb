@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/ash/cast_config_delegate_chromeos.h"
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/cast_devices_private/cast_devices_private_api.h"

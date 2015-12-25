@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/ssl/security_state_model.h"

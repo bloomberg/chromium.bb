@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"

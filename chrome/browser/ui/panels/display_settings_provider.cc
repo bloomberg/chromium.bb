@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/fullscreen.h"
 #include "ui/gfx/screen.h"
 

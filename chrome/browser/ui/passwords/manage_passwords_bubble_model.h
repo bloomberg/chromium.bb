@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/clock.h"
 #include "components/autofill/core/common/password_form.h"

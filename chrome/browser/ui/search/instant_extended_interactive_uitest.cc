@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <sstream>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -16,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -153,7 +157,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
     InstantTestBase::Init(instant_url, ntp_url, false);
   }
 
-  int64 GetHistogramCount(const char* name) {
+  int64_t GetHistogramCount(const char* name) {
     base::HistogramBase* histogram =
         base::StatisticsRecorder::FindHistogram(name);
     if (!histogram) {

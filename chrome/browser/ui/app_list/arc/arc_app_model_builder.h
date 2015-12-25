@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_MODEL_BUILDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_MODEL_BUILDER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/macros.h"

@@ -11,7 +11,7 @@
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
 
-AXRootObjWrapper::AXRootObjWrapper(int32 id)
+AXRootObjWrapper::AXRootObjWrapper(int32_t id)
     : id_(id), alert_window_(new aura::Window(NULL)) {
   alert_window_->Init(ui::LAYER_NOT_DRAWN);
 }
@@ -55,6 +55,6 @@ void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->state = 0;
 }
 
-int32 AXRootObjWrapper::GetID() {
+int32_t AXRootObjWrapper::GetID() {
   return id_;
 }

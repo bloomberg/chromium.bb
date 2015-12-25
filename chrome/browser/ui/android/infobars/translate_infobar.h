@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_TRANSLATE_INFOBAR_H_
 
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 

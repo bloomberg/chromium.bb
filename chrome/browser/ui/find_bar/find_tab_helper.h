@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
 
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "content/public/browser/web_contents_observer.h"

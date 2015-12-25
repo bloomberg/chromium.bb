@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"

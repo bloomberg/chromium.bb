@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_OMNIBOX_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_OMNIBOX_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "ui/app_list/search_provider.h"

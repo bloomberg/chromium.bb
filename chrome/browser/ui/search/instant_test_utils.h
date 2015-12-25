@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"

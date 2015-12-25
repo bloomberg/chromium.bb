@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/certificate_dialogs.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

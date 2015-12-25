@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_ORDER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_ORDER_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "ui/base/page_transition_types.h"
 

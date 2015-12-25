@@ -4,6 +4,7 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"

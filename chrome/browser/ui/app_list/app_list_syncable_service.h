@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_SYNCABLE_SERVICE_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_SYNCABLE_SERVICE_H_
 
+#include <stddef.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/drive/drive_app_uninstall_sync_service.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "components/keyed_service/core/keyed_service.h"

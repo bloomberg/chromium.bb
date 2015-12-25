@@ -15,6 +15,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/fullscreen.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"

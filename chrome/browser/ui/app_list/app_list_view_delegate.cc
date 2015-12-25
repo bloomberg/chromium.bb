@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "apps/custom_launcher_page_contents.h"
@@ -14,6 +16,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -661,7 +664,7 @@ void AppListViewDelegate::OnSpeechResult(const base::string16& result,
   }
 }
 
-void AppListViewDelegate::OnSpeechSoundLevelChanged(int16 level) {
+void AppListViewDelegate::OnSpeechSoundLevelChanged(int16_t level) {
   speech_ui_->UpdateSoundLevel(level);
 }
 

@@ -8,6 +8,7 @@
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"

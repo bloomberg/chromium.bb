@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_ASH_IME_CONTROLLER_CHROMEOS_H_
 
 #include "ash/ime_control_delegate.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 // A class which controls ime when an IME shortcut key such as Control+space is
 // pressed.

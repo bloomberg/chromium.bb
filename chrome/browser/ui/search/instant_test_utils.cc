@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/search/instant_test_utils.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"

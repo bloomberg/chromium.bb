@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_TAB_MODEL_TAB_MODEL_H_
 #define CHROME_BROWSER_UI_ANDROID_TAB_MODEL_TAB_MODEL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "components/sessions/core/session_id.h"

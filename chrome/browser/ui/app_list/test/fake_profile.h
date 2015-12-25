@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "content/public/browser/browser_context.h"

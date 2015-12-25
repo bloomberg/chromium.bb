@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_ASH_CHROME_SCREENSHOT_GRABBER_H_
 
 #include "ash/screenshot_delegate.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/notification.h"
 #include "ui/snapshot/screenshot_grabber.h"
 

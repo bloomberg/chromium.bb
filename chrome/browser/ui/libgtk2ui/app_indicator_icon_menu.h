@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_APP_INDICATOR_ICON_MENU_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 
 typedef struct _GtkMenu GtkMenu;

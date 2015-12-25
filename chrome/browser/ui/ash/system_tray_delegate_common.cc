@@ -11,6 +11,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/volume_control_delegate.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"

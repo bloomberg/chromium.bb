@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 
+#include <stddef.h>
+
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"

@@ -10,6 +10,7 @@
 
 #include "ash/session/session_state_observer.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"

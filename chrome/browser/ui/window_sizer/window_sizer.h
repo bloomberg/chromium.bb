@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_H_
 #define CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/base/ui_base_types.h"

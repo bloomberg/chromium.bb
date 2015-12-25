@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/bubble/bubble_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"

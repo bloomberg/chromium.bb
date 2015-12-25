@@ -4,14 +4,18 @@
 
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
@@ -31,13 +35,13 @@ namespace {
 
 #if defined(OS_MACOSX)
 // Match Activity Monitor's default refresh rate.
-const int64 kRefreshTimeMS = 2000;
+const int64_t kRefreshTimeMS = 2000;
 
 // Activity Monitor shows %cpu with one decimal digit -- be consistent with
 // that.
 const char kCpuTextFormatString[] = "%.1f";
 #else
-const int64 kRefreshTimeMS = 1000;
+const int64_t kRefreshTimeMS = 1000;
 const char kCpuTextFormatString[] = "%.0f";
 #endif  // defined(OS_MACOSX)
 
@@ -118,7 +122,7 @@ class TaskManagerValuesStringifier {
                                                 cpu_usage));
   }
 
-  base::string16 GetMemoryUsageText(int64 memory_usage, bool has_duplicates) {
+  base::string16 GetMemoryUsageText(int64_t memory_usage, bool has_duplicates) {
     if (memory_usage == -1)
       return n_a_string_;
 
@@ -158,13 +162,13 @@ class TaskManagerValuesStringifier {
     return base::IntToString16(nacl_port);
   }
 
-  base::string16 GetWindowsHandlesText(int64 current, int64 peak) {
+  base::string16 GetWindowsHandlesText(int64_t current, int64_t peak) {
     return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
                                       base::Int64ToString16(current),
                                       base::Int64ToString16(peak));
   }
 
-  base::string16 GetNetworkUsageText(int64 network_usage) {
+  base::string16 GetNetworkUsageText(int64_t network_usage) {
     if (network_usage == -1)
       return n_a_string_;
 
@@ -180,7 +184,7 @@ class TaskManagerValuesStringifier {
     return base::IntToString16(proc_id);
   }
 
-  base::string16 FormatAllocatedAndUsedMemory(int64 allocated, int64 used) {
+  base::string16 FormatAllocatedAndUsedMemory(int64_t allocated, int64_t used) {
     return l10n_util::GetStringFUTF16(
         IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
         ui::FormatBytesWithUnits(allocated, ui::DATA_UNITS_KIBIBYTE, false),
@@ -311,13 +315,13 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
           observed_task_manager()->GetProcessId(tasks_[row]));
 
     case IDS_TASK_MANAGER_GDI_HANDLES_COLUMN: {
-      int64 current, peak;
+      int64_t current, peak;
       observed_task_manager()->GetGDIHandles(tasks_[row], &current, &peak);
       return stringifier_->GetWindowsHandlesText(current, peak);
     }
 
     case IDS_TASK_MANAGER_USER_HANDLES_COLUMN: {
-      int64 current, peak;
+      int64_t current, peak;
       observed_task_manager()->GetUSERHandles(tasks_[row], &current, &peak);
       return stringifier_->GetWindowsHandlesText(current, peak);
     }
@@ -360,7 +364,7 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
           observed_task_manager()->GetSqliteMemoryUsed(tasks_[row]), false);
 
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN: {
-      int64 v8_allocated, v8_used;
+      int64_t v8_allocated, v8_used;
       if (observed_task_manager()->GetV8Memory(tasks_[row],
                                                &v8_allocated,
                                                &v8_used)) {
@@ -447,14 +451,14 @@ int TaskManagerTableModel::CompareValues(int row1,
                           observed_task_manager()->GetProcessId(tasks_[row2]));
 
     case IDS_TASK_MANAGER_GDI_HANDLES_COLUMN: {
-      int64 current1, peak1, current2, peak2;
+      int64_t current1, peak1, current2, peak2;
       observed_task_manager()->GetGDIHandles(tasks_[row1], &current1, &peak1);
       observed_task_manager()->GetGDIHandles(tasks_[row2], &current2, &peak2);
       return ValueCompare(current1, current2);
     }
 
     case IDS_TASK_MANAGER_USER_HANDLES_COLUMN: {
-      int64 current1, peak1, current2, peak2;
+      int64_t current1, peak1, current2, peak2;
       observed_task_manager()->GetUSERHandles(tasks_[row1], &current1, &peak1);
       observed_task_manager()->GetUSERHandles(tasks_[row2], &current2, &peak2);
       return ValueCompare(current1, current2);
@@ -501,7 +505,7 @@ int TaskManagerTableModel::CompareValues(int row1,
     }
 
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN: {
-      int64 allocated1, allocated2, used1, used2;
+      int64_t allocated1, allocated2, used1, used2;
       observed_task_manager()->GetV8Memory(tasks_[row1], &allocated1, &used1);
       observed_task_manager()->GetV8Memory(tasks_[row2], &allocated2, &used2);
       return ValueCompare(allocated1, allocated2);

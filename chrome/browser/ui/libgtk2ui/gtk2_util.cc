@@ -7,6 +7,7 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#include <stddef.h>
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"

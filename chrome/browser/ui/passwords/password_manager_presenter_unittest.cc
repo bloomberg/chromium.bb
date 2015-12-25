@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"

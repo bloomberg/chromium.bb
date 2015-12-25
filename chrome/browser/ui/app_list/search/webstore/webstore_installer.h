@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_INSTALLER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_INSTALLER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
 
 class Profile;

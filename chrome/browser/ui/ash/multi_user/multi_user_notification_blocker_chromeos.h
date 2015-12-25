@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/message_center/notification_blocker.h"
 

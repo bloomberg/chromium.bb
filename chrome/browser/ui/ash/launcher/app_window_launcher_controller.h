@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/public/activation_change_observer.h"

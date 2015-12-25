@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/browser_process.h"

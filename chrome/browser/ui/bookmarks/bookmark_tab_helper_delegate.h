@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_DELEGATE_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_DELEGATE_H_
 
-#include "base/basictypes.h"
 
 namespace content {
 class WebContents;

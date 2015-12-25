@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
 struct AppLaunchParams;

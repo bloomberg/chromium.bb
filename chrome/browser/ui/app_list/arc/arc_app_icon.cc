@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"

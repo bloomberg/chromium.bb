@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -511,7 +512,7 @@ void TabStripModel::CloseAllTabs() {
   InternalCloseTabs(closing_tabs, CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-bool TabStripModel::CloseWebContentsAt(int index, uint32 close_types) {
+bool TabStripModel::CloseWebContentsAt(int index, uint32_t close_types) {
   DCHECK(ContainsIndex(index));
   std::vector<int> closing_tabs;
   closing_tabs.push_back(index);
@@ -1140,7 +1141,7 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(WebContents* contents) const {
 }
 
 bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
-                                      uint32 close_types) {
+                                      uint32_t close_types) {
   if (indices.empty())
     return true;
 

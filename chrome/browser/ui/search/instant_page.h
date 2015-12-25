@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"

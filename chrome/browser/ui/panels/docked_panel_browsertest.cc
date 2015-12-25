@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/docked_panel_collection.h"

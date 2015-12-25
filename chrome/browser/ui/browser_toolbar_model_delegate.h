@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_TOOLBAR_MODEL_DELEGATE_H_
 #define CHROME_BROWSER_UI_BROWSER_TOOLBAR_MODEL_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 
 class Browser;

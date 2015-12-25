@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,7 +54,7 @@ class ScopedArcAppListPrefUpdate : public DictionaryPrefUpdate {
 bool InstallIconFromFileThread(const std::string& app_id,
                                ui::ScaleFactor scale_factor,
                                const base::FilePath& icon_path,
-                               const std::vector<uint8>& content_png) {
+                               const std::vector<uint8_t>& content_png) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!content_png.empty());
 
@@ -304,10 +307,10 @@ void ArcAppListPrefs::OnAppReady(const arc::AppInfo& app) {
                       OnAppRegistered(app_id, app_info));
   }
 
-  std::map<std::string, uint32>::iterator deferred_icons =
+  std::map<std::string, uint32_t>::iterator deferred_icons =
       request_icon_deferred_.find(app_id);
   if (deferred_icons != request_icon_deferred_.end()) {
-    for (uint32 i = ui::SCALE_FACTOR_100P; i < ui::NUM_SCALE_FACTORS; ++i) {
+    for (uint32_t i = ui::SCALE_FACTOR_100P; i < ui::NUM_SCALE_FACTORS; ++i) {
       if (deferred_icons->second & (1 << i)) {
          RequestIcon(app_id, static_cast<ui::ScaleFactor>(i));
       }
@@ -352,10 +355,9 @@ void ArcAppListPrefs::OnAppIcon(const mojo::String& package,
               icon_png_data.To<std::vector<uint8_t>>());
 }
 
-
 void ArcAppListPrefs::InstallIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor,
-                                  const std::vector<uint8>& content_png) {
+                                  const std::vector<uint8_t>& content_png) {
   base::FilePath icon_path = GetIconPath(app_id, scale_factor);
   base::PostTaskAndReplyWithResult(content::BrowserThread::GetBlockingPool(),
                                    FROM_HERE,

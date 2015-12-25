@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/core/favicon_service.h"

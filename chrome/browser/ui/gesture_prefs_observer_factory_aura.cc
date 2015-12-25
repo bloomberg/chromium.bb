@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"

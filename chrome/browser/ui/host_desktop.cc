@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/host_desktop.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
+#include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 #if defined(USE_ASH)
 #include "ash/shell.h"

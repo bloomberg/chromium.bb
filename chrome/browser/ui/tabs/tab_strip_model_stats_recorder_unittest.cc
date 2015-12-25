@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_stats_recorder.h"
 
+#include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/chrome_bubble_manager.h"
 
+#include "base/macros.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/testing_profile.h"

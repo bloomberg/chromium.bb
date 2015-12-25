@@ -6,6 +6,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

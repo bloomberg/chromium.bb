@@ -4,8 +4,10 @@
 
 #include "components/ui/zoom/zoom_controller.h"
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"

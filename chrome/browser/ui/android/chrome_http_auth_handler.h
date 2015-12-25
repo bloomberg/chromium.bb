@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 

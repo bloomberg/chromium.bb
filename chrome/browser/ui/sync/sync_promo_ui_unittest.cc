@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"

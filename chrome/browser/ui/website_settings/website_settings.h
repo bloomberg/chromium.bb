@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ssl/security_state_model.h"

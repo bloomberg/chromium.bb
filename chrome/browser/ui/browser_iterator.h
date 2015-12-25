@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_ITERATOR_H_
 #define CHROME_BROWSER_UI_BROWSER_ITERATOR_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 

@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_MODEL_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"

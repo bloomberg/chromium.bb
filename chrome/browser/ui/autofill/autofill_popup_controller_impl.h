@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_
 
+#include <stddef.h>
+
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "ui/gfx/font_list.h"

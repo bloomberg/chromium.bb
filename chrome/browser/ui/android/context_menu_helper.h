@@ -9,6 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/context_menu_params.h"

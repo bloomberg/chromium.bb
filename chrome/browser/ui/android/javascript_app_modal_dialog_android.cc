@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 
 namespace task_management {

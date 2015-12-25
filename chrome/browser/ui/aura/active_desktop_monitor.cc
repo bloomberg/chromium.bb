@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
 
+#include "build/build_config.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 

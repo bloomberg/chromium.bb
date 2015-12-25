@@ -16,6 +16,7 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"

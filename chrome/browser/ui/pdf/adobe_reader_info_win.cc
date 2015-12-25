@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 
 #include <shlwapi.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <vector>

@@ -11,8 +11,8 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
 
 namespace libgtk2ui {

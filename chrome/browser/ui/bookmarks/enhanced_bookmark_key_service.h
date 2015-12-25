@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_ENHANCED_BOOKMARK_KEY_SERVICE_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_ENHANCED_BOOKMARK_KEY_SERVICE_H_
 
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"

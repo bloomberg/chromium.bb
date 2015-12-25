@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_SAVE_PASSWORD_INFOBAR_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_SAVE_PASSWORD_INFOBAR_H_
 
+#include "base/macros.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 

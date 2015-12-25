@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/global_error/global_error_service.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"

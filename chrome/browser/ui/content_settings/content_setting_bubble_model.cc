@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
@@ -514,7 +516,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
  private:
   void OnListItemClicked(int index) override;
 
-  int32 item_id_from_item_index(int index) const {
+  int32_t item_id_from_item_index(int index) const {
     return bubble_content().list_items[index].item_id;
   }
 };
@@ -529,10 +531,10 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
                                      CONTENT_SETTINGS_TYPE_POPUPS) {
   if (web_contents) {
     // Build blocked popup list.
-    std::map<int32, GURL> blocked_popups =
+    std::map<int32_t, GURL> blocked_popups =
         PopupBlockerTabHelper::FromWebContents(web_contents)
             ->GetBlockedPopupRequests();
-    for (const std::pair<int32, GURL>& blocked_popup : blocked_popups) {
+    for (const std::pair<int32_t, GURL>& blocked_popup : blocked_popups) {
       std::string title(blocked_popup.second.spec());
       // The pop-up may not have a valid URL.
       if (title.empty())

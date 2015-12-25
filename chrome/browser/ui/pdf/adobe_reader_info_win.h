@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PDF_ADOBE_READER_INFO_WIN_H_
 #define CHROME_BROWSER_UI_PDF_ADOBE_READER_INFO_WIN_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "content/public/common/webplugininfo.h"
 

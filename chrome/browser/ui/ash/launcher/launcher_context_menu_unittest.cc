@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"

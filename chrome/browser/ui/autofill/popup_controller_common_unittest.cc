@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/test_popup_controller_common.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

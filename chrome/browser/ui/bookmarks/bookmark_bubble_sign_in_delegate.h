@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_BUBBLE_SIGN_IN_DELEGATE_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_BUBBLE_SIGN_IN_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"

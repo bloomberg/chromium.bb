@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PROTOCOL_DIALOG_DELEGATE_H_
 #define CHROME_BROWSER_UI_PROTOCOL_DIALOG_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "url/gurl.h"
 
 // Interface implemented by objects that wish to show a dialog box Window for

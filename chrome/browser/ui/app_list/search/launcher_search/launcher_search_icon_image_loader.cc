@@ -149,7 +149,7 @@ void LauncherSearchIconImageLoader::NotifyObserversBadgeIconImageChange() {
 }
 
 std::string LauncherSearchIconImageLoader::GetTruncatedIconUrl(
-    const uint32 max_size) {
+    const uint32_t max_size) {
   CHECK(max_size > 3);
 
   if (icon_url_.spec().size() <= max_size)

@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 
 namespace gfx {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"

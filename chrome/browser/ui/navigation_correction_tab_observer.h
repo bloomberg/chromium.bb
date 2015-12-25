@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_NAVIGATION_CORRECTION_TAB_OBSERVER_H_
 #define CHROME_BROWSER_UI_NAVIGATION_CORRECTION_TAB_OBSERVER_H_
 
+#include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "content/public/browser/web_contents_observer.h"

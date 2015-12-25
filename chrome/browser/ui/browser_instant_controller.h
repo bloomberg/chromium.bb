@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/search_model_observer.h"

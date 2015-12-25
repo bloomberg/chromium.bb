@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_AUTOFILL_POPUP_CONTROLLER_COMMON_H_
 
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "content/public/browser/render_widget_host.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"

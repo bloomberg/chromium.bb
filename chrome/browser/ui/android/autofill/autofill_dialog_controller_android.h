@@ -9,6 +9,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"

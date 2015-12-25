@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 
+#include <stddef.h>
+
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"

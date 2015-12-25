@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_MOCK_AUTOFILL_DIALOG_VIEW_DELEGATE_H_
 #define CHROME_BROWSER_UI_AUTOFILL_MOCK_AUTOFILL_DIALOG_VIEW_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/range/range.h"

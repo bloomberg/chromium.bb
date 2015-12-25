@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/browser_tab_strip_model_delegate.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"

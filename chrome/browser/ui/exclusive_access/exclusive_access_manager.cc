@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/browser_iterator.h"
 
 namespace content {

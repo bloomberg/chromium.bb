@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

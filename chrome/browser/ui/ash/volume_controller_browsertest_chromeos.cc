@@ -7,6 +7,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -25,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/install_chrome_app.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -597,7 +601,7 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
       return false;
     }
 
-    uint32 restore_behavior = SessionRestore::SYNCHRONOUS;
+    uint32_t restore_behavior = SessionRestore::SYNCHRONOUS;
     if (browser_defaults::kAlwaysCreateTabbedBrowserOnSessionRestore ||
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kCreateBrowserOnStartupForTests)) {

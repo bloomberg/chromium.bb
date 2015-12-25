@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"

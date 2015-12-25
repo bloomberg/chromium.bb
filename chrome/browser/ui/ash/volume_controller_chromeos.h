@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ASH_VOLUME_CONTROLLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_VOLUME_CONTROLLER_CHROMEOS_H_
 
+#include <stdint.h>
+
 #include "ash/volume_control_delegate.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
 
 // A class which controls volume when F8-10 or a multimedia key for volume is

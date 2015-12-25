@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_notifier_impl.h"
@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"

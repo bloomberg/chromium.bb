@@ -10,6 +10,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 
+#include <stdint.h>
+
 #include "ash/shelf/shelf_constants.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/browser.h"
@@ -86,7 +89,7 @@ class LauncherFaviconLoaderBrowsertest
   }
 
   bool WaitForContentsLoaded() {
-    const int64 max_seconds = 10;
+    const int64_t max_seconds = 10;
     base::Time start_time = base::Time::Now();
     while (!(contents_observer_->loaded() &&
              contents_observer_->got_favicons())) {
@@ -101,7 +104,7 @@ class LauncherFaviconLoaderBrowsertest
   }
 
   bool WaitForFaviconUpdated() {
-    const int64 max_seconds = 10;
+    const int64_t max_seconds = 10;
     base::Time start_time = base::Time::Now();
     while (favicon_loader_->HasPendingDownloads()) {
       content::RunAllPendingInMessageLoop();

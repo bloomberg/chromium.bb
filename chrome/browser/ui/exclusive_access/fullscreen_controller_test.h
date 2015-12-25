@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_TEST_H_
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_TEST_H_
 
+#include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/sessions/core/live_tab_context.h"
 

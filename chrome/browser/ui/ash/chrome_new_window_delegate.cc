@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
 
 #include "ash/wm/window_util.h"
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"

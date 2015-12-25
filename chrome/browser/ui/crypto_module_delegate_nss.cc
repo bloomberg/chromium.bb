@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/crypto_module_delegate_nss.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "chrome/browser/net/nss_context.h"
 #include "content/public/browser/browser_thread.h"

@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"

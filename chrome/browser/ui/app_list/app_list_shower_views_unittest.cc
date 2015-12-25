@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_list_shower_views.h"
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_shower_delegate.h"

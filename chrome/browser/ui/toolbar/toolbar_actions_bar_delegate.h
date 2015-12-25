@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_DELEGATE_H_
 
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/size.h"

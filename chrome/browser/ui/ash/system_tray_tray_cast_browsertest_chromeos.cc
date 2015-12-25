@@ -8,6 +8,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/tray_cast_test_api.h"
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

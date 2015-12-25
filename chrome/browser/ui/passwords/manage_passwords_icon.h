@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_ICON_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_ICON_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 

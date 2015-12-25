@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -166,7 +169,7 @@ void RecordAppListDiscoverability(PrefService* local_state,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  int64 enable_time_value = local_state->GetInt64(prefs::kAppListEnableTime);
+  int64_t enable_time_value = local_state->GetInt64(prefs::kAppListEnableTime);
   if (enable_time_value == 0)
     return;  // Already recorded or never enabled.
 

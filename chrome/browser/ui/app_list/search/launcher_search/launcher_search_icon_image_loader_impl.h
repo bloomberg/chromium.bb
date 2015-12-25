@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_IMPL_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/app_menu_badge_controller.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"

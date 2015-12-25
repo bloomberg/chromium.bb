@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/chrome_pages.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -56,7 +59,7 @@ const char kHashMark[] = "#";
 
 void OpenBookmarkManagerWithHash(Browser* browser,
                                  const std::string& action,
-                                 int64 node_id) {
+                                 int64_t node_id) {
   content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
   content::RecordAction(UserMetricsAction("ShowBookmarks"));
   NavigateParams params(GetSingletonTabNavigateParams(
@@ -144,7 +147,7 @@ void ShowBookmarkManager(Browser* browser) {
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIBookmarksURL)));
 }
 
-void ShowBookmarkManagerForNode(Browser* browser, int64 node_id) {
+void ShowBookmarkManagerForNode(Browser* browser, int64_t node_id) {
   OpenBookmarkManagerWithHash(browser, std::string(), node_id);
 }
 

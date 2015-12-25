@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_LIST_PREFS_H_
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_LIST_PREFS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -125,7 +127,7 @@ class ArcAppListPrefs : public KeyedService,
   // directory.
   void InstallIcon(const std::string& app_id,
                    ui::ScaleFactor scale_factor,
-                   const std::vector<uint8>& contentPng);
+                   const std::vector<uint8_t>& contentPng);
   void OnIconInstalled(const std::string& app_id,
                        ui::ScaleFactor scale_factor,
                        bool install_succeed);
@@ -143,7 +145,7 @@ class ArcAppListPrefs : public KeyedService,
   // Keeps deferred icon load requests. Each app may contain several requests
   // for different scale factor. Scale factor is defined by specific bit
   // position.
-  std::map<std::string, uint32> request_icon_deferred_;
+  std::map<std::string, uint32_t> request_icon_deferred_;
 
   mojo::Binding<arc::AppHost> binding_;
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PANELS_TEST_PANEL_MOUSE_WATCHER_H_
 #define CHROME_BROWSER_UI_PANELS_TEST_PANEL_MOUSE_WATCHER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "ui/gfx/geometry/point.h"
 

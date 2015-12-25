@@ -8,8 +8,8 @@
 #include <string>
 
 #include "ash/cast_config_delegate.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/values.h"
 
 namespace chromeos {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/common/webservice_search_provider.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/callback.h"

@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_AURA_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_
 #define CHROME_BROWSER_UI_AURA_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 
 namespace aura {
@@ -16,7 +18,7 @@ class Window;
 
 class AXRootObjWrapper : public views::AXAuraObjWrapper {
  public:
-  explicit AXRootObjWrapper(int32 id);
+  explicit AXRootObjWrapper(int32_t id);
   ~AXRootObjWrapper() override;
 
   // Returns an AXAuraObjWrapper for an alert window with title set to |text|.
@@ -30,10 +32,10 @@ class AXRootObjWrapper : public views::AXAuraObjWrapper {
   void GetChildren(
       std::vector<views::AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;
-  int32 GetID() override;
+  int32_t GetID() override;
 
  private:
-  int32 id_;
+  int32_t id_;
 
   aura::Window* alert_window_;
 

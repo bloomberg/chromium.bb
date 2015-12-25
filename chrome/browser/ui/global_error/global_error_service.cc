@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/global_error/global_error_service.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/stl_util.h"

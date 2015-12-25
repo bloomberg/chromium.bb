@@ -7,9 +7,12 @@
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_SELECT_FILE_DIALOG_IMPL_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_SELECT_FILE_DIALOG_IMPL_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/nix/xdg_util.h"
 #include "ui/aura/window.h"
 #include "ui/shell_dialogs/select_file_dialog.h"

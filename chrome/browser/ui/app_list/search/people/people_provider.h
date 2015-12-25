@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_PEOPLE_PEOPLE_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_PEOPLE_PEOPLE_PROVIDER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_search_provider.h"
 #include "google_apis/gaia/oauth2_token_service.h"

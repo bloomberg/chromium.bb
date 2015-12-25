@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"

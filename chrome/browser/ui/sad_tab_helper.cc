@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/sad_tab_helper.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/sad_tab.h"
 #include "content/public/browser/web_contents.h"

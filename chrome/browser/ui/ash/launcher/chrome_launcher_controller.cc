@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -19,12 +21,14 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"

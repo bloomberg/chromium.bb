@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
 #include "chrome/browser/ui/host_desktop.h"

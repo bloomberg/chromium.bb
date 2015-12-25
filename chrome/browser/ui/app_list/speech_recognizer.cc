@@ -4,9 +4,13 @@
 
 #include "chrome/browser/ui/app_list/speech_recognizer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/speech_recognizer_delegate.h"

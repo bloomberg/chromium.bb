@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_VIEW_ANDROID_HELPER_H_
 #define CHROME_BROWSER_UI_ANDROID_VIEW_ANDROID_HELPER_H_
 
+#include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace ui {

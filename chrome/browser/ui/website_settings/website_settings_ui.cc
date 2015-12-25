@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
+#include "base/macros.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/plugins_field_trial.h"

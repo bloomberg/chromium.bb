@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
 
+#include <stddef.h>
+
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"

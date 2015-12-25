@@ -13,6 +13,7 @@
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"

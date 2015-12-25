@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 class TestToolbarActionsBarBubbleDelegate::DelegateImpl
     : public ToolbarActionsBarBubbleDelegate {

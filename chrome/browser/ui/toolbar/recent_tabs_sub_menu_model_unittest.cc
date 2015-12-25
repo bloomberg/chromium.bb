@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
 #include "chrome/browser/sessions/session_service.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 
+#include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/browser_prefs.h"

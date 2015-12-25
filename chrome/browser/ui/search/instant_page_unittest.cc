@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/search/instant_page.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -51,7 +53,7 @@ class InstantPageTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override;
 
-  bool MessageWasSent(uint32 id) {
+  bool MessageWasSent(uint32_t id) {
     return process()->sink().GetFirstMessageMatching(id) != NULL;
   }
 

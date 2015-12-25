@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"

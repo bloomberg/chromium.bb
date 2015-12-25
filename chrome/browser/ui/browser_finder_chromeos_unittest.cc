@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"

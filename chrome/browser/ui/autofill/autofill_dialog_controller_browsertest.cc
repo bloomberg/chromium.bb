@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -12,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_BROWSER_TEST_UTIL_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_BROWSER_TEST_UTIL_H_
 
+#include "base/macros.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 

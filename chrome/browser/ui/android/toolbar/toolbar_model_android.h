@@ -8,7 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "components/toolbar/toolbar_model.h"

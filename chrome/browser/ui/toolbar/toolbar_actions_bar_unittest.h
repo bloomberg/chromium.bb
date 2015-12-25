@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_UNITTEST_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_UNITTEST_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"

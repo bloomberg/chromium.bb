@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_MULTI_PROFILE_BROWSER_STATUS_MONITOR_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_MULTI_PROFILE_BROWSER_STATUS_MONITOR_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 
 // MultiProfileBrowserStatusMonitor uses mainly the BrowserStatusMonitor

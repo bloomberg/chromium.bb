@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_PANELS_DETACHED_PANEL_COLLECTION_H_
 
 #include <list>
-#include "base/basictypes.h"
+
+#include "base/macros.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "ui/gfx/geometry/point.h"

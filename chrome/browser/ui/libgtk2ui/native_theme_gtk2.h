@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/macros.h"
 #include "ui/native_theme/native_theme_base.h"
 
 

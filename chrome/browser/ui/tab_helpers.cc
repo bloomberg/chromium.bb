@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tab_helpers.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/chrome_content_settings_client.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"

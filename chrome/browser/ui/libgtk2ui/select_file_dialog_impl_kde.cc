@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <set>
-
+#include <stddef.h>
 #include <X11/Xlib.h>
+
+#include <set>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"

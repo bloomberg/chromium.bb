@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_WEBSERVICE_SEARCH_PROVIDER_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

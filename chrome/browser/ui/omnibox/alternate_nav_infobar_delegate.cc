@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"

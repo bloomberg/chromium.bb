@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/search/instant_controller.h"
 
+#include <stddef.h>
+
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"

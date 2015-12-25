@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -17,10 +19,12 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"

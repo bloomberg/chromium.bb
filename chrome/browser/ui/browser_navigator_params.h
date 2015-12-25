@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/site_instance.h"

@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"

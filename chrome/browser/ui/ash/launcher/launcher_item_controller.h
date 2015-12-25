@@ -9,8 +9,8 @@
 
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_types.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"

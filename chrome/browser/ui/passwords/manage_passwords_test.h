@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_TEST_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_TEST_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_samples.h"

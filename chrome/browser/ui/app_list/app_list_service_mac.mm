@@ -6,6 +6,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"

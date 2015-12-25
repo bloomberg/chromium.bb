@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 
 int GetLayoutConstant(LayoutConstant constant) {

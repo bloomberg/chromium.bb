@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/simple_message_box.h"

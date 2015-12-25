@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TABS_HOVER_TAB_SELECTOR_H_
 #define CHROME_BROWSER_UI_TABS_HOVER_TAB_SELECTOR_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 class TabStripModel;

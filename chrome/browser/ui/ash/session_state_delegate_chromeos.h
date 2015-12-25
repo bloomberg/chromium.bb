@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_ASH_SESSION_STATE_DELEGATE_CHROMEOS_H_
 
 #include "ash/session/session_state_delegate.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chromeos/login/login_state.h"

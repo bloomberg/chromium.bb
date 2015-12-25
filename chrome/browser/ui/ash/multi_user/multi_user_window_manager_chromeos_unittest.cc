@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "ash/content/shell_content_state.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
@@ -18,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"

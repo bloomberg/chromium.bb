@@ -7,6 +7,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

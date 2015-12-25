@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_BUBBLE_VIEW_STATE_TRANSITION_H_
 #define CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_BUBBLE_VIEW_STATE_TRANSITION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 
 // The class which manages the transition of the view state of the Translate

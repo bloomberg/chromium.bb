@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/web_contents_sizer.h"
 
+#include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(USE_AURA)

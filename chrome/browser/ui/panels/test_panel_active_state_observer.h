@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PANELS_TEST_PANEL_ACTIVE_STATE_OBSERVER_H_
 #define CHROME_BROWSER_UI_PANELS_TEST_PANEL_ACTIVE_STATE_OBSERVER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/ui/panels/test_panel_notification_observer.h"
 
 class Panel;

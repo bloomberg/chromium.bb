@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PANELS_TEST_PANEL_NOTIFICATION_OBSERVER_H_
 #define CHROME_BROWSER_UI_PANELS_TEST_PANEL_NOTIFICATION_OBSERVER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

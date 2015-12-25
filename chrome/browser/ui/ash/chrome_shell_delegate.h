@@ -9,10 +9,11 @@
 
 #include "ash/shelf/shelf_item_types.h"
 #include "ash/shell_delegate.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/ash/metrics/chrome_user_metrics_recorder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

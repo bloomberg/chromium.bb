@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 bool ExclusiveAccessContext::SupportsFullscreenWithToolbar() const {
   return false;

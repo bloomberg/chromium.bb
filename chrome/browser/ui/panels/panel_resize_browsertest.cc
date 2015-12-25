@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/detached_panel_collection.h"
 #include "chrome/browser/ui/panels/panel.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_filter.h"

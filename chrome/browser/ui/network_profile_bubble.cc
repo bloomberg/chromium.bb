@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/network_profile_bubble.h"
 
 #include <windows.h>
+#include <stdint.h>
 
 #include <wtsapi32.h>
 // Make sure we link the wtsapi lib file in.
@@ -78,7 +79,7 @@ bool NetworkProfileBubble::ShouldCheckNetworkProfile(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   if (prefs->GetInteger(prefs::kNetworkProfileWarningsLeft))
     return !notification_shown_;
-  int64 last_check = prefs->GetInt64(prefs::kNetworkProfileLastWarningTime);
+  int64_t last_check = prefs->GetInt64(prefs::kNetworkProfileLastWarningTime);
   base::TimeDelta time_since_last_check =
       base::Time::Now() - base::Time::FromTimeT(last_check);
   if (time_since_last_check.InDays() > kSilenceDurationDays) {

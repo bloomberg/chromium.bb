@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/app_list/search/common/webservice_cache.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
@@ -115,7 +118,7 @@ bool WebserviceCache::PayloadFromDict(const base::DictionaryValue* dict,
   if (!dict->GetDictionary(kKeyResult, &result))
     return false;
 
-  int64 time_val;
+  int64_t time_val;
   base::StringToInt64(time_string, &time_val);
 
   // The result dictionary will be owned by the cache, hence create a copy

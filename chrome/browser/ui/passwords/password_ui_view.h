@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace autofill {

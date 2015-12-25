@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/search_engines/template_url_service_observer.h"

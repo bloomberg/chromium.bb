@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_H_
 #define CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"

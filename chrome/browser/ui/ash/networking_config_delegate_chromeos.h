@@ -8,8 +8,8 @@
 #include <string>
 
 #include "ash/networking_config_delegate.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_context.h"
 
 namespace chromeos {

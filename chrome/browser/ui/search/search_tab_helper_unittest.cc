@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/command_line.h"
@@ -116,7 +118,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
         .WillRepeatedly(Return(result));
   }
 
-  bool MessageWasSent(uint32 id) {
+  bool MessageWasSent(uint32_t id) {
     return process()->sink().GetFirstMessageMatching(id) != NULL;
   }
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_USER_MANAGER_H_
 #define CHROME_BROWSER_UI_USER_MANAGER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile_window.h"
 
 namespace base {

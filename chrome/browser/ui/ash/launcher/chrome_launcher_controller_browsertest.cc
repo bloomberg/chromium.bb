@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
+#include <stddef.h>
+
 #include "ash/ash_switches.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
@@ -18,8 +20,10 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"

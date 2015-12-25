@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "chrome/browser/ssl/security_state_model.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "third_party/skia/include/core/SkColor.h"

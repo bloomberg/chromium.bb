@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_FINDER_H_
 #define CHROME_BROWSER_UI_BROWSER_FINDER_H_
 
+#include <stddef.h>
+
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"

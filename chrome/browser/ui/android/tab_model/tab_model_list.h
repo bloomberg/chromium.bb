@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_TAB_MODEL_TAB_MODEL_LIST_H_
 #define CHROME_BROWSER_UI_ANDROID_TAB_MODEL_TAB_MODEL_LIST_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 
 class Profile;

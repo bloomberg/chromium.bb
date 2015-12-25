@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/common/extensions/webstore_install_result.h"

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_PROFILE_LOADER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {

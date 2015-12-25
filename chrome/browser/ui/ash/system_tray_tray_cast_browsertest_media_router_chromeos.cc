@@ -6,6 +6,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/tray_cast_test_api.h"
+#include "base/macros.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/media_source_helper.h"

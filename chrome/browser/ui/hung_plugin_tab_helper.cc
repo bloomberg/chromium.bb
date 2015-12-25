@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"

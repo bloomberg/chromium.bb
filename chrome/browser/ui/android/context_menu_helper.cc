@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/context_menu_helper.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -161,8 +163,7 @@ void ContextMenuHelper::OnShareImage(const std::string& thumbnail_data,
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jbyteArray> j_bytes =
       base::android::ToJavaByteArray(
-          env,
-          reinterpret_cast<const uint8*>(thumbnail_data.data()),
+          env, reinterpret_cast<const uint8_t*>(thumbnail_data.data()),
           thumbnail_data.length());
 
   Java_ContextMenuHelper_onShareImageReceived(

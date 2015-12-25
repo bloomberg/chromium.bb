@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -86,25 +89,25 @@ void AutomationManagerAura::HandleAlert(content::BrowserContext* context,
   SendEvent(context, obj, ui::AX_EVENT_ALERT);
 }
 
-void AutomationManagerAura::DoDefault(int32 id) {
+void AutomationManagerAura::DoDefault(int32_t id) {
   CHECK(enabled_);
   current_tree_->DoDefault(id);
 }
 
-void AutomationManagerAura::Focus(int32 id) {
+void AutomationManagerAura::Focus(int32_t id) {
   CHECK(enabled_);
   current_tree_->Focus(id);
 }
 
-void AutomationManagerAura::MakeVisible(int32 id) {
+void AutomationManagerAura::MakeVisible(int32_t id) {
   CHECK(enabled_);
   current_tree_->MakeVisible(id);
 }
 
-void AutomationManagerAura::SetSelection(int32 anchor_id,
-                                         int32 anchor_offset,
-                                         int32 focus_id,
-                                         int32 focus_offset) {
+void AutomationManagerAura::SetSelection(int32_t anchor_id,
+                                         int32_t anchor_offset,
+                                         int32_t focus_id,
+                                         int32_t focus_offset) {
   CHECK(enabled_);
   if (anchor_id != focus_id) {
     NOTREACHED();
@@ -113,7 +116,7 @@ void AutomationManagerAura::SetSelection(int32 anchor_id,
   current_tree_->SetSelection(anchor_id, anchor_offset, focus_offset);
 }
 
-void AutomationManagerAura::ShowContextMenu(int32 id) {
+void AutomationManagerAura::ShowContextMenu(int32_t id) {
   CHECK(enabled_);
   current_tree_->ShowContextMenu(id);
 }

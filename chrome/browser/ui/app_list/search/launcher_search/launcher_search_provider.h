@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"

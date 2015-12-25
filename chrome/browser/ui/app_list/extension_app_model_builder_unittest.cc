@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"

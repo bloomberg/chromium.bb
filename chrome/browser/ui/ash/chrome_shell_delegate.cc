@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
+#include <stddef.h>
+
 #include "ash/content/gpu_support_impl.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"

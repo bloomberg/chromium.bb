@@ -115,7 +115,7 @@ void PopupBlockerTabHelper::AddBlockedPopup(const BlockedWindowParams& params) {
   }
 }
 
-void PopupBlockerTabHelper::ShowBlockedPopup(int32 id) {
+void PopupBlockerTabHelper::ShowBlockedPopup(int32_t id) {
   BlockedRequest* popup = blocked_popups_.Lookup(id);
   if (!popup)
     return;

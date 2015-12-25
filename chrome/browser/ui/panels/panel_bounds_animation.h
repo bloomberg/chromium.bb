@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_BOUNDS_ANIMATION_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_BOUNDS_ANIMATION_H_
 
+#include "base/macros.h"
 #include "ui/gfx/animation/linear_animation.h"
 
 namespace gfx {

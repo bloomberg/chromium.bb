@@ -10,6 +10,7 @@
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/test_browser_window_aura.h"

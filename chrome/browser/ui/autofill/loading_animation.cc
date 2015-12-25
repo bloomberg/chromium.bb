@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/loading_animation.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "ui/gfx/animation/tween.h"
 
 namespace autofill {

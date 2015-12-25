@@ -7,7 +7,8 @@
 
 #include <list>
 #include <set>
-#include "base/basictypes.h"
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"

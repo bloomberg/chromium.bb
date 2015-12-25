@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 
 class PinnedTabTestUtils {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_navigator_params.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"

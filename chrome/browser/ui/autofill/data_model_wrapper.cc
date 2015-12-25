@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_util.h"

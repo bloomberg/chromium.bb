@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"

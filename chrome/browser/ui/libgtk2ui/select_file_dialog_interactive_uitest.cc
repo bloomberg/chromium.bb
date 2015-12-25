@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl_gtk2.h"
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

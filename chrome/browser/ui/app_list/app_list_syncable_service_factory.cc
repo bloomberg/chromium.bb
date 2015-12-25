@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"

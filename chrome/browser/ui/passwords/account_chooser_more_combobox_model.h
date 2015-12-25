@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_ACCOUNT_CHOOSER_MORE_COMBOBOX_MODEL_H_
 #define CHROME_BROWSER_UI_PASSWORDS_ACCOUNT_CHOOSER_MORE_COMBOBOX_MODEL_H_
 
+#include "base/macros.h"
 #include "ui/base/models/combobox_model.h"
 
 // Model for the account chooser's "More" combobox.

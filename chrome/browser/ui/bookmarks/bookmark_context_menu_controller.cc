@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"

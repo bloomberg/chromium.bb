@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"

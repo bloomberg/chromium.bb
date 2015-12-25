@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -9,12 +12,14 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -3112,7 +3117,7 @@ class URLRequestNonsecureConnection : public net::URLRequestMockHTTPJob {
                                         << net::SSL_CONNECTION_VERSION_SHIFT);
     // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
     // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
-    const uint16 ciphersuite = 0xc02f;
+    const uint16_t ciphersuite = 0xc02f;
     net::SSLConnectionStatusSetCipherSuite(ciphersuite,
                                            &info->ssl_info.connection_status);
   }

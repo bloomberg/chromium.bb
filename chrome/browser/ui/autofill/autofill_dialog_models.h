@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_MODELS_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_MODELS_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"

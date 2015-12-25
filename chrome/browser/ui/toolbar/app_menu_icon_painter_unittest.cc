@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 
+#include "base/macros.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/test/base/testing_profile.h"

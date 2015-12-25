@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BLUETOOTH_BLUETOOTH_CHOOSER_BUBBLE_DELEGATE_H_
 #define CHROME_BROWSER_UI_BLUETOOTH_BLUETOOTH_CHOOSER_BUBBLE_DELEGATE_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "components/bubble/bubble_reference.h"

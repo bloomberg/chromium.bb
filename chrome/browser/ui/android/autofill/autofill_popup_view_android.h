@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_UI_ANDROID_AUTOFILL_AUTOFILL_POPUP_VIEW_ANDROID_H_
 
 #include <jni.h>
+#include <stddef.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 
 namespace gfx {

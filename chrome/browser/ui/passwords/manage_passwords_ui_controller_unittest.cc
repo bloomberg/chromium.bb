@@ -6,10 +6,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

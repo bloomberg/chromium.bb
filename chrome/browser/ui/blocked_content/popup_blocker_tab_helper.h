@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_TAB_HELPER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -28,7 +32,7 @@ class PopupBlockerTabHelper
       public content::WebContentsUserData<PopupBlockerTabHelper> {
  public:
   // Mapping from popup IDs to blocked popup requests.
-  typedef std::map<int32, GURL> PopupIdMap;
+  typedef std::map<int32_t, GURL> PopupIdMap;
 
   ~PopupBlockerTabHelper() override;
 
@@ -41,7 +45,7 @@ class PopupBlockerTabHelper
   void AddBlockedPopup(const BlockedWindowParams& params);
 
   // Creates the blocked popup with |popup_id|.
-  void ShowBlockedPopup(int32 popup_id);
+  void ShowBlockedPopup(int32_t popup_id);
 
   // Returns the number of blocked popups.
   size_t GetBlockedPopupsCount() const;

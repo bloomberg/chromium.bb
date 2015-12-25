@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_APP_MENU_ITEM_BROWSER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_APP_MENU_ITEM_BROWSER_H_
 
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "content/public/browser/notification_observer.h"

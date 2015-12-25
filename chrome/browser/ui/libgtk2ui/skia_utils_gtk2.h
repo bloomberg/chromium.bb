@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_SKIA_UTILS_GTK2_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_SKIA_UTILS_GTK2_H_
 
+#include <stdint.h>
+
 #include "third_party/skia/include/core/SkColor.h"
 
 typedef struct _GdkColor GdkColor;
@@ -21,7 +23,7 @@ class SkBitmap;
 
 namespace libgtk2ui {
 
-// Multiply uint8 color components by this.
+// Multiply uint8_t color components by this.
 const int kSkiaToGDKMultiplier = 257;
 
 // Converts GdkColors to the ARGB layout Skia expects.

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -16,6 +18,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

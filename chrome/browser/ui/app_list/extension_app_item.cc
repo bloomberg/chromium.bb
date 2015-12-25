@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"

@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_MOCK_ADDRESS_VALIDATOR_H_
 #define CHROME_BROWSER_UI_AUTOFILL_MOCK_ADDRESS_VALIDATOR_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"

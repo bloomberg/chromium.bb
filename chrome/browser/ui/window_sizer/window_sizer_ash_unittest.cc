@@ -11,6 +11,7 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
