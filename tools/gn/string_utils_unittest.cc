@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/err.h"
 #include "tools/gn/scope.h"
@@ -14,7 +16,7 @@ namespace {
 
 bool CheckExpansionCase(const char* input, const char* expected, bool success) {
   Scope scope(static_cast<const Settings*>(nullptr));
-  int64 one = 1;
+  int64_t one = 1;
   scope.SetValue("one", Value(nullptr, one), nullptr);
   scope.SetValue("onestring", Value(nullptr, "one"), nullptr);
 

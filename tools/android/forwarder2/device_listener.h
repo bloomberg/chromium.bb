@@ -5,10 +5,10 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_DEVICE_LISTENER_H_
 #define TOOLS_ANDROID_FORWARDER2_DEVICE_LISTENER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"

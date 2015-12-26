@@ -5,6 +5,7 @@
 #include "tools/gn/source_dir.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/source_file.h"
 

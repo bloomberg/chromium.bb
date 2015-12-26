@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/output_file.h"
 #include "tools/gn/path_output.h"

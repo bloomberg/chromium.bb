@@ -4,6 +4,8 @@
 
 #include "tools/json_schema_compiler/test/objects.h"
 
+#include <stddef.h>
+
 #include "base/json/json_writer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

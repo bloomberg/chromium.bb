@@ -7,13 +7,13 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_COMMON_H_
 #define TOOLS_ANDROID_FORWARDER2_COMMON_H_
 
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <errno.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 
 // Preserving errno for Close() is important because the function is very often

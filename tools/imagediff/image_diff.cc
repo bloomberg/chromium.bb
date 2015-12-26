@@ -8,12 +8,14 @@
 // The exact format of this tool's output to stdout is important, to match
 // what the run-webkit-tests script expects.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
@@ -24,6 +26,7 @@
 #include "base/process/memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "tools/imagediff/image_diff_png.h"
 
 #if defined(OS_WIN)
@@ -45,8 +48,8 @@ static const int kStatusDifferent = 1;
 static const int kStatusError = 2;
 
 // Color codes.
-static const uint32 RGBA_RED = 0x000000ff;
-static const uint32 RGBA_ALPHA = 0xff000000;
+static const uint32_t RGBA_RED = 0x000000ff;
+static const uint32_t RGBA_ALPHA = 0xff000000;
 
 class Image {
  public:
@@ -124,17 +127,17 @@ class Image {
   }
 
   // Returns the RGBA value of the pixel at the given location
-  uint32 pixel_at(int x, int y) const {
+  uint32_t pixel_at(int x, int y) const {
     DCHECK(x >= 0 && x < w_);
     DCHECK(y >= 0 && y < h_);
-    return *reinterpret_cast<const uint32*>(&(data_[(y * w_ + x) * 4]));
+    return *reinterpret_cast<const uint32_t*>(&(data_[(y * w_ + x) * 4]));
   }
 
-  void set_pixel_at(int x, int y, uint32 color) const {
+  void set_pixel_at(int x, int y, uint32_t color) const {
     DCHECK(x >= 0 && x < w_);
     DCHECK(y >= 0 && y < h_);
     void* addr = &const_cast<unsigned char*>(&data_.front())[(y * w_ + x) * 4];
-    *reinterpret_cast<uint32*>(addr) = color;
+    *reinterpret_cast<uint32_t*>(addr) = color;
   }
 
  private:
@@ -176,7 +179,7 @@ float PercentageDifferent(const Image& baseline, const Image& actual) {
   return 100.0f * pixels_different / total_pixels;
 }
 
-typedef base::hash_map<uint32, int32> RgbaToCountMap;
+typedef base::hash_map<uint32_t, int32_t> RgbaToCountMap;
 
 float HistogramPercentageDifferent(const Image& baseline, const Image& actual) {
   // TODO(johnme): Consider using a joint histogram instead, as described in
@@ -199,7 +202,7 @@ float HistogramPercentageDifferent(const Image& baseline, const Image& actual) {
   int pixels_different = 0;
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      uint32 actual_rgba = actual.pixel_at(x, y);
+      uint32_t actual_rgba = actual.pixel_at(x, y);
       RgbaToCountMap::iterator it = baseline_histogram.find(actual_rgba);
       if (it != baseline_histogram.end() && it->second > 0)
         it->second--;
@@ -342,15 +345,15 @@ bool CreateImageDiff(const Image& image1, const Image& image2, Image* out) {
   // are different.
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      uint32 base_pixel = image1.pixel_at(x, y);
+      uint32_t base_pixel = image1.pixel_at(x, y);
       if (base_pixel != image2.pixel_at(x, y)) {
         // Set differing pixels red.
         out->set_pixel_at(x, y, RGBA_RED | RGBA_ALPHA);
         same = false;
       } else {
         // Set same pixels as faded.
-        uint32 alpha = base_pixel & RGBA_ALPHA;
-        uint32 new_pixel = base_pixel - ((alpha / 2) & RGBA_ALPHA);
+        uint32_t alpha = base_pixel & RGBA_ALPHA;
+        uint32_t new_pixel = base_pixel - ((alpha / 2) & RGBA_ALPHA);
         out->set_pixel_at(x, y, new_pixel);
       }
     }

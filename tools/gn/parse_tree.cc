@@ -4,6 +4,8 @@
 
 #include "tools/gn/parse_tree.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <tuple>
 
@@ -184,7 +186,7 @@ Value AccessorNode::ExecuteArrayAccess(Scope* scope, Err* err) const {
   if (!base_value->VerifyTypeIs(Value::LIST, err))
     return Value();
 
-  int64 index_int = index_value.int_value();
+  int64_t index_int = index_value.int_value();
   if (index_int < 0) {
     *err = Err(index_->GetRange(), "Negative array subscript.",
         "You gave me " + base::Int64ToString(index_int) + ".");
@@ -192,12 +194,13 @@ Value AccessorNode::ExecuteArrayAccess(Scope* scope, Err* err) const {
   }
   size_t index_sizet = static_cast<size_t>(index_int);
   if (index_sizet >= base_value->list_value().size()) {
-    *err = Err(index_->GetRange(), "Array subscript out of range.",
-        "You gave me " + base::Int64ToString(index_int) +
-        " but I was expecting something from 0 to " +
-        base::Int64ToString(
-            static_cast<int64>(base_value->list_value().size()) - 1) +
-        ", inclusive.");
+    *err =
+        Err(index_->GetRange(), "Array subscript out of range.",
+            "You gave me " + base::Int64ToString(index_int) +
+                " but I was expecting something from 0 to " +
+                base::Int64ToString(
+                    static_cast<int64_t>(base_value->list_value().size()) - 1) +
+                ", inclusive.");
     return Value();
   }
 
@@ -704,7 +707,7 @@ Value LiteralNode::Execute(Scope* scope, Err* err) const {
           *err = MakeErrorDescribing("Leading zeros not allowed");
         return Value();
       }
-      int64 result_int;
+      int64_t result_int;
       if (!base::StringToInt64(s, &result_int)) {
         *err = MakeErrorDescribing("This does not look like an integer");
         return Value();

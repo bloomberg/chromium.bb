@@ -4,6 +4,7 @@
 
 #include <sstream>
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"

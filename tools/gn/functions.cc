@@ -4,6 +4,8 @@
 
 #include "tools/gn/functions.h"
 
+#include <stddef.h>
+
 #include <iostream>
 
 #include "base/environment.h"

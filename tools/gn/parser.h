@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_PARSER_H_
 #define TOOLS_GN_PARSER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 

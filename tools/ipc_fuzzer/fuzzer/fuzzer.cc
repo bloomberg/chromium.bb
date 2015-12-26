@@ -8,7 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_switches.h"
@@ -122,7 +124,7 @@ struct FuzzTraits<unsigned long> {
 template <>
 struct FuzzTraits<long long> {
   static bool Fuzz(long long* p, Fuzzer* fuzzer) {
-    fuzzer->FuzzInt64(reinterpret_cast<int64*>(p));
+    fuzzer->FuzzInt64(reinterpret_cast<int64_t*>(p));
     return true;
   }
 };
@@ -130,7 +132,7 @@ struct FuzzTraits<long long> {
 template <>
 struct FuzzTraits<unsigned long long> {
   static bool Fuzz(unsigned long long* p, Fuzzer* fuzzer) {
-    fuzzer->FuzzInt64(reinterpret_cast<int64*>(p));
+    fuzzer->FuzzInt64(reinterpret_cast<int64_t*>(p));
     return true;
   }
 };
@@ -138,7 +140,7 @@ struct FuzzTraits<unsigned long long> {
 template <>
 struct FuzzTraits<short> {
   static bool Fuzz(short* p, Fuzzer* fuzzer) {
-    fuzzer->FuzzUInt16(reinterpret_cast<uint16*>(p));
+    fuzzer->FuzzUInt16(reinterpret_cast<uint16_t*>(p));
     return true;
   }
 };
@@ -146,7 +148,7 @@ struct FuzzTraits<short> {
 template <>
 struct FuzzTraits<unsigned short> {
   static bool Fuzz(unsigned short* p, Fuzzer* fuzzer) {
-    fuzzer->FuzzUInt16(reinterpret_cast<uint16*>(p));
+    fuzzer->FuzzUInt16(reinterpret_cast<uint16_t*>(p));
     return true;
   }
 };
@@ -453,7 +455,7 @@ struct FuzzTraits<base::NullableString16> {
 template <>
 struct FuzzTraits<base::Time> {
   static bool Fuzz(base::Time* p, Fuzzer* fuzzer) {
-    int64 internal_value = p->ToInternalValue();
+    int64_t internal_value = p->ToInternalValue();
     if (!FuzzParam(&internal_value, fuzzer))
       return false;
     *p = base::Time::FromInternalValue(internal_value);
@@ -464,7 +466,7 @@ struct FuzzTraits<base::Time> {
 template <>
 struct FuzzTraits<base::TimeDelta> {
   static bool Fuzz(base::TimeDelta* p, Fuzzer* fuzzer) {
-    int64 internal_value = p->ToInternalValue();
+    int64_t internal_value = p->ToInternalValue();
     if (!FuzzParam(&internal_value, fuzzer))
       return false;
     *p = base::TimeDelta::FromInternalValue(internal_value);
@@ -475,7 +477,7 @@ struct FuzzTraits<base::TimeDelta> {
 template <>
 struct FuzzTraits<base::TimeTicks> {
   static bool Fuzz(base::TimeTicks* p, Fuzzer* fuzzer) {
-    int64 internal_value = p->ToInternalValue();
+    int64_t internal_value = p->ToInternalValue();
     if (!FuzzParam(&internal_value, fuzzer))
       return false;
     *p = base::TimeTicks::FromInternalValue(internal_value);
@@ -1440,7 +1442,7 @@ template <>
 struct FuzzTraits<net::HostPortPair> {
   static bool Fuzz(net::HostPortPair* p, Fuzzer* fuzzer) {
     std::string host = p->host();
-    uint16 port = p->port();
+    uint16_t port = p->port();
     if (!FuzzParam(&host, fuzzer))
       return false;
     if (!FuzzParam(&port, fuzzer))
@@ -1654,7 +1656,7 @@ template <>
 struct FuzzTraits<ppapi::SocketOptionData> {
   static bool Fuzz(ppapi::SocketOptionData* p, Fuzzer* fuzzer) {
     // TODO(mbarbella): This can be improved.
-    int32 tmp;
+    int32_t tmp;
     p->GetInt32(&tmp);
     if (!FuzzParam(&tmp, fuzzer))
       return false;
@@ -1723,8 +1725,8 @@ struct FuzzTraits<storage::DataElement> {
       }
       case storage::DataElement::Type::TYPE_FILE: {
         base::FilePath path;
-        uint64 offset;
-        uint64 length;
+        uint64_t offset;
+        uint64_t length;
         base::Time modification_time;
         if (!FuzzParam(&path, fuzzer))
           return false;
@@ -1739,8 +1741,8 @@ struct FuzzTraits<storage::DataElement> {
       }
       case storage::DataElement::Type::TYPE_BLOB: {
         std::string uuid;
-        uint64 offset;
-        uint64 length;
+        uint64_t offset;
+        uint64_t length;
         if (!FuzzParam(&uuid, fuzzer))
           return false;
         if (!FuzzParam(&offset, fuzzer))
@@ -1752,8 +1754,8 @@ struct FuzzTraits<storage::DataElement> {
       }
       case storage::DataElement::Type::TYPE_FILE_FILESYSTEM: {
         GURL url;
-        uint64 offset;
-        uint64 length;
+        uint64_t offset;
+        uint64_t length;
         base::Time modification_time;
         if (!FuzzParam(&url, fuzzer))
           return false;
@@ -1778,13 +1780,13 @@ template <>
 struct FuzzTraits<ui::LatencyInfo> {
   static bool Fuzz(ui::LatencyInfo* p, Fuzzer* fuzzer) {
     // TODO(inferno): Add param traits for |latency_components|.
-    int64 trace_id = p->trace_id();
+    int64_t trace_id = p->trace_id();
     bool terminated = p->terminated();
-    uint32 input_coordinates_size = static_cast<uint32>(
+    uint32_t input_coordinates_size = static_cast<uint32_t>(
         RandInRange(ui::LatencyInfo::kMaxInputCoordinates + 1));
     ui::LatencyInfo::InputCoordinate
         input_coordinates[ui::LatencyInfo::kMaxInputCoordinates];
-    uint32 event_timestamps_size = static_cast<uint32>(
+    uint32_t event_timestamps_size = static_cast<uint32_t>(
         RandInRange(ui::LatencyInfo::kMaxCoalescedEventTimestamps + 1));
     double event_timestamps[ui::LatencyInfo::kMaxCoalescedEventTimestamps];
     if (!FuzzParamArray(
@@ -1827,7 +1829,7 @@ struct FuzzTraits<url::Origin> {
   static bool Fuzz(url::Origin* p, Fuzzer* fuzzer) {
     std::string scheme = p->scheme();
     std::string host = p->host();
-    uint16 port = p->port();
+    uint16_t port = p->port();
     if (!FuzzParam(&scheme, fuzzer))
       return false;
     if (!FuzzParam(&host, fuzzer))
@@ -2127,7 +2129,7 @@ void PopulateFuzzerFunctionVector(
 #include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
 #undef IPC_MESSAGE_DECL
 #define IPC_MESSAGE_DECL(kind, type, name, in, out, ilist, olist) \
-  (*map)[static_cast<uint32>(name::ID)] = fuzzer_for_##name;
+  (*map)[static_cast<uint32_t>(name::ID)] = fuzzer_for_##name;
 
 void PopulateFuzzerFunctionMap(FuzzerFunctionMap* map) {
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"

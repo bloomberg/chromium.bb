@@ -4,6 +4,8 @@
 
 #include "tools/gn/builder.h"
 
+#include <stddef.h>
+
 #include "tools/gn/config.h"
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"

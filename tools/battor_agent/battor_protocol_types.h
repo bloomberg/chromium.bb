@@ -5,6 +5,8 @@
 #ifndef TOOLS_BATTOR_AGENT_BATTOR_PROTOCOL_H_
 #define TOOLS_BATTOR_AGENT_BATTOR_PROTOCOL_H_
 
+#include <stdint.h>
+
 namespace battor {
 
 // Control characters in the BattOr protocol.

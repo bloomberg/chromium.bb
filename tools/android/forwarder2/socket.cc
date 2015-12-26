@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -183,7 +184,7 @@ bool Socket::BindAndListen() {
     memset(&addr, 0, sizeof(addr));
     socklen_t addrlen = 0;
     sockaddr* addr_ptr = NULL;
-    uint16* port_ptr = NULL;
+    uint16_t* port_ptr = NULL;
     if (family_ == AF_INET) {
       addr_ptr = reinterpret_cast<sockaddr*>(&addr.addr4);
       port_ptr = &addr.addr4.sin_port;

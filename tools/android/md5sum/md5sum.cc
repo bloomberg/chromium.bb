@@ -5,6 +5,8 @@
 // Md5sum implementation for Android. This version handles files as well as
 // directories. Its output is sorted by file path.
 
+#include <stddef.h>
+
 #include <fstream>
 #include <iostream>
 #include <set>

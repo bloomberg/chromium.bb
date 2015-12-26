@@ -5,7 +5,7 @@
 #ifndef TOOLS_IPC_FUZZER_MESSAGE_LIB_MESSAGE_FILE_FORMAT_H_
 #define TOOLS_IPC_FUZZER_MESSAGE_LIB_MESSAGE_FILE_FORMAT_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 // Message file contains IPC messages and message names. Each message type
 // has a NameTableEntry mapping the type to a name.
@@ -44,18 +44,18 @@
 namespace ipc_fuzzer {
 
 struct FileHeader {
-  static const uint32 kMagicValue = 0x1bcf11ee;
-  static const uint32 kCurrentVersion = 1;
+  static const uint32_t kMagicValue = 0x1bcf11ee;
+  static const uint32_t kCurrentVersion = 1;
 
-  uint32 magic;
-  uint32 version;
-  uint32 message_count;
-  uint32 name_count;
+  uint32_t magic;
+  uint32_t version;
+  uint32_t message_count;
+  uint32_t name_count;
 };
 
 struct NameTableEntry {
-  uint32 type;
-  uint32 string_table_offset;
+  uint32_t type;
+  uint32_t string_table_offset;
 };
 
 }  // namespace ipc_fuzzer

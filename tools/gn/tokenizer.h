@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_TOKENIZER_H_
 #define TOOLS_GN_TOKENIZER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/macros.h"

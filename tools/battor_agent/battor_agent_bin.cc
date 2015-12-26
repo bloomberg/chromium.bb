@@ -7,6 +7,8 @@
 // controllers, such as Telemetry and Android Systrace, to issue high-level
 // tracing commands to the BattOr..
 
+#include <stdint.h>
+
 #include <iostream>
 
 #include "base/at_exit.h"
@@ -25,7 +27,7 @@ namespace {
 const char kIoThreadName[] = "BattOr IO Thread";
 const char kFileThreadName[] = "BattOr File Thread";
 const char kUiThreadName[] = "BattOr UI Thread";
-const int32 kBattOrCommandTimeoutSeconds = 10;
+const int32_t kBattOrCommandTimeoutSeconds = 10;
 
 void PrintUsage() {
   std::cout << "Usage: battor_agent <command> <arguments>" << endl

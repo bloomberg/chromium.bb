@@ -4,6 +4,8 @@
 
 #include "tools/gn/operators.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "tools/gn/err.h"
 #include "tools/gn/parse_tree.h"

@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "tools/gn/path_output.h"
 
 class BuildSettings;

@@ -4,6 +4,8 @@
 
 #include "tools/gn/trace.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <sstream>
@@ -14,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "tools/gn/filesystem_utils.h"

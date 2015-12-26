@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_OUTPUT_FILE_H_
 #define TOOLS_GN_OUTPUT_FILE_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/containers/hash_tables.h"

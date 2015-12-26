@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/parse_tree.h"

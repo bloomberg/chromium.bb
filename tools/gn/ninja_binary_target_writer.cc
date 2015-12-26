@@ -4,6 +4,9 @@
 
 #include "tools/gn/ninja_binary_target_writer.h"
 
+#include <stddef.h>
+#include <string.h>
+
 #include <cstring>
 #include <set>
 #include <sstream>

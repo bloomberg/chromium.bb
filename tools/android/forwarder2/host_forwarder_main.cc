@@ -4,6 +4,8 @@
 
 #include <errno.h>
 #include <signal.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -16,7 +18,6 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -24,6 +25,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pickle.h"
@@ -414,7 +416,7 @@ int PortToInt(const std::string& s) {
   int value;
   // Note that 0 is a valid port (used for dynamic port allocation).
   if (!base::StringToInt(s, &value) || value < 0 ||
-      value > std::numeric_limits<uint16>::max()) {
+      value > std::numeric_limits<uint16_t>::max()) {
     LOG(ERROR) << "Could not convert string " << s << " to port";
     ExitWithUsage();
   }

@@ -5,6 +5,9 @@
 #ifndef TOOLS_IPC_FUZZER_REPLAY_REPLAY_PROCESS_H_
 #define TOOLS_IPC_FUZZER_REPLAY_REPLAY_PROCESS_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"

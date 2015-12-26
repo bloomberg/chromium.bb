@@ -7,13 +7,14 @@
 
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <stddef.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace forwarder2 {
 

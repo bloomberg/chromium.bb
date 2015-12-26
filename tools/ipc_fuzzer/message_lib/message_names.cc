@@ -8,7 +8,7 @@
 #include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
 #undef IPC_MESSAGE_DECL
 #define IPC_MESSAGE_DECL(kind, type, name, in, out, ilist, olist) \
-  names.Add(static_cast<uint32>(name::ID), #name);
+  names.Add(static_cast<uint32_t>(name::ID), #name);
 
 void PopulateIpcMessageNames(ipc_fuzzer::MessageNames& names) {
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"

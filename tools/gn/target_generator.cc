@@ -4,6 +4,8 @@
 
 #include "tools/gn/target_generator.h"
 
+#include <stddef.h>
+
 #include "tools/gn/action_target_generator.h"
 #include "tools/gn/binary_target_generator.h"
 #include "tools/gn/build_settings.h"

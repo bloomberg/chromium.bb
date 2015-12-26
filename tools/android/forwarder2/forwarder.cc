@@ -4,8 +4,8 @@
 
 #include "tools/android/forwarder2/forwarder.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "tools/android/forwarder2/socket.h"
 

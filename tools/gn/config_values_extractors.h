@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_CONFIG_VALUES_EXTRACTORS_H_
 #define TOOLS_GN_CONFIG_VALUES_EXTRACTORS_H_
 
+#include <stddef.h>
+
 #include <ostream>
 #include <string>
 #include <vector>

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
 // Include once to get the type definitions
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"

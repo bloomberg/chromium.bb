@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_LABEL_H_
 #define TOOLS_GN_LABEL_H_
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "tools/gn/source_dir.h"
 

@@ -5,7 +5,9 @@
 #ifndef TOOLS_IPC_FUZZER_MESSAGE_LIB_MESSAGE_CRACKER_H_
 #define TOOLS_IPC_FUZZER_MESSAGE_LIB_MESSAGE_CRACKER_H_
 
+#include <stdint.h>
 #include <string.h>
+#include "base/macros.h"
 #include "ipc/ipc_message.h"
 
 // Means for updating protected message fields.
@@ -17,7 +19,7 @@ class MessageCracker : public IPC::Message {
            sizeof(int));
   }
 
-  static void SetMessageType(IPC::Message* message, uint32 type) {
+  static void SetMessageType(IPC::Message* message, uint32_t type) {
     ToCracker(message)->header()->type = type;
   }
 

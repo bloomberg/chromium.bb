@@ -4,8 +4,11 @@
 
 #include "tools/gn/escape.h"
 
+#include <stddef.h>
+
 #include "base/containers/stack_container.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace {
 

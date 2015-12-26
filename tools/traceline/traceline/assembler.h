@@ -48,6 +48,8 @@
 #include <stdio.h>
 #include <string>
 
+#include <stddef.h>
+
 #include "logging.h"
 
 #define ASSERT(x) CHECK(x)

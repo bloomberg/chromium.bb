@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_SOURCE_FILE_H_
 #define TOOLS_GN_SOURCE_FILE_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 

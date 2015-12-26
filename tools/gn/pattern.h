@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_PATTERN_H_
 #define TOOLS_GN_PATTERN_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

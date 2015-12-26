@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_LABEL_PTR_H_
 #define TOOLS_GN_LABEL_PTR_H_
 
+#include <stddef.h>
+
 #include <functional>
 
 #include "tools/gn/label.h"

@@ -4,6 +4,9 @@
 
 #include "tools/json_schema_compiler/test/arrays.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/enums.h"
 

@@ -6,6 +6,8 @@
 
 #include <fcntl.h>
 #include <pthread.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
@@ -85,11 +87,11 @@ struct ImmutableFileHeaderLine {
   static bool ParseAddress(const std::string& line,
                            size_t start_offset,
                            size_t length,
-                           uint64* result) {
+                           uint64_t* result) {
     if (start_offset >= line.length())
       return false;
 
-    uint64 address;
+    uint64_t address;
     const bool ret = HexStringToUInt64(
         base::StringPiece(line.c_str() + start_offset, length), &address);
     if (!ret)
@@ -112,10 +114,10 @@ struct ImmutableFileHeaderLine {
         continue;
 
       const size_t address_length = line.find('-');
-      uint64 start_address = 0;
+      uint64_t start_address = 0;
       CHECK(ParseAddress(line, 0, address_length, &start_address));
 
-      uint64 end_address = 0;
+      uint64_t end_address = 0;
       CHECK(ParseAddress(line, address_length + 1, address_length,
                          &end_address));
 

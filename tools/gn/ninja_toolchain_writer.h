@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "tools/gn/path_output.h"
 #include "tools/gn/toolchain.h"
 

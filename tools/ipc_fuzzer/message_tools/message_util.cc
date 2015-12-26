@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <limits.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <iostream>
 #include <string>

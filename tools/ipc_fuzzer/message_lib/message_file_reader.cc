@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "ipc/ipc_message.h"
 #include "tools/ipc_fuzzer/message_lib/message_cracker.h"
@@ -171,7 +174,7 @@ bool Reader::ReadNameTable() {
 bool Reader::RemoveUnknownMessages() {
   MessageVector::iterator it = messages_->begin();
   while (it != messages_->end()) {
-    uint32 type = (*it)->type();
+    uint32_t type = (*it)->type();
     if (!name_map_.TypeExists(type)) {
       LOG(ERROR) << "Missing name table entry for type " << type;
       return false;
@@ -194,9 +197,9 @@ bool Reader::RemoveUnknownMessages() {
 void Reader::FixMessageTypes() {
   for (MessageVector::iterator it = messages_->begin();
        it != messages_->end(); ++it) {
-    uint32 type = (*it)->type();
+    uint32_t type = (*it)->type();
     const std::string& name = name_map_.TypeToName(type);
-    uint32 correct_type = MessageNames::GetInstance()->NameToType(name);
+    uint32_t correct_type = MessageNames::GetInstance()->NameToType(name);
     if (type != correct_type)
       MessageCracker::SetMessageType(*it, correct_type);
   }

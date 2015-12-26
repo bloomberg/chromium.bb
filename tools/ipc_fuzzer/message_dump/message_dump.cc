@@ -5,6 +5,7 @@
 #include "base/files/file_path.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
 

@@ -33,17 +33,18 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
 #include <sys/ptrace.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "tools/android/heap_profiler/heap_profiler.h"
-
 
 static void lseek_abs(int fd, size_t off);
 static void read_proc_cmdline(char* cmdline, int size);

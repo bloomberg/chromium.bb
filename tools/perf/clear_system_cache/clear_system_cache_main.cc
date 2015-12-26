@@ -6,9 +6,9 @@
 //
 // USAGE: clear_system_cache [--recurse] <files or directories>
 
+#include <stddef.h>
 #include <stdio.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"

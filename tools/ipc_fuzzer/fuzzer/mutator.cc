@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "tools/ipc_fuzzer/fuzzer/mutator.h"
@@ -64,20 +63,20 @@ void Mutator::FuzzWChar(wchar_t* value) {
   FuzzIntegralType<wchar_t>(value, frequency_);
 }
 
-void Mutator::FuzzUInt16(uint16* value) {
-  FuzzIntegralType<uint16>(value, frequency_);
+void Mutator::FuzzUInt16(uint16_t* value) {
+  FuzzIntegralType<uint16_t>(value, frequency_);
 }
 
-void Mutator::FuzzUInt32(uint32* value) {
-  FuzzIntegralType<uint32>(value, frequency_);
+void Mutator::FuzzUInt32(uint32_t* value) {
+  FuzzIntegralType<uint32_t>(value, frequency_);
 }
 
-void Mutator::FuzzInt64(int64* value) {
-  FuzzIntegralType<int64>(value, frequency_);
+void Mutator::FuzzInt64(int64_t* value) {
+  FuzzIntegralType<int64_t>(value, frequency_);
 }
 
-void Mutator::FuzzUInt64(uint64* value) {
-  FuzzIntegralType<uint64>(value, frequency_);
+void Mutator::FuzzUInt64(uint64_t* value) {
+  FuzzIntegralType<uint64_t>(value, frequency_);
 }
 
 void Mutator::FuzzFloat(float* value) {

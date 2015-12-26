@@ -4,6 +4,8 @@
 
 #include "tools/gn/ninja_action_target_writer.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <sstream>
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/ninja_action_target_writer.h"
 #include "tools/gn/substitution_list.h"

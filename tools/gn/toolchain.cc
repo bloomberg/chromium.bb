@@ -4,6 +4,7 @@
 
 #include "tools/gn/toolchain.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/logging.h"

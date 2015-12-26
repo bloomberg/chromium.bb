@@ -12,7 +12,7 @@ MersenneTwister* g_mersenne_twister = NULL;
 void InitRand() {
   // TODO(aedla): convert to C++11 std::mt19937 in the future
   g_mersenne_twister = new MersenneTwister();
-  g_mersenne_twister->init_genrand(static_cast<uint32>(base::RandUint64()));
+  g_mersenne_twister->init_genrand(static_cast<uint32_t>(base::RandUint64()));
 }
 
 }  // namespace ipc_fuzzer

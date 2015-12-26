@@ -6,6 +6,7 @@
 #define TOOLS_IPC_FUZZER_MESSAGE_LIB_MESSAGE_FILE_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ipc/ipc_message.h"
 

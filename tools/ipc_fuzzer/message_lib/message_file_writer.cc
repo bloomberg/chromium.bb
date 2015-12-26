@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <set>
 
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
 #include "tools/ipc_fuzzer/message_lib/message_file_format.h"
 #include "tools/ipc_fuzzer/message_lib/message_names.h"
@@ -41,7 +44,7 @@ class Writer {
   // String table contains the actual message names.
   bool WriteStringTable();
 
-  typedef std::set<uint32> TypesSet;
+  typedef std::set<uint32_t> TypesSet;
   base::FilePath path_;
   base::File file_;
   const MessageVector* messages_;

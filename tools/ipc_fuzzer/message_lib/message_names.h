@@ -5,10 +5,12 @@
 #ifndef TOOLS_IPC_FUZZER_MESSAGE_LIB_MESSAGE_NAMES_H_
 #define TOOLS_IPC_FUZZER_MESSAGE_LIB_MESSAGE_NAMES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace ipc_fuzzer {
 
@@ -18,12 +20,12 @@ class MessageNames {
   ~MessageNames();
   static MessageNames* GetInstance();
 
-  void Add(uint32 type, const std::string& name) {
+  void Add(uint32_t type, const std::string& name) {
     name_map_[type] = name;
     type_map_[name] = type;
   }
 
-  bool TypeExists(uint32 type) {
+  bool TypeExists(uint32_t type) {
     return name_map_.find(type) != name_map_.end();
   }
 
@@ -31,21 +33,21 @@ class MessageNames {
     return type_map_.find(name) != type_map_.end();
   }
 
-  const std::string& TypeToName(uint32 type) {
+  const std::string& TypeToName(uint32_t type) {
     TypeToNameMap::iterator it = name_map_.find(type);
     CHECK(it != name_map_.end());
     return it->second;
   }
 
-  uint32 NameToType(const std::string& name) {
+  uint32_t NameToType(const std::string& name) {
     NameToTypeMap::iterator it = type_map_.find(name);
     CHECK(it != type_map_.end());
     return it->second;
   }
 
  private:
-  typedef std::map<uint32, std::string> TypeToNameMap;
-  typedef std::map<std::string, uint32> NameToTypeMap;
+  typedef std::map<uint32_t, std::string> TypeToNameMap;
+  typedef std::map<std::string, uint32_t> NameToTypeMap;
   TypeToNameMap name_map_;
   NameToTypeMap type_map_;
 

@@ -5,6 +5,8 @@
 #ifndef TOOLS_ANDROID_COMMON_NET_H_
 #define TOOLS_ANDROID_COMMON_NET_H_
 
+#include <stddef.h>
+
 #include <string>
 
 namespace tools {

@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "tools/ipc_fuzzer/fuzzer/generator.h"
 #include "tools/ipc_fuzzer/fuzzer/rand_util.h"
@@ -70,20 +69,20 @@ void Generator::FuzzWChar(wchar_t* value) {
   GenerateIntegralType<wchar_t>(value);
 }
 
-void Generator::FuzzUInt16(uint16* value) {
-  GenerateIntegralType<uint16>(value);
+void Generator::FuzzUInt16(uint16_t* value) {
+  GenerateIntegralType<uint16_t>(value);
 }
 
-void Generator::FuzzUInt32(uint32* value) {
-  GenerateIntegralType<uint32>(value);
+void Generator::FuzzUInt32(uint32_t* value) {
+  GenerateIntegralType<uint32_t>(value);
 }
 
-void Generator::FuzzInt64(int64* value) {
-  GenerateIntegralType<int64>(value);
+void Generator::FuzzInt64(int64_t* value) {
+  GenerateIntegralType<int64_t>(value);
 }
 
-void Generator::FuzzUInt64(uint64* value) {
-  GenerateIntegralType<uint64>(value);
+void Generator::FuzzUInt64(uint64_t* value) {
+  GenerateIntegralType<uint64_t>(value);
 }
 
 void Generator::FuzzFloat(float* value) {

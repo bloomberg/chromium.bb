@@ -4,6 +4,8 @@
 
 #include "tools/gn/target.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

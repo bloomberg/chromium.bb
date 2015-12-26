@@ -5,6 +5,9 @@
 #ifndef TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_H_
 #define TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback_forward.h"

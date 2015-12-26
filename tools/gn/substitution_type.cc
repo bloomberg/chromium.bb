@@ -4,6 +4,7 @@
 
 #include "tools/gn/substitution_type.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "tools/gn/err.h"

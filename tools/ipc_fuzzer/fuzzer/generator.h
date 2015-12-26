@@ -5,6 +5,9 @@
 #ifndef TOOLS_IPC_FUZZER_MUTATE_GENERATOR_H_
 #define TOOLS_IPC_FUZZER_MUTATE_GENERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "tools/ipc_fuzzer/fuzzer/fuzzer.h"
@@ -22,10 +25,10 @@ class Generator : public Fuzzer {
   void FuzzSize(size_t* value) override;
   void FuzzUChar(unsigned char* value) override;
   void FuzzWChar(wchar_t* value) override;
-  void FuzzUInt16(uint16* value) override;
-  void FuzzUInt32(uint32* value) override;
-  void FuzzInt64(int64* value) override;
-  void FuzzUInt64(uint64* value) override;
+  void FuzzUInt16(uint16_t* value) override;
+  void FuzzUInt32(uint32_t* value) override;
+  void FuzzInt64(int64_t* value) override;
+  void FuzzUInt64(uint64_t* value) override;
   void FuzzFloat(float* value) override;
   void FuzzDouble(double* value) override;
   void FuzzString(std::string* value) override;

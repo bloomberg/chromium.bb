@@ -4,6 +4,7 @@
 
 #include "tools/gn/input_conversion.h"
 
+#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/build_settings.h"

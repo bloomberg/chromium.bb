@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_UNIQUE_VECTOR_H_
 #define TOOLS_GN_UNIQUE_VECTOR_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/containers/hash_tables.h"

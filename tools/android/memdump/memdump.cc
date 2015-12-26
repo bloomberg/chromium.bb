@@ -4,6 +4,8 @@
 
 #include <fcntl.h>
 #include <signal.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -17,7 +19,6 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/hash_tables.h"
@@ -39,8 +40,8 @@ class BitSet {
     data_.resize((nbits + 7) / 8);
   }
 
-  void set(uint32 bit) {
-    const uint32 byte_idx = bit / 8;
+  void set(uint32_t bit) {
+    const uint32_t byte_idx = bit / 8;
     CHECK(byte_idx < data_.size());
     data_[byte_idx] |= (1 << (bit & 7));
   }
@@ -67,16 +68,16 @@ class BitSet {
 
 // An entry in /proc/<pid>/pagemap.
 struct PageMapEntry {
-  uint64 page_frame_number : 55;
+  uint64_t page_frame_number : 55;
   uint unused : 8;
   uint present : 1;
 };
 
 // Describes a memory page.
 struct PageInfo {
-  int64 page_frame_number; // Physical page id, also known as PFN.
-  int64 flags;
-  int32 times_mapped;
+  int64_t page_frame_number;  // Physical page id, also known as PFN.
+  int64_t flags;
+  int32_t times_mapped;
 };
 
 struct PageCount {
@@ -89,9 +90,9 @@ struct PageCount {
 struct MemoryMap {
   std::string name;
   std::string flags;
-  uint64 start_address;
-  uint64 end_address;
-  uint64 offset;
+  uint64_t start_address;
+  uint64_t end_address;
+  uint64_t offset;
   PageCount private_pages;
   // app_shared_pages[i] contains the number of pages mapped in i+2 processes
   // (only among the processes that are being analyzed).
@@ -123,7 +124,7 @@ bool PageIsUnevictable(const PageInfo& page_info) {
 }
 
 // Number of times a physical page is mapped in a process.
-typedef base::hash_map<uint64, int> PFNMap;
+typedef base::hash_map<uint64_t, int> PFNMap;
 
 // Parses lines from /proc/<PID>/maps, e.g.:
 // 401e7000-401f5000 r-xp 00000000 103:02 158       /system/bin/linker
@@ -213,12 +214,11 @@ bool GetPagesForMemoryMap(int pagemap_fd,
     PLOG(ERROR) << "lseek";
     return false;
   }
-  for (uint64 addr = memory_map.start_address, page_index = 0;
-       addr < memory_map.end_address;
-       addr += kPageSize, ++page_index) {
+  for (uint64_t addr = memory_map.start_address, page_index = 0;
+       addr < memory_map.end_address; addr += kPageSize, ++page_index) {
     DCHECK_EQ(0u, addr % kPageSize);
     PageMapEntry page_map_entry = {};
-    static_assert(sizeof(PageMapEntry) == sizeof(uint64), "unexpected size");
+    static_assert(sizeof(PageMapEntry) == sizeof(uint64_t), "unexpected size");
     ssize_t bytes = read(pagemap_fd, &page_map_entry, sizeof(page_map_entry));
     if (bytes != sizeof(PageMapEntry) && bytes != 0) {
       PLOG(ERROR) << "read";
@@ -244,15 +244,15 @@ bool SetPagesInfo(int pagecount_fd,
   for (std::vector<PageInfo>::iterator it = pages->begin();
        it != pages->end(); ++it) {
     PageInfo* const page_info = &*it;
-    int64 times_mapped;
+    int64_t times_mapped;
     if (!ReadFromFileAtOffset(
             pagecount_fd, page_info->page_frame_number, &times_mapped)) {
       return false;
     }
     DCHECK(times_mapped <= std::numeric_limits<int32_t>::max());
-    page_info->times_mapped = static_cast<int32>(times_mapped);
+    page_info->times_mapped = static_cast<int32_t>(times_mapped);
 
-    int64 page_flags;
+    int64_t page_flags;
     if (!ReadFromFileAtOffset(
             pageflags_fd, page_info->page_frame_number, &page_flags)) {
       return false;
@@ -292,7 +292,7 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
   FillPFNMaps(*processes_memory, &pfn_maps);
   // Hash set keeping track of the physical pages mapped in a single process so
   // that they can be counted only once.
-  base::hash_set<uint64> physical_pages_mapped_in_process;
+  base::hash_set<uint64_t> physical_pages_mapped_in_process;
 
   for (std::vector<ProcessMemory>::iterator it = processes_memory->begin();
        it != processes_memory->end(); ++it) {
@@ -313,8 +313,8 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
             ++memory_map->private_pages.unevictable_count;
           continue;
         }
-        const uint64 page_frame_number = page_info.page_frame_number;
-        const std::pair<base::hash_set<uint64>::iterator, bool> result =
+        const uint64_t page_frame_number = page_info.page_frame_number;
+        const std::pair<base::hash_set<uint64_t>::iterator, bool> result =
             physical_pages_mapped_in_process.insert(page_frame_number);
         const bool did_insert = result.second;
         if (!did_insert) {

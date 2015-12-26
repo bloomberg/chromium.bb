@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_PARSE_TREE_H_
 #define TOOLS_GN_PARSE_TREE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/macros.h"

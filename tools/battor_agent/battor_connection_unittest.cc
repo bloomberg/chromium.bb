@@ -4,6 +4,10 @@
 
 #include "tools/battor_agent/battor_connection.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"

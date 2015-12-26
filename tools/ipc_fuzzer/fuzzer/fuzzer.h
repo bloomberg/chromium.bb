@@ -5,10 +5,12 @@
 #ifndef TOOLS_IPC_FUZZER_MUTATE_FUZZER_H_
 #define TOOLS_IPC_FUZZER_MUTATE_FUZZER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "ipc/ipc_message.h"
 
@@ -26,10 +28,10 @@ class Fuzzer {
   virtual void FuzzSize(size_t* value) = 0;
   virtual void FuzzUChar(unsigned char* value) = 0;
   virtual void FuzzWChar(wchar_t* value) = 0;
-  virtual void FuzzUInt16(uint16* value) = 0;
-  virtual void FuzzUInt32(uint32* value) = 0;
-  virtual void FuzzInt64(int64* value) = 0;
-  virtual void FuzzUInt64(uint64* value) = 0;
+  virtual void FuzzUInt16(uint16_t* value) = 0;
+  virtual void FuzzUInt32(uint32_t* value) = 0;
+  virtual void FuzzInt64(int64_t* value) = 0;
+  virtual void FuzzUInt64(uint64_t* value) = 0;
   virtual void FuzzFloat(float* value) = 0;
   virtual void FuzzDouble(double *value) = 0;
   virtual void FuzzString(std::string* value) = 0;
@@ -53,10 +55,10 @@ class NoOpFuzzer : public Fuzzer {
   void FuzzSize(size_t* value) override {}
   void FuzzUChar(unsigned char* value) override {}
   void FuzzWChar(wchar_t* value) override {}
-  void FuzzUInt16(uint16* value) override {}
-  void FuzzUInt32(uint32* value) override {}
-  void FuzzInt64(int64* value) override {}
-  void FuzzUInt64(uint64* value) override {}
+  void FuzzUInt16(uint16_t* value) override {}
+  void FuzzUInt32(uint32_t* value) override {}
+  void FuzzInt64(int64_t* value) override {}
+  void FuzzUInt64(uint64_t* value) override {}
   void FuzzFloat(float* value) override {}
   void FuzzDouble(double* value) override {}
   void FuzzString(std::string* value) override {}
@@ -69,7 +71,7 @@ typedef IPC::Message* (*FuzzerFunction)(IPC::Message*, Fuzzer*);
 
 // Used for mutating messages. Once populated, the map associates a message ID
 // with a FuzzerFunction used for mutation of that message type.
-typedef base::hash_map<uint32, FuzzerFunction> FuzzerFunctionMap;
+typedef base::hash_map<uint32_t, FuzzerFunction> FuzzerFunctionMap;
 void PopulateFuzzerFunctionMap(FuzzerFunctionMap* map);
 
 // Used for generating new messages. Once populated, the vector contains

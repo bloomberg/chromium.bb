@@ -8,6 +8,7 @@
 #include <netinet/tcp.h>
 #include <pthread.h>
 #include <signal.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +19,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "tools/android/common/adb_connection.h"
 #include "tools/android/common/daemon.h"

@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_FILESYSTEM_UTILS_H_
 #define TOOLS_GN_FILESYSTEM_UTILS_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_path.h"

@@ -5,7 +5,6 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_COMMAND_H_
 #define TOOLS_ANDROID_FORWARDER2_COMMAND_H_
 
-#include "base/basictypes.h"
 
 namespace forwarder2 {
 

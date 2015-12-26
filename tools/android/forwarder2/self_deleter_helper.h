@@ -5,11 +5,11 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_SELF_DELETER_HELPER_H_
 #define TOOLS_ANDROID_FORWARDER2_SELF_DELETER_HELPER_H_
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

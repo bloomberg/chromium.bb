@@ -5,6 +5,8 @@
 #ifndef TOOLS_GN_ORDERED_SET_H_
 #define TOOLS_GN_ORDERED_SET_H_
 
+#include <stddef.h>
+
 #include <set>
 
 // An ordered set of items. Only appending is supported. Iteration is designed

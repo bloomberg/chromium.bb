@@ -4,6 +4,8 @@
 
 #include "tools/gn/standard_out.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/command_line.h"

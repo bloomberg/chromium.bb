@@ -5,7 +5,9 @@
 #ifndef TOOLS_ANDROID_HEAP_PROFILER_HEAP_PROFILER_H_
 #define TOOLS_ANDROID_HEAP_PROFILER_HEAP_PROFILER_H_
 
+#include <stddef.h>
 #include <stdint.h>
+
 #include "third_party/bsdtrees/tree.h"
 
 #define HEAP_PROFILER_MAGIC_MARKER 0x42beef42L

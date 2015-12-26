@@ -4,6 +4,8 @@
 
 #include "tools/gn/err.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/filesystem_utils.h"

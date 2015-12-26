@@ -4,6 +4,8 @@
 
 #include "tools/gn/ninja_build_writer.h"
 
+#include <stddef.h>
+
 #include <fstream>
 #include <map>
 

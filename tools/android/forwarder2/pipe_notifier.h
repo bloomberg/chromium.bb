@@ -5,7 +5,7 @@
 #ifndef TOOLS_ANDROID_FORWARDER2_PIPE_NOTIFIER_H_
 #define TOOLS_ANDROID_FORWARDER2_PIPE_NOTIFIER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace forwarder2 {
 

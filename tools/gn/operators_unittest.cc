@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/operators.h"
 #include "tools/gn/parse_tree.h"
@@ -10,7 +12,7 @@
 
 namespace {
 
-bool IsValueIntegerEqualing(const Value& v, int64 i) {
+bool IsValueIntegerEqualing(const Value& v, int64_t i) {
   if (v.type() != Value::INTEGER)
     return false;
   return v.int_value() == i;

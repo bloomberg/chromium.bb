@@ -6,6 +6,7 @@
 #define TOOLS_GN_SETTINGS_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/import_manager.h"
 #include "tools/gn/output_file.h"

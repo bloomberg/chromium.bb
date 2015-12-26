@@ -4,9 +4,10 @@
 
 #include "tools/cygprofile/cygprofile.h"
 
-#include <vector>
-
+#include <stdint.h>
 #include <sys/time.h>
+
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"

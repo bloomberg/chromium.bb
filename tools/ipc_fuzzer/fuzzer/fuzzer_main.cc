@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <iostream>
 #include <set>
 #include <vector>
@@ -161,7 +164,7 @@ int Mutate(base::CommandLine* cmd, Fuzzer* fuzzer) {
   std::string type_string_list = cmd->GetSwitchValueASCII(kTypeListSwitch);
   std::vector<std::string> type_string_vector = base::SplitString(
       type_string_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::set<uint32> type_set;
+  std::set<uint32_t> type_set;
   for (size_t i = 0; i < type_string_vector.size(); ++i) {
     type_set.insert(atoi(type_string_vector[i].c_str()));
   }

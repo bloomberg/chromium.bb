@@ -4,6 +4,8 @@
 
 #include "tools/gn/value_extractors.h"
 
+#include <stddef.h>
+
 #include "tools/gn/build_settings.h"
 #include "tools/gn/err.h"
 #include "tools/gn/label.h"

@@ -5,6 +5,8 @@
 #ifndef TOOLS_IMAGEDIFF_IMAGE_DIFF_PNG_H_
 #define TOOLS_IMAGEDIFF_IMAGE_DIFF_PNG_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

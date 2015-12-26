@@ -5,6 +5,7 @@
 #include "tools/gn/c_include_iterator.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/location.h"

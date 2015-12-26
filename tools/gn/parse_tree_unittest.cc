@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parse_tree.h"
@@ -40,7 +42,7 @@ TEST(ParseTree, Accessor) {
   EXPECT_EQ(Value::NONE, result.type());
 
   // Define b, accessor should succeed now.
-  const int64 kBValue = 42;
+  const int64_t kBValue = 42;
   err = Err();
   setup.scope()
       ->GetMutableValue("a", false)

@@ -4,6 +4,8 @@
 
 #include "tools/gn/string_utils.h"
 
+#include <stddef.h>
+
 #include "tools/gn/err.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parser.h"

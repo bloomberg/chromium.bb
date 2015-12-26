@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -59,7 +61,7 @@ TEST(WriteFile, WithData) {
   // Update the contents with a list of a string and a number.
   Value some_list(nullptr, Value::LIST);
   some_list.list_value().push_back(Value(nullptr, "line 1"));
-  some_list.list_value().push_back(Value(nullptr, static_cast<int64>(2)));
+  some_list.list_value().push_back(Value(nullptr, static_cast<int64_t>(2)));
   EXPECT_TRUE(CallWriteFile(setup.scope(), "//out/foo.txt", some_list));
   EXPECT_TRUE(base::ReadFileToString(foo_name, &result_contents));
   EXPECT_EQ("line 1\n2\n", result_contents);
