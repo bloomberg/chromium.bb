@@ -439,7 +439,7 @@ size_t WebInputEventTraits::GetSize(WebInputEvent::Type type) {
 ScopedWebInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {
   ScopedWebInputEvent scoped_event;
   Apply(WebInputEventClone(), event.type, event, &scoped_event);
-  return scoped_event.Pass();
+  return scoped_event;
 }
 
 void WebInputEventTraits::Delete(WebInputEvent* event) {

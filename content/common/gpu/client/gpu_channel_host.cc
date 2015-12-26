@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
@@ -237,7 +238,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
       make_scoped_ptr(new CommandBufferProxyImpl(this, route_id, stream_id));
   AddRoute(route_id, command_buffer->AsWeakPtr());
 
-  return command_buffer.Pass();
+  return command_buffer;
 }
 
 scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateOffscreenCommandBuffer(
@@ -279,7 +280,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateOffscreenCommandBuffer(
       make_scoped_ptr(new CommandBufferProxyImpl(this, route_id, stream_id));
   AddRoute(route_id, command_buffer->AsWeakPtr());
 
-  return command_buffer.Pass();
+  return command_buffer;
 }
 
 scoped_ptr<media::JpegDecodeAccelerator> GpuChannelHost::CreateJpegDecoder(
@@ -301,7 +302,7 @@ scoped_ptr<media::JpegDecodeAccelerator> GpuChannelHost::CreateJpegDecoder(
                                       channel_filter_.get(), route_id,
                                       decoder->GetReceiver(), io_task_runner));
 
-  return decoder.Pass();
+  return std::move(decoder);
 }
 
 void GpuChannelHost::DestroyCommandBuffer(

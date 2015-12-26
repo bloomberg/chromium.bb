@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/gpu/gpu_command_buffer_stub.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -14,7 +18,6 @@
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -665,7 +668,7 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
   command_buffer_->SetSharedStateBuffer(gpu::MakeBackingFromSharedMemory(
-      shared_state_shm.Pass(), kSharedStateSize));
+      std::move(shared_state_shm), kSharedStateSize));
 
   gpu::Capabilities capabilities = decoder_->GetCapabilities();
   capabilities.future_sync_points = channel_->allow_future_sync_points();
@@ -859,7 +862,7 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
 
   if (command_buffer_) {
     command_buffer_->RegisterTransferBuffer(
-        id, gpu::MakeBackingFromSharedMemory(shared_memory.Pass(), size));
+        id, gpu::MakeBackingFromSharedMemory(std::move(shared_memory), size));
   }
 }
 

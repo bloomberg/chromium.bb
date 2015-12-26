@@ -5,6 +5,7 @@
 #include "content/utility/utility_thread_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "build/build_config.h"
@@ -149,7 +150,8 @@ void UtilityThreadImpl::OnLoadPlugins(
 void UtilityThreadImpl::BindProcessControlRequest(
     mojo::InterfaceRequest<ProcessControl> request) {
   DCHECK(process_control_);
-  process_control_bindings_.AddBinding(process_control_.get(), request.Pass());
+  process_control_bindings_.AddBinding(process_control_.get(),
+                                       std::move(request));
 }
 
 }  // namespace content

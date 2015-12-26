@@ -213,7 +213,7 @@ GpuVideoEncodeAccelerator::CreateV4L2VEA() {
   if (device)
     encoder.reset(new V4L2VideoEncodeAccelerator(device));
 #endif
-  return encoder.Pass();
+  return encoder;
 }
 
 // static
@@ -225,7 +225,7 @@ GpuVideoEncodeAccelerator::CreateVaapiVEA() {
   if (!cmd_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode))
     encoder.reset(new VaapiVideoEncodeAccelerator());
 #endif
-  return encoder.Pass();
+  return encoder;
 }
 
 // static
@@ -235,7 +235,7 @@ GpuVideoEncodeAccelerator::CreateAndroidVEA() {
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   encoder.reset(new AndroidVideoEncodeAccelerator());
 #endif
-  return encoder.Pass();
+  return encoder;
 }
 
 void GpuVideoEncodeAccelerator::OnEncode(

@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/gpu_channel.h"
 
+#include <utility>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -127,7 +129,7 @@ bool GpuChannelMessageQueue::GenerateSyncPointMessage(
     msg->retire_sync_point = retire_sync_point;
     msg->sync_point = *sync_point;
 
-    PushMessageHelper(msg.Pass());
+    PushMessageHelper(std::move(msg));
     return true;
   }
   return false;
@@ -745,7 +747,7 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
     streams_.insert(std::make_pair(stream_id, stream));
   }
 
-  stubs_.set(route_id, stub.Pass());
+  stubs_.set(route_id, std::move(stub));
   return CREATE_COMMAND_BUFFER_SUCCEEDED;
 }
 
@@ -964,7 +966,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
     streams_.insert(std::make_pair(stream_id, stream));
   }
 
-  stubs_.set(route_id, stub.Pass());
+  stubs_.set(route_id, std::move(stub));
   *succeeded = true;
 }
 

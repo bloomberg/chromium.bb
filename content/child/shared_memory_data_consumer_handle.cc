@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -24,7 +25,8 @@ class DelegateThreadSafeReceivedData final
  public:
   explicit DelegateThreadSafeReceivedData(
       scoped_ptr<RequestPeer::ReceivedData> data)
-      : data_(data.Pass()), task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+      : data_(std::move(data)),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
   ~DelegateThreadSafeReceivedData() override {
     if (!task_runner_->BelongsToCurrentThread()) {
       // Delete the data on the original thread.
@@ -303,11 +305,11 @@ void SharedMemoryDataConsumerHandle::Writer::AddData(
     scoped_ptr<RequestPeer::ThreadSafeReceivedData> data_to_pass;
     if (mode_ == kApplyBackpressure) {
       data_to_pass =
-          make_scoped_ptr(new DelegateThreadSafeReceivedData(data.Pass()));
+          make_scoped_ptr(new DelegateThreadSafeReceivedData(std::move(data)));
     } else {
       data_to_pass = make_scoped_ptr(new FixedReceivedData(data.get()));
     }
-    context_->Push(data_to_pass.Pass());
+    context_->Push(std::move(data_to_pass));
   }
 
   if (needs_notification) {

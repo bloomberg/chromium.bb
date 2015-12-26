@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
@@ -112,7 +113,7 @@ class GpuJpegDecodeAccelerator::Client
 
   void set_accelerator(scoped_ptr<media::JpegDecodeAccelerator> accelerator) {
     DCHECK(CalledOnValidThread());
-    accelerator_ = accelerator.Pass();
+    accelerator_ = std::move(accelerator);
   }
 
  private:
@@ -343,7 +344,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
     scoped_ptr<media::JpegDecodeAccelerator> tmp_accelerator =
         (*create_jda_function)(io_task_runner_);
     if (tmp_accelerator && tmp_accelerator->Initialize(client.get())) {
-      accelerator = tmp_accelerator.Pass();
+      accelerator = std::move(tmp_accelerator);
       break;
     }
   }
@@ -354,7 +355,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
     Send(reply_msg);
     return;
   }
-  client->set_accelerator(accelerator.Pass());
+  client->set_accelerator(std::move(accelerator));
 
   if (!filter_) {
     DCHECK_EQ(client_number_, 0);
@@ -409,7 +410,7 @@ GpuJpegDecodeAccelerator::CreateV4L2JDA(
   if (device)
     decoder.reset(new V4L2JpegDecodeAccelerator(device, io_task_runner));
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 // static
@@ -420,7 +421,7 @@ GpuJpegDecodeAccelerator::CreateVaapiJDA(
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   decoder.reset(new VaapiJpegDecodeAccelerator(io_task_runner));
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 // static

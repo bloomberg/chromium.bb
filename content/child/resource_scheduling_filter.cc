@@ -4,6 +4,8 @@
 
 #include "content/child/resource_scheduling_filter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "content/child/resource_dispatcher.h"
@@ -82,7 +84,7 @@ void ResourceSchedulingFilter::SetRequestIdTaskRunner(
     int id, scoped_ptr<blink::WebTaskRunner> web_task_runner) {
   base::AutoLock lock(request_id_to_task_runner_map_lock_);
   request_id_to_task_runner_map_.insert(
-      std::make_pair(id, web_task_runner.Pass()));
+      std::make_pair(id, std::move(web_task_runner)));
 }
 
 void ResourceSchedulingFilter::ClearRequestIdTaskRunner(int id) {

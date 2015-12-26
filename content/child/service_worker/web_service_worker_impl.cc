@@ -4,6 +4,8 @@
 
 #include "content/child/service_worker/web_service_worker_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
@@ -43,7 +45,7 @@ void SendPostMessageToWorkerOnMainThread(
     scoped_ptr<WebMessagePortChannelArray> channels) {
   thread_safe_sender->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
       handle_id, message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.Pass())));
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
 }
 
 }  // namespace
@@ -51,7 +53,7 @@ void SendPostMessageToWorkerOnMainThread(
 WebServiceWorkerImpl::WebServiceWorkerImpl(
     scoped_ptr<ServiceWorkerHandleReference> handle_ref,
     ThreadSafeSender* thread_safe_sender)
-    : handle_ref_(handle_ref.Pass()),
+    : handle_ref_(std::move(handle_ref)),
       state_(handle_ref_->state()),
       thread_safe_sender_(thread_safe_sender),
       proxy_(nullptr) {

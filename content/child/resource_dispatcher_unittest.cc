@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/child/resource_dispatcher.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -17,7 +19,6 @@
 #include "base/stl_util.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
-#include "content/child/resource_dispatcher.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -111,7 +112,7 @@ class TestRequestPeer : public RequestPeer {
     if (cancel_on_receive_response)
       return;
     if (data)
-      OnReceivedData(data.Pass());
+      OnReceivedData(std::move(data));
     OnCompletedRequest(error_code, was_ignored_by_handler, stale_copy_in_cache,
                        security_info, completion_time, total_transfer_size);
   }

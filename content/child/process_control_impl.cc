@@ -4,6 +4,8 @@
 
 #include "content/child/process_control_impl.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "content/public/common/content_client.h"
 #include "mojo/shell/static_application_loader.h"
@@ -38,7 +40,7 @@ void ProcessControlImpl::LoadApplication(
   }
 
   callback.Run(true);
-  it->second->Load(application_url, request.Pass());
+  it->second->Load(application_url, std::move(request));
 }
 
 }  // namespace content

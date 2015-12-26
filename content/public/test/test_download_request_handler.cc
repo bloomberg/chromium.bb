@@ -5,6 +5,7 @@
 #include "content/public/test/test_download_request_handler.h"
 
 #include <inttypes.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -213,7 +214,7 @@ TestDownloadRequestHandler::PartialResponseJob::PartialResponseJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
-      parameters_(parameters.Pass()),
+      parameters_(std::move(parameters)),
       interceptor_(interceptor),
       weak_factory_(this) {
   DCHECK(parameters_.get());
@@ -488,7 +489,7 @@ TestDownloadRequestHandler::Interceptor::Register(
   base::WeakPtr<Interceptor> weak_reference =
       interceptor->weak_ptr_factory_.GetWeakPtr();
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddUrlInterceptor(url, interceptor.Pass());
+  filter->AddUrlInterceptor(url, std::move(interceptor));
   return weak_reference;
 }
 

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <string.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -468,8 +468,8 @@ TEST_F(CCMessagesTest, AllQuads) {
   }
 
   DelegatedFrameData frame_in;
-  frame_in.render_pass_list.push_back(child_pass_in.Pass());
-  frame_in.render_pass_list.push_back(pass_in.Pass());
+  frame_in.render_pass_list.push_back(std::move(child_pass_in));
+  frame_in.render_pass_list.push_back(std::move(pass_in));
 
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
@@ -479,11 +479,12 @@ TEST_F(CCMessagesTest, AllQuads) {
       &iter, &frame_out));
 
   // Make sure the out and cmp RenderPasses match.
-  scoped_ptr<RenderPass> child_pass_out = frame_out.render_pass_list[0].Pass();
+  scoped_ptr<RenderPass> child_pass_out =
+      std::move(frame_out.render_pass_list[0]);
   Compare(child_pass_cmp.get(), child_pass_out.get());
   ASSERT_EQ(0u, child_pass_out->shared_quad_state_list.size());
   ASSERT_EQ(0u, child_pass_out->quad_list.size());
-  scoped_ptr<RenderPass> pass_out = frame_out.render_pass_list[1].Pass();
+  scoped_ptr<RenderPass> pass_out = std::move(frame_out.render_pass_list[1]);
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(9u, pass_out->quad_list.size());
@@ -588,7 +589,7 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   ASSERT_EQ(2u, pass_in->quad_list.size());
 
   DelegatedFrameData frame_in;
-  frame_in.render_pass_list.push_back(pass_in.Pass());
+  frame_in.render_pass_list.push_back(std::move(pass_in));
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
@@ -598,7 +599,7 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   EXPECT_TRUE(
       IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
 
-  scoped_ptr<RenderPass> pass_out = frame_out.render_pass_list[0].Pass();
+  scoped_ptr<RenderPass> pass_out = std::move(frame_out.render_pass_list[0]);
 
   // 2 SharedQuadStates come out. The first and fourth SharedQuadStates were
   // used by quads, and so serialized. Others were not.
@@ -656,7 +657,7 @@ TEST_F(CCMessagesTest, Resources) {
   DelegatedFrameData frame_in;
   frame_in.resource_list.push_back(arbitrary_resource1);
   frame_in.resource_list.push_back(arbitrary_resource2);
-  frame_in.render_pass_list.push_back(renderpass_in.Pass());
+  frame_in.render_pass_list.push_back(std::move(renderpass_in));
 
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 

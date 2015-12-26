@@ -4,6 +4,8 @@
 
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
@@ -52,7 +54,7 @@ void MojoShellConnectionImpl::BindToMessagePipe(
     mojo::ScopedMessagePipeHandle handle) {
   if (initialized_)
     return;
-  WaitForShell(handle.Pass());
+  WaitForShell(std::move(handle));
 }
 
 MojoShellConnectionImpl::MojoShellConnectionImpl() : initialized_(false) {}
@@ -64,9 +66,9 @@ void MojoShellConnectionImpl::WaitForShell(
     mojo::ScopedMessagePipeHandle handle) {
   mojo::InterfaceRequest<mojo::Application> application_request;
   runner_connection_.reset(mojo::runner::RunnerConnection::ConnectToRunner(
-      &application_request, handle.Pass()));
-  application_impl_.reset(new mojo::ApplicationImpl(
-      this, application_request.Pass()));
+      &application_request, std::move(handle)));
+  application_impl_.reset(
+      new mojo::ApplicationImpl(this, std::move(application_request)));
   application_impl_->WaitForInitialize();
 }
 

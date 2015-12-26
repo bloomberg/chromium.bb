@@ -6,6 +6,8 @@
 
 #include "content/child/resource_dispatcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -286,7 +288,7 @@ void ResourceDispatcher::OnReceivedData(int request_id,
           factory->Create(data_offset, data_length, encoded_data_length);
       // |data| takes care of ACKing.
       send_ack = false;
-      request_info->peer->OnReceivedData(data.Pass());
+      request_info->peer->OnReceivedData(std::move(data));
     }
 
     UMA_HISTOGRAM_TIMES("ResourceDispatcher.OnReceivedDataTime",
@@ -860,7 +862,7 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
   request->request_body = request_body;
   if (frame_origin)
     *frame_origin = extra_data->frame_origin();
-  return request.Pass();
+  return request;
 }
 
 void ResourceDispatcher::SetResourceSchedulingFilter(

@@ -5,6 +5,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/values.h"
@@ -184,14 +185,14 @@ void WebMessagePortChannelImpl::postMessage(
     converter->SetRegExpAllowed(true);
     scoped_ptr<base::Value> message_as_value(converter->FromV8Value(
         v8_value, v8::Isolate::GetCurrent()->GetCurrentContext()));
-    message = MessagePortMessage(message_as_value.Pass());
+    message = MessagePortMessage(std::move(message_as_value));
   }
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WebMessagePortChannelImpl::PostMessage, this,
-                              message, base::Passed(channels.Pass())));
+                              message, base::Passed(std::move(channels))));
   } else {
-    PostMessage(message, channels.Pass());
+    PostMessage(message, std::move(channels));
   }
 }
 
@@ -199,7 +200,7 @@ void WebMessagePortChannelImpl::PostMessage(
     const MessagePortMessage& message,
     scoped_ptr<WebMessagePortChannelArray> channels) {
   IPC::Message* msg = new MessagePortHostMsg_PostMessage(
-      message_port_id_, message, ExtractMessagePortIDs(channels.Pass()));
+      message_port_id_, message, ExtractMessagePortIDs(std::move(channels)));
   Send(msg);
 }
 

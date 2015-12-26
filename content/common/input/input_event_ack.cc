@@ -4,6 +4,8 @@
 
 #include "content/common/input/input_event_ack.h"
 
+#include <utility>
+
 namespace content {
 
 InputEventAck::InputEventAck(
@@ -15,7 +17,7 @@ InputEventAck::InputEventAck(
     : type(type),
       state(state),
       latency(latency),
-      overscroll(overscroll.Pass()),
+      overscroll(std::move(overscroll)),
       unique_touch_event_id(unique_touch_event_id) {}
 
 InputEventAck::InputEventAck(blink::WebInputEvent::Type type,

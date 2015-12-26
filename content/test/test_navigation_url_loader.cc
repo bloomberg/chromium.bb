@@ -4,6 +4,8 @@
 
 #include "content/test/test_navigation_url_loader.h"
 
+#include <utility>
+
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
@@ -14,10 +16,9 @@ namespace content {
 TestNavigationURLLoader::TestNavigationURLLoader(
     scoped_ptr<NavigationRequestInfo> request_info,
     NavigationURLLoaderDelegate* delegate)
-    : request_info_(request_info.Pass()),
+    : request_info_(std::move(request_info)),
       delegate_(delegate),
-      redirect_count_(0) {
-}
+      redirect_count_(0) {}
 
 void TestNavigationURLLoader::FollowRedirect() {
   redirect_count_++;
@@ -46,7 +47,7 @@ void TestNavigationURLLoader::CallOnRequestRedirected(
 void TestNavigationURLLoader::CallOnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     scoped_ptr<StreamHandle> body) {
-  delegate_->OnResponseStarted(response, body.Pass());
+  delegate_->OnResponseStarted(response, std::move(body));
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

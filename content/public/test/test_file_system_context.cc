@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_file_system_context.h"
 
+#include <utility>
+
 #include "base/memory/scoped_vector.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/test/mock_special_storage_policy.h"
@@ -22,7 +24,7 @@ storage::FileSystemContext* CreateFileSystemContextForTesting(
   additional_providers.push_back(new TestFileSystemBackend(
       base::ThreadTaskRunnerHandle::Get().get(), base_path));
   return CreateFileSystemContextWithAdditionalProvidersForTesting(
-      quota_manager_proxy, additional_providers.Pass(), base_path);
+      quota_manager_proxy, std::move(additional_providers), base_path);
 }
 
 storage::FileSystemContext*
@@ -35,7 +37,7 @@ CreateFileSystemContextWithAdditionalProvidersForTesting(
       base::ThreadTaskRunnerHandle::Get().get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
-      quota_manager_proxy, additional_providers.Pass(),
+      quota_manager_proxy, std::move(additional_providers),
       std::vector<storage::URLRequestAutoMountHandler>(), base_path,
       CreateAllowFileAccessOptions());
 }
@@ -50,7 +52,7 @@ storage::FileSystemContext* CreateFileSystemContextWithAutoMountersForTesting(
       base::ThreadTaskRunnerHandle::Get().get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
-      quota_manager_proxy, additional_providers.Pass(), auto_mounters,
+      quota_manager_proxy, std::move(additional_providers), auto_mounters,
       base_path, CreateAllowFileAccessOptions());
 }
 
@@ -63,7 +65,7 @@ storage::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
       base::ThreadTaskRunnerHandle::Get().get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
-      quota_manager_proxy, additional_providers.Pass(),
+      quota_manager_proxy, std::move(additional_providers),
       std::vector<storage::URLRequestAutoMountHandler>(), base_path,
       CreateIncognitoFileSystemOptions());
 }

@@ -4,6 +4,8 @@
 
 #include "content/public/renderer/media_stream_api.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/rand_util.h"
@@ -37,7 +39,7 @@ bool AddVideoTrackToMediaStream(scoped_ptr<media::VideoCapturerSource> source,
   blink::WebMediaStream web_stream =
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(
           GURL(media_stream_url));
-  return AddVideoTrackToMediaStream(source.Pass(), is_remote, is_readonly,
+  return AddVideoTrackToMediaStream(std::move(source), is_remote, is_readonly,
                                     &web_stream);
 }
 
@@ -53,7 +55,7 @@ bool AddVideoTrackToMediaStream(scoped_ptr<media::VideoCapturerSource> source,
   blink::WebMediaStreamSource webkit_source;
   scoped_ptr<MediaStreamVideoSource> media_stream_source(
       new MediaStreamVideoCapturerSource(
-          MediaStreamSource::SourceStoppedCallback(), source.Pass()));
+          MediaStreamSource::SourceStoppedCallback(), std::move(source)));
   webkit_source.initialize(track_id, blink::WebMediaStreamSource::TypeVideo,
                            track_id, is_remote, is_readonly);
   webkit_source.setExtraData(media_stream_source.get());

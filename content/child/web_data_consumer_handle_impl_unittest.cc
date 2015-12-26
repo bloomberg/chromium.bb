@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -61,7 +62,7 @@ class ReadDataOperation : public ReadDataOperationBase {
   ReadDataOperation(mojo::ScopedDataPipeConsumerHandle handle,
                     base::MessageLoop* main_message_loop,
                     const base::Closure& on_done)
-      : handle_(new WebDataConsumerHandleImpl(handle.Pass())),
+      : handle_(new WebDataConsumerHandleImpl(std::move(handle))),
         main_message_loop_(main_message_loop),
         on_done_(on_done) {}
 
@@ -116,8 +117,9 @@ class TwoPhaseReadDataOperation : public ReadDataOperationBase {
   TwoPhaseReadDataOperation(mojo::ScopedDataPipeConsumerHandle handle,
                             base::MessageLoop* main_message_loop,
                             const base::Closure& on_done)
-      : handle_(new WebDataConsumerHandleImpl(handle.Pass())),
-        main_message_loop_(main_message_loop), on_done_(on_done) {}
+      : handle_(new WebDataConsumerHandleImpl(std::move(handle))),
+        main_message_loop_(main_message_loop),
+        on_done_(on_done) {}
 
   const std::string& result() const { return result_; }
 
@@ -228,9 +230,7 @@ class WebDataConsumerHandleImplTest : public ::testing::Test {
 TEST_F(WebDataConsumerHandleImplTest, ReadData) {
   base::RunLoop run_loop;
   auto operation = make_scoped_ptr(new ReadDataOperation(
-      consumer_.Pass(),
-      &message_loop_,
-      run_loop.QuitClosure()));
+      std::move(consumer_), &message_loop_, run_loop.QuitClosure()));
 
   base::Thread t("DataConsumerHandle test thread");
   ASSERT_TRUE(t.Start());
@@ -251,9 +251,7 @@ TEST_F(WebDataConsumerHandleImplTest, ReadData) {
 TEST_F(WebDataConsumerHandleImplTest, TwoPhaseReadData) {
   base::RunLoop run_loop;
   auto operation = make_scoped_ptr(new TwoPhaseReadDataOperation(
-      consumer_.Pass(),
-      &message_loop_,
-      run_loop.QuitClosure()));
+      std::move(consumer_), &message_loop_, run_loop.QuitClosure()));
 
   base::Thread t("DataConsumerHandle test thread");
   ASSERT_TRUE(t.Start());

@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/layout_test/layout_test_navigator_connect_service_factory.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_delegate.h"
@@ -66,8 +68,9 @@ void LayoutTestNavigatorConnectServiceFactory::Service::SendMessage(
     scoped_ptr<base::DictionaryValue> reply(new base::DictionaryValue);
     reply->SetString("message_as_string", message.message_as_string);
     reply->Set("message_as_value", message.message_as_value.DeepCopy());
-    MessagePortProvider::PostMessageToPort(
-        message_port_id, MessagePortMessage(reply.Pass()), sent_message_ports);
+    MessagePortProvider::PostMessageToPort(message_port_id,
+                                           MessagePortMessage(std::move(reply)),
+                                           sent_message_ports);
   } else {
     MessagePortProvider::PostMessageToPort(message_port_id, message,
                                            sent_message_ports);
@@ -113,7 +116,7 @@ void LayoutTestNavigatorConnectServiceFactory::Connect(
     scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
     value->SetString("origin", client.origin.spec());
     MessagePortProvider::PostMessageToPort(
-        client.message_port_id, MessagePortMessage(value.Pass()),
+        client.message_port_id, MessagePortMessage(std::move(value)),
         std::vector<TransferredMessagePort>());
   }
 }

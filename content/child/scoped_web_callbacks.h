@@ -74,12 +74,12 @@ class ScopedWebCallbacks {
 
   ScopedWebCallbacks(scoped_ptr<CallbacksType> callbacks,
                      const DestructionCallback& destruction_callback)
-      : callbacks_(callbacks.Pass()),
+      : callbacks_(std::move(callbacks)),
         destruction_callback_(destruction_callback) {}
 
   ~ScopedWebCallbacks() {
     if (callbacks_)
-      destruction_callback_.Run(callbacks_.Pass());
+      destruction_callback_.Run(std::move(callbacks_));
   }
 
   ScopedWebCallbacks(ScopedWebCallbacks&& other) { *this = std::move(other); }
@@ -90,7 +90,7 @@ class ScopedWebCallbacks {
     return *this;
   }
 
-  scoped_ptr<CallbacksType> PassCallbacks() { return callbacks_.Pass(); }
+  scoped_ptr<CallbacksType> PassCallbacks() { return std::move(callbacks_); }
 
  private:
   scoped_ptr<CallbacksType> callbacks_;

@@ -5,6 +5,7 @@
 #include "content/common/host_discardable_shared_memory_manager.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
@@ -34,7 +35,7 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
   DiscardableMemoryImpl(scoped_ptr<base::DiscardableSharedMemory> shared_memory,
                         const base::Closure& deleted_callback)
-      : shared_memory_(shared_memory.Pass()),
+      : shared_memory_(std::move(shared_memory)),
         deleted_callback_(deleted_callback),
         is_locked_(true) {}
 
@@ -106,8 +107,7 @@ base::StaticAtomicSequenceNumber g_next_discardable_shared_memory_id;
 
 HostDiscardableSharedMemoryManager::MemorySegment::MemorySegment(
     scoped_ptr<base::DiscardableSharedMemory> memory)
-    : memory_(memory.Pass()) {
-}
+    : memory_(std::move(memory)) {}
 
 HostDiscardableSharedMemoryManager::MemorySegment::~MemorySegment() {
 }
@@ -167,7 +167,7 @@ HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   // Close file descriptor to avoid running out.
   memory->Close();
   return make_scoped_ptr(new DiscardableMemoryImpl(
-      memory.Pass(),
+      std::move(memory),
       base::Bind(
           &HostDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory,
           base::Unretained(this), new_id, ChildProcessHost::kInvalidUniqueID)));
@@ -346,7 +346,7 @@ void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   bytes_allocated_ = checked_bytes_allocated.ValueOrDie();
   BytesAllocatedChanged(bytes_allocated_);
 
-  scoped_refptr<MemorySegment> segment(new MemorySegment(memory.Pass()));
+  scoped_refptr<MemorySegment> segment(new MemorySegment(std::move(memory)));
   process_segments[id] = segment.get();
   segments_.push_back(segment.get());
   std::push_heap(segments_.begin(), segments_.end(), CompareMemoryUsageTime);

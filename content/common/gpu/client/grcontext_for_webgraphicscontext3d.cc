@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -89,8 +90,7 @@ void GrContextForWebGraphicsContext3D::FreeGpuResources() {
 
 GrGLInterfaceForWebGraphicsContext3D::GrGLInterfaceForWebGraphicsContext3D(
     scoped_ptr<gpu_blink::WebGraphicsContext3DImpl> context3d)
-    : context3d_(context3d.Pass()) {
-}
+    : context3d_(std::move(context3d)) {}
 
 void GrGLInterfaceForWebGraphicsContext3D::BindToCurrentThread() {
   context_thread_checker_.DetachFromThread();

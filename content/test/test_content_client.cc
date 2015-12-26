@@ -4,6 +4,8 @@
 
 #include "content/test/test_content_client.h"
 
+#include <utility>
+
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -39,7 +41,7 @@ TestContentClient::TestContentClient()
 #endif  // defined(OS_ANDROID)
 
   if (pak_file.IsValid()) {
-    data_pack_.LoadFromFileRegion(pak_file.Pass(), pak_region);
+    data_pack_.LoadFromFileRegion(std::move(pak_file), pak_region);
   } else {
     content_shell_pack_path = content_shell_pack_path.Append(
         FILE_PATH_LITERAL("content_shell.pak"));

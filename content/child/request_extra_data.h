@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_REQUEST_EXTRA_DATA_H_
 #define CONTENT_CHILD_REQUEST_EXTRA_DATA_H_
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/child/web_url_loader_impl.h"
@@ -114,12 +116,12 @@ class CONTENT_EXPORT RequestExtraData
   // PlzNavigate: |stream_override| is used to override certain parameters of
   // navigation requests.
   scoped_ptr<StreamOverrideParameters> TakeStreamOverrideOwnership() {
-    return stream_override_.Pass();
+    return std::move(stream_override_);
   }
 
   void set_stream_override(
       scoped_ptr<StreamOverrideParameters> stream_override) {
-    stream_override_ = stream_override.Pass();
+    stream_override_ = std::move(stream_override);
   }
 
  private:

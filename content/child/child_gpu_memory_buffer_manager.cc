@@ -4,6 +4,8 @@
 
 #include "content/child/child_gpu_memory_buffer_manager.h"
 
+#include <utility>
+
 #include "content/common/child_process_messages.h"
 #include "content/common/generic_shared_memory_id_generator.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
@@ -57,7 +59,7 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
     return nullptr;
   }
 
-  return buffer.Pass();
+  return std::move(buffer);
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>

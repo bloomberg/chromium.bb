@@ -5,6 +5,7 @@
 #include "content/child/permissions/permission_dispatcher.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "content/public/child/worker_thread.h"
@@ -296,13 +297,10 @@ void PermissionDispatcher::RequestPermissionsInternal(
     names[i] = GetPermissionName(types[i]);
 
   GetPermissionServicePtr()->RequestPermissions(
-      names.Pass(),
-      origin,
+      std::move(names), origin,
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&PermissionDispatcher::OnRequestPermissionsResponse,
-                 base::Unretained(this),
-                 worker_thread_id,
-                 callback_key));
+                 base::Unretained(this), worker_thread_id, callback_key));
 }
 
 void PermissionDispatcher::RevokePermissionInternal(

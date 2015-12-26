@@ -15,7 +15,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -609,7 +609,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   const bool namespace_sandbox_engaged = sandbox_flags & kSandboxLinuxUserNS;
   CHECK_EQ(using_namespace_sandbox, namespace_sandbox_engaged);
 
-  Zygote zygote(sandbox_flags, fork_delegates.Pass(), extra_children,
+  Zygote zygote(sandbox_flags, std::move(fork_delegates), extra_children,
                 extra_fds);
   // This function call can return multiple times, once per fork().
   return zygote.ProcessRequests();

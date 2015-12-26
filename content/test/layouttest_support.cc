@@ -5,6 +5,7 @@
 #include "content/public/test/layouttest_support.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -147,9 +148,8 @@ void FetchManifest(blink::WebView* view, const GURL& url,
 void SetMockGamepadProvider(scoped_ptr<RendererGamepadProvider> provider) {
   RenderThreadImpl::current()
       ->blink_platform_impl()
-      ->SetPlatformEventObserverForTesting(
-          blink::WebPlatformEventTypeGamepad,
-          provider.Pass());
+      ->SetPlatformEventObserverForTesting(blink::WebPlatformEventTypeGamepad,
+                                           std::move(provider));
 }
 
 void SetMockDeviceLightData(const double data) {

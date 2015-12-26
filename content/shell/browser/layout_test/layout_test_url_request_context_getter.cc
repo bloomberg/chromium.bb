@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/layout_test/layout_test_url_request_context_getter.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,7 +27,7 @@ LayoutTestURLRequestContextGetter::LayoutTestURLRequestContextGetter(
                                    io_loop,
                                    file_loop,
                                    protocol_handlers,
-                                   request_interceptors.Pass(),
+                                   std::move(request_interceptors),
                                    net_log) {
   // Must first be created on the UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

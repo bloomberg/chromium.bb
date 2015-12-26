@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
@@ -315,7 +317,7 @@ LayoutTestBluetoothAdapterProvider::GetPowerValueAdapter(int8_t tx_power,
   ON_CALL(*device, GetInquiryTxPower()).WillByDefault(Return(tx_power));
   ON_CALL(*device, GetInquiryRSSI()).WillByDefault(Return(rssi));
 
-  adapter->AddMockDevice(device.Pass());
+  adapter->AddMockDevice(std::move(device));
 
   return adapter;
 }
@@ -360,7 +362,7 @@ LayoutTestBluetoothAdapterProvider::GetUnicodeDeviceAdapter() {
 static void AddDevice(scoped_refptr<NiceMockBluetoothAdapter> adapter,
                       scoped_ptr<NiceMockBluetoothDevice> new_device) {
   NiceMockBluetoothDevice* new_device_ptr = new_device.get();
-  adapter->AddMockDevice(new_device.Pass());
+  adapter->AddMockDevice(std::move(new_device));
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
                     DeviceAdded(adapter.get(), new_device_ptr));
 }
@@ -413,9 +415,9 @@ LayoutTestBluetoothAdapterProvider::GetMissingCharacteristicHeartRateAdapter() {
 
   // Intentionally NOT adding a characteristic to heart_rate service.
 
-  device->AddMockService(generic_access.Pass());
-  device->AddMockService(heart_rate.Pass());
-  adapter->AddMockDevice(device.Pass());
+  device->AddMockService(std::move(generic_access));
+  device->AddMockService(std::move(heart_rate));
+  adapter->AddMockDevice(std::move(device));
 
   return adapter;
 }
@@ -451,7 +453,7 @@ LayoutTestBluetoothAdapterProvider::GetDelayedServicesDiscoveryAdapter() {
         scoped_ptr<NiceMockBluetoothGattService> heart_rate(
             GetBaseGATTService(device_ptr, kHeartRateServiceUUID));
 
-        device_ptr->AddMockService(heart_rate.Pass());
+        device_ptr->AddMockService(std::move(heart_rate));
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::Bind(&NotifyServicesDiscovered,
                                   make_scoped_refptr(adapter_ptr), device_ptr));
@@ -460,7 +462,7 @@ LayoutTestBluetoothAdapterProvider::GetDelayedServicesDiscoveryAdapter() {
         return services;
       }));
 
-  adapter->AddMockDevice(device.Pass());
+  adapter->AddMockDevice(std::move(device));
 
   return adapter;
 }
@@ -476,7 +478,7 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateAdapter() {
 
   device->AddMockService(GetGenericAccessService(adapter.get(), device.get()));
   device->AddMockService(GetHeartRateService(adapter.get(), device.get()));
-  adapter->AddMockDevice(device.Pass());
+  adapter->AddMockDevice(std::move(device));
 
   return adapter;
 }
@@ -518,8 +520,8 @@ LayoutTestBluetoothAdapterProvider::GetFailingGATTOperationsAdapter() {
         static_cast<BluetoothGattService::GattErrorCode>(error)));
   }
 
-  device->AddMockService(service.Pass());
-  adapter->AddMockDevice(device.Pass());
+  device->AddMockService(std::move(service));
+  adapter->AddMockDevice(std::move(device));
 
   return adapter;
 }
@@ -699,7 +701,7 @@ LayoutTestBluetoothAdapterProvider::GetGenericAccessService(
   ON_CALL(*device_name, WriteRemoteCharacteristic(_, _, _))
       .WillByDefault(RunCallback<1 /* success callback */>());
 
-  generic_access->AddMockCharacteristic(device_name.Pass());
+  generic_access->AddMockCharacteristic(std::move(device_name));
 
   return generic_access;
 }
@@ -754,8 +756,8 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
             return location;
           }));
 
-  heart_rate->AddMockCharacteristic(heart_rate_measurement.Pass());
-  heart_rate->AddMockCharacteristic(body_sensor_location.Pass());
+  heart_rate->AddMockCharacteristic(std::move(heart_rate_measurement));
+  heart_rate->AddMockCharacteristic(std::move(body_sensor_location));
 
   return heart_rate;
 }

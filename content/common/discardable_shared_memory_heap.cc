@@ -5,6 +5,7 @@
 #include "content/common/discardable_shared_memory_heap.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/macros.h"
@@ -44,11 +45,10 @@ DiscardableSharedMemoryHeap::ScopedMemorySegment::ScopedMemorySegment(
     int32_t id,
     const base::Closure& deleted_callback)
     : heap_(heap),
-      shared_memory_(shared_memory.Pass()),
+      shared_memory_(std::move(shared_memory)),
       size_(size),
       id_(id),
-      deleted_callback_(deleted_callback) {
-}
+      deleted_callback_(deleted_callback) {}
 
 DiscardableSharedMemoryHeap::ScopedMemorySegment::~ScopedMemorySegment() {
   heap_->ReleaseMemory(shared_memory_.get(), size_);
@@ -131,9 +131,9 @@ scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
 
   // Start tracking if segment is resident by adding it to |memory_segments_|.
   memory_segments_.push_back(new ScopedMemorySegment(
-      this, shared_memory.Pass(), size, id, deleted_callback));
+      this, std::move(shared_memory), size, id, deleted_callback));
 
-  return span.Pass();
+  return span;
 }
 
 void DiscardableSharedMemoryHeap::MergeIntoFreeLists(scoped_ptr<Span> span) {
@@ -167,7 +167,7 @@ void DiscardableSharedMemoryHeap::MergeIntoFreeLists(scoped_ptr<Span> span) {
     spans_[span->start_ + span->length_ - 1] = span.get();
   }
 
-  InsertIntoFreeList(span.Pass());
+  InsertIntoFreeList(std::move(span));
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span>
@@ -182,7 +182,7 @@ DiscardableSharedMemoryHeap::Split(Span* span, size_t blocks) {
   RegisterSpan(leftover.get());
   spans_[span->start_ + blocks - 1] = span;
   span->length_ = blocks;
-  return leftover.Pass();
+  return leftover;
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span>
@@ -288,7 +288,7 @@ DiscardableSharedMemoryHeap::Carve(Span* span, size_t blocks) {
     // No need to coalesce as the previous span of |leftover| was just split
     // and the next span of |leftover| was not previously coalesced with
     // |span|.
-    InsertIntoFreeList(leftover.Pass());
+    InsertIntoFreeList(std::move(leftover));
 
     serving->length_ = blocks;
     spans_[serving->start_ + blocks - 1] = serving.get();
@@ -299,7 +299,7 @@ DiscardableSharedMemoryHeap::Carve(Span* span, size_t blocks) {
   DCHECK_GE(num_free_blocks_, serving->length_);
   num_free_blocks_ -= serving->length_;
 
-  return serving.Pass();
+  return serving;
 }
 
 void DiscardableSharedMemoryHeap::RegisterSpan(Span* span) {

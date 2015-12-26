@@ -4,6 +4,8 @@
 
 #include "content/child/navigator_connect/service_port_dispatcher_impl.h"
 
+#include <utility>
+
 #include "base/trace_event/trace_event.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
@@ -42,7 +44,7 @@ class WebConnectCallbacksImpl
 void ServicePortDispatcherImpl::Create(
     base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
     mojo::InterfaceRequest<ServicePortDispatcher> request) {
-  new ServicePortDispatcherImpl(proxy, request.Pass());
+  new ServicePortDispatcherImpl(proxy, std::move(request));
 }
 
 ServicePortDispatcherImpl::~ServicePortDispatcherImpl() {
@@ -52,7 +54,7 @@ ServicePortDispatcherImpl::~ServicePortDispatcherImpl() {
 ServicePortDispatcherImpl::ServicePortDispatcherImpl(
     base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
     mojo::InterfaceRequest<ServicePortDispatcher> request)
-    : binding_(this, request.Pass()), proxy_(proxy) {
+    : binding_(this, std::move(request)), proxy_(proxy) {
   WorkerThread::AddObserver(this);
 }
 

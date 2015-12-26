@@ -5,6 +5,7 @@
 #include "content/common/discardable_shared_memory_heap.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/discardable_shared_memory.h"
@@ -40,8 +41,8 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
 
   // Create new span for memory.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
-      heap.Grow(memory.Pass(), memory_size, next_discardable_shared_memory_id++,
-                base::Bind(NullTask)));
+      heap.Grow(std::move(memory), memory_size,
+                next_discardable_shared_memory_id++, base::Bind(NullTask)));
 
   // Size should match |memory_size|.
   EXPECT_EQ(memory_size, heap.GetSize());
@@ -53,7 +54,7 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
   EXPECT_FALSE(heap.SearchFreeLists(1, 0));
 
   // Done using |new_span|. Merge it into the free lists.
-  heap.MergeIntoFreeLists(new_span.Pass());
+  heap.MergeIntoFreeLists(std::move(new_span));
 
   // Size of free lists should now match |memory_size|.
   EXPECT_EQ(memory_size, heap.GetSizeOfFreeLists());
@@ -70,7 +71,7 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
   EXPECT_FALSE(heap.SearchFreeLists(1, 0));
 
   // Merge it into the free lists again.
-  heap.MergeIntoFreeLists(span.Pass());
+  heap.MergeIntoFreeLists(std::move(span));
 }
 
 TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
@@ -85,8 +86,8 @@ TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(memory_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
-      heap.Grow(memory.Pass(), memory_size, next_discardable_shared_memory_id++,
-                base::Bind(NullTask)));
+      heap.Grow(std::move(memory), memory_size,
+                next_discardable_shared_memory_id++, base::Bind(NullTask)));
 
   // Split span into two.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> leftover =
@@ -94,13 +95,13 @@ TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
   ASSERT_TRUE(leftover);
 
   // Merge |leftover| into free lists.
-  heap.MergeIntoFreeLists(leftover.Pass());
+  heap.MergeIntoFreeLists(std::move(leftover));
 
   // Some of the memory is still in use.
   EXPECT_FALSE(heap.SearchFreeLists(kBlocks, 0));
 
   // Merge |span| into free lists.
-  heap.MergeIntoFreeLists(new_span.Pass());
+  heap.MergeIntoFreeLists(std::move(new_span));
 
   // Remove a 2 page span from free lists.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span1 =
@@ -113,13 +114,13 @@ TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
   ASSERT_TRUE(span2);
 
   // Merge |span1| back into free lists.
-  heap.MergeIntoFreeLists(span1.Pass());
+  heap.MergeIntoFreeLists(std::move(span1));
 
   // Some of the memory is still in use.
   EXPECT_FALSE(heap.SearchFreeLists(kBlocks, 0));
 
   // Merge |span2| back into free lists.
-  heap.MergeIntoFreeLists(span2.Pass());
+  heap.MergeIntoFreeLists(std::move(span2));
 
   // All memory has been returned to the free lists.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> large_span =
@@ -127,7 +128,7 @@ TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
   ASSERT_TRUE(large_span);
 
   // Merge it into the free lists again.
-  heap.MergeIntoFreeLists(large_span.Pass());
+  heap.MergeIntoFreeLists(std::move(large_span));
 }
 
 TEST(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
@@ -142,8 +143,8 @@ TEST(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(memory_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
-      heap.Grow(memory.Pass(), memory_size, next_discardable_shared_memory_id++,
-                base::Bind(NullTask)));
+      heap.Grow(std::move(memory), memory_size,
+                next_discardable_shared_memory_id++, base::Bind(NullTask)));
 
   // Split span into two.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> leftover =
@@ -151,10 +152,10 @@ TEST(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
   ASSERT_TRUE(leftover);
 
   // Merge |new_span| into free lists.
-  heap.MergeIntoFreeLists(new_span.Pass());
+  heap.MergeIntoFreeLists(std::move(new_span));
 
   // Merge |leftover| into free lists.
-  heap.MergeIntoFreeLists(leftover.Pass());
+  heap.MergeIntoFreeLists(std::move(leftover));
 }
 
 TEST(DiscardableSharedMemoryHeapTest, Grow) {
@@ -165,9 +166,9 @@ TEST(DiscardableSharedMemoryHeapTest, Grow) {
   scoped_ptr<base::DiscardableSharedMemory> memory1(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory1->CreateAndMap(block_size));
-  heap.MergeIntoFreeLists(heap.Grow(memory1.Pass(), block_size,
+  heap.MergeIntoFreeLists(heap.Grow(std::move(memory1), block_size,
                                     next_discardable_shared_memory_id++,
-                                    base::Bind(NullTask)).Pass());
+                                    base::Bind(NullTask)));
 
   // Remove a span from free lists.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span1 =
@@ -181,9 +182,9 @@ TEST(DiscardableSharedMemoryHeapTest, Grow) {
   scoped_ptr<base::DiscardableSharedMemory> memory2(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory2->CreateAndMap(block_size));
-  heap.MergeIntoFreeLists(heap.Grow(memory2.Pass(), block_size,
+  heap.MergeIntoFreeLists(heap.Grow(std::move(memory2), block_size,
                                     next_discardable_shared_memory_id++,
-                                    base::Bind(NullTask)).Pass());
+                                    base::Bind(NullTask)));
 
   // Memory should now be available.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span2 =
@@ -191,8 +192,8 @@ TEST(DiscardableSharedMemoryHeapTest, Grow) {
   EXPECT_TRUE(span2);
 
   // Merge spans into the free lists again.
-  heap.MergeIntoFreeLists(span1.Pass());
-  heap.MergeIntoFreeLists(span2.Pass());
+  heap.MergeIntoFreeLists(std::move(span1));
+  heap.MergeIntoFreeLists(std::move(span2));
 }
 
 TEST(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
@@ -204,8 +205,8 @@ TEST(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(block_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
-      heap.Grow(memory.Pass(), block_size, next_discardable_shared_memory_id++,
-                base::Bind(NullTask));
+      heap.Grow(std::move(memory), block_size,
+                next_discardable_shared_memory_id++, base::Bind(NullTask));
 
   // Free lists should be empty.
   EXPECT_EQ(0u, heap.GetSizeOfFreeLists());
@@ -215,7 +216,7 @@ TEST(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
   // Size should still match |block_size|.
   EXPECT_EQ(block_size, heap.GetSize());
 
-  heap.MergeIntoFreeLists(span.Pass());
+  heap.MergeIntoFreeLists(std::move(span));
   heap.ReleaseFreeMemory();
 
   // Memory should have been released.
@@ -232,8 +233,8 @@ TEST(DiscardableSharedMemoryHeapTest, ReleasePurgedMemory) {
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(block_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
-      heap.Grow(memory.Pass(), block_size, next_discardable_shared_memory_id++,
-                base::Bind(NullTask));
+      heap.Grow(std::move(memory), block_size,
+                next_discardable_shared_memory_id++, base::Bind(NullTask));
 
   // Unlock memory so it can be purged.
   span->shared_memory()->Unlock(0, 0);
@@ -261,9 +262,9 @@ TEST(DiscardableSharedMemoryHeapTest, Slack) {
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(memory_size));
-  heap.MergeIntoFreeLists(heap.Grow(memory.Pass(), memory_size,
+  heap.MergeIntoFreeLists(heap.Grow(std::move(memory), memory_size,
                                     next_discardable_shared_memory_id++,
-                                    base::Bind(NullTask)).Pass());
+                                    base::Bind(NullTask)));
 
   // No free span that is less or equal to 3 + 1.
   EXPECT_FALSE(heap.SearchFreeLists(3, 1));
@@ -278,7 +279,7 @@ TEST(DiscardableSharedMemoryHeapTest, Slack) {
       heap.SearchFreeLists(1, 5);
   EXPECT_TRUE(span);
 
-  heap.MergeIntoFreeLists(span.Pass());
+  heap.MergeIntoFreeLists(std::move(span));
 }
 
 void OnDeleted(bool* deleted) {
@@ -294,11 +295,11 @@ TEST(DiscardableSharedMemoryHeapTest, DeletedCallback) {
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(block_size));
   bool deleted = false;
-  scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
-      heap.Grow(memory.Pass(), block_size, next_discardable_shared_memory_id++,
-                base::Bind(OnDeleted, base::Unretained(&deleted)));
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> span = heap.Grow(
+      std::move(memory), block_size, next_discardable_shared_memory_id++,
+      base::Bind(OnDeleted, base::Unretained(&deleted)));
 
-  heap.MergeIntoFreeLists(span.Pass());
+  heap.MergeIntoFreeLists(std::move(span));
   heap.ReleaseFreeMemory();
 
   EXPECT_TRUE(deleted);
@@ -313,8 +314,8 @@ TEST(DiscardableSharedMemoryHeapTest, CreateMemoryAllocatorDumpTest) {
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(block_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
-      heap.Grow(memory.Pass(), block_size, next_discardable_shared_memory_id++,
-                base::Bind(NullTask));
+      heap.Grow(std::move(memory), block_size,
+                next_discardable_shared_memory_id++, base::Bind(NullTask));
 
   // Check if allocator dump is created when span exists.
   scoped_ptr<base::trace_event::ProcessMemoryDump> pmd(

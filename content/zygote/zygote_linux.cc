@@ -95,7 +95,7 @@ Zygote::Zygote(int sandbox_flags,
                const std::vector<base::ProcessHandle>& extra_children,
                const std::vector<int>& extra_fds)
     : sandbox_flags_(sandbox_flags),
-      helpers_(helpers.Pass()),
+      helpers_(std::move(helpers)),
       initial_uma_index_(0),
       extra_children_(extra_children),
       extra_fds_(extra_fds),

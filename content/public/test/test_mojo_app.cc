@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_mojo_app.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -32,7 +34,7 @@ bool TestMojoApp::ConfigureIncomingConnection(
 void TestMojoApp::Create(mojo::ApplicationConnection* connection,
                          mojo::InterfaceRequest<TestMojoService> request) {
   DCHECK(!service_binding_.is_bound());
-  service_binding_.Bind(request.Pass());
+  service_binding_.Bind(std::move(request));
 }
 
 void TestMojoApp::DoSomething(const DoSomethingCallback& callback) {

@@ -5,6 +5,7 @@
 #include "content/child/background_sync/background_sync_provider.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -37,7 +38,7 @@ void ConnectToServiceOnMainThread(
     mojo::InterfaceRequest<BackgroundSyncService> request) {
   DCHECK(ChildThreadImpl::current());
   ChildThreadImpl::current()->service_registry()->ConnectToRemoteService(
-      request.Pass());
+      std::move(request));
 }
 
 LazyInstance<ThreadLocalPointer<BackgroundSyncProvider>>::Leaky
@@ -102,7 +103,8 @@ void BackgroundSyncProvider::registerBackgroundSync(
       mojo::ConvertTo<SyncRegistrationPtr>(*(optionsPtr.get())),
       service_worker_registration_id, requested_from_service_worker,
       base::Bind(&BackgroundSyncProvider::RegisterCallback,
-                 base::Unretained(this), base::Passed(callbacksPtr.Pass())));
+                 base::Unretained(this),
+                 base::Passed(std::move(callbacksPtr))));
 }
 
 void BackgroundSyncProvider::unregisterBackgroundSync(
@@ -120,7 +122,8 @@ void BackgroundSyncProvider::unregisterBackgroundSync(
   GetBackgroundSyncServicePtr()->Unregister(
       handle_id, service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::UnregisterCallback,
-                 base::Unretained(this), base::Passed(callbacksPtr.Pass())));
+                 base::Unretained(this),
+                 base::Passed(std::move(callbacksPtr))));
 }
 
 void BackgroundSyncProvider::getRegistration(
@@ -140,7 +143,8 @@ void BackgroundSyncProvider::getRegistration(
       mojo::ConvertTo<BackgroundSyncPeriodicity>(periodicity), tag.utf8(),
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::GetRegistrationCallback,
-                 base::Unretained(this), base::Passed(callbacksPtr.Pass())));
+                 base::Unretained(this),
+                 base::Passed(std::move(callbacksPtr))));
 }
 
 void BackgroundSyncProvider::getRegistrations(
@@ -159,7 +163,8 @@ void BackgroundSyncProvider::getRegistrations(
       mojo::ConvertTo<BackgroundSyncPeriodicity>(periodicity),
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::GetRegistrationsCallback,
-                 base::Unretained(this), base::Passed(callbacksPtr.Pass())));
+                 base::Unretained(this),
+                 base::Passed(std::move(callbacksPtr))));
 }
 
 void BackgroundSyncProvider::getPermissionStatus(
@@ -179,7 +184,8 @@ void BackgroundSyncProvider::getPermissionStatus(
       mojo::ConvertTo<BackgroundSyncPeriodicity>(periodicity),
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::GetPermissionStatusCallback,
-                 base::Unretained(this), base::Passed(callbacksPtr.Pass())));
+                 base::Unretained(this),
+                 base::Passed(std::move(callbacksPtr))));
 }
 
 void BackgroundSyncProvider::releaseRegistration(int64_t handle_id) {
@@ -197,9 +203,9 @@ void BackgroundSyncProvider::notifyWhenFinished(
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
   GetBackgroundSyncServicePtr()->NotifyWhenFinished(
-      handle_id,
-      base::Bind(&BackgroundSyncProvider::NotifyWhenFinishedCallback,
-                 base::Unretained(this), base::Passed(callbacks_ptr.Pass())));
+      handle_id, base::Bind(&BackgroundSyncProvider::NotifyWhenFinishedCallback,
+                            base::Unretained(this),
+                            base::Passed(std::move(callbacks_ptr))));
 }
 
 void BackgroundSyncProvider::DuplicateRegistrationHandle(

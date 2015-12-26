@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <string>
+#include <utility>
 
 #include "base/allocator/allocator_extension.h"
 #include "base/at_exit.h"
@@ -286,7 +286,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
   }
 
   // This function call can return multiple times, once per fork().
-  if (!ZygoteMain(main_function_params, zygote_fork_delegates.Pass()))
+  if (!ZygoteMain(main_function_params, std::move(zygote_fork_delegates)))
     return 1;
 
   if (delegate) delegate->ZygoteForked();

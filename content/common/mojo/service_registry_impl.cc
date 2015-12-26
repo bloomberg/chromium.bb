@@ -4,6 +4,8 @@
 
 #include "content/common/mojo/service_registry_impl.h"
 
+#include <utility>
+
 #include "mojo/common/common_type_converters.h"
 
 namespace content {
@@ -20,7 +22,7 @@ ServiceRegistryImpl::~ServiceRegistryImpl() {
 
 void ServiceRegistryImpl::Bind(
     mojo::InterfaceRequest<mojo::ServiceProvider> request) {
-  binding_.Bind(request.Pass());
+  binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(base::Bind(
       &ServiceRegistryImpl::OnConnectionError, base::Unretained(this)));
 }
@@ -28,7 +30,7 @@ void ServiceRegistryImpl::Bind(
 void ServiceRegistryImpl::BindRemoteServiceProvider(
     mojo::ServiceProviderPtr service_provider) {
   CHECK(!remote_provider_);
-  remote_provider_ = service_provider.Pass();
+  remote_provider_ = std::move(service_provider);
   while (!pending_connects_.empty()) {
     remote_provider_->ConnectToService(
         mojo::String::From(pending_connects_.front().first),
@@ -56,7 +58,7 @@ void ServiceRegistryImpl::ConnectToRemoteService(
     return;
   }
   remote_provider_->ConnectToService(
-      mojo::String::From(service_name.as_string()), handle.Pass());
+      mojo::String::From(service_name.as_string()), std::move(handle));
 }
 
 bool ServiceRegistryImpl::IsBound() const {
@@ -83,7 +85,7 @@ void ServiceRegistryImpl::ConnectToService(
     return;
   }
 
-  it->second.Run(client_handle.Pass());
+  it->second.Run(std::move(client_handle));
 }
 
 void ServiceRegistryImpl::OnConnectionError() {

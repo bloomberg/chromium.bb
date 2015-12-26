@@ -702,7 +702,7 @@ class GLHelperTest : public testing::Test {
         }
       }
     }
-    return bitmap.Pass();
+    return bitmap;
   }
 
   // Binds texture and framebuffer and loads the bitmap pixels into the texture.
@@ -741,7 +741,7 @@ class GLHelperTest : public testing::Test {
     WebGLId src_texture = context_->createTexture();
     WebGLId framebuffer = context_->createFramebuffer();
     scoped_ptr<SkBitmap> input_pixels =
-        CreateTestBitmap(xsize, ysize, test_pattern).Pass();
+        CreateTestBitmap(xsize, ysize, test_pattern);
     BindTextureAndFrameBuffer(
         src_texture, framebuffer, input_pixels.get(), xsize, ysize);
 
@@ -835,7 +835,7 @@ class GLHelperTest : public testing::Test {
     WebGLId src_texture = context_->createTexture();
     WebGLId framebuffer = context_->createFramebuffer();
     scoped_ptr<SkBitmap> input_pixels =
-        CreateTestBitmap(xsize, ysize, test_pattern).Pass();
+        CreateTestBitmap(xsize, ysize, test_pattern);
     BindTextureAndFrameBuffer(
         src_texture, framebuffer, input_pixels.get(), xsize, ysize);
 

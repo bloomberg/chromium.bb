@@ -5,6 +5,7 @@
 #include "content/child/child_shared_bitmap_manager.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/debug/alias.h"
 #include "base/process/memory.h"
@@ -32,7 +33,7 @@ class ChildSharedBitmap : public SharedMemoryBitmap {
                     scoped_ptr<base::SharedMemory> shared_memory_holder,
                     const cc::SharedBitmapId& id)
       : ChildSharedBitmap(sender, shared_memory_holder.get(), id) {
-    shared_memory_holder_ = shared_memory_holder.Pass();
+    shared_memory_holder_ = std::move(shared_memory_holder);
   }
 
   ~ChildSharedBitmap() override {
@@ -90,7 +91,7 @@ scoped_ptr<cc::SharedBitmap> ChildSharedBitmapManager::AllocateSharedBitmap(
   if (bitmap)
     bitmap->shared_memory()->Close();
 #endif
-  return bitmap.Pass();
+  return std::move(bitmap);
 }
 
 scoped_ptr<SharedMemoryBitmap>
@@ -122,7 +123,7 @@ ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
   sender_->Send(new ChildProcessHostMsg_AllocatedSharedBitmap(
       memory_size, handle_to_send, id));
 #endif
-  return make_scoped_ptr(new ChildSharedBitmap(sender_, memory.Pass(), id));
+  return make_scoped_ptr(new ChildSharedBitmap(sender_, std::move(memory), id));
 }
 
 scoped_ptr<cc::SharedBitmap> ChildSharedBitmapManager::GetSharedBitmapFromId(

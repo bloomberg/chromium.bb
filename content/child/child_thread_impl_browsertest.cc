@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/child/child_thread_impl.h"
+
 #include <stddef.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -12,7 +15,6 @@
 #include "base/time/time.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
-#include "content/child/child_thread_impl.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/public/common/content_switches.h"
@@ -97,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
     void* addr = memory->data();
     ASSERT_NE(nullptr, addr);
     memory->Unlock();
-    instances.push_back(memory.Pass());
+    instances.push_back(std::move(memory));
   }
 }
 

@@ -5,8 +5,8 @@
 #include "content/child/child_thread_impl.h"
 
 #include <signal.h>
-
 #include <string>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -470,8 +470,8 @@ void ChildThreadImpl::Init(const Options& options) {
       new PowerMonitorBroadcastSource());
     channel_->AddFilter(power_monitor_source->GetMessageFilter());
 
-    power_monitor_.reset(new base::PowerMonitor(
-        power_monitor_source.Pass()));
+    power_monitor_.reset(
+        new base::PowerMonitor(std::move(power_monitor_source)));
   }
 
 #if defined(OS_POSIX)
@@ -726,7 +726,7 @@ void ChildThreadImpl::OnBindExternalMojoShellHandle(
   mojo::ScopedMessagePipeHandle message_pipe =
       mojo_shell_channel_init_.Init(handle, GetIOTaskRunner());
   DCHECK(message_pipe.is_valid());
-  MojoShellConnectionImpl::Get()->BindToMessagePipe(message_pipe.Pass());
+  MojoShellConnectionImpl::Get()->BindToMessagePipe(std::move(message_pipe));
 #endif  // defined(MOJO_SHELL_CLIENT)
 }
 

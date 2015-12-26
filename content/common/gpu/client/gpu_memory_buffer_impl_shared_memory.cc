@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/numerics/safe_math.h"
@@ -28,7 +29,7 @@ GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
     size_t offset,
     int stride)
     : GpuMemoryBufferImpl(id, size, format, callback),
-      shared_memory_(shared_memory.Pass()),
+      shared_memory_(std::move(shared_memory)),
       offset_(offset),
       stride_(stride) {
   DCHECK(IsSizeValidForFormat(size, format));
@@ -52,7 +53,7 @@ GpuMemoryBufferImplSharedMemory::Create(gfx::GpuMemoryBufferId id,
     return nullptr;
 
   return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
-      id, size, format, callback, shared_memory.Pass(), 0,
+      id, size, format, callback, std::move(shared_memory), 0,
       gfx::RowSizeForBufferFormat(size.width(), format, 0)));
 }
 

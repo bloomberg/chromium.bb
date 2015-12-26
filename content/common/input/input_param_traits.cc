@@ -4,6 +4,8 @@
 
 #include "content/common/input/input_param_traits.h"
 
+#include <utility>
+
 #include "content/common/content_param_traits.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
@@ -21,7 +23,7 @@ scoped_ptr<content::SyntheticGestureParams> ReadGestureParams(
   if (!ReadParam(m, iter, gesture_params.get()))
     return scoped_ptr<content::SyntheticGestureParams>();
 
-  return gesture_params.Pass();
+  return std::move(gesture_params);
 }
 }  // namespace
 
@@ -107,7 +109,7 @@ bool ParamTraits<content::SyntheticGesturePacket>::Read(
       return false;
   }
 
-  p->set_gesture_params(gesture_params.Pass());
+  p->set_gesture_params(std::move(gesture_params));
   return p->gesture_params() != NULL;
 }
 

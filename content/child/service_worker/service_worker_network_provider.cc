@@ -97,7 +97,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     network_provider = scoped_ptr<ServiceWorkerNetworkProvider>(
         new ServiceWorkerNetworkProvider());
   }
-  return network_provider.Pass();
+  return network_provider;
 }
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(

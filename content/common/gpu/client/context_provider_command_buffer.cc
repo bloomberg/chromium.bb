@@ -5,8 +5,8 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/callback_helpers.h"
@@ -43,7 +43,7 @@ ContextProviderCommandBuffer::Create(
   if (!context3d)
     return NULL;
 
-  return new ContextProviderCommandBuffer(context3d.Pass(), type);
+  return new ContextProviderCommandBuffer(std::move(context3d), type);
 }
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
@@ -51,8 +51,8 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     CommandBufferContextType type)
     : context_type_(type),
       debug_name_(CommandBufferContextTypeToString(type)) {
-  gr_interface_ = skia::AdoptRef(new GrGLInterfaceForWebGraphicsContext3D(
-      context3d.Pass()));
+  gr_interface_ = skia::AdoptRef(
+      new GrGLInterfaceForWebGraphicsContext3D(std::move(context3d)));
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(gr_interface_->WebContext3D());
   context_thread_checker_.DetachFromThread();

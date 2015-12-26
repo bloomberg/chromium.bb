@@ -114,7 +114,7 @@ void WebProcessMemoryDumpImpl::takeAllDumpsFrom(
         first_entry->first;
     memory_allocator_dumps_.set(
         memory_allocator_dump,
-        other_impl->memory_allocator_dumps_.take_and_erase(first_entry).Pass());
+        other_impl->memory_allocator_dumps_.take_and_erase(first_entry));
   }
   DCHECK_EQ(expected_final_size, memory_allocator_dumps_.size());
   DCHECK(other_impl->memory_allocator_dumps_.empty());

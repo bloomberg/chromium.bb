@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file.h"
@@ -171,7 +172,7 @@ TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
 void TestFileSystemBackend::InitializeCopyOrMoveFileValidatorFactory(
     scoped_ptr<storage::CopyOrMoveFileValidatorFactory> factory) {
   if (!copy_or_move_file_validator_factory_)
-    copy_or_move_file_validator_factory_ = factory.Pass();
+    copy_or_move_file_validator_factory_ = std::move(factory);
 }
 
 FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
@@ -182,7 +183,8 @@ FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
       new FileSystemOperationContext(context));
   operation_context->set_update_observers(*GetUpdateObservers(url.type()));
   operation_context->set_change_observers(*GetChangeObservers(url.type()));
-  return FileSystemOperation::Create(url, context, operation_context.Pass());
+  return FileSystemOperation::Create(url, context,
+                                     std::move(operation_context));
 }
 
 bool TestFileSystemBackend::SupportsStreaming(

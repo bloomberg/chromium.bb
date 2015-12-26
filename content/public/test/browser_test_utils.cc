@@ -5,6 +5,7 @@
 #include "content/public/test/browser_test_utils.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -309,7 +310,7 @@ scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target.spec());
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // namespace

@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_file_error_injector.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -111,12 +112,17 @@ DownloadFileWithErrors::DownloadFileWithErrors(
     const TestFileErrorInjector::FileErrorInfo& error_info,
     const ConstructionCallback& ctor_callback,
     const DestructionCallback& dtor_callback)
-        : DownloadFileImpl(
-            save_info.Pass(), default_download_directory, url, referrer_url,
-            calculate_hash, stream.Pass(), bound_net_log, observer),
-          source_url_(url),
-          error_info_(error_info),
-          destruction_callback_(dtor_callback) {
+    : DownloadFileImpl(std::move(save_info),
+                       default_download_directory,
+                       url,
+                       referrer_url,
+                       calculate_hash,
+                       std::move(stream),
+                       bound_net_log,
+                       observer),
+      source_url_(url),
+      error_info_(error_info),
+      destruction_callback_(dtor_callback) {
   // DownloadFiles are created on the UI thread and are destroyed on the FILE
   // thread. Schedule the ConstructionCallback on the FILE thread so that if a
   // DownloadItem schedules a DownloadFile to be destroyed and creates another
@@ -310,16 +316,9 @@ DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
   }
 
   return new DownloadFileWithErrors(
-      save_info.Pass(),
-      default_download_directory,
-      url,
-      referrer_url,
-      calculate_hash,
-      stream.Pass(),
-      bound_net_log,
-      observer,
-      injected_errors_[url.spec()],
-      construction_callback_,
+      std::move(save_info), default_download_directory, url, referrer_url,
+      calculate_hash, std::move(stream), bound_net_log, observer,
+      injected_errors_[url.spec()], construction_callback_,
       destruction_callback_);
 }
 
@@ -354,7 +353,7 @@ TestFileErrorInjector::TestFileErrorInjector(
       created_factory_);
 
   download_manager_->SetDownloadFileFactoryForTesting(
-      download_file_factory.Pass());
+      std::move(download_file_factory));
 }
 
 TestFileErrorInjector::~TestFileErrorInjector() {

@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_COMMON_SERVICE_REGISTRY_H_
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -65,7 +66,7 @@ class CONTENT_EXPORT ServiceRegistry {
       const base::Callback<void(mojo::InterfaceRequest<Interface>)>
           service_factory,
       mojo::ScopedMessagePipeHandle handle) {
-    service_factory.Run(mojo::MakeRequest<Interface>(handle.Pass()));
+    service_factory.Run(mojo::MakeRequest<Interface>(std::move(handle)));
   }
 };
 

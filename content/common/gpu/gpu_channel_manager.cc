@@ -5,6 +5,7 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -180,7 +181,7 @@ void GpuChannelManager::OnEstablishChannel(
     channel->SetPreemptByFlag(preemption_flag_.get());
   IPC::ChannelHandle channel_handle = channel->Init(shutdown_event_);
 
-  gpu_channels_.set(params.client_id, channel.Pass());
+  gpu_channels_.set(params.client_id, std::move(channel));
 
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }

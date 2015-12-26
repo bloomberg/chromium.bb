@@ -5,6 +5,7 @@
 #include "content/gpu/gpu_child_thread.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -394,7 +395,8 @@ void GpuChildThread::BindProcessControlRequest(
     mojo::InterfaceRequest<ProcessControl> request) {
   DVLOG(1) << "GPU: Binding ProcessControl request";
   DCHECK(process_control_);
-  process_control_bindings_.AddBinding(process_control_.get(), request.Pass());
+  process_control_bindings_.AddBinding(process_control_.get(),
+                                       std::move(request));
 }
 
 }  // namespace content

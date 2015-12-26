@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
@@ -88,7 +89,7 @@ class CONTENT_EXPORT BrowserMessageFilter
   base::ProcessId peer_pid() const { return peer_process_.Pid(); }
 
   void set_peer_process_for_testing(base::Process peer_process) {
-    peer_process_ = peer_process.Pass();
+    peer_process_ = std::move(peer_process);
   }
 
   // Checks that the given message can be dispatched on the UI thread, depending

@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_INPUT_SYNTHETIC_GESTURE_PACKET_H_
 #define CONTENT_COMMON_INPUT_SYNTHETIC_GESTURE_PACKET_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
@@ -20,13 +22,13 @@ class CONTENT_EXPORT SyntheticGesturePacket {
   ~SyntheticGesturePacket();
 
   void set_gesture_params(scoped_ptr<SyntheticGestureParams> gesture_params) {
-    gesture_params_ = gesture_params.Pass();
+    gesture_params_ = std::move(gesture_params);
   }
   const SyntheticGestureParams* gesture_params() const {
     return gesture_params_.get();
   }
   scoped_ptr<SyntheticGestureParams> pass_gesture_params() {
-    return gesture_params_.Pass();
+    return std::move(gesture_params_);
   }
 
  private:

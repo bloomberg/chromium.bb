@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_utils.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -68,7 +70,7 @@ class ScriptCallback {
   virtual ~ScriptCallback() { }
   void ResultCallback(const base::Value* result);
 
-  scoped_ptr<base::Value> result() { return result_.Pass(); }
+  scoped_ptr<base::Value> result() { return std::move(result_); }
 
  private:
   scoped_ptr<base::Value> result_;
@@ -190,7 +192,7 @@ scoped_ptr<base::Value> ExecuteScriptAndGetValue(
       base::Bind(&ScriptCallback::ResultCallback, base::Unretained(&observer)));
   base::MessageLoop* loop = base::MessageLoop::current();
   loop->Run();
-  return observer.result().Pass();
+  return observer.result();
 }
 
 bool AreAllSitesIsolatedForTesting() {

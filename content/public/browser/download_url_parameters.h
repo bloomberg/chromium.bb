@@ -6,8 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_URL_PARAMETERS_H_
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -101,9 +101,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
     save_info_.hash_state = hash_state;
   }
   void set_prompt(bool prompt) { save_info_.prompt_for_save_location = prompt; }
-  void set_file(base::File file) {
-    save_info_.file = file.Pass();
-  }
+  void set_file(base::File file) { save_info_.file = std::move(file); }
   void set_do_not_prompt_for_login(bool do_not_prompt) {
     do_not_prompt_for_login_ = do_not_prompt;
   }
@@ -146,7 +144,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
 
   // Note that this is state changing--the DownloadUrlParameters object
   // will not have a file attached to it after this call.
-  base::File GetFile() { return save_info_.file.Pass(); }
+  base::File GetFile() { return std::move(save_info_.file); }
 
  private:
   OnStartedCallback callback_;

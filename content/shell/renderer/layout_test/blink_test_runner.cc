@@ -5,10 +5,10 @@
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <clocale>
 #include <cmath>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -116,7 +116,7 @@ namespace {
 class InvokeTaskHelper : public blink::WebTaskRunner::Task {
  public:
   InvokeTaskHelper(scoped_ptr<test_runner::WebTask> task)
-      : task_(task.Pass()) {}
+      : task_(std::move(task)) {}
 
   // WebThread::Task implementation:
   void run() override { task_->run(); }
@@ -289,7 +289,7 @@ void BlinkTestRunner::SetEditCommand(const std::string& name,
 void BlinkTestRunner::SetGamepadProvider(
     test_runner::GamepadController* controller) {
   scoped_ptr<MockGamepadProvider> provider(new MockGamepadProvider(controller));
-  SetMockGamepadProvider(provider.Pass());
+  SetMockGamepadProvider(std::move(provider));
 }
 
 void BlinkTestRunner::SetDeviceLightData(const double data) {

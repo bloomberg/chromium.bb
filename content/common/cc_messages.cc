@@ -5,6 +5,7 @@
 #include "content/common/cc_messages.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
@@ -728,7 +729,7 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
         return false;
     }
     pass_set.insert(render_pass->id);
-    p->render_pass_list.push_back(render_pass.Pass());
+    p->render_pass_list.push_back(std::move(render_pass));
   }
   return true;
 }

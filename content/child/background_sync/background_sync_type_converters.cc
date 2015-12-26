@@ -128,7 +128,7 @@ content::SyncRegistrationPtr TypeConverter<
       ConvertTo<content::BackgroundSyncNetworkState>(input.networkState);
   result->power_state =
       ConvertTo<content::BackgroundSyncPowerState>(input.powerState);
-  return result.Pass();
+  return result;
 }
 
 // static

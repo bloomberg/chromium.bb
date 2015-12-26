@@ -5,9 +5,9 @@
 #include "content/child/web_url_loader_impl.h"
 
 #include <stdint.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -341,11 +341,10 @@ WebURLLoaderImpl::Context::Context(
     : loader_(loader),
       client_(NULL),
       resource_dispatcher_(resource_dispatcher),
-      web_task_runner_(web_task_runner.Pass()),
+      web_task_runner_(std::move(web_task_runner)),
       referrer_policy_(blink::WebReferrerPolicyDefault),
       defers_loading_(NOT_DEFERRING),
-      request_id_(-1) {
-}
+      request_id_(-1) {}
 
 void WebURLLoaderImpl::Context::Cancel() {
   if (resource_dispatcher_ && // NULL in unittest.
@@ -520,7 +519,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
 void WebURLLoaderImpl::Context::SetWebTaskRunner(
     scoped_ptr<blink::WebTaskRunner> web_task_runner) {
-  web_task_runner_ = web_task_runner.Pass();
+  web_task_runner_ = std::move(web_task_runner);
 }
 
 void WebURLLoaderImpl::Context::OnUploadProgress(uint64_t position,
@@ -700,7 +699,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(scoped_ptr<ReceivedData> data) {
       // We don't support ftp_listening_delegate_ and multipart_delegate_ for
       // now.
       // TODO(yhirano): Support ftp listening and multipart.
-      body_stream_writer_->AddData(data.Pass());
+      body_stream_writer_->AddData(std::move(data));
     }
   }
 }
@@ -763,7 +762,7 @@ void WebURLLoaderImpl::Context::OnReceivedCompletedResponse(
 
   OnReceivedResponse(info);
   if (data)
-    OnReceivedData(data.Pass());
+    OnReceivedData(std::move(data));
   OnCompletedRequest(error_code, was_ignored_by_handler, stale_copy_in_cache,
                      security_info, completion_time, total_transfer_size);
 }
@@ -869,8 +868,8 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
     scoped_ptr<blink::WebTaskRunner> web_task_runner)
-    : context_(new Context(this, resource_dispatcher, web_task_runner.Pass())) {
-}
+    : context_(
+          new Context(this, resource_dispatcher, std::move(web_task_runner))) {}
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
   cancel();

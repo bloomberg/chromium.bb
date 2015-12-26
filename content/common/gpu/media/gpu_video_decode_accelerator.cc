@@ -389,7 +389,7 @@ GpuVideoDecodeAccelerator::CreateDXVAVDA() {
     NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   }
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -407,7 +407,7 @@ GpuVideoDecodeAccelerator::CreateV4L2VDA() {
         io_task_runner_));
   }
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -425,7 +425,7 @@ GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
         io_task_runner_));
   }
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 void GpuVideoDecodeAccelerator::BindImage(uint32_t client_texture_id,
@@ -449,7 +449,7 @@ GpuVideoDecodeAccelerator::CreateVaapiVDA() {
       make_context_current_, base::Bind(&GpuVideoDecodeAccelerator::BindImage,
                                         base::Unretained(this))));
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -460,7 +460,7 @@ GpuVideoDecodeAccelerator::CreateVTVDA() {
       make_context_current_, base::Bind(&GpuVideoDecodeAccelerator::BindImage,
                                         base::Unretained(this))));
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -471,7 +471,7 @@ GpuVideoDecodeAccelerator::CreateOzoneVDA() {
       media::MediaOzonePlatform::GetInstance();
   decoder.reset(platform->CreateVideoDecodeAccelerator(make_context_current_));
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
@@ -481,7 +481,7 @@ GpuVideoDecodeAccelerator::CreateAndroidVDA() {
   decoder.reset(new AndroidVideoDecodeAccelerator(stub_->decoder()->AsWeakPtr(),
                                                   make_context_current_));
 #endif
-  return decoder.Pass();
+  return decoder;
 }
 
 void GpuVideoDecodeAccelerator::OnSetCdm(int cdm_id) {

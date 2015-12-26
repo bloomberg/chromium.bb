@@ -26,7 +26,7 @@ TypeConverter<content::MojoTransferredMessagePortPtr,
       content::MojoTransferredMessagePort::New());
   output->id = input.id;
   output->send_messages_as_values = input.send_messages_as_values;
-  return output.Pass();
+  return output;
 }
 
 }  // namespace mojo

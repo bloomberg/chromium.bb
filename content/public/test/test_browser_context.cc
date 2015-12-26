@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_browser_context.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/test/null_task_runner.h"
 #include "content/public/browser/background_sync_controller.h"
@@ -59,7 +61,7 @@ void TestBrowserContext::SetSpecialStoragePolicy(
 
 void TestBrowserContext::SetBackgroundSyncController(
     scoped_ptr<BackgroundSyncController> controller) {
-  background_sync_controller_ = controller.Pass();
+  background_sync_controller_ = std::move(controller);
 }
 
 base::FilePath TestBrowserContext::GetPath() const {

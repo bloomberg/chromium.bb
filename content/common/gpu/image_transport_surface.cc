@@ -5,6 +5,7 @@
 #include "content/common/gpu/image_transport_surface.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -171,7 +172,7 @@ void PassThroughImageTransportSurface::SetLatencyInfo(
 gfx::SwapResult PassThroughImageTransportSurface::SwapBuffers() {
   scoped_ptr<std::vector<ui::LatencyInfo>> latency_info = StartSwapBuffers();
   gfx::SwapResult result = gfx::GLSurfaceAdapter::SwapBuffers();
-  FinishSwapBuffers(latency_info.Pass(), result);
+  FinishSwapBuffers(std::move(latency_info), result);
   return result;
 }
 
@@ -195,7 +196,7 @@ gfx::SwapResult PassThroughImageTransportSurface::PostSubBuffer(int x,
   scoped_ptr<std::vector<ui::LatencyInfo>> latency_info = StartSwapBuffers();
   gfx::SwapResult result =
       gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
-  FinishSwapBuffers(latency_info.Pass(), result);
+  FinishSwapBuffers(std::move(latency_info), result);
   return result;
 }
 
@@ -216,7 +217,7 @@ void PassThroughImageTransportSurface::PostSubBufferAsync(
 gfx::SwapResult PassThroughImageTransportSurface::CommitOverlayPlanes() {
   scoped_ptr<std::vector<ui::LatencyInfo>> latency_info = StartSwapBuffers();
   gfx::SwapResult result = gfx::GLSurfaceAdapter::CommitOverlayPlanes();
-  FinishSwapBuffers(latency_info.Pass(), result);
+  FinishSwapBuffers(std::move(latency_info), result);
   return result;
 }
 
@@ -294,7 +295,7 @@ void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
     scoped_ptr<std::vector<ui::LatencyInfo>> latency_info,
     GLSurface::SwapCompletionCallback callback,
     gfx::SwapResult result) {
-  FinishSwapBuffers(latency_info.Pass(), result);
+  FinishSwapBuffers(std::move(latency_info), result);
   callback.Run(result);
 }
 

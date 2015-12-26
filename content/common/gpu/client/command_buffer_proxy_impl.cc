@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -383,7 +384,7 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
 
   *id = new_id;
   scoped_refptr<gpu::Buffer> buffer(
-      gpu::MakeBufferFromSharedMemory(shared_memory.Pass(), size));
+      gpu::MakeBufferFromSharedMemory(std::move(shared_memory), size));
   return buffer;
 }
 

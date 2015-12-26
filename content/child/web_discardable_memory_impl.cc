@@ -4,6 +4,8 @@
 
 #include "content/child/web_discardable_memory_impl.h"
 
+#include <utility>
+
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "content/child/web_process_memory_dump_impl.h"
@@ -43,7 +45,6 @@ WebDiscardableMemoryImpl::createMemoryAllocatorDump(
 
 WebDiscardableMemoryImpl::WebDiscardableMemoryImpl(
     scoped_ptr<base::DiscardableMemory> memory)
-    : discardable_(memory.Pass()) {
-}
+    : discardable_(std::move(memory)) {}
 
 }  // namespace content

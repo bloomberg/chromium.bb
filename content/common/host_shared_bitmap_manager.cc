@@ -5,6 +5,7 @@
 #include "content/common/host_shared_bitmap_manager.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -232,7 +233,7 @@ void HostSharedBitmapManager::AllocateSharedBitmapForChild(
 
   scoped_refptr<BitmapData> data(
       new BitmapData(process_handle, buffer_size));
-  data->memory = shared_memory.Pass();
+  data->memory = std::move(shared_memory);
 
   handle_map_[id] = data;
   if (!data->memory->ShareToProcess(process_handle, shared_memory_handle)) {

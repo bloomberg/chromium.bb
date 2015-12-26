@@ -4,6 +4,7 @@
 
 #include "content/child/blob_storage/blob_transport_controller.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -49,7 +50,7 @@ void BlobTransportController::InitiateBlobTransfer(
     scoped_ptr<BlobConsolidation> consolidation,
     IPC::Sender* sender) {
   BlobConsolidation* consolidation_ptr = consolidation.get();
-  blob_storage_.insert(std::make_pair(uuid, consolidation.Pass()));
+  blob_storage_.insert(std::make_pair(uuid, std::move(consolidation)));
   std::vector<storage::DataElement> descriptions;
   GetDescriptions(consolidation_ptr, kLargeThresholdBytes, &descriptions);
   // TODO(dmurph): Uncomment when IPC messages are added.

@@ -5,6 +5,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -172,7 +173,7 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
   ShellBrowserContext* shell_browser_context =
       ShellBrowserContextForBrowserContext(content_browser_context);
   return shell_browser_context->CreateRequestContext(
-      protocol_handlers, request_interceptors.Pass());
+      protocol_handlers, std::move(request_interceptors));
 }
 
 net::URLRequestContextGetter*
@@ -185,10 +186,8 @@ ShellContentBrowserClient::CreateRequestContextForStoragePartition(
   ShellBrowserContext* shell_browser_context =
       ShellBrowserContextForBrowserContext(content_browser_context);
   return shell_browser_context->CreateRequestContextForStoragePartition(
-      partition_path,
-      in_memory,
-      protocol_handlers,
-      request_interceptors.Pass());
+      partition_path, in_memory, protocol_handlers,
+      std::move(request_interceptors));
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {

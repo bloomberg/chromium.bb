@@ -4,6 +4,8 @@
 
 #include "content/child/navigator_connect/service_port_provider.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
@@ -23,7 +25,7 @@ namespace {
 void ConnectToServiceOnMainThread(
     mojo::InterfaceRequest<ServicePortService> ptr) {
   ChildThreadImpl::current()->service_registry()->ConnectToRemoteService(
-      ptr.Pass());
+      std::move(ptr));
 }
 
 }  // namespace
@@ -124,7 +126,7 @@ ServicePortServicePtr& ServicePortProvider::GetServicePortServicePtr() {
     // Setup channel for browser to post events back to this class.
     ServicePortServiceClientPtr client_ptr;
     binding_.Bind(GetProxy(&client_ptr));
-    service_port_service_->SetClient(client_ptr.Pass());
+    service_port_service_->SetClient(std::move(client_ptr));
   }
   return service_port_service_;
 }

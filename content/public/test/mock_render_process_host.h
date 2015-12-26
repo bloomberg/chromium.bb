@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -127,7 +128,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   }
 
   void SetProcessHandle(scoped_ptr<base::ProcessHandle> new_handle) {
-    process_handle = new_handle.Pass();
+    process_handle = std::move(new_handle);
   }
 
   void GetAudioOutputControllers(
