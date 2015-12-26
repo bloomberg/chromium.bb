@@ -100,3 +100,4 @@ Modifications:
 - Disabled HEAPPROFILE envvar unless ENABLE_PROFILING is defined
 - Add "ARMv8-a" to the supporting list of ARM architecture
 - Add generic.total_physical_bytes property to MallocExtension
+- Replaced atomicops code with a portable implemenation based on C++11 <atomics>

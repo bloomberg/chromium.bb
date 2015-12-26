@@ -31,10 +31,6 @@
  * Author: Sanjay Ghemawat
  */
 
-// For atomic operations on statistics counters, see atomic_stats_counter.h.
-// For atomic operations on sequence numbers, see atomic_sequence_num.h.
-// For atomic operations on reference counts, see atomic_refcount.h.
-
 // Some fast atomic operations -- typically with machine-dependent
 // implementations.  This file may need editing as Google code is
 // ported to different architectures.
@@ -83,30 +79,14 @@
 // #else
 // # define AtomicWordCastType Atomic32
 // #endif
-// TODO(csilvers): figure out ARCH_PIII/ARCH_K8 (perhaps via ./configure?)
 // ------------------------------------------------------------------------
 
-#include "base/arm_instruction_set_select.h"
-
-// TODO(csilvers): match piii, not just __i386.  Also, match k8
 #if defined(__MACH__) && defined(__APPLE__)
 #include "base/atomicops-internals-macosx.h"
-#elif defined(__GNUC__) && defined(ARMV6)
-#include "base/atomicops-internals-arm-v6plus.h"
-#elif defined(ARMV3)
-#include "base/atomicops-internals-arm-generic.h"
 #elif defined(_WIN32)
 #include "base/atomicops-internals-windows.h"
-#elif defined(__GNUC__) && (defined(__i386) || defined(__x86_64__))
-#include "base/atomicops-internals-x86.h"
-#elif defined(__linux__) && defined(__PPC__)
-#include "base/atomicops-internals-linuxppc.h"
 #else
-// Assume x86 for now.  If you need to support a new architecture and
-// don't know how to implement atomic ops, you can probably get away
-// with using pthreads, since atomicops is only used by spinlock.h/cc
-//#error You need to implement atomic operations for this architecture
-#include "base/atomicops-internals-x86.h"
+#include "base/atomicops_internals_portable.h"
 #endif
 
 // Signed type that can hold a pointer and supports the atomic ops below, as
