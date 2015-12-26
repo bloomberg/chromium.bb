@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/resource_loader.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -133,8 +135,8 @@ ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
                                scoped_ptr<ResourceHandler> handler,
                                ResourceLoaderDelegate* delegate)
     : deferred_stage_(DEFERRED_NONE),
-      request_(request.Pass()),
-      handler_(handler.Pass()),
+      request_(std::move(request)),
+      handler_(std::move(handler)),
       delegate_(delegate),
       is_transferring_(false),
       times_cancelled_before_request_start_(0),

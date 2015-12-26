@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -120,7 +121,7 @@ VideoCaptureManager::DeviceEntry::DeviceEntry(
     : serial_id(g_device_start_id++),
       stream_type(stream_type),
       id(id),
-      video_capture_controller_(controller.Pass()) {}
+      video_capture_controller_(std::move(controller)) {}
 
 VideoCaptureManager::DeviceEntry::~DeviceEntry() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -139,7 +140,7 @@ void VideoCaptureManager::DeviceEntry::SetVideoCaptureDevice(
 scoped_ptr<media::VideoCaptureDevice>
 VideoCaptureManager::DeviceEntry::ReleaseVideoCaptureDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return video_capture_device_.Pass();
+  return std::move(video_capture_device_);
 }
 
 VideoCaptureController*
@@ -168,8 +169,7 @@ VideoCaptureManager::VideoCaptureManager(
     scoped_ptr<media::VideoCaptureDeviceFactory> factory)
     : listener_(NULL),
       new_capture_session_id_(1),
-      video_capture_device_factory_(factory.Pass()) {
-}
+      video_capture_device_factory_(std::move(factory)) {}
 
 VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(devices_.empty());
@@ -445,7 +445,7 @@ void VideoCaptureManager::OnDeviceStarted(
     DCHECK(entry_it != devices_.end());
     DeviceEntry* entry = *entry_it;
     DCHECK(!entry->video_capture_device());
-    entry->SetVideoCaptureDevice(device.Pass());
+    entry->SetVideoCaptureDevice(std::move(device));
 
     if (entry->stream_type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
       const media::VideoCaptureSessionId session_id =
@@ -474,8 +474,8 @@ VideoCaptureManager::DoStartDeviceCaptureOnDeviceThread(
     return nullptr;
   }
 
-  video_capture_device->AllocateAndStart(params, device_client.Pass());
-  return video_capture_device.Pass();
+  video_capture_device->AllocateAndStart(params, std::move(device_client));
+  return video_capture_device;
 }
 
 scoped_ptr<media::VideoCaptureDevice>
@@ -494,8 +494,8 @@ VideoCaptureManager::DoStartTabCaptureOnDeviceThread(
     return nullptr;
   }
 
-  video_capture_device->AllocateAndStart(params, device_client.Pass());
-  return video_capture_device.Pass();
+  video_capture_device->AllocateAndStart(params, std::move(device_client));
+  return video_capture_device;
 }
 
 scoped_ptr<media::VideoCaptureDevice>
@@ -523,8 +523,8 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
     return nullptr;
   }
 
-  video_capture_device->AllocateAndStart(params, device_client.Pass());
-  return video_capture_device.Pass();
+  video_capture_device->AllocateAndStart(params, std::move(device_client));
+  return video_capture_device;
 }
 
 void VideoCaptureManager::StartCaptureForClient(
@@ -924,9 +924,8 @@ VideoCaptureManager::DeviceEntry* VideoCaptureManager::GetOrCreateDeviceEntry(
       kMaxNumberOfBuffersForTabCapture : kMaxNumberOfBuffers;
   scoped_ptr<VideoCaptureController> video_capture_controller(
       new VideoCaptureController(max_buffers));
-  DeviceEntry* new_device = new DeviceEntry(device_info.type,
-                                            device_info.id,
-                                            video_capture_controller.Pass());
+  DeviceEntry* new_device = new DeviceEntry(
+      device_info.type, device_info.id, std::move(video_capture_controller));
   devices_.push_back(new_device);
   return new_device;
 }

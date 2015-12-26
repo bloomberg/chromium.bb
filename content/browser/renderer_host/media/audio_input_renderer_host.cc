@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
@@ -54,7 +56,7 @@ base::File CreateDebugRecordingFile(base::FilePath file_path) {
   PLOG_IF(ERROR, !recording_file.IsValid())
       << "Could not open debug recording file, error="
       << recording_file.error_details();
-  return recording_file.Pass();
+  return recording_file;
 }
 
 void CloseFile(base::File file) {
@@ -585,10 +587,9 @@ void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {
 #if defined(ENABLE_WEBRTC)
   if (entry->input_debug_writer.get()) {
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
+        BrowserThread::FILE, FROM_HERE,
         base::Bind(&DeleteInputDebugWriterOnFileThread,
-                   base::Passed(entry->input_debug_writer.Pass())));
+                   base::Passed(std::move(entry->input_debug_writer))));
   }
 #endif
 
@@ -700,15 +701,11 @@ void AudioInputRendererHost::DoEnableDebugRecording(
     return;
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(
-            &CloseFile,
-            Passed(file.Pass())));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&CloseFile, Passed(std::move(file))));
     return;
   }
-  entry->input_debug_writer.reset(new AudioInputDebugWriter(file.Pass()));
+  entry->input_debug_writer.reset(new AudioInputDebugWriter(std::move(file)));
   entry->controller->EnableDebugRecording(entry->input_debug_writer.get());
 }
 
@@ -723,10 +720,9 @@ void AudioInputRendererHost::DeleteDebugWriter(int stream_id) {
 
   if (entry->input_debug_writer.get()) {
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
+        BrowserThread::FILE, FROM_HERE,
         base::Bind(&DeleteInputDebugWriterOnFileThread,
-                   base::Passed(entry->input_debug_writer.Pass())));
+                   base::Passed(std::move(entry->input_debug_writer))));
   }
 }
 #endif  // defined(ENABLE_WEBRTC)

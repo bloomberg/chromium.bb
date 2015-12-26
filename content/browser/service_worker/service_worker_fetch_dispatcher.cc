@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -18,9 +20,8 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     : version_(version),
       prepare_callback_(prepare_callback),
       fetch_callback_(fetch_callback),
-      request_(request.Pass()),
-      weak_factory_(this) {
-}
+      request_(std::move(request)),
+      weak_factory_(this) {}
 
 ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() {}
 

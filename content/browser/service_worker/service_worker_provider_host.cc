@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
+#include <utility>
+
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -394,7 +396,7 @@ ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
   scoped_ptr<ServiceWorkerHandle> new_handle(
       ServiceWorkerHandle::Create(context_, AsWeakPtr(), version));
   handle = new_handle.get();
-  dispatcher_host_->RegisterServiceWorkerHandle(new_handle.Pass());
+  dispatcher_host_->RegisterServiceWorkerHandle(std::move(new_handle));
   return handle->GetObjectInfo();
 }
 

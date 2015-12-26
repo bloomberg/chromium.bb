@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -134,7 +136,7 @@ int32_t PepperFlashFileMessageFilter::OnOpenFile(
   }
 
   IPC::PlatformFileForTransit transit_file =
-      IPC::TakeFileHandleForProcess(file.Pass(), plugin_process_.Handle());
+      IPC::TakeFileHandleForProcess(std::move(file), plugin_process_.Handle());
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(
@@ -256,7 +258,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
     return ppapi::FileErrorToPepperError(file.error_details());
 
   IPC::PlatformFileForTransit transit_file =
-      IPC::TakeFileHandleForProcess(file.Pass(), plugin_process_.Handle());
+      IPC::TakeFileHandleForProcess(std::move(file), plugin_process_.Handle());
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
   reply_context.params.AppendHandle(ppapi::proxy::SerializedHandle(

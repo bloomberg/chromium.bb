@@ -4,6 +4,8 @@
 
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -240,7 +242,7 @@ void SpeechRecognitionManagerImpl::MediaRequestPermissionCallback(
     iter->second->context.devices = devices;
 
     // Save the UI object.
-    iter->second->ui = stream_ui.Pass();
+    iter->second->ui = std::move(stream_ui);
   }
 
   // Clear the label to indicate the request has been done.

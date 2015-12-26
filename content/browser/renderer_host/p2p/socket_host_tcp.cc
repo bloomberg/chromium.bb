@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -156,9 +157,9 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
     state_ = STATE_TLS_CONNECTING;
     StartTls();
   } else if (IsPseudoTlsClientSocket(type_)) {
-    scoped_ptr<net::StreamSocket> transport_socket = socket_.Pass();
+    scoped_ptr<net::StreamSocket> transport_socket = std::move(socket_);
     socket_.reset(
-        new jingle_glue::FakeSSLClientSocket(transport_socket.Pass()));
+        new jingle_glue::FakeSSLClientSocket(std::move(transport_socket)));
     state_ = STATE_TLS_CONNECTING;
     int status = socket_->Connect(
         base::Bind(&P2PSocketHostTcpBase::ProcessTlsSslConnectDone,
@@ -181,7 +182,7 @@ void P2PSocketHostTcpBase::StartTls() {
 
   scoped_ptr<net::ClientSocketHandle> socket_handle(
       new net::ClientSocketHandle());
-  socket_handle->SetSocket(socket_.Pass());
+  socket_handle->SetSocket(std::move(socket_));
 
   net::SSLClientSocketContext context;
   context.cert_verifier = url_context_->GetURLRequestContext()->cert_verifier();
@@ -208,7 +209,7 @@ void P2PSocketHostTcpBase::StartTls() {
   DCHECK(socket_factory);
 
   socket_ = socket_factory->CreateSSLClientSocket(
-      socket_handle.Pass(), dest_host_port_pair, ssl_config, context);
+      std::move(socket_handle), dest_host_port_pair, ssl_config, context);
   int status = socket_->Connect(
       base::Bind(&P2PSocketHostTcpBase::ProcessTlsSslConnectDone,
                  base::Unretained(this)));

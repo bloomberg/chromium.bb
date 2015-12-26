@@ -23,6 +23,7 @@
 
 #include "content/browser/download/download_item_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -231,7 +232,7 @@ DownloadItemImpl::DownloadItemImpl(
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
     const net::BoundNetLog& bound_net_log)
     : is_save_package_download_(true),
-      request_handle_(request_handle.Pass()),
+      request_handle_(std::move(request_handle)),
       download_id_(download_id),
       current_path_(path),
       target_path_(path),
@@ -1116,8 +1117,8 @@ void DownloadItemImpl::Start(
   DCHECK(file.get());
   DCHECK(req_handle.get());
 
-  download_file_ = file.Pass();
-  request_handle_ = req_handle.Pass();
+  download_file_ = std::move(file);
+  request_handle_ = std::move(req_handle);
 
   if (GetState() == CANCELLED) {
     // The download was in the process of resuming when it was cancelled. Don't
@@ -1703,7 +1704,7 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
       base::Bind(&DownloadItemImpl::OnResumeRequestStarted,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  delegate_->ResumeInterruptedDownload(download_params.Pass(), GetId());
+  delegate_->ResumeInterruptedDownload(std::move(download_params), GetId());
   // Just in case we were interrupted while paused.
   is_paused_ = false;
 

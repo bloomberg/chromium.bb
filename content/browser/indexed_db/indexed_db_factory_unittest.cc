@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -449,7 +450,7 @@ class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
       int64_t old_version,
       scoped_ptr<IndexedDBConnection> connection,
       const content::IndexedDBDatabaseMetadata& metadata) override {
-    connection_ = connection.Pass();
+    connection_ = std::move(connection);
   }
 
  protected:

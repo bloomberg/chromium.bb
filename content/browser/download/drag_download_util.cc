@@ -82,7 +82,7 @@ base::File CreateFileForDrop(base::FilePath* file_path) {
         new_file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     if (file.IsValid()) {
       *file_path = new_file_path;
-      return file.Pass();
+      return file;
     }
   }
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -851,7 +852,7 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
           native_url, Referrer(), ui::PAGE_TRANSITION_LINK, false,
           std::string(), browser_context());
   new_entry->SetPageID(0);
-  entries.push_back(new_entry.Pass());
+  entries.push_back(std::move(new_entry));
   controller().Restore(
       0,
       NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
@@ -901,7 +902,7 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
           regular_url, Referrer(), ui::PAGE_TRANSITION_LINK, false,
           std::string(), browser_context());
   new_entry->SetPageID(0);
-  entries.push_back(new_entry.Pass());
+  entries.push_back(std::move(new_entry));
   controller().Restore(
       0,
       NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,

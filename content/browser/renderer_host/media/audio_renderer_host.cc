@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -204,8 +205,8 @@ AudioRendererHost::AudioEntry::AudioEntry(
     : host_(host),
       stream_id_(stream_id),
       render_frame_id_(render_frame_id),
-      shared_memory_(shared_memory.Pass()),
-      reader_(reader.Pass()),
+      shared_memory_(std::move(shared_memory)),
+      reader_(std::move(reader)),
       controller_(media::AudioOutputController::Create(host->audio_manager_,
                                                        this,
                                                        params,
@@ -593,7 +594,7 @@ void AudioRendererHost::DoCreateStream(int stream_id,
 
   scoped_ptr<AudioEntry> entry(
       new AudioEntry(this, stream_id, render_frame_id, params, device_unique_id,
-                     shared_memory.Pass(), reader.Pass()));
+                     std::move(shared_memory), std::move(reader)));
   if (mirroring_manager_) {
     mirroring_manager_->AddDiverter(
         render_process_id_, entry->render_frame_id(), entry->controller());

@@ -37,7 +37,7 @@ GeolocationProviderImpl::AddLocationUpdateCallback(
     callback.Run(position_);
   }
 
-  return subscription.Pass();
+  return subscription;
 }
 
 void GeolocationProviderImpl::UserDidOptIntoLocationServices() {

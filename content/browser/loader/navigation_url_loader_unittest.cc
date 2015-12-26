@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -109,7 +111,7 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
                          scoped_ptr<StreamHandle> body) override {
     response_ = response;
-    body_ = body.Pass();
+    body_ = std::move(body);
     ASSERT_TRUE(response_started_);
     response_started_->Quit();
   }
@@ -187,8 +189,8 @@ class NavigationURLLoaderTest : public testing::Test {
         new NavigationRequestInfo(common_params, begin_params, url, true, false,
                                   -1, scoped_refptr<ResourceRequestBody>()));
 
-    return NavigationURLLoader::Create(browser_context_.get(),
-                                       request_info.Pass(), nullptr, delegate);
+    return NavigationURLLoader::Create(
+        browser_context_.get(), std::move(request_info), nullptr, delegate);
   }
 
   // Helper function for fetching the body of a URL to a string.

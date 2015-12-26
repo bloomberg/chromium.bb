@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/frame_mojo_shell.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/common/mojo/service_registry_impl.h"
@@ -61,7 +63,8 @@ void FrameMojoShell::ConnectToApplication(
     capability_filter = filter->filter.To<mojo::shell::CapabilityFilter>();
   MojoShellContext::ConnectToApplication(
       GURL(application_url->url), frame_host_->GetSiteInstance()->GetSiteURL(),
-      services.Pass(), frame_services.Pass(), capability_filter, callback);
+      std::move(services), std::move(frame_services), capability_filter,
+      callback);
 }
 
 void FrameMojoShell::QuitApplication() {

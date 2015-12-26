@@ -5,8 +5,8 @@
 #include "content/browser/loader/temporary_file_stream.h"
 
 #include <string.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -42,7 +42,7 @@ class WaitForFileStream {
                            scoped_ptr<net::FileStream> file_stream,
                            ShareableFileReference* deletable_file) {
     error_ = error;
-    file_stream_ = file_stream.Pass();
+    file_stream_ = std::move(file_stream);
     deletable_file_ = deletable_file;
     loop_.Quit();
   }

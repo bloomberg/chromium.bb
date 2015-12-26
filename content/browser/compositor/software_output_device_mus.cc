@@ -5,6 +5,7 @@
 #include "content/browser/compositor/software_output_device_mus.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "components/bitmap_uploader/bitmap_uploader.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -58,7 +59,7 @@ void SoftwareOutputDeviceMus::EndPaint() {
   scoped_ptr<std::vector<unsigned char>> data(new std::vector<unsigned char>(
       pixels, pixels + rowBytes * viewport_pixel_size_.height()));
   uploader->SetBitmap(viewport_pixel_size_.width(),
-                      viewport_pixel_size_.height(), data.Pass(),
+                      viewport_pixel_size_.height(), std::move(data),
                       bitmap_uploader::BitmapUploader::BGRA);
 }
 

@@ -474,7 +474,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // NavigationHandle that came from the transferring RenderFrameHost.
     DCHECK(transfer_navigation_handle_);
     dest_render_frame_host->SetNavigationHandle(
-        transfer_navigation_handle_.Pass());
+        std::move(transfer_navigation_handle_));
   }
   DCHECK(!transfer_navigation_handle_);
 
@@ -617,7 +617,7 @@ void RenderFrameHostManager::OnCrossSiteResponse(
 
   // Store the transferring request so that we can release it if the transfer
   // navigation matches.
-  cross_site_transferring_request_ = cross_site_transferring_request.Pass();
+  cross_site_transferring_request_ = std::move(cross_site_transferring_request);
 
   // Store the NavigationHandle to give it to the appropriate RenderFrameHost
   // after it started navigating.
@@ -858,7 +858,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
 
     // Tell the old RenderFrameHost to swap out, with no proxy to replace it.
     old_render_frame_host->SwapOut(nullptr, true);
-    MoveToPendingDeleteHosts(old_render_frame_host.Pass());
+    MoveToPendingDeleteHosts(std::move(old_render_frame_host));
     return;
   }
 
@@ -879,7 +879,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
     // In --site-per-process, frames delete their RFH rather than storing it
     // in the proxy.  Schedule it for deletion once the SwapOutACK comes in.
     // TODO(creis): This will be the default when we remove swappedout://.
-    MoveToPendingDeleteHosts(old_render_frame_host.Pass());
+    MoveToPendingDeleteHosts(std::move(old_render_frame_host));
   } else {
     // We shouldn't get here for subframes, since we only swap subframes when
     // --site-per-process is used.
@@ -887,7 +887,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
 
     // The old RenderFrameHost will stay alive inside the proxy so that existing
     // JavaScript window references to it stay valid.
-    proxy->TakeFrameHostOwnership(old_render_frame_host.Pass());
+    proxy->TakeFrameHostOwnership(std::move(old_render_frame_host));
   }
 }
 
@@ -929,7 +929,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
       if (!render_frame_host->is_swapped_out())
         render_frame_host->SwapOut(proxy, false);
 
-      proxy->TakeFrameHostOwnership(render_frame_host.Pass());
+      proxy->TakeFrameHostOwnership(std::move(render_frame_host));
     }
   }
 
@@ -1141,7 +1141,7 @@ scoped_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::UnsetSpeculativeRenderFrameHost() {
   CHECK(IsBrowserSideNavigationEnabled());
   speculative_render_frame_host_->GetProcess()->RemovePendingView();
-  return speculative_render_frame_host_.Pass();
+  return std::move(speculative_render_frame_host_);
 }
 
 void RenderFrameHostManager::OnDidStartLoading() {
@@ -1219,7 +1219,8 @@ bool RenderFrameHostManager::ClearProxiesInSiteInstance(
       DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
       scoped_ptr<RenderFrameHostImpl> swapped_out_rfh =
           proxy->PassFrameHostOwnership();
-      node->render_manager()->MoveToPendingDeleteHosts(swapped_out_rfh.Pass());
+      node->render_manager()->MoveToPendingDeleteHosts(
+          std::move(swapped_out_rfh));
     }
     node->render_manager()->proxy_hosts_->Remove(site_instance_id);
   }
@@ -1880,7 +1881,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
           new_render_frame_host->GetSiteInstance(),
           new_render_frame_host->render_view_host(), frame_tree_node_);
       proxy_hosts_->Add(instance->GetId(), make_scoped_ptr(proxy));
-      proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
+      proxy->TakeFrameHostOwnership(std::move(new_render_frame_host));
     }
 
     if (frame_tree_node_->IsMainFrame()) {
@@ -1923,7 +1924,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   // Returns the new RFH if it isn't swapped out.
   if (success && !swapped_out) {
     DCHECK(new_render_frame_host->GetSiteInstance() == instance);
-    return new_render_frame_host.Pass();
+    return new_render_frame_host;
   }
   return nullptr;
 }
@@ -2171,12 +2172,12 @@ void RenderFrameHostManager::CommitPending() {
   if (!IsBrowserSideNavigationEnabled()) {
     DCHECK(!speculative_render_frame_host_);
     old_render_frame_host =
-        SetRenderFrameHost(pending_render_frame_host_.Pass());
+        SetRenderFrameHost(std::move(pending_render_frame_host_));
   } else {
     // PlzNavigate
     DCHECK(speculative_render_frame_host_);
     old_render_frame_host =
-        SetRenderFrameHost(speculative_render_frame_host_.Pass());
+        SetRenderFrameHost(std::move(speculative_render_frame_host_));
   }
 
   // The process will no longer try to exit, so we can decrement the count.
@@ -2244,7 +2245,7 @@ void RenderFrameHostManager::CommitPending() {
   // out ack arrives (or immediately if the process isn't live).
   // In the --site-per-process case, old subframe RFHs are not kept alive inside
   // the proxy.
-  SwapOutOldFrame(old_render_frame_host.Pass());
+  SwapOutOldFrame(std::move(old_render_frame_host));
 
   if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     // Since the new RenderFrameHost is now committed, there must be no proxies
@@ -2490,7 +2491,7 @@ void RenderFrameHostManager::CancelPending() {
 scoped_ptr<RenderFrameHostImpl>
 RenderFrameHostManager::UnsetPendingRenderFrameHost() {
   scoped_ptr<RenderFrameHostImpl> pending_render_frame_host =
-      pending_render_frame_host_.Pass();
+      std::move(pending_render_frame_host_);
 
   RenderFrameDevToolsAgentHost::OnCancelPendingNavigation(
       pending_render_frame_host.get(),
@@ -2499,15 +2500,15 @@ RenderFrameHostManager::UnsetPendingRenderFrameHost() {
   // We no longer need to prevent the process from exiting.
   pending_render_frame_host->GetProcess()->RemovePendingView();
 
-  return pending_render_frame_host.Pass();
+  return pending_render_frame_host;
 }
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
     scoped_ptr<RenderFrameHostImpl> render_frame_host) {
   // Swap the two.
   scoped_ptr<RenderFrameHostImpl> old_render_frame_host =
-      render_frame_host_.Pass();
-  render_frame_host_ = render_frame_host.Pass();
+      std::move(render_frame_host_);
+  render_frame_host_ = std::move(render_frame_host);
 
   if (frame_tree_node_->IsMainFrame()) {
     // Update the count of top-level frames using this SiteInstance.  All
@@ -2524,7 +2525,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
     }
   }
 
-  return old_render_frame_host.Pass();
+  return old_render_frame_host;
 }
 
 bool RenderFrameHostManager::IsRVHOnSwappedOutList(

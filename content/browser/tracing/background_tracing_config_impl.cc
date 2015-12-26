@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/tracing/background_tracing_config_impl.h"
+
+#include <utility>
+
 #include "base/macros.h"
 #include "base/values.h"
-#include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 
 namespace content {
@@ -111,10 +114,10 @@ void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) const {
     scoped_ptr<base::DictionaryValue> config_dict(new base::DictionaryValue());
     DCHECK(it);
     it->IntoDict(config_dict.get());
-    configs_list->Append(config_dict.Pass());
+    configs_list->Append(std::move(config_dict));
   }
 
-  dict->Set(kConfigsKey, configs_list.Pass());
+  dict->Set(kConfigsKey, std::move(configs_list));
 
   if (!scenario_name_.empty())
     dict->SetString(kConfigScenarioName, scenario_name_);
@@ -129,7 +132,7 @@ void BackgroundTracingConfigImpl::AddPreemptiveRule(
   scoped_ptr<BackgroundTracingRule> rule =
       BackgroundTracingRule::PreemptiveRuleFromDict(dict);
   if (rule)
-    rules_.push_back(rule.Pass());
+    rules_.push_back(std::move(rule));
 }
 
 void BackgroundTracingConfigImpl::AddReactiveRule(
@@ -138,7 +141,7 @@ void BackgroundTracingConfigImpl::AddReactiveRule(
   scoped_ptr<BackgroundTracingRule> rule =
       BackgroundTracingRule::ReactiveRuleFromDict(dict, category_preset);
   if (rule)
-    rules_.push_back(rule.Pass());
+    rules_.push_back(std::move(rule));
 }
 
 scoped_ptr<BackgroundTracingConfigImpl> BackgroundTracingConfigImpl::FromDict(
@@ -167,7 +170,7 @@ scoped_ptr<BackgroundTracingConfigImpl> BackgroundTracingConfigImpl::FromDict(
                     &config->disable_blink_features_);
   }
 
-  return config.Pass();
+  return config;
 }
 
 scoped_ptr<BackgroundTracingConfigImpl>
@@ -201,7 +204,7 @@ BackgroundTracingConfigImpl::PreemptiveFromDict(
   if (config->rules().empty())
     return nullptr;
 
-  return config.Pass();
+  return config;
 }
 
 scoped_ptr<BackgroundTracingConfigImpl>
@@ -235,7 +238,7 @@ BackgroundTracingConfigImpl::ReactiveFromDict(
   if (config->rules().empty())
     return nullptr;
 
-  return config.Pass();
+  return config;
 }
 
 }  // namspace content

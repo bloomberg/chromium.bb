@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/appcache_request_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
@@ -197,7 +199,8 @@ void AppCacheRequestHandler::CompleteCrossSiteTransfer(
     return;
   DCHECK_EQ(host_, host_for_cross_site_transfer_.get());
   AppCacheBackendImpl* backend = host_->service()->GetBackend(new_process_id);
-  backend->TransferHostIn(new_host_id, host_for_cross_site_transfer_.Pass());
+  backend->TransferHostIn(new_host_id,
+                          std::move(host_for_cross_site_transfer_));
 }
 
 void AppCacheRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(

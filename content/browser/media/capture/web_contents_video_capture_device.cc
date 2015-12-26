@@ -50,9 +50,9 @@
 
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 
-#include <algorithm>
-
 #include <stdint.h>
+#include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -466,7 +466,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
                                              : base::WeakPtr<CursorRenderer>(),
             window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
                                      : base::WeakPtr<WindowActivityTracker>()));
-    view->BeginFrameSubscription(subscriber.Pass());
+    view->BeginFrameSubscription(std::move(subscriber));
   }
 
   // Subscribe to timer events. This instance will service these as well.
@@ -966,7 +966,7 @@ void WebContentsVideoCaptureDevice::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
   DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
-  core_->AllocateAndStart(params, client.Pass());
+  core_->AllocateAndStart(params, std::move(client));
 }
 
 void WebContentsVideoCaptureDevice::StopAndDeAllocate() {

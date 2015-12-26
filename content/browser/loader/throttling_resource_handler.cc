@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/throttling_resource_handler.h"
 
+#include <utility>
+
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
@@ -15,9 +17,9 @@ ThrottlingResourceHandler::ThrottlingResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
     net::URLRequest* request,
     ScopedVector<ResourceThrottle> throttles)
-    : LayeredResourceHandler(request, next_handler.Pass()),
+    : LayeredResourceHandler(request, std::move(next_handler)),
       deferred_stage_(DEFERRED_NONE),
-      throttles_(throttles.Pass()),
+      throttles_(std::move(throttles)),
       next_index_(0),
       cancelled_by_resource_throttle_(false) {
   for (size_t i = 0; i < throttles_.size(); ++i) {

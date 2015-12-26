@@ -55,7 +55,7 @@ class UrlDataManagerBackendTest : public testing::Test {
         GURL("chrome://resources/polymer/v1_0/polymer/polymer-extracted.js"),
         net::HIGHEST, delegate);
     request->SetExtraRequestHeaderByName("Origin", origin, true);
-    return request.Pass();
+    return request;
   }
 
  protected:

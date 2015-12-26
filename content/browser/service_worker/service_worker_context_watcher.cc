@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
@@ -175,7 +177,7 @@ void ServiceWorkerContextWatcher::OnNewLiveVersion(int64_t version_id,
   version->script_url = script_url;
   SendVersionInfo(*version);
   if (!IsStoppedAndRedundant(*version))
-    version_info_map_.set(version_id, version.Pass());
+    version_info_map_.set(version_id, std::move(version));
 }
 
 void ServiceWorkerContextWatcher::OnRunningStateChanged(

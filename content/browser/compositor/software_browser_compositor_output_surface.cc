@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -22,10 +24,8 @@ namespace content {
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
-    : BrowserCompositorOutputSurface(software_device.Pass(),
-                                     vsync_manager),
-      weak_factory_(this) {
-}
+    : BrowserCompositorOutputSurface(std::move(software_device), vsync_manager),
+      weak_factory_(this) {}
 
 SoftwareBrowserCompositorOutputSurface::
     ~SoftwareBrowserCompositorOutputSurface() {

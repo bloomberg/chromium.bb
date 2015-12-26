@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/pepper/pepper_tcp_socket_message_filter.h"
 
 #include <cstring>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -108,7 +109,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       rcvbuf_size_(0),
       sndbuf_size_(0),
       address_index_(0),
-      socket_(socket.Pass()),
+      socket_(std::move(socket)),
       ssl_context_helper_(host->ssl_context_helper()),
       pending_accept_(false),
       pending_read_on_unthrottle_(false),
@@ -321,7 +322,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
 
   scoped_ptr<net::ClientSocketHandle> handle(new net::ClientSocketHandle());
   handle->SetSocket(make_scoped_ptr<net::StreamSocket>(
-      new net::TCPClientSocket(socket_.Pass(), peer_address)));
+      new net::TCPClientSocket(std::move(socket_), peer_address)));
   net::ClientSocketFactory* factory =
       net::ClientSocketFactory::GetDefaultFactory();
   net::HostPortPair host_port_pair(server_name, server_port);
@@ -329,11 +330,9 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
   ssl_context.cert_verifier = ssl_context_helper_->GetCertVerifier();
   ssl_context.transport_security_state =
       ssl_context_helper_->GetTransportSecurityState();
-  ssl_socket_ =
-      factory->CreateSSLClientSocket(handle.Pass(),
-                                     host_port_pair,
-                                     ssl_context_helper_->ssl_config(),
-                                     ssl_context);
+  ssl_socket_ = factory->CreateSSLClientSocket(
+      std::move(handle), host_port_pair, ssl_context_helper_->ssl_config(),
+      ssl_context);
   if (!ssl_socket_) {
     LOG(WARNING) << "Failed to create an SSL client socket.";
     state_.CompletePendingTransition(false);
@@ -1023,14 +1022,14 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
   // in CONNECTED state have a NULL |factory_|, while getting here requires
   // LISTENING state.
   scoped_ptr<ppapi::host::ResourceHost> host =
-      factory_->CreateAcceptedTCPSocket(
-          instance_, version_, accepted_socket_.Pass());
+      factory_->CreateAcceptedTCPSocket(instance_, version_,
+                                        std::move(accepted_socket_));
   if (!host) {
     SendAcceptError(context, PP_ERROR_NOSPACE);
     return;
   }
   int pending_host_id =
-      host_->GetPpapiHost()->AddPendingResourceHost(host.Pass());
+      host_->GetPpapiHost()->AddPendingResourceHost(std::move(host));
   if (pending_host_id)
     SendAcceptReply(context, PP_OK, pending_host_id, local_addr, remote_addr);
   else

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,7 +41,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
       base::StringPrintf(
           "<html><head><title>%s</title></head></html>",
           request.content.c_str()));
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // namespace

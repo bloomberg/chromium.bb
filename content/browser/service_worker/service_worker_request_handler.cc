@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_request_handler.h"
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -136,7 +137,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
   // transferred to its "final" destination in the OnProviderCreated handler. If
   // the navigation fails, it will be destroyed along with the
   // ServiceWorkerNavigationHandleCore.
-  navigation_handle_core->DidPreCreateProviderHost(provider_host.Pass());
+  navigation_handle_core->DidPreCreateProviderHost(std::move(provider_host));
 }
 
 void ServiceWorkerRequestHandler::InitializeHandler(
@@ -217,7 +218,7 @@ void ServiceWorkerRequestHandler::CompleteCrossSiteTransfer(
     return;
   DCHECK_EQ(provider_host_.get(), host_for_cross_site_transfer_.get());
   context_->TransferProviderHostIn(new_process_id, new_provider_id,
-                                   host_for_cross_site_transfer_.Pass());
+                                   std::move(host_for_cross_site_transfer_));
   DCHECK_EQ(provider_host_->provider_id(), new_provider_id);
 }
 

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/frame_host/render_frame_host_manager.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -17,7 +20,6 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
-#include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -2750,7 +2752,7 @@ TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
           kInitUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, false, std::string(),
           browser_context());
   new_entry->SetPageID(0);
-  entries.push_back(new_entry.Pass());
+  entries.push_back(std::move(new_entry));
   controller.Restore(
       0, NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
   ASSERT_EQ(0u, entries.size());

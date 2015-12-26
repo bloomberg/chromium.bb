@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -78,7 +79,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   bool IsPotentiallySecurePluginContext(PP_Instance instance);
 
   void set_plugin_process(base::Process process) {
-    plugin_process_ = process.Pass();
+    plugin_process_ = std::move(process);
   }
 
   bool external_plugin() const { return external_plugin_; }

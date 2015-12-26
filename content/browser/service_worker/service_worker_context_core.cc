@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 
+#include <utility>
+
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -222,12 +224,9 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       weak_factory_(this) {
   // These get a WeakPtr from weak_factory_, so must be set after weak_factory_
   // is initialized.
-  storage_ = ServiceWorkerStorage::Create(path,
-                                          AsWeakPtr(),
-                                          database_task_manager.Pass(),
-                                          disk_cache_thread,
-                                          quota_manager_proxy,
-                                          special_storage_policy);
+  storage_ = ServiceWorkerStorage::Create(
+      path, AsWeakPtr(), std::move(database_task_manager), disk_cache_thread,
+      quota_manager_proxy, special_storage_policy);
   embedded_worker_registry_ = EmbeddedWorkerRegistry::Create(AsWeakPtr());
   job_coordinator_.reset(new ServiceWorkerJobCoordinator(AsWeakPtr()));
 }
@@ -334,7 +333,7 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&FrameListContainsMainFrameOnUI,
-                 base::Passed(render_frames.Pass())),
+                 base::Passed(std::move(render_frames))),
       callback);
 }
 

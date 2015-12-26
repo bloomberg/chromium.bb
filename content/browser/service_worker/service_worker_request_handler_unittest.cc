@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_request_handler.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -53,7 +55,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
     host->SetDocumentUrl(GURL("http://host/scope/"));
     provider_host_ = host->AsWeakPtr();
-    context()->AddProviderHost(host.Pass());
+    context()->AddProviderHost(std::move(host));
 
     context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
     base::RunLoop().RunUntilIdle();

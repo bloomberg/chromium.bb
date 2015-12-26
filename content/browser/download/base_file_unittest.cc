@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -543,14 +544,8 @@ TEST_F(BaseFileTest, WriteWithError) {
   // Pass a file handle which was opened without the WRITE flag.
   // This should result in an error when writing.
   base::File file(path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ);
-  base_file_.reset(new BaseFile(path,
-                                GURL(),
-                                GURL(),
-                                0,
-                                false,
-                                std::string(),
-                                file.Pass(),
-                                net::BoundNetLog()));
+  base_file_.reset(new BaseFile(path, GURL(), GURL(), 0, false, std::string(),
+                                std::move(file), net::BoundNetLog()));
   ASSERT_TRUE(InitializeFile());
 #if defined(OS_WIN)
   set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -194,11 +196,9 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get().get(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
-        make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
-        nullptr,
-        additional_providers.Pass(),
-        std::vector<storage::URLRequestAutoMountHandler>(),
-        base_dir,
+        make_scoped_refptr(new MockSpecialStoragePolicy()).get(), nullptr,
+        std::move(additional_providers),
+        std::vector<storage::URLRequestAutoMountHandler>(), base_dir,
         CreateAllowFileAccessOptions());
 
     // Disallow IO on the main loop.

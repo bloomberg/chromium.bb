@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/embedded_worker_instance.h"
 
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -86,8 +88,8 @@ void SetupMojoOnUIThread(
     return;
   EmbeddedWorkerSetupPtr setup;
   rph->GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&setup));
-  setup->ExchangeServiceProviders(thread_id, services.Pass(),
-                                  mojo::MakeProxy(exposed_services.Pass()));
+  setup->ExchangeServiceProviders(thread_id, std::move(services),
+                                  mojo::MakeProxy(std::move(exposed_services)));
 }
 
 }  // namespace
@@ -263,7 +265,7 @@ void EmbeddedWorkerInstance::RunProcessAllocated(
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
   }
-  instance->ProcessAllocated(params.Pass(), callback, process_id,
+  instance->ProcessAllocated(std::move(params), callback, process_id,
                              is_new_process, status);
 }
 
@@ -342,7 +344,7 @@ void EmbeddedWorkerInstance::SendStartWorker(
 
   starting_phase_ = SENT_START_WORKER;
   ServiceWorkerStatusCode status =
-      registry_->SendStartWorker(params.Pass(), process_id_);
+      registry_->SendStartWorker(std::move(params), process_id_);
   if (status != SERVICE_WORKER_OK) {
     OnStartFailed(callback, status);
     return;
@@ -397,7 +399,7 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
       base::Bind(SetupMojoOnUIThread, process_id_, thread_id_,
                  base::Passed(&services_request),
                  base::Passed(exposed_services.PassInterface())));
-  service_registry_->BindRemoteServiceProvider(services.Pass());
+  service_registry_->BindRemoteServiceProvider(std::move(services));
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "content/browser/service_worker/service_worker_storage.h"
 
+#include <stdint.h>
 #include <string>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -17,7 +19,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -279,14 +280,9 @@ class ServiceWorkerStorageTest : public testing::Test {
     scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
         new MockServiceWorkerDatabaseTaskManager(
             base::ThreadTaskRunnerHandle::Get()));
-    context_.reset(
-        new ServiceWorkerContextCore(GetUserDataDirectory(),
-                                     database_task_manager.Pass(),
-                                     base::ThreadTaskRunnerHandle::Get(),
-                                     NULL,
-                                     NULL,
-                                     NULL,
-                                     NULL));
+    context_.reset(new ServiceWorkerContextCore(
+        GetUserDataDirectory(), std::move(database_task_manager),
+        base::ThreadTaskRunnerHandle::Get(), NULL, NULL, NULL, NULL));
     context_ptr_ = context_->AsWeakPtr();
   }
 
@@ -1214,14 +1210,9 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
       new MockServiceWorkerDatabaseTaskManager(
           base::ThreadTaskRunnerHandle::Get()));
-  context_.reset(
-      new ServiceWorkerContextCore(GetUserDataDirectory(),
-                                   database_task_manager.Pass(),
-                                   base::ThreadTaskRunnerHandle::Get(),
-                                   NULL,
-                                   NULL,
-                                   NULL,
-                                   NULL));
+  context_.reset(new ServiceWorkerContextCore(
+      GetUserDataDirectory(), std::move(database_task_manager),
+      base::ThreadTaskRunnerHandle::Get(), NULL, NULL, NULL, NULL));
   storage()->LazyInitialize(base::Bind(&base::DoNothing));
   base::RunLoop().RunUntilIdle();
 
@@ -1581,7 +1572,7 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
       new MockServiceWorkerDatabaseTaskManager(
           base::ThreadTaskRunnerHandle::Get()));
   context_.reset(new ServiceWorkerContextCore(
-      GetUserDataDirectory(), database_task_manager.Pass(),
+      GetUserDataDirectory(), std::move(database_task_manager),
       base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr, nullptr, nullptr));
   LazyInitialize();
 

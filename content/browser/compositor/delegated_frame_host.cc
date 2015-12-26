@@ -155,7 +155,7 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
                      output_size, preferred_color_type, callback));
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);
-  RequestCopyOfOutput(request.Pass());
+  RequestCopyOfOutput(std::move(request));
 }
 
 void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
@@ -176,7 +176,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
           target,
           callback));
   request->set_area(src_subrect);
-  RequestCopyOfOutput(request.Pass());
+  RequestCopyOfOutput(std::move(request));
 }
 
 bool DelegatedFrameHost::CanCopyToBitmap() const {
@@ -191,7 +191,7 @@ bool DelegatedFrameHost::CanCopyToVideoFrame() const {
 
 void DelegatedFrameHost::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  frame_subscriber_ = subscriber.Pass();
+  frame_subscriber_ = std::move(subscriber);
 }
 
 void DelegatedFrameHost::EndFrameSubscription() {
@@ -331,12 +331,12 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
     // through RequestCopyOfOutput (which goes through the browser
     // compositor).
     if (!request_copy_of_output_callback_for_testing_.is_null())
-      request_copy_of_output_callback_for_testing_.Run(request.Pass());
+      request_copy_of_output_callback_for_testing_.Run(std::move(request));
     else
-      surface_factory_->RequestCopyOfSurface(surface_id_, request.Pass());
+      surface_factory_->RequestCopyOfSurface(surface_id_, std::move(request));
   } else {
     request->set_area(gfx::Rect(current_frame_size_in_dip_));
-    RequestCopyOfOutput(request.Pass());
+    RequestCopyOfOutput(std::move(request));
   }
 }
 
@@ -611,16 +611,15 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
 
   if (result->HasTexture()) {
     // GPU-accelerated path
-    PrepareTextureCopyOutputResult(output_size_in_pixel, color_type,
-                                   callback,
-                                   result.Pass());
+    PrepareTextureCopyOutputResult(output_size_in_pixel, color_type, callback,
+                                   std::move(result));
     return;
   }
 
   DCHECK(result->HasBitmap());
   // Software path
   PrepareBitmapCopyOutputResult(output_size_in_pixel, color_type, callback,
-                                result.Pass());
+                                std::move(result));
 }
 
 static void CopyFromCompositingSurfaceFinished(
@@ -1049,9 +1048,10 @@ void DelegatedFrameHost::LockResources() {
 void DelegatedFrameHost::RequestCopyOfOutput(
     scoped_ptr<cc::CopyOutputRequest> request) {
   if (!request_copy_of_output_callback_for_testing_.is_null())
-    request_copy_of_output_callback_for_testing_.Run(request.Pass());
+    request_copy_of_output_callback_for_testing_.Run(std::move(request));
   else
-    client_->DelegatedFrameHostGetLayer()->RequestCopyOfOutput(request.Pass());
+    client_->DelegatedFrameHostGetLayer()->RequestCopyOfOutput(
+        std::move(request));
 }
 
 void DelegatedFrameHost::UnlockResources() {

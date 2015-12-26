@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/navigation_url_loader_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -63,7 +65,7 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
     scoped_ptr<StreamHandle> body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  delegate_->OnResponseStarted(response, body.Pass());
+  delegate_->OnResponseStarted(response, std::move(body));
 }
 
 void NavigationURLLoaderImpl::NotifyRequestFailed(bool in_cache,

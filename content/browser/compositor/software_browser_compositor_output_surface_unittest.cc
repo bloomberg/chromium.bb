@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/compositor/software_browser_compositor_output_surface.h"
+
+#include <utility>
+
 #include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "content/browser/compositor/software_browser_compositor_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -106,15 +109,14 @@ SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
     scoped_ptr<cc::SoftwareOutputDevice> device) {
   return scoped_ptr<content::BrowserCompositorOutputSurface>(
       new content::SoftwareBrowserCompositorOutputSurface(
-          device.Pass(),
-          compositor_->vsync_manager()));
+          std::move(device), compositor_->vsync_manager()));
 }
 
 TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {
   cc::FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<cc::SoftwareOutputDevice> software_device(
       new cc::SoftwareOutputDevice());
-  output_surface_ = CreateSurface(software_device.Pass());
+  output_surface_ = CreateSurface(std::move(software_device));
   CHECK(output_surface_->BindToClient(&output_surface_client));
 
   cc::CompositorFrame frame;
@@ -128,7 +130,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, VSyncProviderUpdates) {
   cc::FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<cc::SoftwareOutputDevice> software_device(
       new FakeSoftwareOutputDevice());
-  output_surface_ = CreateSurface(software_device.Pass());
+  output_surface_ = CreateSurface(std::move(software_device));
   CHECK(output_surface_->BindToClient(&output_surface_client));
 
   FakeVSyncProvider* vsync_provider = static_cast<FakeVSyncProvider*>(

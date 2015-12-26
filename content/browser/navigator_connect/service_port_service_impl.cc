@@ -4,6 +4,8 @@
 
 #include "content/browser/navigator_connect/service_port_service_impl.h"
 
+#include <utility>
+
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/navigator_connect/navigator_connect_context_impl.h"
@@ -65,14 +67,14 @@ void ServicePortServiceImpl::CreateOnIOThread(
     mojo::InterfaceRequest<ServicePortService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   new ServicePortServiceImpl(navigator_connect_context,
-                             message_port_message_filter, request.Pass());
+                             message_port_message_filter, std::move(request));
 }
 
 ServicePortServiceImpl::ServicePortServiceImpl(
     const scoped_refptr<NavigatorConnectContextImpl>& navigator_connect_context,
     const scoped_refptr<MessagePortMessageFilter>& message_port_message_filter,
     mojo::InterfaceRequest<ServicePortService> request)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       navigator_connect_context_(navigator_connect_context),
       message_port_message_filter_(message_port_message_filter),
       weak_ptr_factory_(this) {
@@ -82,7 +84,7 @@ ServicePortServiceImpl::ServicePortServiceImpl(
 void ServicePortServiceImpl::SetClient(ServicePortServiceClientPtr client) {
   DCHECK(!client_.get());
   // TODO(mek): Set ErrorHandler to listen for errors.
-  client_ = client.Pass();
+  client_ = std::move(client);
 }
 
 void ServicePortServiceImpl::Connect(const mojo::String& target_url,

@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/pepper_file_io_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -91,7 +93,7 @@ void DidOpenFile(base::WeakPtr<PepperFileIOHost> file_host,
                  base::File file,
                  const base::Closure& on_close_callback) {
   if (file_host) {
-    callback.Run(file.Pass(), on_close_callback);
+    callback.Run(std::move(file), on_close_callback);
   } else {
     BrowserThread::PostTaskAndReply(
         BrowserThread::FILE,
@@ -284,7 +286,7 @@ void PepperFileIOHost::DidOpenInternalFile(
   DCHECK(!file_.IsValid());
   base::File::Error error =
       file.IsValid() ? base::File::FILE_OK : file.error_details();
-  file_.SetFile(file.Pass());
+  file_.SetFile(std::move(file));
   OnOpenProxyCallback(reply_context, error);
 }
 
@@ -390,7 +392,7 @@ void PepperFileIOHost::DidOpenQuotaFile(
   DCHECK(!file_.IsValid());
   DCHECK(file.IsValid());
   max_written_offset_ = max_written_offset;
-  file_.SetFile(file.Pass());
+  file_.SetFile(std::move(file));
 
   OnOpenProxyCallback(reply_context, base::File::FILE_OK);
 }

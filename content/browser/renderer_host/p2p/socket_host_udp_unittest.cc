@@ -5,8 +5,8 @@
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 #include <stdint.h>
-
 #include <deque>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -188,7 +188,7 @@ class P2PSocketHostUdpTest : public testing::Test {
     dest2_ = ParseAddress(kTestIpAddress2, kTestPort2);
 
     scoped_ptr<rtc::Timing> timing(new FakeTiming());
-    throttler_.SetTiming(timing.Pass());
+    throttler_.SetTiming(std::move(timing));
   }
 
   P2PMessageThrottler throttler_;

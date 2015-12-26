@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -131,7 +132,7 @@ class VideoCaptureBufferPoolTest
     Buffer(const scoped_refptr<VideoCaptureBufferPool> pool,
            scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle,
            int id)
-        : id_(id), pool_(pool), buffer_handle_(buffer_handle.Pass()) {}
+        : id_(id), pool_(pool), buffer_handle_(std::move(buffer_handle)) {}
     ~Buffer() { pool_->RelinquishProducerReservation(id()); }
     int id() const { return id_; }
     size_t mapped_size() { return buffer_handle_->mapped_size(); }
@@ -183,7 +184,7 @@ class VideoCaptureBufferPoolTest
     scoped_ptr<VideoCaptureBufferPool::BufferHandle> buffer_handle =
         pool_->GetBufferHandle(buffer_id);
     return scoped_ptr<Buffer>(
-        new Buffer(pool_, buffer_handle.Pass(), buffer_id));
+        new Buffer(pool_, std::move(buffer_handle), buffer_id));
   }
 
   base::MessageLoop loop_;

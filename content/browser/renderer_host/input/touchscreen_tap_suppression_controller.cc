@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 
+#include <utility>
+
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 
 using blink::WebInputEvent;
@@ -63,8 +65,8 @@ void TouchscreenTapSuppressionController::DropStashedTapDown() {
 
 void TouchscreenTapSuppressionController::ForwardStashedTapDown() {
   DCHECK(stashed_tap_down_);
-  ScopedGestureEvent tap_down = stashed_tap_down_.Pass();
-  ScopedGestureEvent show_press = stashed_show_press_.Pass();
+  ScopedGestureEvent tap_down = std::move(stashed_tap_down_);
+  ScopedGestureEvent show_press = std::move(stashed_show_press_);
   gesture_event_queue_->ForwardGestureEvent(*tap_down);
   if (show_press)
     gesture_event_queue_->ForwardGestureEvent(*show_press);

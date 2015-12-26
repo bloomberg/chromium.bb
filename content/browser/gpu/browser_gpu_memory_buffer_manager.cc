@@ -4,6 +4,8 @@
 
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
@@ -286,7 +288,7 @@ BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
       "BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle");
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   request.event.Wait();
-  return request.result.Pass();
+  return std::move(request.result);
 }
 
 scoped_ptr<gfx::GpuMemoryBuffer>
@@ -460,7 +462,7 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface(
       "BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForSurface");
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   request.event.Wait();
-  return request.result.Pass();
+  return std::move(request.result);
 }
 
 void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -82,12 +83,12 @@ class TestDownloadFileImpl : public DownloadFileImpl {
                        scoped_ptr<ByteStreamReader> stream,
                        const net::BoundNetLog& bound_net_log,
                        base::WeakPtr<DownloadDestinationObserver> observer)
-      : DownloadFileImpl(save_info.Pass(),
+      : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          url,
                          referrer_url,
                          calculate_hash,
-                         stream.Pass(),
+                         std::move(stream),
                          bound_net_log,
                          observer) {}
 
@@ -176,16 +177,14 @@ class DownloadFileTest : public testing::Test {
 
     scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
     scoped_ptr<TestDownloadFileImpl> download_file_impl(
-        new TestDownloadFileImpl(save_info.Pass(),
-                                 base::FilePath(),
-                                 GURL(),  // Source
-                                 GURL(),  // Referrer
-                                 calculate_hash,
-                                 scoped_ptr<ByteStreamReader>(input_stream_),
-                                 net::BoundNetLog(),
-                                 observer_factory_.GetWeakPtr()));
+        new TestDownloadFileImpl(
+            std::move(save_info), base::FilePath(),
+            GURL(),  // Source
+            GURL(),  // Referrer
+            calculate_hash, scoped_ptr<ByteStreamReader>(input_stream_),
+            net::BoundNetLog(), observer_factory_.GetWeakPtr()));
     download_file_impl->SetClientGuid("12345678-ABCD-1234-DCBA-123456789ABC");
-    download_file_ = download_file_impl.Pass();
+    download_file_ = std::move(download_file_impl);
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))

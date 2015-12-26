@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -142,7 +143,7 @@ scoped_ptr<cc::CompositorFrame> CreateDelegatedFrame(float scale_factor,
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(cc::RenderPassId(1, 1), gfx::Rect(size), damage,
                gfx::Transform());
-  frame->delegated_frame_data->render_pass_list.push_back(pass.Pass());
+  frame->delegated_frame_data->render_pass_list.push_back(std::move(pass));
   return frame;
 }
 

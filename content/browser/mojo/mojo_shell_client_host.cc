@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/mojo/mojo_shell_client_host.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/mojo/mojo_shell_client_host.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -103,7 +105,7 @@ void RegisterChildWithExternalShell(int child_process_id,
   mojo::embedder::ScopedPlatformHandle platform_channel =
       platform_channel_pair.PassServerHandle();
   mojo::ScopedMessagePipeHandle handle(mojo::embedder::CreateChannel(
-      platform_channel.Pass(), base::Bind(&DidCreateChannel),
+      std::move(platform_channel), base::Bind(&DidCreateChannel),
       base::ThreadTaskRunnerHandle::Get()));
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
   MojoShellConnection::Get()->GetApplication()->ConnectToService(

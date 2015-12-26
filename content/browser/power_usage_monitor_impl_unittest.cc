@@ -4,6 +4,8 @@
 
 #include "content/browser/power_usage_monitor_impl.h"
 
+#include <utility>
+
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/battery/battery_monitor.mojom.h"
@@ -66,7 +68,7 @@ class PowerUsageMonitorTest : public testing::Test {
     scoped_ptr<SystemInterfaceForTest> test_interface(
         new SystemInterfaceForTest());
     system_interface_ = test_interface.get();
-    monitor_->SetSystemInterfaceForTest(test_interface.Pass());
+    monitor_->SetSystemInterfaceForTest(std::move(test_interface));
 
     // Without live renderers, the monitor won't do anything.
     monitor_->OnRenderProcessNotification(NOTIFICATION_RENDERER_PROCESS_CREATED,

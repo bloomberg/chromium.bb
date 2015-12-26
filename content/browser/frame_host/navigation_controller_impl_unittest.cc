@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/frame_host/navigation_controller_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -16,7 +19,6 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
-#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -2801,7 +2803,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entry->SetPageState(PageState::CreateFromEncodedData("state"));
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
-  entries.push_back(entry.Pass());
+  entries.push_back(std::move(entry));
   scoped_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
       WebContents::Create(WebContents::CreateParams(browser_context()))));
   NavigationControllerImpl& our_controller = our_contents->GetController();
@@ -2872,7 +2874,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   new_entry->SetPageID(0);
   new_entry->SetTitle(base::ASCIIToUTF16("Title"));
   new_entry->SetPageState(PageState::CreateFromEncodedData("state"));
-  entries.push_back(new_entry.Pass());
+  entries.push_back(std::move(new_entry));
   scoped_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
       WebContents::Create(WebContents::CreateParams(browser_context()))));
   NavigationControllerImpl& our_controller = our_contents->GetController();
@@ -3113,7 +3115,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Adding a transient with no pending entry.
   scoped_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
 
   // We should not have received any notifications.
   EXPECT_EQ(0U, notifications.size());
@@ -3143,7 +3145,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient again, then navigate with no pending entry this time.
   transient_entry.reset(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url3, true);
   main_test_rfh()->PrepareForCommit();
@@ -3158,7 +3160,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   entry_id = controller.GetPendingEntry()->GetUniqueID();
   transient_entry.reset(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(4, entry_id, true, url4);
@@ -3168,7 +3170,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and go back.  This should simply remove the transient.
   transient_entry.reset(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
@@ -3186,7 +3188,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and go to an entry before the current one.
   transient_entry.reset(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
   controller.GoToIndex(1);
   entry_id = controller.GetPendingEntry()->GetUniqueID();
@@ -3202,7 +3204,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and go to an entry after the current one.
   transient_entry.reset(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
   controller.GoToIndex(3);
   entry_id = controller.GetPendingEntry()->GetUniqueID();
@@ -3218,7 +3220,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and go forward.
   transient_entry.reset(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
   EXPECT_TRUE(controller.CanGoForward());
   controller.GoForward();
@@ -3234,7 +3236,7 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Add a transient and do an in-page navigation, replacing the current entry.
   transient_entry.reset(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
 
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url3_ref, false);
@@ -3272,7 +3274,7 @@ TEST_F(NavigationControllerTest, ReloadTransient) {
   // A transient entry is added, interrupting the navigation.
   scoped_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
   transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(transient_entry.Pass());
+  controller.SetTransientEntry(std::move(transient_entry));
   EXPECT_TRUE(controller.GetTransientEntry());
   EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
 
@@ -4422,7 +4424,7 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
             kRestoredUrls[i], Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
             std::string(), browser_context());
     entry->SetPageID(static_cast<int>(i));
-    entries.push_back(entry.Pass());
+    entries.push_back(std::move(entry));
   }
 
   // Create a WebContents with restored entries.

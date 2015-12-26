@@ -5,6 +5,7 @@
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -170,8 +171,8 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
         blob_storage_context_->GetBlobDataFromUUID(blob_handle_->uuid()));
 
     cache_storage_blob_to_disk_cache_->StreamBlobToCache(
-        disk_cache_entry_.Pass(), kCacheEntryIndex, url_request_context_getter_,
-        new_data_handle.Pass(),
+        std::move(disk_cache_entry_), kCacheEntryIndex,
+        url_request_context_getter_, std::move(new_data_handle),
         base::Bind(&CacheStorageBlobToDiskCacheTest::StreamCallback,
                    base::Unretained(this)));
 
@@ -181,7 +182,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
   }
 
   void StreamCallback(disk_cache::ScopedEntryPtr entry_ptr, bool success) {
-    disk_cache_entry_ = entry_ptr.Pass();
+    disk_cache_entry_ = std::move(entry_ptr);
     callback_success_ = success;
     callback_called_ = true;
   }

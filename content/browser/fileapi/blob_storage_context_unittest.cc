@@ -54,7 +54,7 @@ scoped_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
                                           callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
 
-  return cache.Pass();
+  return cache;
 }
 
 disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
@@ -71,7 +71,7 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
   rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
                         iobuffer->size(), callback.callback(), false);
   EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));
-  return entry.Pass();
+  return entry;
 }
 
 void SetupBasicBlob(BlobStorageHost* host, const std::string& id) {

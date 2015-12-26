@@ -5,6 +5,7 @@
 #include "content/browser/download/download_create_info.h"
 
 #include <string>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -20,7 +21,7 @@ DownloadCreateInfo::DownloadCreateInfo(const base::Time& start_time,
       download_id(DownloadItem::kInvalidId),
       has_user_gesture(false),
       transition_type(ui::PAGE_TRANSITION_LINK),
-      save_info(save_info.Pass()),
+      save_info(std::move(save_info)),
       request_bound_net_log(bound_net_log) {}
 
 DownloadCreateInfo::DownloadCreateInfo()

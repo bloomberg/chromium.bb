@@ -5,8 +5,8 @@
 #include "content/browser/fileapi/browser_file_system_helper.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -79,12 +79,9 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
           file_task_runner.get(),
           BrowserContext::GetMountPoints(browser_context),
-          browser_context->GetSpecialStoragePolicy(),
-          quota_manager_proxy,
-          additional_backends.Pass(),
-          url_request_auto_mount_handlers,
-          profile_path,
-          CreateBrowserFileSystemOptions(is_incognito));
+          browser_context->GetSpecialStoragePolicy(), quota_manager_proxy,
+          std::move(additional_backends), url_request_auto_mount_handlers,
+          profile_path, CreateBrowserFileSystemOptions(is_incognito));
 
   std::vector<storage::FileSystemType> types;
   file_system_context->GetFileSystemTypes(&types);

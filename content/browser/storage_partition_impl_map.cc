@@ -4,6 +4,8 @@
 
 #include "content/browser/storage_partition_impl_map.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -463,17 +465,13 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   if (partition_domain.empty()) {
     partition->SetURLRequestContext(
         GetContentClient()->browser()->CreateRequestContext(
-            browser_context_,
-            &protocol_handlers,
-            request_interceptors.Pass()));
+            browser_context_, &protocol_handlers,
+            std::move(request_interceptors)));
   } else {
     partition->SetURLRequestContext(
         GetContentClient()->browser()->CreateRequestContextForStoragePartition(
-            browser_context_,
-            partition->GetPath(),
-            in_memory,
-            &protocol_handlers,
-            request_interceptors.Pass()));
+            browser_context_, partition->GetPath(), in_memory,
+            &protocol_handlers, std::move(request_interceptors)));
   }
   partition->SetMediaURLRequestContext(
       partition_domain.empty() ?

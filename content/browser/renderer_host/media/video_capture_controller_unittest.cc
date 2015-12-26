@@ -4,10 +4,12 @@
 
 // Unit test for VideoCaptureController.
 
+#include "content/browser/renderer_host/media/video_capture_controller.h"
+
 #include <stdint.h>
 #include <string.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -19,7 +21,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
-#include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_options.h"
@@ -320,7 +321,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
       media::VideoFrameMetadata::RESOURCE_UTILIZATION));
   client_a_->resource_utilization_ = 0.5;
   client_b_->resource_utilization_ = -1.0;
-  device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
+  device_->OnIncomingCapturedVideoFrame(std::move(buffer), video_frame,
                                         base::TimeTicks());
 
   base::RunLoop().RunUntilIdle();
@@ -349,7 +350,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
       media::VideoFrameMetadata::RESOURCE_UTILIZATION));
   client_a_->resource_utilization_ = 0.5;
   client_b_->resource_utilization_ = 3.14;
-  device_->OnIncomingCapturedVideoFrame(buffer2.Pass(), video_frame,
+  device_->OnIncomingCapturedVideoFrame(std::move(buffer2), video_frame,
                                         base::TimeTicks());
 
   // The buffer should be delivered to the clients in any order.
@@ -391,7 +392,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     memset(buffer->data(), buffer_no++, buffer->mapped_size());
     video_frame = WrapI420Buffer(capture_resolution,
                                  static_cast<uint8_t*>(buffer->data()));
-    device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
+    device_->OnIncomingCapturedVideoFrame(std::move(buffer), video_frame,
                                           base::TimeTicks());
   }
   // ReserveOutputBuffer ought to fail now, because the pool is depleted.
@@ -439,7 +440,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer3->data(), buffer_no++, buffer3->mapped_size());
   video_frame = WrapI420Buffer(capture_resolution,
                                static_cast<uint8_t*>(buffer3->data()));
-  device_->OnIncomingCapturedVideoFrame(buffer3.Pass(), video_frame,
+  device_->OnIncomingCapturedVideoFrame(std::move(buffer3), video_frame,
                                         base::TimeTicks());
 
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer4 =
@@ -456,7 +457,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer4->data(), buffer_no++, buffer4->mapped_size());
   video_frame = WrapI420Buffer(capture_resolution,
                                static_cast<uint8_t*>(buffer4->data()));
-  device_->OnIncomingCapturedVideoFrame(buffer4.Pass(), video_frame,
+  device_->OnIncomingCapturedVideoFrame(std::move(buffer4), video_frame,
                                         base::TimeTicks());
   // B2 is the only client left, and is the only one that should
   // get the buffer.
@@ -504,7 +505,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   ASSERT_TRUE(buffer.get());
   scoped_refptr<media::VideoFrame> video_frame =
       WrapI420Buffer(capture_resolution, static_cast<uint8_t*>(buffer->data()));
-  device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
+  device_->OnIncomingCapturedVideoFrame(std::move(buffer), video_frame,
                                         base::TimeTicks());
 
   base::RunLoop().RunUntilIdle();
@@ -542,7 +543,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   scoped_refptr<media::VideoFrame> video_frame =
       WrapI420Buffer(dims, static_cast<uint8_t*>(buffer->data()));
   device_->OnError(FROM_HERE, "Test Error");
-  device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
+  device_->OnIncomingCapturedVideoFrame(std::move(buffer), video_frame,
                                         base::TimeTicks());
 
   EXPECT_CALL(*client_a_, DoError(route_id)).Times(1);

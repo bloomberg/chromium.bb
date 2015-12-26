@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/presentation/presentation_service_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/location.h"
@@ -14,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/browser/presentation/presentation_service_impl.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/presentation_session.h"
 #include "content/public/common/presentation_constants.h"
@@ -167,7 +168,7 @@ class MockPresentationServiceClient :
   void OnSessionMessagesReceived(
       presentation::PresentationSessionInfoPtr session_info,
       mojo::Array<presentation::SessionMessagePtr> messages) override {
-    messages_received_ = messages.Pass();
+    messages_received_ = std::move(messages);
     MessagesReceived();
   }
   MOCK_METHOD0(MessagesReceived, void());
@@ -193,13 +194,13 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     EXPECT_CALL(mock_delegate_, AddObserver(_, _, _)).Times(1);
     service_impl_.reset(new PresentationServiceImpl(
         contents()->GetMainFrame(), contents(), &mock_delegate_));
-    service_impl_->Bind(request.Pass());
+    service_impl_->Bind(std::move(request));
 
     presentation::PresentationServiceClientPtr client_ptr;
     client_binding_.reset(
         new mojo::Binding<presentation::PresentationServiceClient>(
             &mock_client_, mojo::GetProxy(&client_ptr)));
-    service_impl_->SetClient(client_ptr.Pass());
+    service_impl_->SetClient(std::move(client_ptr));
   }
 
   void TearDown() override {
@@ -335,18 +336,18 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     message.reset(
         new content::PresentationSessionMessage(PresentationMessageType::TEXT));
     message->message = text_msg;
-    messages.push_back(message.Pass());
+    messages.push_back(std::move(message));
     message.reset(new content::PresentationSessionMessage(
         PresentationMessageType::ARRAY_BUFFER));
     message->data.reset(new std::vector<uint8_t>(binary_data));
-    messages.push_back(message.Pass());
+    messages.push_back(std::move(message));
 
     std::vector<presentation::SessionMessagePtr> actual_msgs;
     {
       base::RunLoop run_loop;
       EXPECT_CALL(mock_client_, MessagesReceived())
           .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-      message_cb.Run(messages.Pass(), pass_ownership);
+      message_cb.Run(std::move(messages), pass_ownership);
       run_loop.Run();
     }
     ExpectSessionMessages(expected_msgs, mock_client_.messages_received_);
@@ -639,7 +640,7 @@ TEST_F(PresentationServiceImplTest, SendStringMessage) {
                           PRESENTATION_MESSAGE_TYPE_TEXT;
   message_request->message = message;
   service_ptr_->SendSessionMessage(
-      session.Pass(), message_request.Pass(),
+      std::move(session), std::move(message_request),
       base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
                  base::Unretained(this)));
 
@@ -678,7 +679,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
                           PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
-      session.Pass(), message_request.Pass(),
+      std::move(session), std::move(message_request),
       base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
                  base::Unretained(this)));
 
@@ -723,7 +724,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
                           PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
-      session.Pass(), message_request.Pass(),
+      std::move(session), std::move(message_request),
       base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
                  base::Unretained(this)));
 
@@ -755,7 +756,7 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
       presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB;
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
-      session.Pass(), message_request.Pass(),
+      std::move(session), std::move(message_request),
       base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
                  base::Unretained(this)));
 

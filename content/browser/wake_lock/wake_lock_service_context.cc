@@ -4,6 +4,8 @@
 
 #include "content/browser/wake_lock/wake_lock_service_context.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "content/browser/power_save_blocker_impl.h"
@@ -25,7 +27,7 @@ void WakeLockServiceContext::CreateService(
     int render_frame_id,
     mojo::InterfaceRequest<WakeLockService> request) {
   new WakeLockServiceImpl(weak_factory_.GetWeakPtr(), render_process_id,
-                          render_frame_id, request.Pass());
+                          render_frame_id, std::move(request));
 }
 
 void WakeLockServiceContext::RenderFrameDeleted(

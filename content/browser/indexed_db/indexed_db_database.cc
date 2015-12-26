@@ -7,6 +7,7 @@
 #include <math.h>
 #include <limits>
 #include <set>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -79,13 +80,13 @@ class IndexedDBDatabase::PendingUpgradeCall {
                      int64_t transaction_id,
                      int64_t version)
       : callbacks_(callbacks),
-        connection_(connection.Pass()),
+        connection_(std::move(connection)),
         version_(version),
         transaction_id_(transaction_id) {}
   scoped_refptr<IndexedDBCallbacks> callbacks() const { return callbacks_; }
   // Takes ownership of the connection object.
   scoped_ptr<IndexedDBConnection> ReleaseConnection() WARN_UNUSED_RESULT {
-    return connection_.Pass();
+    return std::move(connection_);
   }
   int64_t version() const { return version_; }
   int64_t transaction_id() const { return transaction_id_; }
@@ -240,7 +241,7 @@ scoped_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
       new IndexedDBConnection(this, database_callbacks));
   connections_.insert(connection.get());
   backing_store_->GrantChildProcessPermissions(child_process_id);
-  return connection.Pass();
+  return connection;
 }
 
 IndexedDBTransaction* IndexedDBDatabase::GetTransaction(
@@ -951,7 +952,7 @@ void IndexedDBDatabase::Put(int64_t transaction_id,
   params->object_store_id = object_store_id;
   params->value.swap(*value);
   params->handles.swap(*handles);
-  params->key = key.Pass();
+  params->key = std::move(key);
   params->put_mode = put_mode;
   params->callbacks = callbacks;
   params->index_keys = index_keys;
@@ -983,9 +984,9 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                  "Maximum key generator value reached."));
       return;
     }
-    key = auto_inc_key.Pass();
+    key = std::move(auto_inc_key);
   } else {
-    key = params->key.Pass();
+    key = std::move(params->key);
   }
 
   DCHECK(key->IsValid());
@@ -1233,7 +1234,7 @@ void IndexedDBDatabase::OpenCursor(
   scoped_ptr<OpenCursorOperationParams> params(new OpenCursorOperationParams());
   params->object_store_id = object_store_id;
   params->index_id = index_id;
-  params->key_range = key_range.Pass();
+  params->key_range = std::move(key_range);
   params->direction = direction;
   params->cursor_type =
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE;
@@ -1317,10 +1318,8 @@ void IndexedDBDatabase::OpenCursorOperation(
   }
 
   scoped_refptr<IndexedDBCursor> cursor =
-      new IndexedDBCursor(backing_store_cursor.Pass(),
-                          params->cursor_type,
-                          params->task_type,
-                          transaction);
+      new IndexedDBCursor(std::move(backing_store_cursor), params->cursor_type,
+                          params->task_type, transaction);
   params->callbacks->OnSuccess(
       cursor, cursor->key(), cursor->primary_key(), cursor->Value());
 }
@@ -1548,7 +1547,7 @@ void IndexedDBDatabase::VersionChangeOperation(
   DCHECK(!pending_second_half_open_);
   pending_second_half_open_.reset(
       new PendingSuccessCall(callbacks, connection.get(), version));
-  callbacks->OnUpgradeNeeded(old_version, connection.Pass(), metadata());
+  callbacks->OnUpgradeNeeded(old_version, std::move(connection), metadata());
 }
 
 void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
@@ -1566,7 +1565,7 @@ void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
 
         // Connection was already minted for OnUpgradeNeeded callback.
         scoped_ptr<IndexedDBConnection> connection;
-        pending_second_half_open_->callbacks()->OnSuccess(connection.Pass(),
+        pending_second_half_open_->callbacks()->OnSuccess(std::move(connection),
                                                           this->metadata());
       } else {
         pending_second_half_open_->callbacks()->OnError(
@@ -1619,7 +1618,7 @@ void IndexedDBDatabase::ProcessPendingCalls() {
     DCHECK(pending_run_version_change_transaction_call_->version() >
            metadata_.int_version);
     scoped_ptr<PendingUpgradeCall> pending_call =
-        pending_run_version_change_transaction_call_.Pass();
+        std::move(pending_run_version_change_transaction_call_);
     RunVersionChangeTransactionFinal(pending_call->callbacks(),
                                      pending_call->ReleaseConnection(),
                                      pending_call->transaction_id(),
@@ -1819,11 +1818,11 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
 
     DCHECK(!pending_run_version_change_transaction_call_);
     pending_run_version_change_transaction_call_.reset(new PendingUpgradeCall(
-        callbacks, connection.Pass(), transaction_id, requested_version));
+        callbacks, std::move(connection), transaction_id, requested_version));
     return;
   }
-  RunVersionChangeTransactionFinal(
-      callbacks, connection.Pass(), transaction_id, requested_version);
+  RunVersionChangeTransactionFinal(callbacks, std::move(connection),
+                                   transaction_id, requested_version);
 }
 
 void IndexedDBDatabase::RunVersionChangeTransactionFinal(

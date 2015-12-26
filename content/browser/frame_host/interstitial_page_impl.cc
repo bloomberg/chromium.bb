@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/interstitial_page_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -241,7 +242,7 @@ void InterstitialPageImpl::Show() {
     // Give delegates a chance to set some states on the navigation entry.
     delegate_->OverrideEntry(entry.get());
 
-    controller_->SetTransientEntry(entry.Pass());
+    controller_->SetTransientEntry(std::move(entry));
 
     static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSSLState();
   }

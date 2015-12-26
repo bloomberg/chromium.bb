@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "content/browser/service_worker/service_worker_url_request_job.h"
 
+#include <stdint.h>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -21,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
@@ -283,7 +284,7 @@ class ServiceWorkerURLRequestJobTest
         "blob", CreateMockBlobProtocolHandler(blob_storage_context));
     url_request_context_.set_job_factory(url_request_job_factory_.get());
 
-    helper_->context()->AddProviderHost(provider_host.Pass());
+    helper_->context()->AddProviderHost(std::move(provider_host));
   }
 
   void TearDown() override {

@@ -4,6 +4,8 @@
 
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"
@@ -39,19 +41,19 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
   DCHECK(!blob_request_);
 
   if (!request_context_getter->GetURLRequestContext()) {
-    callback.Run(entry.Pass(), false /* success */);
+    callback.Run(std::move(entry), false /* success */);
     return;
   }
 
   disk_cache_body_index_ = disk_cache_body_index;
 
-  entry_ = entry.Pass();
+  entry_ = std::move(entry);
   callback_ = callback;
   request_context_getter_ = request_context_getter;
 
   blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
-      blob_data_handle.Pass(), request_context_getter->GetURLRequestContext(),
-      this);
+      std::move(blob_data_handle),
+      request_context_getter->GetURLRequestContext(), this);
   request_context_getter_->AddObserver(this);
   blob_request_->Start();
 }
@@ -144,7 +146,7 @@ void CacheStorageBlobToDiskCache::RunCallbackAndRemoveObserver(bool success) {
 
   request_context_getter_->RemoveObserver(this);
   blob_request_.reset();
-  callback_.Run(entry_.Pass(), success);
+  callback_.Run(std::move(entry_), success);
 }
 
 }  // namespace content

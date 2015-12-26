@@ -4,6 +4,8 @@
 
 #include "content/browser/mojo/mojo_application_host.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,9 +28,8 @@ class ApplicationSetupImpl : public ApplicationSetup {
  public:
   ApplicationSetupImpl(ServiceRegistryImpl* service_registry,
                        mojo::InterfaceRequest<ApplicationSetup> request)
-      : binding_(this, request.Pass()),
-        service_registry_(service_registry) {
-  }
+      : binding_(this, std::move(request)),
+        service_registry_(service_registry) {}
 
   ~ApplicationSetupImpl() override {
   }
@@ -38,8 +39,8 @@ class ApplicationSetupImpl : public ApplicationSetup {
   void ExchangeServiceProviders(
       mojo::InterfaceRequest<mojo::ServiceProvider> services,
       mojo::ServiceProviderPtr exposed_services) override {
-    service_registry_->Bind(services.Pass());
-    service_registry_->BindRemoteServiceProvider(exposed_services.Pass());
+    service_registry_->Bind(std::move(services));
+    service_registry_->BindRemoteServiceProvider(std::move(exposed_services));
   }
 
   mojo::Binding<ApplicationSetup> binding_;
@@ -84,7 +85,7 @@ bool MojoApplicationHost::Init() {
 
   application_setup_.reset(new ApplicationSetupImpl(
       &service_registry_,
-      mojo::MakeRequest<ApplicationSetup>(message_pipe.Pass())));
+      mojo::MakeRequest<ApplicationSetup>(std::move(message_pipe))));
   return true;
 }
 
@@ -94,7 +95,7 @@ void MojoApplicationHost::Activate(IPC::Sender* sender,
   DCHECK(client_handle_.is_valid());
 
   base::PlatformFile client_file =
-      PlatformFileFromScopedPlatformHandle(client_handle_.Pass());
+      PlatformFileFromScopedPlatformHandle(std::move(client_handle_));
   did_activate_ = sender->Send(new MojoMsg_Activate(
       IPC::GetFileHandleForProcess(client_file, process_handle, true)));
 }

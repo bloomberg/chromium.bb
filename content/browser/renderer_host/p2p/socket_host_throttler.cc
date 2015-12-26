@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
+
+#include <utility>
+
 #include "third_party/webrtc/base/ratelimiter.h"
 #include "third_party/webrtc/base/timing.h"
 
@@ -24,7 +27,7 @@ P2PMessageThrottler::~P2PMessageThrottler() {
 }
 
 void P2PMessageThrottler::SetTiming(scoped_ptr<rtc::Timing> timing) {
-  timing_ = timing.Pass();
+  timing_ = std::move(timing);
 }
 
 void P2PMessageThrottler::SetSendIceBandwidth(int bandwidth_kbps) {

@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
+#include <utility>
+
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -168,7 +170,7 @@ void NavigationHandleImpl::CancelDeferredNavigation(
 
 void NavigationHandleImpl::RegisterThrottleForTesting(
     scoped_ptr<NavigationThrottle> navigation_throttle) {
-  throttles_.push_back(navigation_throttle.Pass());
+  throttles_.push_back(std::move(navigation_throttle));
 }
 
 NavigationThrottle::ThrottleCheckResult

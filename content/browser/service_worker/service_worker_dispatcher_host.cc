@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
@@ -278,7 +280,7 @@ ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
       new ServiceWorkerRegistrationHandle(GetContext()->AsWeakPtr(),
                                           provider_host, registration));
   ServiceWorkerRegistrationHandle* new_handle_ptr = new_handle.get();
-  RegisterServiceWorkerRegistrationHandle(new_handle.Pass());
+  RegisterServiceWorkerRegistrationHandle(std::move(new_handle));
   return new_handle_ptr;
 }
 
@@ -765,7 +767,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
             render_process_id_, route_id, provider_id, provider_type,
             GetContext()->AsWeakPtr(), this));
   }
-  GetContext()->AddProviderHost(provider_host.Pass());
+  GetContext()->AddProviderHost(std::move(provider_host));
 }
 
 void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {

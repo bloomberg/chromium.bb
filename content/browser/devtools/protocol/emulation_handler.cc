@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/protocol/emulation_handler.h"
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -82,7 +84,7 @@ Response EmulationHandler::SetGeolocationOverride(
   } else {
     geoposition->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   }
-  geolocation_context->SetOverride(geoposition.Pass());
+  geolocation_context->SetOverride(std::move(geoposition));
   return Response::OK();
 }
 

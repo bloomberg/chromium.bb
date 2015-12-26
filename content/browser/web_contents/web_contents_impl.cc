@@ -1389,7 +1389,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   if (browser_plugin_guest_ &&
       !BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
     view_.reset(new WebContentsViewGuest(this, browser_plugin_guest_.get(),
-                                         view_.Pass(),
+                                         std::move(view_),
                                          &render_view_host_delegate_view_));
   }
   CHECK(render_view_host_delegate_view_);
@@ -2592,7 +2592,7 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
       params->add_request_header(pair[0], pair[1]);
     }
   }
-  dlm->DownloadUrl(params.Pass());
+  dlm->DownloadUrl(std::move(params));
 }
 
 void WebContentsImpl::GenerateMHTML(
@@ -2808,7 +2808,7 @@ int WebContentsImpl::DownloadImage(
   req->bypass_cache = bypass_cache;
 
   mojo_image_downloader->DownloadImage(
-      req.Pass(),
+      std::move(req),
       base::Bind(&DidDownloadImage, callback, download_id, url));
   return download_id;
 }

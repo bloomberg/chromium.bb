@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/browser/tracing_controller.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -10,7 +13,6 @@
 #include "base/strings/pattern.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/tracing_controller.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -77,7 +79,8 @@ class TracingControllerTestEndpoint
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(done_callback_, base::Passed(metadata.Pass()), chunk_ptr));
+        base::Bind(done_callback_, base::Passed(std::move(metadata)),
+                   chunk_ptr));
   }
 
  protected:

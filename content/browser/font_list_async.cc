@@ -4,6 +4,8 @@
 
 #include "content/public/browser/font_list_async.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "content/common/font_list.h"
@@ -17,7 +19,7 @@ namespace {
 void ReturnFontListToOriginalThread(
     const base::Callback<void(scoped_ptr<base::ListValue>)>& callback,
     scoped_ptr<base::ListValue> result) {
-  callback.Run(result.Pass());
+  callback.Run(std::move(result));
 }
 
 void GetFontListInBlockingPool(

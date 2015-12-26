@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/websocket_host.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -274,7 +276,7 @@ ChannelState WebSocketEventHandler::OnSSLCertificateError(
            << " routing_id=" << routing_id_ << " url=" << url.spec()
            << " cert_status=" << ssl_info.cert_status << " fatal=" << fatal;
   ssl_error_handler_delegate_.reset(
-      new SSLErrorHandlerDelegate(callbacks.Pass()));
+      new SSLErrorHandlerDelegate(std::move(callbacks)));
   SSLManager::OnSSLCertificateSubresourceError(
       ssl_error_handler_delegate_->GetWeakPtr(), url,
       dispatcher_->render_process_id(), render_frame_id_, ssl_info, fatal);
@@ -284,7 +286,7 @@ ChannelState WebSocketEventHandler::OnSSLCertificateError(
 
 WebSocketEventHandler::SSLErrorHandlerDelegate::SSLErrorHandlerDelegate(
     scoped_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks)
-    : callbacks_(callbacks.Pass()), weak_ptr_factory_(this) {}
+    : callbacks_(std::move(callbacks)), weak_ptr_factory_(this) {}
 
 WebSocketEventHandler::SSLErrorHandlerDelegate::~SSLErrorHandlerDelegate() {}
 
@@ -382,8 +384,8 @@ void WebSocketHost::AddChannel(
 
   scoped_ptr<net::WebSocketEventInterface> event_interface(
       new WebSocketEventHandler(dispatcher_, routing_id_, render_frame_id));
-  channel_.reset(
-      new net::WebSocketChannel(event_interface.Pass(), url_request_context_));
+  channel_.reset(new net::WebSocketChannel(std::move(event_interface),
+                                           url_request_context_));
 
   if (pending_flow_control_quota_ > 0) {
     // channel_->SendFlowControl(pending_flow_control_quota_) must be called

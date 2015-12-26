@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
@@ -212,8 +212,8 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
 TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlobUrl) {
   scoped_ptr<storage::BlobDataHandle> null_handle;
   file_system_context_->operation_runner()->Write(
-      &url_request_context(), URLForPath(virtual_path_),
-      null_handle.Pass(), 0, RecordWriteCallback());
+      &url_request_context(), URLForPath(virtual_path_), std::move(null_handle),
+      0, RecordWriteCallback());
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());

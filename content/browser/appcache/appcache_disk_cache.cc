@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_disk_cache.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -369,7 +370,7 @@ int AppCacheDiskCache::Init(
 
 void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
   if (rv == net::OK) {
-    disk_cache_ = create_backend_callback_->backend_ptr_.Pass();
+    disk_cache_ = std::move(create_backend_callback_->backend_ptr_);
   }
   create_backend_callback_ = NULL;
 

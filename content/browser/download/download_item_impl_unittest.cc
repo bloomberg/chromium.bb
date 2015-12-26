@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/download/download_item_impl.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -12,7 +15,6 @@
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_factory.h"
-#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
@@ -218,7 +220,7 @@ class DownloadItemTest : public testing::Test {
     info->url_chain.push_back(GURL());
     info->etag = "SomethingToSatisfyResumption";
 
-    return CreateDownloadItemWithCreateInfo(info.Pass());
+    return CreateDownloadItemWithCreateInfo(std::move(info));
   }
 
   DownloadItemImpl* CreateDownloadItemWithCreateInfo(
@@ -247,7 +249,7 @@ class DownloadItemTest : public testing::Test {
 
     scoped_ptr<DownloadRequestHandleInterface> request_handle(
         new NiceMock<MockRequestHandle>);
-    item->Start(download_file.Pass(), request_handle.Pass());
+    item->Start(std::move(download_file), std::move(request_handle));
     loop_.RunUntilIdle();
 
     // So that we don't have a function writing to a stack variable
@@ -517,7 +519,7 @@ TEST_F(DownloadItemTest, LimitRestartsAfterInterrupted) {
 
     // Copied key parts of DoIntermediateRename & AddDownloadFileToDownloadItem
     // to allow for holding onto the request handle.
-    item->Start(download_file.Pass(), request_handle.Pass());
+    item->Start(std::move(download_file), std::move(request_handle));
     RunAllPendingInMessageLoops();
     if (i == 0) {
       // Target determination is only done the first time through.
@@ -554,7 +556,8 @@ TEST_F(DownloadItemTest, ResumeUsingFinalURL) {
   create_info->url_chain.push_back(GURL("http://example.com/b"));
   create_info->url_chain.push_back(GURL("http://example.com/c"));
 
-  DownloadItemImpl* item = CreateDownloadItemWithCreateInfo(create_info.Pass());
+  DownloadItemImpl* item =
+      CreateDownloadItemWithCreateInfo(std::move(create_info));
   TestDownloadItemObserver observer(item);
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
@@ -672,7 +675,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
 
   EXPECT_CALL(*mock_download_file, Initialize(_));
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(_, _));
-  item->Start(download_file.Pass(), request_handle.Pass());
+  item->Start(std::move(download_file), std::move(request_handle));
 
   item->Pause();
   ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
@@ -719,7 +722,7 @@ TEST_F(DownloadItemTest, Start) {
   scoped_ptr<DownloadRequestHandleInterface> request_handle(
       new NiceMock<MockRequestHandle>);
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _));
-  item->Start(download_file.Pass(), request_handle.Pass());
+  item->Start(std::move(download_file), std::move(request_handle));
   RunAllPendingInMessageLoops();
 
   CleanupItem(item, mock_download_file, DownloadItem::IN_PROGRESS);

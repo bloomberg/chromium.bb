@@ -4,6 +4,8 @@
 
 #include "content/browser/background_sync/background_sync_context_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
@@ -78,7 +80,7 @@ void BackgroundSyncContextImpl::CreateServiceOnIOThread(
     mojo::InterfaceRequest<BackgroundSyncService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_manager_);
-  services_.insert(new BackgroundSyncServiceImpl(this, request.Pass()));
+  services_.insert(new BackgroundSyncServiceImpl(this, std::move(request)));
 }
 
 void BackgroundSyncContextImpl::ShutdownOnIO() {

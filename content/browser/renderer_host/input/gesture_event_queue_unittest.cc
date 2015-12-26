@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 
+#include <stddef.h>
+#include <utility>
 #include <vector>
 
 #include "base/location.h"
@@ -13,7 +15,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -53,7 +54,7 @@ class GestureEventQueueTest : public testing::Test,
       const GestureEventWithLatencyInfo& event) override {
     ++sent_gesture_event_count_;
     if (sync_ack_result_) {
-      scoped_ptr<InputEventAckState> ack_result = sync_ack_result_.Pass();
+      scoped_ptr<InputEventAckState> ack_result = std::move(sync_ack_result_);
       SendInputEventACK(event.event.type, *ack_result);
     }
   }
@@ -63,7 +64,7 @@ class GestureEventQueueTest : public testing::Test,
     ++acked_gesture_event_count_;
     last_acked_event_ = event.event;
     if (sync_followup_event_) {
-      auto sync_followup_event = sync_followup_event_.Pass();
+      auto sync_followup_event = std::move(sync_followup_event_);
       SimulateGestureEvent(*sync_followup_event);
     }
   }

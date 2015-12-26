@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
+
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 
 static leveldb::Slice MakeSlice(const base::StringPiece& s) {
   return leveldb::Slice(s.begin(), s.size());
@@ -20,8 +23,7 @@ LevelDBIteratorImpl::~LevelDBIteratorImpl() {
 }
 
 LevelDBIteratorImpl::LevelDBIteratorImpl(scoped_ptr<leveldb::Iterator> it)
-    : iterator_(it.Pass()) {
-}
+    : iterator_(std::move(it)) {}
 
 void LevelDBIteratorImpl::CheckStatus() {
   const leveldb::Status& s = iterator_->status();

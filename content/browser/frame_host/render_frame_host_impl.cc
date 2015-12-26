@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
@@ -1067,7 +1069,7 @@ int RenderFrameHostImpl::GetEnabledBindings() {
 
 void RenderFrameHostImpl::SetNavigationHandle(
     scoped_ptr<NavigationHandleImpl> navigation_handle) {
-  navigation_handle_ = navigation_handle.Pass();
+  navigation_handle_ = std::move(navigation_handle);
   if (navigation_handle_)
     navigation_handle_->set_render_frame_host(this);
 }
@@ -1076,7 +1078,7 @@ scoped_ptr<NavigationHandleImpl>
 RenderFrameHostImpl::PassNavigationHandleOwnership() {
   DCHECK(!IsBrowserSideNavigationEnabled());
   navigation_handle_->set_is_transferring(true);
-  return navigation_handle_.Pass();
+  return std::move(navigation_handle_);
 }
 
 void RenderFrameHostImpl::OnCrossSiteResponse(
@@ -1087,7 +1089,7 @@ void RenderFrameHostImpl::OnCrossSiteResponse(
     ui::PageTransition page_transition,
     bool should_replace_current_entry) {
   frame_tree_node_->render_manager()->OnCrossSiteResponse(
-      this, global_request_id, cross_site_transferring_request.Pass(),
+      this, global_request_id, std::move(cross_site_transferring_request),
       transfer_url_chain, referrer, page_transition,
       should_replace_current_entry);
 }
@@ -2041,7 +2043,7 @@ void RenderFrameHostImpl::CommitNavigation(
 
   // TODO(clamy): Release the stream handle once the renderer has finished
   // reading it.
-  stream_handle_ = body.Pass();
+  stream_handle_ = std::move(body);
 
   // When navigating to a Javascript url, no commit is expected from the
   // RenderFrameHost, nor should the throbber start.
@@ -2087,8 +2089,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 
   mojo::ServiceProviderPtr services;
   setup->ExchangeServiceProviders(routing_id_, GetProxy(&services),
-                                  exposed_services.Pass());
-  service_registry_->BindRemoteServiceProvider(services.Pass());
+                                  std::move(exposed_services));
+  service_registry_->BindRemoteServiceProvider(std::move(services));
 
 #if defined(OS_ANDROID)
   service_registry_android_.reset(
@@ -2192,7 +2194,7 @@ void RenderFrameHostImpl::CommitPendingWebUI() {
   if (should_reuse_web_ui_) {
     should_reuse_web_ui_ = false;
   } else {
-    web_ui_ = pending_web_ui_.Pass();
+    web_ui_ = std::move(pending_web_ui_);
     web_ui_type_ = pending_web_ui_type_;
     pending_web_ui_type_ = WebUI::kNoWebUI;
   }

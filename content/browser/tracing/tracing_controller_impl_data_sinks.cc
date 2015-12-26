@@ -1,13 +1,14 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "content/browser/tracing/tracing_controller_impl.h"
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/strings/pattern.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"
 
@@ -35,7 +36,7 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(completion_callback_,
-                                       base::Passed(metadata.Pass()), str));
+                                       base::Passed(std::move(metadata)), str));
   }
 
  private:
@@ -325,7 +326,7 @@ void TracingController::TraceDataSink::SetMetadataFilterPredicate(
 scoped_ptr<const base::DictionaryValue>
     TracingController::TraceDataSink::GetMetadataCopy() const {
   if (metadata_filter_predicate_.is_null())
-    return scoped_ptr<const base::DictionaryValue>(metadata_.DeepCopy()).Pass();
+    return scoped_ptr<const base::DictionaryValue>(metadata_.DeepCopy());
 
   scoped_ptr<base::DictionaryValue> metadata_copy(new base::DictionaryValue);
   for (base::DictionaryValue::Iterator it(metadata_); !it.IsAtEnd();
@@ -335,7 +336,7 @@ scoped_ptr<const base::DictionaryValue>
     else
       metadata_copy->SetString(it.key(), "__stripped__");
   }
-  return metadata_copy.Pass();
+  return std::move(metadata_copy);
 }
 
 scoped_refptr<TracingController::TraceDataSink>

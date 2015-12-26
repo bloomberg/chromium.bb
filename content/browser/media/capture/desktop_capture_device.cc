@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -140,11 +141,10 @@ DesktopCaptureDevice::Core::Core(
     scoped_ptr<webrtc::DesktopCapturer> capturer,
     DesktopMediaID::Type type)
     : task_runner_(task_runner),
-      desktop_capturer_(capturer.Pass()),
+      desktop_capturer_(std::move(capturer)),
       capture_in_progress_(false),
       first_capture_returned_(false),
-      capturer_type_(type) {
-}
+      capturer_type_(type) {}
 
 DesktopCaptureDevice::Core::~Core() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -164,7 +164,7 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
   DCHECK(client.get());
   DCHECK(!client_.get());
 
-  client_ = client.Pass();
+  client_ = std::move(client);
   requested_frame_rate_ = params.requested_format.frame_rate;
   resolution_chooser_.reset(new media::CaptureResolutionChooser(
       params.requested_format.frame_size,
@@ -408,9 +408,9 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 
   scoped_ptr<media::VideoCaptureDevice> result;
   if (capturer)
-    result.reset(new DesktopCaptureDevice(capturer.Pass(), source.type));
+    result.reset(new DesktopCaptureDevice(std::move(capturer), source.type));
 
-  return result.Pass();
+  return result;
 }
 
 DesktopCaptureDevice::~DesktopCaptureDevice() {
@@ -458,7 +458,7 @@ DesktopCaptureDevice::DesktopCaptureDevice(
 
   thread_.StartWithOptions(base::Thread::Options(thread_type, 0));
 
-  core_.reset(new Core(thread_.task_runner(), capturer.Pass(), type));
+  core_.reset(new Core(thread_.task_runner(), std::move(capturer), type));
 }
 
 }  // namespace content

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/frame_host/navigation_controller_impl.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
-#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/site_isolation_policy.h"
@@ -2481,7 +2483,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // 5. Restore the new entry in a new tab and verify the correct URLs load.
   std::vector<scoped_ptr<NavigationEntry>> entries;
-  entries.push_back(restored_entry.Pass());
+  entries.push_back(std::move(restored_entry));
   Shell* new_shell = Shell::CreateNewWindow(
       controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
   FrameTreeNode* new_root =
@@ -2750,7 +2752,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerOopifBrowserTest,
 
   // 4. Restore the new entry in a new tab and verify the correct URLs load.
   std::vector<scoped_ptr<NavigationEntry>> entries;
-  entries.push_back(restored_entry.Pass());
+  entries.push_back(std::move(restored_entry));
   Shell* new_shell = Shell::CreateNewWindow(
       controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
   FrameTreeNode* new_root =

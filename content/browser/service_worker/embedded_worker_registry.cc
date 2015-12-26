@@ -40,7 +40,7 @@ scoped_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker() {
   scoped_ptr<EmbeddedWorkerInstance> worker(
       new EmbeddedWorkerInstance(context_, next_embedded_worker_id_));
   worker_map_[next_embedded_worker_id_++] = worker.get();
-  return worker.Pass();
+  return worker;
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::StopWorker(

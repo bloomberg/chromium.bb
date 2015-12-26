@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -77,7 +79,7 @@ class BatteryMonitorImplTest : public ContentBrowserTest {
         battery_service_->GetUpdateCallbackForTesting()));
     battery_manager_ = battery_manager.get();
 
-    battery_service_->SetBatteryManagerForTesting(battery_manager.Pass());
+    battery_service_->SetBatteryManagerForTesting(std::move(battery_manager));
   }
 
   void TearDown() override {

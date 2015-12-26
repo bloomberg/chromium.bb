@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
 #include <cctype>
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -279,7 +279,7 @@ class MediaStreamManager::DeviceRequest {
 
   bool HasUIRequest() const { return ui_request_.get() != nullptr; }
   scoped_ptr<MediaStreamRequest> DetachUIRequest() {
-    return ui_request_.Pass();
+    return std::move(ui_request_);
   }
 
   // Update the request state and notify observers.
@@ -1146,7 +1146,7 @@ void MediaStreamManager::PostRequestToUI(const std::string& label,
 
     fake_ui_->SetAvailableDevices(devices);
 
-    request->ui_proxy = fake_ui_.Pass();
+    request->ui_proxy = std::move(fake_ui_);
   } else {
     request->ui_proxy = MediaStreamUIProxy::Create();
   }
@@ -1395,7 +1395,7 @@ void MediaStreamManager::FinalizeRequestFailed(
 
   if (request->request_type == MEDIA_DEVICE_ACCESS &&
       !request->callback.is_null()) {
-    request->callback.Run(MediaStreamDevices(), request->ui_proxy.Pass());
+    request->callback.Run(MediaStreamDevices(), std::move(request->ui_proxy));
   }
 
   DeleteRequest(label);
@@ -1429,7 +1429,7 @@ void MediaStreamManager::FinalizeEnumerateDevices(const std::string& label,
   if (use_fake_ui_) {
     if (!fake_ui_)
       fake_ui_.reset(new FakeMediaStreamUIProxy());
-    request->ui_proxy = fake_ui_.Pass();
+    request->ui_proxy = std::move(fake_ui_);
   } else {
     request->ui_proxy = MediaStreamUIProxy::Create();
   }
@@ -1507,7 +1507,7 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
     DeviceRequest* request,
     const MediaStreamDevices& devices) {
   if (!request->callback.is_null())
-    request->callback.Run(devices, request->ui_proxy.Pass());
+    request->callback.Run(devices, std::move(request->ui_proxy));
 
   // Delete the request since it is done.
   DeleteRequest(label);
@@ -1759,7 +1759,7 @@ void MediaStreamManager::UseFakeUIForTests(
     scoped_ptr<FakeMediaStreamUIProxy> fake_ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   use_fake_ui_ = true;
-  fake_ui_ = fake_ui.Pass();
+  fake_ui_ = std::move(fake_ui);
 }
 
 void MediaStreamManager::RegisterNativeLogCallback(

@@ -5,6 +5,7 @@
 #include "content/browser/media/media_internals.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
@@ -209,7 +210,7 @@ void AudioLogImpl::SendWebContentsTitle(int component_id,
                                         int render_frame_id) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   StoreComponentMetadata(component_id, dict.get());
-  SendWebContentsTitleHelper(FormatCacheKey(component_id), dict.Pass(),
+  SendWebContentsTitleHelper(FormatCacheKey(component_id), std::move(dict),
                              render_process_id, render_frame_id);
 }
 

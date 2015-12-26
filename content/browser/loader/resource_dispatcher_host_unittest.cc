@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -1114,19 +1114,14 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
       browser_context_->GetResourceContext()->GetRequestContext();
   scoped_ptr<net::URLRequest> request(
       request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
-  host_.BeginDownload(
-      request.Pass(),
-      Referrer(),
-      false,  // is_content_initiated
-      browser_context_->GetResourceContext(),
-      web_contents_->GetRenderProcessHost()->GetID(),
-      web_contents_->GetRoutingID(),
-      web_contents_->GetMainFrame()->GetRoutingID(),
-      false,
-      false,
-      save_info.Pass(),
-      DownloadItem::kInvalidId,
-      ResourceDispatcherHostImpl::DownloadStartedCallback());
+  host_.BeginDownload(std::move(request), Referrer(),
+                      false,  // is_content_initiated
+                      browser_context_->GetResourceContext(),
+                      web_contents_->GetRenderProcessHost()->GetID(),
+                      web_contents_->GetRoutingID(),
+                      web_contents_->GetMainFrame()->GetRoutingID(), false,
+                      false, std::move(save_info), DownloadItem::kInvalidId,
+                      ResourceDispatcherHostImpl::DownloadStartedCallback());
 }
 
 void ResourceDispatcherHostTest::CancelRequest(int request_id) {
@@ -2049,7 +2044,7 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   scoped_ptr<net::UploadElementReader> reader(new net::UploadBytesElementReader(
       upload_content.data(), upload_content.size()));
   req->set_upload(
-      net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+      net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
 
   // Since the upload throttling is disabled, this has no effect on the cost.
   EXPECT_EQ(
@@ -3497,7 +3492,7 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
   if (test_fixture_->loader_test_request_info_) {
     DCHECK_EQ(test_fixture_->loader_test_request_info_->url, request->url());
     scoped_ptr<LoadInfoTestRequestInfo> info =
-        test_fixture_->loader_test_request_info_.Pass();
+        std::move(test_fixture_->loader_test_request_info_);
     return new URLRequestLoadInfoJob(request, network_delegate,
                                      info->load_state, info->upload_progress);
   }

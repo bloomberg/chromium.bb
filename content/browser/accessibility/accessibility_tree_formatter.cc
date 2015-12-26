@@ -40,7 +40,7 @@ AccessibilityTreeFormatter::BuildAccessibilityTree(
   CHECK(root);
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   RecursiveBuildAccessibilityTree(*root, dict.get());
-  return dict.Pass();
+  return dict;
 }
 
 void AccessibilityTreeFormatter::FormatAccessibilityTree(

@@ -5,6 +5,7 @@
 #include "content/browser/download/save_package.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -315,11 +316,10 @@ bool SavePackage::Init(
       new SavePackageRequestHandle(AsWeakPtr()));
   // The download manager keeps ownership but adds us as an observer.
   download_manager_->CreateSavePackageDownloadItem(
-      saved_main_file_path_,
-      page_url_,
-      ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ?
-       "multipart/related" : "text/html"),
-      request_handle.Pass(),
+      saved_main_file_path_, page_url_,
+      ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ? "multipart/related"
+                                               : "text/html"),
+      std::move(request_handle),
       base::Bind(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
                  download_created_callback));
   return true;

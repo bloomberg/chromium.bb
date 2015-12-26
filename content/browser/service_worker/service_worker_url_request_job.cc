@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <limits>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -475,7 +475,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
     request->referrer =
         Referrer(GURL(request_->referrer()), blink::WebReferrerPolicyDefault);
   }
-  return request.Pass();
+  return request;
 }
 
 bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
@@ -504,8 +504,8 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
       DCHECK_NE(storage::DataElement::TYPE_BLOB, item->type());
       resolved_elements.push_back(item->data_element_ptr());
     }
-    handles.push_back(handle.Pass());
-    snapshots.push_back(snapshot.Pass());
+    handles.push_back(std::move(handle));
+    snapshots.push_back(std::move(snapshot));
   }
 
   const std::string uuid(base::GenerateGUID());
@@ -684,7 +684,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
       return;
     }
     blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
-        blob_data_handle.Pass(), request()->context(), this);
+        std::move(blob_data_handle), request()->context(), this);
     blob_request_->Start();
   }
 

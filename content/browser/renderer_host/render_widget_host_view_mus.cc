@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_mus.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
@@ -43,7 +45,7 @@ RenderWidgetHostViewMus::RenderWidgetHostViewMus(mus::Window* parent_window,
   mus::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(
       host_->GetRoutingID(), mojo::GetProxy(&window_tree_client));
-  mus_window_->window()->Embed(window_tree_client.Pass());
+  mus_window_->window()->Embed(std::move(window_tree_client));
 }
 
 RenderWidgetHostViewMus::~RenderWidgetHostViewMus() {}

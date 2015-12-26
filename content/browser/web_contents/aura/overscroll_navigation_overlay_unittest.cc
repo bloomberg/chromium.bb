@@ -5,7 +5,7 @@
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 
 #include <string.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -42,7 +42,8 @@ class OverscrollTestWebContents : public TestWebContents {
       scoped_ptr<aura::Window> fake_native_view,
       scoped_ptr<aura::Window> fake_contents_window) {
     OverscrollTestWebContents* web_contents = new OverscrollTestWebContents(
-        browser_context, fake_native_view.Pass(), fake_contents_window.Pass());
+        browser_context, std::move(fake_native_view),
+        std::move(fake_contents_window));
     web_contents->Init(WebContents::CreateParams(browser_context, instance));
     return web_contents;
   }
@@ -67,8 +68,8 @@ class OverscrollTestWebContents : public TestWebContents {
       scoped_ptr<aura::Window> fake_native_view,
       scoped_ptr<aura::Window> fake_contents_window)
       : TestWebContents(browser_context),
-        fake_native_view_(fake_native_view.Pass()),
-        fake_contents_window_(fake_contents_window.Pass()),
+        fake_native_view_(std::move(fake_native_view)),
+        fake_contents_window_(std::move(fake_contents_window)),
         is_being_destroyed_(false) {}
 
  private:
@@ -120,7 +121,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     else
       EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::NONE);
     window->SetBounds(gfx::Rect(root_window()->bounds().size()));
-    GetOverlay()->OnOverscrollCompleted(window.Pass());
+    GetOverlay()->OnOverscrollCompleted(std::move(window));
     if (IsBrowserSideNavigationEnabled())
       main_test_rfh()->PrepareForCommit();
     else
@@ -166,10 +167,8 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
 
     // Replace the default test web contents with our custom class.
     SetContents(OverscrollTestWebContents::Create(
-        browser_context(),
-        SiteInstance::Create(browser_context()),
-        fake_native_view.Pass(),
-        fake_contents_window.Pass()));
+        browser_context(), SiteInstance::Create(browser_context()),
+        std::move(fake_native_view), std::move(fake_contents_window)));
 
     contents()->NavigateAndCommit(first());
     EXPECT_TRUE(controller().GetVisibleEntry());

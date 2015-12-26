@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -137,7 +138,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
   void OnSuccess(const std::vector<base::string16>&) override {}
   void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                  const IndexedDBDatabaseMetadata& metadata) override {
-    connection_ = connection.Pass();
+    connection_ = std::move(connection);
     idb_context_->ConnectionOpened(origin_url_, connection_.get());
   }
 

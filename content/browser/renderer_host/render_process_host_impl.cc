@@ -291,7 +291,7 @@ IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path,
             << dump_file.error_details();
     return IPC::InvalidPlatformFileForTransit();
   }
-  return IPC::TakeFileHandleForProcess(dump_file.Pass(), process);
+  return IPC::TakeFileHandleForProcess(std::move(dump_file), process);
 }
 
 #if defined(ENABLE_WEBRTC)

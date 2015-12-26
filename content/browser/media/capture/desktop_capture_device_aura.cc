@@ -4,6 +4,8 @@
 
 #include "content/browser/media/capture/desktop_capture_device_aura.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/timer/timer.h"
 #include "content/browser/media/capture/aura_window_capture_machine.h"
@@ -52,7 +54,7 @@ void DesktopCaptureDeviceAura::AllocateAndStart(
     const media::VideoCaptureParams& params,
     scoped_ptr<Client> client) {
   DVLOG(1) << "Allocating " << params.requested_format.frame_size.ToString();
-  core_->AllocateAndStart(params, client.Pass());
+  core_->AllocateAndStart(params, std::move(client));
 }
 
 void DesktopCaptureDeviceAura::StopAndDeAllocate() {

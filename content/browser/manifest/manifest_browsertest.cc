@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -497,7 +498,7 @@ scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForCookies(
         "<html><head>"
         "<link rel=manifest crossorigin='use-credentials' href=/manifest.json>"
         "</head></html>");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   const auto& iter = request.headers.find("Cookie");
@@ -511,7 +512,7 @@ scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForCookies(
   http_response->set_content(
       base::StringPrintf("{\"name\": \"%s\"}", iter->second.c_str()));
 
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // anonymous namespace
@@ -557,7 +558,7 @@ scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForNoCookies(
     http_response->set_content_type("text/html");
     http_response->set_content(
         "<html><head><link rel=manifest href=/manifest.json></head></html>");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   const auto& iter = request.headers.find("Cookie");
@@ -570,7 +571,7 @@ scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForNoCookies(
   http_response->set_content_type("application/json");
   http_response->set_content("{\"name\": \"no cookies\"}");
 
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // anonymous namespace

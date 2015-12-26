@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "build/build_config.h"
 
@@ -119,8 +120,8 @@ void BrowserContext::GarbageCollectStoragePartitions(
       BrowserContext* browser_context,
       scoped_ptr<base::hash_set<base::FilePath> > active_paths,
       const base::Closure& done) {
-  GetStoragePartitionMap(browser_context)->GarbageCollect(
-      active_paths.Pass(), done);
+  GetStoragePartitionMap(browser_context)
+      ->GarbageCollect(std::move(active_paths), done);
 }
 
 DownloadManager* BrowserContext::GetDownloadManager(

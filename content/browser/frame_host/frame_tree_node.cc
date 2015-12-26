@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 
 #include <queue>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
@@ -152,7 +153,7 @@ FrameTreeNode* FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
     render_manager_.CreateProxiesForChildFrame(child.get());
 
-  children_.push_back(child.Pass());
+  children_.push_back(std::move(child));
   return children_.back().get();
 }
 
@@ -161,7 +162,7 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
     if (iter->get() == child) {
       // Subtle: we need to make sure the node is gone from the tree before
       // observers are notified of its deletion.
-      scoped_ptr<FrameTreeNode> node_to_delete(iter->Pass());
+      scoped_ptr<FrameTreeNode> node_to_delete(std::move(*iter));
       children_.erase(iter);
       node_to_delete.reset();
       return;
@@ -290,7 +291,7 @@ void FrameTreeNode::CreatedNavigationRequest(
     DidStartLoading(true);
   }
 
-  navigation_request_ = navigation_request.Pass();
+  navigation_request_ = std::move(navigation_request);
 
   render_manager()->DidCreateNavigationRequest(*navigation_request_);
 }

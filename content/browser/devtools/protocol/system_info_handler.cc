@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/system_info_handler.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -195,11 +196,12 @@ void SystemInfoHandler::SendGetInfoResponse(DevToolsCommandId command_id) {
   AuxGPUInfoEnumerator enumerator(aux_attributes.get());
   gpu_info.EnumerateFields(&enumerator);
 
-  scoped_refptr<GPUInfo> gpu = GPUInfo::Create()
-      ->set_devices(devices)
-      ->set_aux_attributes(aux_attributes.Pass())
-      ->set_feature_status(make_scoped_ptr(GetFeatureStatus()))
-      ->set_driver_bug_workarounds(GetDriverBugWorkarounds());
+  scoped_refptr<GPUInfo> gpu =
+      GPUInfo::Create()
+          ->set_devices(devices)
+          ->set_aux_attributes(std::move(aux_attributes))
+          ->set_feature_status(make_scoped_ptr(GetFeatureStatus()))
+          ->set_driver_bug_workarounds(GetDriverBugWorkarounds());
 
   client_->SendGetInfoResponse(
       command_id,

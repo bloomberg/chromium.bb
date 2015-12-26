@@ -5,9 +5,9 @@
 #include "content/browser/loader/resource_scheduler.h"
 
 #include <stdint.h>
-
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -1084,12 +1084,12 @@ scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
     // 3. The tab is closed while a RequestResource IPC is in flight.
     unowned_requests_.insert(request.get());
     request->Start(START_SYNC);
-    return request.Pass();
+    return std::move(request);
   }
 
   Client* client = it->second;
   client->ScheduleRequest(url_request, request.get());
-  return request.Pass();
+  return std::move(request);
 }
 
 void ResourceScheduler::RemoveRequest(ScheduledResourceRequest* request) {

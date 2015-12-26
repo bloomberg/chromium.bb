@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -55,7 +56,7 @@ scoped_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
 class DelayableBackend : public disk_cache::Backend {
  public:
   DelayableBackend(scoped_ptr<disk_cache::Backend> backend)
-      : backend_(backend.Pass()), delay_open_(false) {}
+      : backend_(std::move(backend)), delay_open_(false) {}
 
   // disk_cache::Backend overrides
   net::CacheType GetCacheType() const override {
@@ -234,7 +235,8 @@ class TestCacheStorageCache : public CacheStorageCache {
   // created before calling this.
   DelayableBackend* UseDelayableBackend() {
     EXPECT_TRUE(backend_);
-    DelayableBackend* delayable_backend = new DelayableBackend(backend_.Pass());
+    DelayableBackend* delayable_backend =
+        new DelayableBackend(std::move(backend_));
     backend_.reset(delayable_backend);
     return delayable_backend;
   }
@@ -446,10 +448,10 @@ class CacheStorageCacheTest : public testing::Test {
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> body_handle) {
     callback_error_ = error;
-    callback_response_ = response.Pass();
+    callback_response_ = std::move(response);
     callback_response_data_.reset();
     if (error == CACHE_STORAGE_OK && !callback_response_->blob_uuid.empty())
-      callback_response_data_ = body_handle.Pass();
+      callback_response_data_ = std::move(body_handle);
 
     if (run_loop)
       run_loop->Quit();

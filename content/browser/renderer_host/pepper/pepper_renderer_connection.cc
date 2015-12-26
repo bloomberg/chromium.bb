@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -82,7 +83,7 @@ void PendingHostCreator::AddPendingResourceHost(
     size_t index,
     scoped_ptr<ppapi::host::ResourceHost> resource_host) {
   pending_resource_host_ids_[index] =
-      host_->GetPpapiHost()->AddPendingResourceHost(resource_host.Pass());
+      host_->GetPpapiHost()->AddPendingResourceHost(std::move(resource_host));
 }
 
 PendingHostCreator::~PendingHostCreator() {
@@ -218,7 +219,7 @@ void PepperRendererConnection::OnMsgCreateResourceHostsFromHost(
     }
 
     if (resource_host.get())
-      creator->AddPendingResourceHost(i, resource_host.Pass());
+      creator->AddPendingResourceHost(i, std::move(resource_host));
   }
 
   // Note: All of the pending host IDs that were added as part of this

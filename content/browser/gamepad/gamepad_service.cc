@@ -4,6 +4,8 @@
 
 #include "content/browser/gamepad/gamepad_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -26,7 +28,7 @@ GamepadService::GamepadService()
 }
 
 GamepadService::GamepadService(scoped_ptr<GamepadDataFetcher> fetcher)
-    : provider_(new GamepadProvider(fetcher.Pass())),
+    : provider_(new GamepadProvider(std::move(fetcher))),
       num_active_consumers_(0),
       gesture_callback_pending_(false) {
   SetInstance(this);

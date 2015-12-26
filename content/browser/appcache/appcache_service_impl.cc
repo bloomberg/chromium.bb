@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_service_impl.h"
 
 #include <functional>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -389,7 +390,7 @@ void AppCacheServiceImpl::CheckResponseHelper::OnReadDataComplete(int result) {
 
 AppCacheStorageReference::AppCacheStorageReference(
     scoped_ptr<AppCacheStorage> storage)
-    : storage_(storage.Pass()) {}
+    : storage_(std::move(storage)) {}
 AppCacheStorageReference::~AppCacheStorageReference() {}
 
 // AppCacheServiceImpl -------
@@ -469,8 +470,8 @@ void AppCacheServiceImpl::Reinitialize() {
 
   // Inform observers of about this and give them a chance to
   // defer deletion of the old storage object.
-  scoped_refptr<AppCacheStorageReference>
-      old_storage_ref(new AppCacheStorageReference(storage_.Pass()));
+  scoped_refptr<AppCacheStorageReference> old_storage_ref(
+      new AppCacheStorageReference(std::move(storage_)));
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnServiceReinitialized(old_storage_ref.get()));
 

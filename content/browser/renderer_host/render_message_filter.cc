@@ -6,8 +6,8 @@
 
 #include <errno.h>
 #include <string.h>
-
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -391,17 +391,10 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
           url, net::DEFAULT_PRIORITY, NULL));
   RecordDownloadSource(INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
-      request.Pass(),
-      referrer,
+      std::move(request), referrer,
       true,  // is_content_initiated
-      resource_context_,
-      render_process_id_,
-      render_view_id,
-      render_frame_id,
-      false,
-      false,
-      save_info.Pass(),
-      DownloadItem::kInvalidId,
+      resource_context_, render_process_id_, render_view_id, render_frame_id,
+      false, false, std::move(save_info), DownloadItem::kInvalidId,
       ResourceDispatcherHostImpl::DownloadStartedCallback());
 }
 

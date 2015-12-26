@@ -4,6 +4,8 @@
 
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
 
+#include <utility>
+
 #include "content/browser/wake_lock/wake_lock_service_context.h"
 
 namespace content {
@@ -16,7 +18,7 @@ WakeLockServiceImpl::WakeLockServiceImpl(
     : context_(context),
       render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
-      binding_(this, request.Pass()) {}
+      binding_(this, std::move(request)) {}
 
 WakeLockServiceImpl::~WakeLockServiceImpl() {}
 

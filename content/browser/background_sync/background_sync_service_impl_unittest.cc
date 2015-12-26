@@ -5,6 +5,7 @@
 #include "content/browser/background_sync/background_sync_service_impl.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -179,7 +180,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     mojo::InterfaceRequest<BackgroundSyncService> service_request =
         mojo::GetProxy(&service_ptr_);
     // Create a new BackgroundSyncServiceImpl bound to the dummy channel
-    background_sync_context_->CreateService(service_request.Pass());
+    background_sync_context_->CreateService(std::move(service_request));
     base::RunLoop().RunUntilIdle();
 
     service_impl_ = *background_sync_context_->services_.begin();
@@ -190,7 +191,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void RegisterOneShot(
       SyncRegistrationPtr sync,
       const BackgroundSyncService::RegisterCallback& callback) {
-    service_impl_->Register(sync.Pass(), sw_registration_id_,
+    service_impl_->Register(std::move(sync), sw_registration_id_,
                             false /* requested_from_service_worker */,
                             callback);
     base::RunLoop().RunUntilIdle();

@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -62,7 +64,7 @@ class RedirectToFileResourceHandler::Writer {
          scoped_ptr<net::FileStream> file_stream,
          ShareableFileReference* deletable_file)
       : handler_(handler),
-        file_stream_(file_stream.Pass()),
+        file_stream_(std::move(file_stream)),
         is_writing_(false),
         deletable_file_(deletable_file) {
     DCHECK(!deletable_file_->path().empty());
@@ -130,7 +132,7 @@ class RedirectToFileResourceHandler::Writer {
 RedirectToFileResourceHandler::RedirectToFileResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
     net::URLRequest* request)
-    : LayeredResourceHandler(request, next_handler.Pass()),
+    : LayeredResourceHandler(request, std::move(next_handler)),
       buf_(new net::GrowableIOBuffer()),
       buf_write_pending_(false),
       write_cursor_(0),
@@ -138,8 +140,7 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
       next_buffer_size_(kInitialReadBufSize),
       did_defer_(false),
       completed_during_write_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
   // Orphan the writer to asynchronously close and release the temporary file.
@@ -250,7 +251,7 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     return;
   }
 
-  writer_ = new Writer(this, file_stream.Pass(), deletable_file);
+  writer_ = new Writer(this, std::move(file_stream), deletable_file);
 
   // Resume the request.
   DCHECK(did_defer_);

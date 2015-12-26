@@ -129,11 +129,11 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
         child->CloneAndReplace(frame_tree_node, frame_navigation_entry));
   }
 
-  return copy.Pass();
+  return copy;
 }
 
 scoped_ptr<NavigationEntry> NavigationEntry::Create() {
-  return make_scoped_ptr(new NavigationEntryImpl()).Pass();
+  return make_scoped_ptr(new NavigationEntryImpl());
 }
 
 NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
@@ -554,7 +554,7 @@ scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: intent_received_timestamp_
   copy->extra_data_ = extra_data_;
 
-  return copy.Pass();
+  return copy;
 }
 
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(

@@ -4,6 +4,7 @@
 
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/i18n/rtl.h"
@@ -53,7 +54,7 @@ class OverlayDismissAnimator
  public:
   // Takes ownership of the layer.
   explicit OverlayDismissAnimator(scoped_ptr<ui::Layer> layer)
-      : layer_(layer.Pass()) {
+      : layer_(std::move(layer)) {
     CHECK(layer_.get());
   }
 
@@ -134,7 +135,7 @@ void OverscrollNavigationOverlay::StopObservingIfDone() {
   // animation completes.
   scoped_ptr<ui::Layer> dismiss_layer = window_->AcquireLayer();
   window_.reset();
-  (new OverlayDismissAnimator(dismiss_layer.Pass()))->Animate();
+  (new OverlayDismissAnimator(std::move(dismiss_layer)))->Animate();
   Observe(nullptr);
   received_paint_update_ = false;
   loading_complete_ = false;
@@ -164,7 +165,7 @@ scoped_ptr<aura::Window> OverscrollNavigationOverlay::CreateOverlayWindow(
   // off its bounds.
   event_window->SetCapture();
   window->Show();
-  return window.Pass();
+  return window;
 }
 
 const gfx::Image OverscrollNavigationOverlay::GetImageForDirection(
@@ -247,7 +248,7 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
   }
 
   main_window->SetTransform(gfx::Transform());
-  window_ = window.Pass();
+  window_ = std::move(window);
   // Make sure the window is in its default position.
   window_->SetBounds(gfx::Rect(web_contents_window_->bounds().size()));
   window_->SetTransform(gfx::Transform());

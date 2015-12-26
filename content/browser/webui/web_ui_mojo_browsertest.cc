@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <limits>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -81,7 +82,7 @@ class BrowserTargetImpl : public BrowserTarget {
  public:
   BrowserTargetImpl(base::RunLoop* run_loop,
                     mojo::InterfaceRequest<BrowserTarget> request)
-      : run_loop_(run_loop), binding_(this, request.Pass()) {}
+      : run_loop_(run_loop), binding_(this, std::move(request)) {}
 
   ~BrowserTargetImpl() override {}
 
@@ -140,7 +141,7 @@ class PingTestWebUIController : public TestWebUIController {
   }
 
   void CreateHandler(mojo::InterfaceRequest<BrowserTarget> request) {
-    browser_target_.reset(new BrowserTargetImpl(run_loop_, request.Pass()));
+    browser_target_.reset(new BrowserTargetImpl(run_loop_, std::move(request)));
   }
 
  private:

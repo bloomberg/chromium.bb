@@ -30,7 +30,7 @@ scoped_ptr<GestureDetector> CreateGestureDetector(
   detector->set_longpress_enabled(false);
   detector->set_showpress_enabled(false);
 
-  return detector.Pass();
+  return detector;
 }
 
 }  // namespace

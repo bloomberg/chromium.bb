@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/pepper/pepper_udp_socket_message_filter.h"
 
 #include <cstring>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -503,7 +504,7 @@ void PepperUDPSocketMessageFilter::DoBind(
       base::Bind(&PepperUDPSocketMessageFilter::OnBindComplete, this,
                  base::Passed(&socket), context, net_address));
 #else
-  OnBindComplete(socket.Pass(), context, net_address);
+  OnBindComplete(std::move(socket), context, net_address);
 #endif
 }
 

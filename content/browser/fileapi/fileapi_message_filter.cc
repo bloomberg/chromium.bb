@@ -5,6 +5,7 @@
 #include "content/browser/fileapi/fileapi_message_filter.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -411,7 +412,7 @@ void FileAPIMessageFilter::OnWrite(int request_id,
       blob_storage_context_->context()->GetBlobDataFromUUID(blob_uuid);
 
   operations_[request_id] = operation_runner()->Write(
-      request_context_, url, blob.Pass(), offset,
+      request_context_, url, std::move(blob), offset,
       base::Bind(&FileAPIMessageFilter::DidWrite, this, request_id));
 }
 

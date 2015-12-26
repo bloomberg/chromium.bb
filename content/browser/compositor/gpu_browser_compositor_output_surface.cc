@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
@@ -25,7 +27,7 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     : BrowserCompositorOutputSurface(context,
                                      worker_context,
                                      vsync_manager,
-                                     overlay_candidate_validator.Pass()),
+                                     std::move(overlay_candidate_validator)),
 #if defined(OS_MACOSX)
       should_show_frames_state_(SHOULD_SHOW_FRAMES),
 #endif

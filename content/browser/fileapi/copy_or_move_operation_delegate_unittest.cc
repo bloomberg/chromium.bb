@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
 #include <queue>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -221,7 +221,8 @@ class CopyOrMoveOperationTestHelper {
       test_backend->set_require_copy_or_move_validator(
           require_copy_or_move_validator);
       if (init_copy_or_move_validator)
-        test_backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
+        test_backend->InitializeCopyOrMoveFileValidatorFactory(
+            std::move(factory));
     }
     backend->ResolveURL(
         FileSystemURL::CreateForTest(origin_, dest_type_, base::FilePath()),
@@ -744,7 +745,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
 
   std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
-      reader.Pass(), writer.Pass(),
+      std::move(reader), std::move(writer),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
       10,  // buffer size
       base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
@@ -800,7 +801,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
 
   std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
-      reader.Pass(), writer.Pass(),
+      std::move(reader), std::move(writer),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
       10,  // buffer size
       base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
@@ -851,7 +852,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
 
   std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
-      reader.Pass(), writer.Pass(),
+      std::move(reader), std::move(writer),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
       10,  // buffer size
       base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),

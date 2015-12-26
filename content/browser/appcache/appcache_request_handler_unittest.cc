@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "content/browser/appcache/appcache_request_handler.h"
 
+#include <stdint.h>
 #include <stack>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -20,7 +22,6 @@
 #include "base/threading/thread.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
-#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
@@ -119,7 +120,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
     ~MockURLRequestJobFactory() override { DCHECK(!job_); }
 
-    void SetJob(scoped_ptr<net::URLRequestJob> job) { job_ = job.Pass(); }
+    void SetJob(scoped_ptr<net::URLRequestJob> job) { job_ = std::move(job); }
 
     net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
         const std::string& scheme,
@@ -816,7 +817,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
     base::WeakPtr<AppCacheURLRequestJob> weak_job = job_->GetWeakPtr();
 
-    job_factory_->SetJob(job_.Pass());
+    job_factory_->SetJob(std::move(job_));
     request_->Start();
     ASSERT_TRUE(weak_job);
     EXPECT_TRUE(weak_job->has_been_started());

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
+
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -13,7 +17,6 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -241,10 +244,8 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   // When not using surfaces, the frame just gets proxied to
   // the embedder's renderer to be composited.
   if (!frame->delegated_frame_data || !use_surfaces_) {
-    guest_->SwapCompositorFrame(output_surface_id,
-                                host_->GetProcess()->GetID(),
-                                host_->GetRoutingID(),
-                                frame.Pass());
+    guest_->SwapCompositorFrame(output_surface_id, host_->GetProcess()->GetID(),
+                                host_->GetRoutingID(), std::move(frame));
     return;
   }
 
@@ -295,7 +296,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK(ack_pending_count_ < 1000);
-  surface_factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                           ack_callback);
 }
 

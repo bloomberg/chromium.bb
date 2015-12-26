@@ -77,7 +77,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
       : BrowserCompositorOutputSurface(context_provider,
                                        nullptr,
                                        vsync_manager,
-                                       CreateTestValidatorOzone().Pass()) {
+                                       CreateTestValidatorOzone()) {
     surface_size_ = gfx::Size(256, 256);
     device_scale_factor_ = 1.f;
   }
@@ -131,12 +131,10 @@ class ReflectorImplTest : public testing::Test {
     compositor_.reset(
         new ui::Compositor(context_factory, compositor_task_runner_.get()));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
-    context_provider_ = cc::TestContextProvider::Create(
-        cc::TestWebGraphicsContext3D::Create().Pass());
-    output_surface_ =
-        scoped_ptr<TestOutputSurface>(
-            new TestOutputSurface(context_provider_,
-                                  compositor_->vsync_manager())).Pass();
+    context_provider_ =
+        cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
+    output_surface_ = scoped_ptr<TestOutputSurface>(
+        new TestOutputSurface(context_provider_, compositor_->vsync_manager()));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));

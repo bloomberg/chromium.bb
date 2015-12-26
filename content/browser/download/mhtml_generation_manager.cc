@@ -6,6 +6,7 @@
 
 #include <map>
 #include <queue>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -33,7 +34,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   Job(int job_id, WebContents* web_contents, GenerateMHTMLCallback callback);
   ~Job() override;
 
-  void set_browser_file(base::File file) { browser_file_ = file.Pass(); }
+  void set_browser_file(base::File file) { browser_file_ = std::move(file); }
 
   GenerateMHTMLCallback callback() const { return callback_; }
 
@@ -202,7 +203,7 @@ void MHTMLGenerationManager::Job::CloseFile(
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MHTMLGenerationManager::Job::CloseFileOnFileThread,
-                 base::Passed(browser_file_.Pass())),
+                 base::Passed(std::move(browser_file_))),
       callback);
 }
 
@@ -300,7 +301,7 @@ base::File MHTMLGenerationManager::CreateFile(const base::FilePath& file_path) {
     LOG(ERROR) << "Failed to create file to save MHTML at: " <<
         file_path.value();
   }
-  return browser_file.Pass();
+  return browser_file;
 }
 
 void MHTMLGenerationManager::OnFileAvailable(int job_id,
@@ -317,7 +318,7 @@ void MHTMLGenerationManager::OnFileAvailable(int job_id,
   if (!job)
     return;
 
-  job->set_browser_file(browser_file.Pass());
+  job->set_browser_file(std::move(browser_file));
 
   if (!job->SendToNextRenderFrame()) {
     JobFinished(job_id, JobStatus::FAILURE);

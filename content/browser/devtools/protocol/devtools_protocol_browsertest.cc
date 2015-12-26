@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -47,7 +48,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
  protected:
   void SendCommand(const std::string& method,
                    scoped_ptr<base::DictionaryValue> params) {
-    SendCommand(method, params.Pass(), true);
+    SendCommand(method, std::move(params), true);
   }
 
   void SendCommand(const std::string& method,
@@ -167,7 +168,7 @@ class SyntheticKeyEventTest : public DevToolsProtocolTest {
     params->SetInteger("modifiers", modifier);
     params->SetInteger("windowsVirtualKeyCode", windowsKeyCode);
     params->SetInteger("nativeVirtualKeyCode", nativeKeyCode);
-    SendCommand("Input.dispatchKeyEvent", params.Pass());
+    SendCommand("Input.dispatchKeyEvent", std::move(params));
   }
 };
 
@@ -343,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
   scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   test_url = GetTestUrl("devtools", "navigation.html");
   params->SetString("url", test_url.spec());
-  SendCommand("Page.navigate", params.Pass(), true);
+  SendCommand("Page.navigate", std::move(params), true);
 
   bool enough_results = result_ids_.size() >= 2u;
   EXPECT_TRUE(enough_results);

@@ -5,6 +5,7 @@
 #include "content/browser/loader/cross_site_resource_handler.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -76,9 +77,9 @@ void OnCrossSiteResponseHelper(const CrossSiteResponseParams& params) {
       CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
     }
     rfh->OnCrossSiteResponse(
-        params.global_request_id, cross_site_transferring_request.Pass(),
-        params.transfer_url_chain, params.referrer,
-        params.page_transition, params.should_replace_current_entry);
+        params.global_request_id, std::move(cross_site_transferring_request),
+        params.transfer_url_chain, params.referrer, params.page_transition,
+        params.should_replace_current_entry);
   } else if (leak_requests_for_testing_ && cross_site_transferring_request) {
     // Some unit tests expect requests to be leaked in this case, so they can
     // pass them along manually.
@@ -111,13 +112,12 @@ CheckNavigationPolicyOnUI(GURL real_url, int process_id, int render_frame_id) {
 CrossSiteResourceHandler::CrossSiteResourceHandler(
     scoped_ptr<ResourceHandler> next_handler,
     net::URLRequest* request)
-    : LayeredResourceHandler(request, next_handler.Pass()),
+    : LayeredResourceHandler(request, std::move(next_handler)),
       has_started_response_(false),
       in_cross_site_transition_(false),
       completed_during_transition_(false),
       did_defer_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 CrossSiteResourceHandler::~CrossSiteResourceHandler() {
   // Cleanup back-pointer stored on the request info.

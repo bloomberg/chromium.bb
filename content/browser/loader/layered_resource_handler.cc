@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/layered_resource_handler.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 namespace content {
@@ -11,9 +13,7 @@ namespace content {
 LayeredResourceHandler::LayeredResourceHandler(
     net::URLRequest* request,
     scoped_ptr<ResourceHandler> next_handler)
-    : ResourceHandler(request),
-      next_handler_(next_handler.Pass()) {
-}
+    : ResourceHandler(request), next_handler_(std::move(next_handler)) {}
 
 LayeredResourceHandler::~LayeredResourceHandler() {
 }

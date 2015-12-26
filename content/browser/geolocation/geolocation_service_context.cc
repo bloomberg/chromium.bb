@@ -4,6 +4,8 @@
 
 #include "content/browser/geolocation/geolocation_service_context.h"
 
+#include <utility>
+
 namespace content {
 
 GeolocationServiceContext::GeolocationServiceContext() : paused_(false) {
@@ -16,7 +18,7 @@ void GeolocationServiceContext::CreateService(
     const base::Closure& update_callback,
     mojo::InterfaceRequest<GeolocationService> request) {
   GeolocationServiceImpl* service =
-      new GeolocationServiceImpl(request.Pass(), this, update_callback);
+      new GeolocationServiceImpl(std::move(request), this, update_callback);
   services_.push_back(service);
   if (geoposition_override_)
     service->SetOverride(*geoposition_override_.get());

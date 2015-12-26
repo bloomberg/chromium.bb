@@ -95,7 +95,7 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
       uint32_t id,
       scoped_ptr<DownloadSaveInfo> save_info,
       const DownloadUrlParameters::OnStartedCallback& started_cb) override {
-    return scoped_ptr<ResourceHandler>(new TestResourceHandler).Pass();
+    return scoped_ptr<ResourceHandler>(new TestResourceHandler);
   }
 
   scoped_ptr<ResourceHandler> MaybeInterceptAsStream(
@@ -106,7 +106,7 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
     intercepted_as_stream_count_++;
     if (stream_has_handler_) {
       intercepted_as_stream_ = true;
-      return scoped_ptr<ResourceHandler>(new TestResourceHandler).Pass();
+      return scoped_ptr<ResourceHandler>(new TestResourceHandler);
     } else {
       return scoped_ptr<ResourceHandler>();
     }
@@ -258,10 +258,9 @@ bool MimeTypeResourceHandlerTest::TestStreamIsIntercepted(
   host.SetDelegate(&host_delegate);
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
-  scoped_ptr<ResourceHandler> mime_sniffing_handler(
-      new MimeTypeResourceHandler(
-          scoped_ptr<ResourceHandler>(new TestResourceHandler()).Pass(), &host,
-          &plugin_service, request.get()));
+  scoped_ptr<ResourceHandler> mime_sniffing_handler(new MimeTypeResourceHandler(
+      scoped_ptr<ResourceHandler>(new TestResourceHandler()), &host,
+      &plugin_service, request.get()));
   TestResourceController resource_controller;
   mime_sniffing_handler->SetController(&resource_controller);
 

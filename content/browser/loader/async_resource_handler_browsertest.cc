@@ -5,8 +5,8 @@
 #include "content/browser/loader/async_resource_handler.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
@@ -50,13 +50,13 @@ scoped_ptr<net::test_server::HttpResponse> HandlePostAndRedirectURLs(
     http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
     http_response->AddCustomHeader("Location", kPostPath);
     EXPECT_EQ(request.content.length(), kPayloadSize);;
-    return http_response.Pass();
+    return std::move(http_response);
   } else if(base::StartsWith(request.relative_url, kPostPath,
                              base::CompareCase::SENSITIVE)) {
     http_response->set_content("hello");
     http_response->set_content_type("text/plain");
     EXPECT_EQ(request.content.length(), kPayloadSize);
-    return http_response.Pass();
+    return std::move(http_response);
   } else {
     return scoped_ptr<net::test_server::HttpResponse>();
   }

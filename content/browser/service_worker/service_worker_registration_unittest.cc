@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -27,14 +28,9 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
         new MockServiceWorkerDatabaseTaskManager(
             base::ThreadTaskRunnerHandle::Get()));
-    context_.reset(
-        new ServiceWorkerContextCore(base::FilePath(),
-                                     database_task_manager.Pass(),
-                                     base::ThreadTaskRunnerHandle::Get(),
-                                     NULL,
-                                     NULL,
-                                     NULL,
-                                     NULL));
+    context_.reset(new ServiceWorkerContextCore(
+        base::FilePath(), std::move(database_task_manager),
+        base::ThreadTaskRunnerHandle::Get(), NULL, NULL, NULL, NULL));
     context_ptr_ = context_->AsWeakPtr();
   }
 

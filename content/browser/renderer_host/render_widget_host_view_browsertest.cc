@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/barrier_closure.h"
 #include "base/command_line.h"
@@ -348,7 +349,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
           &RenderWidgetHostViewBrowserTest::FrameDelivered,
           base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),
           run_loop.QuitClosure())));
-  view->BeginFrameSubscription(subscriber.Pass());
+  view->BeginFrameSubscription(std::move(subscriber));
   run_loop.Run();
   view->EndFrameSubscription();
 

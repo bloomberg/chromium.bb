@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 
+#include <utility>
+
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
@@ -14,7 +16,7 @@ namespace content {
 
 SyntheticGestureController::SyntheticGestureController(
     scoped_ptr<SyntheticGestureTarget> gesture_target)
-    : gesture_target_(gesture_target.Pass()) {}
+    : gesture_target_(std::move(gesture_target)) {}
 
 SyntheticGestureController::~SyntheticGestureController() {}
 
@@ -25,7 +27,8 @@ void SyntheticGestureController::QueueSyntheticGesture(
 
   bool was_empty = pending_gesture_queue_.IsEmpty();
 
-  pending_gesture_queue_.Push(synthetic_gesture.Pass(), completion_callback);
+  pending_gesture_queue_.Push(std::move(synthetic_gesture),
+                              completion_callback);
 
   if (was_empty)
     StartGesture(*pending_gesture_queue_.FrontGesture());
@@ -61,7 +64,7 @@ void SyntheticGestureController::OnDidFlushInput() {
     return;
 
   DCHECK(!pending_gesture_queue_.IsEmpty());
-  auto pending_gesture_result = pending_gesture_result_.Pass();
+  auto pending_gesture_result = std::move(pending_gesture_result_);
   StopGesture(*pending_gesture_queue_.FrontGesture(),
               pending_gesture_queue_.FrontCallback(),
               *pending_gesture_result);

@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -767,11 +768,10 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       origin_identifier_(ComputeOriginIdentifier(origin_url)),
       request_context_(request_context),
       task_runner_(task_runner),
-      db_(db.Pass()),
-      comparator_(comparator.Pass()),
+      db_(std::move(db)),
+      comparator_(std::move(comparator)),
       active_blob_registry_(this),
-      committing_transaction_count_(0) {
-}
+      committing_transaction_count_(0) {}
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
   if (!blob_path_.empty() && !child_process_ids_granted_.empty()) {
@@ -1106,14 +1106,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   }
 
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      Create(indexed_db_factory,
-             origin_url,
-             blob_path,
-             request_context,
-             db.Pass(),
-             comparator.Pass(),
-             task_runner,
-             status);
+      Create(indexed_db_factory, origin_url, blob_path, request_context,
+             std::move(db), std::move(comparator), task_runner, status);
 
   if (clean_journal && backing_store.get()) {
     *status = backing_store->CleanUpBlobJournal(LiveBlobJournalKey::Encode());
@@ -1156,14 +1150,9 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
   }
   HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS, origin_url);
 
-  return Create(NULL /* indexed_db_factory */,
-                origin_url,
-                base::FilePath(),
-                NULL /* request_context */,
-                db.Pass(),
-                comparator.Pass(),
-                task_runner,
-                status);
+  return Create(NULL /* indexed_db_factory */, origin_url, base::FilePath(),
+                NULL /* request_context */, std::move(db),
+                std::move(comparator), task_runner, status);
 }
 
 // static
@@ -1177,14 +1166,9 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
     base::SequencedTaskRunner* task_runner,
     leveldb::Status* status) {
   // TODO(jsbell): Handle comparator name changes.
-  scoped_refptr<IndexedDBBackingStore> backing_store(
-      new IndexedDBBackingStore(indexed_db_factory,
-                                origin_url,
-                                blob_path,
-                                request_context,
-                                db.Pass(),
-                                comparator.Pass(),
-                                task_runner));
+  scoped_refptr<IndexedDBBackingStore> backing_store(new IndexedDBBackingStore(
+      indexed_db_factory, origin_url, blob_path, request_context, std::move(db),
+      std::move(comparator), task_runner));
   *status = backing_store->SetUpMetadata();
   if (!status->ok())
     return scoped_refptr<IndexedDBBackingStore>();
@@ -2388,7 +2372,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
             0,
             storage::FileStreamWriter::CREATE_NEW_FILE));
     scoped_ptr<FileWriterDelegate> delegate(new FileWriterDelegate(
-        writer.Pass(), storage::FlushPolicy::FLUSH_ON_COMPLETION));
+        std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION));
 
     DCHECK(blob_url.is_valid());
     scoped_ptr<net::URLRequest> blob_request(request_context->CreateRequest(
@@ -2397,9 +2381,9 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     this->file_path_ = file_path;
     this->last_modified_ = last_modified;
 
-    delegate->Start(blob_request.Pass(),
+    delegate->Start(std::move(blob_request),
                     base::Bind(&LocalWriteClosure::Run, this));
-    chained_blob_writer_->set_delegate(delegate.Pass());
+    chained_blob_writer_->set_delegate(std::move(delegate));
   }
 
  private:
@@ -3965,7 +3949,7 @@ IndexedDBBackingStore::OpenObjectStoreCursor(
   if (!cursor->FirstSeek(s))
     return scoped_ptr<IndexedDBBackingStore::Cursor>();
 
-  return cursor.Pass();
+  return std::move(cursor);
 }
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -3992,7 +3976,7 @@ IndexedDBBackingStore::OpenObjectStoreKeyCursor(
   if (!cursor->FirstSeek(s))
     return scoped_ptr<IndexedDBBackingStore::Cursor>();
 
-  return cursor.Pass();
+  return std::move(cursor);
 }
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -4021,7 +4005,7 @@ IndexedDBBackingStore::OpenIndexKeyCursor(
   if (!cursor->FirstSeek(s))
     return scoped_ptr<IndexedDBBackingStore::Cursor>();
 
-  return cursor.Pass();
+  return std::move(cursor);
 }
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -4049,7 +4033,7 @@ IndexedDBBackingStore::OpenIndexCursor(
   if (!cursor->FirstSeek(s))
     return scoped_ptr<IndexedDBBackingStore::Cursor>();
 
-  return cursor.Pass();
+  return std::move(cursor);
 }
 
 IndexedDBBackingStore::Transaction::Transaction(
@@ -4431,7 +4415,7 @@ IndexedDBBackingStore::BlobChangeRecord::Clone() const {
 
   for (const auto* handle : handles_)
     record->handles_.push_back(new storage::BlobDataHandle(*handle));
-  return record.Pass();
+  return record;
 }
 
 leveldb::Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/download/download_manager_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -25,7 +27,6 @@
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
-#include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/public/browser/browser_context.h"
@@ -480,11 +481,9 @@ class DownloadManagerTest : public testing::Test {
     download_manager_.reset(new DownloadManagerImpl(
                                 NULL, mock_browser_context_.get()));
     download_manager_->SetDownloadItemFactoryForTesting(
-        scoped_ptr<DownloadItemFactory>(
-            mock_download_item_factory_.get()).Pass());
+        scoped_ptr<DownloadItemFactory>(mock_download_item_factory_.get()));
     download_manager_->SetDownloadFileFactoryForTesting(
-        scoped_ptr<DownloadFileFactory>(
-            mock_download_file_factory_.get()).Pass());
+        scoped_ptr<DownloadFileFactory>(mock_download_file_factory_.get()));
     observer_.reset(new MockDownloadManagerObserver());
     download_manager_->AddObserver(observer_.get());
     download_manager_->SetDelegate(mock_download_manager_delegate_.get());
@@ -530,7 +529,7 @@ class DownloadManagerTest : public testing::Test {
     // we call Start on it immediately, so we need to set that expectation
     // in the factory.
     scoped_ptr<DownloadRequestHandleInterface> req_handle;
-    item.Start(scoped_ptr<DownloadFile>(), req_handle.Pass());
+    item.Start(scoped_ptr<DownloadFile>(), std::move(req_handle));
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 
@@ -631,8 +630,8 @@ TEST_F(DownloadManagerTest, StartDownload) {
                              stream.get(), _, _))
       .WillOnce(Return(mock_file));
 
-  download_manager_->StartDownload(
-      info.Pass(), stream.Pass(), DownloadUrlParameters::OnStartedCallback());
+  download_manager_->StartDownload(std::move(info), std::move(stream),
+                                   DownloadUrlParameters::OnStartedCallback());
   EXPECT_TRUE(download_manager_->GetDownload(local_id));
 }
 

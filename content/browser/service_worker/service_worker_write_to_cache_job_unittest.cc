@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/macros.h"
@@ -280,7 +281,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         process_id, MSG_ROUTING_NONE, provider_id,
         SERVICE_WORKER_PROVIDER_FOR_WORKER, context()->AsWeakPtr(), nullptr));
     base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
-    context()->AddProviderHost(host.Pass());
+    context()->AddProviderHost(std::move(host));
     provider_host->running_hosted_version_ = version;
   }
 
@@ -395,7 +396,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     scoped_ptr<ServiceWorkerResponseReader> reader =
         context()->storage()->CreateResponseReader(id);
     scoped_refptr<ResponseVerifier> verifier = new ResponseVerifier(
-        reader.Pass(), expected, CreateReceiverOnCurrentThread(&is_equal));
+        std::move(reader), expected, CreateReceiverOnCurrentThread(&is_equal));
     verifier->Start();
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(is_equal);

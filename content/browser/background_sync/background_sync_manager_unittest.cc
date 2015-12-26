@@ -5,6 +5,7 @@
 #include "content/browser/background_sync/background_sync_manager.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -340,7 +341,7 @@ class BackgroundSyncManagerTest : public testing::Test {
         new TestBackgroundSyncController());
     test_controller_ = background_sync_controller.get();
     helper_->browser_context()->SetBackgroundSyncController(
-        background_sync_controller.Pass());
+        std::move(background_sync_controller));
 
     SetMaxSyncAttemptsAndRestartManager(1);
 
@@ -408,7 +409,7 @@ class BackgroundSyncManagerTest : public testing::Test {
       scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle) {
     *was_called = true;
     callback_status_ = status;
-    callback_registration_handle_ = registration_handle.Pass();
+    callback_registration_handle_ = std::move(registration_handle);
   }
 
   void StatusAndRegistrationsCallback(
@@ -418,7 +419,7 @@ class BackgroundSyncManagerTest : public testing::Test {
           registration_handles) {
     *was_called = true;
     callback_status_ = status;
-    callback_registration_handles_ = registration_handles.Pass();
+    callback_registration_handles_ = std::move(registration_handles);
   }
 
   void StatusCallback(bool* was_called, BackgroundSyncStatus status) {
@@ -721,7 +722,7 @@ TEST_F(BackgroundSyncManagerTest, RegisterWithoutActiveSWRegistration) {
 TEST_F(BackgroundSyncManagerTest, RegisterOverwrites) {
   EXPECT_TRUE(Register(sync_options_1_));
   scoped_ptr<BackgroundSyncRegistrationHandle> first_registration_handle =
-      callback_registration_handle_.Pass();
+      std::move(callback_registration_handle_);
 
   sync_options_1_.min_period = 100;
   EXPECT_TRUE(Register(sync_options_1_));
@@ -895,7 +896,7 @@ TEST_F(BackgroundSyncManagerTest, RegisterMaxTagLength) {
 TEST_F(BackgroundSyncManagerTest, RegistrationIncreasesId) {
   EXPECT_TRUE(Register(sync_options_1_));
   scoped_ptr<BackgroundSyncRegistrationHandle> registered_handle =
-      callback_registration_handle_.Pass();
+      std::move(callback_registration_handle_);
   BackgroundSyncRegistration::RegistrationId cur_id =
       registered_handle->handle_id();
 
@@ -1397,7 +1398,7 @@ TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
   EXPECT_EQ(POWER_STATE_AVOID_DRAINING,
             callback_registration_handle_->options()->power_state);
   scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
-      callback_registration_handle_.Pass();
+      std::move(callback_registration_handle_);
 
   // Overwrite the pending registration.
   sync_options_1_.power_state = POWER_STATE_AUTO;
@@ -1419,7 +1420,7 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichSucceeds) {
   sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
   scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
-      callback_registration_handle_.Pass();
+      std::move(callback_registration_handle_);
 
   // The next registration won't block.
   InitSyncEventTest();
@@ -1443,7 +1444,7 @@ TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichFails) {
   sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
   scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
-      callback_registration_handle_.Pass();
+      std::move(callback_registration_handle_);
 
   // The next registration won't block.
   InitSyncEventTest();

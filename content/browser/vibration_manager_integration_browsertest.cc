@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -44,12 +45,12 @@ void ResetGlobalValues() {
 class FakeVibrationManager : public device::VibrationManager {
  public:
   static void Create(mojo::InterfaceRequest<VibrationManager> request) {
-    new FakeVibrationManager(request.Pass());
+    new FakeVibrationManager(std::move(request));
   }
 
  private:
   FakeVibrationManager(mojo::InterfaceRequest<VibrationManager> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
   ~FakeVibrationManager() override {}
 
   void Vibrate(int64_t milliseconds) override {

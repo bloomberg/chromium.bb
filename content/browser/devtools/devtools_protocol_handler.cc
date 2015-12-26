@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/devtools_protocol_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -50,7 +52,7 @@ void DevToolsProtocolHandler::HandleMessage(int session_id,
     return;
   if (PassCommandToDelegate(session_id, command.get()))
     return;
-  HandleCommand(session_id, command.Pass());
+  HandleCommand(session_id, std::move(command));
 }
 
 bool DevToolsProtocolHandler::HandleOptionalMessage(int session_id,
@@ -61,7 +63,7 @@ bool DevToolsProtocolHandler::HandleOptionalMessage(int session_id,
     return true;
   if (PassCommandToDelegate(session_id, command.get()))
     return true;
-  return HandleOptionalCommand(session_id, command.Pass(), call_id);
+  return HandleOptionalCommand(session_id, std::move(command), call_id);
 }
 
 bool DevToolsProtocolHandler::PassCommandToDelegate(

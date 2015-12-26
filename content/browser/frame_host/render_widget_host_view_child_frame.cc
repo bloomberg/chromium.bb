@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "build/build_config.h"
@@ -267,10 +268,8 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   // the embedder's renderer to be composited.
   if (!frame->delegated_frame_data || !use_surfaces_) {
     frame_connector_->ChildFrameCompositorFrameSwapped(
-        output_surface_id,
-        host_->GetProcess()->GetID(),
-        host_->GetRoutingID(),
-        frame.Pass());
+        output_surface_id, host_->GetProcess()->GetID(), host_->GetRoutingID(),
+        std::move(frame));
     return;
   }
 
@@ -320,7 +319,7 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK_LT(ack_pending_count_, 1000U);
-  surface_factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                           ack_callback);
 }
 

@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/navigator_impl.h"
 
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -809,10 +811,9 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
   navigation_request->TransferNavigationHandleOwnership(render_frame_host);
   render_frame_host->navigation_handle()->ReadyToCommitNavigation(
       render_frame_host, response ? response->head.headers : nullptr);
-  render_frame_host->CommitNavigation(response, body.Pass(),
+  render_frame_host->CommitNavigation(response, std::move(body),
                                       navigation_request->common_params(),
                                       navigation_request->request_params());
-
 }
 
 // PlzNavigate
@@ -1013,7 +1014,7 @@ void NavigatorImpl::DidStartMainFrameNavigation(
       entry->set_should_replace_entry(pending_entry->should_replace_entry());
       entry->SetRedirectChain(pending_entry->GetRedirectChain());
     }
-    controller_->SetPendingEntry(entry.Pass());
+    controller_->SetPendingEntry(std::move(entry));
     if (delegate_)
       delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);
   }

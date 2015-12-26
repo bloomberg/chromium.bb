@@ -5,8 +5,8 @@
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 
 #include <stdint.h>
-
 #include <cerrno>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/logging.h"
@@ -308,9 +308,9 @@ leveldb::Status LevelDBDatabase::Open(const base::FilePath& file_name,
 
   (*result).reset(new LevelDBDatabase);
   (*result)->db_ = make_scoped_ptr(db);
-  (*result)->comparator_adapter_ = comparator_adapter.Pass();
+  (*result)->comparator_adapter_ = std::move(comparator_adapter);
   (*result)->comparator_ = comparator;
-  (*result)->filter_policy_ = filter_policy.Pass();
+  (*result)->filter_policy_ = std::move(filter_policy);
 
   return s;
 }
@@ -335,13 +335,13 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
   }
 
   scoped_ptr<LevelDBDatabase> result(new LevelDBDatabase);
-  result->env_ = in_memory_env.Pass();
+  result->env_ = std::move(in_memory_env);
   result->db_ = make_scoped_ptr(db);
-  result->comparator_adapter_ = comparator_adapter.Pass();
+  result->comparator_adapter_ = std::move(comparator_adapter);
   result->comparator_ = comparator;
-  result->filter_policy_ = filter_policy.Pass();
+  result->filter_policy_ = std::move(filter_policy);
 
-  return result.Pass();
+  return result;
 }
 
 leveldb::Status LevelDBDatabase::Put(const StringPiece& key,
@@ -419,7 +419,7 @@ scoped_ptr<LevelDBIterator> LevelDBDatabase::CreateIterator(
 
   scoped_ptr<leveldb::Iterator> i(db_->NewIterator(read_options));
   return scoped_ptr<LevelDBIterator>(
-      IndexedDBClassFactory::Get()->CreateIteratorImpl(i.Pass()));
+      IndexedDBClassFactory::Get()->CreateIteratorImpl(std::move(i)));
 }
 
 const LevelDBComparator* LevelDBDatabase::Comparator() const {

@@ -36,7 +36,7 @@ bool CanUseNetworkMonitor(bool external_plugin,
 scoped_ptr<net::NetworkInterfaceList> GetNetworkList() {
   scoped_ptr<net::NetworkInterfaceList> list(new net::NetworkInterfaceList());
   net::GetNetworkList(list.get(), net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
-  return list.Pass();
+  return list;
 }
 
 }  // namespace

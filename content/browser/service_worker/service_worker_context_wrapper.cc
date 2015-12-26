@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/barrier_closure.h"
@@ -114,11 +115,8 @@ void ServiceWorkerContextWrapper::Init(
       new ServiceWorkerDatabaseTaskManagerImpl(pool));
   scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE);
-  InitInternal(user_data_directory,
-               database_task_manager.Pass(),
-               disk_cache_thread,
-               quota_manager_proxy,
-               special_storage_policy);
+  InitInternal(user_data_directory, std::move(database_task_manager),
+               disk_cache_thread, quota_manager_proxy, special_storage_policy);
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
@@ -678,13 +676,9 @@ void ServiceWorkerContextWrapper::InitInternal(
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
   }
-  context_core_.reset(new ServiceWorkerContextCore(user_data_directory,
-                                                   database_task_manager.Pass(),
-                                                   disk_cache_thread,
-                                                   quota_manager_proxy,
-                                                   special_storage_policy,
-                                                   observer_list_.get(),
-                                                   this));
+  context_core_.reset(new ServiceWorkerContextCore(
+      user_data_directory, std::move(database_task_manager), disk_cache_thread,
+      quota_manager_proxy, special_storage_policy, observer_list_.get(), this));
 }
 
 void ServiceWorkerContextWrapper::ShutdownOnIO() {

@@ -5,6 +5,7 @@
 #include "content/browser/browser_main_loop.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -555,7 +556,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor");
     scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
-    power_monitor_.reset(new base::PowerMonitor(power_monitor_source.Pass()));
+    power_monitor_.reset(
+        new base::PowerMonitor(std::move(power_monitor_source)));
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager");
@@ -1078,7 +1080,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     switch (thread_id) {
       case BrowserThread::DB: {
         TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:DBThread");
-        ResetThread_DB(db_thread_.Pass());
+        ResetThread_DB(std::move(db_thread_));
         break;
       }
       case BrowserThread::FILE: {
@@ -1089,28 +1091,28 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
         if (resource_dispatcher_host_)
           resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
 #endif  // !defined(OS_IOS)
-        ResetThread_FILE(file_thread_.Pass());
+        ResetThread_FILE(std::move(file_thread_));
         break;
       }
       case BrowserThread::FILE_USER_BLOCKING: {
         TRACE_EVENT0("shutdown",
                       "BrowserMainLoop::Subsystem:FileUserBlockingThread");
-        ResetThread_FILE_USER_BLOCKING(file_user_blocking_thread_.Pass());
+        ResetThread_FILE_USER_BLOCKING(std::move(file_user_blocking_thread_));
         break;
       }
       case BrowserThread::PROCESS_LAUNCHER: {
         TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:LauncherThread");
-        ResetThread_PROCESS_LAUNCHER(process_launcher_thread_.Pass());
+        ResetThread_PROCESS_LAUNCHER(std::move(process_launcher_thread_));
         break;
       }
       case BrowserThread::CACHE: {
         TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:CacheThread");
-        ResetThread_CACHE(cache_thread_.Pass());
+        ResetThread_CACHE(std::move(cache_thread_));
         break;
       }
       case BrowserThread::IO: {
         TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
-        ResetThread_IO(io_thread_.Pass());
+        ResetThread_IO(std::move(io_thread_));
         break;
       }
       case BrowserThread::UI:
@@ -1124,7 +1126,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #if !defined(OS_IOS)
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IndexedDBThread");
-    ResetThread_IndexedDb(indexed_db_thread_.Pass());
+    ResetThread_IndexedDb(std::move(indexed_db_thread_));
   }
 #endif
 

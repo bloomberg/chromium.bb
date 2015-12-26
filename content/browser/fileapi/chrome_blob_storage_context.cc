@@ -4,6 +4,8 @@
 
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "content/public/browser/blob_handle.h"
@@ -25,7 +27,7 @@ const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
 class BlobHandleImpl : public BlobHandle {
  public:
   explicit BlobHandleImpl(scoped_ptr<storage::BlobDataHandle> handle)
-      : handle_(handle.Pass()) {}
+      : handle_(std::move(handle)) {}
 
   ~BlobHandleImpl() override {}
 
@@ -78,8 +80,8 @@ scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
     return scoped_ptr<BlobHandle>();
 
   scoped_ptr<BlobHandle> blob_handle(
-      new BlobHandleImpl(blob_data_handle.Pass()));
-  return blob_handle.Pass();
+      new BlobHandleImpl(std::move(blob_data_handle)));
+  return blob_handle;
 }
 
 scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
@@ -99,8 +101,8 @@ scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
     return scoped_ptr<BlobHandle>();
 
   scoped_ptr<BlobHandle> blob_handle(
-      new BlobHandleImpl(blob_data_handle.Pass()));
-  return blob_handle.Pass();
+      new BlobHandleImpl(std::move(blob_data_handle)));
+  return blob_handle;
 }
 
 ChromeBlobStorageContext::~ChromeBlobStorageContext() {}

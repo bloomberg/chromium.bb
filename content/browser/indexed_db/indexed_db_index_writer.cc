@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -162,7 +163,7 @@ bool MakeIndexWriters(
     if (!can_add_keys)
       return true;
 
-    index_writers->push_back(index_writer.Pass());
+    index_writers->push_back(std::move(index_writer));
   }
 
   *completed = true;

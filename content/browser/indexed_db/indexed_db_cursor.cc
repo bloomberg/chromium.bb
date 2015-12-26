@@ -5,7 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -26,7 +26,7 @@ IndexedDBCursor::IndexedDBCursor(
     : task_type_(task_type),
       cursor_type_(cursor_type),
       transaction_(transaction),
-      cursor_(cursor.Pass()),
+      cursor_(std::move(cursor)),
       closed_(false) {
   transaction_->RegisterOpenCursor(this);
 }

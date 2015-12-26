@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/service_worker/embedded_worker_instance.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -265,9 +267,10 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachDuringStart) {
   // SendStartWorker.
   worker->status_ = EmbeddedWorkerInstance::STOPPED;
   base::RunLoop run_loop;
-  worker->SendStartWorker(params.Pass(), base::Bind(&SaveStatusAndCall, &status,
-                                                    run_loop.QuitClosure()),
-                          true, -1, false);
+  worker->SendStartWorker(
+      std::move(params),
+      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()), true, -1,
+      false);
   run_loop.Run();
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
   // Don't expect SendStartWorker() to dispatch an OnStopped/Detached() message
@@ -280,8 +283,9 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachDuringStart) {
   worker->status_ = EmbeddedWorkerInstance::STOPPED;
   EmbeddedWorkerInstance* worker_ptr = worker.get();
   worker_ptr->SendStartWorker(
-      params.Pass(), base::Bind(&DestroyWorker, base::Passed(&worker), &status),
-      true, -1, false);
+      std::move(params),
+      base::Bind(&DestroyWorker, base::Passed(&worker), &status), true, -1,
+      false);
   // No crash.
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
 }

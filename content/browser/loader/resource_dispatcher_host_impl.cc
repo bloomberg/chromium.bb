@@ -7,9 +7,9 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -725,12 +725,11 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
 
   // From this point forward, the |DownloadResourceHandler| is responsible for
   // |started_callback|.
-  scoped_ptr<ResourceHandler> handler(
-      CreateResourceHandlerForDownload(request.get(), is_content_initiated,
-                                       true, download_id, save_info.Pass(),
-                                       started_callback));
+  scoped_ptr<ResourceHandler> handler(CreateResourceHandlerForDownload(
+      request.get(), is_content_initiated, true, download_id,
+      std::move(save_info), started_callback));
 
-  BeginRequestInternal(request.Pass(), handler.Pass());
+  BeginRequestInternal(std::move(request), std::move(handler));
 
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
@@ -761,8 +760,8 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     uint32_t id,
     scoped_ptr<DownloadSaveInfo> save_info,
     const DownloadUrlParameters::OnStartedCallback& started_cb) {
-  scoped_ptr<ResourceHandler> handler(
-      new DownloadResourceHandler(id, request, started_cb, save_info.Pass()));
+  scoped_ptr<ResourceHandler> handler(new DownloadResourceHandler(
+      id, request, started_cb, std::move(save_info)));
   if (delegate_) {
     const ResourceRequestInfoImpl* request_info(
         ResourceRequestInfoImpl::ForRequest(request));
@@ -773,12 +772,11 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
         request_info->GetRouteID(), request_info->GetRequestID(),
         is_content_initiated, must_download, &throttles);
     if (!throttles.empty()) {
-      handler.reset(
-          new ThrottlingResourceHandler(
-              handler.Pass(), request, throttles.Pass()));
+      handler.reset(new ThrottlingResourceHandler(std::move(handler), request,
+                                                  std::move(throttles)));
     }
   }
-  return handler.Pass();
+  return handler;
 }
 
 scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::MaybeInterceptAsStream(
@@ -817,8 +815,8 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::MaybeInterceptAsStream(
     stream_info->response_headers =
         new net::HttpResponseHeaders(response->head.headers->raw_headers());
   }
-  delegate_->OnStreamCreated(request, stream_info.Pass());
-  return handler.Pass();
+  delegate_->OnStreamCreated(request, std::move(stream_info));
+  return std::move(handler);
 }
 
 ResourceDispatcherHostLoginDelegate*
@@ -1483,7 +1481,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
            resource_context));
 
   if (handler)
-    BeginRequestInternal(new_request.Pass(), handler.Pass());
+    BeginRequestInternal(std::move(new_request), std::move(handler));
 }
 
 scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
@@ -1514,7 +1512,7 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
     // The RedirectToFileResourceHandler depends on being next in the chain.
     if (request_data.download_to_file) {
       handler.reset(
-          new RedirectToFileResourceHandler(handler.Pass(), request));
+          new RedirectToFileResourceHandler(std::move(handler), request));
     }
   }
 
@@ -1523,7 +1521,7 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
     handler.reset(new DetachableResourceHandler(
         request,
         base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
-        handler.Pass()));
+        std::move(handler)));
   }
 
   // PlzNavigate: If using --enable-browser-side-navigation, the
@@ -1545,12 +1543,12 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
           request_data.resource_type == RESOURCE_TYPE_SUB_FRAME;
     }
     if (is_swappable_navigation && process_type == PROCESS_TYPE_RENDERER)
-      handler.reset(new CrossSiteResourceHandler(handler.Pass(), request));
+      handler.reset(new CrossSiteResourceHandler(std::move(handler), request));
   }
 
   return AddStandardHandlers(request, request_data.resource_type,
                              resource_context, filter_->appcache_service(),
-                             child_id, route_id, handler.Pass());
+                             child_id, route_id, std::move(handler));
 }
 
 scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
@@ -1567,7 +1565,7 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
   if (IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type) &&
       child_id != -1) {
     DCHECK(request->url().SchemeIs(url::kBlobScheme));
-    return handler.Pass();
+    return handler;
   }
 
   PluginService* plugin_service = nullptr;
@@ -1575,7 +1573,7 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
   plugin_service = PluginService::GetInstance();
 #endif
   // Insert a buffered event handler before the actual one.
-  handler.reset(new MimeTypeResourceHandler(handler.Pass(), this,
+  handler.reset(new MimeTypeResourceHandler(std::move(handler), this,
                                             plugin_service, request));
 
   ScopedVector<ResourceThrottle> throttles;
@@ -1604,10 +1602,10 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
   throttles.push_back(scheduler_->ScheduleRequest(child_id, route_id,
                                                   info->IsAsync(), request));
 
-  handler.reset(
-      new ThrottlingResourceHandler(handler.Pass(), request, throttles.Pass()));
+  handler.reset(new ThrottlingResourceHandler(std::move(handler), request,
+                                              std::move(throttles)));
 
-  return handler.Pass();
+  return handler;
 }
 
 void ResourceDispatcherHostImpl::OnReleaseDownloadedFile(int request_id) {
@@ -1825,7 +1823,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(const GURL& url,
       request.get(), save_item_id, save_package_id, child_id,
       render_frame_route_id, url, save_file_manager_.get()));
 
-  BeginRequestInternal(request.Pass(), handler.Pass());
+  BeginRequestInternal(std::move(request), std::move(handler));
 }
 
 void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
@@ -2205,14 +2203,14 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // TODO(davidben): Pass in the appropriate appcache_service. Also fix the
   // dependency on child_id/route_id. Those are used by the ResourceScheduler;
   // currently it's a no-op.
-  handler = AddStandardHandlers(new_request.get(), resource_type,
-                                resource_context,
-                                nullptr,  // appcache_service
-                                -1,  // child_id
-                                -1,  // route_id
-                                handler.Pass());
+  handler =
+      AddStandardHandlers(new_request.get(), resource_type, resource_context,
+                          nullptr,  // appcache_service
+                          -1,       // child_id
+                          -1,       // route_id
+                          std::move(handler));
 
-  BeginRequestInternal(new_request.Pass(), handler.Pass());
+  BeginRequestInternal(std::move(new_request), std::move(handler));
 }
 
 void ResourceDispatcherHostImpl::EnableStaleWhileRevalidateForTesting() {
@@ -2275,7 +2273,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   }
 
   linked_ptr<ResourceLoader> loader(
-      new ResourceLoader(request.Pass(), handler.Pass(), this));
+      new ResourceLoader(std::move(request), std::move(handler), this));
 
   GlobalRoutingID id(info->GetGlobalRoutingID());
   BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.find(id);
@@ -2378,7 +2376,7 @@ ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
       (*info_map)[id] = load_info;
     }
   }
-  return info_map.Pass();
+  return info_map;
 }
 
 void ResourceDispatcherHostImpl::UpdateLoadInfo() {

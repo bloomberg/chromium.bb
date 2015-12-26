@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -612,7 +613,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
-    return http_response.Pass();
+    return std::move(http_response);
   } else if (request_path == "fail" && !request_query.empty()) {
     FailClass failure_class = FAIL_CLASS_NOTHING;
     FailMethod failure_method = FAIL_METHOD_NOTHING;
@@ -676,7 +677,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_OK);
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // A request for a test resource
@@ -689,7 +690,7 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
   if (!base::ReadFileToString(resource_path, &file_contents))
     return scoped_ptr<net::test_server::HttpResponse>();
   http_response->set_content(file_contents);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // namespace

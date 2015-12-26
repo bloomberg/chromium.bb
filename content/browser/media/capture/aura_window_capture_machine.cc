@@ -5,6 +5,7 @@
 #include "content/browser/media/capture/aura_window_capture_machine.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -189,7 +190,7 @@ void AuraWindowCaptureMachine::Capture(bool dirty) {
     gfx::Rect window_rect = gfx::Rect(desktop_window_->bounds().width(),
                                       desktop_window_->bounds().height());
     request->set_area(window_rect);
-    desktop_window_->layer()->RequestCopyOfOutput(request.Pass());
+    desktop_window_->layer()->RequestCopyOfOutput(std::move(request));
   }
 }
 
@@ -203,7 +204,7 @@ void AuraWindowCaptureMachine::DidCopyOutput(
   static bool first_call = true;
 
   bool succeeded = ProcessCopyOutputResponse(
-      video_frame, start_time, capture_frame_cb, result.Pass());
+      video_frame, start_time, capture_frame_cb, std::move(result));
 
   base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
 

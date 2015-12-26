@@ -251,8 +251,8 @@ class DraggedFileUtilTest : public testing::Test {
   }
 
   scoped_ptr<storage::FileSystemOperationContext> GetOperationContext() {
-    return make_scoped_ptr(new storage::FileSystemOperationContext(
-                               file_system_context())).Pass();
+    return make_scoped_ptr(
+        new storage::FileSystemOperationContext(file_system_context()));
   }
 
 

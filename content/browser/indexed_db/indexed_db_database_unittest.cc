@@ -5,8 +5,8 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 
 #include <stdint.h>
-
 #include <set>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -396,14 +396,8 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   std::vector<IndexedDBDatabase::IndexKeys> index_keys;
   scoped_refptr<MockIndexedDBCallbacks> request(
       new MockIndexedDBCallbacks(false));
-  db_->Put(transaction_->id(),
-           store_id,
-           &value,
-           &handles,
-           key.Pass(),
-           blink::WebIDBPutModeAddOnly,
-           request,
-           index_keys);
+  db_->Put(transaction_->id(), store_id, &value, &handles, std::move(key),
+           blink::WebIDBPutModeAddOnly, request, index_keys);
 
   // Deletion is asynchronous.
   db_->DeleteObjectStore(transaction_->id(),

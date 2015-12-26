@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "content/browser/appcache/appcache_storage_impl.h"
 
+#include <stdint.h>
 #include <stack>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,7 +29,6 @@
 #include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "content/browser/appcache/appcache_storage_impl.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -132,9 +133,8 @@ class MockHttpServerJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   MockHttpServerJobFactory(
-     scoped_ptr<net::URLRequestInterceptor> appcache_start_interceptor)
-     : appcache_start_interceptor_(appcache_start_interceptor.Pass()) {
-  }
+      scoped_ptr<net::URLRequestInterceptor> appcache_start_interceptor)
+      : appcache_start_interceptor_(std::move(appcache_start_interceptor)) {}
 
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
@@ -168,7 +168,7 @@ class IOThread : public base::Thread {
     factory->SetProtocolHandler(
         "http", make_scoped_ptr(new MockHttpServerJobFactory(
                     make_scoped_ptr(new AppCacheInterceptor()))));
-    job_factory_ = factory.Pass();
+    job_factory_ = std::move(factory);
     request_context_.reset(new net::TestURLRequestContext());
     request_context_->set_job_factory(job_factory_.get());
   }

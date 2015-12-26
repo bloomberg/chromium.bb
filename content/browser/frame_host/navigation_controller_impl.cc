@@ -35,6 +35,8 @@
 
 #include "content/browser/frame_host/navigation_controller_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -278,7 +280,8 @@ void NavigationControllerImpl::Restore(
   needs_reload_ = true;
   entries_.reserve(entries->size());
   for (auto& entry : *entries)
-    entries_.push_back(NavigationEntryImpl::FromNavigationEntry(entry.Pass()));
+    entries_.push_back(
+        NavigationEntryImpl::FromNavigationEntry(std::move(entry)));
 
   // At this point, the |entries| is full of empty scoped_ptrs, so it can be
   // cleared out safely.
@@ -447,7 +450,7 @@ void NavigationControllerImpl::LoadEntry(
   // When navigating to a new page, we don't know for sure if we will actually
   // end up leaving the current page.  The new page load could for example
   // result in a download or a 'no content' response (e.g., a mailto: URL).
-  SetPendingEntry(entry.Pass());
+  SetPendingEntry(std::move(entry));
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -559,7 +562,7 @@ void NavigationControllerImpl::TakeScreenshot() {
 void NavigationControllerImpl::SetScreenshotManager(
     scoped_ptr<NavigationEntryScreenshotManager> manager) {
   if (manager.get())
-    screenshot_manager_ = manager.Pass();
+    screenshot_manager_ = std::move(manager);
   else
     screenshot_manager_.reset(new NavigationEntryScreenshotManager(this));
 }
@@ -816,7 +819,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       break;
   };
 
-  LoadEntry(entry.Pass());
+  LoadEntry(std::move(entry));
 }
 
 bool NavigationControllerImpl::RendererDidNavigate(
@@ -1160,7 +1163,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     last_committed_entry_index_ = -1;
   }
 
-  InsertOrReplaceEntry(new_entry.Pass(), replace_entry);
+  InsertOrReplaceEntry(std::move(new_entry), replace_entry);
 }
 
 void NavigationControllerImpl::RendererDidNavigateToExistingPage(
@@ -1289,7 +1292,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   }
 
   new_entry->SetPageID(params.page_id);
-  InsertOrReplaceEntry(new_entry.Pass(), false);
+  InsertOrReplaceEntry(std::move(new_entry), false);
 }
 
 bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
@@ -1683,7 +1686,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   if (replace && current_size > 0) {
     int32_t page_id = entry->GetPageID();
 
-    entries_[last_committed_entry_index_] = entry.Pass();
+    entries_[last_committed_entry_index_] = std::move(entry);
 
     // This is a new page ID, so we need everybody to know about it.
     delegate_->UpdateMaxPageID(page_id);
@@ -1711,7 +1714,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   PruneOldestEntryIfFull();
 
   int32_t page_id = entry->GetPageID();
-  entries_.push_back(entry.Pass());
+  entries_.push_back(std::move(entry));
   last_committed_entry_index_ = static_cast<int>(entries_.size()) - 1;
 
   // This is a new page ID, so we need everybody to know about it.
@@ -2024,7 +2027,7 @@ void NavigationControllerImpl::SetTransientEntry(
     index = last_committed_entry_index_ + 1;
   DiscardTransientEntry();
   entries_.insert(entries_.begin() + index,
-                  NavigationEntryImpl::FromNavigationEntry(entry.Pass()));
+                  NavigationEntryImpl::FromNavigationEntry(std::move(entry)));
   transient_entry_index_ = index;
   delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
 }
@@ -2041,7 +2044,7 @@ void NavigationControllerImpl::InsertEntriesFrom(
       // NavigationEntries, it will not be safe to share them with another tab.
       // Must have a version of Clone that recreates them.
       entries_.insert(entries_.begin() + insert_index++,
-                      source.entries_[i]->Clone().Pass());
+                      source.entries_[i]->Clone());
     }
   }
 }

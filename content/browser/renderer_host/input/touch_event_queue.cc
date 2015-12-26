@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -619,7 +621,8 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
 
 void TouchEventQueue::FlushPendingAsyncTouchmove() {
   DCHECK(!dispatching_touch_);
-  scoped_ptr<TouchEventWithLatencyInfo> touch = pending_async_touchmove_.Pass();
+  scoped_ptr<TouchEventWithLatencyInfo> touch =
+      std::move(pending_async_touchmove_);
   touch->event.cancelable = false;
   touch_queue_.push_front(new CoalescedWebTouchEvent(*touch, true));
   SendTouchEventImmediately(touch.get());
@@ -741,7 +744,7 @@ scoped_ptr<CoalescedWebTouchEvent> TouchEventQueue::PopTouchEvent() {
   DCHECK(!touch_queue_.empty());
   scoped_ptr<CoalescedWebTouchEvent> event(touch_queue_.front());
   touch_queue_.pop_front();
-  return event.Pass();
+  return event;
 }
 
 void TouchEventQueue::SendTouchEventImmediately(

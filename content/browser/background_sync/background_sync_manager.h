@@ -111,7 +111,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   void set_clock(scoped_ptr<base::Clock> clock) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    clock_ = clock.Pass();
+    clock_ = std::move(clock);
   }
   void set_max_sync_attempts(int max_attempts) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);

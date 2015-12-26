@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -92,13 +93,9 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       return scoped_refptr<TestableIndexedDBBackingStore>();
 
     scoped_refptr<TestableIndexedDBBackingStore> backing_store(
-        new TestableIndexedDBBackingStore(indexed_db_factory,
-                                          origin_url,
-                                          blob_path,
-                                          request_context,
-                                          db.Pass(),
-                                          comparator.Pass(),
-                                          task_runner));
+        new TestableIndexedDBBackingStore(
+            indexed_db_factory, origin_url, blob_path, request_context,
+            std::move(db), std::move(comparator), task_runner));
 
     *status = backing_store->SetUpMetadata();
     if (!status->ok())
@@ -165,8 +162,8 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
                               origin_url,
                               blob_path,
                               request_context,
-                              db.Pass(),
-                              comparator.Pass(),
+                              std::move(db),
+                              std::move(comparator),
                               task_runner),
         database_id_(0) {}
 

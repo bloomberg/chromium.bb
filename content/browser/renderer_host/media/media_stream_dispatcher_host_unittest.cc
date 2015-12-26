@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
+#include <stddef.h>
 #include <queue>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -17,7 +19,6 @@
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
-#include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -848,7 +849,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
   EXPECT_CALL(*stream_ui, OnStarted(_, _))
       .WillOnce(SaveArg<0>(&close_callback));
-  media_stream_manager_->UseFakeUIForTests(stream_ui.Pass());
+  media_stream_manager_->UseFakeUIForTests(std::move(stream_ui));
 
   GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 

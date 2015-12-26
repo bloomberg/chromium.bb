@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/navigation_request.h"
 
+#include <utility>
+
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -107,7 +109,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetLastCommittedEntryIndex(),
           controller->GetEntryCount()),
       request_body, true, &frame_entry, &entry));
-  return navigation_request.Pass();
+  return navigation_request;
 }
 
 // static
@@ -143,7 +145,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   scoped_ptr<NavigationRequest> navigation_request(
       new NavigationRequest(frame_tree_node, common_params, begin_params,
                             request_params, body, false, nullptr, nullptr));
-  return navigation_request.Pass();
+  return navigation_request;
 }
 
 NavigationRequest::NavigationRequest(
@@ -228,7 +230,7 @@ void NavigationRequest::CreateNavigationHandle() {
 
 void NavigationRequest::TransferNavigationHandleOwnership(
     RenderFrameHostImpl* render_frame_host) {
-  render_frame_host->SetNavigationHandle(navigation_handle_.Pass());
+  render_frame_host->SetNavigationHandle(std::move(navigation_handle_));
 }
 
 void NavigationRequest::OnRequestRedirected(
@@ -267,8 +269,8 @@ void NavigationRequest::OnResponseStarted(
             ->service_worker_provider_host_id();
   }
 
-  frame_tree_node_->navigator()->CommitNavigation(frame_tree_node_,
-                                                  response.get(), body.Pass());
+  frame_tree_node_->navigator()->CommitNavigation(
+      frame_tree_node_, response.get(), std::move(body));
 }
 
 void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
@@ -300,7 +302,7 @@ void NavigationRequest::OnStartChecksComplete(
   InitializeServiceWorkerHandleIfNeeded();
   loader_ = NavigationURLLoader::Create(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      info_.Pass(), navigation_handle_->service_worker_handle(), this);
+      std::move(info_), navigation_handle_->service_worker_handle(), this);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(

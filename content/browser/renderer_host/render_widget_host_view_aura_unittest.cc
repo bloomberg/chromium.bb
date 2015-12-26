@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -266,7 +267,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   void UseFakeDispatcher() {
     dispatcher_ = new FakeWindowEventDispatcher(window()->GetHost());
     scoped_ptr<aura::WindowEventDispatcher> dispatcher(dispatcher_);
-    aura::test::SetHostDispatcher(window()->GetHost(), dispatcher.Pass());
+    aura::test::SetHostDispatcher(window()->GetHost(), std::move(dispatcher));
   }
 
   ~FakeRenderWidgetHostViewAura() override {}
@@ -286,7 +287,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   }
 
   void InterceptCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
-    last_copy_request_ = request.Pass();
+    last_copy_request_ = std::move(request);
     if (last_copy_request_->has_texture_mailbox()) {
       // Give the resulting texture a size.
       GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
@@ -1530,8 +1531,8 @@ scoped_ptr<cc::CompositorFrame> MakeDelegatedFrame(float scale_factor,
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(
       cc::RenderPassId(1, 1), gfx::Rect(size), damage, gfx::Transform());
-  frame->delegated_frame_data->render_pass_list.push_back(pass.Pass());
-  return frame.Pass();
+  frame->delegated_frame_data->render_pass_list.push_back(std::move(pass));
+  return frame;
 }
 
 // Resizing in fullscreen mode should send the up-to-date screen info.
@@ -2295,7 +2296,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
 
   void ReleaseSwappedFrame() {
     scoped_ptr<cc::CopyOutputRequest> request =
-        view_->last_copy_request_.Pass();
+        std::move(view_->last_copy_request_);
     request->SendTextureResult(view_rect_.size(), request->texture_mailbox(),
                                scoped_ptr<cc::SingleReleaseCallback>());
     RunLoopUntilCallback();
@@ -2407,7 +2408,8 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
 
   OnSwapCompositorFrame();
   EXPECT_EQ(1, callback_count_);
-  scoped_ptr<cc::CopyOutputRequest> request = view_->last_copy_request_.Pass();
+  scoped_ptr<cc::CopyOutputRequest> request =
+      std::move(view_->last_copy_request_);
 
   // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
   TearDownEnvironment();

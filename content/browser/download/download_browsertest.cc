@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/callback_helpers.h"
@@ -199,9 +199,14 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     scoped_ptr<PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer,
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
-    : DownloadFileImpl(
-        save_info.Pass(), default_download_directory, url, referrer_url,
-        calculate_hash, stream.Pass(), bound_net_log, observer),
+    : DownloadFileImpl(std::move(save_info),
+                       default_download_directory,
+                       url,
+                       referrer_url,
+                       calculate_hash,
+                       std::move(stream),
+                       bound_net_log,
+                       observer),
       owner_(owner) {}
 
 DownloadFileWithDelay::~DownloadFileWithDelay() {}
@@ -254,9 +259,9 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonOther, "Download in progress"));
   return new DownloadFileWithDelay(
-      save_info.Pass(), default_download_directory, url, referrer_url,
-      calculate_hash, stream.Pass(), bound_net_log,
-      psb.Pass(), observer, weak_ptr_factory_.GetWeakPtr());
+      std::move(save_info), default_download_directory, url, referrer_url,
+      calculate_hash, std::move(stream), bound_net_log, std::move(psb),
+      observer, weak_ptr_factory_.GetWeakPtr());
 }
 
 void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
@@ -284,19 +289,23 @@ void DownloadFileWithDelayFactory::WaitForSomeCallback() {
 
 class CountingDownloadFile : public DownloadFileImpl {
  public:
-  CountingDownloadFile(
-    scoped_ptr<DownloadSaveInfo> save_info,
-    const base::FilePath& default_downloads_directory,
-    const GURL& url,
-    const GURL& referrer_url,
-    bool calculate_hash,
-    scoped_ptr<ByteStreamReader> stream,
-    const net::BoundNetLog& bound_net_log,
-    scoped_ptr<PowerSaveBlocker> power_save_blocker,
-    base::WeakPtr<DownloadDestinationObserver> observer)
-      : DownloadFileImpl(save_info.Pass(), default_downloads_directory,
-                         url, referrer_url, calculate_hash,
-                         stream.Pass(), bound_net_log, observer) {}
+  CountingDownloadFile(scoped_ptr<DownloadSaveInfo> save_info,
+                       const base::FilePath& default_downloads_directory,
+                       const GURL& url,
+                       const GURL& referrer_url,
+                       bool calculate_hash,
+                       scoped_ptr<ByteStreamReader> stream,
+                       const net::BoundNetLog& bound_net_log,
+                       scoped_ptr<PowerSaveBlocker> power_save_blocker,
+                       base::WeakPtr<DownloadDestinationObserver> observer)
+      : DownloadFileImpl(std::move(save_info),
+                         default_downloads_directory,
+                         url,
+                         referrer_url,
+                         calculate_hash,
+                         std::move(stream),
+                         bound_net_log,
+                         observer) {}
 
   ~CountingDownloadFile() override {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
@@ -352,9 +361,9 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
         PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         PowerSaveBlocker::kReasonOther, "Download in progress"));
     return new CountingDownloadFile(
-        save_info.Pass(), default_downloads_directory, url, referrer_url,
-        calculate_hash, stream.Pass(), bound_net_log,
-        psb.Pass(), observer);
+        std::move(save_info), default_downloads_directory, url, referrer_url,
+        calculate_hash, std::move(stream), bound_net_log, std::move(psb),
+        observer);
   }
 };
 
@@ -447,7 +456,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequestAndSendRedirectResponse(
     response->set_code(net::HTTP_FOUND);
     response->AddCustomHeader("Location", target_url.spec());
   }
-  return response.Pass();
+  return std::move(response);
 }
 
 // Creates a request handler for EmbeddedTestServer that responds with a HTTP
@@ -474,7 +483,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequestAndSendBasicResponse(
     response->set_content_type(content_type);
     response->set_content(body);
   }
-  return response.Pass();
+  return std::move(response);
 }
 
 // Creates a request handler for an EmbeddedTestServer that response with an
@@ -594,8 +603,7 @@ class DownloadContentTest : public ContentBrowserTest {
   // Note: Cannot be used with other alternative DownloadFileFactorys
   void SetupEnsureNoPendingDownloads() {
     DownloadManagerForShell(shell())->SetDownloadFileFactoryForTesting(
-        scoped_ptr<DownloadFileFactory>(
-            new CountingDownloadFileFactory()).Pass());
+        scoped_ptr<DownloadFileFactory>(new CountingDownloadFileFactory()));
   }
 
   bool EnsureNoPendingDownloads() {
@@ -855,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
       new DownloadFileWithDelayFactory();
   DownloadManagerImpl* download_manager(DownloadManagerForShell(shell()));
   download_manager->SetDownloadFileFactoryForTesting(
-      scoped_ptr<DownloadFileFactory>(file_factory).Pass());
+      scoped_ptr<DownloadFileFactory>(file_factory));
 
   // Create a download
   NavigateToURL(shell(),
@@ -904,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtRelease) {
   DownloadFileWithDelayFactory* file_factory =
       new DownloadFileWithDelayFactory();
   download_manager->SetDownloadFileFactoryForTesting(
-      scoped_ptr<DownloadFileFactory>(file_factory).Pass());
+      scoped_ptr<DownloadFileFactory>(file_factory));
 
   // Create a download
   NavigateToURL(shell(),
@@ -1015,7 +1023,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   DownloadFileWithDelayFactory* file_factory =
       new DownloadFileWithDelayFactory();
   download_manager->SetDownloadFileFactoryForTesting(
-      scoped_ptr<DownloadFileFactory>(file_factory).Pass());
+      scoped_ptr<DownloadFileFactory>(file_factory));
 
   // Create a download
   NavigateToURL(shell(),
@@ -1662,7 +1670,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
       DownloadUrlParameters::FromWebContents(shell()->web_contents(),
                                              origin_two.GetURL("/bar")));
   scoped_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
-  DownloadManagerForShell(shell())->DownloadUrl(download_parameters.Pass());
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
   observer->WaitForFinished();
 
   // Get the important info from other threads and check it.

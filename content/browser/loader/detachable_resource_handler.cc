@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/detachable_resource_handler.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -24,7 +26,7 @@ DetachableResourceHandler::DetachableResourceHandler(
     base::TimeDelta cancel_delay,
     scoped_ptr<ResourceHandler> next_handler)
     : ResourceHandler(request),
-      next_handler_(next_handler.Pass()),
+      next_handler_(std::move(next_handler)),
       cancel_delay_(cancel_delay),
       is_deferred_(false),
       is_finished_(false) {

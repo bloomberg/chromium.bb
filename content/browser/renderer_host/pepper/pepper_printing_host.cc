@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
 
+#include <utility>
+
 #include "ppapi/c/dev/pp_print_settings_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -19,7 +21,7 @@ PepperPrintingHost::PepperPrintingHost(
     PP_Resource resource,
     scoped_ptr<PepperPrintSettingsManager> print_settings_manager)
     : ResourceHost(host, instance, resource),
-      print_settings_manager_(print_settings_manager.Pass()),
+      print_settings_manager_(std::move(print_settings_manager)),
       weak_factory_(this) {}
 
 PepperPrintingHost::~PepperPrintingHost() {}

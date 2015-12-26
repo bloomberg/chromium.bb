@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/pepper_tcp_server_socket_message_filter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -313,12 +315,13 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
   scoped_ptr<ppapi::host::ResourceHost> host =
       factory_->CreateAcceptedTCPSocket(instance_,
                                         ppapi::TCP_SOCKET_VERSION_PRIVATE,
-                                        accepted_socket_.Pass());
+                                        std::move(accepted_socket_));
   if (!host) {
     SendAcceptError(context, PP_ERROR_NOSPACE);
     return;
   }
-  int pending_resource_id = ppapi_host_->AddPendingResourceHost(host.Pass());
+  int pending_resource_id =
+      ppapi_host_->AddPendingResourceHost(std::move(host));
   if (pending_resource_id) {
     SendAcceptReply(
         context, PP_OK, pending_resource_id, local_addr, remote_addr);

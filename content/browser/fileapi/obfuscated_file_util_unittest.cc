@@ -4,10 +4,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <limits>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -192,7 +192,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     scoped_ptr<FileSystemOperationContext> context(
         sandbox_file_system_.NewOperationContext());
     context->set_allowed_bytes_growth(allowed_bytes_growth);
-    return context.Pass();
+    return context;
   }
 
   scoped_ptr<FileSystemOperationContext> UnlimitedContext() {
@@ -400,7 +400,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     UsageVerifyHelper(scoped_ptr<FileSystemOperationContext> context,
                       SandboxFileSystemTestHelper* file_system,
                       int64_t expected_usage)
-        : context_(context.Pass()),
+        : context_(std::move(context)),
           sandbox_file_system_(file_system),
           expected_usage_(expected_usage) {}
 
@@ -851,7 +851,7 @@ TEST_F(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   ASSERT_TRUE(file.created());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
 
-  CheckFileAndCloseHandle(url, file.Pass());
+  CheckFileAndCloseHandle(url, std::move(file));
 
   context.reset(NewContext(NULL));
   base::FilePath local_path;
@@ -887,7 +887,7 @@ TEST_F(ObfuscatedFileUtilTest, TestCreateAndDeleteFile) {
   ASSERT_TRUE(file.created());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
 
-  CheckFileAndCloseHandle(url, file.Pass());
+  CheckFileAndCloseHandle(url, std::move(file));
 
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::File::FILE_OK,

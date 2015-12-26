@@ -5,8 +5,8 @@
 #include "content/browser/service_worker/service_worker_internals_ui.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -431,7 +431,8 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
     scoped_ptr<PartitionObserver> new_observer(
         new PartitionObserver(partition_id, web_ui()));
     context->AddObserver(new_observer.get());
-    observers_.set(reinterpret_cast<uintptr_t>(partition), new_observer.Pass());
+    observers_.set(reinterpret_cast<uintptr_t>(partition),
+                   std::move(new_observer));
   }
 
   BrowserThread::PostTask(

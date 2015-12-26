@@ -4,6 +4,8 @@
 
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -70,7 +72,7 @@ void SelectCertificateOnUIThread(
     return;
 
   GetContentClient()->browser()->SelectClientCertificate(
-      web_contents, cert_request_info, delegate.Pass());
+      web_contents, cert_request_info, std::move(delegate));
 }
 
 }  // namespace
@@ -83,7 +85,7 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
        scoped_ptr<net::ClientCertStore> client_cert_store,
        net::SSLCertRequestInfo* cert_request_info)
       : handler_(handler),
-        client_cert_store_(client_cert_store.Pass()),
+        client_cert_store_(std::move(client_cert_store)),
         cert_request_info_(cert_request_info) {}
 
   bool has_client_cert_store() const { return client_cert_store_; }
@@ -129,7 +131,7 @@ SSLClientAuthHandler::SSLClientAuthHandler(
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  core_ = new Core(weak_factory_.GetWeakPtr(), client_cert_store.Pass(),
+  core_ = new Core(weak_factory_.GetWeakPtr(), std::move(client_cert_store),
                    cert_request_info_.get());
 }
 

@@ -4,6 +4,8 @@
 
 #include "content/browser/download/base_file.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -37,7 +39,7 @@ BaseFile::BaseFile(const base::FilePath& full_path,
     : full_path_(full_path),
       source_url_(source_url),
       referrer_url_(referrer_url),
-      file_(file.Pass()),
+      file_(std::move(file)),
       bytes_so_far_(received_bytes),
       start_tick_(base::TimeTicks::Now()),
       calculate_hash_(calculate_hash),

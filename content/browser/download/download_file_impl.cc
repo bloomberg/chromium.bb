@@ -5,6 +5,7 @@
 #include "content/browser/download/download_file_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -48,15 +49,14 @@ DownloadFileImpl::DownloadFileImpl(
             save_info->offset,
             calculate_hash,
             save_info->hash_state,
-            save_info->file.Pass(),
+            std::move(save_info->file),
             bound_net_log),
       default_download_directory_(default_download_directory),
-      stream_reader_(stream.Pass()),
+      stream_reader_(std::move(stream)),
       bytes_seen_(0),
       bound_net_log_(bound_net_log),
       observer_(observer),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 DownloadFileImpl::~DownloadFileImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);

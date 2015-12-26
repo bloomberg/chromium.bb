@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
@@ -254,8 +254,8 @@ class FormatChecker {
 class DesktopCaptureDeviceTest : public testing::Test {
  public:
   void CreateScreenCaptureDevice(scoped_ptr<webrtc::DesktopCapturer> capturer) {
-    capture_device_.reset(
-        new DesktopCaptureDevice(capturer.Pass(), DesktopMediaID::TYPE_SCREEN));
+    capture_device_.reset(new DesktopCaptureDevice(
+        std::move(capturer), DesktopMediaID::TYPE_SCREEN));
   }
 
   void CopyFrame(const uint8_t* frame, int size,
@@ -282,7 +282,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   scoped_ptr<webrtc::DesktopCapturer> capturer(
       webrtc::ScreenCapturer::Create(
           webrtc::DesktopCaptureOptions::CreateDefault()));
-  CreateScreenCaptureDevice(capturer.Pass());
+  CreateScreenCaptureDevice(std::move(capturer));
 
   media::VideoCaptureFormat format;
   base::WaitableEvent done_event(false, false);
@@ -299,7 +299,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_device_->AllocateAndStart(capture_params, client.Pass());
+  capture_device_->AllocateAndStart(capture_params, std::move(client));
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   capture_device_->StopAndDeAllocate();
 
@@ -337,7 +337,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_RESOLUTION;
 
-  capture_device_->AllocateAndStart(capture_params, client.Pass());
+  capture_device_->AllocateAndStart(capture_params, std::move(client));
 
   // Capture at least two frames, to ensure that the source frame size has
   // changed to two different sizes while capturing.  The mock for
@@ -381,8 +381,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
 
-  capture_device_->AllocateAndStart(
-      capture_params, client.Pass());
+  capture_device_->AllocateAndStart(capture_params, std::move(client));
 
   // Capture at least three frames, to ensure that the source frame size has
   // changed to two different sizes while capturing.  The mock for
@@ -426,8 +425,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
 
-  capture_device_->AllocateAndStart(
-      capture_params, client.Pass());
+  capture_device_->AllocateAndStart(capture_params, std::move(client));
 
   // Capture at least three frames, to ensure that the source frame size has
   // changed to two different sizes while capturing.  The mock for
@@ -468,7 +466,7 @@ TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
   capture_params.requested_format.pixel_format =
       media::PIXEL_FORMAT_I420;
 
-  capture_device_->AllocateAndStart(capture_params, client.Pass());
+  capture_device_->AllocateAndStart(capture_params, std::move(client));
 
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   done_event.Reset();
@@ -510,7 +508,7 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
 
-  capture_device_->AllocateAndStart(capture_params, client.Pass());
+  capture_device_->AllocateAndStart(capture_params, std::move(client));
 
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   done_event.Reset();

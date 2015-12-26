@@ -210,7 +210,7 @@ class MockRendererProcessHost {
     CHECK(queued_messages_.size());
     scoped_ptr<IPC::Message> msg(*queued_messages_.begin());
     queued_messages_.weak_erase(queued_messages_.begin());
-    return msg.Pass();
+    return msg;
   }
 
   void FastShutdownIfPossible() {

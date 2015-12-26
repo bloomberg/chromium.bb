@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
@@ -38,7 +40,7 @@ OffscreenBrowserCompositorOutputSurface::
     : BrowserCompositorOutputSurface(context,
                                      worker_context,
                                      vsync_manager,
-                                     overlay_candidate_validator.Pass()),
+                                     std::move(overlay_candidate_validator)),
       fbo_(0),
       is_backbuffer_discarded_(false),
       weak_ptr_factory_(this) {

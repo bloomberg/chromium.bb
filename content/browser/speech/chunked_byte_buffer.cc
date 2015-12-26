@@ -5,6 +5,7 @@
 #include "content/browser/speech/chunked_byte_buffer.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -111,7 +112,7 @@ scoped_ptr<std::vector<uint8_t>> ChunkedByteBuffer::PopChunk() {
   DCHECK_EQ(chunk->content->size(), chunk->ExpectedContentLength());
   total_bytes_stored_ -= chunk->content->size();
   total_bytes_stored_ -= kHeaderLength;
-  return chunk->content.Pass();
+  return std::move(chunk->content);
 }
 
 void ChunkedByteBuffer::Clear() {

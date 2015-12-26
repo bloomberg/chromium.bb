@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/callback_list.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -48,15 +50,14 @@ void UpdateBattery(const device::BatteryStatus& battery_status) {
 class FakeBatteryMonitor : public device::BatteryMonitor {
  public:
   static void Create(mojo::InterfaceRequest<BatteryMonitor> request) {
-    new FakeBatteryMonitor(request.Pass());
+    new FakeBatteryMonitor(std::move(request));
   }
 
  private:
   typedef mojo::Callback<void(device::BatteryStatusPtr)> BatteryStatusCallback;
 
   FakeBatteryMonitor(mojo::InterfaceRequest<BatteryMonitor> request)
-      : binding_(this, request.Pass()) {
-  }
+      : binding_(this, std::move(request)) {}
   ~FakeBatteryMonitor() override {}
 
   void QueryNextStatus(const BatteryStatusCallback& callback) override {

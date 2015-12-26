@@ -343,7 +343,7 @@ scoped_ptr<dbus::Response> NetworkManagerWlanApi::GetAccessPointProperty(
   if (!response) {
     LOG(WARNING) << "Failed to get property for " << property_name;
   }
-  return response.Pass();
+  return response;
 }
 
 }  // namespace

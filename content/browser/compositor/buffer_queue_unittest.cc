@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/compositor/buffer_queue.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <set>
+#include <utility>
 
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "content/browser/compositor/buffer_queue.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/common/gpu/client/gl_helper.h"
@@ -95,7 +96,7 @@ class BufferQueueTest : public ::testing::Test {
 
   void InitWithContext(scoped_ptr<cc::TestWebGraphicsContext3D> context) {
     scoped_refptr<cc::TestContextProvider> context_provider =
-        cc::TestContextProvider::Create(context.Pass());
+        cc::TestContextProvider::Create(std::move(context));
     context_provider->BindToCurrentThread();
     gpu_memory_buffer_manager_.reset(new StubBrowserGpuMemoryBufferManager);
     mock_output_surface_ =
@@ -236,7 +237,7 @@ scoped_ptr<BufferQueue> CreateOutputSurfaceWithMock(
       new BufferQueue(context_provider, target, GL_RGBA, nullptr,
                       gpu_memory_buffer_manager, 1));
   buffer_queue->Initialize();
-  return buffer_queue.Pass();
+  return buffer_queue;
 }
 
 TEST(BufferQueueStandaloneTest, FboInitialization) {

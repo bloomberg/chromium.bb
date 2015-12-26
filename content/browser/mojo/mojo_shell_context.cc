@@ -4,6 +4,8 @@
 
 #include "content/browser/mojo/mojo_shell_context.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -52,7 +54,7 @@ void StartUtilityProcessOnIOThread(
   process_host->StartMojoMode();
 
   ServiceRegistry* services = process_host->GetServiceRegistry();
-  services->ConnectToRemoteService(request.Pass());
+  services->ConnectToRemoteService(std::move(request));
 }
 
 void OnApplicationLoaded(const GURL& url, bool success) {
@@ -96,7 +98,7 @@ class UtilityProcessLoader : public mojo::shell::ApplicationLoader {
                             base::Bind(&StartUtilityProcessOnIOThread,
                                        base::Passed(&process_request),
                                        process_name_, use_sandbox_));
-    process_control->LoadApplication(url.spec(), application_request.Pass(),
+    process_control->LoadApplication(url.spec(), std::move(application_request),
                                      base::Bind(&OnApplicationLoaded, url));
   }
 
@@ -120,7 +122,8 @@ void RequestGpuProcessControl(mojo::InterfaceRequest<ProcessControl> request) {
   // process is dead. In that case, |request| will be dropped and application
   // load requests through ProcessControl will also fail. Make sure we handle
   // these cases correctly.
-  process_host->GetServiceRegistry()->ConnectToRemoteService(request.Pass());
+  process_host->GetServiceRegistry()->ConnectToRemoteService(
+      std::move(request));
 }
 
 // Forwards the load request to the GPU process.
@@ -139,7 +142,7 @@ class GpuProcessLoader : public mojo::shell::ApplicationLoader {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&RequestGpuProcessControl, base::Passed(&process_request)));
-    process_control->LoadApplication(url.spec(), application_request.Pass(),
+    process_control->LoadApplication(url.spec(), std::move(application_request),
                                      base::Bind(&OnApplicationLoaded, url));
   }
 
@@ -167,8 +170,8 @@ class MojoShellContext::Proxy {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
       if (shell_context_) {
         shell_context_->ConnectToApplicationOnOwnThread(
-            url, requestor_url, request.Pass(), exposed_services.Pass(), filter,
-            callback);
+            url, requestor_url, std::move(request), std::move(exposed_services),
+            filter, callback);
       }
     } else {
       // |shell_context_| outlives the main MessageLoop, so it's safe for it to
@@ -206,7 +209,7 @@ MojoShellContext::MojoShellContext() {
   scoped_ptr<mojo::package_manager::PackageManagerImpl> package_manager(
       new mojo::package_manager::PackageManagerImpl(base::FilePath(), nullptr));
   application_manager_.reset(
-      new mojo::shell::ApplicationManager(package_manager.Pass()));
+      new mojo::shell::ApplicationManager(std::move(package_manager)));
 
   application_manager_->set_default_loader(
       scoped_ptr<mojo::shell::ApplicationLoader>(new DefaultApplicationLoader));
@@ -272,9 +275,9 @@ void MojoShellContext::ConnectToApplication(
     mojo::ServiceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
     const mojo::Shell::ConnectToApplicationCallback& callback) {
-  proxy_.Get()->ConnectToApplication(url, requestor_url,
-                                     request.Pass(), exposed_services.Pass(),
-                                     filter, callback);
+  proxy_.Get()->ConnectToApplication(url, requestor_url, std::move(request),
+                                     std::move(exposed_services), filter,
+                                     callback);
 }
 
 void MojoShellContext::ConnectToApplicationOnOwnThread(
@@ -290,11 +293,11 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
       mojo::shell::Identity(requestor_url, std::string(),
                             mojo::shell::GetPermissiveCapabilityFilter()));
   params->SetTarget(mojo::shell::Identity(url, std::string(), filter));
-  params->set_services(request.Pass());
-  params->set_exposed_services(exposed_services.Pass());
+  params->set_services(std::move(request));
+  params->set_exposed_services(std::move(exposed_services));
   params->set_on_application_end(base::Bind(&base::DoNothing));
   params->set_connect_callback(callback);
-  application_manager_->ConnectToApplication(params.Pass());
+  application_manager_->ConnectToApplication(std::move(params));
 }
 
 }  // namespace content

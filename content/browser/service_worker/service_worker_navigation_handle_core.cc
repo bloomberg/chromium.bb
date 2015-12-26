@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -37,7 +39,7 @@ void ServiceWorkerNavigationHandleCore::DidPreCreateProviderHost(
   DCHECK(precreated_host.get());
   DCHECK(context_wrapper_->context());
 
-  precreated_host_ = precreated_host.Pass();
+  precreated_host_ = std::move(precreated_host);
   context_wrapper_->context()->AddNavigationHandleCore(
       precreated_host_->provider_id(), this);
   BrowserThread::PostTask(
@@ -57,7 +59,7 @@ ServiceWorkerNavigationHandleCore::RetrievePreCreatedHost() {
   DCHECK(context_wrapper_->context());
   context_wrapper_->context()->RemoveNavigationHandleCore(
       precreated_host_->provider_id());
-  return precreated_host_.Pass();
+  return std::move(precreated_host_);
 }
 
 }  // namespace content

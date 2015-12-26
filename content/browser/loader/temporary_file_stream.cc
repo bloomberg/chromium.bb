@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/temporary_file_stream.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_proxy.h"
@@ -43,7 +45,7 @@ void DidCreateTemporaryFile(
   scoped_ptr<net::FileStream> file_stream(
       new net::FileStream(file_proxy->TakeFile(), task_runner));
 
-  callback.Run(error_code, file_stream.Pass(), deletable_file.get());
+  callback.Run(error_code, std::move(file_stream), deletable_file.get());
 }
 
 }  // namespace

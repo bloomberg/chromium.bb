@@ -4,6 +4,8 @@
 
 #include "content/browser/geolocation/geolocation_service_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
@@ -62,7 +64,7 @@ GeolocationServiceImpl::GeolocationServiceImpl(
     mojo::InterfaceRequest<GeolocationService> request,
     GeolocationServiceContext* context,
     const base::Closure& update_callback)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       context_(context),
       update_callback_(update_callback),
       high_accuracy_(false),

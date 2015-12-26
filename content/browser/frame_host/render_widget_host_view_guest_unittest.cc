@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -139,7 +140,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
 
     // Call base-class version so that we can test UpdateGuestSizeIfNecessary().
     BrowserPluginGuest::SwapCompositorFrame(output_surface_id, host_process_id,
-                                            host_routing_id, frame.Pass());
+                                            host_routing_id, std::move(frame));
   }
 
   void SetChildFrameSurface(const cc::SurfaceId& surface_id,
@@ -239,7 +240,7 @@ scoped_ptr<cc::CompositorFrame> CreateDelegatedFrame(float scale_factor,
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(cc::RenderPassId(1, 1), gfx::Rect(size), damage,
                gfx::Transform());
-  frame->delegated_frame_data->render_pass_list.push_back(pass.Pass());
+  frame->delegated_frame_data->render_pass_list.push_back(std::move(pass));
   return frame;
 }
 }  // anonymous namespace

@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/mime_type_resource_handler.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -86,7 +87,7 @@ MimeTypeResourceHandler::MimeTypeResourceHandler(
     ResourceDispatcherHostImpl* host,
     PluginService* plugin_service,
     net::URLRequest* request)
-    : LayeredResourceHandler(request, next_handler.Pass()),
+    : LayeredResourceHandler(request, std::move(next_handler)),
       state_(STATE_STARTING),
       host_(host),
       plugin_service_(plugin_service),
@@ -94,8 +95,7 @@ MimeTypeResourceHandler::MimeTypeResourceHandler(
       bytes_read_(0),
       must_download_(false),
       must_download_is_set_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 MimeTypeResourceHandler::~MimeTypeResourceHandler() {
 }
@@ -329,7 +329,7 @@ bool MimeTypeResourceHandler::SelectPluginHandler(bool* defer,
       plugin_path, request(), response_.get(), &payload));
   if (handler) {
     *handled_by_plugin = true;
-    return UseAlternateNextHandler(handler.Pass(), payload);
+    return UseAlternateNextHandler(std::move(handler), payload);
   }
 #endif
   return true;
@@ -346,7 +346,7 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
     info->set_is_download(true);
     scoped_ptr<ResourceHandler> handler(
         new CertificateResourceHandler(request()));
-    return UseAlternateNextHandler(handler.Pass(), std::string());
+    return UseAlternateNextHandler(std::move(handler), std::string());
   }
 
   // Allow requests for object/embed tags to be intercepted as streams.
@@ -391,7 +391,7 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
           DownloadItem::kInvalidId,
           scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo()),
           DownloadUrlParameters::OnStartedCallback()));
-  return UseAlternateNextHandler(handler.Pass(), std::string());
+  return UseAlternateNextHandler(std::move(handler), std::string());
 }
 
 bool MimeTypeResourceHandler::UseAlternateNextHandler(
@@ -443,7 +443,7 @@ bool MimeTypeResourceHandler::UseAlternateNextHandler(
 
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.
-  next_handler_ = new_handler.Pass();
+  next_handler_ = std::move(new_handler);
   next_handler_->SetController(this);
 
   return CopyReadBufferToNextHandler();

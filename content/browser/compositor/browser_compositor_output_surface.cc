@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -27,18 +29,19 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       use_begin_frame_scheduling_(
           base::CommandLine::ForCurrentProcess()
               ->HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
-  overlay_candidate_validator_ = overlay_candidate_validator.Pass();
+  overlay_candidate_validator_ = std::move(overlay_candidate_validator);
   Initialize();
 }
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
-    : OutputSurface(software_device.Pass()),
+    : OutputSurface(std::move(software_device)),
       vsync_manager_(vsync_manager),
       reflector_(nullptr),
-      use_begin_frame_scheduling_(base::CommandLine::ForCurrentProcess()->
-          HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
+      use_begin_frame_scheduling_(
+          base::CommandLine::ForCurrentProcess()
+              ->HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
   Initialize();
 }
 

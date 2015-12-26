@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
@@ -136,7 +137,7 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
         scoped_ptr<PepperPrintSettingsManager> manager(
             new PepperPrintSettingsManagerImpl());
         return scoped_ptr<ResourceHost>(new PepperPrintingHost(
-            host_->GetPpapiHost(), instance, resource, manager.Pass()));
+            host_->GetPpapiHost(), instance, resource, std::move(manager)));
       }
       case PpapiHostMsg_TrueTypeFont_Create::ID: {
         SerializedTrueTypeFontDesc desc;
@@ -232,8 +233,8 @@ ContentBrowserPepperHostFactory::CreateAcceptedTCPSocket(
   if (!CanCreateSocket())
     return scoped_ptr<ResourceHost>();
   scoped_refptr<ResourceMessageFilter> tcp_socket(
-      new PepperTCPSocketMessageFilter(
-          host_, instance, version, socket.Pass()));
+      new PepperTCPSocketMessageFilter(host_, instance, version,
+                                       std::move(socket)));
   return scoped_ptr<ResourceHost>(
       new MessageFilterHost(host_->GetPpapiHost(), instance, 0, tcp_socket));
 }

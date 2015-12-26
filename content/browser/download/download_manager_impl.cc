@@ -5,6 +5,7 @@
 #include "content/browser/download/download_manager_impl.h"
 
 #include <iterator>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -66,7 +67,7 @@ scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
     scoped_ptr<net::UploadElementReader> reader(
         net::UploadOwnedBytesElementReader::CreateWithString(body));
     request->set_upload(
-        net::ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+        net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
   }
   if (params->post_id() >= 0) {
     // The POST in this case does not have an actual body, and only works
@@ -204,9 +205,8 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       const std::string& mime_type,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) override {
-    return new DownloadItemImpl(delegate, download_id, path, url,
-                                mime_type, request_handle.Pass(),
-                                bound_net_log);
+    return new DownloadItemImpl(delegate, download_id, path, url, mime_type,
+                                std::move(request_handle), bound_net_log);
   }
 };
 
@@ -463,12 +463,8 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetNextId(base::Bind(
       &DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
-      weak_factory_.GetWeakPtr(),
-      main_file_path,
-      page_url,
-      mime_type,
-      base::Passed(request_handle.Pass()),
-      item_created));
+      weak_factory_.GetWeakPtr(), main_file_path, page_url, mime_type,
+      base::Passed(std::move(request_handle)), item_created));
 }
 
 void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
@@ -484,12 +480,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
-      this,
-      id,
-      main_file_path,
-      page_url,
-      mime_type,
-      request_handle.Pass(),
+      this, id, main_file_path, page_url, mime_type, std::move(request_handle),
       bound_net_log);
   downloads_[download_item->GetId()] = download_item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(
@@ -521,12 +512,12 @@ void DownloadManagerImpl::ResumeInterruptedDownload(
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
     scoped_ptr<DownloadItemFactory> item_factory) {
-  item_factory_ = item_factory.Pass();
+  item_factory_ = std::move(item_factory);
 }
 
 void DownloadManagerImpl::SetDownloadFileFactoryForTesting(
     scoped_ptr<DownloadFileFactory> file_factory) {
-  file_factory_ = file_factory.Pass();
+  file_factory_ = std::move(file_factory);
 }
 
 DownloadFileFactory* DownloadManagerImpl::GetDownloadFileFactoryForTesting() {
@@ -546,7 +537,7 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
 void DownloadManagerImpl::AddUrlDownloader(
     scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> downloader) {
   if (downloader)
-    url_downloaders_.push_back(downloader.Pass());
+    url_downloaders_.push_back(std::move(downloader));
 }
 
 void DownloadManagerImpl::RemoveUrlDownloader(UrlDownloader* downloader) {

@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
@@ -57,7 +58,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   scoped_ptr<MockServiceWorkerDatabaseTaskManager> database_task_manager(
       new MockServiceWorkerDatabaseTaskManager(
           base::ThreadTaskRunnerHandle::Get()));
-  wrapper_->InitInternal(user_data_directory, database_task_manager.Pass(),
+  wrapper_->InitInternal(user_data_directory, std::move(database_task_manager),
                          base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id_);
   registry()->AddChildProcessSender(mock_render_process_id_, this,

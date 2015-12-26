@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "content/browser/mojo/mojo_shell_client_host.h"
 
@@ -13,7 +15,7 @@ mojo::CapabilityFilterPtr CreateCapabilityFilterForRenderer() {
   mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
   mojo::Array<mojo::String> window_manager_interfaces;
   window_manager_interfaces.push_back(mus::mojom::Gpu::Name_);
-  filter->filter.insert("mojo:mus", window_manager_interfaces.Pass());
+  filter->filter.insert("mojo:mus", std::move(window_manager_interfaces));
   return filter;
 }
 

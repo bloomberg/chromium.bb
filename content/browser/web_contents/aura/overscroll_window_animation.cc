@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/aura/overscroll_window_animation.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/i18n/rtl.h"
 #include "content/browser/web_contents/aura/shadow_layer_delegate.h"
@@ -78,7 +79,7 @@ void OverscrollWindowAnimation::OnImplicitAnimationsCompleted() {
     delegate_->OnOverscrollCancelled();
     overscroll_cancelled_ = false;
   } else {
-    delegate_->OnOverscrollCompleted(slide_window_.Pass());
+    delegate_->OnOverscrollCompleted(std::move(slide_window_));
   }
   direction_ = SLIDE_NONE;
 }

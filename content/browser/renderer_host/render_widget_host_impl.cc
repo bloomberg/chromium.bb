@@ -293,7 +293,7 @@ scoped_ptr<RenderWidgetHostIterator> RenderWidgetHost::GetRenderWidgetHosts() {
       hosts->Add(widget);
   }
 
-  return hosts.Pass();
+  return std::move(hosts);
 }
 
 // static
@@ -304,7 +304,7 @@ RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
   for (auto& it : g_routing_id_widget_map.Get())
     hosts->Add(it.second);
 
-  return hosts.Pass();
+  return std::move(hosts);
 }
 
 // static
@@ -1185,12 +1185,11 @@ void RenderWidgetHostImpl::QueueSyntheticGesture(
     const base::Callback<void(SyntheticGesture::Result)>& on_complete) {
   if (!synthetic_gesture_controller_ && view_) {
     synthetic_gesture_controller_.reset(
-        new SyntheticGestureController(
-            view_->CreateSyntheticGestureTarget().Pass()));
+        new SyntheticGestureController(view_->CreateSyntheticGestureTarget()));
   }
   if (synthetic_gesture_controller_) {
     synthetic_gesture_controller_->QueueSyntheticGesture(
-        synthetic_gesture.Pass(), on_complete);
+        std::move(synthetic_gesture), on_complete);
   }
 }
 
@@ -1587,12 +1586,12 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
   if (view_) {
-    view_->OnSwapCompositorFrame(output_surface_id, frame.Pass());
+    view_->OnSwapCompositorFrame(output_surface_id, std::move(frame));
     view_->DidReceiveRendererFrame();
   } else {
     cc::CompositorFrameAck ack;
     if (frame->gl_frame_data) {
-      ack.gl_frame_data = frame->gl_frame_data.Pass();
+      ack.gl_frame_data = std::move(frame->gl_frame_data);
       ack.gl_frame_data->sync_token.Clear();
     } else if (frame->delegated_frame_data) {
       cc::TransferableResource::ReturnResources(

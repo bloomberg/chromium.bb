@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/database_message_filter.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
@@ -147,8 +148,8 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(
               VfsBackend::OpenFile(db_file,
                                    desired_flags | SQLITE_OPEN_DELETEONCLOSE);
           if (!(desired_flags & SQLITE_OPEN_DELETEONCLOSE)) {
-            tracked_file = db_tracker_->SaveIncognitoFile(vfs_file_name,
-                                                          file.Pass());
+            tracked_file =
+                db_tracker_->SaveIncognitoFile(vfs_file_name, std::move(file));
           }
         }
       } else {
@@ -162,7 +163,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(
   // database tracker.
   *handle = IPC::InvalidPlatformFileForTransit();
   if (file.IsValid()) {
-    *handle = IPC::TakeFileHandleForProcess(file.Pass(), PeerHandle());
+    *handle = IPC::TakeFileHandleForProcess(std::move(file), PeerHandle());
   } else if (tracked_file) {
     DCHECK(tracked_file->IsValid());
     *handle =

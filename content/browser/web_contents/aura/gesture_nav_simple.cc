@@ -4,6 +4,8 @@
 
 #include "content/browser/web_contents/aura/gesture_nav_simple.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "cc/layers/layer.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -50,7 +52,7 @@ template <class T>
 class DeleteAfterAnimation : public ui::ImplicitAnimationObserver {
  public:
   explicit DeleteAfterAnimation(scoped_ptr<T> object)
-      : object_(object.Pass()) {}
+      : object_(std::move(object)) {}
 
  private:
   friend class base::DeleteHelper<DeleteAfterAnimation<T> >;
@@ -129,9 +131,10 @@ void GestureNavSimple::ApplyEffectsAndDestroy(const gfx::Transform& transform,
   ui::Layer* layer = arrow_.get();
   ui::ScopedLayerAnimationSettings settings(arrow_->GetAnimator());
   settings.AddObserver(
-      new DeleteAfterAnimation<ArrowLayerDelegate>(arrow_delegate_.Pass()));
-  settings.AddObserver(new DeleteAfterAnimation<ui::Layer>(arrow_.Pass()));
-  settings.AddObserver(new DeleteAfterAnimation<ui::Layer>(clip_layer_.Pass()));
+      new DeleteAfterAnimation<ArrowLayerDelegate>(std::move(arrow_delegate_)));
+  settings.AddObserver(new DeleteAfterAnimation<ui::Layer>(std::move(arrow_)));
+  settings.AddObserver(
+      new DeleteAfterAnimation<ui::Layer>(std::move(clip_layer_)));
   layer->SetTransform(transform);
   layer->SetOpacity(opacity);
 }

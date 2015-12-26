@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/debug/debugger.h"
@@ -428,7 +429,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
         int buffer_id)
         : id_(buffer_id),
           pool_(pool),
-          buffer_handle_(buffer_handle.Pass()) {
+          buffer_handle_(std::move(buffer_handle)) {
       DCHECK(pool_.get());
     }
     int id() const override { return id_; }
@@ -474,7 +475,7 @@ class StubClientObserver {
   virtual ~StubClientObserver() {}
 
   scoped_ptr<media::VideoCaptureDevice::Client> PassClient() {
-    return client_.Pass();
+    return std::move(client_);
   }
 
   void QuitIfConditionsMet(SkColor color, const gfx::Size& size) {

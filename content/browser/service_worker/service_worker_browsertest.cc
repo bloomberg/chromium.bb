@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -220,7 +221,7 @@ scoped_ptr<net::test_server::HttpResponse> VerifyServiceWorkerHeaderInRequest(
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse());
   http_response->set_content_type("text/javascript");
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // The ImportsBustMemcache test requires that the imported script
@@ -261,12 +262,12 @@ void CreateLongLivedResourceInterceptors(
   interceptor.reset(new LongLivedResourceInterceptor(
       "importScripts('long_lived_import.js');"));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      worker_url, interceptor.Pass());
+      worker_url, std::move(interceptor));
 
   interceptor.reset(new LongLivedResourceInterceptor(
       "// the imported script does nothing"));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      import_url, interceptor.Pass());
+      import_url, std::move(interceptor));
 }
 
 void CountScriptResources(
@@ -454,7 +455,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(prepare_result);
     *result = fetch_result.result;
     *response = fetch_result.response;
-    *blob_data_handle = fetch_result.blob_data_handle.Pass();
+    *blob_data_handle = std::move(fetch_result.blob_data_handle);
     ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
   }
 
@@ -507,7 +508,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         embedded_test_server()->GetURL("/service_worker/host"));
     host->AssociateRegistration(registration_.get(),
                                 false /* notify_controllerchange */);
-    wrapper()->context()->AddProviderHost(host.Pass());
+    wrapper()->context()->AddProviderHost(std::move(host));
   }
 
   void AddWaitingWorkerOnIOThread(const std::string& worker_url) {

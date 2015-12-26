@@ -340,7 +340,7 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
     for (const BluetoothUUID& service : services) {
       discovery_filter->AddUUID(service);
     }
-    return discovery_filter.Pass();
+    return discovery_filter;
   }
 
   const int thread_id;
@@ -442,7 +442,7 @@ void BluetoothDispatcherHost::StopDeviceDiscovery() {
        !iter.IsAtEnd(); iter.Advance()) {
     RequestDeviceSession* session = iter.GetCurrentValue();
     if (session->discovery_session) {
-      StopDiscoverySession(session->discovery_session.Pass());
+      StopDiscoverySession(std::move(session->discovery_session));
     }
     if (session->chooser) {
       session->chooser->ShowDiscoveryState(
@@ -991,14 +991,14 @@ void BluetoothDispatcherHost::OnDiscoverySessionStarted(
   VLOG(1) << "Started discovery session for " << chooser_id;
   if (RequestDeviceSession* session =
           request_device_sessions_.Lookup(chooser_id)) {
-    session->discovery_session = discovery_session.Pass();
+    session->discovery_session = std::move(discovery_session);
 
     // Arrange to stop discovery later.
     discovery_session_timer_.Reset();
   } else {
     VLOG(1) << "Chooser " << chooser_id
             << " was closed before the session finished starting. Stopping.";
-    StopDiscoverySession(discovery_session.Pass());
+    StopDiscoverySession(std::move(discovery_session));
   }
 }
 
@@ -1139,7 +1139,7 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
     base::TimeTicks start_time,
     scoped_ptr<device::BluetoothGattConnection> connection) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  connections_.push_back(connection.Pass());
+  connections_.push_back(std::move(connection));
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
   Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id, device_id));
@@ -1229,7 +1229,7 @@ void BluetoothDispatcherHost::OnStartNotifySessionSuccess(
   const std::string characteristic_instance_id =
       notify_session->GetCharacteristicIdentifier();
   characteristic_id_to_notify_session_.insert(
-      std::make_pair(characteristic_instance_id, notify_session.Pass()));
+      std::make_pair(characteristic_instance_id, std::move(notify_session)));
 
   Send(new BluetoothMsg_StartNotificationsSuccess(thread_id, request_id));
 }

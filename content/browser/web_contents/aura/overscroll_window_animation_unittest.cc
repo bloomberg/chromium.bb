@@ -94,7 +94,7 @@ class OverscrollWindowAnimationTest
       scoped_ptr<aura::Window> window(
           CreateNormalWindow(++last_window_id_, root_window(), nullptr));
       window->SetBounds(bounds);
-      return window.Pass();
+      return window;
     }
     return nullptr;
   }

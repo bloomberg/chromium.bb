@@ -134,7 +134,7 @@ scoped_ptr<base::DictionaryValue> GenerateTracingMetadataDict()  {
   metadata_dict->SetBoolean("highres-ticks",
                             base::TimeTicks::IsHighResolution());
 
-  return metadata_dict.Pass();
+  return metadata_dict;
 }
 
 }  // namespace

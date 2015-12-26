@@ -1778,7 +1778,7 @@ scoped_ptr<IndexedDBKey> ObjectStoreDataKey::user_key() const {
   if (!DecodeIDBKey(&slice, &key)) {
     // TODO(jsbell): Return error.
   }
-  return key.Pass();
+  return key;
 }
 
 const int64_t ObjectStoreDataKey::kSpecialIndexNumber = kObjectStoreDataIndexId;
@@ -1822,7 +1822,7 @@ scoped_ptr<IndexedDBKey> ExistsEntryKey::user_key() const {
   if (!DecodeIDBKey(&slice, &key)) {
     // TODO(jsbell): Return error.
   }
-  return key.Pass();
+  return key;
 }
 
 const int64_t ExistsEntryKey::kSpecialIndexNumber = kExistsEntryIndexId;
@@ -2021,7 +2021,7 @@ scoped_ptr<IndexedDBKey> IndexDataKey::user_key() const {
   if (!DecodeIDBKey(&slice, &key)) {
     // TODO(jsbell): Return error.
   }
-  return key.Pass();
+  return key;
 }
 
 scoped_ptr<IndexedDBKey> IndexDataKey::primary_key() const {
@@ -2030,7 +2030,7 @@ scoped_ptr<IndexedDBKey> IndexDataKey::primary_key() const {
   if (!DecodeIDBKey(&slice, &key)) {
     // TODO(jsbell): Return error.
   }
-  return key.Pass();
+  return key;
 }
 
 }  // namespace content

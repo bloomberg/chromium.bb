@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -114,12 +115,9 @@ scoped_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  return make_scoped_ptr(new ServiceWorkerStorage(path,
-                                                  context,
-                                                  database_task_manager.Pass(),
-                                                  disk_cache_thread,
-                                                  quota_manager_proxy,
-                                                  special_storage_policy));
+  return make_scoped_ptr(new ServiceWorkerStorage(
+      path, context, std::move(database_task_manager), disk_cache_thread,
+      quota_manager_proxy, special_storage_policy));
 }
 
 // static
@@ -783,7 +781,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       state_(UNINITIALIZED),
       path_(path),
       context_(context),
-      database_task_manager_(database_task_manager.Pass()),
+      database_task_manager_(std::move(database_task_manager)),
       disk_cache_thread_(disk_cache_thread),
       quota_manager_proxy_(quota_manager_proxy),
       special_storage_policy_(special_storage_policy),
@@ -1466,21 +1464,21 @@ void ServiceWorkerStorage::ReadInitialDataFromDB(
                                     &data->next_resource_id);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, base::Passed(data.Pass()), status));
+        FROM_HERE, base::Bind(callback, base::Passed(std::move(data)), status));
     return;
   }
 
   status = database->GetOriginsWithRegistrations(&data->origins);
   if (status != ServiceWorkerDatabase::STATUS_OK) {
     original_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, base::Passed(data.Pass()), status));
+        FROM_HERE, base::Bind(callback, base::Passed(std::move(data)), status));
     return;
   }
 
   status = database->GetOriginsWithForeignFetchRegistrations(
       &data->foreign_fetch_origins);
   original_task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(data.Pass()), status));
+      FROM_HERE, base::Bind(callback, base::Passed(std::move(data)), status));
 }
 
 void ServiceWorkerStorage::DeleteRegistrationFromDB(

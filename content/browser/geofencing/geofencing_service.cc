@@ -4,6 +4,8 @@
 
 #include "content/browser/geofencing/geofencing_service.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
@@ -140,7 +142,7 @@ void GeofencingServiceImpl::UnregisterRegion(
 void GeofencingServiceImpl::SetProviderForTesting(
     scoped_ptr<GeofencingProvider> provider) {
   DCHECK(!provider_.get());
-  provider_ = provider.Pass();
+  provider_ = std::move(provider);
 }
 
 int GeofencingServiceImpl::RegistrationCountForTesting() {

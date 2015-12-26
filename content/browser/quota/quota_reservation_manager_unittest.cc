@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "storage/browser/fileapi/quota/quota_reservation_manager.h"
-
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -18,6 +17,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/quota/open_file_handle.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
+#include "storage/browser/fileapi/quota/quota_reservation_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::kFileSystemTypeTemporary;
@@ -102,12 +102,11 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 class FakeWriter {
  public:
   explicit FakeWriter(scoped_ptr<OpenFileHandle> handle)
-      : handle_(handle.Pass()),
+      : handle_(std::move(handle)),
         path_(handle_->platform_path()),
         max_written_offset_(handle_->GetEstimatedFileSize()),
         append_mode_write_amount_(0),
-        dirty_(false) {
-  }
+        dirty_(false) {}
 
   ~FakeWriter() {
     if (handle_)
@@ -193,7 +192,7 @@ class QuotaReservationManagerTest : public testing::Test {
     SetFileSize(file_path_, kInitialFileSize);
 
     scoped_ptr<QuotaReservationManager::QuotaBackend> backend(new FakeBackend);
-    reservation_manager_.reset(new QuotaReservationManager(backend.Pass()));
+    reservation_manager_.reset(new QuotaReservationManager(std::move(backend)));
   }
 
   void TearDown() override { reservation_manager_.reset(); }

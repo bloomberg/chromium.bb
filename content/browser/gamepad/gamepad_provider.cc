@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/gamepad/gamepad_provider.h"
+
 #include <stddef.h>
 #include <string.h>
-
 #include <cmath>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -20,7 +22,6 @@
 #include "build/build_config.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_platform_data_fetcher.h"
-#include "content/browser/gamepad/gamepad_provider.h"
 #include "content/browser/gamepad/gamepad_service.h"
 #include "content/common/gamepad_hardware_buffer.h"
 #include "content/common/gamepad_messages.h"
@@ -54,7 +55,7 @@ GamepadProvider::GamepadProvider(scoped_ptr<GamepadDataFetcher> fetcher)
       have_scheduled_do_poll_(false),
       devices_changed_(true),
       ever_had_user_gesture_(false) {
-  Initialize(fetcher.Pass());
+  Initialize(std::move(fetcher));
 }
 
 GamepadProvider::~GamepadProvider() {
@@ -160,7 +161,7 @@ void GamepadProvider::DoInitializePollingThread(
 
   if (!fetcher)
     fetcher.reset(new GamepadPlatformDataFetcher);
-  data_fetcher_ = fetcher.Pass();
+  data_fetcher_ = std::move(fetcher);
 }
 
 void GamepadProvider::SendPauseHint(bool paused) {

@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/resource_scheduler.h"
 
+#include <utility>
+
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -53,8 +55,8 @@ class TestRequest : public ResourceController {
               scoped_ptr<ResourceThrottle> throttle,
               ResourceScheduler* scheduler)
       : started_(false),
-        url_request_(url_request.Pass()),
-        throttle_(throttle.Pass()),
+        url_request_(std::move(url_request)),
+        throttle_(std::move(throttle)),
         scheduler_(scheduler) {
     throttle_->set_controller_for_testing(this);
   }
@@ -102,10 +104,10 @@ class CancelingTestRequest : public TestRequest {
   CancelingTestRequest(scoped_ptr<net::URLRequest> url_request,
                        scoped_ptr<ResourceThrottle> throttle,
                        ResourceScheduler* scheduler)
-      : TestRequest(url_request.Pass(), throttle.Pass(), scheduler) {}
+      : TestRequest(std::move(url_request), std::move(throttle), scheduler) {}
 
   void set_request_to_cancel(scoped_ptr<TestRequest> request_to_cancel) {
-    request_to_cancel_ = request_to_cancel.Pass();
+    request_to_cancel_ = std::move(request_to_cancel);
   }
 
  private:
@@ -181,7 +183,7 @@ class ResourceSchedulerTest : public testing::Test {
       int route_id) {
     scoped_ptr<net::URLRequest> url_request(
         context_.CreateRequest(GURL(url), priority, NULL));
-    return url_request.Pass();
+    return url_request;
   }
 
   scoped_ptr<net::URLRequest> NewURLRequest(const char* url,
@@ -238,8 +240,8 @@ class ResourceSchedulerTest : public testing::Test {
         NewURLRequestWithChildAndRoute(url, priority, child_id, route_id));
     scoped_ptr<ResourceThrottle> throttle(scheduler_->ScheduleRequest(
         child_id, route_id, is_async, url_request.get()));
-    TestRequest* request =
-        new TestRequest(url_request.Pass(), throttle.Pass(), scheduler());
+    TestRequest* request = new TestRequest(std::move(url_request),
+                                           std::move(throttle), scheduler());
     request->Start();
     return request;
   }
@@ -403,11 +405,11 @@ TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
   scoped_ptr<ResourceThrottle> throttle(scheduler()->ScheduleRequest(
       kChildId, kRouteId, true, url_request.get()));
   scoped_ptr<CancelingTestRequest> low2(new CancelingTestRequest(
-      url_request.Pass(), throttle.Pass(), scheduler()));
+      std::move(url_request), std::move(throttle), scheduler()));
   low2->Start();
 
   scoped_ptr<TestRequest> low3(NewRequest("http://host/low3", net::LOWEST));
-  low2->set_request_to_cancel(low3.Pass());
+  low2->set_request_to_cancel(std::move(low3));
   scoped_ptr<TestRequest> low4(NewRequest("http://host/low4", net::LOWEST));
 
   EXPECT_TRUE(high->started());
