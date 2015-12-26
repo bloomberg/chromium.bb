@@ -5,19 +5,23 @@
 #ifndef CHROME_BROWSER_IO_THREAD_H_
 #define CHROME_BROWSER_IO_THREAD_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/features.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
@@ -195,8 +199,8 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     scoped_ptr<net::NetworkQualityEstimator> network_quality_estimator;
     bool ignore_certificate_errors;
-    uint16 testing_fixed_http_port;
-    uint16 testing_fixed_https_port;
+    uint16_t testing_fixed_http_port;
+    uint16_t testing_fixed_https_port;
     Optional<bool> enable_tcp_fast_open_for_ssl;
 
     Optional<size_t> initial_max_spdy_concurrent_streams;

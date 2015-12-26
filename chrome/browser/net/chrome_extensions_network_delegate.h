@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_NET_CHROME_EXTENSIONS_NETWORK_DELEGATE_H_
 #define CHROME_BROWSER_NET_CHROME_EXTENSIONS_NETWORK_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/network_delegate_impl.h"
 

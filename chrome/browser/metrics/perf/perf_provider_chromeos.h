@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_METRICS_PERF_PERF_PROVIDER_CHROMEOS_H_
 #define CHROME_BROWSER_METRICS_PERF_PERF_PROVIDER_CHROMEOS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -129,8 +131,8 @@ class PerfProvider : public base::NonThreadSafe,
       scoped_ptr<WindowedIncognitoObserver> incognito_observer,
       scoped_ptr<SampledProfile> sampled_profile,
       int result,
-      const std::vector<uint8>& perf_data,
-      const std::vector<uint8>& perf_stat);
+      const std::vector<uint8_t>& perf_data,
+      const std::vector<uint8_t>& perf_stat);
 
   const CollectionParams& collection_params() const {
     return collection_params_;

@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -75,7 +76,7 @@ namespace {
 // A bitfield formed from values in AutoImportState to record the state of
 // AutoImport. This is used in testing to verify import startup actions that
 // occur before an observer can be registered in the test.
-uint16 g_auto_import_state = first_run::AUTO_IMPORT_NONE;
+uint16_t g_auto_import_state = first_run::AUTO_IMPORT_NONE;
 
 // Flags for functions of similar name.
 bool g_should_show_welcome_page = false;
@@ -236,7 +237,7 @@ void SetImportItem(PrefService* user_prefs,
 void ImportFromSourceProfile(ExternalProcessImporterHost* importer_host,
                              const importer::SourceProfile& source_profile,
                              Profile* target_profile,
-                             uint16 items_to_import) {
+                             uint16_t items_to_import) {
   ImportEndedObserver observer;
   importer_host->set_observer(&observer);
   importer_host->StartImportSettings(source_profile,
@@ -829,7 +830,7 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user) {
   internal::DoPostImportPlatformSpecificTasks(profile);
 }
 
-uint16 auto_import_state() {
+uint16_t auto_import_state() {
   return g_auto_import_state;
 }
 

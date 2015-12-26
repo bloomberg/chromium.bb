@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
@@ -19,7 +23,7 @@ void MeasureSizeAndTimeToLoadNativeLibrary(const base::FilePath& library_name) {
   base::FilePath library_path = output_dir.Append(library_name);
   ASSERT_TRUE(base::PathExists(library_path)) << library_path.value();
 
-  int64 size = 0;
+  int64_t size = 0;
   ASSERT_TRUE(base::GetFileSize(library_path, &size));
   perf_test::PrintResult("library_size",
                          "",

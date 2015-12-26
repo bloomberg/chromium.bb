@@ -4,9 +4,11 @@
 
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"

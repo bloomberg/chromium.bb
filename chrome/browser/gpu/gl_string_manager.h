@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 
 class PrefRegistrySimple;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -17,6 +19,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
@@ -197,7 +200,7 @@ bool ChromeMetricsServiceClient::IsOffTheRecordSessionActive() {
   return chrome::IsOffTheRecordSessionActive();
 }
 
-int32 ChromeMetricsServiceClient::GetProduct() {
+int32_t ChromeMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::CHROME;
 }
 

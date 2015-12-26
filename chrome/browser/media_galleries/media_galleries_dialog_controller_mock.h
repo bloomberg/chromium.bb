@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_DIALOG_CONTROLLER_MOCK_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_DIALOG_CONTROLLER_MOCK_H_
 
+#include <stddef.h>
+
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

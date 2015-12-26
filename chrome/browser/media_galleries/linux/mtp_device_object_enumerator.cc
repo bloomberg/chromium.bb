@@ -27,7 +27,7 @@ base::FilePath MTPDeviceObjectEnumerator::Next() {
   return base::FilePath(file_entries_[index_].file_name());
 }
 
-int64 MTPDeviceObjectEnumerator::Size() {
+int64_t MTPDeviceObjectEnumerator::Size() {
   if (!IsIndexReadyAndInRange())
     return 0;
   return file_entries_[index_].file_size();
@@ -45,7 +45,7 @@ base::Time MTPDeviceObjectEnumerator::LastModifiedTime() {
   return base::Time::FromTimeT(file_entries_[index_].modification_time());
 }
 
-bool MTPDeviceObjectEnumerator::GetEntryId(uint32* entry_id) const {
+bool MTPDeviceObjectEnumerator::GetEntryId(uint32_t* entry_id) const {
   DCHECK(entry_id);
   if (!IsIndexReadyAndInRange())
     return false;

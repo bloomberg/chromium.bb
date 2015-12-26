@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "net/url_request/url_fetcher.h"

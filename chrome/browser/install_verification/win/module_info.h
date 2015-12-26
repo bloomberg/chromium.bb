@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_INFO_H_
 #define CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_INFO_H_
 
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 
 // Represents and facilitates operations on the address range corresponding to a

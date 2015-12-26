@@ -5,6 +5,7 @@
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/cloud_device_list.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/json/json_reader.h"

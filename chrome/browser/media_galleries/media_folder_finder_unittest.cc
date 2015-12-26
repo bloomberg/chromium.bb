@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/media_folder_finder.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
@@ -11,9 +13,11 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "build/build_config.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_MANIFEST_MANIFEST_ICON_SELECTOR_H_
 #define CHROME_BROWSER_MANIFEST_MANIFEST_ICON_SELECTOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/common/manifest.h"
 #include "url/gurl.h"
 

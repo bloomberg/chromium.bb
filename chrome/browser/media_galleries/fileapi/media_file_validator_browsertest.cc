@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -36,9 +39,9 @@ const char kValidImage[] = "RIFF0\0\0\0WEBPVP8 $\0\0\0\xB2\x02\0\x9D\x01\x2A"
 
 const char kInvalidMediaFile[] = "Not a media file";
 
-const int64 kNoFileSize = -1;
+const int64_t kNoFileSize = -1;
 
-void HandleCheckFileResult(int64 expected_size,
+void HandleCheckFileResult(int64_t expected_size,
                            const base::Callback<void(bool success)>& callback,
                            base::File::Error result,
                            const base::File::Info& file_info) {
@@ -175,7 +178,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   // |kNoFileSize| if the file should not exist.  |callback| is called
   // with success/failure.
   void CheckFile(storage::FileSystemURL url,
-                 int64 expected_size,
+                 int64_t expected_size,
                  const base::Callback<void(bool success)>& callback) {
     operation_runner()->GetMetadata(
         url, storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,

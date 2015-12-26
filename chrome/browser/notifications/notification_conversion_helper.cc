@@ -4,6 +4,9 @@
 
 #include "chrome/browser/notifications/notification_conversion_helper.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>

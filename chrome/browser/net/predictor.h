@@ -25,7 +25,12 @@
 #include <string>
 #include <vector>
 
+#include <stddef.h>
+
+#include <stdint.h>
+
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -407,9 +412,9 @@ class Predictor {
   // Interval between periodic trimming of our whole referrer list.
   // We only do a major trimming about once an hour, and then only when the user
   // is actively browsing.
-  static const int64 kDurationBetweenTrimmingsHours;
+  static const int64_t kDurationBetweenTrimmingsHours;
   // Interval between incremental trimmings (to avoid inducing Jank).
-  static const int64 kDurationBetweenTrimmingIncrementsSeconds;
+  static const int64_t kDurationBetweenTrimmingIncrementsSeconds;
   // Number of referring URLs processed in an incremental trimming.
   static const size_t kUrlsTrimmedPerIncrement;
 

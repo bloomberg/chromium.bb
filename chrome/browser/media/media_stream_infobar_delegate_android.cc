@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/media_stream_infobar_delegate_android.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"

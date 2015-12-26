@@ -17,7 +17,9 @@
 
 #include <map>
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "url/gurl.h"
@@ -51,13 +53,13 @@ class ReferrerValue {
   // of our associated referrer.)
   void ReferrerWasObserved();
 
-  int64 navigation_count() const { return navigation_count_; }
+  int64_t navigation_count() const { return navigation_count_; }
   double subresource_use_rate() const { return subresource_use_rate_; }
 
-  int64 preconnection_count() const { return preconnection_count_; }
+  int64_t preconnection_count() const { return preconnection_count_; }
   void IncrementPreconnectionCount() { ++preconnection_count_; }
 
-  int64 preresolution_count() const { return preresolution_count_; }
+  int64_t preresolution_count() const { return preresolution_count_; }
   void preresolution_increment() { ++preresolution_count_; }
 
   // Reduce the subresource_use_rate_ by the supplied factor, and return true
@@ -68,15 +70,15 @@ class ReferrerValue {
   const base::Time birth_time_;
 
   // The number of times this item was navigated to with the fixed referrer.
-  int64 navigation_count_;
+  int64_t navigation_count_;
 
   // The number of times this item was preconnected as a consequence of its
   // referrer.
-  int64 preconnection_count_;
+  int64_t preconnection_count_;
 
   // The number of times this item was pre-resolved (via DNS) as a consequence
   // of its referrer.
-  int64 preresolution_count_;
+  int64_t preresolution_count_;
 
   // A smoothed estimate of the expected number of connections that will be made
   // to this subresource.
@@ -102,7 +104,7 @@ class Referrer : public SubresourceMap {
  public:
   Referrer();
   void IncrementUseCount() { ++use_count_; }
-  int64 use_count() const { return use_count_; }
+  int64_t use_count() const { return use_count_; }
 
   // Add the indicated url to the list that are resolved via DNS when the user
   // navigates to this referrer.  Note that if the list is long, an entry may be
@@ -129,7 +131,7 @@ class Referrer : public SubresourceMap {
 
   // The number of times this referer had its subresources scanned for possible
   // preconnection or DNS preresolution.
-  int64 use_count_;
+  int64_t use_count_;
 
   // We put these into a std::map<>, so we need copy constructors.
   // DISALLOW_COPY_AND_ASSIGN(Referrer);

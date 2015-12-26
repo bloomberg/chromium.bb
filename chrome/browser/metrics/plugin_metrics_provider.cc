@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/prefs/pref_registry_simple.h"

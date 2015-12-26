@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_EVICTION_POLICY_H_
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_EVICTION_POLICY_H_
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/macros.h"
@@ -31,8 +33,8 @@ class SiteEngagementEvictionPolicy : public storage::QuotaEvictionPolicy {
   void GetEvictionOrigin(const scoped_refptr<storage::SpecialStoragePolicy>&
                              special_storage_policy,
                          const std::set<GURL>& exceptions,
-                         const std::map<GURL, int64>& usage_map,
-                         int64 global_quota,
+                         const std::map<GURL, int64_t>& usage_map,
+                         int64_t global_quota,
                          const storage::GetOriginCallback& callback) override;
 
  private:
@@ -43,8 +45,8 @@ class SiteEngagementEvictionPolicy : public storage::QuotaEvictionPolicy {
           special_storage_policy,
       SiteEngagementScoreProvider* score_provider,
       const std::set<GURL>& exceptions,
-      const std::map<GURL, int64>& usage_map,
-      int64 global_quota);
+      const std::map<GURL, int64_t>& usage_map,
+      int64_t global_quota);
 
   content::BrowserContext* const browser_context_;
 

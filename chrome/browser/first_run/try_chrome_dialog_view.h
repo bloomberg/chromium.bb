@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_FIRST_RUN_TRY_CHROME_DIALOG_VIEW_H_
 #define CHROME_BROWSER_FIRST_RUN_TRY_CHROME_DIALOG_VIEW_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"

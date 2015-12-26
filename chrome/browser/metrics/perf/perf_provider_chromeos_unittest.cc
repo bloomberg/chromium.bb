@@ -4,10 +4,12 @@
 
 #include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/test_simple_task_runner.h"

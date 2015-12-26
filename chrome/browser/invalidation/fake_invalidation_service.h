@@ -8,8 +8,8 @@
 #include <list>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/impl/mock_ack_handler.h"
 #include "components/invalidation/public/invalidation_service.h"

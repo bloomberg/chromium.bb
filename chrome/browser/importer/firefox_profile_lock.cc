@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 // This class is based on Firefox code in:
 //   profile/dirserviceprovider/src/nsProfileLock.cpp

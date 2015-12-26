@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/profiles/profile.h"

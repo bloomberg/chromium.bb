@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GPU_GPU_FEATURE_CHECKER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "gpu/config/gpu_feature_type.h"

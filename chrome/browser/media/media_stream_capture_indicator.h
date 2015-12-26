@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "content/public/common/media_stream_request.h"

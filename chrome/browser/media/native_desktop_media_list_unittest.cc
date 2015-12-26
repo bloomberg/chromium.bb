@@ -4,7 +4,12 @@
 
 #include "chrome/browser/media/native_desktop_media_list.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"

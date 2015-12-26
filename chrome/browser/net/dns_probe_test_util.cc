@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/dns_probe_test_util.h"
 
+#include <stdint.h>
+
 #include "chrome/browser/net/dns_probe_runner.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
@@ -22,10 +24,10 @@ scoped_ptr<DnsClient> CreateMockDnsClientForProbes(
   DnsConfig config;
   IPAddressNumber dns_ip;
   ParseIPLiteralToNumber("192.168.1.1", &dns_ip);
-  const uint16 kDnsPort = net::dns_protocol::kDefaultPort;
+  const uint16_t kDnsPort = net::dns_protocol::kDefaultPort;
   config.nameservers.push_back(net::IPEndPoint(dns_ip, kDnsPort));
 
-  const uint16 kTypeA = net::dns_protocol::kTypeA;
+  const uint16_t kTypeA = net::dns_protocol::kTypeA;
   MockDnsClientRuleList rules;
   rules.push_back(MockDnsClientRule(DnsProbeRunner::kKnownGoodHostname, kTypeA,
                                     result, false));

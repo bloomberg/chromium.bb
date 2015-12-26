@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/media/android/remote/remote_media_player_bridge.h"

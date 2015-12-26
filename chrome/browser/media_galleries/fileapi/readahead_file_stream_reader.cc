@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/readahead_file_stream_reader.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/message_loop/message_loop.h"
@@ -51,7 +53,7 @@ int ReadaheadFileStreamReader::Read(
   return result;
 }
 
-int64 ReadaheadFileStreamReader::GetLength(
+int64_t ReadaheadFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   return source_->GetLength(callback);
 }

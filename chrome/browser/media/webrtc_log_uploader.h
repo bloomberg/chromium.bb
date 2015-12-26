@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_LOG_UPLOADER_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_LOG_UPLOADER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -104,8 +106,8 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64 current,
-                                int64 total) override;
+                                int64_t current,
+                                int64_t total) override;
 
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.

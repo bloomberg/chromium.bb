@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_NATIVE_MEDIA_FILE_UTIL_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_NATIVE_MEDIA_FILE_UTIL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -68,7 +72,7 @@ class NativeMediaFileUtil : public storage::AsyncFileUtil {
              const StatusCallback& callback) override;
   void Truncate(scoped_ptr<storage::FileSystemOperationContext> context,
                 const storage::FileSystemURL& url,
-                int64 length,
+                int64_t length,
                 const StatusCallback& callback) override;
   void CopyFileLocal(scoped_ptr<storage::FileSystemOperationContext> context,
                      const storage::FileSystemURL& src_url,

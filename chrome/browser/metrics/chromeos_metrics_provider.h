@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_METRICS_CHROMEOS_METRICS_PROVIDER_H_
 #define CHROME_BROWSER_METRICS_CHROMEOS_METRICS_PROVIDER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
 #include "components/metrics/metrics_provider.h"
@@ -88,7 +91,7 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // The user count at the time that a log was last initialized. Contains a
   // valid value only if |registered_user_count_at_log_initialization_| is
   // true.
-  uint64 user_count_at_log_initialization_;
+  uint64_t user_count_at_log_initialization_;
 
   // Hardware class (e.g., hardware qualification ID). This class identifies
   // the configured system components such as CPU, WiFi adapter, etc.

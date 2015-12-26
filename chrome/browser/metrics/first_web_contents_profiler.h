@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_METRICS_FIRST_WEB_CONTENTS_PROFILER_H_
 #define CHROME_BROWSER_METRICS_FIRST_WEB_CONTENTS_PROFILER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 

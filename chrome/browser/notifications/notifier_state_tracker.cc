@@ -4,11 +4,14 @@
 
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

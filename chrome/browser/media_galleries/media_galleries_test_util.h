@@ -8,11 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include "base/test/test_reg_util_win.h"

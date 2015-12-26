@@ -9,10 +9,10 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/macros.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/safe_iapps_library_parser.h"
 

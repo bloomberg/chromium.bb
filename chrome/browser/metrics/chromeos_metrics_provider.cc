@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 
+#include <stddef.h>
+
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -248,12 +250,12 @@ void ChromeOSMetricsProvider::WriteBluetoothProto(
     paired_device->set_type(AsBluetoothDeviceType(device->GetDeviceType()));
 
     // |address| is xx:xx:xx:xx:xx:xx, extract the first three components and
-    // pack into a uint32.
+    // pack into a uint32_t.
     std::string address = device->GetAddress();
     if (address.size() > 9 && address[2] == ':' && address[5] == ':' &&
         address[8] == ':') {
       std::string vendor_prefix_str;
-      uint64 vendor_prefix;
+      uint64_t vendor_prefix;
 
       base::RemoveChars(address.substr(0, 9), ":", &vendor_prefix_str);
       DCHECK_EQ(6U, vendor_prefix_str.size());

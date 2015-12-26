@@ -4,10 +4,13 @@
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"

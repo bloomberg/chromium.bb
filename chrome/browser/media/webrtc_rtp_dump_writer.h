@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_RTP_DUMP_WRITER_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_RTP_DUMP_WRITER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -45,7 +48,7 @@ class WebRtcRtpDumpWriter {
 
   // Adds a RTP packet to the dump. The caller must make sure it's a valid RTP
   // packet. No validation is done by this method.
-  virtual void WriteRtpPacket(const uint8* packet_header,
+  virtual void WriteRtpPacket(const uint8_t* packet_header,
                               size_t header_length,
                               size_t packet_length,
                               bool incoming);
@@ -112,8 +115,8 @@ class WebRtcRtpDumpWriter {
   const base::Closure max_dump_size_reached_callback_;
 
   // The in-memory buffers for the uncompressed dumps.
-  std::vector<uint8> incoming_buffer_;
-  std::vector<uint8> outgoing_buffer_;
+  std::vector<uint8_t> incoming_buffer_;
+  std::vector<uint8_t> outgoing_buffer_;
 
   // The time when the first packet is dumped.
   base::TimeTicks start_time_;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 

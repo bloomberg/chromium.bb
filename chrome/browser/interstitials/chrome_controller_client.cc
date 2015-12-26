@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

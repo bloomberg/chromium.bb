@@ -4,6 +4,8 @@
 
 #include "chrome/browser/intranet_redirect_detector.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc_browsertest_perf.h"
 
+#include <stddef.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"

@@ -9,12 +9,12 @@
 #include <set>
 #include <sstream>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -73,8 +73,8 @@ const double Predictor::kDiscardableExpectedValue = 0.05;
 // system that uses a higher trim ratio when the list is large.
 // static
 const double Predictor::kReferrerTrimRatio = 0.97153;
-const int64 Predictor::kDurationBetweenTrimmingsHours = 1;
-const int64 Predictor::kDurationBetweenTrimmingIncrementsSeconds = 15;
+const int64_t Predictor::kDurationBetweenTrimmingsHours = 1;
+const int64_t Predictor::kDurationBetweenTrimmingIncrementsSeconds = 15;
 const size_t Predictor::kUrlsTrimmedPerIncrement = 5u;
 const size_t Predictor::kMaxSpeculativeParallelResolves = 3;
 const int Predictor::kMaxUnusedSocketLifetimeSecondsWithoutAGet = 10;

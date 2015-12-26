@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_MEDIA_ANDROID_ROUTER_MEDIA_ROUTER_ANDROID_H_
 
 #include <jni.h>
+#include <stdint.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/media/router/media_router_base.h"
@@ -49,7 +51,7 @@ class MediaRouterAndroid : public MediaRouterBase {
                         const SendRouteMessageCallback& callback) override;
   void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      scoped_ptr<std::vector<uint8>> data,
+      scoped_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) override;
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;

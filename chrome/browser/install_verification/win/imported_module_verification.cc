@@ -4,6 +4,7 @@
 
 #include "chrome/browser/install_verification/win/imported_module_verification.h"
 
+#include <stddef.h>
 #include <Windows.h>
 
 #include <algorithm>
@@ -11,6 +12,7 @@
 #include <string>
 #include <vector>
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/install_verification/win/module_info.h"
 

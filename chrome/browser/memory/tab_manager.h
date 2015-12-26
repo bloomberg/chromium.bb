@@ -5,15 +5,19 @@
 #ifndef CHROME_BROWSER_MEMORY_TAB_MANAGER_H_
 #define CHROME_BROWSER_MEMORY_TAB_MANAGER_H_
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -82,7 +86,7 @@ class TabManager : public TabStripModelObserver {
   // Discards a tab with the given unique ID. The tab still exists in the
   // tab-strip; clicking on it will reload it. Returns true if it successfully
   // found a tab and discarded it.
-  content::WebContents* DiscardTabById(int64 target_web_contents_id);
+  content::WebContents* DiscardTabById(int64_t target_web_contents_id);
 
   // Log memory statistics for the running processes, then discards a tab.
   // Tab discard happens sometime later, as collecting the statistics touches
@@ -134,7 +138,7 @@ class TabManager : public TabStripModelObserver {
   // Goes through a list of checks to see if a tab is allowed to be discarded by
   // the automatic tab discarding mechanism. Note that this is not used when
   // discarding a particular tab from about:discards.
-  bool CanDiscardTab(int64 target_web_contents_id) const;
+  bool CanDiscardTab(int64_t target_web_contents_id) const;
 
   // Does the actual discard by destroying the WebContents in |model| at |index|
   // and replacing it by an empty one. Returns the new WebContents or NULL if

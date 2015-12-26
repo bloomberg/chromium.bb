@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/desktop_media_list_ash.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "ash/shell.h"

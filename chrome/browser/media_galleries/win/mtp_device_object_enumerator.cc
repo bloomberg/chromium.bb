@@ -33,7 +33,7 @@ base::FilePath MTPDeviceObjectEnumerator::Next() {
   return base::FilePath(object_entries_[index_].name);
 }
 
-int64 MTPDeviceObjectEnumerator::Size() {
+int64_t MTPDeviceObjectEnumerator::Size() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsIndexReadyAndInRange())
     return 0;

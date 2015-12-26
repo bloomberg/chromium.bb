@@ -8,6 +8,7 @@
 #include <Ws2spi.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 

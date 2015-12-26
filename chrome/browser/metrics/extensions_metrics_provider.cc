@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <vector>
@@ -125,11 +127,11 @@ ExtensionsMetricsProvider::~ExtensionsMetricsProvider() {
 
 // static
 int ExtensionsMetricsProvider::HashExtension(const std::string& extension_id,
-                                             uint32 client_key) {
+                                             uint32_t client_key) {
   DCHECK_LE(client_key, kExtensionListClientKeys);
   std::string message =
       base::StringPrintf("%u:%s", client_key, extension_id.c_str());
-  uint64 output = CityHash64(message.data(), message.size());
+  uint64_t output = CityHash64(message.data(), message.size());
   return output % kExtensionListBuckets;
 }
 
@@ -165,7 +167,7 @@ ExtensionsMetricsProvider::GetInstalledExtensions(Profile* profile) {
   return scoped_ptr<extensions::ExtensionSet>();
 }
 
-uint64 ExtensionsMetricsProvider::GetClientID() {
+uint64_t ExtensionsMetricsProvider::GetClientID() {
   // TODO(blundell): Create a MetricsLog::ClientIDAsInt() API and call it
   // here as well as in MetricsLog's population of the client_id field of
   // the uma_proto.

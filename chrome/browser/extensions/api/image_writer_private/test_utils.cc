@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 
+#include <string.h>
+
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)

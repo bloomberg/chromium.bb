@@ -6,6 +6,7 @@
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
 #include "chromeos/login/login_state.h"
 #include "ui/message_center/message_center.h"

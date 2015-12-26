@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SAFE_AUDIO_VIDEO_CHECKER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SAFE_AUDIO_VIDEO_CHECKER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"

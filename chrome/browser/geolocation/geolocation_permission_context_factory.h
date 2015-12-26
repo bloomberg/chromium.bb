@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"

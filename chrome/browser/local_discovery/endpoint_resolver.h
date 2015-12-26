@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_ENDPOINT_RESOLVER_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_ENDPOINT_RESOLVER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -37,7 +39,7 @@ class EndpointResolver {
                               ServiceResolver::RequestStatus result,
                               const ServiceDescription& description);
 
-  void DomainResolveComplete(uint16 port,
+  void DomainResolveComplete(uint16_t port,
                              const ResultCallback& callback,
                              bool success,
                              const net::IPAddressNumber& address_ipv4,

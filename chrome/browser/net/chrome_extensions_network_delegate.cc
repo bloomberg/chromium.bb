@@ -4,6 +4,9 @@
 
 #include "chrome/browser/net/chrome_extensions_network_delegate.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "net/base/net_errors.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -31,7 +34,7 @@ enum RequestStatus { REQUEST_STARTED, REQUEST_DONE };
 // for a particular RenderFrame.
 void NotifyEPMRequestStatus(RequestStatus status,
                             void* profile_id,
-                            uint64 request_id,
+                            uint64_t request_id,
                             int process_id,
                             int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

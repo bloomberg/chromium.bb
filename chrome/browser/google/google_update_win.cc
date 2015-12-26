@@ -6,6 +6,8 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <stdint.h>
+#include <string.h>
 
 #include <vector>
 
@@ -13,6 +15,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"

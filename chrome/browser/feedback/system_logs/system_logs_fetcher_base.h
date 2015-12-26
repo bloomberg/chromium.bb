@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
 #define CHROME_BROWSER_FEEDBACK_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 

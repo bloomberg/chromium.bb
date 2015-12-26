@@ -4,7 +4,6 @@
 
 #include "chrome/browser/icon_loader.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/chrome_switches.h"

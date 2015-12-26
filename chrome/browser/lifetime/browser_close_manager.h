@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_LIFETIME_BROWSER_CLOSE_MANAGER_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 class Browser;

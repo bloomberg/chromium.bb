@@ -4,9 +4,12 @@
 
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -100,7 +103,7 @@ class ServiceDiscoveryHostClient::ServiceWatcherProxy : public ServiceWatcher {
  private:
   scoped_refptr<ServiceDiscoveryHostClient> host_;
   const std::string service_type_;
-  const uint64 id_;
+  const uint64_t id_;
   bool started_;
 };
 
@@ -135,7 +138,7 @@ class ServiceDiscoveryHostClient::ServiceResolverProxy
  private:
   scoped_refptr<ServiceDiscoveryHostClient> host_;
   const std::string service_name_;
-  const uint64 id_;
+  const uint64_t id_;
   bool started_;
 };
 
@@ -172,7 +175,7 @@ class ServiceDiscoveryHostClient::LocalDomainResolverProxy
   scoped_refptr<ServiceDiscoveryHostClient> host_;
   std::string domain_;
   net::AddressFamily address_family_;
-  const uint64 id_;
+  const uint64_t id_;
   bool started_;
 };
 
@@ -213,7 +216,7 @@ ServiceDiscoveryHostClient::CreateLocalDomainResolver(
       this, domain, address_family, callback));
 }
 
-uint64 ServiceDiscoveryHostClient::RegisterWatcherCallback(
+uint64_t ServiceDiscoveryHostClient::RegisterWatcherCallback(
     const ServiceWatcher::UpdatedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!ContainsKey(service_watcher_callbacks_, current_id_ + 1));
@@ -221,7 +224,7 @@ uint64 ServiceDiscoveryHostClient::RegisterWatcherCallback(
   return current_id_;
 }
 
-uint64 ServiceDiscoveryHostClient::RegisterResolverCallback(
+uint64_t ServiceDiscoveryHostClient::RegisterResolverCallback(
     const ServiceResolver::ResolveCompleteCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!ContainsKey(service_resolver_callbacks_, current_id_ + 1));
@@ -229,7 +232,7 @@ uint64 ServiceDiscoveryHostClient::RegisterResolverCallback(
   return current_id_;
 }
 
-uint64 ServiceDiscoveryHostClient::RegisterLocalDomainResolverCallback(
+uint64_t ServiceDiscoveryHostClient::RegisterLocalDomainResolverCallback(
     const LocalDomainResolver::IPAddressCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!ContainsKey(domain_resolver_callbacks_, current_id_ + 1));
@@ -237,18 +240,18 @@ uint64 ServiceDiscoveryHostClient::RegisterLocalDomainResolverCallback(
   return current_id_;
 }
 
-void ServiceDiscoveryHostClient::UnregisterWatcherCallback(uint64 id) {
+void ServiceDiscoveryHostClient::UnregisterWatcherCallback(uint64_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   service_watcher_callbacks_.erase(id);
 }
 
-void ServiceDiscoveryHostClient::UnregisterResolverCallback(uint64 id) {
+void ServiceDiscoveryHostClient::UnregisterResolverCallback(uint64_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   service_resolver_callbacks_.erase(id);
 }
 
 void ServiceDiscoveryHostClient::UnregisterLocalDomainResolverCallback(
-    uint64 id) {
+    uint64_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   domain_resolver_callbacks_.erase(id);
 }
@@ -391,7 +394,7 @@ void ServiceDiscoveryHostClient::OnError() {
 }
 
 void ServiceDiscoveryHostClient::OnWatcherCallback(
-    uint64 id,
+    uint64_t id,
     ServiceWatcher::UpdateType update,
     const std::string& service_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -402,7 +405,7 @@ void ServiceDiscoveryHostClient::OnWatcherCallback(
 }
 
 void ServiceDiscoveryHostClient::OnResolverCallback(
-    uint64 id,
+    uint64_t id,
     ServiceResolver::RequestStatus status,
     const ServiceDescription& description) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -413,7 +416,7 @@ void ServiceDiscoveryHostClient::OnResolverCallback(
 }
 
 void ServiceDiscoveryHostClient::OnLocalDomainResolverCallback(
-    uint64 id,
+    uint64_t id,
     bool success,
     const net::IPAddressNumber& ip_address_ipv4,
     const net::IPAddressNumber& ip_address_ipv6) {
@@ -425,7 +428,7 @@ void ServiceDiscoveryHostClient::OnLocalDomainResolverCallback(
 }
 
 void ServiceDiscoveryHostClient::RunWatcherCallback(
-    uint64 id,
+    uint64_t id,
     ServiceWatcher::UpdateType update,
     const std::string& service_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -435,7 +438,7 @@ void ServiceDiscoveryHostClient::RunWatcherCallback(
 }
 
 void ServiceDiscoveryHostClient::RunResolverCallback(
-    uint64 id,
+    uint64_t id,
     ServiceResolver::RequestStatus status,
     const ServiceDescription& description) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -445,7 +448,7 @@ void ServiceDiscoveryHostClient::RunResolverCallback(
 }
 
 void ServiceDiscoveryHostClient::RunLocalDomainResolverCallback(
-    uint64 id,
+    uint64_t id,
     bool success,
     const net::IPAddressNumber& ip_address_ipv4,
     const net::IPAddressNumber& ip_address_ipv6) {

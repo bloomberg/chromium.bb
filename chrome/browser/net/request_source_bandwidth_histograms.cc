@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/request_source_bandwidth_histograms.h"
 
+#include <stdint.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/process_type.h"
@@ -40,8 +42,8 @@ Bucket GetBucketForRequest(const net::URLRequest* request) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ResponseSizeByProcess." bucket, sample, \
                                 1, 4 * 1024 * 1024, 100)
 
-void LogRequest(Bucket bucket, int64 bytes) {
-  int64 kilobytes = bytes / 1024;
+void LogRequest(Bucket bucket, int64_t bytes) {
+  int64_t kilobytes = bytes / 1024;
   switch (bucket) {
     case BUCKET_UNKNOWN:
       UMA_HISTOGRAM_RESPONSE_KB("Unknown", kilobytes);

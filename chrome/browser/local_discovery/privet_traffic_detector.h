@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_endpoint.h"

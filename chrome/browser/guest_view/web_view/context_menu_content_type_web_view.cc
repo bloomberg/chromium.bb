@@ -5,6 +5,7 @@
 #include "chrome/browser/guest_view/web_view/context_menu_content_type_web_view.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"

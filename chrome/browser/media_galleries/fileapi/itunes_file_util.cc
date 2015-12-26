@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>

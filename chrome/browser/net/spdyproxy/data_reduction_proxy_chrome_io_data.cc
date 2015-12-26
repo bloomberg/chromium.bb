@@ -5,6 +5,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
 
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/media_sink.h"

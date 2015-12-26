@@ -4,6 +4,8 @@
 
 #include "chrome/browser/font_family_cache.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/prefs/pref_service.h"

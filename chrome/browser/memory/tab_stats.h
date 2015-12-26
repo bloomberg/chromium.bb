@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_MEMORY_TAB_STATS_H_
 #define CHROME_BROWSER_MEMORY_TAB_STATS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace memory {
 
@@ -31,7 +34,7 @@ struct TabStats {
 #if defined(OS_CHROMEOS)
   int oom_score;
 #endif
-  int64 tab_contents_id;  // Unique ID per WebContents.
+  int64_t tab_contents_id;  // Unique ID per WebContents.
 };
 
 typedef std::vector<TabStats> TabStatsList;

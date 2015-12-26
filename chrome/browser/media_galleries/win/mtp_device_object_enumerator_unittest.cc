@@ -6,9 +6,12 @@
 
 #include "chrome/browser/media_galleries/win/mtp_device_object_enumerator.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <ctime>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
@@ -27,7 +30,7 @@ struct MTPDeviceObjectEntryData {
   bool is_directory;
 
   // The object file size in bytes, e.g. "882992".
-  int64 size;
+  int64_t size;
 
   // Last modified time of the object.
   time_t last_modified_time;

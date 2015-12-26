@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -343,7 +345,7 @@ void MediaRouterMojoImpl::SendRouteMessage(
 
 void MediaRouterMojoImpl::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
-    scoped_ptr<std::vector<uint8>> data,
+    scoped_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -571,10 +573,10 @@ void MediaRouterMojoImpl::DoSendSessionMessage(
 
 void MediaRouterMojoImpl::DoSendSessionBinaryMessage(
     const MediaRoute::Id& route_id,
-    scoped_ptr<std::vector<uint8>> data,
+    scoped_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "SendRouteBinaryMessage " << route_id;
-  mojo::Array<uint8> mojo_array;
+  mojo::Array<uint8_t> mojo_array;
   mojo_array.Swap(data.get());
   media_route_provider_->SendRouteBinaryMessage(route_id, mojo_array.Pass(),
                                                 callback);

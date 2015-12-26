@@ -5,6 +5,7 @@
 #include "chrome/browser/memory_details.h"
 
 #include <psapi.h>
+#include <stddef.h>
 #include <TlHelp32.h>
 
 #include "base/bind.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/message_center_stats_collector.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/metrics/histogram.h"

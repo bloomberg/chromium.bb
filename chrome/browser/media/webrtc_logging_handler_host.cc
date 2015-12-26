@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/bad_message.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -409,7 +410,7 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
   rtp_dump_handler_->StopDump(type, callback);
 }
 
-void WebRtcLoggingHandlerHost::OnRtpPacket(scoped_ptr<uint8[]> packet_header,
+void WebRtcLoggingHandlerHost::OnRtpPacket(scoped_ptr<uint8_t[]> packet_header,
                                            size_t header_length,
                                            size_t packet_length,
                                            bool incoming) {
@@ -427,7 +428,7 @@ void WebRtcLoggingHandlerHost::OnRtpPacket(scoped_ptr<uint8[]> packet_header,
 }
 
 void WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread(
-    scoped_ptr<uint8[]> packet_header,
+    scoped_ptr<uint8_t[]> packet_header,
     size_t header_length,
     size_t packet_length,
     bool incoming) {

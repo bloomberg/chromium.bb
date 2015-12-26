@@ -4,6 +4,8 @@
 
 #include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/render_messages.h"

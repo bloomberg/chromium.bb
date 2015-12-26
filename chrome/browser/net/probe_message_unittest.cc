@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <string.h>
 
 #include "chrome/browser/net/probe_message.h"
@@ -22,10 +23,10 @@ TEST_F(ProbeMessageTest, TestGenerateProbeRequest) {
   ProbePacket_Token token;
   token.set_timestamp_micros(1000000U);
   token.mutable_hash()->assign("1x1x");
-  uint32 group_id = 1;
-  uint32 probe_size = 500;
-  uint32 pacing_interval_micros = 1000000;
-  uint32 number_probe_packets = 21;
+  uint32_t group_id = 1;
+  uint32_t probe_size = 500;
+  uint32_t pacing_interval_micros = 1000000;
+  uint32_t number_probe_packets = 21;
   ProbePacket probe_packet;
   pm.GenerateProbeRequest(token,
                           group_id,
@@ -57,10 +58,10 @@ TEST_F(ProbeMessageTest, TestSetPacketHeader) {
 TEST_F(ProbeMessageTest, TestMakeEncodePacketAndParseInput) {
   ProbeMessage pm;
   ProbePacket in_packet;
-  uint32 version = 2;
+  uint32_t version = 2;
   ProbePacket_Type type = ProbePacket_Type_HELLO_REPLY;
-  uint32 number_probe_packets = 2;
-  uint32 group_id = 5;
+  uint32_t number_probe_packets = 2;
+  uint32_t group_id = 5;
   in_packet.mutable_header()->set_version(version);
   in_packet.mutable_header()->set_type(type);
   in_packet.set_number_probe_packets(number_probe_packets);
@@ -81,10 +82,10 @@ TEST_F(ProbeMessageTest, TestMakeEncodePacketAndParseInput) {
 TEST_F(ProbeMessageTest, TestChecksum) {
   ProbeMessage pm;
   std::string str("ABC");
-  uint32 computed_checksum = pm.Checksum(str);
-  uint32 expected_sum = 0;
+  uint32_t computed_checksum = pm.Checksum(str);
+  uint32_t expected_sum = 0;
   for (unsigned i = 0; i < str.size(); ++i)
-    expected_sum += static_cast<uint8>(str[i]);
+    expected_sum += static_cast<uint8_t>(str[i]);
   EXPECT_EQ(computed_checksum, expected_sum);
 }
 

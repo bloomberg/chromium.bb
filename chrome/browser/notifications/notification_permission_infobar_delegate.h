@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
 class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {

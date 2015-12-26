@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_IMAGE_HOLDER_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "ui/gfx/image/image.h"

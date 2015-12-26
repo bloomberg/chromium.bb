@@ -12,11 +12,10 @@ MTPDeviceObjectEntry::MTPDeviceObjectEntry() : is_directory(false), size(0) {
 MTPDeviceObjectEntry::MTPDeviceObjectEntry(const base::string16& object_id,
                                            const base::string16& object_name,
                                            bool is_directory,
-                                           int64 size,
+                                           int64_t size,
                                            const base::Time& last_modified_time)
     : object_id(object_id),
       name(object_name),
       is_directory(is_directory),
       size(size),
-      last_modified_time(last_modified_time) {
-}
+      last_modified_time(last_modified_time) {}

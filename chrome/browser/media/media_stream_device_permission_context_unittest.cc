@@ -5,6 +5,8 @@
 #include "chrome/browser/media/media_stream_device_permission_context.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_request_id.h"

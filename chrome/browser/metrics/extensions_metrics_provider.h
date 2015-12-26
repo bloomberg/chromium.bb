@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_METRICS_EXTENSIONS_METRICS_PROVIDER_H_
 #define CHROME_BROWSER_METRICS_EXTENSIONS_METRICS_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_provider.h"
 
@@ -45,12 +47,13 @@ class ExtensionsMetricsProvider : public metrics::MetricsProvider {
       Profile* profile);
 
   // Retrieves the client ID.
-  virtual uint64 GetClientID();
+  virtual uint64_t GetClientID();
 
   // Hashes the extension extension ID using the provided client key (which
   // must be less than kExtensionListClientKeys) and to produce an output value
   // between 0 and kExtensionListBuckets-1.
-  static int HashExtension(const std::string& extension_id, uint32 client_key);
+  static int HashExtension(const std::string& extension_id,
+                           uint32_t client_key);
 
  private:
   // Returns the profile for which extensions will be gathered.  Once a

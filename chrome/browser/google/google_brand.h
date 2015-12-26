@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 class GURL;
 
@@ -47,6 +47,7 @@ class BrandForTesting {
 
  private:
   std::string brand_;
+
   DISALLOW_COPY_AND_ASSIGN(BrandForTesting);
 };
 

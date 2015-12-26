@@ -4,6 +4,7 @@
 
 #include "chrome/browser/install_verification/win/module_list.h"
 
+#include <stddef.h>
 #include <Windows.h>
 #include <vector>
 #include "base/bind.h"

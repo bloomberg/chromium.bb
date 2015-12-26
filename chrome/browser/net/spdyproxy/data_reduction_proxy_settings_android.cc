@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/values.h"
@@ -116,9 +118,9 @@ base::android::ScopedJavaLocalRef<jobject>
 DataReductionProxySettingsAndroid::GetContentLengths(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  int64 original_content_length;
-  int64 received_content_length;
-  int64 last_update_internal;
+  int64_t original_content_length;
+  int64_t received_content_length;
+  int64_t last_update_internal;
   Settings()->GetContentLengths(
       data_reduction_proxy::kNumDaysInHistorySummary,
       &original_content_length,

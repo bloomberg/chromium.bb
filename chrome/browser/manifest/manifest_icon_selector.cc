@@ -4,6 +4,8 @@
 
 #include "chrome/browser/manifest/manifest_icon_selector.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>

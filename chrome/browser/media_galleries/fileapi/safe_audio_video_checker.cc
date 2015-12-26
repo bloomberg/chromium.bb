@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/safe_audio_video_checker.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -14,9 +16,9 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -64,7 +66,7 @@ void SafeAudioVideoChecker::OnProcessStarted() {
     OnCheckingFinished(false /* valid? */);
     return;
   }
-  const int64 kFileDecodeTimeInMS = 250;
+  const int64_t kFileDecodeTimeInMS = 250;
   utility_process_host_->Send(new ChromeUtilityMsg_CheckMediaFile(
       kFileDecodeTimeInMS, file_for_transit));
 }

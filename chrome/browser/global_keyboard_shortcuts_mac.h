@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_GLOBAL_KEYBOARD_SHORTCUTS_MAC_H_
 
 #include <Carbon/Carbon.h>  // For unichar.
-
-#include "base/basictypes.h"
+#include <stddef.h>
 
 @class NSEvent;
 

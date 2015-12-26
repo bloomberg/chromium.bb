@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_BOOKMARK_MODEL_SQL_HANDLER_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_BOOKMARK_MODEL_SQL_HANDLER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/history/core/browser/android/sql_handler.h"
 
 class Profile;
@@ -51,7 +54,7 @@ class BookmarkModelSQLHandler : public SQLHandler {
     // Adds a bookmark with the given |url|, |title| and |parent_id|.
     void AddBookmark(const GURL& url,
                      const base::string16& title,
-                     int64 parent_id);
+                     int64_t parent_id);
 
     // Removes the bookmark with the given |url|.
     void RemoveBookmark(const GURL& url);

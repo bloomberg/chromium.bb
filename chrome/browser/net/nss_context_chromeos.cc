@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/nss_context.h"
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile_io_data.h"

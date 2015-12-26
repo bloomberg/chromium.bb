@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/chrome_network_delegate.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 #include <vector>
@@ -14,6 +15,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -25,6 +27,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -113,7 +116,7 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
                                    const GURL& referrer,
                                    base::TimeDelta latency,
                                    const base::Time& fetch_time,
-                                   int64 size,
+                                   int64_t size,
                                    bool was_cached,
                                    void* profile_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -273,7 +276,7 @@ void RecordCacheStateStats(const net::URLRequest* request) {
                               CACHE_STATE_MAX);
   }
 
-  int64 size = request->received_response_content_length();
+  int64_t size = request->received_response_content_length();
   if (size >= 0 && state == CACHE_STATE_NO_LONGER_VALID) {
     UMA_HISTOGRAM_COUNTS("Net.CacheState.AllBytes", size);
     if (CanRequestBeDeltaEncoded(request)) {
@@ -532,7 +535,8 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
     // For better accuracy, we use the actual bytes read instead of the length
     // specified with the Content-Length header, which may be inaccurate,
     // or missing, as is the case with chunked encoding.
-    int64 received_content_length = request->received_response_content_length();
+    int64_t received_content_length =
+        request->received_response_content_length();
     base::TimeDelta latency = base::TimeTicks::Now() - request->creation_time();
 
     // Record precache metrics when a fetch is completed successfully, if

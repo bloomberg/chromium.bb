@@ -82,7 +82,7 @@ base::File::Error NativeMediaFileUtil::IsMediaFile(
   char buffer[net::kMaxBytesToSniff];
 
   // Read as much as net::SniffMimeTypeFromLocalData() will bother looking at.
-  int64 len = file.Read(0, buffer, net::kMaxBytesToSniff);
+  int64_t len = file.Read(0, buffer, net::kMaxBytesToSniff);
   if (len < 0)
     return base::File::FILE_ERROR_FAILED;
 
@@ -206,7 +206,7 @@ void NativeMediaFileUtil::Touch(
 void NativeMediaFileUtil::Truncate(
     scoped_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    int64 length,
+    int64_t length,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);

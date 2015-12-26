@@ -20,6 +20,7 @@
 // infobars, etc.).
 //
 // Otherwise the permission is already decided.
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"

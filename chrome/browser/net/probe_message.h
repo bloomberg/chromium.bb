@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_NET_PROBE_MESSAGE_H_
 #define CHROME_BROWSER_NET_PROBE_MESSAGE_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "chrome/browser/net/probe_message.pb.h"
 
 namespace chrome_browser_net {
@@ -20,10 +22,10 @@ class ProbeMessage {
 
   // Generate a ProbeRequest packet.
   void GenerateProbeRequest(const ProbePacket_Token& received_token,
-                            uint32 group_id,
-                            uint32 probe_size,
-                            uint32 pacing_interval_micros,
-                            uint32 number_probe_packets,
+                            uint32_t group_id,
+                            uint32_t probe_size,
+                            uint32_t pacing_interval_micros,
+                            uint32_t number_probe_packets,
                             ProbePacket* output);
   // Make an encoded packet (string) from a ProbePacket object.
   std::string MakeEncodedPacket(const ProbePacket& packet) const;
@@ -34,7 +36,7 @@ class ProbeMessage {
   // packet. Return true if there is no error and false otherwise.
   bool ParseInput(const std::string& input, ProbePacket* packet) const;
 
-  static const uint32 kMaxProbePacketBytes;
+  static const uint32_t kMaxProbePacketBytes;
 
  private:
   // For unittest.
@@ -45,14 +47,14 @@ class ProbeMessage {
   FRIEND_TEST_ALL_PREFIXES(ProbeMessageTest, TestSetPacketHeader);
 
   // Compute the checksum of the padding string.
-  uint32 Checksum(const std::string& str) const;
+  uint32_t Checksum(const std::string& str) const;
 
   // Encode the packet with kEncodingString. This is also used for decoding.
   std::string Encode(const std::string& input) const;
 
-  static const uint32 kVersion;
-  static const uint32 kMaxNumberProbePackets;
-  static const uint32 kMaxPacingIntervalMicros;
+  static const uint32_t kVersion;
+  static const uint32_t kMaxNumberProbePackets;
+  static const uint32_t kMaxPacingIntervalMicros;
   static const char kEncodingString[];
 
   DISALLOW_COPY_AND_ASSIGN(ProbeMessage);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -9,6 +11,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "build/build_config.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"

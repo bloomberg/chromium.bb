@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/browser/media/router/issue_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

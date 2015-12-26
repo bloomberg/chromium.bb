@@ -4,9 +4,12 @@
 
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 
+#include <stddef.h>
+
 #include "base/base_paths_posix.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -15,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
@@ -841,7 +845,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const base::string16& volume_label,
     const base::string16& vendor_name,
     const base::string16& model_name,
-    uint64 total_size_in_bytes,
+    uint64_t total_size_in_bytes,
     base::Time last_attach_time,
     int audio_count,
     int image_count,
@@ -866,12 +870,20 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
 }
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddOrUpdateGalleryInternal(
-    const std::string& device_id, const base::string16& display_name,
-    const base::FilePath& relative_path, MediaGalleryPrefInfo::Type type,
-    const base::string16& volume_label, const base::string16& vendor_name,
-    const base::string16& model_name, uint64 total_size_in_bytes,
-    base::Time last_attach_time, bool volume_metadata_valid,
-    int audio_count, int image_count, int video_count, int prefs_version,
+    const std::string& device_id,
+    const base::string16& display_name,
+    const base::FilePath& relative_path,
+    MediaGalleryPrefInfo::Type type,
+    const base::string16& volume_label,
+    const base::string16& vendor_name,
+    const base::string16& model_name,
+    uint64_t total_size_in_bytes,
+    base::Time last_attach_time,
+    bool volume_metadata_valid,
+    int audio_count,
+    int image_count,
+    int video_count,
+    int prefs_version,
     MediaGalleryPrefInfo::DefaultGalleryType default_gallery_type) {
   DCHECK(type == MediaGalleryPrefInfo::kUserAdded ||
          type == MediaGalleryPrefInfo::kAutoDetected ||
@@ -1289,7 +1301,7 @@ const MediaGalleriesPrefInfoMap& MediaGalleriesPreferences::known_galleries()
 }
 
 base::Time MediaGalleriesPreferences::GetLastScanCompletionTime() const {
-  int64 last_scan_time_internal =
+  int64_t last_scan_time_internal =
       profile_->GetPrefs()->GetInt64(prefs::kMediaGalleriesLastScanTime);
   return base::Time::FromInternalValue(last_scan_time_internal);
 }

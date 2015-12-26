@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
 
 #if defined(ENABLE_EXTENSIONS)

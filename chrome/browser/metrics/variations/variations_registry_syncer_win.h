@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REGISTRY_SYNCER_WIN_H_
 #define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REGISTRY_SYNCER_WIN_H_
 
+#include "base/macros.h"
 #include "base/timer/timer.h"
 
 namespace chrome_variations {

@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -59,7 +63,7 @@ const char kSinkName[] = "sinkName";
 const char kPresentationId[] = "presentationId";
 const char kOrigin[] = "http://origin/";
 const int kInvalidTabId = -1;
-const uint8 kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
+const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 
 bool ArePresentationSessionMessagesEqual(
     const content::PresentationSessionMessage* expected,
@@ -574,13 +578,14 @@ TEST_F(MediaRouterMojoImplTest, SendRouteMessage) {
 }
 
 TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
-  scoped_ptr<std::vector<uint8>> expected_binary_data(new std::vector<uint8>(
-      kBinaryMessage, kBinaryMessage + arraysize(kBinaryMessage)));
+  scoped_ptr<std::vector<uint8_t>> expected_binary_data(
+      new std::vector<uint8_t>(kBinaryMessage,
+                               kBinaryMessage + arraysize(kBinaryMessage)));
 
   EXPECT_CALL(mock_media_route_provider_,
               SendRouteBinaryMessageInternal(mojo::String(kRouteId), _, _))
       .WillOnce(Invoke([](
-          const MediaRoute::Id& route_id, const std::vector<uint8>& data,
+          const MediaRoute::Id& route_id, const std::vector<uint8_t>& data,
           const interfaces::MediaRouteProvider::SendRouteMessageCallback& cb) {
         EXPECT_EQ(
             0, memcmp(kBinaryMessage, &(data[0]), arraysize(kBinaryMessage)));

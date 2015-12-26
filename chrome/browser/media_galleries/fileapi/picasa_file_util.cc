@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

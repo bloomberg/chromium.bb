@@ -11,7 +11,9 @@
 #include <algorithm>
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/mime_util/mime_util.h"
 #include "net/base/mime_util.h"
 

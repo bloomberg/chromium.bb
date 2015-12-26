@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/android/media_player_bridge.h"

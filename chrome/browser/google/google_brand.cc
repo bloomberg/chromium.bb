@@ -6,9 +6,10 @@
 
 #include <string>
 
-
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 #if defined(OS_MACOSX)

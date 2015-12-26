@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"

@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/random.h"

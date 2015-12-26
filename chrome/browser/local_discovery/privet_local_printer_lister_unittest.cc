@@ -4,6 +4,9 @@
 
 #include "chrome/browser/local_discovery/privet_local_printer_lister.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
@@ -21,7 +24,7 @@ namespace local_discovery {
 
 namespace {
 
-const uint8 kAnnouncePacket[] = {
+const uint8_t kAnnouncePacket[] = {
     // Header
     0x00, 0x00,  // ID is zeroed out
     0x80, 0x00,  // Standard query response, no error
@@ -69,7 +72,8 @@ const uint8 kAnnouncePacket[] = {
     0x10, 0x00, 0x00, 0x10,  // RDLENGTH is 16
     0x01, 0x02, 0x03, 0x04,  // 1.2.3.4
     0x01, 0x02, 0x03, 0x04, 0x01, 0x02, 0x03, 0x04, 0x01, 0x02,
-    0x03, 0x04, };
+    0x03, 0x04,
+};
 
 const char kInfoIsLocalPrinter[] = "{"
     "\"api\" : [ \"/privet/printer/submitdoc\" ],"
@@ -137,7 +141,7 @@ class PrivetLocalPrinterListerTest : public testing::Test {
     return true;
   }
 
-  void SimulateReceive(const uint8* packet, size_t size) {
+  void SimulateReceive(const uint8_t* packet, size_t size) {
     test_service_discovery_client_->SimulateReceive(packet, size);
     base::RunLoop().RunUntilIdle();
   }

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_SOURCE_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_SOURCE_H_
 
+#include <stddef.h>
+
 #include <ostream>
 #include <string>
 

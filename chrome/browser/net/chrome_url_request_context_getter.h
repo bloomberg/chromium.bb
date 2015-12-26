@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "net/url_request/url_request_context.h"

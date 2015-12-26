@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <shellapi.h>
+#include <stdint.h>
 
 #include "base/base_paths.h"
 #include "base/callback.h"
@@ -124,7 +125,7 @@ void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
   // Delay the task slightly to give Chrome launch I/O priority while also
   // making sure shortcuts are created promptly to avoid annoying the user by
   // re-creating shortcuts he previously deleted.
-  static const int64 kTiggerActiveSetupDelaySeconds = 5;
+  static const int64_t kTiggerActiveSetupDelaySeconds = 5;
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();

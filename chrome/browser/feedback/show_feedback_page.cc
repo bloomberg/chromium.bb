@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/profiles/profile.h"

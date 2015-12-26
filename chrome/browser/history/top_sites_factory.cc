@@ -4,9 +4,12 @@
 
 #include "chrome/browser/history/top_sites_factory.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"

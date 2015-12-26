@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/web_contents_observer.h"

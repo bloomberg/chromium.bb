@@ -4,6 +4,7 @@
 
 #include "chrome/browser/guest_view/chrome_guest_view_manager_delegate.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/task_management/web_contents_tags.h"
 
 #if defined(OS_CHROMEOS)

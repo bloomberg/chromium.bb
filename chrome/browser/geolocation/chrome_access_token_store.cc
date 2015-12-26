@@ -4,6 +4,8 @@
 
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"

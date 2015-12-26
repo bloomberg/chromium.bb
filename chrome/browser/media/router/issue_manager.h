@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_ISSUE_MANAGER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_ISSUE_MANAGER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/issue.h"

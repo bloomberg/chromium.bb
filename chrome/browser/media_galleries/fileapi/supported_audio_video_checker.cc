@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/supported_audio_video_checker.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 
@@ -12,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media_galleries/fileapi/safe_audio_video_checker.h"
 #include "components/mime_util/mime_util.h"

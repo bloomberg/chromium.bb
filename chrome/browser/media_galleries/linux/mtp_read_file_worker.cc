@@ -23,12 +23,12 @@ namespace {
 // the file thread.
 // Returns the number of bytes written to the snapshot file. In case of failure,
 // returns zero.
-uint32 WriteDataChunkIntoSnapshotFileOnFileThread(
+uint32_t WriteDataChunkIntoSnapshotFileOnFileThread(
     const base::FilePath& snapshot_file_path,
     const std::string& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   return base::AppendToFile(snapshot_file_path, data.c_str(), data.size())
-             ? base::checked_cast<uint32>(data.size())
+             ? base::checked_cast<uint32_t>(data.size())
              : 0;
 }
 
@@ -103,7 +103,7 @@ void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
 
 void MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile(
     scoped_ptr<SnapshotFileDetails> snapshot_file_details,
-    uint32 bytes_written) {
+    uint32_t bytes_written) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(snapshot_file_details.get());
   if (snapshot_file_details->AddBytesWritten(bytes_written)) {

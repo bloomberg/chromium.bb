@@ -4,9 +4,12 @@
 
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 
+#include <stddef.h>
+
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"

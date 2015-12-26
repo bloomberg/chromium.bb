@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_HISTORY_PROVIDER_SERVICE_H_
 #define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_HISTORY_PROVIDER_SERVICE_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -34,7 +37,7 @@ class AndroidHistoryProviderService {
 
   // Callback invoked when a method inserting rows in the database complete.
   // The value is the new row id or 0 if the insertion failed.
-  typedef base::Callback<void(int64)> InsertCallback;
+  typedef base::Callback<void(int64_t)> InsertCallback;
 
   // Callback invoked when a method deleting rows in the database complete.
   // The value is the number of rows deleted or 0 if the deletion failed.

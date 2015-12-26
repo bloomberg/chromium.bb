@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GOOGLE_CHROME_GOOGLE_URL_TRACKER_CLIENT_H_
 #define CHROME_BROWSER_GOOGLE_CHROME_GOOGLE_URL_TRACKER_CLIENT_H_
 
+#include "base/macros.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
 
 class Profile;

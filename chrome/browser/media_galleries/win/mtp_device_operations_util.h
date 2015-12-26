@@ -12,6 +12,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_OPERATIONS_UTIL_H_
 
 #include <portabledeviceapi.h>
+#include <stddef.h>
 
 #include <string>
 

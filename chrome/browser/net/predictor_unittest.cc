@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #include <time.h>
 
 #include <algorithm>
@@ -9,6 +10,7 @@
 #include <string>
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -16,6 +18,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_info.h"
 #include "components/network_hints/common/network_hints_common.h"

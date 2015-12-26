@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/iphoto_data_provider.h"
 
+#include <stdint.h>
+
 #include <map>
 
 #include "base/bind.h"
@@ -46,7 +48,7 @@ void IPhotoDataProvider::OnLibraryParsed(const ReadyCallback& ready_callback,
 }
 
 void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
-  typedef base::hash_map<uint64, const base::FilePath*> IdIndex;
+  typedef base::hash_map<uint64_t, const base::FilePath*> IdIndex;
 
   IdIndex photo_id_index;
   IdIndex originals_id_index;
@@ -60,7 +62,7 @@ void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
 
   // Build up a set of IDs which have in-album duplicates.
   // Those are the filenames we want to globally mangle.
-  std::set<uint64> dupe_ids;
+  std::set<uint64_t> dupe_ids;
   for (parser::Albums::const_iterator album_it = library.albums.begin();
        album_it != library.albums.end(); album_it++) {
     const parser::Album& album = album_it->second;
@@ -68,7 +70,7 @@ void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
     std::set<std::string> album_paths;
     for (parser::Album::const_iterator id_it = album.begin();
          id_it != album.end(); id_it++) {
-      uint64 id = *id_it;
+      uint64_t id = *id_it;
       IdIndex::const_iterator photo_it = photo_id_index.find(id);
       if (photo_it == photo_id_index.end())
         continue;
@@ -91,7 +93,7 @@ void IPhotoDataProvider::BuildIndices(const parser::Library& library) {
 
     for (parser::Album::const_iterator id_it = album.begin();
          id_it != album.end(); id_it++) {
-      uint64 id = *id_it;
+      uint64_t id = *id_it;
       IdIndex::const_iterator photo_it = photo_id_index.find(id);
       if (photo_it == photo_id_index.end())
         continue;

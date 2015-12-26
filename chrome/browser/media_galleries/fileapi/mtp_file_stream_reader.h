@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_FILE_STREAM_READER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_FILE_STREAM_READER_H_
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
@@ -26,7 +29,7 @@ class MTPFileStreamReader
  public:
   MTPFileStreamReader(storage::FileSystemContext* file_system_context,
                       const storage::FileSystemURL& url,
-                      int64 initial_offset,
+                      int64_t initial_offset,
                       const base::Time& expected_modification_time,
                       bool do_media_header_validation);
 
@@ -36,7 +39,7 @@ class MTPFileStreamReader
   int Read(net::IOBuffer* buf,
            int buf_len,
            const net::CompletionCallback& callback) override;
-  int64 GetLength(const net::Int64CompletionCallback& callback) override;
+  int64_t GetLength(const net::Int64CompletionCallback& callback) override;
 
  private:
   void FinishValidateMediaHeader(
@@ -54,7 +57,7 @@ class MTPFileStreamReader
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   storage::FileSystemURL url_;
-  int64 current_offset_;
+  int64_t current_offset_;
   const base::Time expected_modification_time_;
 
   bool media_header_validated_;

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -21,9 +25,10 @@ static const size_t kMinimumRtpHeaderLength = 12;
 
 static void CreateFakeRtpPacketHeader(size_t csrc_count,
                                       size_t extension_header_count,
-                                      std::vector<uint8>* packet_header) {
-  packet_header->resize(kMinimumRtpHeaderLength + csrc_count * sizeof(uint32) +
-                        (extension_header_count + 1) * sizeof(uint32));
+                                      std::vector<uint8_t>* packet_header) {
+  packet_header->resize(kMinimumRtpHeaderLength +
+                        csrc_count * sizeof(uint32_t) +
+                        (extension_header_count + 1) * sizeof(uint32_t));
 
   memset(&(*packet_header)[0], 0, packet_header->size());
 
@@ -37,9 +42,9 @@ static void CreateFakeRtpPacketHeader(size_t csrc_count,
 
   // Set extension length.
   size_t offset = kMinimumRtpHeaderLength +
-                  (csrc_count & 0xf) * sizeof(uint32) + sizeof(uint16);
+                  (csrc_count & 0xf) * sizeof(uint32_t) + sizeof(uint16_t);
   base::WriteBigEndian(reinterpret_cast<char*>(&(*packet_header)[offset]),
-                       static_cast<uint16>(extension_header_count));
+                       static_cast<uint16_t>(extension_header_count));
 }
 
 class WebRtcRtpDumpWriterTest : public testing::Test {
@@ -91,7 +96,7 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
   bool VerifyCompressedDump(std::string* dump, size_t expected_packet_count) {
     EXPECT_GT(dump->size(), 0U);
 
-    std::vector<uint8> decompressed_dump;
+    std::vector<uint8_t> decompressed_dump;
     EXPECT_TRUE(Decompress(dump, &decompressed_dump));
 
     size_t actual_packet_count = 0;
@@ -102,7 +107,7 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
   }
 
   // Decompresses the |input| into |output|.
-  bool Decompress(std::string* input, std::vector<uint8>* output) {
+  bool Decompress(std::string* input, std::vector<uint8_t>* output) {
     z_stream stream = {0};
 
     int result = inflateInit2(&stream, 15 + 16);
@@ -127,10 +132,10 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
 
   // Tries to read |dump| as a rtpplay dump file and returns the number of
   // packets found in the dump.
-  bool ReadDecompressedDump(const std::vector<uint8>& dump,
+  bool ReadDecompressedDump(const std::vector<uint8_t>& dump,
                             size_t* packet_count) {
     static const char kFirstLine[] = "#!rtpplay1.0 0.0.0.0/0\n";
-    static const size_t kDumpFileHeaderSize = 4 * sizeof(uint32);
+    static const size_t kDumpFileHeaderSize = 4 * sizeof(uint32_t);
 
     *packet_count = 0;
     size_t dump_pos = 0;
@@ -167,37 +172,37 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
 
   // Tries to read one packet dump starting at |dump| and returns the size of
   // the packet dump.
-  bool VerifyPacketDump(const uint8* dump,
+  bool VerifyPacketDump(const uint8_t* dump,
                         size_t dump_length,
                         size_t* packet_dump_length) {
     static const size_t kDumpHeaderLength = 8;
 
     size_t dump_pos = 0;
     base::ReadBigEndian(reinterpret_cast<const char*>(dump + dump_pos),
-                        reinterpret_cast<uint16*>(packet_dump_length));
+                        reinterpret_cast<uint16_t*>(packet_dump_length));
     if (*packet_dump_length < kDumpHeaderLength + kMinimumRtpHeaderLength)
       return false;
 
     EXPECT_GE(dump_length, *packet_dump_length);
-    dump_pos += sizeof(uint16);
+    dump_pos += sizeof(uint16_t);
 
-    uint16 rtp_packet_length = 0;
+    uint16_t rtp_packet_length = 0;
     base::ReadBigEndian(reinterpret_cast<const char*>(dump + dump_pos),
                         &rtp_packet_length);
     if (rtp_packet_length < kMinimumRtpHeaderLength)
       return false;
 
-    dump_pos += sizeof(uint16);
+    dump_pos += sizeof(uint16_t);
 
     // Skips the elapsed time field.
-    dump_pos += sizeof(uint32);
+    dump_pos += sizeof(uint32_t);
 
     return IsValidRtpHeader(dump + dump_pos,
                             *packet_dump_length - kDumpHeaderLength);
   }
 
   // Returns true if |header| is a valid RTP header.
-  bool IsValidRtpHeader(const uint8* header, size_t length) {
+  bool IsValidRtpHeader(const uint8_t* header, size_t length) {
     if ((header[0] & 0xC0) != 0x80)
       return false;
 
@@ -207,7 +212,7 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
     if (length < header_length_without_extn)
       return false;
 
-    uint16 extension_count = 0;
+    uint16_t extension_count = 0;
     base::ReadBigEndian(
         reinterpret_cast<const char*>(header + header_length_without_extn + 2),
         &extension_count);
@@ -245,7 +250,7 @@ TEST_F(WebRtcRtpDumpWriterTest, NoDumpFileIfNoPacketDumped) {
 }
 
 TEST_F(WebRtcRtpDumpWriterTest, WriteAndFlushSmallSizeDump) {
-  std::vector<uint8> packet_header;
+  std::vector<uint8_t> packet_header;
   CreateFakeRtpPacketHeader(1, 2, &packet_header);
 
   writer_->WriteRtpPacket(
@@ -280,7 +285,7 @@ TEST_F(WebRtcRtpDumpWriterTest, WriteOverMaxLimit) {
       base::Bind(&WebRtcRtpDumpWriterTest::OnMaxSizeReached,
                  base::Unretained(this))));
 
-  std::vector<uint8> packet_header;
+  std::vector<uint8_t> packet_header;
   CreateFakeRtpPacketHeader(3, 4, &packet_header);
 
   const size_t kPacketCount = 200;
@@ -328,7 +333,7 @@ TEST_F(WebRtcRtpDumpWriterTest, DestroyWriterBeforeEndDumpCallback) {
 }
 
 TEST_F(WebRtcRtpDumpWriterTest, EndDumpsSeparately) {
-  std::vector<uint8> packet_header;
+  std::vector<uint8_t> packet_header;
   CreateFakeRtpPacketHeader(1, 2, &packet_header);
 
   writer_->WriteRtpPacket(

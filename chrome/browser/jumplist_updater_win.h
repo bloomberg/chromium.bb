@@ -7,11 +7,13 @@
 
 #include <windows.h>
 #include <shobjidl.h>
+#include <stddef.h>
 
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/win/scoped_comptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"

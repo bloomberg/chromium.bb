@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "url/gurl.h"

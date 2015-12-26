@@ -7,7 +7,10 @@
 #include "net/base/io_buffer.h"
 
 MTPDeviceAsyncDelegate::ReadBytesRequest::ReadBytesRequest(
-    uint32 file_id, net::IOBuffer* buf, int64 offset, int buf_len,
+    uint32_t file_id,
+    net::IOBuffer* buf,
+    int64_t offset,
+    int buf_len,
     const ReadBytesSuccessCallback& success_callback,
     const ErrorCallback& error_callback)
     : file_id(file_id),
@@ -15,7 +18,6 @@ MTPDeviceAsyncDelegate::ReadBytesRequest::ReadBytesRequest(
       offset(offset),
       buf_len(buf_len),
       success_callback(success_callback),
-      error_callback(error_callback) {
-}
+      error_callback(error_callback) {}
 
 MTPDeviceAsyncDelegate::ReadBytesRequest::~ReadBytesRequest() {}

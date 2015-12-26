@@ -8,10 +8,11 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 
 namespace iphoto {
 class IPhotoDataProvider;

@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 #define CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
 class GURL;
 class Profile;
@@ -155,7 +157,7 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user);
 
 // Returns the current state of AutoImport as recorded in a bitfield formed from
 // values in AutoImportState.
-uint16 auto_import_state();
+uint16_t auto_import_state();
 
 // Set a master preferences file path that overrides platform defaults.
 void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs);

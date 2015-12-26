@@ -6,8 +6,8 @@
 
 #import <AppKit/AppKit.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
 

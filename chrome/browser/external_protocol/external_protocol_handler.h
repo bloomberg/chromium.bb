@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/shell_integration.h"
 #include "ui/base/page_transition_types.h"
 

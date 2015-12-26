@@ -9,6 +9,8 @@
 #include <propvarutil.h>
 #include <shlguid.h>
 #include <shlobj.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <urlhist.h>
 
 #include <algorithm>
@@ -18,6 +20,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -125,8 +128,8 @@ bool CreateOrderBlob(const base::FilePath& favorites_folder,
   // Create a binary sequence for setting a specific order of favorites.
   // The format depends on the version of Shell32.dll, so we cannot embed
   // a binary constant here.
-  std::vector<uint8> blob(20, 0);
-  blob[16] = static_cast<uint8>(entries.size());
+  std::vector<uint8_t> blob(20, 0);
+  blob[16] = static_cast<uint8_t>(entries.size());
 
   for (size_t i = 0; i < entries.size(); ++i) {
     PIDLIST_ABSOLUTE id_list_full = ILCreateFromPath(
@@ -137,9 +140,9 @@ bool CreateOrderBlob(const base::FilePath& favorites_folder,
     size_t id_list_size = id_list->mkid.cb + sizeof(id_list->mkid.cb);
 
     blob.resize(blob.size() + 8);
-    uint32 total_size = id_list_size + 8;
+    uint32_t total_size = id_list_size + 8;
     memcpy(&blob[blob.size() - 8], &total_size, 4);
-    uint32 sort_index = i;
+    uint32_t sort_index = i;
     memcpy(&blob[blob.size() - 4], &sort_index, 4);
     blob.resize(blob.size() + id_list_size);
     memcpy(&blob[blob.size() - id_list_size], id_list, id_list_size);
@@ -223,7 +226,7 @@ class TestObserver : public ProfileWriter,
     IE7,
   };
 
-  explicit TestObserver(uint16 importer_items, TestIEVersion ie_version)
+  explicit TestObserver(uint16_t importer_items, TestIEVersion ie_version)
       : ProfileWriter(NULL),
         bookmark_count_(0),
         history_count_(0),
@@ -232,8 +235,7 @@ class TestObserver : public ProfileWriter,
         homepage_count_(0),
         ie7_password_count_(0),
         importer_items_(importer_items),
-        ie_version_(ie_version) {
-  }
+        ie_version_(ie_version) {}
 
   // importer::ImporterProgressObserver:
   void ImportStarted() override {}
@@ -371,7 +373,7 @@ class TestObserver : public ProfileWriter,
   size_t favicon_count_;
   size_t homepage_count_;
   size_t ie7_password_count_;
-  uint16 importer_items_;
+  uint16_t importer_items_;
   TestIEVersion ie_version_;
 };
 

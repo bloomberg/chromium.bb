@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_METRO_VIEWER_CHROME_METRO_VIEWER_PROCESS_HOST_AURAWIN_H_
 #define CHROME_BROWSER_METRO_VIEWER_CHROME_METRO_VIEWER_PROCESS_HOST_AURAWIN_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "win8/viewer/metro_viewer_process_host.h"
 
 namespace base {
@@ -21,12 +24,12 @@ class ChromeMetroViewerProcessHost : public win8::MetroViewerProcessHost {
   void OnChannelError() override;
 
   // IPC::Listener implementation
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnSetTargetSurface(gfx::NativeViewId target_surface,
                           float device_scale) override;
   void OnOpenURL(const base::string16& url) override;
   void OnHandleSearchRequest(const base::string16& search_string) override;
-  void OnWindowSizeChanged(uint32 width, uint32 height) override;
+  void OnWindowSizeChanged(uint32_t width, uint32_t height) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetroViewerProcessHost);
 };

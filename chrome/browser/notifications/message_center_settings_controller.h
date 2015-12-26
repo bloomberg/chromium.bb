@@ -5,13 +5,16 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_SETTINGS_CONTROLLER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_SETTINGS_CONTROLLER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "components/content_settings/core/common/content_settings.h"

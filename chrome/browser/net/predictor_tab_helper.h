@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NET_PREDICTOR_TAB_HELPER_H_
 #define CHROME_BROWSER_NET_PREDICTOR_TAB_HELPER_H_
 
+#include "base/macros.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"

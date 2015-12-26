@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_LIST_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_LIST_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/common/importer/importer_data_types.h"

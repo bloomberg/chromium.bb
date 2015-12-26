@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -66,7 +69,7 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
              const StatusCallback& callback) override;
   void Truncate(scoped_ptr<storage::FileSystemOperationContext> context,
                 const storage::FileSystemURL& url,
-                int64 length,
+                int64_t length,
                 const StatusCallback& callback) override;
   void CopyFileLocal(scoped_ptr<storage::FileSystemOperationContext> context,
                      const storage::FileSystemURL& src_url,
@@ -106,7 +109,7 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
   // with reading this file are returned by the FileStreamReader itself.
   virtual scoped_ptr<storage::FileStreamReader> GetFileStreamReader(
       const storage::FileSystemURL& url,
-      int64 offset,
+      int64_t offset,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context);
 

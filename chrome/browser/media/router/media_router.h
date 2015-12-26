@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -116,7 +118,7 @@ class MediaRouter : public KeyedService {
   // This is called for Blob / ArrayBuffer / ArrayBufferView types.
   virtual void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      scoped_ptr<std::vector<uint8>> data,
+      scoped_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) = 0;
 
   // Adds a new |issue|.

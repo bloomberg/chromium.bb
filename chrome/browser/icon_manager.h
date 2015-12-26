@@ -48,6 +48,7 @@
 #include <map>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/icon_loader.h"
 #include "ui/gfx/image/image.h"

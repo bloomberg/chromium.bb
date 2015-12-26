@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
 #include "components/storage_monitor/storage_info.h"
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -77,7 +79,7 @@ class TestExtensionsMetricsProvider : public ExtensionsMetricsProvider {
 
   // Override GetClientID() to return a specific value on which test
   // expectations are based.
-  uint64 GetClientID() override { return 0x3f1bfee9; }
+  uint64_t GetClientID() override { return 0x3f1bfee9; }
 };
 
 }  // namespace

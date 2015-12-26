@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/privet_local_printer_lister.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "chrome/browser/local_discovery/privet_constants.h"

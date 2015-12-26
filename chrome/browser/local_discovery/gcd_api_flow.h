@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"

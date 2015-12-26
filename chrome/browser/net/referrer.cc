@@ -5,6 +5,7 @@
 #include "chrome/browser/net/referrer.h"
 
 #include <limits.h>
+#include <stddef.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -83,11 +84,11 @@ void Referrer::DeleteLeastUseful() {
   GURL least_useful_url;
   double lowest_rate_seen = 0.0;
   // We use longs for durations because we will use multiplication on them.
-  int64 least_useful_lifetime = 0;  // Duration in milliseconds.
+  int64_t least_useful_lifetime = 0;  // Duration in milliseconds.
 
   const base::Time kNow(base::Time::Now());  // Avoid multiple calls.
   for (SubresourceMap::iterator it = begin(); it != end(); ++it) {
-    int64 lifetime = (kNow - it->second.birth_time()).InMilliseconds();
+    int64_t lifetime = (kNow - it->second.birth_time()).InMilliseconds();
     double rate = it->second.subresource_use_rate();
     if (least_useful_url.has_host()) {
       if (rate > lowest_rate_seen)

@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <stdint.h>
 
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/ip_endpoint.h"
@@ -118,7 +120,7 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
       base::Bind(&ServiceDiscoveryClientMacTest::OnResolveComplete,
                  base::Unretained(this)));
 
-  const uint8 record_bytes[] = { 2, 'a', 'b', 3, 'd', '=', 'e' };
+  const uint8_t record_bytes[] = {2, 'a', 'b', 3, 'd', '=', 'e'};
   base::scoped_nsobject<TestNSNetService> test_service([[TestNSNetService alloc]
       initWithData:[[NSData alloc] initWithBytes:record_bytes
                                           length:arraysize(record_bytes)]]);

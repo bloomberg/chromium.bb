@@ -5,6 +5,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"

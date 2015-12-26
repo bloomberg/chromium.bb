@@ -10,13 +10,13 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/test/python_utils.h"
 
-
-const uint16 kMinPort = 17000;
-const uint16 kPortRangeSize = 1000;
+const uint16_t kMinPort = 17000;
+const uint16_t kPortRangeSize = 1000;
 
 // Widevine license server configuration files.
 const base::FilePath::CharType kKeysFileName[] =
@@ -104,9 +104,9 @@ bool WVTestLicenseServerConfig::SelectServerPort() {
   // Instead of starting from kMinPort, use a random port within that range.
   net::IPAddressNumber address;
   net::ParseIPLiteralToNumber("127.0.0.1", &address);
-  uint16 start_seed = base::RandInt(0, kPortRangeSize);
-  uint16 try_port = 0;
-  for (uint16 i = 0; i < kPortRangeSize; ++i) {
+  uint16_t start_seed = base::RandInt(0, kPortRangeSize);
+  uint16_t try_port = 0;
+  for (uint16_t i = 0; i < kPortRangeSize; ++i) {
     try_port = kMinPort + (start_seed + i) % kPortRangeSize;
     net::NetLog::Source source;
     net::TCPServerSocket sock(NULL, source);

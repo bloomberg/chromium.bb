@@ -4,9 +4,12 @@
 
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"

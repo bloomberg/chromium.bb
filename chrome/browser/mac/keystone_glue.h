@@ -10,6 +10,7 @@
 #if defined(__OBJC__)
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include "base/mac/scoped_authorizationref.h"
 #import "base/mac/scoped_nsobject.h"

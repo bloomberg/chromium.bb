@@ -188,7 +188,7 @@ void MediaRouterAndroid::SendRouteMessage(
 
 void MediaRouterAndroid::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
-    scoped_ptr<std::vector<uint8>> data,
+    scoped_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
   int callback_id =
       message_callbacks_.Add(new SendRouteMessageCallback(callback));

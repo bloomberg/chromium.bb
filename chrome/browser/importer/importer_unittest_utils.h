@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_UNITTEST_UTILS_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_UNITTEST_UTILS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
 
 struct ImportedBookmarkEntry;
 

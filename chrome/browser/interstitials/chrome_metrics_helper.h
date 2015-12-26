@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "url/gurl.h"
 

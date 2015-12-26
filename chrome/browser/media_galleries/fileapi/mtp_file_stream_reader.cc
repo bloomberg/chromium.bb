@@ -43,7 +43,7 @@ void CallInt64CompletionCallbackWithPlatformFileError(
 void ReadBytes(
     const storage::FileSystemURL& url,
     const scoped_refptr<net::IOBuffer>& buf,
-    int64 offset,
+    int64_t offset,
     int buf_len,
     const MTPDeviceAsyncDelegate::ReadBytesSuccessCallback& success_callback,
     const net::CompletionCallback& error_callback) {
@@ -67,7 +67,7 @@ void ReadBytes(
 MTPFileStreamReader::MTPFileStreamReader(
     storage::FileSystemContext* file_system_context,
     const storage::FileSystemURL& url,
-    int64 initial_offset,
+    int64_t initial_offset,
     const base::Time& expected_modification_time,
     bool do_media_header_validation)
     : file_system_context_(file_system_context),
@@ -75,8 +75,7 @@ MTPFileStreamReader::MTPFileStreamReader(
       current_offset_(initial_offset),
       expected_modification_time_(expected_modification_time),
       media_header_validated_(!do_media_header_validation),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 MTPFileStreamReader::~MTPFileStreamReader() {
 }
@@ -126,7 +125,7 @@ int MTPFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
   return net::ERR_IO_PENDING;
 }
 
-int64 MTPFileStreamReader::GetLength(
+int64_t MTPFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 

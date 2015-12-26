@@ -4,6 +4,8 @@
 
 #include "chrome/browser/importer/profile_writer.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -13,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"

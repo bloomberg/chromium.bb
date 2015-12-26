@@ -4,6 +4,8 @@
 
 #include "chrome/browser/install_verification/win/install_verification.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 

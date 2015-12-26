@@ -5,6 +5,7 @@
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 

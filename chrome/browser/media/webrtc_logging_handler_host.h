@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_LOGGING_HANDLER_HOST_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_LOGGING_HANDLER_HOST_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/rtp_dump_type.h"
 #include "chrome/browser/media/webrtc_rtp_dump_handler.h"
 #include "chrome/common/media/webrtc_logging_message_data.h"
@@ -58,7 +62,7 @@ class WebRtcLogBuffer {
 
  private:
   base::ThreadChecker thread_checker_;
-  uint8 buffer_[kWebRtcLogSize];
+  uint8_t buffer_[kWebRtcLogSize];
   PartialCircularBuffer circular_;
   bool read_only_;
 };
@@ -145,7 +149,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   // Called when an RTP packet is sent or received. Must be called on the UI
   // thread.
-  void OnRtpPacket(scoped_ptr<uint8[]> packet_header,
+  void OnRtpPacket(scoped_ptr<uint8_t[]> packet_header,
                    size_t header_length,
                    size_t packet_length,
                    bool incoming);
@@ -245,7 +249,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   void DoStartRtpDump(RtpDumpType type, const GenericDoneCallback& callback);
 
   // Adds the packet to the dump on IO thread.
-  void DumpRtpPacketOnIOThread(scoped_ptr<uint8[]> packet_header,
+  void DumpRtpPacketOnIOThread(scoped_ptr<uint8_t[]> packet_header,
                                size_t header_length,
                                size_t packet_length,
                                bool incoming);

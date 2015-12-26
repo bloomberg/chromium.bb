@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/fileapi/safe_iapps_library_parser.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"

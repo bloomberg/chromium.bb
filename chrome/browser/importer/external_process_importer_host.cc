@@ -45,7 +45,7 @@ void ExternalProcessImporterHost::Cancel() {
 void ExternalProcessImporterHost::StartImportSettings(
     const importer::SourceProfile& source_profile,
     Profile* target_profile,
-    uint16 items,
+    uint16_t items,
     ProfileWriter* writer) {
   // We really only support importing from one host at a time.
   DCHECK(!profile_);
@@ -185,7 +185,7 @@ bool ExternalProcessImporterHost::CheckForFirefoxLock(
   return true;
 }
 
-void ExternalProcessImporterHost::CheckForLoadedModels(uint16 items) {
+void ExternalProcessImporterHost::CheckForLoadedModels(uint16_t items) {
   // A target profile must be loaded by StartImportSettings().
   DCHECK(profile_);
 

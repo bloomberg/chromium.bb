@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GUEST_VIEW_APP_VIEW_CHROME_APP_VIEW_GUEST_DELEGATE_H_
 #define CHROME_BROWSER_GUEST_VIEW_APP_VIEW_CHROME_APP_VIEW_GUEST_DELEGATE_H_
 
+#include "base/macros.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest_delegate.h"
 

@@ -6,6 +6,7 @@
 
 #include <ctype.h>
 #include <math.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -15,6 +16,7 @@
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 

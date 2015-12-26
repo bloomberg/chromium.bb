@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/notification_provider/notification_provider_api.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "chrome/browser/notifications/extension_welcome_notification_factory.h"

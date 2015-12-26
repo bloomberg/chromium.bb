@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
@@ -54,15 +56,17 @@ class MTPDeviceAsyncDelegate {
            int bytes_read)> ReadBytesSuccessCallback;
 
   struct ReadBytesRequest {
-    ReadBytesRequest(uint32 file_id,
-                     net::IOBuffer* buf, int64 offset, int buf_len,
+    ReadBytesRequest(uint32_t file_id,
+                     net::IOBuffer* buf,
+                     int64_t offset,
+                     int buf_len,
                      const ReadBytesSuccessCallback& success_callback,
                      const ErrorCallback& error_callback);
     ~ReadBytesRequest();
 
-    uint32 file_id;
+    uint32_t file_id;
     scoped_refptr<net::IOBuffer> buf;
-    int64 offset;
+    int64_t offset;
     int buf_len;
     ReadBytesSuccessCallback success_callback;
     ErrorCallback error_callback;
@@ -133,7 +137,7 @@ class MTPDeviceAsyncDelegate {
   // IsStreaming() is true.
   virtual void ReadBytes(const base::FilePath& device_file_path,
                          const scoped_refptr<net::IOBuffer>& buf,
-                         int64 offset,
+                         int64_t offset,
                          int buf_len,
                          const ReadBytesSuccessCallback& success_callback,
                          const ErrorCallback& error_callback) = 0;

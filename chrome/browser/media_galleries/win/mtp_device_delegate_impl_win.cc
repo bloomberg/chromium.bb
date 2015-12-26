@@ -7,6 +7,7 @@
 #include "chrome/browser/media_galleries/win/mtp_device_delegate_impl_win.h"
 
 #include <portabledevice.h>
+#include <stddef.h>
 
 #include <vector>
 
@@ -465,7 +466,7 @@ bool MTPDeviceDelegateImplWin::IsStreaming() {
 void MTPDeviceDelegateImplWin::ReadBytes(
     const base::FilePath& device_file_path,
     const scoped_refptr<net::IOBuffer>& buf,
-    int64 offset,
+    int64_t offset,
     int buf_len,
     const ReadBytesSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/font_family_cache.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"

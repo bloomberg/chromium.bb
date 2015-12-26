@@ -4,6 +4,7 @@
 
 #include "chrome/browser/memory_details.h"
 
+#include <stddef.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -17,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/browser_thread.h"

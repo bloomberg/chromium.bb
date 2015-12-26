@@ -117,7 +117,7 @@ void ChromeMetroViewerProcessHost::OnChannelError() {
   g_browser_process->platform_part()->OnMetroViewerProcessTerminated();
 }
 
-void ChromeMetroViewerProcessHost::OnChannelConnected(int32 /*peer_pid*/) {
+void ChromeMetroViewerProcessHost::OnChannelConnected(int32_t /*peer_pid*/) {
   DVLOG(1) << "ChromeMetroViewerProcessHost::OnChannelConnected: ";
   // Set environment variable to let breakpad know that metro process was
   // connected.
@@ -167,8 +167,8 @@ void ChromeMetroViewerProcessHost::OnHandleSearchRequest(
     OpenURL(url);
 }
 
-void ChromeMetroViewerProcessHost::OnWindowSizeChanged(uint32 width,
-                                                       uint32 height) {
+void ChromeMetroViewerProcessHost::OnWindowSizeChanged(uint32_t width,
+                                                       uint32_t height) {
   std::vector<ash::DisplayInfo> info_list;
   info_list.push_back(ash::DisplayInfo::CreateFromSpec(
       base::StringPrintf("%dx%d*%f", width, height, gfx::GetDPIScale())));

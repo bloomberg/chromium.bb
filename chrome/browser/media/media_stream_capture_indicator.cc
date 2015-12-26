@@ -4,9 +4,12 @@
 
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/enumerate_modules_model_win.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <Tlhelp32.h>
 #include <wintrust.h>
 #include <algorithm>
@@ -14,6 +16,7 @@
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -347,7 +350,7 @@ static void GenerateHash(const std::string& input, std::string* output) {
     return;
   }
 
-  uint8 hash[4];
+  uint8_t hash[4];
   crypto::SHA256HashString(input, hash, sizeof(hash));
   *output = base::ToLowerASCII(base::HexEncode(hash, sizeof(hash)));
 }

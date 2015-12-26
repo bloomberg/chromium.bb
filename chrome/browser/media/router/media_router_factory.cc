@@ -4,7 +4,9 @@
 
 #include "chrome/browser/media/router/media_router_factory.h"
 
+#include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/android/router/media_router_android.h"
 #else

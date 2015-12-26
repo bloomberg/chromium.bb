@@ -4,6 +4,8 @@
 
 #include "chrome/browser/internal_auth.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/lazy_instance.h"

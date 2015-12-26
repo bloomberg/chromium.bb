@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -31,7 +34,7 @@ class FakeDumpWriter : public WebRtcRtpDumpWriter {
         max_size_reached_callback_(max_size_reached_callback),
         end_dump_success_(end_dump_success) {}
 
-  void WriteRtpPacket(const uint8* packet_header,
+  void WriteRtpPacket(const uint8_t* packet_header,
                       size_t header_length,
                       size_t packet_length,
                       bool incoming) override {
@@ -163,7 +166,7 @@ TEST_F(WebRtcRtpDumpHandlerTest, StoppedWhenMaxSizeReached) {
 
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_INCOMING, &error));
 
-  std::vector<uint8> buffer(100, 0);
+  std::vector<uint8_t> buffer(100, 0);
   handler_->OnRtpPacket(&buffer[0], buffer.size(), buffer.size(), true);
   base::RunLoop().RunUntilIdle();
 
@@ -173,7 +176,7 @@ TEST_F(WebRtcRtpDumpHandlerTest, StoppedWhenMaxSizeReached) {
 }
 
 TEST_F(WebRtcRtpDumpHandlerTest, PacketIgnoredIfDumpingNotStarted) {
-  std::vector<uint8> buffer(100, 0);
+  std::vector<uint8_t> buffer(100, 0);
   handler_->OnRtpPacket(&buffer[0], buffer.size(), buffer.size(), true);
   handler_->OnRtpPacket(&buffer[0], buffer.size(), buffer.size(), false);
   base::RunLoop().RunUntilIdle();
@@ -189,7 +192,7 @@ TEST_F(WebRtcRtpDumpHandlerTest, PacketIgnoredIfDumpingStopped) {
                      base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
                                 base::Unretained(this)));
 
-  std::vector<uint8> buffer(100, 0);
+  std::vector<uint8_t> buffer(100, 0);
   handler_->OnRtpPacket(&buffer[0], buffer.size(), buffer.size(), true);
   base::RunLoop().RunUntilIdle();
 }

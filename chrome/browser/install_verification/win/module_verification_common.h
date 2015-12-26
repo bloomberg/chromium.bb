@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_VERIFICATION_COMMON_H_
 #define CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_VERIFICATION_COMMON_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>

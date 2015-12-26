@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_READ_FILE_WORKER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_READ_FILE_WORKER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
@@ -75,7 +78,7 @@ class MTPReadFileWorker {
   // If the write operation fails, |bytes_written| is set to zero.
   void OnDidWriteDataChunkIntoSnapshotFile(
       scoped_ptr<SnapshotFileDetails> snapshot_file_details,
-      uint32 bytes_written);
+      uint32_t bytes_written);
 
   // The device unique identifier to query the device.
   const std::string device_handle_;

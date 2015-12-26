@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -10,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -97,7 +101,7 @@ class TestFolder {
     base::Time variant_epoch = base::Time::FromLocalExploded(
         picasa::kPmpVariantTimeEpoch);
 
-    int64 microseconds_since_epoch =
+    int64_t microseconds_since_epoch =
         (folder_info_.timestamp - variant_epoch).InMicroseconds();
 
     return static_cast<double>(microseconds_since_epoch) /

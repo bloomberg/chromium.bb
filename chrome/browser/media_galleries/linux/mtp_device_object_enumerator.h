@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_OBJECT_ENUMERATOR_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_OBJECT_ENUMERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 
@@ -19,13 +23,13 @@ class MTPDeviceObjectEnumerator {
   ~MTPDeviceObjectEnumerator();
 
   base::FilePath Next();
-  int64 Size();
+  int64_t Size();
   bool IsDirectory();
   base::Time LastModifiedTime();
 
   // If the current file entry is valid, returns true and fills in |entry_id|
   // with the entry identifier else returns false and |entry_id| is not set.
-  bool GetEntryId(uint32* entry_id) const;
+  bool GetEntryId(uint32_t* entry_id) const;
 
  private:
   // Returns true if the enumerator has more entries to traverse, false

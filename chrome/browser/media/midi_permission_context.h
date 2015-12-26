@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_MIDI_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_MEDIA_MIDI_PERMISSION_CONTEXT_H_
 
+#include "base/macros.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 
 class GURL;

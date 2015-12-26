@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/ui/browser.h"

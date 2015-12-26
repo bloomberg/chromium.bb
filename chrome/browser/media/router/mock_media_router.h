@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MOCK_MEDIA_ROUTER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MOCK_MEDIA_ROUTER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -43,13 +45,13 @@ class MockMediaRouter : public MediaRouter {
                     const SendRouteMessageCallback& callback));
   void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      scoped_ptr<std::vector<uint8>> data,
+      scoped_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) override {
     SendRouteBinaryMessageInternal(route_id, data.get(), callback);
   }
   MOCK_METHOD3(SendRouteBinaryMessageInternal,
                void(const MediaRoute::Id& route_id,
-                    std::vector<uint8>* data,
+                    std::vector<uint8_t>* data,
                     const SendRouteMessageCallback& callback));
   MOCK_METHOD1(AddIssue, void(const Issue& issue));
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));

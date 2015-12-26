@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_IMPORTER_EXTERNAL_PROCESS_IMPORTER_HOST_H_
 #define CHROME_BROWSER_IMPORTER_EXTERNAL_PROCESS_IMPORTER_HOST_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -44,7 +46,7 @@ class ExternalProcessImporterHost
   virtual void StartImportSettings(
       const importer::SourceProfile& source_profile,
       Profile* target_profile,
-      uint16 items,
+      uint16_t items,
       ProfileWriter* writer);
 
   // When in headless mode, the importer will not show any warning dialog if
@@ -109,7 +111,7 @@ class ExternalProcessImporterHost
   // Make sure BookmarkModel and TemplateURLService are loaded before import
   // process starts, if bookmarks and/or search engines are among the items
   // which are to be imported.
-  void CheckForLoadedModels(uint16 items);
+  void CheckForLoadedModels(uint16_t items);
 
   // True if UI is not to be shown.
   bool headless_;
@@ -150,7 +152,7 @@ class ExternalProcessImporterHost
   importer::SourceProfile source_profile_;
 
   // Bitmask of items to be imported (see importer::ImportItem enum).
-  uint16 items_;
+  uint16_t items_;
 
   // True if the import process has been cancelled.
   bool cancelled_;

@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_delegate.h"

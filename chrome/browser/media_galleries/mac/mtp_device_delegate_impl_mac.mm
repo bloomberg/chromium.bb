@@ -4,9 +4,12 @@
 
 #include "chrome/browser/media_galleries/mac/mtp_device_delegate_impl_mac.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/storage_monitor/image_capture_device.h"
 #include "components/storage_monitor/image_capture_device_manager.h"
@@ -211,7 +214,7 @@ bool MTPDeviceDelegateImplMac::IsStreaming() {
 void MTPDeviceDelegateImplMac::ReadBytes(
     const base::FilePath& device_file_path,
     const scoped_refptr<net::IOBuffer>& buf,
-    int64 offset,
+    int64_t offset,
     int buf_len,
     const ReadBytesSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "chrome/browser/manifest/manifest_icon_selector.h"

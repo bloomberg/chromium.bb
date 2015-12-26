@@ -7,6 +7,7 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <stddef.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>  // Must be included before ifaddrs.h.
 

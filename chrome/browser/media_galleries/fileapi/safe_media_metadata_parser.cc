@@ -18,9 +18,11 @@ using content::BrowserThread;
 
 namespace metadata {
 
-SafeMediaMetadataParser::SafeMediaMetadataParser(
-    Profile* profile, const std::string& blob_uuid, int64 blob_size,
-    const std::string& mime_type, bool get_attached_images)
+SafeMediaMetadataParser::SafeMediaMetadataParser(Profile* profile,
+                                                 const std::string& blob_uuid,
+                                                 int64_t blob_size,
+                                                 const std::string& mime_type,
+                                                 bool get_attached_images)
     : profile_(profile),
       blob_uuid_(blob_uuid),
       blob_size_(blob_size),
@@ -88,7 +90,9 @@ void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
 }
 
 void SafeMediaMetadataParser::OnUtilityProcessRequestBlobBytes(
-    int64 request_id, int64 byte_start, int64 length) {
+    int64_t request_id,
+    int64_t byte_start,
+    int64_t length) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -97,8 +101,9 @@ void SafeMediaMetadataParser::OnUtilityProcessRequestBlobBytes(
                  request_id, byte_start, length));
 }
 
-void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
-    int64 request_id, int64 byte_start, int64 length) {
+void SafeMediaMetadataParser::StartBlobReaderOnUIThread(int64_t request_id,
+                                                        int64_t byte_start,
+                                                        int64_t length) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // BlobReader is self-deleting.
@@ -109,8 +114,9 @@ void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
 }
 
 void SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread(
-    int64 request_id, scoped_ptr<std::string> data,
-    int64 /* blob_total_size */) {
+    int64_t request_id,
+    scoped_ptr<std::string> data,
+    int64_t /* blob_total_size */) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -120,7 +126,8 @@ void SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread(
 }
 
 void SafeMediaMetadataParser::FinishRequestBlobBytes(
-    int64 request_id, scoped_ptr<std::string> data) {
+    int64_t request_id,
+    scoped_ptr<std::string> data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!utility_process_host_.get())
     return;

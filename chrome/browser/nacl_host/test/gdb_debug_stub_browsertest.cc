@@ -9,6 +9,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/ppapi/ppapi_test.h"
 #include "components/nacl/browser/nacl_browser.h"

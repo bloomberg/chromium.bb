@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/child_process_data.h"

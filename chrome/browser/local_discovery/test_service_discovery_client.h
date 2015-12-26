@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_TEST_SERVICE_DISCOVERY_CLIENT_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_TEST_SERVICE_DISCOVERY_CLIENT_H_
 
+#include <stdint.h>
+
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "net/dns/mdns_client.h"
@@ -32,7 +34,7 @@ class TestServiceDiscoveryClient : public ServiceDiscoverySharedClient {
 
   MOCK_METHOD1(OnSendTo, void(const std::string& data));
 
-  void SimulateReceive(const uint8* packet, int size);
+  void SimulateReceive(const uint8_t* packet, int size);
 
  private:
   ~TestServiceDiscoveryClient() override;

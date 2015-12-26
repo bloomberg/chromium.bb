@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include <math.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -66,12 +67,12 @@ class CustomThreadWatcher : public ThreadWatcher {
   State thread_watcher_state_;
   WaitState wait_state_;
   CheckResponseState check_response_state_;
-  uint64 ping_sent_;
-  uint64 pong_received_;
+  uint64_t ping_sent_;
+  uint64_t pong_received_;
   base::subtle::Atomic32 success_response_;
   base::subtle::Atomic32 failed_response_;
   base::TimeTicks saved_ping_time_;
-  uint64 saved_ping_sequence_number_;
+  uint64_t saved_ping_sequence_number_;
 
   CustomThreadWatcher(const BrowserThread::ID thread_id,
                       const std::string thread_name,
@@ -140,13 +141,13 @@ class CustomThreadWatcher : public ThreadWatcher {
     ThreadWatcher::PostPingMessage();
   }
 
-  void OnPongMessage(uint64 ping_sequence_number) override {
+  void OnPongMessage(uint64_t ping_sequence_number) override {
     State old_state = UpdateState(RECEIVED_PONG);
     EXPECT_TRUE(old_state == SENT_PING || old_state == DEACTIVATED);
     ThreadWatcher::OnPongMessage(ping_sequence_number);
   }
 
-  void OnCheckResponsiveness(uint64 ping_sequence_number) override {
+  void OnCheckResponsiveness(uint64_t ping_sequence_number) override {
     ThreadWatcher::OnCheckResponsiveness(ping_sequence_number);
     {
       base::AutoLock auto_lock(custom_lock_);
@@ -188,7 +189,7 @@ class CustomThreadWatcher : public ThreadWatcher {
     State exit_state = INITIALIZED;
     // Keep the thread that is running the tests waiting until ThreadWatcher
     // object's state changes to the expected_state or until wait_time elapses.
-    for (uint32 i = 0; i < unresponsive_threshold_; ++i) {
+    for (uint32_t i = 0; i < unresponsive_threshold_; ++i) {
         TimeTicks end_time = TimeTicks::Now() + wait_time;
         {
           base::AutoLock auto_lock(custom_lock_);
@@ -217,7 +218,7 @@ class CustomThreadWatcher : public ThreadWatcher {
     // Keep the thread that is running the tests waiting until ThreadWatcher
     // object's check_response_state_ changes to the expected_state or until
     // wait_time elapses.
-    for (uint32 i = 0; i < unresponsive_threshold_; ++i) {
+    for (uint32_t i = 0; i < unresponsive_threshold_; ++i) {
         TimeTicks end_time = TimeTicks::Now() + wait_time;
         {
           base::AutoLock auto_lock(custom_lock_);
@@ -347,7 +348,7 @@ TEST_F(ThreadWatcherTest, ThreadNamesOnlyArgs) {
 
   // Parse command_line arguments.
   ThreadWatcherList::CrashOnHangThreadMap crash_on_hang_threads;
-  uint32 unresponsive_threshold;
+  uint32_t unresponsive_threshold;
   ThreadWatcherList::ParseCommandLine(command_line,
                                       &unresponsive_threshold,
                                       &crash_on_hang_threads);
@@ -376,7 +377,7 @@ TEST_F(ThreadWatcherTest, ThreadNamesAndLiveThresholdArgs) {
 
   // Parse command_line arguments.
   ThreadWatcherList::CrashOnHangThreadMap crash_on_hang_threads;
-  uint32 unresponsive_threshold;
+  uint32_t unresponsive_threshold;
   ThreadWatcherList::ParseCommandLine(command_line,
                                       &unresponsive_threshold,
                                       &crash_on_hang_threads);
@@ -405,7 +406,7 @@ TEST_F(ThreadWatcherTest, CrashOnHangThreadsAllArgs) {
 
   // Parse command_line arguments.
   ThreadWatcherList::CrashOnHangThreadMap crash_on_hang_threads;
-  uint32 unresponsive_threshold;
+  uint32_t unresponsive_threshold;
   ThreadWatcherList::ParseCommandLine(command_line,
                                       &unresponsive_threshold,
                                       &crash_on_hang_threads);
@@ -423,11 +424,11 @@ TEST_F(ThreadWatcherTest, CrashOnHangThreadsAllArgs) {
     bool crash_on_hang = (it != crash_on_hang_threads.end());
     EXPECT_TRUE(crash_on_hang);
 
-    uint32 crash_live_threads_threshold = it->second.live_threads_threshold;
+    uint32_t crash_live_threads_threshold = it->second.live_threads_threshold;
     EXPECT_EQ(5u, crash_live_threads_threshold);
 
-    uint32 crash_unresponsive_threshold = it->second.unresponsive_threshold;
-    uint32 crash_on_unresponsive_seconds =
+    uint32_t crash_unresponsive_threshold = it->second.unresponsive_threshold;
+    uint32_t crash_on_unresponsive_seconds =
         ThreadWatcherList::kUnresponsiveSeconds * crash_unresponsive_threshold;
     EXPECT_EQ(12u, crash_on_unresponsive_seconds);
   }
@@ -468,11 +469,11 @@ TEST_F(ThreadWatcherTest, ThreadResponding) {
   // ping/pong messaging sequence to happen.
   io_watcher_->WaitForStateChange(kSleepTime + TimeDelta::FromMinutes(1),
                                   RECEIVED_PONG);
-  EXPECT_GT(io_watcher_->ping_sent_, static_cast<uint64>(0));
-  EXPECT_GT(io_watcher_->pong_received_, static_cast<uint64>(0));
+  EXPECT_GT(io_watcher_->ping_sent_, static_cast<uint64_t>(0));
+  EXPECT_GT(io_watcher_->pong_received_, static_cast<uint64_t>(0));
   EXPECT_TRUE(io_watcher_->active());
   EXPECT_GE(io_watcher_->saved_ping_time_, time_before_ping);
-  EXPECT_GE(io_watcher_->saved_ping_sequence_number_, static_cast<uint64>(0));
+  EXPECT_GE(io_watcher_->saved_ping_sequence_number_, static_cast<uint64_t>(0));
 
   // Verify watched thread is responding with ping/pong messaging.
   io_watcher_->WaitForCheckResponse(
@@ -546,9 +547,9 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
   // Verify DB thread is responding with ping/pong messaging.
   db_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), SUCCESSFUL);
-  EXPECT_GT(db_watcher_->ping_sent_, static_cast<uint64>(0));
-  EXPECT_GT(db_watcher_->pong_received_, static_cast<uint64>(0));
-  EXPECT_GE(db_watcher_->ping_sequence_number_, static_cast<uint64>(0));
+  EXPECT_GT(db_watcher_->ping_sent_, static_cast<uint64_t>(0));
+  EXPECT_GT(db_watcher_->pong_received_, static_cast<uint64_t>(0));
+  EXPECT_GE(db_watcher_->ping_sequence_number_, static_cast<uint64_t>(0));
   EXPECT_GT(base::subtle::NoBarrier_Load(&(db_watcher_->success_response_)),
       static_cast<base::subtle::Atomic32>(0));
   EXPECT_EQ(base::subtle::NoBarrier_Load(&(db_watcher_->failed_response_)),
@@ -557,9 +558,9 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
   // Verify IO thread is responding with ping/pong messaging.
   io_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), SUCCESSFUL);
-  EXPECT_GT(io_watcher_->ping_sent_, static_cast<uint64>(0));
-  EXPECT_GT(io_watcher_->pong_received_, static_cast<uint64>(0));
-  EXPECT_GE(io_watcher_->ping_sequence_number_, static_cast<uint64>(0));
+  EXPECT_GT(io_watcher_->ping_sent_, static_cast<uint64_t>(0));
+  EXPECT_GT(io_watcher_->pong_received_, static_cast<uint64_t>(0));
+  EXPECT_GE(io_watcher_->ping_sequence_number_, static_cast<uint64_t>(0));
   EXPECT_GT(base::subtle::NoBarrier_Load(&(io_watcher_->success_response_)),
       static_cast<base::subtle::Atomic32>(0));
   EXPECT_EQ(base::subtle::NoBarrier_Load(&(io_watcher_->failed_response_)),

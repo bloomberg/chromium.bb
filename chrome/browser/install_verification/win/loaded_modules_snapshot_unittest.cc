@@ -4,6 +4,7 @@
 
 #include "chrome/browser/install_verification/win/loaded_modules_snapshot.h"
 
+#include <stddef.h>
 #include <Windows.h>
 
 #include <algorithm>

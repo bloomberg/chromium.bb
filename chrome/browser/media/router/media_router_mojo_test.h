@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/mock_media_router.h"

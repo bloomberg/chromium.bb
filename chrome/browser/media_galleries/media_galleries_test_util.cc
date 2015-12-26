@@ -4,9 +4,7 @@
 
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include <stddef.h>
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
@@ -14,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +31,7 @@
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
+#include <windows.h>
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #endif  // OS_WIN

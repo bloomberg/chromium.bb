@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
+#include "build/build_config.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/ip_endpoint.h"
@@ -66,7 +67,7 @@ void EndpointResolver::Start(const net::HostPortPair& address,
 }
 
 void EndpointResolver::DomainResolveComplete(
-    uint16 port,
+    uint16_t port,
     const ResultCallback& callback,
     bool success,
     const net::IPAddressNumber& address_ipv4,

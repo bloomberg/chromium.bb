@@ -4,8 +4,11 @@
 
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"

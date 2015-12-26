@@ -53,7 +53,7 @@ TestServiceDiscoveryClient::CreateLocalDomainResolver(
       domain, address_family, callback);
 }
 
-void TestServiceDiscoveryClient::SimulateReceive(const uint8* packet,
+void TestServiceDiscoveryClient::SimulateReceive(const uint8_t* packet,
                                                  int size) {
   mock_socket_factory_.SimulateReceive(packet, size);
 }

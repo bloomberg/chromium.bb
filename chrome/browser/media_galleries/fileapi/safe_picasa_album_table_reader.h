@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "content/public/browser/utility_process_host.h"

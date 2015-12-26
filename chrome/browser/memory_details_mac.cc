@@ -4,10 +4,11 @@
 
 #include "chrome/browser/memory_details.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"

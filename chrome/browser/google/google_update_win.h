@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_
 #define CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

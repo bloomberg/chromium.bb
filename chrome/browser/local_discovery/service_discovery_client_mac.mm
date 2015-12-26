@@ -7,6 +7,8 @@
 #import <arpa/inet.h>
 #import <Foundation/Foundation.h>
 #import <net/if_dl.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/singleton.h"
@@ -100,7 +102,7 @@ void ParseTxtRecord(NSData* record, std::vector<std::string>* output) {
   const char* const record_end = record_bytes + [record length];
   // TODO(justinlin): More strict bounds checking.
   while (record_bytes < record_end) {
-    uint8 size = *record_bytes++;
+    uint8_t size = *record_bytes++;
     if (size <= 0)
       continue;
 

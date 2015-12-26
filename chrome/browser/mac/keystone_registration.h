@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #include <Security/Authorization.h>
+#include <stdint.h>
 
 // Declarations of the Keystone registration bits needed here. From
 // KSRegistration.h.

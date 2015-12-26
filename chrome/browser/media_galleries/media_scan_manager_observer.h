@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
 
 class MediaScanManagerObserver {

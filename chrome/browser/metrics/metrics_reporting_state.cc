@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/installer/util/google_update_settings.h"

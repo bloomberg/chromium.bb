@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"
@@ -24,7 +25,7 @@ using content::UtilityProcessHost;
 ExternalProcessImporterClient::ExternalProcessImporterClient(
     base::WeakPtr<ExternalProcessImporterHost> importer_host,
     const importer::SourceProfile& source_profile,
-    uint16 items,
+    uint16_t items,
     InProcessImporterBridge* bridge)
     : total_bookmarks_count_(0),
       total_history_rows_count_(0),

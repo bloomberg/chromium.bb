@@ -11,6 +11,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -161,7 +162,7 @@ void ThreadWatcher::PostPingMessage() {
   }
 }
 
-void ThreadWatcher::OnPongMessage(uint64 ping_sequence_number) {
+void ThreadWatcher::OnPongMessage(uint64_t ping_sequence_number) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   // Record watched thread's response time.
@@ -192,7 +193,7 @@ void ThreadWatcher::OnPongMessage(uint64 ping_sequence_number) {
       sleep_time_);
 }
 
-void ThreadWatcher::OnCheckResponsiveness(uint64 ping_sequence_number) {
+void ThreadWatcher::OnCheckResponsiveness(uint64_t ping_sequence_number) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   // If we have stopped watching then consider thread as responding.
   if (!active_) {
@@ -285,8 +286,8 @@ void ThreadWatcher::GotNoResponse() {
     return;
 
   // Record how other threads are responding.
-  uint32 responding_thread_count = 0;
-  uint32 unresponding_thread_count = 0;
+  uint32_t responding_thread_count = 0;
+  uint32_t unresponding_thread_count = 0;
   ThreadWatcherList::GetStatusOfThreads(&responding_thread_count,
                                         &unresponding_thread_count);
 
@@ -335,11 +336,10 @@ const int ThreadWatcherList::kLiveThreadsThreshold = 2;
 int ThreadWatcherList::g_initialize_delay_seconds = 120;
 
 ThreadWatcherList::CrashDataThresholds::CrashDataThresholds(
-    uint32 live_threads_threshold,
-    uint32 unresponsive_threshold)
+    uint32_t live_threads_threshold,
+    uint32_t unresponsive_threshold)
     : live_threads_threshold(live_threads_threshold),
-      unresponsive_threshold(unresponsive_threshold) {
-}
+      unresponsive_threshold(unresponsive_threshold) {}
 
 ThreadWatcherList::CrashDataThresholds::CrashDataThresholds()
     : live_threads_threshold(kLiveThreadsThreshold),
@@ -350,7 +350,7 @@ ThreadWatcherList::CrashDataThresholds::CrashDataThresholds()
 void ThreadWatcherList::StartWatchingAll(
     const base::CommandLine& command_line) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  uint32 unresponsive_threshold;
+  uint32_t unresponsive_threshold;
   CrashOnHangThreadMap crash_on_hang_threads;
   ParseCommandLine(command_line,
                    &unresponsive_threshold,
@@ -398,8 +398,9 @@ bool ThreadWatcherList::IsRegistered(const BrowserThread::ID thread_id) {
 }
 
 // static
-void ThreadWatcherList::GetStatusOfThreads(uint32* responding_thread_count,
-                                           uint32* unresponding_thread_count) {
+void ThreadWatcherList::GetStatusOfThreads(
+    uint32_t* responding_thread_count,
+    uint32_t* unresponding_thread_count) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   *responding_thread_count = 0;
   *unresponding_thread_count = 0;
@@ -445,7 +446,7 @@ ThreadWatcherList::~ThreadWatcherList() {
 // static
 void ThreadWatcherList::ParseCommandLine(
     const base::CommandLine& command_line,
-    uint32* unresponsive_threshold,
+    uint32_t* unresponsive_threshold,
     CrashOnHangThreadMap* crash_on_hang_threads) {
   // Initialize |unresponsive_threshold| to a default value.
   *unresponsive_threshold = kUnresponsiveCount;
@@ -467,7 +468,7 @@ void ThreadWatcherList::ParseCommandLine(
     *unresponsive_threshold *= 2;
 #endif
 
-  uint32 crash_seconds = *unresponsive_threshold * kUnresponsiveSeconds;
+  uint32_t crash_seconds = *unresponsive_threshold * kUnresponsiveSeconds;
   std::string crash_on_hang_thread_names;
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
     crash_on_hang_thread_names =
@@ -491,8 +492,8 @@ void ThreadWatcherList::ParseCommandLine(
 // static
 void ThreadWatcherList::ParseCommandLineCrashOnHangThreads(
     const std::string& crash_on_hang_thread_names,
-    uint32 default_live_threads_threshold,
-    uint32 default_crash_seconds,
+    uint32_t default_live_threads_threshold,
+    uint32_t default_crash_seconds,
     CrashOnHangThreadMap* crash_on_hang_threads) {
   base::StringTokenizer tokens(crash_on_hang_thread_names, ",");
   while (tokens.GetNext()) {
@@ -500,8 +501,8 @@ void ThreadWatcherList::ParseCommandLineCrashOnHangThreads(
         tokens.token_piece(), ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::string thread_name = values[0].as_string();
 
-    uint32 live_threads_threshold = default_live_threads_threshold;
-    uint32 crash_seconds = default_crash_seconds;
+    uint32_t live_threads_threshold = default_live_threads_threshold;
+    uint32_t crash_seconds = default_crash_seconds;
     if (values.size() >= 2 &&
         (!base::StringToUint(values[1], &live_threads_threshold))) {
       continue;
@@ -510,7 +511,7 @@ void ThreadWatcherList::ParseCommandLineCrashOnHangThreads(
         (!base::StringToUint(values[2], &crash_seconds))) {
       continue;
     }
-    uint32 unresponsive_threshold = static_cast<uint32>(
+    uint32_t unresponsive_threshold = static_cast<uint32_t>(
         ceil(static_cast<float>(crash_seconds) / kUnresponsiveSeconds));
 
     CrashDataThresholds crash_data(live_threads_threshold,
@@ -522,7 +523,7 @@ void ThreadWatcherList::ParseCommandLineCrashOnHangThreads(
 
 // static
 void ThreadWatcherList::InitializeAndStartWatching(
-    uint32 unresponsive_threshold,
+    uint32_t unresponsive_threshold,
     const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
@@ -574,14 +575,14 @@ void ThreadWatcherList::StartWatching(
     const std::string& thread_name,
     const base::TimeDelta& sleep_time,
     const base::TimeDelta& unresponsive_time,
-    uint32 unresponsive_threshold,
+    uint32_t unresponsive_threshold,
     const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
 
   CrashOnHangThreadMap::const_iterator it =
       crash_on_hang_threads.find(thread_name);
   bool crash_on_hang = false;
-  uint32 live_threads_threshold = 0;
+  uint32_t live_threads_threshold = 0;
   if (it != crash_on_hang_threads.end()) {
     crash_on_hang = true;
     live_threads_threshold = it->second.live_threads_threshold;

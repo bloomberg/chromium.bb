@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc_log_uploader.h"
 
+#include <stddef.h>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -13,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/media_url_constants.h"
 #include "chrome/browser/media/webrtc_log_list.h"
@@ -29,7 +32,7 @@ using content::BrowserThread;
 namespace {
 
 const int kLogCountLimit = 5;
-const uint32 kIntermediateCompressionBufferBytes = 256 * 1024;  // 256 KB
+const uint32_t kIntermediateCompressionBufferBytes = 256 * 1024;  // 256 KB
 const int kLogListLimitLines = 50;
 
 const char kUploadContentType[] = "multipart/form-data";
@@ -313,9 +316,9 @@ void WebRtcLogUploader::OnURLFetchComplete(
   delete source;
 }
 
-void WebRtcLogUploader::OnURLFetchUploadProgress(
-    const net::URLFetcher* source, int64 current, int64 total) {
-}
+void WebRtcLogUploader::OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                                 int64_t current,
+                                                 int64_t total) {}
 
 void WebRtcLogUploader::SetupMultipart(
     std::string* post_data,
@@ -384,9 +387,9 @@ void WebRtcLogUploader::CompressLog(std::string* compressed_log,
                             Z_DEFAULT_STRATEGY);
   DCHECK_EQ(Z_OK, result);
 
-  uint8 intermediate_buffer[kIntermediateCompressionBufferBytes] = {0};
+  uint8_t intermediate_buffer[kIntermediateCompressionBufferBytes] = {0};
   ResizeForNextOutput(compressed_log, &stream);
-  uint32 read = 0;
+  uint32_t read = 0;
 
   PartialCircularBuffer read_buffer(buffer->Read());
   do {

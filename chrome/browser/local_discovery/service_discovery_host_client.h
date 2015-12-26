@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_HOST_CLIENT_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_HOST_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -70,10 +74,10 @@ class ServiceDiscoveryHostClient
   class LocalDomainResolverProxy;
   friend class ServiceDiscoveryClientUtility;
 
-  typedef std::map<uint64, ServiceWatcher::UpdatedCallback> WatcherCallbacks;
-  typedef std::map<uint64, ServiceResolver::ResolveCompleteCallback>
+  typedef std::map<uint64_t, ServiceWatcher::UpdatedCallback> WatcherCallbacks;
+  typedef std::map<uint64_t, ServiceResolver::ResolveCompleteCallback>
       ResolverCallbacks;
-  typedef std::map<uint64, LocalDomainResolver::IPAddressCallback>
+  typedef std::map<uint64_t, LocalDomainResolver::IPAddressCallback>
       DomainResolverCallbacks;
 
   void StartOnIOThread();
@@ -88,50 +92,48 @@ class ServiceDiscoveryHostClient
   void Send(IPC::Message* msg);
   void SendOnIOThread(IPC::Message* msg);
 
-  uint64 RegisterWatcherCallback(
+  uint64_t RegisterWatcherCallback(
       const ServiceWatcher::UpdatedCallback& callback);
-  uint64 RegisterResolverCallback(
+  uint64_t RegisterResolverCallback(
       const ServiceResolver::ResolveCompleteCallback& callback);
-  uint64 RegisterLocalDomainResolverCallback(
+  uint64_t RegisterLocalDomainResolverCallback(
       const LocalDomainResolver::IPAddressCallback& callback);
 
-  void UnregisterWatcherCallback(uint64 id);
-  void UnregisterResolverCallback(uint64 id);
-  void UnregisterLocalDomainResolverCallback(uint64 id);
+  void UnregisterWatcherCallback(uint64_t id);
+  void UnregisterResolverCallback(uint64_t id);
+  void UnregisterLocalDomainResolverCallback(uint64_t id);
 
   // IPC Message handlers.
   void OnError();
-  void OnWatcherCallback(uint64 id,
+  void OnWatcherCallback(uint64_t id,
                          ServiceWatcher::UpdateType update,
                          const std::string& service_name);
-  void OnResolverCallback(uint64 id,
+  void OnResolverCallback(uint64_t id,
                           ServiceResolver::RequestStatus status,
                           const ServiceDescription& description);
-  void OnLocalDomainResolverCallback(uint64 id,
+  void OnLocalDomainResolverCallback(uint64_t id,
                                      bool success,
                                      const net::IPAddressNumber& address_ipv4,
                                      const net::IPAddressNumber& address_ipv6);
 
-
   // Runs watcher callback on owning thread.
-  void RunWatcherCallback(uint64 id,
+  void RunWatcherCallback(uint64_t id,
                           ServiceWatcher::UpdateType update,
                           const std::string& service_name);
   // Runs resolver callback on owning thread.
-  void RunResolverCallback(uint64 id,
+  void RunResolverCallback(uint64_t id,
                            ServiceResolver::RequestStatus status,
                            const ServiceDescription& description);
   // Runs local domain resolver callback on owning thread.
-  void RunLocalDomainResolverCallback(uint64 id,
+  void RunLocalDomainResolverCallback(uint64_t id,
                                       bool success,
                                       const net::IPAddressNumber& address_ipv4,
                                       const net::IPAddressNumber& address_ipv6);
 
-
   base::WeakPtr<content::UtilityProcessHost> utility_host_;
 
   // Incrementing counter to assign ID to watchers and resolvers.
-  uint64 current_id_;
+  uint64_t current_id_;
   base::Closure error_callback_;
   WatcherCallbacks service_watcher_callbacks_;
   ResolverCallbacks service_resolver_callbacks_;

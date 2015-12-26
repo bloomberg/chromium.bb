@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chrome/browser/media_galleries/linux/mtp_device_object_enumerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -9,7 +13,7 @@ namespace {
 
 struct MtpFileEntryData {
   const char* const name;
-  int64 size;
+  int64_t size;
   bool is_directory;
   time_t modification_time;
 };

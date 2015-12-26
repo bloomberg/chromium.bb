@@ -4,10 +4,14 @@
 
 #include "chrome/browser/importer/in_process_importer_bridge.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"

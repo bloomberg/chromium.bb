@@ -12,6 +12,7 @@
 #include "base/cpu.h"
 #include "base/metrics/histogram.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 
 namespace chrome {
 

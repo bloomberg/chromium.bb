@@ -4,6 +4,8 @@
 
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <utility>

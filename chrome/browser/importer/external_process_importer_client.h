@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_IMPORTER_EXTERNAL_PROCESS_IMPORTER_CLIENT_H_
 #define CHROME_BROWSER_IMPORTER_EXTERNAL_PROCESS_IMPORTER_CLIENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
@@ -48,7 +52,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   ExternalProcessImporterClient(
       base::WeakPtr<ExternalProcessImporterHost> importer_host,
       const importer::SourceProfile& source_profile,
-      uint16 items,
+      uint16_t items,
       InProcessImporterBridge* bridge);
 
   // Launches the task to start the external process.
@@ -147,7 +151,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
 
   // Data to be passed from the importer host to the external importer.
   importer::SourceProfile source_profile_;
-  uint16 items_;
+  uint16_t items_;
 
   // Takes import data coming over IPC and delivers it to be written by the
   // ProfileWriter.

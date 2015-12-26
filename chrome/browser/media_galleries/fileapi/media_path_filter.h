@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_PATH_FILTER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_PATH_FILTER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
 

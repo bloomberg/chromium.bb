@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_MOJO_IMPL_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_MOJO_IMPL_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <set>
@@ -81,7 +83,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                         const SendRouteMessageCallback& callback) override;
   void SendRouteBinaryMessage(
       const MediaRoute::Id& route_id,
-      scoped_ptr<std::vector<uint8>> data,
+      scoped_ptr<std::vector<uint8_t>> data,
       const SendRouteMessageCallback& callback) override;
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
@@ -218,7 +220,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                             const std::string& message,
                             const SendRouteMessageCallback& callback);
   void DoSendSessionBinaryMessage(const MediaRoute::Id& route_id,
-                                  scoped_ptr<std::vector<uint8>> data,
+                                  scoped_ptr<std::vector<uint8_t>> data,
                                   const SendRouteMessageCallback& callback);
   void DoListenForRouteMessages(const MediaRoute::Id& route_id);
   void DoStopListeningForRouteMessages(const MediaRoute::Id& route_id);

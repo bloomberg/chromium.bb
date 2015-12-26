@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_H_
 #define CHROME_BROWSER_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"

@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SAFE_MEDIA_METADATA_PARSER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SAFE_MEDIA_METADATA_PARSER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/media_galleries.h"
@@ -38,8 +41,10 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
            scoped_ptr<std::vector<AttachedImage> > attached_images)>
       DoneCallback;
 
-  SafeMediaMetadataParser(Profile* profile, const std::string& blob_uuid,
-                          int64 blob_size, const std::string& mime_type,
+  SafeMediaMetadataParser(Profile* profile,
+                          const std::string& blob_uuid,
+                          int64_t blob_size,
+                          const std::string& mime_type,
                           bool get_attached_images);
 
   // Should be called on the UI thread. |callback| also runs on the UI thread.
@@ -66,14 +71,16 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
 
   // Sequence of functions that bounces from the IO thread to the UI thread to
   // read the blob data, then sends the data back to the utility process.
-  void OnUtilityProcessRequestBlobBytes(int64 request_id, int64 byte_start,
-                                        int64 length);
-  void StartBlobReaderOnUIThread(int64 request_id, int64 byte_start,
-                                 int64 length);
-  void OnBlobReaderDoneOnUIThread(int64 request_id,
+  void OnUtilityProcessRequestBlobBytes(int64_t request_id,
+                                        int64_t byte_start,
+                                        int64_t length);
+  void StartBlobReaderOnUIThread(int64_t request_id,
+                                 int64_t byte_start,
+                                 int64_t length);
+  void OnBlobReaderDoneOnUIThread(int64_t request_id,
                                   scoped_ptr<std::string> data,
-                                  int64 /* blob_total_size */);
-  void FinishRequestBlobBytes(int64 request_id, scoped_ptr<std::string> data);
+                                  int64_t /* blob_total_size */);
+  void FinishRequestBlobBytes(int64_t request_id, scoped_ptr<std::string> data);
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.
@@ -83,7 +90,7 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
   // All member variables are only accessed on the IO thread.
   Profile* const profile_;
   const std::string blob_uuid_;
-  const int64 blob_size_;
+  const int64_t blob_size_;
   const std::string mime_type_;
   bool get_attached_images_;
 

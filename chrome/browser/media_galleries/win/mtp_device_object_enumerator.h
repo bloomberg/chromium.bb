@@ -8,7 +8,11 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_OBJECT_ENUMERATOR_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_OBJECT_ENUMERATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
@@ -23,7 +27,7 @@ class MTPDeviceObjectEnumerator {
   ~MTPDeviceObjectEnumerator();
 
   base::FilePath Next();
-  int64 Size();
+  int64_t Size();
   bool IsDirectory();
   base::Time LastModifiedTime();
 

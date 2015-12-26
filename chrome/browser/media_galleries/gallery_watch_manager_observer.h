@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_GALLERY_WATCH_MANAGER_OBSERVER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_GALLERY_WATCH_MANAGER_OBSERVER_H_
 
-#include "base/basictypes.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 
 class GalleryWatchManagerObserver {

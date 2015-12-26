@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_VERIFICATION_TEST_H_
 #define CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_VERIFICATION_TEST_H_
 
+#include <stddef.h>
+
 #include <set>
 #include "base/compiler_specific.h"
 #include "chrome/browser/install_verification/win/module_info.h"

@@ -4,9 +4,11 @@
 
 #include <AppKit/NSEvent.h>
 #include <Carbon/Carbon.h>
+#include <stddef.h>
 
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 
+#include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

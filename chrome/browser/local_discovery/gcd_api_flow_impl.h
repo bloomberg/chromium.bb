@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_GCD_API_FLOW_IMPL_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_GCD_API_FLOW_IMPL_H_
 
+#include "base/macros.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"

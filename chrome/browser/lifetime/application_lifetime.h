@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 
 class Browser;
 

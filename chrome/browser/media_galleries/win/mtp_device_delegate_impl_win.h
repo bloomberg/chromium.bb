@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_DELEGATE_IMPL_WIN_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_DELEGATE_IMPL_WIN_H_
 
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -112,7 +115,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   bool IsStreaming() override;
   void ReadBytes(const base::FilePath& device_file_path,
                  const scoped_refptr<net::IOBuffer>& buf,
-                 int64 offset,
+                 int64_t offset,
                  int buf_len,
                  const ReadBytesSuccessCallback& success_callback,
                  const ErrorCallback& error_callback) override;

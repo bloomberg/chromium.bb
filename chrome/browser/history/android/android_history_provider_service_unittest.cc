@@ -4,6 +4,9 @@
 
 #include "chrome/browser/history/android/android_history_provider_service.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -104,7 +107,7 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
     return count_;
   }
 
-  void OnInserted(int64 id) {
+  void OnInserted(int64_t id) {
     success_ = id != 0;
     base::MessageLoop::current()->QuitWhenIdle();
   }

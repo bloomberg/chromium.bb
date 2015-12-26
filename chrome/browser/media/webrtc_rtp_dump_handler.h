@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_RTP_DUMP_HANDLER_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_RTP_DUMP_HANDLER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/rtp_dump_type.h"
 
@@ -72,7 +75,7 @@ class WebRtcRtpDumpHandler {
 
   // Adds an RTP packet to the dump. The caller must make sure it's a valid RTP
   // packet.
-  void OnRtpPacket(const uint8* packet_header,
+  void OnRtpPacket(const uint8_t* packet_header,
                    size_t header_length,
                    size_t packet_length,
                    bool incoming);

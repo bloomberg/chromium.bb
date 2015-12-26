@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_PREFERENCES_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_PREFERENCES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -35,7 +37,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-typedef uint64 MediaGalleryPrefId;
+typedef uint64_t MediaGalleryPrefId;
 const MediaGalleryPrefId kInvalidMediaGalleryPrefId = 0;
 
 const char kMediaGalleriesPrefsVersionKey[] = "preferencesVersion";
@@ -103,7 +105,7 @@ struct MediaGalleryPrefInfo {
 
   // The capacity in bytes of the volume/device on which the gallery is
   // located. Will be zero if unknown.
-  uint64 total_size_in_bytes;
+  uint64_t total_size_in_bytes;
 
   // If the gallery is on a removable device, the time that device was last
   // attached. It is stored in preferences by the base::Time internal value,
@@ -233,7 +235,7 @@ class MediaGalleriesPreferences
                                 const base::string16& volume_label,
                                 const base::string16& vendor_name,
                                 const base::string16& model_name,
-                                uint64 total_size_in_bytes,
+                                uint64_t total_size_in_bytes,
                                 base::Time last_attach_time,
                                 int audio_count,
                                 int image_count,
@@ -330,7 +332,7 @@ class MediaGalleriesPreferences
       const base::string16& volume_label,
       const base::string16& vendor_name,
       const base::string16& model_name,
-      uint64 total_size_in_bytes,
+      uint64_t total_size_in_bytes,
       base::Time last_attach_time,
       bool volume_metadata_valid,
       int audio_count,

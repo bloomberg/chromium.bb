@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/image_holder.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

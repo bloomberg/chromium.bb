@@ -4,8 +4,11 @@
 
 #include "chrome/browser/notifications/extension_welcome_notification.h"
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
@@ -195,10 +198,10 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
   void SetBooleanPref(const char* path, bool value) const {
     profile_->GetPrefs()->SetBoolean(path, value);
   }
-  int64 GetInt64Pref(const char* path) const {
+  int64_t GetInt64Pref(const char* path) const {
     return profile_->GetPrefs()->GetInt64(path);
   }
-  void SetInt64Pref(const char* path, int64 value) const {
+  void SetInt64Pref(const char* path, int64_t value) const {
     profile_->GetPrefs()->SetInt64(path, value);
   }
 

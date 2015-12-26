@@ -8,6 +8,7 @@
 #include <AvailabilityMacros.h>
 #include <crt_externs.h>
 #include <dlfcn.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/event.h>
 #include <sys/time.h>
@@ -17,7 +18,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"

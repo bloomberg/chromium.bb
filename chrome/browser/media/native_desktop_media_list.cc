@@ -4,12 +4,16 @@
 
 #include "chrome/browser/media/native_desktop_media_list.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <sstream>
 
 #include "base/hash.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
@@ -34,7 +38,7 @@ const int kDefaultUpdatePeriod = 1000;
 
 // Returns a hash of a DesktopFrame content to detect when image for a desktop
 // media source has changed.
-uint32 GetFrameHash(webrtc::DesktopFrame* frame) {
+uint32_t GetFrameHash(webrtc::DesktopFrame* frame) {
   int data_size = frame->stride() * frame->size().height();
   return base::SuperFastHash(reinterpret_cast<char*>(frame->data()), data_size);
 }
@@ -49,7 +53,7 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
   result.allocN32Pixels(scaled_rect.width(), scaled_rect.height(), true);
   result.lockPixels();
 
-  uint8* pixels_data = reinterpret_cast<uint8*>(result.getPixels());
+  uint8_t* pixels_data = reinterpret_cast<uint8_t*>(result.getPixels());
   libyuv::ARGBScale(frame->data(), frame->stride(),
                     frame->size().width(), frame->size().height(),
                     pixels_data, result.rowBytes(),
@@ -94,7 +98,7 @@ class NativeDesktopMediaList::Worker
                content::DesktopMediaID::Id view_dialog_id);
 
  private:
-  typedef std::map<DesktopMediaID, uint32> ImageHashesMap;
+  typedef std::map<DesktopMediaID, uint32_t> ImageHashesMap;
 
   // webrtc::DesktopCapturer::Callback interface.
   webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
@@ -198,7 +202,7 @@ void NativeDesktopMediaList::Worker::Refresh(
     // |current_frame_| may be NULL if capture failed (e.g. because window has
     // been closed).
     if (current_frame_) {
-      uint32 frame_hash = GetFrameHash(current_frame_.get());
+      uint32_t frame_hash = GetFrameHash(current_frame_.get());
       new_image_hashes[source.id] = frame_hash;
 
       // Scale the image only if it has changed.

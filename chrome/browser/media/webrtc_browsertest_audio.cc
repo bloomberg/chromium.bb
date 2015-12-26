@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc_browsertest_audio.h"
 
+#include <stddef.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "media/audio/audio_parameters.h"

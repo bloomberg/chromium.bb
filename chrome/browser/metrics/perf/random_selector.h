@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_METRICS_PERF_RANDOM_SELECTOR_H_
 #define CHROME_BROWSER_METRICS_PERF_RANDOM_SELECTOR_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

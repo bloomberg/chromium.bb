@@ -4,12 +4,15 @@
 
 #include "chrome/browser/net/proxy_service_factory.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/chrome_switches.h"

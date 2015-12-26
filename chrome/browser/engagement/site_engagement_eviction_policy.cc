@@ -19,10 +19,10 @@ namespace {
 const int kExpectedEngagementSites = 200;
 
 // Gets the quota that an origin deserves based on its site engagement.
-int64 GetSoftQuotaForOrigin(const GURL& origin,
-                            int score,
-                            int total_engagement_points,
-                            int64 global_quota) {
+int64_t GetSoftQuotaForOrigin(const GURL& origin,
+                              int score,
+                              int total_engagement_points,
+                              int64_t global_quota) {
   double quota_per_point =
       global_quota /
       std::max(kExpectedEngagementSites * SiteEngagementScore::kMaxPoints,
@@ -35,8 +35,8 @@ GURL DoCalculateEvictionOrigin(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     SiteEngagementScoreProvider* score_provider,
     const std::set<GURL>& exceptions,
-    const std::map<GURL, int64>& usage_map,
-    int64 global_quota) {
+    const std::map<GURL, int64_t>& usage_map,
+    int64_t global_quota) {
   // TODO(calamity): Integrate storage access frequency as an input to this
   // heuristic.
 
@@ -49,7 +49,7 @@ GURL DoCalculateEvictionOrigin(
   // use based on its engagement and the global quota. The origin that most
   // exceeds its soft quota is chosen.
   GURL origin_to_evict;
-  int64 max_overuse = std::numeric_limits<int64>::min();
+  int64_t max_overuse = std::numeric_limits<int64_t>::min();
   int total_engagement_points = score_provider->GetTotalEngagementPoints();
 
   for (const auto& usage : usage_map) {
@@ -61,9 +61,10 @@ GURL DoCalculateEvictionOrigin(
     }
 
     // |overuse| can be negative if the soft quota exceeds the usage.
-    int64 overuse = usage.second - GetSoftQuotaForOrigin(
-                                       origin, score_provider->GetScore(origin),
-                                       total_engagement_points, global_quota);
+    int64_t overuse =
+        usage.second -
+        GetSoftQuotaForOrigin(origin, score_provider->GetScore(origin),
+                              total_engagement_points, global_quota);
     if (overuse > max_overuse && !ContainsKey(exceptions, origin)) {
       max_overuse = overuse;
       origin_to_evict = origin;
@@ -77,8 +78,8 @@ GURL GetSiteEngagementEvictionOriginOnUIThread(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     content::BrowserContext* browser_context,
     const std::set<GURL>& exceptions,
-    const std::map<GURL, int64>& usage_map,
-    int64 global_quota) {
+    const std::map<GURL, int64_t>& usage_map,
+    int64_t global_quota) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -118,8 +119,8 @@ SiteEngagementEvictionPolicy::~SiteEngagementEvictionPolicy() {}
 void SiteEngagementEvictionPolicy::GetEvictionOrigin(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const std::set<GURL>& exceptions,
-    const std::map<GURL, int64>& usage_map,
-    int64 global_quota,
+    const std::map<GURL, int64_t>& usage_map,
+    int64_t global_quota,
     const storage::GetOriginCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -136,8 +137,8 @@ GURL SiteEngagementEvictionPolicy::CalculateEvictionOriginForTests(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     SiteEngagementScoreProvider* score_provider,
     const std::set<GURL>& exceptions,
-    const std::map<GURL, int64>& usage_map,
-    int64 global_quota) {
+    const std::map<GURL, int64_t>& usage_map,
+    int64_t global_quota) {
   return DoCalculateEvictionOrigin(special_storage_policy, score_provider,
                                    exceptions, usage_map, global_quota);
 }

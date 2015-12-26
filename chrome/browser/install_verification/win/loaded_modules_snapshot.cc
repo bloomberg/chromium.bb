@@ -5,6 +5,7 @@
 #include "chrome/browser/install_verification/win/loaded_modules_snapshot.h"
 
 #include <Psapi.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 

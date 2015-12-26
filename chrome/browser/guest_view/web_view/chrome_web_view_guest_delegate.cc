@@ -5,6 +5,7 @@
 
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"

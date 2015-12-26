@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/metrics_memory_details.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/location.h"
@@ -11,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"

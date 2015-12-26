@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/media_stream_device_permissions.h"
 
+#include <stddef.h>
+
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"

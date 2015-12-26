@@ -7,6 +7,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile_manager.h"

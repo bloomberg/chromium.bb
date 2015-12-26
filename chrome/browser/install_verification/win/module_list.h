@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_LIST_H_
 #define CHROME_BROWSER_INSTALL_VERIFICATION_WIN_MODULE_LIST_H_
 
+#include <stddef.h>
 #include <Windows.h>
 
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 struct ModuleInfo;

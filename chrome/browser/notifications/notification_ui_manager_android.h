@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_ANDROID_H_
 
 #include <jni.h>
+#include <stdint.h>
 #include <map>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
 // Implementation of the Notification UI Manager for Android, which defers to

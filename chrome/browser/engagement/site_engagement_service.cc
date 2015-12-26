@@ -4,6 +4,8 @@
 
 #include "chrome/browser/engagement/site_engagement_service.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cmath>
 #include <vector>

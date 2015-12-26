@@ -4,17 +4,19 @@
 
 #include "chrome/browser/net/probe_message.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/logging.h"
 
 namespace chrome_browser_net {
 
-const uint32 ProbeMessage::kVersion = 2;
-const uint32 ProbeMessage::kMaxNumberProbePackets = 21;
-const uint32 ProbeMessage::kMaxProbePacketBytes = 1500;
+const uint32_t ProbeMessage::kVersion = 2;
+const uint32_t ProbeMessage::kMaxNumberProbePackets = 21;
+const uint32_t ProbeMessage::kMaxProbePacketBytes = 1500;
 // Maximum pacing interval is 300 seconds (for testing NAT binding).
-const uint32 ProbeMessage::kMaxPacingIntervalMicros = 300000000;
+const uint32_t ProbeMessage::kMaxPacingIntervalMicros = 300000000;
 const char ProbeMessage::kEncodingString[] =
     "T\xd3?\xa5h2\x9c\x8en\xf1Q6\xbc{\xc6-4\xfa$f\xb9[\xa6\xcd@6,\xdf\xb3i-\xe6"
     "v\x9eV\x8dXd\xd9kE\xf6=\xbeO";
@@ -43,7 +45,7 @@ bool ProbeMessage::ParseInput(const std::string& input,
   // Checksum is computed on padding only.
   if (probe_packet->has_padding()) {
     DVLOG(3) << "received padding: " << probe_packet->padding();
-    uint32 computed_checksum = Checksum(probe_packet->padding());
+    uint32_t computed_checksum = Checksum(probe_packet->padding());
     if (computed_checksum != header.checksum()) {
       DVLOG(1) << "Checksum mismatch.  Got: " << header.checksum()
                << " expected: " << computed_checksum;
@@ -59,19 +61,19 @@ bool ProbeMessage::ParseInput(const std::string& input,
   return true;
 }
 
-uint32 ProbeMessage::Checksum(const std::string& str) const {
-  uint32 ret = 0;
+uint32_t ProbeMessage::Checksum(const std::string& str) const {
+  uint32_t ret = 0;
   for (std::string::const_iterator i = str.begin(); i != str.end(); ++i) {
-    ret += static_cast<uint8>(*i);
+    ret += static_cast<uint8_t>(*i);
   }
   return ret;
 }
 
 void ProbeMessage::GenerateProbeRequest(const ProbePacket_Token& token,
-                                        uint32 group_id,
-                                        uint32 probe_size,
-                                        uint32 pacing_interval_micros,
-                                        uint32 number_probe_packets,
+                                        uint32_t group_id,
+                                        uint32_t probe_size,
+                                        uint32_t pacing_interval_micros,
+                                        uint32_t number_probe_packets,
                                         ProbePacket* probe_packet) {
   DCHECK_LE(number_probe_packets, kMaxNumberProbePackets);
   DCHECK_LE(probe_size, kMaxProbePacketBytes);
@@ -91,7 +93,7 @@ void ProbeMessage::GenerateProbeRequest(const ProbePacket_Token& token,
   probe_packet->mutable_header()->set_checksum(Checksum(*padding));
   DVLOG(3) << "Request size " << probe_packet->ByteSize() << " probe size "
            << probe_size;
-  DCHECK_LE(probe_size, static_cast<uint32>(probe_packet->ByteSize()));
+  DCHECK_LE(probe_size, static_cast<uint32_t>(probe_packet->ByteSize()));
 }
 
 void ProbeMessage::SetPacketHeader(ProbePacket_Type packet_type,

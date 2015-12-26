@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_CHROME_HISTORY_BACKEND_CLIENT_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_backend_client.h"
 
 namespace bookmarks {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_TEST_LICENSE_SERVER_H_
 
 #include <string>
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 

@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_JUMPLIST_WIN_H_
 #define CHROME_BROWSER_JUMPLIST_WIN_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/task/cancelable_task_tracker.h"

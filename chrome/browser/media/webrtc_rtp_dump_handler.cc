@@ -207,7 +207,7 @@ WebRtcRtpDumpHandler::ReleasedDumps WebRtcRtpDumpHandler::ReleaseDumps() {
   return ReleasedDumps(incoming_dump, outgoing_dump);
 }
 
-void WebRtcRtpDumpHandler::OnRtpPacket(const uint8* packet_header,
+void WebRtcRtpDumpHandler::OnRtpPacket(const uint8_t* packet_header,
                                        size_t header_length,
                                        size_t packet_length,
                                        bool incoming) {

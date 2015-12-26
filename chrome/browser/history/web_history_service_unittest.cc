@@ -5,6 +5,7 @@
 #include "components/history/core/browser/web_history_service.h"
 
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

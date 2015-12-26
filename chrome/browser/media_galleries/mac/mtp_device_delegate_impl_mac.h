@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_MAC_MTP_DEVICE_DELEGATE_IMPL_MAC_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_MAC_MTP_DEVICE_DELEGATE_IMPL_MAC_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <vector>
@@ -12,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
@@ -56,7 +59,7 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
   bool IsStreaming() override;
   void ReadBytes(const base::FilePath& device_file_path,
                  const scoped_refptr<net::IOBuffer>& buf,
-                 int64 offset,
+                 int64_t offset,
                  int buf_len,
                  const ReadBytesSuccessCallback& success_callback,
                  const ErrorCallback& error_callback) override;
