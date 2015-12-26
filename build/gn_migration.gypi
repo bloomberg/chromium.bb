@@ -612,6 +612,7 @@
             ['OS!="android"', {
               'dependencies': [
                 '../ipc/ipc.gyp:ipc_tests_run',
+                '../ui/base/ui_base_tests.gyp:ui_base_unittests_run',
                 '../ui/gl/gl_tests.gyp:gl_unittests_run',
                 '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
               ],
