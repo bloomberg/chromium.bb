@@ -5,6 +5,7 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"

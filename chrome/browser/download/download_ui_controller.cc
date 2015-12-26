@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/browser_finder.h"

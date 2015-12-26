@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_PROVIDER_BOOKMARK_MODEL_OBSERVER_TASK_H_
 #define CHROME_BROWSER_ANDROID_PROVIDER_BOOKMARK_MODEL_OBSERVER_TASK_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 
 // Base class for synchronous tasks that involve the bookmark model.

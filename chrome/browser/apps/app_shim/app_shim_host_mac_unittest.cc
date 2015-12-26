@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "ipc/ipc_message.h"

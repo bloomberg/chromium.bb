@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/first_run/first_run.h"

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_H_
 #define CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"

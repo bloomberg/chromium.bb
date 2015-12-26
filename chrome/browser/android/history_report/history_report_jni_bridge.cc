@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/history_report/history_report_jni_bridge.h"
+
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/android/jni_array.h"
@@ -89,7 +93,7 @@ base::android::ScopedJavaLocalRef<jobjectArray> HistoryReportJniBridge::Query(
       history_report::Java_HistoryReportJniBridge_createDeltaFileEntriesArray(
           env, entries->size());
 
-  int64 max_seq_no = 0;
+  int64_t max_seq_no = 0;
   for (size_t i = 0; i < entries->size(); ++i) {
     const DeltaFileEntryWithData& entry = (*entries)[i];
     max_seq_no = max_seq_no < entry.SeqNo() ? entry.SeqNo() : max_seq_no;

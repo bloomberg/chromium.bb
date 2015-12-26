@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram_macros.h"
 
 void WebSiteSettingsUmaUtil::LogPermissionChange(ContentSettingsType type,

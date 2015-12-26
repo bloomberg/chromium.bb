@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_DATABASE_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_DATABASE_HELPER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "storage/browser/database/database_tracker.h"
@@ -32,14 +35,14 @@ class BrowsingDataDatabaseHelper
     DatabaseInfo(const storage::DatabaseIdentifier& identifier,
                  const std::string& database_name,
                  const std::string& description,
-                 int64 size,
+                 int64_t size,
                  base::Time last_modified);
     ~DatabaseInfo();
 
     storage::DatabaseIdentifier identifier;
     std::string database_name;
     std::string description;
-    int64 size;
+    int64_t size;
     base::Time last_modified;
   };
 

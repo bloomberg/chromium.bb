@@ -4,9 +4,11 @@
 
 #include "chrome/browser/app_mode/app_mode_utils.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_switches.h"
 

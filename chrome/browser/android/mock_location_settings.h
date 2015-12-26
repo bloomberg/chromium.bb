@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_MOCK_LOCATION_SETTINGS_H_
 #define CHROME_BROWSER_ANDROID_MOCK_LOCATION_SETTINGS_H_
 
+#include "base/macros.h"
 #include "chrome/browser/android/location_settings.h"
 
 // Mock implementation of LocationSettings for unit tests.

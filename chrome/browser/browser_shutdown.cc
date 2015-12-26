@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browser_shutdown.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
@@ -19,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

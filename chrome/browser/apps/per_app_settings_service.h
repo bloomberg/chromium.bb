@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/keyed_service/core/keyed_service.h"
 

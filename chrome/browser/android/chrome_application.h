@@ -7,7 +7,7 @@
 
 #include <jni.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace content {
 class WebContents;

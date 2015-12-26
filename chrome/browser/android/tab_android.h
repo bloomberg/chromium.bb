@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_ANDROID_TAB_ANDROID_H_
 
 #include <jni.h>
+#include <stdint.h>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/search/instant_service_observer.h"

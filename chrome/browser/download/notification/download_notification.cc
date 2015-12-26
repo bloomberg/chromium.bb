@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/notification/download_notification.h"
 
+#include "base/macros.h"
 #include "chrome/browser/download/notification/download_notification_manager.h"
 
 namespace {

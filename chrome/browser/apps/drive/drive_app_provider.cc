@@ -4,6 +4,8 @@
 
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"

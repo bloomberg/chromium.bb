@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/prefs/pref_service.h"

@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"

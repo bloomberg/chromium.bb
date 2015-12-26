@@ -15,17 +15,17 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(SingleTabModeTabHelper);
 
 namespace {
 
-typedef std::pair<int32, int32> RenderWidgetHostID;
+typedef std::pair<int32_t, int32_t> RenderWidgetHostID;
 typedef std::set<RenderWidgetHostID> SingleTabIDSet;
 base::LazyInstance<SingleTabIDSet> g_blocked_ids = LAZY_INSTANCE_INITIALIZER;
 
-void AddPairOnIOThread(int32 process_id, int32 routing_id) {
+void AddPairOnIOThread(int32_t process_id, int32_t routing_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   RenderWidgetHostID single_tab_pair(process_id, routing_id);
   g_blocked_ids.Get().insert(single_tab_pair);
 }
 
-void RemovePairOnIOThread(int32 process_id, int32 routing_id) {
+void RemovePairOnIOThread(int32_t process_id, int32_t routing_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   RenderWidgetHostID single_tab_pair(process_id, routing_id);
   SingleTabIDSet::iterator itr = g_blocked_ids.Get().find(single_tab_pair);
@@ -37,8 +37,8 @@ void AddPair(content::RenderViewHost* render_view_host) {
   if (!render_view_host)
     return;
 
-  int32 process_id = render_view_host->GetProcess()->GetID();
-  int32 routing_id = render_view_host->GetRoutingID();
+  int32_t process_id = render_view_host->GetProcess()->GetID();
+  int32_t routing_id = render_view_host->GetRoutingID();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&AddPairOnIOThread, process_id, routing_id));
@@ -48,8 +48,8 @@ void RemovePair(content::RenderViewHost* render_view_host) {
   if (!render_view_host)
     return;
 
-  int32 process_id = render_view_host->GetProcess()->GetID();
-  int32 routing_id = render_view_host->GetRoutingID();
+  int32_t process_id = render_view_host->GetProcess()->GetID();
+  int32_t routing_id = render_view_host->GetRoutingID();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&RemovePairOnIOThread, process_id, routing_id));
@@ -85,8 +85,8 @@ void SingleTabModeTabHelper::PermanentlyBlockAllNewWindows() {
   AddPair(web_contents()->GetRenderViewHost());
 }
 
-bool SingleTabModeTabHelper::IsRegistered(int32 process_id,
-                                          int32 routing_id) {
+bool SingleTabModeTabHelper::IsRegistered(int32_t process_id,
+                                          int32_t routing_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   RenderWidgetHostID single_tab_pair(process_id, routing_id);
   SingleTabIDSet::iterator itr = g_blocked_ids.Get().find(single_tab_pair);

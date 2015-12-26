@@ -4,6 +4,8 @@
 
 // TODO(rickcam): Bug 73183: Add unit tests for image loading
 
+#include <stddef.h>
+
 #include <cstdlib>
 #include <set>
 
@@ -14,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/permissions_updater.h"

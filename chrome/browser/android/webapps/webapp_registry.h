@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 
 // WebappRegistry is the C++ counterpart of
 // org.chromium.chrome.browser.webapp's WebappRegistry in Java.

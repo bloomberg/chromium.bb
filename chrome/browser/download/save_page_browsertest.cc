@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -11,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
@@ -18,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
@@ -130,7 +135,7 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
 // Waits for an item record to be removed from the downloads database.
 class DownloadRemovedObserver : public DownloadPersistedObserver {
  public:
-  DownloadRemovedObserver(Profile* profile, int32 download_id)
+  DownloadRemovedObserver(Profile* profile, int32_t download_id)
       : DownloadPersistedObserver(profile, PersistedFilter()),
         removed_(false),
         download_id_(download_id) {}
@@ -158,18 +163,17 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
  private:
   bool removed_;
   base::Closure quit_waiting_callback_;
-  int32 download_id_;
+  int32_t download_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRemovedObserver);
 };
 
-bool DownloadStoredProperly(
-    const GURL& expected_url,
-    const base::FilePath& expected_path,
-    int64 num_files,
-    history::DownloadState expected_state,
-    DownloadItem* item,
-    const history::DownloadRow& info) {
+bool DownloadStoredProperly(const GURL& expected_url,
+                            const base::FilePath& expected_path,
+                            int64_t num_files,
+                            history::DownloadState expected_state,
+                            DownloadItem* item,
+                            const history::DownloadRow& info) {
   // This function may be called multiple times for a given test. Returning
   // false doesn't necessarily mean that the test has failed or will fail, it
   // might just mean that the test hasn't passed yet.
@@ -697,7 +701,7 @@ SavePageAsMHTMLBrowserTest::~SavePageAsMHTMLBrowserTest() {
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
-  static const int64 kFileSizeMin = 2758;
+  static const int64_t kFileSizeMin = 2758;
   GURL url = NavigateToMockURL("b");
   base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
       GetDownloadManager())->DownloadPath();
@@ -718,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   persisted.WaitForPersisted();
 
   ASSERT_TRUE(base::PathExists(full_file_name));
-  int64 actual_file_size = -1;
+  int64_t actual_file_size = -1;
   EXPECT_TRUE(base::GetFileSize(full_file_name, &actual_file_size));
   EXPECT_LE(kFileSizeMin, actual_file_size);
 }
@@ -823,7 +827,7 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveAsCompleteHtml) {
   for (auto file_path : expected_files) {
     EXPECT_TRUE(base::PathExists(file_path)) << "Does " << file_path.value()
                                              << " exist?";
-    int64 actual_file_size = 0;
+    int64_t actual_file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &actual_file_size));
     EXPECT_NE(0, actual_file_size) << "Is " << file_path.value()
                                    << " non-empty?";

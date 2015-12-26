@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include <stddef.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"

@@ -4,11 +4,15 @@
 
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -236,7 +240,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   // Converts a time string written to the JSON codec into a time_t string
   // (used by bookmarks.html) and writes it.
   bool WriteTime(const std::string& time_string) {
-    int64 internal_value;
+    int64_t internal_value;
     base::StringToInt64(time_string, &internal_value);
     return Write(base::Int64ToString(
         base::Time::FromInternalValue(internal_value).ToTimeT()));

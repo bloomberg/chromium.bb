@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_FIELD_TRIALS_DESKTOP_H_
 #define CHROME_BROWSER_CHROME_BROWSER_FIELD_TRIALS_DESKTOP_H_
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 
 namespace base {

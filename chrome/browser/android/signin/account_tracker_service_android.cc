@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/signin/account_tracker_service_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_array.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"

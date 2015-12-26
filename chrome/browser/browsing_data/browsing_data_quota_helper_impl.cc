@@ -123,7 +123,7 @@ void BrowsingDataQuotaHelperImpl::GotHostUsage(QuotaInfoMap* quota_info,
                                                const base::Closure& completion,
                                                const std::string& host,
                                                storage::StorageType type,
-                                               int64 usage) {
+                                               int64_t usage) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (type) {
     case storage::kStorageTypeTemporary:
@@ -171,4 +171,4 @@ void BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread(
 
 void BrowsingDataQuotaHelperImpl::DidRevokeHostQuota(
     storage::QuotaStatusCode /*status*/,
-    int64 /*quota*/) {}
+    int64_t /*quota*/) {}

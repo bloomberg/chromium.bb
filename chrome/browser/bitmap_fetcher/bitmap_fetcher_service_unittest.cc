@@ -4,6 +4,9 @@
 
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"

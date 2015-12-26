@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 // Encapsulates the various parts of a Resolved Search Term, which tells
 // Contextual Search what to search for and how that term appears in the

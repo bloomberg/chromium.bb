@@ -4,11 +4,14 @@
 
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <map>
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 
 namespace {
@@ -26,9 +29,9 @@ class BrowsingDataFlashLSOHelperImpl
 
   // PepperFlashSettingsManager::Client overrides:
   void OnGetSitesWithDataCompleted(
-      uint32 request_id,
+      uint32_t request_id,
       const std::vector<std::string>& sites) override;
-  void OnClearSiteDataCompleted(uint32 request_id, bool success) override;
+  void OnClearSiteDataCompleted(uint32_t request_id, bool success) override;
 
  private:
   ~BrowsingDataFlashLSOHelperImpl() override;
@@ -37,11 +40,11 @@ class BrowsingDataFlashLSOHelperImpl
   PepperFlashSettingsManager settings_manager_;
 
   // Identifies the request to fetch site data.
-  uint32 get_sites_with_data_request_id_;
+  uint32_t get_sites_with_data_request_id_;
 
   // Contains the pending requests to clear site data. The key is the request
   // ID, the value the site for which to clear data.
-  std::map<uint32, std::string> clear_site_data_ids_;
+  std::map<uint32_t, std::string> clear_site_data_ids_;
 
   // Called when we have fetched the list of sites.
   GetSitesWithFlashDataCallback callback_;
@@ -67,23 +70,24 @@ void BrowsingDataFlashLSOHelperImpl::StartFetching(
 
 void BrowsingDataFlashLSOHelperImpl::DeleteFlashLSOsForSite(
     const std::string& site) {
-  const uint64 kClearAllData = 0;
-  uint32 id = settings_manager_.ClearSiteData(
-      site, kClearAllData, std::numeric_limits<uint64>::max());
+  const uint64_t kClearAllData = 0;
+  uint32_t id = settings_manager_.ClearSiteData(
+      site, kClearAllData, std::numeric_limits<uint64_t>::max());
   clear_site_data_ids_[id] = site;
 }
 
 void BrowsingDataFlashLSOHelperImpl::OnGetSitesWithDataCompleted(
-    uint32 request_id,
+    uint32_t request_id,
     const std::vector<std::string>& sites) {
   DCHECK_EQ(get_sites_with_data_request_id_, request_id);
   callback_.Run(sites);
   callback_ = GetSitesWithFlashDataCallback();
 }
 
-void BrowsingDataFlashLSOHelperImpl::OnClearSiteDataCompleted(uint32 request_id,
-                                                              bool success) {
-  std::map<uint32, std::string>::iterator entry =
+void BrowsingDataFlashLSOHelperImpl::OnClearSiteDataCompleted(
+    uint32_t request_id,
+    bool success) {
+  std::map<uint32_t, std::string>::iterator entry =
       clear_site_data_ids_.find(request_id);
   DCHECK(entry != clear_site_data_ids_.end());
   LOG_IF(ERROR, !success) << "Couldn't clear Flash LSO data for "

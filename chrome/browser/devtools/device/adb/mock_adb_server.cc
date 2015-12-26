@@ -4,7 +4,11 @@
 
 #include "chrome/browser/devtools/device/adb/mock_adb_server.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -171,7 +175,7 @@ char kSampleWebViewPages[] = "[ {\n"
     "}]";
 
 static const int kBufferSize = 16*1024;
-static const uint16 kAdbPort = 5037;
+static const uint16_t kAdbPort = 5037;
 
 static const int kAdbMessageHeaderSize = 4;
 

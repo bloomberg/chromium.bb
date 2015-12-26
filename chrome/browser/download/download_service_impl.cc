@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_service_impl.h"
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"

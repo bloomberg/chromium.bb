@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browser_process_impl.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <vector>
@@ -15,6 +17,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -26,6 +29,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_child_process_watcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -673,7 +677,7 @@ GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
 void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
     chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
-    uint16 port) {
+    uint16_t port) {
   DCHECK(CalledOnValidThread());
 #if !defined(OS_ANDROID)
   // StartupBrowserCreator::LaunchBrowser can be run multiple times when browser

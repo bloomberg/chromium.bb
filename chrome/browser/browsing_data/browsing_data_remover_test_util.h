@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_TEST_UTIL_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_TEST_UTIL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "content/public/test/test_utils.h"

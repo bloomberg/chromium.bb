@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_QUOTA_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_QUOTA_HELPER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "storage/common/quota/quota_types.h"
@@ -39,9 +42,9 @@ class BrowsingDataQuotaHelper
     QuotaInfo();
     explicit QuotaInfo(const std::string& host);
     QuotaInfo(const std::string& host,
-              int64 temporary_usage,
-              int64 persistent_usage,
-              int64 syncable_usage);
+              int64_t temporary_usage,
+              int64_t persistent_usage,
+              int64_t syncable_usage);
     ~QuotaInfo();
 
     // Certain versions of MSVC 2008 have bad implementations of ADL for nested
@@ -51,9 +54,9 @@ class BrowsingDataQuotaHelper
     bool operator ==(const QuotaInfo& rhs) const;
 
     std::string host;
-    int64 temporary_usage = 0;
-    int64 persistent_usage = 0;
-    int64 syncable_usage = 0;
+    int64_t temporary_usage = 0;
+    int64_t persistent_usage = 0;
+    int64_t syncable_usage = 0;
   };
 
   typedef std::list<QuotaInfo> QuotaInfoArray;

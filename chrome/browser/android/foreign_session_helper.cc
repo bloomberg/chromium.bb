@@ -5,6 +5,7 @@
 #include "chrome/browser/android/foreign_session_helper.h"
 
 #include <jni.h>
+#include <stddef.h>
 
 #include "base/android/jni_string.h"
 #include "base/prefs/pref_service.h"

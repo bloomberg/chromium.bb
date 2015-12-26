@@ -7,8 +7,9 @@
 
 #include <set>
 
-#include "content/public/browser/download_manager.h"
+#include "base/macros.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 
 // AllDownloadItemNotifier observes ALL the DownloadItems on a given
 // DownloadManager.

@@ -4,23 +4,24 @@
 
 #include "chrome/browser/diagnostics/diagnostics_writer.h"
 
+#include <stdint.h>
+
+#include <string>
+
+#include "base/command_line.h"
+#include "base/logging.h"
+#include "base/macros.h"
+#include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_switches.h"
+#include "ui/base/ui_base_paths.h"
 
 #if defined(OS_POSIX)
 #include <stdio.h>
 #include <unistd.h>
 #endif
-
-#include <string>
-
-#include "base/basictypes.h"
-#include "base/command_line.h"
-#include "base/logging.h"
-#include "base/strings/string16.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
-#include "ui/base/ui_base_paths.h"
 
 namespace diagnostics {
 
@@ -89,8 +90,8 @@ class WinConsole : public SimpleConsole {
 
   // Sets the foreground and background color.
   bool SetColor(Color color) override {
-    uint16 color_combo = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE |
-                         FOREGROUND_INTENSITY;
+    uint16_t color_combo = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE |
+                           FOREGROUND_INTENSITY;
     switch (color) {
       case RED:
         color_combo = FOREGROUND_RED | FOREGROUND_INTENSITY;

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "url/gurl.h"
 
 // Encapsulates key parts of a Contextual Search Context, including surrounding

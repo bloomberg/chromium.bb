@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_DEVTOOLS_BRIDGE_INSTANCES_REQUEST_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_DEVTOOLS_BRIDGE_INSTANCES_REQUEST_H_
 
+#include "base/macros.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 

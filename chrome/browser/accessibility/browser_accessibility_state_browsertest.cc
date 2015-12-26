@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/test/histogram_tester.h"
-#include "content/public/browser/browser_accessibility_state.h"
+#include "build/build_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/browser_accessibility_state.h"
 
 namespace content {
 

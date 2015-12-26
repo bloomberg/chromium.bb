@@ -8,7 +8,9 @@
 #include <set>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/prefs/pref_member.h"
+#include "build/build_config.h"
 
 class PrefService;
 class Profile;

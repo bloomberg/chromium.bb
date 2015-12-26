@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/autofill_counter.h"
 
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"

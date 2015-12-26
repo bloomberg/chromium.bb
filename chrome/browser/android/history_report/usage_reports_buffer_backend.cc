@@ -58,8 +58,8 @@ bool UsageReportsBufferBackend::Init() {
 }
 
 void UsageReportsBufferBackend::AddVisit(const std::string& id,
-    int64 timestamp_ms,
-    bool typed_visit) {
+                                         int64_t timestamp_ms,
+                                         bool typed_visit) {
   if (!db_.get()) {
     LOG(WARNING) << "AddVisit db not initilized.";
     return;

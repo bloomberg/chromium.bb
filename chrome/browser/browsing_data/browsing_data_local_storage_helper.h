@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_LOCAL_STORAGE_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_LOCAL_STORAGE_HELPER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -25,14 +28,13 @@ class BrowsingDataLocalStorageHelper
  public:
   // Contains detailed information about local storage.
   struct LocalStorageInfo {
-    LocalStorageInfo(
-        const GURL& origin_url,
-        int64 size,
-        base::Time last_modified);
+    LocalStorageInfo(const GURL& origin_url,
+                     int64_t size,
+                     base::Time last_modified);
     ~LocalStorageInfo();
 
     GURL origin_url;
-    int64 size;
+    int64_t size;
     base::Time last_modified;
   };
 

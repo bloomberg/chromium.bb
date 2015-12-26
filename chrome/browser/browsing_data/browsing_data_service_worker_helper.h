@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_SERVICE_WORKER_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_SERVICE_WORKER_HELPER_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <set>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_usage_info.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 

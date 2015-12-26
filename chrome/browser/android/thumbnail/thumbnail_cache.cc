@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/android_opengl/etc1/etc1.h"
 #include "third_party/skia/include/core/SkBitmap.h"

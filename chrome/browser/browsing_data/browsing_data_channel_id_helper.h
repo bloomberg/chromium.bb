@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_CHANNEL_ID_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_CHANNEL_ID_HELPER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "net/ssl/channel_id_store.h"
 
 namespace net {

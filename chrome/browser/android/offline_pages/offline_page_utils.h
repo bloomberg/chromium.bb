@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_UTILS_H_
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_UTILS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 class GURL;
 
@@ -32,7 +32,7 @@ class OfflinePageUtils {
       const GURL& offline_url);
 
   // Gets a bookmark ID related to the |offline_url|.
-  static int64 GetBookmarkIdForOfflineURL(
+  static int64_t GetBookmarkIdForOfflineURL(
       content::BrowserContext* browser_context,
       const GURL& offline_url);
 

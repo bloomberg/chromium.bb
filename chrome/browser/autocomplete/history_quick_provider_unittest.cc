@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/history_quick_provider.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 #include <set>
@@ -11,6 +13,7 @@
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"

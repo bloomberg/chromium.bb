@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_SECCOMP_SUPPORT_DETECTOR_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 // This class is used to report via UMA the Android kernel version and

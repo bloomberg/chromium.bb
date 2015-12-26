@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/global_confirm_info_bar.h"
 
+#include "base/macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

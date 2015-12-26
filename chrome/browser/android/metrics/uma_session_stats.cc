@@ -133,7 +133,7 @@ static void RegisterExternalExperiment(JNIEnv* env,
   const std::string group_name_utf8 = base::IntToString(experiment_id);
 
   variations::ActiveGroupId active_group;
-  active_group.name = static_cast<uint32>(study_id);
+  active_group.name = static_cast<uint32_t>(study_id);
   active_group.group = metrics::HashName(group_name_utf8);
   variations::AssociateGoogleVariationIDForceHashes(
       variations::GOOGLE_WEB_PROPERTIES, active_group,

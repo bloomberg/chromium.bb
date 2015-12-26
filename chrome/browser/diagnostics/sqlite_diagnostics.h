@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_SQLITE_DIAGNOSTICS_H_
 #define CHROME_BROWSER_DIAGNOSTICS_SQLITE_DIAGNOSTICS_H_
 
+#include "build/build_config.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 
 namespace diagnostics {

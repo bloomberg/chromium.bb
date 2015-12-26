@@ -5,6 +5,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"

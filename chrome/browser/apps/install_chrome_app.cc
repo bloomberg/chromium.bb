@@ -4,8 +4,8 @@
 
 #include "chrome/browser/apps/install_chrome_app.h"
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"

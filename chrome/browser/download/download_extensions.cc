@@ -7,8 +7,10 @@
 
 #include "chrome/browser/download/download_extensions.h"
 
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 

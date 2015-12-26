@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_BROWSER_SHUTDOWN_H_
 #define CHROME_BROWSER_BROWSER_SHUTDOWN_H_
 
+#include "build/build_config.h"
+
 class PrefRegistrySimple;
 
 namespace browser_shutdown {

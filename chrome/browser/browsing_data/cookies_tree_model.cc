@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 #include <map>

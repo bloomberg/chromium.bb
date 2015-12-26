@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_HISTORY_REPORT_DELTA_FILE_BACKEND_LEVELDB_H_
 #define CHROME_BROWSER_ANDROID_HISTORY_REPORT_DELTA_FILE_BACKEND_LEVELDB_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 class GURL;
@@ -33,13 +36,13 @@ class DeltaFileBackend {
   // Removes all delta file entries with
   // sequence number <= min(|lower_bound|, max sequence number - 1).
   // Returns max sequence number in delta file.
-  int64 Trim(int64 lower_bound);
+  int64_t Trim(int64_t lower_bound);
   // Recreates delta file using given |urls|.
   bool Recreate(const std::vector<std::string>& urls);
   // Provides up to |limit| delta file entries with
   // sequence number > |last_seq_no|.
-  scoped_ptr<std::vector<DeltaFileEntryWithData> > Query(int64 last_seq_no,
-                                                         int32 limit);
+  scoped_ptr<std::vector<DeltaFileEntryWithData>> Query(int64_t last_seq_no,
+                                                        int32_t limit);
   // Removes all entries from delta file
   void Clear();
 

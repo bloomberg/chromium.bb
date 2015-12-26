@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_AFTER_STARTUP_TASK_UTILS_H_
 #define CHROME_BROWSER_AFTER_STARTUP_TASK_UTILS_H_
 
-#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace android {

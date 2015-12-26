@@ -4,7 +4,9 @@
 
 #include "chrome/browser/devtools/device/usb/android_rsa.h"
 
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <limits>
 

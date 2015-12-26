@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_CACHE_H_
 #define CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_CACHE_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <set>
 #include <string>
@@ -12,6 +14,7 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"

@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 
 #include "base/files/file_path_watcher.h"
+#include "base/macros.h"
 #include "chrome/browser/chrome_browser_main.h"
 
 class DidRunUpdater;

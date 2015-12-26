@@ -4,10 +4,13 @@
 
 #include "chrome/browser/character_encoding.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"

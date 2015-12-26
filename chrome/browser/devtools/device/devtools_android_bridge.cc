@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <set>
@@ -15,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"

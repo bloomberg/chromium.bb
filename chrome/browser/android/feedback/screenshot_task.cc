@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/feedback/screenshot_task.h"
 
+#include <stddef.h>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"

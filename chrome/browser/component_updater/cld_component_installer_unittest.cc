@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #include <stdint.h>
 #include <vector>
 
@@ -86,7 +87,7 @@ TEST_F(CldComponentInstallerTest, VerifyInstallation) {
   ASSERT_TRUE(base::CreateDirectory(data_file_dir));
   const base::FilePath data_file = data_file_dir.Append(kTestCldDataFileName);
   const std::string test_data("fake cld2 data file content here :)");
-  ASSERT_EQ(static_cast<int32>(test_data.length()),
+  ASSERT_EQ(static_cast<int32_t>(test_data.length()),
             base::WriteFile(data_file, test_data.c_str(), test_data.length()));
   ASSERT_TRUE(traits_.VerifyInstallation(manifest, temp_dir_.path()));
 }

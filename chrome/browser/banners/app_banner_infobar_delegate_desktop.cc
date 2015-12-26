@@ -4,6 +4,7 @@
 
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/common/constants.h"

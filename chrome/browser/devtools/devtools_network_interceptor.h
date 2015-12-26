@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_INTERCEPTOR_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_INTERCEPTOR_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <utility>

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/tab_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -224,9 +226,8 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
         params->browser_initiated_post_data.get() &&
         params->browser_initiated_post_data.get()->size()) {
       jpost_data = ToJavaByteArray(
-          env,
-          reinterpret_cast<const uint8*>(
-              params->browser_initiated_post_data.get()->front()),
+          env, reinterpret_cast<const uint8_t*>(
+                   params->browser_initiated_post_data.get()->front()),
           params->browser_initiated_post_data.get()->size());
     }
     Java_Tab_openNewTab(env,
@@ -596,7 +597,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     if (j_post_data) {
       load_params.load_type =
           content::NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
-      std::vector<uint8> post_data;
+      std::vector<uint8_t> post_data;
       base::android::JavaByteArrayToByteVector(env, j_post_data, &post_data);
       load_params.browser_initiated_post_data =
           base::RefCountedBytes::TakeVector(&post_data);

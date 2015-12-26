@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_MOCK_DOWNLOAD_CONTROLLER_ANDROID_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/android/download_controller_android.h"
 

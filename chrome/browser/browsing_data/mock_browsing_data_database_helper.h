@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 
 // Mock for BrowsingDataDatabaseHelper.

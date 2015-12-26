@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_TCP_DEVICE_PROVIDER_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_TCP_DEVICE_PROVIDER_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "chrome/browser/devtools/device/android_device_manager.h"

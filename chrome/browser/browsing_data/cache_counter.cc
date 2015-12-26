@@ -34,7 +34,7 @@ void CacheCounter::Count() {
   pending_ = true;
 }
 
-void CacheCounter::OnCacheSizeCalculated(int64 result_bytes) {
+void CacheCounter::OnCacheSizeCalculated(int64_t result_bytes) {
   pending_ = false;
 
   // A value less than 0 means a net error code.

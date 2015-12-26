@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_device_client.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/hid/hid_service.h"
 #include "device/usb/usb_service.h"

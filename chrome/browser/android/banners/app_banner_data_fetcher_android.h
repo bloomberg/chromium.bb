@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_DATA_FETCHER_ANDROID_H_
 
 #include "base/android/jni_android.h"
+#include "base/macros.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 
 namespace banners {

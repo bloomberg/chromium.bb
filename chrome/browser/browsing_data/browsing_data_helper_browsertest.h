@@ -9,8 +9,8 @@
 
 #include <list>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 
 // This template can be used for the StartFetching methods of the browsing data

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 
 class MockBrowsingDataFlashLSOHelper : public BrowsingDataFlashLSOHelper {

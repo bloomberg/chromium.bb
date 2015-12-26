@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_client.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"

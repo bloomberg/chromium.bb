@@ -4,6 +4,8 @@
 
 #include "chrome/browser/custom_home_pages_table_model.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"

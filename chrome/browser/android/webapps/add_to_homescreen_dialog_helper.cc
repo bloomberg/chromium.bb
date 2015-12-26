@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/strings/string16.h"

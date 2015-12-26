@@ -4,8 +4,11 @@
 
 #include "chrome/browser/android/history_report/usage_reports_buffer_backend.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/history_report/usage_report_util.h"
 #include "chrome/browser/android/proto/delta_file.pb.h"
@@ -13,9 +16,9 @@
 
 namespace {
 void VerifyUsageReport(history_report::UsageReport& actual,
-    const std::string& expected_id,
-    int64 expected_timestamp_ms,
-    bool expected_typed_visit) {
+                       const std::string& expected_id,
+                       int64_t expected_timestamp_ms,
+                       bool expected_typed_visit) {
   EXPECT_EQ(expected_id, actual.id());
   EXPECT_EQ(expected_timestamp_ms, actual.timestamp_ms());
   EXPECT_EQ(expected_typed_visit, actual.typed_visit());

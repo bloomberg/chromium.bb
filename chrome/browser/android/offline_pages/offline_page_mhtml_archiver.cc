@@ -114,7 +114,7 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
 void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
     const GURL& url,
     const base::FilePath& file_path,
-    int64 file_size) {
+    int64_t file_size) {
   if (file_size < 0) {
     ReportFailure(ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
   } else {

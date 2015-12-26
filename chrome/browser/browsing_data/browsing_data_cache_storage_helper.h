@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_CACHE_STORAGE_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_CACHE_STORAGE_HELPER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <set>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/public/browser/cache_storage_context.h"
@@ -64,14 +68,14 @@ class CannedBrowsingDataCacheStorageHelper
   // Contains information about a Cache Storage.
   struct PendingCacheStorageUsageInfo {
     PendingCacheStorageUsageInfo(const GURL& origin,
-                                 int64 total_size_bytes,
+                                 int64_t total_size_bytes,
                                  const base::Time& last_modified);
     ~PendingCacheStorageUsageInfo();
 
     bool operator<(const PendingCacheStorageUsageInfo& other) const;
 
     GURL origin;
-    int64 total_size_bytes;
+    int64_t total_size_bytes;
     base::Time last_modified;
   };
 

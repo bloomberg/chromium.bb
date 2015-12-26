@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/macros.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

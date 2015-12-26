@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/all_download_item_notifier.h"
 
+#include "base/macros.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"

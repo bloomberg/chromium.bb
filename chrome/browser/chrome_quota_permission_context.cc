@@ -4,11 +4,15 @@
 
 #include "chrome/browser/chrome_quota_permission_context.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
@@ -36,7 +40,7 @@ namespace {
 
 // If the site requested larger quota than this threshold, show a different
 // message to the user.
-const int64 kRequestLargeQuotaThreshold = 5 * 1024 * 1024;
+const int64_t kRequestLargeQuotaThreshold = 5 * 1024 * 1024;
 
 // QuotaPermissionRequest ---------------------------------------------
 
@@ -45,7 +49,7 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   QuotaPermissionRequest(
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
-      int64 requested_quota,
+      int64_t requested_quota,
       bool user_gesture,
       const std::string& display_languages,
       const content::QuotaPermissionContext::PermissionCallback& callback);
@@ -67,7 +71,7 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   scoped_refptr<ChromeQuotaPermissionContext> context_;
   GURL origin_url_;
   std::string display_languages_;
-  int64 requested_quota_;
+  int64_t requested_quota_;
   bool user_gesture_;
   content::QuotaPermissionContext::PermissionCallback callback_;
 
@@ -77,7 +81,7 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
 QuotaPermissionRequest::QuotaPermissionRequest(
     ChromeQuotaPermissionContext* context,
     const GURL& origin_url,
-    int64 requested_quota,
+    int64_t requested_quota,
     bool user_gesture,
     const std::string& display_languages,
     const content::QuotaPermissionContext::PermissionCallback& callback)
@@ -154,7 +158,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
       InfoBarService* infobar_service,
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
-      int64 requested_quota,
+      int64_t requested_quota,
       const std::string& display_languages,
       const content::QuotaPermissionContext::PermissionCallback& callback);
 
@@ -162,7 +166,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   RequestQuotaInfoBarDelegate(
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
-      int64 requested_quota,
+      int64_t requested_quota,
       const std::string& display_languages,
       const content::QuotaPermissionContext::PermissionCallback& callback);
   ~RequestQuotaInfoBarDelegate() override;
@@ -175,7 +179,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   scoped_refptr<ChromeQuotaPermissionContext> context_;
   GURL origin_url_;
   std::string display_languages_;
-  int64 requested_quota_;
+  int64_t requested_quota_;
   content::QuotaPermissionContext::PermissionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestQuotaInfoBarDelegate);
@@ -186,7 +190,7 @@ void RequestQuotaInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     ChromeQuotaPermissionContext* context,
     const GURL& origin_url,
-    int64 requested_quota,
+    int64_t requested_quota,
     const std::string& display_languages,
     const content::QuotaPermissionContext::PermissionCallback& callback) {
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
@@ -197,7 +201,7 @@ void RequestQuotaInfoBarDelegate::Create(
 RequestQuotaInfoBarDelegate::RequestQuotaInfoBarDelegate(
     ChromeQuotaPermissionContext* context,
     const GURL& origin_url,
-    int64 requested_quota,
+    int64_t requested_quota,
     const std::string& display_languages,
     const content::QuotaPermissionContext::PermissionCallback& callback)
     : ConfirmInfoBarDelegate(),
@@ -205,8 +209,7 @@ RequestQuotaInfoBarDelegate::RequestQuotaInfoBarDelegate(
       origin_url_(origin_url),
       display_languages_(display_languages),
       requested_quota_(requested_quota),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 RequestQuotaInfoBarDelegate::~RequestQuotaInfoBarDelegate() {
   if (!callback_.is_null()) {

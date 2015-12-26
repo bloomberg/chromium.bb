@@ -4,9 +4,9 @@
 
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"

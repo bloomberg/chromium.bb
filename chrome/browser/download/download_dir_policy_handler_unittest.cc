@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"

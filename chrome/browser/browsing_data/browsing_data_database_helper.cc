@@ -29,14 +29,13 @@ BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
     const DatabaseIdentifier& identifier,
     const std::string& database_name,
     const std::string& description,
-    int64 size,
+    int64_t size,
     base::Time last_modified)
     : identifier(identifier),
       database_name(database_name),
       description(description),
       size(size),
-      last_modified(last_modified) {
-}
+      last_modified(last_modified) {}
 
 BrowsingDataDatabaseHelper::DatabaseInfo::~DatabaseInfo() {}
 

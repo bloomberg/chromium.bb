@@ -4,10 +4,14 @@
 
 #include "chrome/browser/download/download_status_updater.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/views/linux_ui/linux_ui.h"
@@ -60,8 +64,8 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
   *progress = 0;
   *download_count = 0;
   bool progress_certain = true;
-  int64 received_bytes = 0;
-  int64 total_bytes = 0;
+  int64_t received_bytes = 0;
+  int64_t total_bytes = 0;
 
   for (std::vector<AllDownloadItemNotifier*>::const_iterator it =
        notifiers_.begin(); it != notifiers_.end(); ++it) {

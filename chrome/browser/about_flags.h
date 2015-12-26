@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ABOUT_FLAGS_H_
 #define CHROME_BROWSER_ABOUT_FLAGS_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>

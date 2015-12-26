@@ -23,11 +23,11 @@ namespace {
 const base::FilePath::CharType kDbFileName[] =
     FILE_PATH_LITERAL("DeltaFileLevelDb");
 
-int64 GetLastSeqNo(leveldb::DB* db) {
+int64_t GetLastSeqNo(leveldb::DB* db) {
   leveldb::ReadOptions options;
   scoped_ptr<leveldb::Iterator> db_iter(db->NewIterator(options));
   db_iter->SeekToLast();
-  int64 seq_no = 0;
+  int64_t seq_no = 0;
   if (db_iter->Valid()) {
     history_report::DeltaFileEntry last_entry;
     leveldb::Slice value_slice = db_iter->value();
@@ -40,7 +40,7 @@ int64 GetLastSeqNo(leveldb::DB* db) {
 void SaveChange(leveldb::DB* db,
                 const std::string& url,
                 const std::string& type) {
-  int64 seq_no = GetLastSeqNo(db) + 1;
+  int64_t seq_no = GetLastSeqNo(db) + 1;
   history_report::DeltaFileEntry entry;
   entry.set_seq_no(seq_no);
   entry.set_type(type);
@@ -65,8 +65,8 @@ class DeltaFileBackend::DigitsComparator : public leveldb::Comparator {
  public:
   int Compare(const leveldb::Slice& a,
               const leveldb::Slice& b) const override {
-    int64 first;
-    int64 second;
+    int64_t first;
+    int64_t second;
     // Keys which can't be parsed go to the end.
     if (!base::StringToInt64(a.ToString(), &first)) return 1;
     if (!base::StringToInt64(b.ToString(), &second)) return -1;
@@ -125,7 +125,7 @@ void DeltaFileBackend::PageDeleted(const GURL& url) {
   SaveChange(db_.get(), url.spec().c_str(), "del");
 }
 
-int64 DeltaFileBackend::Trim(int64 lower_bound) {
+int64_t DeltaFileBackend::Trim(int64_t lower_bound) {
   if (!EnsureInitialized()) return -1;
   leveldb::ReadOptions read_options;
   scoped_ptr<leveldb::Iterator> db_iter(db_->NewIterator(read_options));
@@ -136,7 +136,7 @@ int64 DeltaFileBackend::Trim(int64 lower_bound) {
   leveldb::Slice value_slice = db_iter->value();
   if (!first_entry.ParseFromArray(value_slice.data(), value_slice.size()))
     return -1;
-  int64 min_seq_no = first_entry.seq_no();
+  int64_t min_seq_no = first_entry.seq_no();
   db_iter->SeekToLast();
   if (!db_iter->Valid())
     return -1;
@@ -144,13 +144,13 @@ int64 DeltaFileBackend::Trim(int64 lower_bound) {
   value_slice = db_iter->value();
   if (!last_entry.ParseFromArray(value_slice.data(), value_slice.size()))
     return -1;
-  int64 max_seq_no = last_entry.seq_no();
+  int64_t max_seq_no = last_entry.seq_no();
   // We want to have at least one entry in delta file left to know
   // last sequence number in SaveChange.
   if (max_seq_no <= lower_bound)
     lower_bound = max_seq_no - 1;
   leveldb::WriteBatch updates;
-  for (int64 seq_no = min_seq_no; seq_no <= lower_bound; ++seq_no) {
+  for (int64_t seq_no = min_seq_no; seq_no <= lower_bound; ++seq_no) {
     std::string key;
     base::SStringPrintf(&key, "%" PRId64, seq_no);
     updates.Delete(leveldb::Slice(key));
@@ -167,7 +167,7 @@ int64 DeltaFileBackend::Trim(int64 lower_bound) {
 bool DeltaFileBackend::Recreate(const std::vector<std::string>& urls) {
   if (!EnsureInitialized()) return false;
   Clear();
-  int64 seq_no = 1;
+  int64_t seq_no = 1;
   leveldb::WriteBatch updates;
   for (std::vector<std::string>::const_iterator it = urls.begin();
        it != urls.end();
@@ -190,9 +190,9 @@ bool DeltaFileBackend::Recreate(const std::vector<std::string>& urls) {
   return false;
 }
 
-scoped_ptr<std::vector<DeltaFileEntryWithData> > DeltaFileBackend::Query(
-    int64 last_seq_no,
-    int32 limit) {
+scoped_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileBackend::Query(
+    int64_t last_seq_no,
+    int32_t limit) {
   if (!EnsureInitialized())
     return make_scoped_ptr(new std::vector<DeltaFileEntryWithData>());
   std::string start;
@@ -201,7 +201,7 @@ scoped_ptr<std::vector<DeltaFileEntryWithData> > DeltaFileBackend::Query(
   scoped_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
   scoped_ptr<std::vector<DeltaFileEntryWithData> > result(
       new std::vector<DeltaFileEntryWithData>());
-  int32 count = 0;
+  int32_t count = 0;
   for (db_it->Seek(start); db_it->Valid() && count < limit; db_it->Next()) {
     DeltaFileEntry entry;
     leveldb::Slice value_slice = db_it->value();

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_THUMBNAIL_LAYER_H_
 #define CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_THUMBNAIL_LAYER_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/layers/ui_resource_layer.h"

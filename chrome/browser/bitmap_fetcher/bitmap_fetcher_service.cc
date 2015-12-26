@@ -4,6 +4,9 @@
 
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/profiles/profile.h"

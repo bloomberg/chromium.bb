@@ -4,6 +4,8 @@
 
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/copresence/chrome_whispernet_config.h"
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"

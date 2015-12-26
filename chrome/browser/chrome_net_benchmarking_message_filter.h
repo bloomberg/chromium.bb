@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROME_NET_BENCHMARKING_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_CHROME_NET_BENCHMARKING_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace net {

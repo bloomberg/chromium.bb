@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_DEVTOOLS_BRIDGE_CLIENT_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_DEVTOOLS_BRIDGE_CLIENT_H_
 
+#include "base/macros.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_instances_request.h"
 #include "chrome/browser/devtools/device/webrtc/send_command_request.h"

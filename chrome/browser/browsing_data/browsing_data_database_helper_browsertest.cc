@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -35,7 +37,7 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
             ->GetDatabaseTracker();
     base::string16 db_name = base::ASCIIToUTF16("db");
     base::string16 description = base::ASCIIToUTF16("db_description");
-    int64 size;
+    int64_t size;
     db_tracker->DatabaseOpened(kTestIdentifier1, db_name, description,
                                1, &size);
     db_tracker->DatabaseClosed(kTestIdentifier1, db_name);

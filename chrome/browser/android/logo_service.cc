@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/logo_service.h"
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/image_decoder.h"

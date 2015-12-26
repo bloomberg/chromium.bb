@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_CHROME_MEDIA_CLIENT_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_CHROME_MEDIA_CLIENT_ANDROID_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "components/cdm/browser/widevine_drm_delegate_android.h"
 #include "media/base/android/media_client_android.h"

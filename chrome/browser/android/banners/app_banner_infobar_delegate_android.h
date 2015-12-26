@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"

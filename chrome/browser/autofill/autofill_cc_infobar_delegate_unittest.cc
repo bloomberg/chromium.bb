@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"

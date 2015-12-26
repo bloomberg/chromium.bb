@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_AURAWIN_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 #include "content/public/browser/notification_observer.h"

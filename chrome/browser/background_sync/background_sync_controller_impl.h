@@ -7,6 +7,9 @@
 
 #include "content/public/browser/background_sync_controller.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
 

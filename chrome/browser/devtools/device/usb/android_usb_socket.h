@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_SOCKET_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_SOCKET_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -20,7 +23,7 @@ class AndroidUsbSocket : public net::StreamSocket,
                          public base::NonThreadSafe {
  public:
   AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
-                   uint32 socket_id,
+                   uint32_t socket_id,
                    const std::string& command,
                    base::Closure delete_callback);
   ~AndroidUsbSocket() override;
@@ -36,8 +39,8 @@ class AndroidUsbSocket : public net::StreamSocket,
   int Write(net::IOBuffer* buf,
             int buf_len,
             const net::CompletionCallback& callback) override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
   int Connect(const net::CompletionCallback& callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
@@ -64,8 +67,8 @@ class AndroidUsbSocket : public net::StreamSocket,
 
   scoped_refptr<AndroidUsbDevice> device_;
   std::string command_;
-  uint32 local_id_;
-  uint32 remote_id_;
+  uint32_t local_id_;
+  uint32_t remote_id_;
   net::BoundNetLog net_log_;
   bool is_connected_;
   std::string read_buffer_;

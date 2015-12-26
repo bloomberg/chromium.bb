@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"

@@ -9,6 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 class PrecacheLauncher {

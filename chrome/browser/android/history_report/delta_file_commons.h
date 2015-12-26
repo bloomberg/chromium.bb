@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_HISTORY_REPORT_DELTA_FILE_COMMONS_H_
 #define CHROME_BROWSER_ANDROID_HISTORY_REPORT_DELTA_FILE_COMMONS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 #include "chrome/browser/android/proto/delta_file.pb.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -22,7 +23,7 @@ class DeltaFileEntryWithData {
   ~DeltaFileEntryWithData();
 
   // Returns sequence number of this delta file entry.
-  int64 SeqNo() const;
+  int64_t SeqNo() const;
 
   // Returns type of delta file entry ('add' or 'del').
   std::string Type() const;
@@ -37,7 +38,7 @@ class DeltaFileEntryWithData {
   base::string16 Title() const;
 
   // Returns ranking score of url described by delta file entry.
-  int32 Score() const;
+  int32_t Score() const;
 
   // Returns part of delta file entry's url
   // which will be used as a key in search index.

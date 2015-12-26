@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_ITEM_NOTIFICATION_H_
 #define CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_ITEM_NOTIFICATION_H_
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/notification/download_notification.h"

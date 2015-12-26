@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>

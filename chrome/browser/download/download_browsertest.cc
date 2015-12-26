@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <sstream>
 
 #include "base/bind.h"
@@ -12,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -23,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/test/test_file_util.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -639,7 +643,7 @@ class DownloadTest : public InProcessBrowserTest {
     if (!downloaded_file_exists)
       return false;
 
-    int64 origin_file_size = 0;
+    int64_t origin_file_size = 0;
     EXPECT_TRUE(base::GetFileSize(origin_file, &origin_file_size));
     std::string original_file_contents;
     EXPECT_TRUE(base::ReadFileToString(origin_file, &original_file_contents));
@@ -788,7 +792,7 @@ class DownloadTest : public InProcessBrowserTest {
   // string.
   bool VerifyFile(const base::FilePath& path,
                   const std::string& value,
-                  const int64 file_size) {
+                  const int64_t file_size) {
     std::string file_contents;
 
     bool read = base::ReadFileToString(path, &file_contents);
@@ -1363,7 +1367,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   base::FilePath origin(OriginFile(base::FilePath(FILE_PATH_LITERAL(
       "downloads/a_zip_file.zip"))));
   ASSERT_TRUE(base::PathExists(origin));
-  int64 origin_file_size = 0;
+  int64_t origin_file_size = 0;
   EXPECT_TRUE(base::GetFileSize(origin, &origin_file_size));
   std::string original_contents;
   EXPECT_TRUE(base::ReadFileToString(origin, &original_contents));
@@ -2984,7 +2988,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
       browser(), base::FilePath(FILE_PATH_LITERAL("DownloadTest_BigZip.zip"))));
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   ASSERT_TRUE(file.IsValid());
-  int64 size = 1 << 25;
+  int64_t size = 1 << 25;
   EXPECT_EQ(1, file.Write(size, "a", 1));
   file.Close();
 
@@ -2994,8 +2998,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
 #endif
 
   // Ensure that we have enough disk space.
-  int64 free_space = base::SysInfo::AmountOfFreeDiskSpace(
-      GetDownloadDirectory(browser()));
+  int64_t free_space =
+      base::SysInfo::AmountOfFreeDiskSpace(GetDownloadDirectory(browser()));
   ASSERT_LE(size, free_space) << "Not enough disk space to download. Got "
                               << free_space;
   GURL file_url(net::FilePathToFileURL(file_path));
@@ -3021,7 +3025,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
 
   // Check that the file downloaded correctly.
   ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
-  int64 downloaded_size = 0;
+  int64_t downloaded_size = 0;
   ASSERT_TRUE(base::GetFileSize(
       download_items[0]->GetTargetFilePath(), &downloaded_size));
   ASSERT_EQ(size + 1, downloaded_size);

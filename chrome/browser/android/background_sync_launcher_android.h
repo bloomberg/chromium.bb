@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_BACKGROUND_SYNC_LAUNCHER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_BACKGROUND_SYNC_LAUNCHER_ANDROID_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/android/jni_android.h"

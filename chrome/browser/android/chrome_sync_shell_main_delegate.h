@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_CHROME_SYNC_SHELL_MAIN_DELEGATE_H_
 #define CHROME_BROWSER_ANDROID_CHROME_SYNC_SHELL_MAIN_DELEGATE_H_
 
+#include "base/macros.h"
 #include "chrome/app/android/chrome_main_delegate_android.h"
 
 class ChromeSyncShellMainDelegate : public ChromeMainDelegateAndroid {

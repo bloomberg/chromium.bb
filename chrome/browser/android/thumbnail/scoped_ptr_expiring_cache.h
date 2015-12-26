@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_THUMBNAIL_SCOPED_PTR_EXPIRING_CACHE_H_
 #define CHROME_BROWSER_ANDROID_THUMBNAIL_SCOPED_PTR_EXPIRING_CACHE_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/linked_hash_map.h"
 

@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_HISTORY_REPORT_DELTA_FILE_SERVICE_H_
 #define CHROME_BROWSER_ANDROID_HISTORY_REPORT_DELTA_FILE_SERVICE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 
@@ -34,13 +37,13 @@ class DeltaFileService {
   void PageDeleted(const GURL& url);
   // Removes all delta file entries with seqno <= lower_bound.
   // Returns max seqno in delta file.
-  int64 Trim(int64 lower_bound);
+  int64_t Trim(int64_t lower_bound);
   // Removes all data from delta file and populates it with new addition
   // entries for given urls.
   bool Recreate(const std::vector<std::string>& urls);
   // Provides up to limit delta file entries with seqno > last_seq_no.
-  scoped_ptr<std::vector<DeltaFileEntryWithData> > Query(int64 last_seq_no,
-                                                         int32 limit);
+  scoped_ptr<std::vector<DeltaFileEntryWithData>> Query(int64_t last_seq_no,
+                                                        int32_t limit);
   // Removes all entries from delta file.
   void Clear();
 

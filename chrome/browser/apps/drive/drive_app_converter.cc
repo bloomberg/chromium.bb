@@ -4,11 +4,14 @@
 
 #include "chrome/browser/apps/drive/drive_app_converter.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/crx_installer.h"

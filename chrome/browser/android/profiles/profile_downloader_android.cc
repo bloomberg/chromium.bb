@@ -4,8 +4,11 @@
 
 #include "chrome/browser/android/profiles/profile_downloader_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"

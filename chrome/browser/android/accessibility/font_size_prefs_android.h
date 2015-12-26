@@ -7,6 +7,7 @@
 
 #include <jni.h>
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 
 class PrefChangeRegistrar;

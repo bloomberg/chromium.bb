@@ -4,6 +4,9 @@
 
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -13,12 +16,14 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -142,8 +147,8 @@ void FakeDBusCall(const chromeos::BoolDBusMethodCallback& callback) {
 #endif
 
 struct StoragePartitionRemovalData {
-  uint32 remove_mask = 0;
-  uint32 quota_storage_remove_mask = 0;
+  uint32_t remove_mask = 0;
+  uint32_t quota_storage_remove_mask = 0;
   GURL remove_origin;
   base::Time remove_begin;
   base::Time remove_end;
@@ -202,8 +207,8 @@ class TestStoragePartition : public StoragePartition {
     return nullptr;
   }
 
-  void ClearDataForOrigin(uint32 remove_mask,
-                          uint32 quota_storage_remove_mask,
+  void ClearDataForOrigin(uint32_t remove_mask,
+                          uint32_t quota_storage_remove_mask,
                           const GURL& storage_origin,
                           net::URLRequestContextGetter* rq_context,
                           const base::Closure& callback) override {
@@ -214,8 +219,8 @@ class TestStoragePartition : public StoragePartition {
                                        callback));
   }
 
-  void ClearData(uint32 remove_mask,
-                 uint32 quota_storage_remove_mask,
+  void ClearData(uint32_t remove_mask,
+                 uint32_t quota_storage_remove_mask,
                  const GURL& storage_origin,
                  const OriginMatcherFunction& origin_matcher,
                  const base::Time begin,
@@ -1636,7 +1641,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
 
   // Persistent data would be left out since we are not removing from
   // beginning of time.
-  uint32 expected_quota_mask =
+  uint32_t expected_quota_mask =
       ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
   EXPECT_EQ(removal_data.quota_storage_remove_mask, expected_quota_mask);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());
@@ -1677,7 +1682,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
 
   // Persistent data would be left out since we are not removing from
   // beginning of time.
-  uint32 expected_quota_mask =
+  uint32_t expected_quota_mask =
       ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
   EXPECT_EQ(removal_data.quota_storage_remove_mask, expected_quota_mask);
   EXPECT_TRUE(removal_data.remove_origin.is_empty());

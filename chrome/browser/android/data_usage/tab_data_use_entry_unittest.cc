@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

@@ -11,6 +11,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/bind.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "cc/resources/ui_resource_client.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"

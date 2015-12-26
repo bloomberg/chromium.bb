@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
 
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_service.h"

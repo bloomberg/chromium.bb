@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -116,7 +117,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread(
     for (const GURL& current : origins) {
       if (!BrowsingDataHelper::HasWebScheme(current))
         continue;  // Non-websafe state is not considered browsing data.
-      int64 usage = quota_util->GetOriginUsageOnFileTaskRunner(
+      int64_t usage = quota_util->GetOriginUsageOnFileTaskRunner(
           filesystem_context_.get(), current, type);
       OriginInfoMap::iterator inserted =
           file_system_info_map.insert(
@@ -160,7 +161,7 @@ CannedBrowsingDataFileSystemHelper::~CannedBrowsingDataFileSystemHelper() {}
 void CannedBrowsingDataFileSystemHelper::AddFileSystem(
     const GURL& origin,
     const storage::FileSystemType type,
-    const int64 size) {
+    const int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // This canned implementation of AddFileSystem uses an O(n^2) algorithm; which
   // is fine, as it isn't meant for use in a high-volume context. If it turns

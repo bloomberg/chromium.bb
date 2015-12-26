@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_INTERCEPT_DOWNLOAD_RESOURCE_THROTTLE_H_
 #define CHROME_BROWSER_ANDROID_INTERCEPT_DOWNLOAD_RESOURCE_THROTTLE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/resource_throttle.h"
 
 namespace net {

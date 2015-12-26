@@ -4,9 +4,13 @@
 
 #include "chrome/browser/download/notification/download_item_notification.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -55,7 +59,7 @@ const SkColor kImageBackgroundColor = SK_ColorWHITE;
 
 // Maximum size of preview image. If the image exceeds this size, don't show the
 // preview image.
-const int64 kMaxImagePreviewSize = 10 * 1024 * 1024;  // 10 MB
+const int64_t kMaxImagePreviewSize = 10 * 1024 * 1024;  // 10 MB
 
 std::string ReadNotificationImage(const base::FilePath& file_path) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());

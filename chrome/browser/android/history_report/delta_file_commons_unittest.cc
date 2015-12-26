@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/history_report/delta_file_commons.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/history_types.h"
@@ -208,7 +211,8 @@ TEST_F(DeltaFileEntryWithDataTest, IdForLongUrl) {
 
   std::stringstream expected_length_stream;
   expected_length_stream << std::setfill('0') << std::setw(8)
-      << base::Uint64ToString(static_cast<uint64>(url.str().size()));
+                         << base::Uint64ToString(
+                                static_cast<uint64_t>(url.str().size()));
   std::string length = data.Id().substr(0, 8);
   EXPECT_EQ(expected_length_stream.str(), length);
 

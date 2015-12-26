@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/media/media_throttle_infobar_delegate.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"

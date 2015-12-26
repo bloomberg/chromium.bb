@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chrome_elf_init_win.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"

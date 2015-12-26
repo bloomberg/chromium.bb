@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_WEBRTC_DEVICE_PROVIDER_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_WEBRTC_DEVICE_PROVIDER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "content/public/browser/web_ui_controller.h"
 

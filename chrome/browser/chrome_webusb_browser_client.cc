@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_webusb_browser_client.h"
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile_manager.h"

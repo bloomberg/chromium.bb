@@ -4,10 +4,13 @@
 
 #include "chrome/browser/android/history_report/delta_file_backend_leveldb.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,7 +158,7 @@ TEST_F(DeltaFileBackendTest, Trim) {
   backend_->PageDeleted(test_url);
   backend_->PageDeleted(test_url);
   // Trim all entries with sequence number <= 3.
-  int64 max_seq_no = backend_->Trim(3);
+  int64_t max_seq_no = backend_->Trim(3);
   EXPECT_EQ(5, max_seq_no);
   scoped_ptr<std::vector<DeltaFileEntryWithData> > result =
       backend_->Query(0, 10);
@@ -179,7 +182,7 @@ TEST_F(DeltaFileBackendTest, TrimLowerBoundEqualToMaxSeqNo) {
   backend_->PageDeleted(test_url);
   // Trim all entries with sequence number <= 5 but leave at least one entry
   // in delta file.
-  int64 max_seq_no = backend_->Trim(5);
+  int64_t max_seq_no = backend_->Trim(5);
   EXPECT_EQ(5, max_seq_no);
   scoped_ptr<std::vector<DeltaFileEntryWithData> > result =
       backend_->Query(0, 10);
@@ -202,7 +205,7 @@ TEST_F(DeltaFileBackendTest, TrimLowerBoundGreaterThanMaxSeqNo) {
   backend_->PageDeleted(test_url);
   // Trim all entries with sequence number <= 6 but leave at least one entry
   // in delta file.
-  int64 max_seq_no = backend_->Trim(6);
+  int64_t max_seq_no = backend_->Trim(6);
   EXPECT_EQ(5, max_seq_no);
   scoped_ptr<std::vector<DeltaFileEntryWithData> > result =
       backend_->Query(0, 10);
@@ -221,7 +224,7 @@ TEST_F(DeltaFileBackendTest, TrimDeltaFileWithSingleEntry) {
   // Trim all entries with sequence number <= 1 but leave at least one entry
   // in delta file. Should not remove any entries since there's only one
   // in delta file.
-  int64 max_seq_no = backend_->Trim(1);
+  int64_t max_seq_no = backend_->Trim(1);
   EXPECT_EQ(1, max_seq_no);
   scoped_ptr<std::vector<DeltaFileEntryWithData> > result =
       backend_->Query(0, 10);

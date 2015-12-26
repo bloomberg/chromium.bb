@@ -4,9 +4,12 @@
 
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
+#include <stdint.h>
+
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -15,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_constants.h"
@@ -40,7 +44,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
     REMOVE_IF_CORRUPT = 0x02,
   };
 
-  SqliteIntegrityTest(uint32 flags,
+  SqliteIntegrityTest(uint32_t flags,
                       DiagnosticsTestId id,
                       const base::FilePath& db_path)
       : DiagnosticsTest(id), flags_(flags), db_path_(db_path) {}
@@ -194,7 +198,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
     DISALLOW_COPY_AND_ASSIGN(ErrorRecorder);
   };
 
-  uint32 flags_;
+  uint32_t flags_;
   base::FilePath db_path_;
   DISALLOW_COPY_AND_ASSIGN(SqliteIntegrityTest);
 };

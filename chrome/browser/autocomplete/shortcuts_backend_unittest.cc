@@ -4,7 +4,10 @@
 
 #include "components/omnibox/browser/shortcuts_backend.h"
 
+#include <stddef.h>
+
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

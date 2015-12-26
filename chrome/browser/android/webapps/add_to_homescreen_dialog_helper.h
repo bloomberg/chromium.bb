@@ -7,7 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_data_fetcher.h"
 #include "content/public/common/manifest.h"

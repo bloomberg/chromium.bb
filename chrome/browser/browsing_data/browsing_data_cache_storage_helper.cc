@@ -80,7 +80,7 @@ void BrowsingDataCacheStorageHelper::DeleteCacheStorageOnIOThread(
 
 CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo::
     PendingCacheStorageUsageInfo(const GURL& origin,
-                                 int64 total_size_bytes,
+                                 int64_t total_size_bytes,
                                  const base::Time& last_modified)
     : origin(origin),
       total_size_bytes(total_size_bytes),

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -10,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_file_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "content/public/test/mock_download_item.h"
@@ -35,7 +39,7 @@ class DownloadPathReservationTrackerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  MockDownloadItem* CreateDownloadItem(int32 id);
+  MockDownloadItem* CreateDownloadItem(int32_t id);
   base::FilePath GetPathInDownloadsDirectory(
       const base::FilePath::CharType* suffix);
   bool IsPathInUse(const base::FilePath& path);
@@ -85,7 +89,7 @@ void DownloadPathReservationTrackerTest::TearDown() {
 }
 
 MockDownloadItem* DownloadPathReservationTrackerTest::CreateDownloadItem(
-    int32 id) {
+    int32_t id) {
   MockDownloadItem* item = new ::testing::StrictMock<MockDownloadItem>;
   EXPECT_CALL(*item, GetId())
       .WillRepeatedly(Return(id));

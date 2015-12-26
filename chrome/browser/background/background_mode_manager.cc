@@ -4,6 +4,8 @@
 
 #include "chrome/browser/background/background_mode_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -20,6 +22,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/background/background_trigger.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/about_flags.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -16,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/flags_ui/feature_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libxml/chromium/libxml_utils.h"

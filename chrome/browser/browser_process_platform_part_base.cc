@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 

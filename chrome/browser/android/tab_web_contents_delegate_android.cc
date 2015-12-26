@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"

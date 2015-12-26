@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
@@ -15,6 +18,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/common/features.h"
 #include "components/search_engines/template_url_service.h"
@@ -285,7 +289,7 @@ class BrowsingDataRemover
 
 #if defined(ENABLE_PLUGINS)
   // PepperFlashSettingsManager::Client implementation.
-  void OnDeauthorizeContentLicensesCompleted(uint32 request_id,
+  void OnDeauthorizeContentLicensesCompleted(uint32_t request_id,
                                              bool success) override;
 #endif
 
@@ -444,7 +448,7 @@ class BrowsingDataRemover
   scoped_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
 #endif
 
-  uint32 deauthorize_content_licenses_request_id_ = 0;
+  uint32_t deauthorize_content_licenses_request_id_ = 0;
   // True if we're waiting for various data to be deleted.
   // These may only be accessed from UI thread in order to avoid races!
   bool waiting_for_clear_autofill_origin_urls_ = false;

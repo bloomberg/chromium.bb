@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_CONTROLLER_H_
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 

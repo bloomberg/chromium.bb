@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 
 class NewTabPagePrefs {

@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_QUOTA_HELPER_IMPL_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_QUOTA_HELPER_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
@@ -55,14 +58,14 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
                     const base::Closure& completion,
                     const std::string& host,
                     storage::StorageType type,
-                    int64 usage);
+                    int64_t usage);
 
   // Called when all QuotaManager::GetHostUsage requests are complete.
   void OnGetHostsUsageComplete(const FetchResultCallback& callback,
                                QuotaInfoMap* quota_info);
 
   void RevokeHostQuotaOnIOThread(const std::string& host);
-  void DidRevokeHostQuota(storage::QuotaStatusCode status, int64 quota);
+  void DidRevokeHostQuota(storage::QuotaStatusCode status, int64_t quota);
 
   scoped_refptr<storage::QuotaManager> quota_manager_;
 

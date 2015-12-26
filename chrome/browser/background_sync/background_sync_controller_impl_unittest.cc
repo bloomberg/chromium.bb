@@ -4,6 +4,9 @@
 
 #include "chrome/browser/background_sync/background_sync_controller_impl.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/rappor/test_rappor_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -124,7 +127,7 @@ TEST_F(BackgroundSyncControllerImplTest, AllParamsSet) {
   field_parameters
       [BackgroundSyncControllerImpl::kRetryDelayFactorParameterName] = "300";
   field_parameters[BackgroundSyncControllerImpl::kMinSyncRecoveryTimeName] =
-      "8000000000000";  // something larger than int32.
+      "8000000000000";  // something larger than int32_t.
   ASSERT_TRUE(variations::AssociateVariationParams(
       BackgroundSyncControllerImpl::kFieldTrialName, kFieldTrialGroup,
       field_parameters));

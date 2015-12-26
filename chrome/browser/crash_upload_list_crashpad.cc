@@ -4,8 +4,11 @@
 
 #include "chrome/browser/crash_upload_list_crashpad.h"
 
+#include <stddef.h>
+
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/crash/content/app/crashpad.h"
 

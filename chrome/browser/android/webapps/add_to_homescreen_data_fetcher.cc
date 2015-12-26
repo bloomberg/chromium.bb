@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/webapps/add_to_homescreen_data_fetcher.h"
 
-#include "base/basictypes.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"

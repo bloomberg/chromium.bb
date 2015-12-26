@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "net/cookies/canonical_cookie.h"
 

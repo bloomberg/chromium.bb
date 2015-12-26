@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "components/guest_view/browser/guest_view_manager.h"

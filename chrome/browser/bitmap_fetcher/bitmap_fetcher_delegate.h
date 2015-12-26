@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BITMAP_FETCHER_BITMAP_FETCHER_DELEGATE_H_
 #define CHROME_BROWSER_BITMAP_FETCHER_BITMAP_FETCHER_DELEGATE_H_
 
+#include "base/macros.h"
 #include "url/gurl.h"
 
 class SkBitmap;

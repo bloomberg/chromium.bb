@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROME_CHILD_PROCESS_WATCHER_H_
 #define CHROME_BROWSER_CHROME_CHILD_PROCESS_WATCHER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_child_process_observer.h"
 
 // ChromeChildProcessWatcher watches for crashed child processes.

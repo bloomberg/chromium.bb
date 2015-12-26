@@ -4,10 +4,13 @@
 
 #include "chrome/browser/android/chrome_feature_list.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
+#include "base/macros.h"
 #include "jni/ChromeFeatureList_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;

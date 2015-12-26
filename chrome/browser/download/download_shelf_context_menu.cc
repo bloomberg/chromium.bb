@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/content_features.h"

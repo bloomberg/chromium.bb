@@ -95,7 +95,7 @@ GURL OfflinePageUtils::GetOnlineURLForOfflineURL(
 }
 
 // static
-int64 OfflinePageUtils::GetBookmarkIdForOfflineURL(
+int64_t OfflinePageUtils::GetBookmarkIdForOfflineURL(
     content::BrowserContext* browser_context,
     const GURL& offline_url) {
   const offline_pages::OfflinePageItem* offline_page =

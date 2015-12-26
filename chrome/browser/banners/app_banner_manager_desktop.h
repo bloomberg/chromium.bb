@@ -7,6 +7,7 @@
 
 #include "chrome/browser/banners/app_banner_manager.h"
 
+#include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace banners {

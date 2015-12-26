@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_LOGIN_DETECTOR_H_
 #define CHROME_BROWSER_CAPTIVE_PORTAL_CAPTIVE_PORTAL_LOGIN_DETECTOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 
 class Profile;

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_FIELD_TRIALS_H_
 #define CHROME_BROWSER_CHROME_BROWSER_FIELD_TRIALS_H_
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 
 namespace base {
 class Time;

@@ -4,8 +4,12 @@
 
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/time_formatting.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

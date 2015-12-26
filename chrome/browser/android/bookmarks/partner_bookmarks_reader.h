@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_BOOKMARKS_PARTNER_BOOKMARKS_READER_H_
 #define CHROME_BROWSER_ANDROID_BOOKMARKS_PARTNER_BOOKMARKS_READER_H_
 
+#include <stdint.h>
+
 #include "base/android/jni_weak_ref.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
@@ -45,7 +48,7 @@ class PartnerBookmarksReader {
 
   // JNI
   scoped_ptr<bookmarks::BookmarkNode> wip_partner_bookmarks_root_;
-  int64 wip_next_available_id_;
+  int64_t wip_next_available_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PartnerBookmarksReader);
 };

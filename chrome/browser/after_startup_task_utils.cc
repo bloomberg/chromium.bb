@@ -5,6 +5,7 @@
 #include "chrome/browser/after_startup_task_utils.h"
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
@@ -12,6 +13,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/task_runner.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

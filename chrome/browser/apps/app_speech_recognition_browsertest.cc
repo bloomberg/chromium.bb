@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/fake_speech_recognition_manager.h"

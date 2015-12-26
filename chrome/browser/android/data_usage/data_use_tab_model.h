@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_DATA_USAGE_DATA_USE_TAB_MODEL_H_
 #define CHROME_BROWSER_ANDROID_DATA_USAGE_DATA_USE_TAB_MODEL_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

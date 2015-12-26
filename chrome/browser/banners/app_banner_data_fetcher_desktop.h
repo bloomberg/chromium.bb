@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_DATA_FETCHER_DESKTOP_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_DATA_FETCHER_DESKTOP_H_
 
+#include "base/macros.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 
 namespace extensions {

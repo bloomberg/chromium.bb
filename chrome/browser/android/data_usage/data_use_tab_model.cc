@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 
+#include <stdint.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"

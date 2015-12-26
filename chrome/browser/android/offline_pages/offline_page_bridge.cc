@@ -6,7 +6,6 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/basictypes.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -106,7 +105,7 @@ void OfflinePageBridge::OfflinePageModelChanged(OfflinePageModel* model) {
   Java_OfflinePageBridge_offlinePageModelChanged(env, obj.obj());
 }
 
-void OfflinePageBridge::OfflinePageDeleted(int64 bookmark_id) {
+void OfflinePageBridge::OfflinePageDeleted(int64_t bookmark_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -209,7 +208,7 @@ void OfflinePageBridge::DeletePages(
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
 
-  std::vector<int64> bookmark_ids;
+  std::vector<int64_t> bookmark_ids;
   base::android::JavaLongArrayToInt64Vector(env, bookmark_ids_array,
                                             &bookmark_ids);
 

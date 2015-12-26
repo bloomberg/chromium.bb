@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chrome_browser_main.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -504,7 +507,7 @@ bool ProcessSingletonNotificationCallback(
   if (command_line.HasSwitch(switches::kOriginalProcessStartTime)) {
     std::string start_time_string =
         command_line.GetSwitchValueASCII(switches::kOriginalProcessStartTime);
-    int64 remote_start_time;
+    int64_t remote_start_time;
     if (base::StringToInt64(start_time_string, &remote_start_time)) {
       base::TimeDelta elapsed =
           base::Time::Now() - base::Time::FromInternalValue(remote_start_time);
@@ -539,9 +542,8 @@ void LaunchDevToolsHandlerIfNeeded(const base::CommandLine& command_line) {
     int port;
     if (base::StringToInt(port_str, &port) && port >= 0 && port < 65535) {
       g_browser_process->CreateDevToolsHttpProtocolHandler(
-          chrome::HOST_DESKTOP_TYPE_NATIVE,
-          "127.0.0.1",
-          static_cast<uint16>(port));
+          chrome::HOST_DESKTOP_TYPE_NATIVE, "127.0.0.1",
+          static_cast<uint16_t>(port));
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
     }

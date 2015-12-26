@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/data_usage/data_use_matcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

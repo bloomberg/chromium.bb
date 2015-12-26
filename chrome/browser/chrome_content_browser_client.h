@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROME_CONTENT_BROWSER_CLIENT_H_
 #define CHROME_BROWSER_CHROME_CONTENT_BROWSER_CLIENT_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -13,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 
 class ChromeContentBrowserClientParts;

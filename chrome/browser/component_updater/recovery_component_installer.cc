@@ -24,6 +24,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/threading/worker_pool.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"

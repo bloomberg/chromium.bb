@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/device/webrtc/webrtc_device_provider.h"
 
+#include <stddef.h>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

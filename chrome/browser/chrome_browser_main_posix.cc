@@ -8,6 +8,8 @@
 #include <limits.h>
 #include <pthread.h>
 #include <signal.h>
+#include <stddef.h>
+#include <string.h>
 #include <sys/resource.h>
 #include <unistd.h>
 
@@ -16,8 +18,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/sessions/session_restore.h"

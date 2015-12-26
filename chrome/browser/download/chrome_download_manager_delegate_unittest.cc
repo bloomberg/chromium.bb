@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -137,7 +140,7 @@ class ChromeDownloadManagerDelegateTest
   void VerifyAndClearExpectations();
 
   // Creates MockDownloadItem and sets up default expectations.
-  content::MockDownloadItem* CreateActiveDownloadItem(int32 id);
+  content::MockDownloadItem* CreateActiveDownloadItem(int32_t id);
 
   // Given the relative path |path|, returns the full path under the temporary
   // downloads directory.
@@ -197,7 +200,7 @@ void ChromeDownloadManagerDelegateTest::VerifyAndClearExpectations() {
 }
 
 content::MockDownloadItem*
-    ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32 id) {
+ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
   content::MockDownloadItem* item =
       new ::testing::NiceMock<content::MockDownloadItem>();
   ON_CALL(*item, GetBrowserContext())

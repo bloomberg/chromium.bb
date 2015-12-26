@@ -15,9 +15,9 @@ BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo(const std::string& host)
     : host(host) {}
 
 BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo(const std::string& host,
-                                              int64 temporary_usage,
-                                              int64 persistent_usage,
-                                              int64 syncable_usage)
+                                              int64_t temporary_usage,
+                                              int64_t persistent_usage,
+                                              int64_t syncable_usage)
     : host(host),
       temporary_usage(temporary_usage),
       persistent_usage(persistent_usage),

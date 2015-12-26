@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_COPRESENCE_CHROME_WHISPERNET_CONFIG_H_
 #define CHROME_BROWSER_COPRESENCE_CHROME_WHISPERNET_CONFIG_H_
 
+#include <stdint.h>
+
 // Shared structs with whispernet. TODO(rkc): These will be removed once we can
 // get protobufs working with Nacl. At that point, we'll just pass in
 // config_data.proto to the whispernet nacl wrapper directly.

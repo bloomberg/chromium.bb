@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 

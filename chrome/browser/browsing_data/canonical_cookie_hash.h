@@ -9,6 +9,8 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_CANONICAL_COOKIE_HASH_H_
 #define CHROME_BROWSER_BROWSING_DATA_CANONICAL_COOKIE_HASH_H_
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "net/cookies/canonical_cookie.h"
 

@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/sync_driver/sync_service_observer.h"

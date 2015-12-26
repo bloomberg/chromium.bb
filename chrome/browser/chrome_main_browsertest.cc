@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/process/launch.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"

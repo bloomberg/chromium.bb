@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 
+#include <stdint.h>
+
 #include <cmath>
 #include <list>
 #include <utility>
@@ -12,6 +14,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -96,8 +99,8 @@ using content::BrowserThread;
 namespace {
 
 const char kDefaultUrlScheme[] = "http://";
-const int64 kInvalidContentProviderId = 0;
-const int64 kInvalidBookmarkId = -1;
+const int64_t kInvalidContentProviderId = 0;
+const int64_t kInvalidBookmarkId = -1;
 
 // ------------- Java-related utility methods ------------- //
 
@@ -141,7 +144,7 @@ jboolean ConvertJBooleanObjectToPrimitive(JNIEnv* env, jobject boolean_object) {
 
 base::Time ConvertJlongToTime(jlong value) {
   return base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds((int64)value);
+         base::TimeDelta::FromMilliseconds((int64_t)value);
 }
 
 jint ConvertJIntegerToJint(JNIEnv* env, jobject integer_obj) {
@@ -199,11 +202,11 @@ class AddBookmarkTask : public BookmarkModelTask {
  public:
   explicit AddBookmarkTask(BookmarkModel* model) : BookmarkModelTask(model) {}
 
-  int64 Run(const base::string16& title,
-            const base::string16& url,
-            const bool is_folder,
-            const int64 parent_id) {
-    int64 result = kInvalidBookmarkId;
+  int64_t Run(const base::string16& title,
+              const base::string16& url,
+              const bool is_folder,
+              const int64_t parent_id) {
+    int64_t result = kInvalidBookmarkId;
     RunOnUIThreadBlocking::Run(
         base::Bind(&AddBookmarkTask::RunOnUIThread,
                    model(), title, url, is_folder, parent_id, &result));
@@ -214,8 +217,8 @@ class AddBookmarkTask : public BookmarkModelTask {
                             const base::string16& title,
                             const base::string16& url,
                             const bool is_folder,
-                            const int64 parent_id,
-                            int64* result) {
+                            const int64_t parent_id,
+                            int64_t* result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
     GURL gurl = ParseAndMaybeAppendScheme(url, kDefaultUrlScheme);
@@ -251,14 +254,14 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
         id_to_delete_(kInvalidBookmarkId) {}
   ~RemoveBookmarkTask() override {}
 
-  int Run(const int64 id) {
+  int Run(const int64_t id) {
     id_to_delete_ = id;
     RunOnUIThreadBlocking::Run(
         base::Bind(&RemoveBookmarkTask::RunOnUIThread, model(), id));
     return deleted_;
   }
 
-  static void RunOnUIThread(BookmarkModel* model, const int64 id) {
+  static void RunOnUIThread(BookmarkModel* model, const int64_t id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (node && node->parent())
@@ -277,7 +280,7 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
 
  private:
   int deleted_;
-  int64 id_to_delete_;
+  int64_t id_to_delete_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveBookmarkTask);
 };
@@ -315,10 +318,10 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
         id_to_update_(kInvalidBookmarkId){}
   ~UpdateBookmarkTask() override {}
 
-  int Run(const int64 id,
+  int Run(const int64_t id,
           const base::string16& title,
           const base::string16& url,
-          const int64 parent_id) {
+          const int64_t parent_id) {
     id_to_update_ = id;
     RunOnUIThreadBlocking::Run(
         base::Bind(&UpdateBookmarkTask::RunOnUIThread,
@@ -327,10 +330,10 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
   }
 
   static void RunOnUIThread(BookmarkModel* model,
-                            const int64 id,
+                            const int64_t id,
                             const base::string16& title,
                             const base::string16& url,
-                            const int64 parent_id) {
+                            const int64_t parent_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (node) {
@@ -363,7 +366,7 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
 
  private:
   int updated_;
-  int64 id_to_update_;
+  int64_t id_to_update_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateBookmarkTask);
 };
@@ -375,7 +378,7 @@ class BookmarkNodeExistsTask : public BookmarkModelTask {
       : BookmarkModelTask(model) {
   }
 
-  bool Run(const int64 id) {
+  bool Run(const int64_t id) {
     bool result = false;
     RunOnUIThreadBlocking::Run(
         base::Bind(&BookmarkNodeExistsTask::RunOnUIThread,
@@ -384,7 +387,7 @@ class BookmarkNodeExistsTask : public BookmarkModelTask {
   }
 
   static void RunOnUIThread(BookmarkModel* model,
-                            const int64 id,
+                            const int64_t id,
                             bool* result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
@@ -401,7 +404,7 @@ class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
   explicit IsInMobileBookmarksBranchTask(BookmarkModel* model)
       : BookmarkModelTask(model) {}
 
-  bool Run(const int64 id) {
+  bool Run(const int64_t id) {
     bool result = false;
     RunOnUIThreadBlocking::Run(
         base::Bind(&IsInMobileBookmarksBranchTask::RunOnUIThread,
@@ -410,8 +413,8 @@ class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
   }
 
   static void RunOnUIThread(BookmarkModel* model,
-                            const int64 id,
-                            bool *result) {
+                            const int64_t id,
+                            bool* result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
@@ -434,8 +437,8 @@ class CreateBookmarksFolderOnceTask : public BookmarkModelTask {
   explicit CreateBookmarksFolderOnceTask(BookmarkModel* model)
       : BookmarkModelTask(model) {}
 
-  int64 Run(const base::string16& title, const int64 parent_id) {
-    int64 result = kInvalidBookmarkId;
+  int64_t Run(const base::string16& title, const int64_t parent_id) {
+    int64_t result = kInvalidBookmarkId;
     RunOnUIThreadBlocking::Run(
         base::Bind(&CreateBookmarksFolderOnceTask::RunOnUIThread,
                    model(), title, parent_id, &result));
@@ -444,8 +447,8 @@ class CreateBookmarksFolderOnceTask : public BookmarkModelTask {
 
   static void RunOnUIThread(BookmarkModel* model,
                             const base::string16& title,
-                            const int64 parent_id,
-                            int64* result) {
+                            const int64_t parent_id,
+                            int64_t* result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(result);
 
@@ -548,7 +551,7 @@ class GetBookmarkNodeTask : public BookmarkModelTask {
       : BookmarkModelTask(model) {
   }
 
-  void Run(const int64 id,
+  void Run(const int64_t id,
            bool get_parent,
            bool get_children,
            ScopedJavaGlobalRef<jobject>* jnode) {
@@ -558,7 +561,7 @@ class GetBookmarkNodeTask : public BookmarkModelTask {
   }
 
   static void RunOnUIThread(BookmarkModel* model,
-                            const int64 id,
+                            const int64_t id,
                             bool get_parent,
                             bool get_children,
                             ScopedJavaGlobalRef<jobject>* jnode) {
@@ -1115,7 +1118,7 @@ void FillBookmarkRow(JNIEnv* env,
         env, date)));
 
   if (favicon) {
-    std::vector<uint8> bytes;
+    std::vector<uint8_t> bytes;
     base::android::JavaByteArrayToByteVector(env, favicon, &bytes);
     row->set_favicon(base::RefCountedBytes::TakeVector(&bytes));
   }

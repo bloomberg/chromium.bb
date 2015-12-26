@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_APPCACHE_HELPER_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 
 class MockBrowsingDataAppCacheHelper

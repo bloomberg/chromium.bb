@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 #include "chrome/browser/diagnostics/diagnostics_writer.h"

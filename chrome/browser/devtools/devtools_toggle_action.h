@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_TOGGLE_ACTION_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_TOGGLE_ACTION_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 

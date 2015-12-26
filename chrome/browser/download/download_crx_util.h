@@ -8,7 +8,6 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_CRX_UTIL_H_
 
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 

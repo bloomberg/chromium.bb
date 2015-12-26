@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/history_report/data_provider.h"
+
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
@@ -105,9 +108,9 @@ DataProvider::DataProvider(Profile* profile,
 
 DataProvider::~DataProvider() {}
 
-scoped_ptr<std::vector<DeltaFileEntryWithData> > DataProvider::Query(
-    int64 last_seq_no,
-    int32 limit) {
+scoped_ptr<std::vector<DeltaFileEntryWithData>> DataProvider::Query(
+    int64_t last_seq_no,
+    int32_t limit) {
   if (last_seq_no == 0)
     RecreateLog();
   scoped_ptr<std::vector<DeltaFileEntryWithData> > entries;

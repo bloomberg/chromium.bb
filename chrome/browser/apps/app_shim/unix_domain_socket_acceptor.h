@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SHIM_UNIX_DOMAIN_SOCKET_ACCEPTOR_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "ipc/ipc_channel_handle.h"
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/device/usb/android_usb_socket.h"
 
+#include <stddef.h>
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -16,7 +18,7 @@ const int kMaxPayload = 4096;
 }  // namespace
 
 AndroidUsbSocket::AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
-                                   uint32 socket_id,
+                                   uint32_t socket_id,
                                    const std::string& command,
                                    base::Closure delete_callback)
     : device_(device),
@@ -25,8 +27,7 @@ AndroidUsbSocket::AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
       remote_id_(0),
       is_connected_(false),
       delete_callback_(delete_callback),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 AndroidUsbSocket::~AndroidUsbSocket() {
   DCHECK(CalledOnValidThread());
@@ -148,12 +149,12 @@ int AndroidUsbSocket::Write(net::IOBuffer* buffer,
   return net::ERR_IO_PENDING;
 }
 
-int AndroidUsbSocket::SetReceiveBufferSize(int32 size) {
+int AndroidUsbSocket::SetReceiveBufferSize(int32_t size) {
   NOTIMPLEMENTED();
   return net::ERR_NOT_IMPLEMENTED;
 }
 
-int AndroidUsbSocket::SetSendBufferSize(int32 size) {
+int AndroidUsbSocket::SetSendBufferSize(int32_t size) {
   NOTIMPLEMENTED();
   return net::ERR_NOT_IMPLEMENTED;
 }

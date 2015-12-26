@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_
 #define CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_
 
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"

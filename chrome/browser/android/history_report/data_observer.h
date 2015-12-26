@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/history/core/browser/history_service_observer.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/android/favicon_helper.h"
 
 #include <jni.h>
+#include <stddef.h>
 
 #include <vector>
 

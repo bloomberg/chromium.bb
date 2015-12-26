@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/device/android_device_manager.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "base/location.h"

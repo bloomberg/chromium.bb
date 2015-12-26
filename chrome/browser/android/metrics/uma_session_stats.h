@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_ANDROID_METRICS_UMA_SESSION_STATS_H_
 
 #include <jni.h>
+#include <stdint.h>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 

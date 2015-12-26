@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_file_system_indexer.h"
 
+#include <stddef.h>
+
 #include <iterator>
 
 #include "base/bind.h"
@@ -13,6 +15,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,9 +35,9 @@ using std::vector;
 
 namespace {
 
-typedef int32 Trigram;
+typedef int32_t Trigram;
 typedef char TrigramChar;
-typedef uint16 FileId;
+typedef uint16_t FileId;
 
 const int kMinTimeoutBetweenWorkedNitification = 200;
 // Trigram characters include all ASCII printable characters (32-126) except for

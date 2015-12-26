@@ -5,6 +5,7 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"

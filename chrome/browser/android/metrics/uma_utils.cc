@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/metrics/uma_utils.h"
 
+#include <stdint.h>
+
 #include "jni/UmaUtils_jni.h"
 
 namespace chrome {
@@ -11,7 +13,7 @@ namespace android {
 
 base::Time GetMainEntryPointTime() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  int64 startTimeUnixMs = Java_UmaUtils_getMainEntryPointTime(env);
+  int64_t startTimeUnixMs = Java_UmaUtils_getMainEntryPointTime(env);
   return base::Time::UnixEpoch() +
          base::TimeDelta::FromMilliseconds(startTimeUnixMs);
 }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_SEND_COMMAND_REQUEST_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_WEBRTC_SEND_COMMAND_REQUEST_H_
 
+#include "base/macros.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 
 class SendCommandRequest : public local_discovery::GCDApiFlowRequest {

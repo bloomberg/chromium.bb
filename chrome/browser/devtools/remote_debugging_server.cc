@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/remote_debugging_server.h"
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -29,18 +30,17 @@ namespace {
 
 base::LazyInstance<bool>::Leaky g_tethering_enabled = LAZY_INSTANCE_INITIALIZER;
 
-const uint16 kMinTetheringPort = 9333;
-const uint16 kMaxTetheringPort = 9444;
+const uint16_t kMinTetheringPort = 9333;
+const uint16_t kMaxTetheringPort = 9444;
 const int kBackLog = 10;
 
 class TCPServerSocketFactory
     : public devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, uint16 port)
+  TCPServerSocketFactory(const std::string& address, uint16_t port)
       : address_(address),
         port_(port),
-        last_tethering_port_(kMinTetheringPort) {
-  }
+        last_tethering_port_(kMinTetheringPort) {}
 
  private:
   // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
@@ -59,7 +59,7 @@ class TCPServerSocketFactory
 
     if (last_tethering_port_ == kMaxTetheringPort)
       last_tethering_port_ = kMinTetheringPort;
-    uint16 port = ++last_tethering_port_;
+    uint16_t port = ++last_tethering_port_;
     *name = base::UintToString(port);
     scoped_ptr<net::TCPServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
@@ -71,8 +71,8 @@ class TCPServerSocketFactory
   }
 
   std::string address_;
-  uint16 port_;
-  uint16 last_tethering_port_;
+  uint16_t port_;
+  uint16_t last_tethering_port_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
@@ -154,7 +154,7 @@ void RemoteDebuggingServer::EnableTetheringForDebug() {
 RemoteDebuggingServer::RemoteDebuggingServer(
     chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
-    uint16 port) {
+    uint16_t port) {
   base::FilePath output_dir;
   if (!port) {
     // The client requested an ephemeral port. Must write the selected

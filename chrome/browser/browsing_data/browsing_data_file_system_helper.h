@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILE_SYSTEM_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FILE_SYSTEM_HELPER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <list>
 #include <map>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"
@@ -45,7 +49,7 @@ class BrowsingDataFileSystemHelper
     // The origin for which the information is relevant.
     GURL origin;
     // FileSystemType to usage (in bytes) map.
-    std::map<storage::FileSystemType, int64> usage_map;
+    std::map<storage::FileSystemType, int64_t> usage_map;
   };
 
   using FetchCallback = base::Callback<void(const std::list<FileSystemInfo>&)>;
@@ -97,7 +101,7 @@ class CannedBrowsingDataFileSystemHelper
   // each file system type).
   void AddFileSystem(const GURL& origin,
                      storage::FileSystemType type,
-                     int64 size);
+                     int64_t size);
 
   // Clear this helper's list of canned filesystems.
   void Reset();

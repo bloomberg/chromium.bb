@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_DATA_USAGE_EXTERNAL_DATA_USE_OBSERVER_H_
 #define CHROME_BROWSER_ANDROID_DATA_USAGE_EXTERNAL_DATA_USE_OBSERVER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

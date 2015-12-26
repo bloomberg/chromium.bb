@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_TEST_H_
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_TEST_H_
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/diagnostics/diagnostics_metrics.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"

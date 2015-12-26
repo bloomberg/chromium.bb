@@ -319,8 +319,8 @@ base::string16 DownloadItemModel::GetStatusText() const {
 }
 
 base::string16 DownloadItemModel::GetTabProgressStatusText() const {
-  int64 total = GetTotalBytes();
-  int64 size = download_->GetReceivedBytes();
+  int64_t total = GetTotalBytes();
+  int64_t size = download_->GetReceivedBytes();
   base::string16 received_size = ui::FormatBytes(size);
   base::string16 amount = received_size;
 
@@ -338,7 +338,7 @@ base::string16 DownloadItemModel::GetTabProgressStatusText() const {
   } else {
     amount.assign(received_size);
   }
-  int64 current_speed = download_->CurrentSpeed();
+  int64_t current_speed = download_->CurrentSpeed();
   base::string16 speed_text = ui::FormatSpeed(current_speed);
   base::i18n::AdjustStringForLocaleDirection(&speed_text);
 
@@ -431,11 +431,11 @@ base::string16 DownloadItemModel::GetWarningConfirmButtonText() const {
   }
 }
 
-int64 DownloadItemModel::GetCompletedBytes() const {
+int64_t DownloadItemModel::GetCompletedBytes() const {
   return download_->GetReceivedBytes();
 }
 
-int64 DownloadItemModel::GetTotalBytes() const {
+int64_t DownloadItemModel::GetTotalBytes() const {
   return download_->AllDataSaved() ? download_->GetReceivedBytes() :
                                      download_->GetTotalBytes();
 }
@@ -631,8 +631,8 @@ void DownloadItemModel::SetIsBeingRevived(bool is_being_revived) {
 
 base::string16 DownloadItemModel::GetProgressSizesString() const {
   base::string16 size_ratio;
-  int64 size = GetCompletedBytes();
-  int64 total = GetTotalBytes();
+  int64_t size = GetCompletedBytes();
+  int64_t total = GetTotalBytes();
   if (total > 0) {
     ui::DataUnits amount_units = ui::GetByteDisplayUnits(total);
     base::string16 simple_size = ui::FormatBytesWithUnits(size, amount_units, false);

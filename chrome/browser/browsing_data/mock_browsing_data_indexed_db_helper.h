@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 
 class Profile;

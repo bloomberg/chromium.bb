@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"

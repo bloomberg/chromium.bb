@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_CHROME_DOWNLOAD_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_DOWNLOAD_CHROME_DOWNLOAD_MANAGER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
@@ -132,7 +135,7 @@ class ChromeDownloadManagerDelegate
 
   // Callback function after the DownloadProtectionService completes.
   void CheckClientDownloadDone(
-      uint32 download_id,
+      uint32_t download_id,
       safe_browsing::DownloadProtectionService::DownloadCheckResult result);
 
   // Internal gateways for ShouldCompleteDownload().
@@ -140,15 +143,15 @@ class ChromeDownloadManagerDelegate
       content::DownloadItem* item,
       const base::Closure& internal_complete_callback);
   void ShouldCompleteDownloadInternal(
-    uint32 download_id,
-    const base::Closure& user_complete_callback);
+      uint32_t download_id,
+      const base::Closure& user_complete_callback);
 
-  void SetNextId(uint32 id);
+  void SetNextId(uint32_t id);
 
   void ReturnNextId(const content::DownloadIdCallback& callback);
 
   void OnDownloadTargetDetermined(
-      int32 download_id,
+      int32_t download_id,
       const content::DownloadTargetCallback& callback,
       scoped_ptr<DownloadTargetInfo> target_info);
 
@@ -156,7 +159,7 @@ class ChromeDownloadManagerDelegate
   bool IsOpenInBrowserPreferreredForFile(const base::FilePath& path);
 
   Profile* profile_;
-  uint32 next_download_id_;
+  uint32_t next_download_id_;
   IdCallbackVector id_callbacks_;
   scoped_ptr<DownloadPrefs> download_prefs_;
 

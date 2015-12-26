@@ -42,7 +42,7 @@ void GetUsageInfoCallback(
 
 BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo(
     const GURL& origin_url,
-    int64 size,
+    int64_t size,
     base::Time last_modified)
     : origin_url(origin_url), size(size), last_modified(last_modified) {}
 

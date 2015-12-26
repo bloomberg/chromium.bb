@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -476,7 +477,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     download_prefs->SetSaveFilePath(download_prefs->DownloadPath());
   }
 
-  uint32 storage_partition_remove_mask = 0;
+  uint32_t storage_partition_remove_mask = 0;
 
   // We ignore the REMOVE_COOKIES request if UNPROTECTED_WEB is not set,
   // so that callers who request REMOVE_SITE_DATA with PROTECTED_WEB
@@ -708,7 +709,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     else
       storage_partition = BrowserContext::GetDefaultStoragePartition(profile_);
 
-    uint32 quota_storage_remove_mask =
+    uint32_t quota_storage_remove_mask =
         ~content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
 
     if (delete_begin_ == base::Time() ||
@@ -1065,7 +1066,7 @@ void BrowsingDataRemover::OnWaitableEventSignaled(
 
 #if defined(ENABLE_PLUGINS)
 void BrowsingDataRemover::OnDeauthorizeContentLicensesCompleted(
-    uint32 request_id,
+    uint32_t request_id,
     bool /* success */) {
   DCHECK(waiting_for_clear_content_licenses_);
   DCHECK_EQ(request_id, deauthorize_content_licenses_request_id_);

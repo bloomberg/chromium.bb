@@ -24,11 +24,10 @@ void MockBrowsingDataQuotaHelper::StartFetching(
 void MockBrowsingDataQuotaHelper::RevokeHostQuota(const std::string& host) {
 }
 
-void MockBrowsingDataQuotaHelper::AddHost(
-    const std::string& host,
-    int64 temporary_usage,
-    int64 persistent_usage,
-    int64 syncable_usage) {
+void MockBrowsingDataQuotaHelper::AddHost(const std::string& host,
+                                          int64_t temporary_usage,
+                                          int64_t persistent_usage,
+                                          int64_t syncable_usage) {
   response_.push_back(QuotaInfo(
       host,
       temporary_usage,

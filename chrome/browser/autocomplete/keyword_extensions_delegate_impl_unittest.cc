@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"

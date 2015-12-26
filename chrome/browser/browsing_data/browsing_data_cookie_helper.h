@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COOKIE_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COOKIE_HELPER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browsing_data/canonical_cookie_hash.h"
 #include "net/cookies/cookie_monster.h"

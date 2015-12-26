@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_
 #define CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"

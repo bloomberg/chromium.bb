@@ -4,6 +4,9 @@
 
 #include "chrome/browser/caps/generate_state_json.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 
@@ -21,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/task_manager/task_manager.h"
 
 namespace {
@@ -115,14 +119,14 @@ class TaskManagerDataDumper :
                      base::SysInfo::NumberOfProcessors());
     dict->SetInteger("system.cpu.logicalprocessors",
                      base::SysInfo::NumberOfProcessors());
-    int64 memory = base::SysInfo::AmountOfPhysicalMemory();
+    int64_t memory = base::SysInfo::AmountOfPhysicalMemory();
     dict->SetInteger("system.memory.physical", InMBFromB(memory));
     memory = base::SysInfo::AmountOfAvailablePhysicalMemory();
     dict->SetInteger("system.memory.available", InMBFromB(memory));
     dict->SetInteger("system.uptime", base::SysInfo::Uptime().InSeconds());
     dict->SetString("os.name", base::SysInfo::OperatingSystemName());
 #if !defined(OS_LINUX)
-    int32 major, minor, bugfix;
+    int32_t major, minor, bugfix;
     base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
     dict->SetInteger("os.version.major", major);
     dict->SetInteger("os.version.minor", minor);

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_MODEL_H_
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_MODEL_H_
 
+#include <stddef.h>
+
 #include <string>
 #include "base/time/time.h"
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
 #define CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/apps/app_shim/unix_domain_socket_acceptor.h"
 #include "content/public/browser/browser_thread.h"

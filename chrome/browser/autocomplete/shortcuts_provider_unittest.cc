@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/shortcuts_provider.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <functional>
@@ -12,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"

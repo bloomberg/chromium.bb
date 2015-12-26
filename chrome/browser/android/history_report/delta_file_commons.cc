@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/history_report/delta_file_commons.h"
 
+#include <stddef.h>
+
 #include <iomanip>
 
 #include "base/strings/string_number_conversions.h"
@@ -52,7 +54,7 @@ DeltaFileEntryWithData::DeltaFileEntryWithData(DeltaFileEntry entry)
 
 DeltaFileEntryWithData::~DeltaFileEntryWithData() {}
 
-int64 DeltaFileEntryWithData::SeqNo() const {
+int64_t DeltaFileEntryWithData::SeqNo() const {
   return entry_.seq_no();
 }
 
@@ -86,7 +88,7 @@ std::string DeltaFileEntryWithData::UrlToId(const std::string& url) {
   id << std::setfill('0') << std::setw(kUrlLengthWidth) << url.size();
 
   // 2. SHA-256 of URL.
-  uint8 hash[kSHA256ByteSize];
+  uint8_t hash[kSHA256ByteSize];
   crypto::SHA256HashString(url, hash, sizeof(hash));
   id << base::HexEncode(hash, sizeof(hash));
 
@@ -112,9 +114,9 @@ base::string16 DeltaFileEntryWithData::Title() const {
   return data_.title();
 }
 
-int32 DeltaFileEntryWithData::Score() const {
+int32_t DeltaFileEntryWithData::Score() const {
   if (!Valid()) return 0;
-  int32 score = data_.visit_count() + data_.typed_count();
+  int32_t score = data_.visit_count() + data_.typed_count();
   if (is_bookmark_) score = (score + 1) * kBookmarkScoreBonusMultiplier;
   return score;
 }

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_WRITER_H_
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_WRITER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 

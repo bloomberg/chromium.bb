@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_BOOKMARKS_PARTNER_BOOKMARKS_SHIM_H_
 #define CHROME_BROWSER_ANDROID_BOOKMARKS_PARTNER_BOOKMARKS_SHIM_H_
 
+#include <stdint.h>
+
 #include "base/android/jni_weak_ref.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
@@ -83,7 +86,7 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
   void RemoveObserver(Observer* observer);
 
   // PartnerBookmarksShim versions of BookmarkModel/BookmarkNode methods
-  const bookmarks::BookmarkNode* GetNodeByID(int64 id) const;
+  const bookmarks::BookmarkNode* GetNodeByID(int64_t id) const;
   base::string16 GetTitle(const bookmarks::BookmarkNode* node) const;
 
   bool IsPartnerBookmark(const bookmarks::BookmarkNode* node) const;
@@ -126,7 +129,7 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
 
   const bookmarks::BookmarkNode* GetNodeByID(
       const bookmarks::BookmarkNode* parent,
-      int64 id) const;
+      int64_t id) const;
   void ReloadNodeMapping();
   void SaveNodeMapping();
 

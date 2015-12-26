@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_DEV_TOOLS_DISCOVERY_PROVIDER_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_DEV_TOOLS_DISCOVERY_PROVIDER_ANDROID_H_
 
+#include "base/macros.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 
 class DevToolsDiscoveryProviderAndroid :

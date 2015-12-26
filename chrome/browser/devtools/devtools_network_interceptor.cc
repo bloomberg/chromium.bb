@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -201,7 +203,7 @@ void DevToolsNetworkInterceptor::ArmTimer(base::TimeTicks now) {
   if (upload_time < desired_time)
     desired_time = upload_time;
 
-  int64_t min_baseline = std::numeric_limits<int64>::max();
+  int64_t min_baseline = std::numeric_limits<int64_t>::max();
   for (size_t i = 0; i < suspend_count; ++i) {
     if (suspended_[i].send_end < min_baseline)
       min_baseline = suspended_[i].send_end;

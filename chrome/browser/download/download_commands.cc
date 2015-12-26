@@ -8,8 +8,10 @@
 
 #include "base/base64.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
@@ -65,7 +67,7 @@ class ImageClipboardCopyManager : public ImageDecoder::ImageRequest {
         RunsTasksOnCurrentThread());
 
     // Re-check the filesize since the file may be modified after downloaded.
-    int64 filesize;
+    int64_t filesize;
     if (!GetFileSize(file_path_, &filesize) ||
         filesize > kMaxImageClipboardSize) {
       OnFailedBeforeDecoding();

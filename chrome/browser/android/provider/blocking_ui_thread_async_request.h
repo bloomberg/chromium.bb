@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/android/provider/run_on_ui_thread_blocking.h"
 #include "content/public/browser/browser_thread.h"

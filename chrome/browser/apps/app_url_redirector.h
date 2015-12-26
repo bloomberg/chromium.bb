@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_APPS_APP_URL_REDIRECTOR_H_
 #define CHROME_BROWSER_APPS_APP_URL_REDIRECTOR_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
 

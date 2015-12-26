@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_MODEL_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_MODEL_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 class SavePackage;
@@ -68,11 +70,11 @@ class DownloadItemModel {
   base::string16 GetWarningConfirmButtonText() const;
 
   // Get the number of bytes that has completed so far. Virtual for testing.
-  int64 GetCompletedBytes() const;
+  int64_t GetCompletedBytes() const;
 
   // Get the total number of bytes for this download. Should return 0 if the
   // total size of the download is not known. Virual for testing.
-  int64 GetTotalBytes() const;
+  int64_t GetTotalBytes() const;
 
   // Rough percent complete. Returns -1 if the progress is unknown.
   int PercentComplete() const;

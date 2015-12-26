@@ -43,7 +43,7 @@ using content::DownloadItem;
 namespace {
 
 // Delay before we show a transient download.
-const int64 kDownloadShowDelayInSeconds = 2;
+const int64_t kDownloadShowDelayInSeconds = 2;
 
 // Get the opacity based on |animation_progress|, with values in [0.0, 1.0].
 // Range of return value is [0, 255].
@@ -229,7 +229,7 @@ void DownloadShelf::ShowDownload(DownloadItem* download) {
   }
 }
 
-void DownloadShelf::ShowDownloadById(int32 download_id) {
+void DownloadShelf::ShowDownloadById(int32_t download_id) {
   content::DownloadManager* download_manager = GetDownloadManager();
   if (!download_manager)
     return;

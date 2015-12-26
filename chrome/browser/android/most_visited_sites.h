@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_ANDROID_MOST_VISITED_SITES_H_
 
 #include <jni.h>
+#include <stddef.h>
 
 #include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"

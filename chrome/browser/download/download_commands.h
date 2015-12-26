@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"

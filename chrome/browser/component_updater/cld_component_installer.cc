@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"

@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_QUOTA_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_MOCK_BROWSING_DATA_QUOTA_HELPER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 
 class MockBrowsingDataQuotaHelper : public BrowsingDataQuotaHelper {
@@ -18,9 +21,9 @@ class MockBrowsingDataQuotaHelper : public BrowsingDataQuotaHelper {
   void RevokeHostQuota(const std::string& host) override;
 
   void AddHost(const std::string& host,
-               int64 temporary_usage,
-               int64 persistent_usage,
-               int64 syncable_usage);
+               int64_t temporary_usage,
+               int64_t persistent_usage,
+               int64_t syncable_usage);
   void AddQuotaSamples();
   void Notify();
 

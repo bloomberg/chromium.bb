@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 
+#include <stddef.h>
+
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"

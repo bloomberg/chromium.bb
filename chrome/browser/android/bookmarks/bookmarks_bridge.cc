@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/containers/stack_container.h"
@@ -589,7 +592,7 @@ jboolean BookmarksBridge::IsFolderVisible(JNIEnv* env,
                                           jint type) {
   if (type == BookmarkType::BOOKMARK_TYPE_NORMAL) {
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
-        bookmark_model_, static_cast<int64>(id));
+        bookmark_model_, static_cast<int64_t>(id));
     return node->IsVisible();
   } else if (type == BookmarkType::BOOKMARK_TYPE_PARTNER) {
     const BookmarkNode* node = partner_bookmarks_shim_->GetNodeByID(
@@ -806,7 +809,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::CreateJavaBookmark(
   JNIEnv* env = AttachCurrentThread();
 
   const BookmarkNode* parent = GetParentNode(node);
-  int64 parent_id = parent ? parent->id() : -1;
+  int64_t parent_id = parent ? parent->id() : -1;
 
   std::string url;
   if (node->is_url())
@@ -837,11 +840,10 @@ void BookmarksBridge::ExtractBookmarkNodeInformation(const BookmarkNode* node,
 const BookmarkNode* BookmarksBridge::GetNodeByID(long node_id, int type) {
   const BookmarkNode* node;
   if (type == BookmarkType::BOOKMARK_TYPE_PARTNER) {
-    node = partner_bookmarks_shim_->GetNodeByID(
-        static_cast<int64>(node_id));
+    node = partner_bookmarks_shim_->GetNodeByID(static_cast<int64_t>(node_id));
   } else {
     node = bookmarks::GetBookmarkNodeByID(bookmark_model_,
-                                          static_cast<int64>(node_id));
+                                          static_cast<int64_t>(node_id));
   }
   return node;
 }

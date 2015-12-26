@@ -6,6 +6,7 @@
 
 #include <fontconfig/fontconfig.h>
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/content/app/breakpad_linux.h"

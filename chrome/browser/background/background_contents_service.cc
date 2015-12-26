@@ -5,11 +5,11 @@
 #include "chrome/browser/background/background_contents_service.h"
 
 #include "apps/app_load_service.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"

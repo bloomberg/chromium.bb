@@ -14,6 +14,7 @@
 #include "base/mac/call_with_eh_frame.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
+#include "base/macros.h"
 #import "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"

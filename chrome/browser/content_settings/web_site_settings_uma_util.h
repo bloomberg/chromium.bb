@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CONTENT_SETTINGS_WEB_SITE_SETTINGS_UMA_UTIL_H_
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 
 class WebSiteSettingsUmaUtil {

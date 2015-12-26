@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_DEVICE_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_USB_ANDROID_USB_DEVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <queue>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -46,15 +50,15 @@ class AdbMessage {
     kAuthRSAPublicKey = 3
   };
 
-  AdbMessage(uint32 command,
-             uint32 arg0,
-             uint32 arg1,
+  AdbMessage(uint32_t command,
+             uint32_t arg0,
+             uint32_t arg1,
              const std::string& body);
   ~AdbMessage();
 
-  uint32 command;
-  uint32 arg0;
-  uint32 arg1;
+  uint32_t command;
+  uint32_t arg0;
+  uint32_t arg1;
   std::string body;
 
  private:
@@ -84,9 +88,9 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   net::StreamSocket* CreateSocket(const std::string& command);
 
-  void Send(uint32 command,
-            uint32 arg0,
-            uint32 arg1,
+  void Send(uint32_t command,
+            uint32_t arg0,
+            uint32_t arg1,
             const std::string& body);
 
   scoped_refptr<device::UsbDeviceHandle> usb_device() { return usb_handle_; }
@@ -111,11 +115,11 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
                    size_t result);
 
   void ReadBody(scoped_ptr<AdbMessage> message,
-                uint32 data_length,
-                uint32 data_check);
+                uint32_t data_length,
+                uint32_t data_check);
   void ParseBody(scoped_ptr<AdbMessage> message,
-                 uint32 data_length,
-                 uint32 data_check,
+                 uint32_t data_length,
+                 uint32_t data_check,
                  device::UsbTransferStatus status,
                  scoped_refptr<net::IOBuffer> buffer,
                  size_t result);
@@ -127,7 +131,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   void TerminateIfReleased(scoped_refptr<device::UsbDeviceHandle> usb_handle);
   void Terminate();
 
-  void SocketDeleted(uint32 socket_id);
+  void SocketDeleted(uint32_t socket_id);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -145,8 +149,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   bool signature_sent_;
 
   // Created sockets info
-  uint32 last_socket_id_;
-  typedef std::map<uint32, AndroidUsbSocket*> AndroidUsbSockets;
+  uint32_t last_socket_id_;
+  typedef std::map<uint32_t, AndroidUsbSocket*> AndroidUsbSockets;
   AndroidUsbSockets sockets_;
 
   // Outgoing bulk queue

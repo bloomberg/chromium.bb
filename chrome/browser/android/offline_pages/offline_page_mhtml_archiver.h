@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_MHTML_ARCHIVER_H_
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_MHTML_ARCHIVER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/offline_page_archiver.h"
@@ -65,14 +68,14 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   // Callback for Generating MHTML.
   void OnGenerateMHTMLDone(const GURL& url,
                            const base::FilePath& file_path,
-                           int64 file_size);
+                           int64_t file_size);
 
   // Sends the result of archiving a page to the client that requested archive
   // creation.
   void ReportResult(ArchiverResult result,
                     const GURL& url,
                     const base::FilePath& file_path,
-                    int64 file_size);
+                    int64_t file_size);
   void ReportFailure(ArchiverResult result);
 
  private:

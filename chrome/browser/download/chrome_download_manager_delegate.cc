@@ -6,11 +6,11 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -20,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -212,7 +213,7 @@ ChromeDownloadManagerDelegate::GetDownloadIdReceiverCallback() {
                     weak_ptr_factory_.GetWeakPtr());
 }
 
-void ChromeDownloadManagerDelegate::SetNextId(uint32 next_id) {
+void ChromeDownloadManagerDelegate::SetNextId(uint32_t next_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
   DCHECK_NE(content::DownloadItem::kInvalidId, next_id);
@@ -345,7 +346,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
 }
 
 void ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal(
-    uint32 download_id,
+    uint32_t download_id,
     const base::Closure& user_complete_callback) {
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item)
@@ -642,7 +643,7 @@ void ChromeDownloadManagerDelegate::GetFileMimeType(
 
 #if defined(FULL_SAFE_BROWSING)
 void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
-    uint32 download_id,
+    uint32_t download_id,
     DownloadProtectionService::DownloadCheckResult result) {
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item || (item->GetState() != DownloadItem::IN_PROGRESS))
@@ -710,7 +711,7 @@ void ChromeDownloadManagerDelegate::Observe(
 }
 
 void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
-    int32 download_id,
+    int32_t download_id,
     const content::DownloadTargetCallback& callback,
     scoped_ptr<DownloadTargetInfo> target_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

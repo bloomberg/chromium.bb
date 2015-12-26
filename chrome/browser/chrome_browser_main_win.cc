@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <shellapi.h>
+#include <stddef.h>
 
 #include <algorithm>
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_exo.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"

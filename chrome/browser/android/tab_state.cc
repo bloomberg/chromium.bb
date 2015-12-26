@@ -5,6 +5,8 @@
 #include "chrome/browser/android/tab_state.h"
 
 #include <jni.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <limits>
 #include <vector>
 
@@ -197,7 +199,7 @@ void UpgradeNavigationFromV1ToV2(
     if (iterator->ReadBool(&is_overriding_user_agent))
       v2_pickle.WriteBool(is_overriding_user_agent);
 
-    int64 timestamp_internal_value = 0;
+    int64_t timestamp_internal_value = 0;
     if (iterator->ReadInt64(&timestamp_internal_value))
       v2_pickle.WriteInt64(timestamp_internal_value);
 

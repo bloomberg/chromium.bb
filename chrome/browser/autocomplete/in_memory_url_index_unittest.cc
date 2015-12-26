@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <fstream>
 
@@ -10,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/case_conversion.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -278,7 +282,7 @@ void InMemoryURLIndexTest::SetUp() {
       history::URLRow row;
       history_database_->FillURLRow(statement, &row);
       base::Time last_visit = time_right_now;
-      for (int64 i = row.last_visit().ToInternalValue(); i > 0; --i)
+      for (int64_t i = row.last_visit().ToInternalValue(); i > 0; --i)
         last_visit -= day_delta;
       row.set_last_visit(last_visit);
       history_database_->UpdateURLRow(row.id(), row);
@@ -298,7 +302,7 @@ void InMemoryURLIndexTest::SetUp() {
       history::VisitRow row;
       history_database_->FillVisitRow(statement, &row);
       base::Time last_visit = time_right_now;
-      for (int64 i = row.visit_time.ToInternalValue(); i > 0; --i)
+      for (int64_t i = row.visit_time.ToInternalValue(); i > 0; --i)
         last_visit -= day_delta;
       row.visit_time = last_visit;
       history_database_->UpdateVisitRow(row);
@@ -488,7 +492,7 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   // is the pre-filtered count, i.e. all of the items.
   sql::Statement statement(GetDB().GetUniqueStatement("SELECT * FROM urls;"));
   ASSERT_TRUE(statement.is_valid());
-  uint64 row_count = 0;
+  uint64_t row_count = 0;
   while (statement.Step()) ++row_count;
   EXPECT_EQ(1U, row_count);
 

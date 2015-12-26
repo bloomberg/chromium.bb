@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_H_
 #define CHROME_BROWSER_BACKGROUND_BACKGROUND_CONTENTS_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/background/background_contents.h"

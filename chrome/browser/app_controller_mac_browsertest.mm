@@ -8,6 +8,7 @@
 #import <Foundation/NSAppleEventDescriptor.h>
 #import <objc/message.h>
 #import <objc/runtime.h>
+#include <stddef.h>
 
 #include "base/command_line.h"
 #include "base/mac/foundation_util.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_resource_throttle.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"

@@ -137,7 +137,7 @@ void PartnerBookmarksShim::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-const BookmarkNode* PartnerBookmarksShim::GetNodeByID(int64 id) const {
+const BookmarkNode* PartnerBookmarksShim::GetNodeByID(int64_t id) const {
   DCHECK(IsLoaded());
   if (!HasPartnerBookmarks())
     return NULL;
@@ -225,7 +225,8 @@ PartnerBookmarksShim::~PartnerBookmarksShim() {
 }
 
 const BookmarkNode* PartnerBookmarksShim::GetNodeByID(
-    const BookmarkNode* parent, int64 id) const {
+    const BookmarkNode* parent,
+    int64_t id) const {
   if (parent->id() == id)
     return parent;
   for (int i = 0, child_count = parent->child_count(); i < child_count; ++i) {

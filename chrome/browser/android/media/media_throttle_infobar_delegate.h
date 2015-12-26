@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 namespace content {

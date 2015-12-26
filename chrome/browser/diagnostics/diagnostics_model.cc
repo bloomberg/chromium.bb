@@ -7,12 +7,13 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 #include "chrome/browser/diagnostics/recon_diagnostics.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"

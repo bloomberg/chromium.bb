@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -126,7 +129,7 @@ TEST_F(PartnerBookmarksShimTest, ObserverNotifiedOfLoadNoPartnerBookmarks) {
 
 TEST_F(PartnerBookmarksShimTest, ObserverNotifiedOfLoadWithPartnerBookmarks) {
   EXPECT_CALL(observer_, PartnerShimLoaded(_)).Times(0);
-  int64 id = 5;
+  int64_t id = 5;
   BookmarkNode* root_partner_node = new BookmarkPermanentNode(id++);
   BookmarkNode* partner_bookmark1 = new BookmarkNode(id++,
                                                      GURL("http://www.a.com"));

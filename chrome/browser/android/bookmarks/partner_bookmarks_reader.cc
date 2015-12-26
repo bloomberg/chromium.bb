@@ -91,7 +91,7 @@ void PrepareAndSetFavicon(JNIEnv* env, jbyte* icon_bytes, int icon_len,
   }
 }
 
-const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64 id) {
+const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64_t id) {
   if (parent->id() == id)
     return parent;
   for (int i= 0, child_count = parent->child_count(); i < child_count; ++i) {

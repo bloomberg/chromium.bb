@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_DEV_TOOLS_SERVER_H_
 #define CHROME_BROWSER_ANDROID_DEV_TOOLS_SERVER_H_
 
-#include <string>
 #include <jni.h>
-#include "base/basictypes.h"
+#include <string>
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace devtools_http_handler {

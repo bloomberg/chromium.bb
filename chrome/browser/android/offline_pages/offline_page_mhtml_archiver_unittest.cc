@@ -4,9 +4,12 @@
 
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -22,7 +25,7 @@ namespace {
 const char kTestURL[] = "http://example.com/";
 const base::FilePath::CharType kTestFilePath[] = FILE_PATH_LITERAL(
     "/archive_dir/offline_page.mhtml");
-const int64 kTestFileSize = 123456LL;
+const int64_t kTestFileSize = 123456LL;
 
 class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
  public:
@@ -97,7 +100,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
     return last_result_;
   }
   const base::FilePath& last_file_path() const { return last_file_path_; }
-  int64 last_file_size() const { return last_file_size_; }
+  int64_t last_file_size() const { return last_file_size_; }
 
   const OfflinePageArchiver::CreateArchiveCallback callback() {
     return base::Bind(&OfflinePageMHTMLArchiverTest::OnCreateArchiveDone,
@@ -109,13 +112,13 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
                            OfflinePageArchiver::ArchiverResult result,
                            const GURL& url,
                            const base::FilePath& file_path,
-                           int64 file_size);
+                           int64_t file_size);
 
   OfflinePageArchiver* last_archiver_;
   OfflinePageArchiver::ArchiverResult last_result_;
   GURL last_url_;
   base::FilePath last_file_path_;
-  int64 last_file_size_;
+  int64_t last_file_size_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -146,7 +149,7 @@ void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(
     OfflinePageArchiver::ArchiverResult result,
     const GURL& url,
     const base::FilePath& file_path,
-    int64 file_size) {
+    int64_t file_size) {
   last_url_ = url;
   last_archiver_ = archiver;
   last_result_ = result;

@@ -5,6 +5,7 @@
 #include "chrome/browser/android/logo_bridge.h"
 
 #include <jni.h>
+#include <stdint.h>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -158,8 +159,9 @@ void LogoBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   source->GetResponseAsString(&response);
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  ScopedJavaLocalRef<jbyteArray> j_bytes = ToJavaByteArray(
-      env, reinterpret_cast<const uint8*>(response.data()), response.length());
+  ScopedJavaLocalRef<jbyteArray> j_bytes =
+      ToJavaByteArray(env, reinterpret_cast<const uint8_t*>(response.data()),
+                      response.length());
   ScopedJavaLocalRef<jobject> j_gif_image =
       Java_LogoBridge_createGifImage(env, j_bytes.obj());
   Java_AnimatedLogoCallback_onAnimatedLogoAvailable(env, j_callback_.obj(),

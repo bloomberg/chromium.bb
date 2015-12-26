@@ -4,8 +4,12 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
@@ -71,7 +75,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     client->TouchAllOriginsAndNotify();
   }
 
-  void SetPersistentHostQuota(const std::string& host, int64 quota) {
+  void SetPersistentHostQuota(const std::string& host, int64_t quota) {
     quota_ = -1;
     quota_manager_->SetPersistentHostQuota(
         host, quota,
@@ -87,7 +91,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void GotPersistentHostQuota(storage::QuotaStatusCode status, int64 quota) {
+  void GotPersistentHostQuota(storage::QuotaStatusCode status, int64_t quota) {
     EXPECT_EQ(storage::kQuotaStatusOk, status);
     quota_ = quota;
   }
@@ -96,9 +100,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     helper_->RevokeHostQuota(host);
   }
 
-  int64 quota() {
-    return quota_;
-  }
+  int64_t quota() { return quota_; }
 
  private:
   void FetchCompleted(const QuotaInfoArray& quota_info) {
@@ -114,7 +116,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
 
   bool fetching_completed_ = true;
   QuotaInfoArray quota_info_;
-  int64 quota_ = -1;
+  int64_t quota_ = -1;
   base::WeakPtrFactory<BrowsingDataQuotaHelperTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataQuotaHelperTest);

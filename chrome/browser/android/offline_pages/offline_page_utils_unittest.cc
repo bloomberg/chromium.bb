@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -29,9 +31,9 @@ namespace {
 const GURL kTestPage1Url("http://test.org/page1");
 const GURL kTestPage2Url("http://test.org/page2");
 const GURL kTestPage3Url("http://test.org/page3");
-const int64 kTestPage1BookmarkId = 1234;
-const int64 kTestPage2BookmarkId = 5678;
-const int64 kTestFileSize = 876543LL;
+const int64_t kTestPage1BookmarkId = 1234;
+const int64_t kTestPage2BookmarkId = 5678;
+const int64_t kTestFileSize = 876543LL;
 
 }  // namespace
 

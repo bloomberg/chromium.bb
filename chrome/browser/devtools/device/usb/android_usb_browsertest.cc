@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -71,8 +74,8 @@ struct BreakingAndroidTraits {
   static const bool kConfigured = true;
 };
 
-const uint32 kMaxPayload = 4096;
-const uint32 kVersion = 0x01000000;
+const uint32_t kMaxPayload = 4096;
+const uint32_t kVersion = 0x01000000;
 
 const char kDeviceManufacturer[] = "Test Manufacturer";
 const char kDeviceModel[] = "Nexus 6";
@@ -168,7 +171,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     NOTIMPLEMENTED();
   }
 
-  void ClearHalt(uint8 endpoint, const ResultCallback& callback) override {
+  void ClearHalt(uint8_t endpoint, const ResultCallback& callback) override {
     NOTIMPLEMENTED();
   }
 
@@ -176,28 +179,28 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   void ControlTransfer(UsbEndpointDirection direction,
                        TransferRequestType request_type,
                        TransferRecipient recipient,
-                       uint8 request,
-                       uint16 value,
-                       uint16 index,
+                       uint8_t request,
+                       uint16_t value,
+                       uint16_t index,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
                        const TransferCallback& callback) override {}
 
   void GenericTransfer(UsbEndpointDirection direction,
-                       uint8 endpoint,
+                       uint8_t endpoint,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
                        const TransferCallback& callback) override {
     if (direction == device::USB_DIRECTION_OUTBOUND) {
       if (remaining_body_length_ == 0) {
-        std::vector<uint32> header(6);
+        std::vector<uint32_t> header(6);
         memcpy(&header[0], buffer->data(), length);
         current_message_.reset(
             new AdbMessage(header[0], header[1], header[2], std::string()));
         remaining_body_length_ = header[3];
-        uint32 magic = header[5];
+        uint32_t magic = header[5];
         if ((current_message_->command ^ 0xffffffff) != magic) {
           DCHECK(false) << "Header checksum error";
           return;
@@ -237,10 +240,10 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
 
   // Copied from AndroidUsbDevice::Checksum
-  uint32 Checksum(const std::string& data) {
+  uint32_t Checksum(const std::string& data) {
     unsigned char* x = (unsigned char*)data.data();
     int count = data.length();
-    uint32 sum = 0;
+    uint32_t sum = 0;
     while (count-- > 0)
       sum += *x++;
     return sum;
@@ -314,7 +317,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     append(arg0);
     append(arg1);
     bool add_zero = !body.empty() && (command != AdbMessage::kCommandWRTE);
-    append(static_cast<uint32>(body.size() + (add_zero ? 1 : 0)));
+    append(static_cast<uint32_t>(body.size() + (add_zero ? 1 : 0)));
     append(Checksum(body));
     append(command ^ 0xffffffff);
     std::copy(body.begin(), body.end(), std::back_inserter(output_buffer_));
@@ -349,7 +352,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
 
   void IsochronousTransfer(UsbEndpointDirection direction,
-                           uint8 endpoint,
+                           uint8_t endpoint,
                            scoped_refptr<net::IOBuffer> buffer,
                            size_t length,
                            unsigned int packets,
@@ -372,7 +375,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   };
 
   scoped_refptr<MockUsbDevice<T> > device_;
-  uint32 remaining_body_length_;
+  uint32_t remaining_body_length_;
   scoped_ptr<AdbMessage> current_message_;
   std::vector<char> output_buffer_;
   std::queue<Query> queries_;

@@ -210,14 +210,14 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
       }
       // Get start & end time. If we don't have an end time, we can assume the
       // cleaner has not completed.
-      int64 start_time_value;
+      int64_t start_time_value;
       cleaner_key.ReadInt64(safe_browsing::kStartTimeValueName,
                             &start_time_value);
 
       bool completed = cleaner_key.HasValue(safe_browsing::kEndTimeValueName);
       SRTHasCompleted(completed ? SRT_COMPLETED_YES : SRT_COMPLETED_NOT_YET);
       if (completed) {
-        int64 end_time_value;
+        int64_t end_time_value;
         cleaner_key.ReadInt64(safe_browsing::kEndTimeValueName,
                               &end_time_value);
         cleaner_key.DeleteValue(safe_browsing::kEndTimeValueName);
@@ -247,7 +247,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
         DCHECK_GT(elapsed.InMilliseconds(), 0);
         UMA_HISTOGRAM_BOOLEAN(
             "SoftwareReporter.Cleaner.HasRebooted",
-            static_cast<uint64>(elapsed.InMilliseconds()) > ::GetTickCount());
+            static_cast<uint64_t>(elapsed.InMilliseconds()) > ::GetTickCount());
       }
 
       if (cleaner_key.HasValue(kUploadResultsValueName)) {

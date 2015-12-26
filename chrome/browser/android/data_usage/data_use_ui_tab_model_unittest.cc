@@ -4,8 +4,10 @@
 
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"

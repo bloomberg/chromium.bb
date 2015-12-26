@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_IMPL_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_IMPL_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/download_service.h"
 #include "components/keyed_service/core/keyed_service.h"

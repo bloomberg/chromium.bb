@@ -4,17 +4,21 @@
 
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/icu/icu_utf.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"

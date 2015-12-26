@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_BRIDGE_H_
 
+#include <stdint.h>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/macros.h"
 #include "components/offline_pages/offline_page_model.h"
 
 namespace content {
@@ -30,7 +33,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageModelChanged(OfflinePageModel* model) override;
-  void OfflinePageDeleted(int64 bookmark_id) override;
+  void OfflinePageDeleted(int64_t bookmark_id) override;
 
   void GetAllPages(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,

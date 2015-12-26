@@ -8,6 +8,7 @@
 #ifdef __OBJC__
 
 #import <AppKit/AppKit.h>
+#include <stddef.h>
 
 #include <vector>
 

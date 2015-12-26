@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 

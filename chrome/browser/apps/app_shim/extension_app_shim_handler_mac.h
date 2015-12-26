@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "apps/app_lifetime_monitor.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
