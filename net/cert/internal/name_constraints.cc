@@ -4,6 +4,8 @@
 
 #include "net/cert/internal/name_constraints.h"
 
+#include <limits.h>
+
 #include "base/strings/string_util.h"
 #include "net/cert/internal/verify_name_match.h"
 #include "net/der/input.h"

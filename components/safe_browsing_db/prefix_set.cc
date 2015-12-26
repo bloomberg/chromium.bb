@@ -4,6 +4,8 @@
 
 #include "components/safe_browsing_db/prefix_set.h"
 
+#include <limits.h>
+
 #include <algorithm>
 
 #include "base/files/file_util.h"

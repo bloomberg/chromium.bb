@@ -11,7 +11,6 @@
 
 #include "base/auto_reset.h"
 #include "base/base_switches.h"
-#import "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"

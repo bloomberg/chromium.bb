@@ -4,6 +4,8 @@
 
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
+#include <limits.h>
+
 #include <utility>
 
 #include "base/logging.h"

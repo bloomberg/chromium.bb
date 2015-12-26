@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 
+#include <limits.h>
+
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"

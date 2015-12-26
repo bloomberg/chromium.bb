@@ -4,6 +4,8 @@
 
 #include "ui/aura/window.h"
 
+#include <limits.h>
+
 #include <string>
 #include <utility>
 #include <vector>

@@ -5,8 +5,6 @@
 #ifndef CONTENT_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
 #define CONTENT_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
 
-#import "base/basictypes.h"
-
 namespace mac_plugin_interposing {
 
 // Swizzles methods we need to watch in order to manage process and window

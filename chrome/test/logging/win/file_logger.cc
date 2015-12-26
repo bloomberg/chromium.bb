@@ -4,6 +4,7 @@
 
 #include "chrome/test/logging/win/file_logger.h"
 
+#include <limits.h>
 #include <windows.h>
 #include <guiddef.h>
 #include <objbase.h>

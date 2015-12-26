@@ -4,6 +4,7 @@
 
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include <map>

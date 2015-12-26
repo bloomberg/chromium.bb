@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits.h>
+
 #include "base/logging.h"
 #include "url/url_canon.h"
 #include "url/url_canon_internal.h"

@@ -4,6 +4,7 @@
 
 #include "components/drive/resource_metadata.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include "base/bind.h"

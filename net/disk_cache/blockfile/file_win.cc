@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/blockfile/file.h"
 
+#include <limits.h>
+
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"

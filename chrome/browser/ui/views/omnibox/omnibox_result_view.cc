@@ -4,6 +4,7 @@
 
 // For WinDDK ATL compatibility, these ATL headers must come first.
 #include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <atlbase.h>  // NOLINT
 #include <atlwin.h>  // NOLINT
@@ -11,6 +12,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+
+#include <limits.h>
 
 #include <algorithm>  // NOLINT
 

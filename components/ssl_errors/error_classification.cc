@@ -4,6 +4,7 @@
 
 #include "components/ssl_errors/error_classification.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include <vector>

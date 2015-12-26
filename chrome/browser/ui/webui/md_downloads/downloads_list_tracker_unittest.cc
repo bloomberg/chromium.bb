@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
 
+#include <limits.h>
 #include <stdint.h>
 
 #include <vector>

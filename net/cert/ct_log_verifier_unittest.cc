@@ -4,6 +4,8 @@
 
 #include "net/cert/ct_log_verifier.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
@@ -92,7 +94,7 @@ const ProofTestVector kSHA256Proofs[4] = {
 
 // Decodes a hexadecimal string into the binary data it represents.
 std::string HexToBytes(const char* hex_data, size_t hex_data_length) {
-  std::vector<uint8> output;
+  std::vector<uint8_t> output;
   std::string result;
   std::string hex_data_input(hex_data, hex_data_length);
   if (base::HexStringToBytes(hex_data, &output))

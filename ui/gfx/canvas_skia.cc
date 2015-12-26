@@ -4,6 +4,7 @@
 
 #include "ui/gfx/canvas.h"
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 

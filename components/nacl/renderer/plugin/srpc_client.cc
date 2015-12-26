@@ -6,6 +6,7 @@
 
 #include "components/nacl/renderer/plugin/srpc_client.h"
 
+#include <limits.h>
 #include <stdint.h>
 #include <string.h>
 

@@ -4,6 +4,7 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <limits.h>
 #include <oleacc.h>
 #include <stdint.h>
 

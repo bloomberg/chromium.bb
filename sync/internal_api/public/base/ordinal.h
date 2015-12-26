@@ -35,7 +35,7 @@ namespace syncer {
 //
 // The Traits class should look like the following:
 //
-//   // Don't forget to #include "base/basictypes.h".
+//   // Don't forget to #include <stdint.h> and <stddef.h>.
 //   struct MyOrdinalTraits {
 //     // There must be at least two distinct values greater than kZeroDigit
 //     // and less than kMaxDigit.

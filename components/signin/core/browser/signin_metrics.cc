@@ -4,6 +4,8 @@
 
 #include "components/signin/core/browser/signin_metrics.h"
 
+#include <limits.h>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"

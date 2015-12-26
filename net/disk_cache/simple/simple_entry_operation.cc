@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/simple/simple_entry_operation.h"
 
+#include <limits.h>
+
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"

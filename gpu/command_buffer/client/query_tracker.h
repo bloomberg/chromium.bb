@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_QUERY_TRACKER_H_
 
 #include <GLES2/gl2.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 

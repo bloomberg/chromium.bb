@@ -4,6 +4,7 @@
 
 #include "components/mus/public/cpp/window.h"
 
+#include <limits.h>
 #include <stdint.h>
 
 #include "base/logging.h"

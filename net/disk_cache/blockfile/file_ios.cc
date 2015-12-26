@@ -4,6 +4,7 @@
 
 #include "net/disk_cache/blockfile/file.h"
 
+#include <limits.h>
 #include <stdint.h>
 
 #include <limits>

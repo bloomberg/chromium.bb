@@ -4,6 +4,8 @@
 
 #include "net/base/sdch_manager.h"
 
+#include <limits.h>
+
 #include <utility>
 
 #include "base/base64url.h"

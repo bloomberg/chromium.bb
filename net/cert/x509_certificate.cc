@@ -4,6 +4,7 @@
 
 #include "net/cert/x509_certificate.h"
 
+#include <limits.h>
 #include <stdlib.h>
 
 #include <algorithm>

@@ -4,6 +4,8 @@
 
 #include "components/variations/metrics_util.h"
 
+#include <string.h>
+
 #include "base/sha1.h"
 #include "base/sys_byteorder.h"
 

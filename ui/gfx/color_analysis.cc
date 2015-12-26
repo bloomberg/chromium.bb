@@ -4,6 +4,7 @@
 
 #include "ui/gfx/color_analysis.h"
 
+#include <limits.h>
 #include <stdint.h>
 
 #include <algorithm>

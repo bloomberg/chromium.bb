@@ -7,6 +7,8 @@
 
 #include "base/time/time.h"
 
+#include <limits.h>
+
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace signin_metrics {

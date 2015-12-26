@@ -4,6 +4,8 @@
 
 #include "base/logging.h"
 
+#include <limits.h>
+
 #if defined(OS_WIN)
 #include <io.h>
 #include <windows.h>

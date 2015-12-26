@@ -5,6 +5,7 @@
 #include "chrome/browser/process_singleton.h"
 
 #include <fcntl.h>
+#include <limits.h>
 #include <signal.h>
 #include <stddef.h>
 #include <sys/types.h>

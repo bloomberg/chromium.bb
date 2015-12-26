@@ -5,6 +5,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "base/command_line.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -173,7 +175,7 @@ TEST_F(CHROMIUMFramebufferMixedSamplesTest, CoverageModulation) {
   }
   static const float kBlue[] = {0.0f, 0.0f, 1.0f, 1.0f};
   static const float kGreen[] = {0.0f, 1.0f, 0.0f, 1.0f};
-  scoped_ptr<uint8[]> results[3];
+  scoped_ptr<uint8_t[]> results[3];
   const GLint kResultSize = kWidth * kHeight * 4;
 
   for (int pass = 0; pass < 3; ++pass) {
@@ -190,7 +192,7 @@ TEST_F(CHROMIUMFramebufferMixedSamplesTest, CoverageModulation) {
       glCoverageModulationCHROMIUM(GL_NONE);
     }
 
-    results[pass].reset(new uint8[kResultSize]);
+    results[pass].reset(new uint8_t[kResultSize]);
     memset(results[pass].get(), GLTestHelper::kCheckClearValue, kResultSize);
     glReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
                  results[pass].get());
@@ -213,7 +215,7 @@ TEST_F(CHROMIUMFramebufferMixedSamplesTest, MultisampleStencilEffective) {
   static const float kBlue[] = {0.0f, 0.0f, 1.0f, 1.0f};
   static const float kGreen[] = {0.0f, 1.0f, 0.0f, 1.0f};
 
-  scoped_ptr<uint8[]> results[3];
+  scoped_ptr<uint8_t[]> results[3];
   const GLint kResultSize = kWidth * kHeight * 4;
 
   for (int pass = 0; pass < 3; ++pass) {
@@ -228,7 +230,7 @@ TEST_F(CHROMIUMFramebufferMixedSamplesTest, MultisampleStencilEffective) {
     glUniform4fv(color_loc_, 1, kBlue);
     glDrawArrays(GL_TRIANGLES, 3, 3);
 
-    results[pass].reset(new uint8[kResultSize]);
+    results[pass].reset(new uint8_t[kResultSize]);
     memset(results[pass].get(), GLTestHelper::kCheckClearValue, kResultSize);
     glReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
                  results[pass].get());

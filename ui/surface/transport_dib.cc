@@ -4,6 +4,8 @@
 
 #include "ui/surface/transport_dib.h"
 
+#include <limits.h>
+
 #include "skia/ext/platform_canvas.h"
 
 // static

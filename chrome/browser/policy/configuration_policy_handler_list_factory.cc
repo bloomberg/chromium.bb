@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include "base/bind.h"

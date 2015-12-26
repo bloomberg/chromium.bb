@@ -4,6 +4,7 @@
 
 #include "sandbox/win/src/handle_closer_agent.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include "base/logging.h"

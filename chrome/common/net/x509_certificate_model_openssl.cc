@@ -4,6 +4,7 @@
 
 #include "chrome/common/net/x509_certificate_model.h"
 
+#include <limits.h>
 #include <openssl/mem.h>
 #include <openssl/obj_mac.h>
 #include <openssl/sha.h>

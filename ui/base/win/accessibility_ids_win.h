@@ -4,6 +4,8 @@
 #ifndef UI_BASE_WIN_ACCESSIBILITY_IDS_WIN_H_
 #define UI_BASE_WIN_ACCESSIBILITY_IDS_WIN_H_
 
+#include <limits.h>
+
 namespace base {
 namespace win {
 

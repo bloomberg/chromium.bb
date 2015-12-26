@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/sync_point_manager.h"
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 

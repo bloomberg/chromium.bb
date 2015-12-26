@@ -4,6 +4,7 @@
 
 #include "net/cert/x509_util_openssl.h"
 
+#include <limits.h>
 #include <openssl/asn1.h>
 #include <openssl/mem.h>
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/metrics_private/metrics_private_api.h"
 
+#include <limits.h>
+
 #include <algorithm>
 
 #include "base/metrics/field_trial.h"

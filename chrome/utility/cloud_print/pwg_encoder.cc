@@ -4,6 +4,7 @@
 
 #include "chrome/utility/cloud_print/pwg_encoder.h"
 
+#include <limits.h>
 #include <string.h>
 
 #include <algorithm>

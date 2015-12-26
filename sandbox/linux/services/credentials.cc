@@ -5,6 +5,7 @@
 #include "sandbox/linux/services/credentials.h"
 
 #include <errno.h>
+#include <limits.h>
 #include <signal.h>
 #include <stddef.h>
 #include <stdint.h>

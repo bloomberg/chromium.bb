@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_SAFE_BROWSING_PROTOBUF_MESSAGE_PARAM_TRAITS_H_
 #define CHROME_COMMON_SAFE_BROWSING_PROTOBUF_MESSAGE_PARAM_TRAITS_H_
 
+#include <limits.h>
+
 #include <string>
 
 #include "base/pickle.h"

@@ -4,6 +4,8 @@
 
 #include "ui/gfx/render_text.h"
 
+#include <limits.h>
+
 #include <algorithm>
 #include <climits>
 

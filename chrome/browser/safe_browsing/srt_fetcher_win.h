@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SRT_FETCHER_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SRT_FETCHER_WIN_H_
 
+#include <limits.h>
+
 #include <string>
 
 #include "base/callback_forward.h"

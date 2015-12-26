@@ -4,6 +4,7 @@
 
 #include "chrome/browser/themes/browser_theme_pack.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include <limits>

@@ -4,6 +4,7 @@
 
 #include "sql/connection.h"
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>

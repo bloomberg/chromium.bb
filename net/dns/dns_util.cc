@@ -5,6 +5,7 @@
 #include "net/dns/dns_util.h"
 
 #include <errno.h>
+#include <limits.h>
 
 #include <cstring>
 

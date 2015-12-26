@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/schema.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include <algorithm>

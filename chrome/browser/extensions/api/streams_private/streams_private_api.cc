@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 
+#include <limits.h>
+
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"

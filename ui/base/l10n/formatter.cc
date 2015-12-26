@@ -4,6 +4,8 @@
 
 #include "ui/base/l10n/formatter.h"
 
+#include <limits.h>
+
 #include <vector>
 
 #include "base/logging.h"
