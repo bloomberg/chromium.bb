@@ -10,7 +10,7 @@
 using base::Time;
 using base::TimeDelta;
 
-const int64 ThumbnailScore::kUpdateThumbnailTimeDays = 1;
+const int64_t ThumbnailScore::kUpdateThumbnailTimeDays = 1;
 const double ThumbnailScore::kThumbnailMaximumBoringness = 0.94;
 const double ThumbnailScore::kThumbnailDegradePerHour = 0.01;
 const double ThumbnailScore::kTooWideAspectRatio = 2.0;

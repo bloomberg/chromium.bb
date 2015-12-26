@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <set>
 
+#include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "mojo/public/cpp/system/macros.h"
 

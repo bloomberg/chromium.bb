@@ -31,7 +31,7 @@ GuestViewMessageFilter::GuestViewMessageFilter(int render_process_id,
 }
 
 GuestViewMessageFilter::GuestViewMessageFilter(
-    const uint32* message_classes_to_filter,
+    const uint32_t* message_classes_to_filter,
     size_t num_message_classes_to_filter,
     int render_process_id,
     BrowserContext* context)

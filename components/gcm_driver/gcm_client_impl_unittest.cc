@@ -4,10 +4,13 @@
 
 #include "components/gcm_driver/gcm_client_impl.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -45,11 +48,11 @@ enum LastEvent {
 };
 
 const char kChromeVersion[] = "45.0.0.1";
-const uint64 kDeviceAndroidId = 54321;
-const uint64 kDeviceSecurityToken = 12345;
-const uint64 kDeviceAndroidId2 = 11111;
-const uint64 kDeviceSecurityToken2 = 2222;
-const int64 kSettingsCheckinInterval = 16 * 60 * 60;
+const uint64_t kDeviceAndroidId = 54321;
+const uint64_t kDeviceSecurityToken = 12345;
+const uint64_t kDeviceAndroidId2 = 11111;
+const uint64_t kDeviceSecurityToken2 = 2222;
+const int64_t kSettingsCheckinInterval = 16 * 60 * 60;
 const char kAppId[] = "app_id";
 const char kSender[] = "project_id";
 const char kSender2[] = "project_id2";
@@ -107,20 +110,20 @@ class FakeMCSClient : public MCSClient {
                 GCMStore* gcm_store,
                 GCMStatsRecorder* recorder);
   ~FakeMCSClient() override;
-  void Login(uint64 android_id, uint64 security_token) override;
+  void Login(uint64_t android_id, uint64_t security_token) override;
   void SendMessage(const MCSMessage& message) override;
 
-  uint64 last_android_id() const { return last_android_id_; }
-  uint64 last_security_token() const { return last_security_token_; }
-  uint8 last_message_tag() const { return last_message_tag_; }
+  uint64_t last_android_id() const { return last_android_id_; }
+  uint64_t last_security_token() const { return last_security_token_; }
+  uint8_t last_message_tag() const { return last_message_tag_; }
   const mcs_proto::DataMessageStanza& last_data_message_stanza() const {
     return last_data_message_stanza_;
   }
 
  private:
-  uint64 last_android_id_;
-  uint64 last_security_token_;
-  uint8 last_message_tag_;
+  uint64_t last_android_id_;
+  uint64_t last_security_token_;
+  uint8_t last_message_tag_;
   mcs_proto::DataMessageStanza last_data_message_stanza_;
 };
 
@@ -137,7 +140,7 @@ FakeMCSClient::FakeMCSClient(base::Clock* clock,
 FakeMCSClient::~FakeMCSClient() {
 }
 
-void FakeMCSClient::Login(uint64 android_id, uint64 security_token) {
+void FakeMCSClient::Login(uint64_t android_id, uint64_t security_token) {
   last_android_id_ = android_id;
   last_security_token_ = security_token;
 }
@@ -262,8 +265,8 @@ class GCMClientImplTest : public testing::Test,
       const std::string& app_id,
       const std::string& message_id,
       const MCSClient::MessageSendStatus status);
-  void CompleteCheckin(uint64 android_id,
-                       uint64 security_token,
+  void CompleteCheckin(uint64_t android_id,
+                       uint64_t security_token,
                        const std::string& digest,
                        const std::map<std::string, std::string>& settings);
   void CompleteRegistration(const std::string& registration_id);
@@ -357,7 +360,7 @@ class GCMClientImplTest : public testing::Test,
     return temp_directory_.path().Append(FILE_PATH_LITERAL("GCM Store"));
   }
 
-  int64 CurrentTime();
+  int64_t CurrentTime();
 
   // Tooling.
   void PumpLoopUntilIdle();
@@ -441,8 +444,8 @@ void GCMClientImplTest::BuildGCMClient(base::TimeDelta clock_step) {
 }
 
 void GCMClientImplTest::CompleteCheckin(
-    uint64 android_id,
-    uint64 security_token,
+    uint64_t android_id,
+    uint64_t security_token,
     const std::string& digest,
     const std::map<std::string, std::string>& settings) {
   checkin_proto::AndroidCheckinResponse response;
@@ -624,7 +627,7 @@ void GCMClientImplTest::OnSendAcknowledged(const std::string& app_id,
   last_message_id_ = message_id;
 }
 
-int64 GCMClientImplTest::CurrentTime() {
+int64_t GCMClientImplTest::CurrentTime() {
   return clock()->Now().ToInternalValue() / base::Time::kMicrosecondsPerSecond;
 }
 

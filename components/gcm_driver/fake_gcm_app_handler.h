@@ -6,6 +6,7 @@
 #define COMPONENTS_GCM_DRIVER_FAKE_GCM_APP_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 

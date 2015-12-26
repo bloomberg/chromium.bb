@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
 namespace base {

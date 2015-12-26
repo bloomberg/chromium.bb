@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_CONNECTION_OBSERVER_H_
 #define COMPONENTS_GCM_DRIVER_GCM_CONNECTION_OBSERVER_H_
 
-#include "base/basictypes.h"
 
 namespace net {
 class IPEndPoint;

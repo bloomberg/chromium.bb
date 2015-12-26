@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_HTML_VIEWER_WEB_NOTIFICATION_MANAGER_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_WEB_NOTIFICATION_MANAGER_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 
 namespace blink {

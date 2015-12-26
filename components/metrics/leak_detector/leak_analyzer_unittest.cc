@@ -4,6 +4,8 @@
 
 #include "components/metrics/leak_detector/leak_analyzer.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/macros.h"

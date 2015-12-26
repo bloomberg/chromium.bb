@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/google/core/browser/google_url_tracker_client.h"

@@ -4,6 +4,8 @@
 
 #include "components/metrics/stability_metrics_helper.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"
@@ -11,6 +13,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
@@ -207,7 +210,7 @@ void StabilityMetricsHelper::IncrementPrefValue(const char* path) {
 }
 
 void StabilityMetricsHelper::IncrementLongPrefsValue(const char* path) {
-  int64 value = local_state_->GetInt64(path);
+  int64_t value = local_state_->GetInt64(path);
   local_state_->SetInt64(path, value + 1);
 }
 

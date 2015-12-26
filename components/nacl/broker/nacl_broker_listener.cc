@@ -25,7 +25,7 @@
 
 namespace {
 
-void SendReply(IPC::Channel* channel, int32 pid, bool result) {
+void SendReply(IPC::Channel* channel, int32_t pid, bool result) {
   channel->Send(new NaClProcessMsg_DebugExceptionHandlerLaunched(pid, result));
 }
 
@@ -64,7 +64,7 @@ bool NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy) {
   return result == sandbox::SBOX_ALL_OK;
 }
 
-void NaClBrokerListener::OnChannelConnected(int32 peer_pid) {
+void NaClBrokerListener::OnChannelConnected(int32_t peer_pid) {
   browser_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
   CHECK(browser_process_.IsValid());
 }
@@ -128,7 +128,8 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
 }
 
 void NaClBrokerListener::OnLaunchDebugExceptionHandler(
-    int32 pid, base::ProcessHandle process_handle,
+    int32_t pid,
+    base::ProcessHandle process_handle,
     const std::string& startup_info) {
   NaClStartDebugExceptionHandlerThread(
       base::Process(process_handle), startup_info,

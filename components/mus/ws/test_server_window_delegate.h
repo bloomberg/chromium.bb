@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MUS_WS_TEST_SERVER_WINDOW_DELEGATE_H_
 #define COMPONENTS_MUS_WS_TEST_SERVER_WINDOW_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/mus/ws/server_window_delegate.h"
 
 namespace mus {

@@ -4,6 +4,9 @@
 
 #include "components/message_port/web_message_port_channel_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"

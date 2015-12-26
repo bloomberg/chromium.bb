@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/registration_info.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 

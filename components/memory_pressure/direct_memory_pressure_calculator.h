@@ -7,7 +7,9 @@
 
 #include "components/memory_pressure/memory_pressure_calculator.h"
 
+#include "base/macros.h"
 #include "base/process/process_metrics.h"
+#include "build/build_config.h"
 
 namespace memory_pressure {
 

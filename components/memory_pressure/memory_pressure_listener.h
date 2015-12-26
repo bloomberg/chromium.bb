@@ -11,8 +11,9 @@
 #define COMPONENTS_MEMORY_PRESSURE_MEMORY_PRESSURE_LISTENER_H_
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 
 // ChromeOS and Linux operating systems will be added to this as they are
 // implemented.

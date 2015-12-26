@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/focus_controller.h"
 
+#include "base/macros.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/focus_controller_observer.h"

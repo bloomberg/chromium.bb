@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"

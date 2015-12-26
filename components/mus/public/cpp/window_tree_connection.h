@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CONNECTION_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CONNECTION_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_url_tracker.h"

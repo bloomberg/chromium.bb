@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "google_apis/gaia/fake_identity_provider.h"

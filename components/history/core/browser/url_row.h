@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_URL_ROW_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_URL_ROW_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/query_parser/snippet.h"
@@ -13,7 +14,7 @@
 
 namespace history {
 
-typedef int64 URLID;
+typedef int64_t URLID;
 
 // Holds all information globally associated with one URL (one row in the
 // URL table).

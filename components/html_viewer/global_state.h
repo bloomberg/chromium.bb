@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_HTML_VIEWER_GLOBAL_STATE_H_
 #define COMPONENTS_HTML_VIEWER_GLOBAL_STATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "components/html_viewer/blink_settings.h"
 #include "components/html_viewer/discardable_memory_allocator.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer_manager.h"

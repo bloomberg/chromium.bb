@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_WEB_COOKIE_JAR_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_WEB_COOKIE_JAR_IMPL_H_
 
+#include "base/macros.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "third_party/WebKit/public/platform/WebCookieJar.h"
 

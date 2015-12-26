@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -211,8 +213,8 @@ base::TimeDelta GCMChannelStatusSyncer::GetRequestDelayInterval() const {
 
   // Make sure that checking with server occurs at polling interval, regardless
   // whether the browser restarts.
-  int64 delay_seconds = poll_interval_seconds_ -
-      (base::Time::Now() - last_check_time_).InSeconds();
+  int64_t delay_seconds = poll_interval_seconds_ -
+                          (base::Time::Now() - last_check_time_).InSeconds();
   if (delay_seconds < 0)
     delay_seconds = 0;
 

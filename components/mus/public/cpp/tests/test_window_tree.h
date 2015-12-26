@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_TESTS_TEST_WINDOW_TREE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_TESTS_TEST_WINDOW_TREE_H_
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/macros.h"

@@ -5,12 +5,15 @@
 #include "components/history/core/browser/visitsegment_database.h"
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -182,7 +185,7 @@ bool VisitSegmentDatabase::IncreaseSegmentVisitCount(SegmentID segment_id,
   if (select.Step()) {
     sql::Statement update(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "UPDATE segment_usage SET visit_count = ? WHERE id = ?"));
-    update.BindInt64(0, select.ColumnInt64(1) + static_cast<int64>(amount));
+    update.BindInt64(0, select.ColumnInt64(1) + static_cast<int64_t>(amount));
     update.BindInt64(1, select.ColumnInt64(0));
 
     return update.Run();
@@ -192,7 +195,7 @@ bool VisitSegmentDatabase::IncreaseSegmentVisitCount(SegmentID segment_id,
         "(segment_id, time_slot, visit_count) VALUES (?, ?, ?)"));
     insert.BindInt64(0, segment_id);
     insert.BindInt64(1, t.ToInternalValue());
-    insert.BindInt64(2, static_cast<int64>(amount));
+    insert.BindInt64(2, static_cast<int64_t>(amount));
 
     return insert.Run();
   }

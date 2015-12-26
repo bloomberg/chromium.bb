@@ -32,6 +32,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":browser",
+    "//base",
     "//components/history/core/browser:browser",
     "//components/history/core/test",
     "//testing/gtest",

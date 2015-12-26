@@ -15,7 +15,6 @@
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "components/invalidation/impl/unacked_invalidation_set.h"

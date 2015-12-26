@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_INFOBARS_CORE_CONFIRM_INFOBAR_DELEGATE_H_
 #define COMPONENTS_INFOBARS_CORE_CONFIRM_INFOBAR_DELEGATE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/infobar_delegate.h"

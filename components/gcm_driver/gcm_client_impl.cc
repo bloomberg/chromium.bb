@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_client_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -82,7 +84,7 @@ const char kMessageTypeKey[] = "message_type";
 const char kMessageTypeSendErrorKey[] = "send_error";
 const char kSendErrorMessageIdKey[] = "google.message_id";
 const char kSendMessageFromValue[] = "gcm@chrome.com";
-const int64 kDefaultUserSerialNumber = 0LL;
+const int64_t kDefaultUserSerialNumber = 0LL;
 const int kDestroyGCMStoreDelayMS = 5 * 60 * 1000;  // 5 minutes.
 
 GCMClient::Result ToGCMClientResult(MCSClient::MessageSendStatus status) {
@@ -1215,7 +1217,7 @@ void GCMClientImpl::OnMessageReceivedFromMCS(const gcm::MCSMessage& message) {
   }
 }
 
-void GCMClientImpl::OnMessageSentToMCS(int64 user_serial_number,
+void GCMClientImpl::OnMessageSentToMCS(int64_t user_serial_number,
                                        const std::string& app_id,
                                        const std::string& message_id,
                                        MCSClient::MessageSendStatus status) {

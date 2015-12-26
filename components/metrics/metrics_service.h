@@ -8,12 +8,14 @@
 #ifndef COMPONENTS_METRICS_METRICS_SERVICE_H_
 #define COMPONENTS_METRICS_METRICS_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +25,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
@@ -111,11 +114,11 @@ class MetricsService : public base::HistogramFlattener {
   std::string GetClientId();
 
   // Returns the install date of the application, in seconds since the epoch.
-  int64 GetInstallDate();
+  int64_t GetInstallDate();
 
   // Returns the date at which the current metrics client ID was created as
-  // an int64 containing seconds since the epoch.
-  int64 GetMetricsReportingEnabledDate();
+  // an int64_t containing seconds since the epoch.
+  int64_t GetMetricsReportingEnabledDate();
 
   // Returns true if the last session exited cleanly.
   bool WasLastShutdownClean() const;

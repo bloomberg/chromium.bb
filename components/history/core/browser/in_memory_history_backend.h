@@ -22,8 +22,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/history/core/browser/history_service_observer.h"

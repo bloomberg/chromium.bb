@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_METRICS_PROFILER_IOS_IOS_TRACKING_SYNCHRONIZER_DELEGATE_H_
 #define COMPONENTS_METRICS_PROFILER_IOS_IOS_TRACKING_SYNCHRONIZER_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/metrics/profiler/tracking_synchronizer_delegate.h"
 

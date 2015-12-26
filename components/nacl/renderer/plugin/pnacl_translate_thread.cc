@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/plugin/pnacl_translate_thread.h"
 
+#include <stddef.h>
+
 #include <iterator>
 #include <sstream>
 

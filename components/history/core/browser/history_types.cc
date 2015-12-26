@@ -164,13 +164,13 @@ void QueryOptions::SetRecentDayRange(int days_ago) {
   begin_time = end_time - base::TimeDelta::FromDays(days_ago);
 }
 
-int64 QueryOptions::EffectiveBeginTime() const {
+int64_t QueryOptions::EffectiveBeginTime() const {
   return begin_time.ToInternalValue();
 }
 
-int64 QueryOptions::EffectiveEndTime() const {
-  return end_time.is_null() ?
-      std::numeric_limits<int64>::max() : end_time.ToInternalValue();
+int64_t QueryOptions::EffectiveEndTime() const {
+  return end_time.is_null() ? std::numeric_limits<int64_t>::max()
+                            : end_time.ToInternalValue();
 }
 
 int QueryOptions::EffectiveMaxCount() const {

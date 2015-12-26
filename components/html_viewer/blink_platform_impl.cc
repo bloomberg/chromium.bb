@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"

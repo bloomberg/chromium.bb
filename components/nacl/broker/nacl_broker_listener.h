@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_NACL_BROKER_NACL_BROKER_LISTENER_H_
 #define COMPONENTS_NACL_BROKER_NACL_BROKER_LISTENER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "components/nacl/common/nacl_types.h"
@@ -30,13 +33,13 @@ class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override;
 
   // IPC::Listener implementation.
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
   void OnChannelError() override;
 
  private:
   void OnLaunchLoaderThroughBroker(const std::string& loader_channel_id);
-  void OnLaunchDebugExceptionHandler(int32 pid,
+  void OnLaunchDebugExceptionHandler(int32_t pid,
                                      base::ProcessHandle process_handle,
                                      const std::string& startup_info);
   void OnStopBroker();

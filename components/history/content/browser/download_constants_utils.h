@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONSTANTS_UTILS_H_
 #define COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONSTANTS_UTILS_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "components/history/core/browser/download_types.h"
@@ -40,8 +42,8 @@ DownloadInterruptReason ToHistoryDownloadInterruptReason(
 // Utility functions to convert between content download id values and
 // history::DownloadId type (value have no meaning in history, except
 // for kInvalidDownloadId).
-uint32 ToContentDownloadId(DownloadId id);
-DownloadId ToHistoryDownloadId(uint32 id);
+uint32_t ToContentDownloadId(DownloadId id);
+DownloadId ToHistoryDownloadId(uint32_t id);
 }  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CONTENT_BROWSER_DOWNLOAD_CONSTANTS_UTILS_H_

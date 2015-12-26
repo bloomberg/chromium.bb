@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_METRICS_STABILITY_METRICS_HELPER_H_
 #define COMPONENTS_METRICS_STABILITY_METRICS_HELPER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/process/kill.h"
 

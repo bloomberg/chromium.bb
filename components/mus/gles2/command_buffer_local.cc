@@ -113,7 +113,7 @@ bool CommandBufferLocal::Initialize() {
   gpu::gles2::DisallowedFeatures disallowed_features;
 
   // TODO(piman): attributes.
-  std::vector<int32> attrib_vector;
+  std::vector<int32_t> attrib_vector;
   if (!decoder_->Initialize(surface_, context_, false /* offscreen */,
                             gfx::Size(1, 1), disallowed_features,
                             attrib_vector))
@@ -158,8 +158,8 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
     return -1;
   }
 
-  static int32 next_id = 1;
-  int32 new_id = next_id++;
+  static int32_t next_id = 1;
+  int32_t new_id = next_id++;
 
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   DCHECK(image_manager);
@@ -167,7 +167,7 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
   return new_id;
 }
 
-void CommandBufferLocal::DestroyImage(int32 id) {
+void CommandBufferLocal::DestroyImage(int32_t id) {
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   DCHECK(image_manager);
   image_manager->RemoveImage(id);

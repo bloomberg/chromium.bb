@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/macros.h"
 #include "cc/scheduler/scheduler.h"
 
 namespace cc {

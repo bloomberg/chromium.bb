@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/accessibility/public/interfaces/accessibility.mojom.h"
 

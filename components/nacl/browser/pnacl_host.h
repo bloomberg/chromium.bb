@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_NACL_BROWSER_PNACL_HOST_H_
 #define COMPONENTS_NACL_BROWSER_PNACL_HOST_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"

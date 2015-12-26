@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_METRICS_TEST_METRICS_SERVICE_CLIENT_H_
 #define COMPONENTS_METRICS_TEST_METRICS_SERVICE_CLIENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "components/metrics/metrics_service_client.h"
 
 namespace metrics {

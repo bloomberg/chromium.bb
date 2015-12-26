@@ -4,7 +4,10 @@
 
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/lib/window_private.h"
@@ -52,7 +55,7 @@ class WindowTreeClientImplPrivate {
       : tree_client_impl_(tree_client_impl) {}
   ~WindowTreeClientImplPrivate() {}
 
-  void Init(mojom::WindowTree* window_tree, uint32 access_policy) {
+  void Init(mojom::WindowTree* window_tree, uint32_t access_policy) {
     mojom::WindowDataPtr root_data(mojom::WindowData::New());
     root_data->parent_id = 0;
     root_data->window_id = 1;

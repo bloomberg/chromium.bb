@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
+#include "build/build_config.h"
 
 namespace metrics {
 

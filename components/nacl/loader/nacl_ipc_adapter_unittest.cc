@@ -4,6 +4,8 @@
 
 #include "components/nacl/loader/nacl_ipc_adapter.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "base/memory/scoped_ptr.h"
@@ -73,9 +75,9 @@ class NaClIPCAdapterTest : public testing::Test {
 // Tests a simple message getting rewritten sent from native code to NaCl.
 TEST_F(NaClIPCAdapterTest, SimpleReceiveRewriting) {
   int routing_id = 0x89898989;
-  uint32 type = 0x55555555;
+  uint32_t type = 0x55555555;
   IPC::Message input(routing_id, type, IPC::Message::PRIORITY_NORMAL);
-  uint32 flags = input.flags();
+  uint32_t flags = input.flags();
 
   int value = 0x12345678;
   input.WriteInt(value);
@@ -107,7 +109,7 @@ TEST_F(NaClIPCAdapterTest, SimpleReceiveRewriting) {
 // Tests a simple message getting rewritten sent from NaCl to native code.
 TEST_F(NaClIPCAdapterTest, SendRewriting) {
   int routing_id = 0x89898989;
-  uint32 type = 0x55555555;
+  uint32_t type = 0x55555555;
   int value = 0x12345678;
 
   // Send a message with one int inside it.
@@ -173,14 +175,14 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
 // Tests when a buffer is too small to receive the entire message.
 TEST_F(NaClIPCAdapterTest, PartialReceive) {
   int routing_id_1 = 0x89898989;
-  uint32 type_1 = 0x55555555;
+  uint32_t type_1 = 0x55555555;
   IPC::Message input_1(routing_id_1, type_1, IPC::Message::PRIORITY_NORMAL);
   int value_1 = 0x12121212;
   input_1.WriteInt(value_1);
   adapter_->OnMessageReceived(input_1);
 
   int routing_id_2 = 0x90909090;
-  uint32 type_2 = 0x66666666;
+  uint32_t type_2 = 0x66666666;
   IPC::Message input_2(routing_id_2, type_2, IPC::Message::PRIORITY_NORMAL);
   int value_2 = 0x23232323;
   input_2.WriteInt(value_2);
@@ -223,7 +225,7 @@ TEST_F(NaClIPCAdapterTest, PartialReceive) {
 // succeeds and buffers the data.
 TEST_F(NaClIPCAdapterTest, SendOverflow) {
   int routing_id = 0x89898989;
-  uint32 type = 0x55555555;
+  uint32_t type = 0x55555555;
   int value = 0x12345678;
 
   // Make a message with one int inside it. Reserve some extra space so

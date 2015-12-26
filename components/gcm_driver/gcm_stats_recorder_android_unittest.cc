@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_stats_recorder_android.h"
 
+#include <stddef.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {

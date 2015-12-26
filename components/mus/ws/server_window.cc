@@ -5,6 +5,7 @@
 #include "components/mus/ws/server_window.h"
 
 #include <inttypes.h>
+#include <stddef.h>
 
 #include "base/strings/stringprintf.h"
 #include "components/mus/common/transient_window_utils.h"

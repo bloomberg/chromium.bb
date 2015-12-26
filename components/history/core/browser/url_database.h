@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_URL_DATABASE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_URL_DATABASE_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/query_parser/query_parser.h"

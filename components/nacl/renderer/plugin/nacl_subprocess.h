@@ -13,6 +13,7 @@
 
 #include <stdarg.h>
 
+#include "base/macros.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
 #include "components/nacl/renderer/plugin/srpc_client.h"
 #include "native_client/src/include/nacl_macros.h"

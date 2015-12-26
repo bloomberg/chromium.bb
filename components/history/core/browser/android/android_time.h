@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_TIME_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_ANDROID_ANDROID_TIME_H_
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 
 namespace history {
@@ -12,12 +14,12 @@ namespace history {
 // Android's system time is the milliseconds since January 1, 1970 00:00:00 UTC,
 // the below 2 methods are used convert between base::Time and the milliseconds
 // stored in database.
-inline base::Time FromDatabaseTime(int64 milliseconds) {
+inline base::Time FromDatabaseTime(int64_t milliseconds) {
   return base::TimeDelta::FromMilliseconds(milliseconds) +
          base::Time::UnixEpoch();
 }
 
-inline int64 ToDatabaseTime(const base::Time& time) {
+inline int64_t ToDatabaseTime(const base::Time& time) {
   return (time - base::Time::UnixEpoch()).InMilliseconds();
 }
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 
 #include "components/invalidation/impl/push_client_channel.h"

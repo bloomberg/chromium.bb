@@ -4,10 +4,13 @@
 
 #include "components/html_viewer/html_frame_tree_manager.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/html_viewer/blink_basic_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/document_resource_waiter.h"

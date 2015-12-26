@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_MUS_GLES2_GPU_MEMORY_TRACKER_H_
 #define COMPONENTS_MUS_GLES2_GPU_MEMORY_TRACKER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 
 namespace mus {

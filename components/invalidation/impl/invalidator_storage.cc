@@ -4,11 +4,12 @@
 
 #include "components/invalidation/impl/invalidator_storage.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"

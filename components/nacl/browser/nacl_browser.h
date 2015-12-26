@@ -5,14 +5,18 @@
 #ifndef COMPONENTS_NACL_BROWSER_NACL_BROWSER_H_
 #define COMPONENTS_NACL_BROWSER_NACL_BROWSER_H_
 
+#include <stdint.h>
+
 #include <deque>
 
 #include "base/bind.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
 #include "components/nacl/browser/nacl_validation_cache.h"
 
@@ -110,9 +114,11 @@ class NaClBrowser {
   // per guess.
   // TODO(ncbray): move the cache onto NaClProcessHost so that we don't need to
   // rely on tokens being unguessable by another process.
-  void PutFilePath(const base::FilePath& path, uint64* file_token_lo,
-                   uint64* file_token_hi);
-  bool GetFilePath(uint64 file_token_lo, uint64 file_token_hi,
+  void PutFilePath(const base::FilePath& path,
+                   uint64_t* file_token_lo,
+                   uint64_t* file_token_hi);
+  bool GetFilePath(uint64_t file_token_lo,
+                   uint64_t file_token_hi,
                    base::FilePath* path);
 
   bool QueryKnownToValidate(const std::string& signature, bool off_the_record);

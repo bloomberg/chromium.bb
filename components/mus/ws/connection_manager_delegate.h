@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_CONNECTION_MANAGER_DELEGATE_H_
 #define COMPONENTS_MUS_WS_CONNECTION_MANAGER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "components/mus/common/types.h"

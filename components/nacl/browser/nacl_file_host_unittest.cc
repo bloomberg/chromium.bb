@@ -4,10 +4,11 @@
 
 #include "components/nacl/browser/nacl_file_host.h"
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/test/scoped_path_override.h"
+#include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
 #include "components/nacl/browser/test_nacl_browser_delegate.h"

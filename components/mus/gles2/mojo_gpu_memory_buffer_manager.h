@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
 #define COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_MANAGER_H_
 
+#include "base/macros.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
 namespace mus {

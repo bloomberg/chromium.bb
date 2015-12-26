@@ -5,6 +5,7 @@
 #include "components/html_viewer/html_document_application_delegate.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document.h"
 #include "mojo/application/public/cpp/application_connection.h"

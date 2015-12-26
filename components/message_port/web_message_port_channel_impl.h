@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MESSAGE_PORT_WEB_MESSAGE_PORT_CHANNEL_IMPL_H_
 #define COMPONENTS_MESSAGE_PORT_WEB_MESSAGE_PORT_CHANNEL_IMPL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"

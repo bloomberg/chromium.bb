@@ -4,6 +4,9 @@
 
 #include "components/metrics/leak_detector/ranked_list.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/macros.h"

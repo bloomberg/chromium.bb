@@ -4,6 +4,7 @@
 
 #include "components/gcm_driver/crypto/p256_key_util.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <openssl/ec.h>

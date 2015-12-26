@@ -4,6 +4,7 @@
 
 #include "components/guest_view/renderer/guest_view_container.h"
 
+#include "base/macros.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/guest_view/common/guest_view_messages.h"
 #include "components/guest_view/renderer/guest_view_request.h"

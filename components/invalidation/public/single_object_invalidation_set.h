@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_INVALIDATION_PUBLIC_SINGLE_OBJECT_INVALIDATION_SET_H_
 #define COMPONENTS_INVALIDATION_PUBLIC_SINGLE_OBJECT_INVALIDATION_SET_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/memory/scoped_ptr.h"

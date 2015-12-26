@@ -13,6 +13,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"

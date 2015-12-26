@@ -7,6 +7,7 @@
 
 #include "components/memory_pressure/memory_pressure_calculator.h"
 
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace base {

@@ -4,9 +4,13 @@
 
 #include "components/history/core/browser/typed_url_syncable_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -67,7 +71,7 @@ bool URLsEqual(history::URLRow& lhs, history::URLRow& rhs) {
 }
 
 void AddNewestVisit(ui::PageTransition transition,
-                    int64 visit_time,
+                    int64_t visit_time,
                     URLRow* url,
                     VisitVector* visits) {
   base::Time time = base::Time::FromInternalValue(visit_time);
@@ -82,7 +86,7 @@ void AddNewestVisit(ui::PageTransition transition,
 }
 
 void AddOldestVisit(ui::PageTransition transition,
-                    int64 visit_time,
+                    int64_t visit_time,
                     URLRow* url,
                     VisitVector* visits) {
   base::Time time = base::Time::FromInternalValue(visit_time);
@@ -100,7 +104,7 @@ void AddOldestVisit(ui::PageTransition transition,
 URLRow MakeTypedUrlRow(const std::string& url,
                        const std::string& title,
                        int typed_count,
-                       int64 last_visit,
+                       int64_t last_visit,
                        bool hidden,
                        VisitVector* visits) {
   // Give each URL a unique ID, to mimic the behavior of the real database.
@@ -129,7 +133,7 @@ URLRow MakeTypedUrlRow(const std::string& url,
 
 static sync_pb::TypedUrlSpecifics MakeTypedUrlSpecifics(const char* url,
                                                         const char* title,
-                                                        int64 last_visit,
+                                                        int64_t last_visit,
                                                         bool hidden) {
   sync_pb::TypedUrlSpecifics typed_url;
   typed_url.set_url(url);
@@ -248,7 +252,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
       const std::string& url,
       const std::string& title,
       int typed_count,
-      int64 last_visit,
+      int64_t last_visit,
       bool hidden,
       syncer::SyncChange::SyncChangeType change_type);
 
@@ -273,7 +277,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
 
   // Create a new row associated with a specific visit's time.
   static history::VisitRow CreateVisit(ui::PageTransition type,
-                                       int64 timestamp);
+                                       int64_t timestamp);
 
   static const TypedUrlSyncableService::MergeResult DIFF_NONE =
       TypedUrlSyncableService::DIFF_NONE;
@@ -354,7 +358,7 @@ VisitVector TypedUrlSyncableServiceTest::ApplyUrlAndVisitsChange(
     const std::string& url,
     const std::string& title,
     int typed_count,
-    int64 last_visit,
+    int64_t last_visit,
     bool hidden,
     syncer::SyncChange::SyncChangeType change_type) {
   VisitVector visits;
@@ -406,7 +410,7 @@ void TypedUrlSyncableServiceTest::DiffVisits(
 // Static.
 history::VisitRow TypedUrlSyncableServiceTest::CreateVisit(
     ui::PageTransition type,
-    int64 timestamp) {
+    int64_t timestamp) {
   return history::VisitRow(0, base::Time::FromInternalValue(timestamp), 0, type,
                            0);
 }
@@ -1149,9 +1153,9 @@ TEST_F(TypedUrlSyncableServiceTest, DiffVisitsSame) {
   history::VisitVector old_visits;
   sync_pb::TypedUrlSpecifics new_url;
 
-  const int64 visits[] = {1024, 2065, 65534, 1237684};
+  const int64_t visits[] = {1024, 2065, 65534, 1237684};
 
-  for (int64 visit : visits) {
+  for (int64_t visit : visits) {
     old_visits.push_back(history::VisitRow(0,
                                            base::Time::FromInternalValue(visit),
                                            0, ui::PAGE_TRANSITION_TYPED, 0));
@@ -1173,22 +1177,22 @@ TEST_F(TypedUrlSyncableServiceTest, DiffVisitsRemove) {
   history::VisitVector old_visits;
   sync_pb::TypedUrlSpecifics new_url;
 
-  const int64 visits_left[] = {1,    2,     1024,    1500,   2065,
-                               6000, 65534, 1237684, 2237684};
-  const int64 visits_right[] = {1024, 2065, 65534, 1237684};
+  const int64_t visits_left[] = {1,    2,     1024,    1500,   2065,
+                                 6000, 65534, 1237684, 2237684};
+  const int64_t visits_right[] = {1024, 2065, 65534, 1237684};
 
   // DiffVisits will not remove the first visit, because we never delete visits
   // from the start of the array (since those visits can get truncated by the
   // size-limiting code).
-  const int64 visits_removed[] = {1500, 6000, 2237684};
+  const int64_t visits_removed[] = {1500, 6000, 2237684};
 
-  for (int64 visit : visits_left) {
+  for (int64_t visit : visits_left) {
     old_visits.push_back(history::VisitRow(0,
                                            base::Time::FromInternalValue(visit),
                                            0, ui::PAGE_TRANSITION_TYPED, 0));
   }
 
-  for (int64 visit : visits_right) {
+  for (int64_t visit : visits_right) {
     new_url.add_visits(visit);
     new_url.add_visit_transitions(ui::PAGE_TRANSITION_TYPED);
   }
@@ -1211,19 +1215,19 @@ TEST_F(TypedUrlSyncableServiceTest, DiffVisitsAdd) {
   history::VisitVector old_visits;
   sync_pb::TypedUrlSpecifics new_url;
 
-  const int64 visits_left[] = {1024, 2065, 65534, 1237684};
-  const int64 visits_right[] = {1,    1024,  1500,    2065,
-                                6000, 65534, 1237684, 2237684};
+  const int64_t visits_left[] = {1024, 2065, 65534, 1237684};
+  const int64_t visits_right[] = {1,    1024,  1500,    2065,
+                                  6000, 65534, 1237684, 2237684};
 
-  const int64 visits_added[] = {1, 1500, 6000, 2237684};
+  const int64_t visits_added[] = {1, 1500, 6000, 2237684};
 
-  for (int64 visit : visits_left) {
+  for (int64_t visit : visits_left) {
     old_visits.push_back(history::VisitRow(0,
                                            base::Time::FromInternalValue(visit),
                                            0, ui::PAGE_TRANSITION_TYPED, 0));
   }
 
-  for (int64 visit : visits_right) {
+  for (int64_t visit : visits_right) {
     new_url.add_visits(visit);
     new_url.add_visit_transitions(ui::PAGE_TRANSITION_TYPED);
   }
@@ -1265,7 +1269,7 @@ TEST_F(TypedUrlSyncableServiceTest, WriteTypedUrlSpecifics) {
 // Create 101 visits, check WriteToTypedUrlSpecifics will only keep 100 visits.
 TEST_F(TypedUrlSyncableServiceTest, TooManyVisits) {
   history::VisitVector visits;
-  int64 timestamp = 1000;
+  int64_t timestamp = 1000;
   visits.push_back(CreateVisit(ui::PAGE_TRANSITION_TYPED, timestamp++));
   for (int i = 0; i < 100; ++i) {
     visits.push_back(CreateVisit(ui::PAGE_TRANSITION_LINK, timestamp++));
@@ -1291,7 +1295,7 @@ TEST_F(TypedUrlSyncableServiceTest, TooManyVisits) {
 // visits.
 TEST_F(TypedUrlSyncableServiceTest, TooManyTypedVisits) {
   history::VisitVector visits;
-  int64 timestamp = 1000;
+  int64_t timestamp = 1000;
   for (int i = 0; i < 102; ++i) {
     visits.push_back(CreateVisit(ui::PAGE_TRANSITION_TYPED, timestamp++));
     visits.push_back(CreateVisit(ui::PAGE_TRANSITION_LINK, timestamp++));

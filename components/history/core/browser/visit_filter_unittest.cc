@@ -5,6 +5,7 @@
 #include "components/history/core/browser/visit_filter.h"
 
 #include <math.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/time/time.h"

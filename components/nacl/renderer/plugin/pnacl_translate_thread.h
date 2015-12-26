@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_TRANSLATE_THREAD_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_TRANSLATE_THREAD_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"

@@ -4,6 +4,9 @@
 
 #include "components/history/core/browser/thumbnail_database.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <string>
 
@@ -16,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/url_database.h"
 #include "sql/recovery.h"
@@ -135,8 +139,8 @@ void GenerateDiagnostics(sql::Connection* db,
   // TODO(shess): If this could be related to the time in the channel, then the
   // rate could ramp up over time.  Perhaps could remember the timestamp the
   // first time upload is considered, and ramp up 1% per day?
-  static const uint64 kReportPercent = 5;
-  uint64 rand = base::RandGenerator(100);
+  static const uint64_t kReportPercent = 5;
+  uint64_t rand = base::RandGenerator(100);
   if (rand <= kReportPercent)
     db->ReportDiagnosticInfo(extended_error, stmt);
 }
@@ -272,7 +276,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   size_t favicons_rows_recovered = 0;
   size_t favicon_bitmaps_rows_recovered = 0;
   size_t icon_mapping_rows_recovered = 0;
-  int64 original_size = 0;
+  int64_t original_size = 0;
   base::GetFileSize(db_path, &original_size);
 
   scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
@@ -385,7 +389,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // the input database.  The size should almost always be smaller,
   // unless the input database was empty to start with.  If the
   // percentage results are very low, something is awry.
-  int64 final_size = 0;
+  int64_t final_size = 0;
   if (original_size > 0 &&
       base::GetFileSize(db_path, &final_size) &&
       final_size > 0) {
@@ -484,10 +488,11 @@ void ThumbnailDatabase::ComputeDatabaseMetrics() {
   {
     sql::Statement page_count(
         db_.GetCachedStatement(SQL_FROM_HERE, "PRAGMA page_count"));
-    int64 page_count_bytes = page_count.Step() ? page_count.ColumnInt64(0) : 0;
+    int64_t page_count_bytes =
+        page_count.Step() ? page_count.ColumnInt64(0) : 0;
     sql::Statement page_size(
         db_.GetCachedStatement(SQL_FROM_HERE, "PRAGMA page_size"));
-    int64 page_size_bytes = page_size.Step() ? page_size.ColumnInt64(0) : 0;
+    int64_t page_size_bytes = page_size.Step() ? page_size.ColumnInt64(0) : 0;
     int size_mb = static_cast<int>(
         (page_count_bytes * page_size_bytes) / (1024 * 1024));
     UMA_HISTOGRAM_MEMORY_MB("History.FaviconDatabaseSizeMB", size_mb);

@@ -4,6 +4,8 @@
 
 #include "components/metrics/profiler/tracking_synchronizer.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram.h"

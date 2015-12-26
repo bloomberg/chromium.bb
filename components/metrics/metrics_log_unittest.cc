@@ -4,10 +4,13 @@
 
 #include "components/metrics/metrics_log.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
@@ -28,10 +31,10 @@ namespace metrics {
 namespace {
 
 const char kClientId[] = "bogus client ID";
-const int64 kInstallDate = 1373051956;
-const int64 kInstallDateExpected = 1373050800;  // Computed from kInstallDate.
-const int64 kEnabledDate = 1373001211;
-const int64 kEnabledDateExpected = 1373000400;  // Computed from kEnabledDate.
+const int64_t kInstallDate = 1373051956;
+const int64_t kInstallDateExpected = 1373050800;  // Computed from kInstallDate.
+const int64_t kEnabledDate = 1373001211;
+const int64_t kEnabledDateExpected = 1373000400;  // Computed from kEnabledDate.
 const int kSessionId = 127;
 const variations::ActiveGroupId kFieldTrialIds[] = {
   {37, 43},

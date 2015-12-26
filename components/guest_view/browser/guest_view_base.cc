@@ -5,6 +5,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"

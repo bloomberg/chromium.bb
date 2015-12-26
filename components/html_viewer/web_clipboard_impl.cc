@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/web_clipboard_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "components/html_viewer/blink_basic_type_converters.h"
 

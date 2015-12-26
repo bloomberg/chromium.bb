@@ -4,7 +4,7 @@
 
 #include "components/history/core/browser/visit_tracker.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace history {

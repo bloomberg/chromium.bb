@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/visit_tracker.h"
 
+#include <stddef.h>
+
 #include "base/stl_util.h"
 
 namespace history {

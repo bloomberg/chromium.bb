@@ -30,6 +30,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_client.h"
@@ -746,7 +747,7 @@ void HistoryService::UpdateDownload(const DownloadRow& data) {
                                            history_backend_.get(), data));
 }
 
-void HistoryService::RemoveDownloads(const std::set<uint32>& ids) {
+void HistoryService::RemoveDownloads(const std::set<uint32_t>& ids) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::RemoveDownloads,
@@ -1071,7 +1072,7 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
     // TODO(dubroy): This API does not yet support deletion of specific URLs.
     DCHECK(restrict_urls.empty());
 
-    delete_directive_handler_.CreateDeleteDirectives(std::set<int64>(),
+    delete_directive_handler_.CreateDeleteDirectives(std::set<int64_t>(),
                                                      begin_time, end_time);
 
     // Attempt online deletion from the history server, but ignore the result.

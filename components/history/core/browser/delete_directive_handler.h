@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_DELETE_DIRECTIVE_HANDLER_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_DELETE_DIRECTIVE_HANDLER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -37,7 +40,7 @@ class DeleteDirectiveHandler {
   // Create delete directives for the deletion of visits identified by
   // |global_ids| (which may be empty), in the time range specified by
   // |begin_time| and |end_time|.
-  bool CreateDeleteDirectives(const std::set<int64>& global_ids,
+  bool CreateDeleteDirectives(const std::set<int64_t>& global_ids,
                               base::Time begin_time,
                               base::Time end_time);
 

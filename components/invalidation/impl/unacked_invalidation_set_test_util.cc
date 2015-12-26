@@ -5,6 +5,7 @@
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/macros.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 

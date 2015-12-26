@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_BLINK_SETTINGS_H_
 #define COMPONENTS_HTML_VIEWER_BLINK_SETTINGS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace blink {
 class WebView;

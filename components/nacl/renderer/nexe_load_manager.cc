@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/nexe_load_manager.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"

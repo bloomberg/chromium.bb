@@ -4,6 +4,10 @@
 
 #include "components/mus/ws/focus_controller.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/focus_controller_observer.h"
 #include "components/mus/ws/server_window.h"

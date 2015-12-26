@@ -11,6 +11,7 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_SERVICE_RUNTIME_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_SERVICE_RUNTIME_H_
 
+#include "base/macros.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"

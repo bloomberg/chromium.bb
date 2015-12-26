@@ -8,10 +8,12 @@
 #ifndef COMPONENTS_METRICS_METRICS_LOG_H_
 #define COMPONENTS_METRICS_METRICS_LOG_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
@@ -63,18 +65,18 @@ class MetricsLog {
 
   // Computes the MD5 hash of the given string, and returns the first 8 bytes of
   // the hash.
-  static uint64 Hash(const std::string& value);
+  static uint64_t Hash(const std::string& value);
 
   // Get the GMT buildtime for the current binary, expressed in seconds since
   // January 1, 1970 GMT.
   // The value is used to identify when a new build is run, so that previous
   // reliability stats, from other builds, can be abandoned.
-  static int64 GetBuildTime();
+  static int64_t GetBuildTime();
 
   // Convenience function to return the current time at a resolution in seconds.
   // This wraps base::TimeTicks, and hence provides an abstract time that is
   // always incrementing for use in measuring time durations.
-  static int64 GetCurrentTime();
+  static int64_t GetCurrentTime();
 
   // Records a user-initiated action.
   void RecordUserAction(const std::string& key);
@@ -93,8 +95,8 @@ class MetricsLog {
   void RecordEnvironment(
       const std::vector<MetricsProvider*>& metrics_providers,
       const std::vector<variations::ActiveGroupId>& synthetic_trials,
-      int64 install_date,
-      int64 metrics_reporting_enabled_date);
+      int64_t install_date,
+      int64_t metrics_reporting_enabled_date);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
   // call from prefs and clears the pref value. Returns true on success or false

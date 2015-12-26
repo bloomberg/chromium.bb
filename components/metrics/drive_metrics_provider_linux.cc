@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"

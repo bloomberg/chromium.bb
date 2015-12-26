@@ -4,6 +4,9 @@
 
 #include "components/html_viewer/web_url_loader_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"

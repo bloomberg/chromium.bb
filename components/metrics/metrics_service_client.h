@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -49,7 +48,7 @@ class MetricsServiceClient {
 
   // Returns the product value to use in uploaded reports, which will be used to
   // set the ChromeUserMetricsExtension.product field. See comments on that
-  // field on why it's an int32 rather than an enum.
+  // field on why it's an int32_t rather than an enum.
   virtual int32_t GetProduct() = 0;
 
   // Returns the current application locale (e.g. "en-US").

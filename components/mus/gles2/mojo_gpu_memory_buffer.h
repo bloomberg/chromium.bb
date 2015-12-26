@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_H_
 #define COMPONENTS_MUS_GLES2_MOJO_GPU_MEMORY_BUFFER_H_
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"

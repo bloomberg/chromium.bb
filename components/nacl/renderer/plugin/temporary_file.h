@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_TEMPORARY_FILE_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_TEMPORARY_FILE_H_
 
+#include <stdint.h>
+
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"

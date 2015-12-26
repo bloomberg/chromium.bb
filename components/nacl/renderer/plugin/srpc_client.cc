@@ -6,8 +6,10 @@
 
 #include "components/nacl/renderer/plugin/srpc_client.h"
 
+#include <stdint.h>
 #include <string.h>
 
+#include "base/macros.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/srpc_params.h"
 #include "components/nacl/renderer/plugin/utility.h"

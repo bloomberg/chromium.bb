@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_
 #define COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"

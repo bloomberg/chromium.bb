@@ -114,12 +114,12 @@ DownloadInterruptReason ToHistoryDownloadInterruptReason(
   return static_cast<DownloadInterruptReason>(interrupt_reason);
 }
 
-uint32 ToContentDownloadId(DownloadId id) {
+uint32_t ToContentDownloadId(DownloadId id) {
   DCHECK_NE(id, kInvalidDownloadId);
-  return static_cast<uint32>(id);
+  return static_cast<uint32_t>(id);
 }
 
-DownloadId ToHistoryDownloadId(uint32 id) {
+DownloadId ToHistoryDownloadId(uint32_t id) {
   DCHECK_NE(id, content::DownloadItem::kInvalidId);
   return static_cast<DownloadId>(id);
 }

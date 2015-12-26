@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_NACL_LOADER_NACL_VALIDATION_QUERY_H_
 #define COMPONENTS_NACL_LOADER_NACL_VALIDATION_QUERY_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "crypto/hmac.h"
 

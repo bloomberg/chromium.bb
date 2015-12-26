@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/top_sites_backend.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"

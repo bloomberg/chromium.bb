@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/html_frame_properties.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "mojo/common/common_type_converters.h"

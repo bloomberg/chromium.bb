@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_LAYOUT_TEST_CONTENT_HANDLER_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_LAYOUT_TEST_CONTENT_HANDLER_IMPL_H_
 
+#include "base/macros.h"
 #include "components/html_viewer/content_handler_impl.h"
 #include "components/html_viewer/html_factory.h"
 #include "components/test_runner/web_test_proxy.h"

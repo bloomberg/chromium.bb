@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_MUS_WS_DISPLAY_MANAGER_H_
 #define COMPONENTS_MUS_WS_DISPLAY_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/display_manager_delegate.h"
 #include "mojo/public/cpp/bindings/callback.h"

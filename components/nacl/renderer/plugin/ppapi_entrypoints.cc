@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
 
+#include <stdint.h>
+
 #include "components/nacl/renderer/plugin/module_ppapi.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"

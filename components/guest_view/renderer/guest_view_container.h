@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_CONTAINER_H_
 #define COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_CONTAINER_H_
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/browser_plugin_delegate.h"

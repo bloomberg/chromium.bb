@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/ticl_profile_settings_provider.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"

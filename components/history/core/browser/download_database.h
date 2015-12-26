@@ -5,10 +5,14 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_DOWNLOAD_DATABASE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_DOWNLOAD_DATABASE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/threading/platform_thread.h"
 #include "components/history/core/browser/download_types.h"
 
@@ -28,7 +32,7 @@ class DownloadDatabase {
                    DownloadInterruptReason download_interrupt_reason_crash);
   virtual ~DownloadDatabase();
 
-  uint32 GetNextDownloadId();
+  uint32_t GetNextDownloadId();
 
   // Get all the downloads from the database.
   void QueryDownloads(std::vector<DownloadRow>* results);
@@ -43,7 +47,7 @@ class DownloadDatabase {
   bool CreateDownload(const DownloadRow& info);
 
   // Remove |id| from the database.
-  void RemoveDownload(uint32 id);
+  void RemoveDownload(uint32_t id);
 
   size_t CountDownloads();
 
@@ -95,7 +99,7 @@ class DownloadDatabase {
 
   bool EnsureColumnExists(const std::string& name, const std::string& type);
 
-  void RemoveDownloadURLs(uint32 id);
+  void RemoveDownloadURLs(uint32_t id);
 
   bool owning_thread_set_;
   base::PlatformThreadId owning_thread_;

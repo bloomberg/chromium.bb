@@ -5,6 +5,7 @@
 #include "components/history/core/browser/android/favicon_sql_handler.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "components/history/core/browser/thumbnail_database.h"

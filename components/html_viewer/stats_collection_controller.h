@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_STATS_COLLECTION_CONTROLLER_H_
 #define COMPONENTS_HTML_VIEWER_STATS_COLLECTION_CONTROLLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "gin/wrappable.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 

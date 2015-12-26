@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "components/metrics/metrics_provider.h"

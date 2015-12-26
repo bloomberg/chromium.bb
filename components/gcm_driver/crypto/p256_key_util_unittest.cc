@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/crypto/p256_key_util.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/base64.h"

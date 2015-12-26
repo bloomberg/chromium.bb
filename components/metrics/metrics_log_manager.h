@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_METRICS_METRICS_LOG_MANAGER_H_
 #define COMPONENTS_METRICS_METRICS_LOG_MANAGER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/persisted_logs.h"

@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/guest_view/common/guest_view_constants.h"

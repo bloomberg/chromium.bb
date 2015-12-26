@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
+#include "build/build_config.h"
 #include "components/nacl/browser/nacl_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

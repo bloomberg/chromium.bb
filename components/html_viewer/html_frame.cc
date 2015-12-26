@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/html_frame.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -920,7 +922,7 @@ void HTMLFrame::OnDispatchFrameLoadEvent(uint32_t frame_id) {
     frame->web_frame_->toWebRemoteFrame()->DispatchLoadEventForFrameOwner();
 }
 
-void HTMLFrame::Find(int32 request_id,
+void HTMLFrame::Find(int32_t request_id,
                      const mojo::String& search_text,
                      web_view::mojom::FindOptionsPtr options,
                      bool wrap_within_frame,

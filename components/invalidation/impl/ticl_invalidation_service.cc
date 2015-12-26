@@ -4,7 +4,10 @@
 
 #include "components/invalidation/impl/ticl_invalidation_service.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"

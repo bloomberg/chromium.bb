@@ -4,6 +4,10 @@
 
 #include "components/memory_pressure/memory_pressure_stats_collector.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/time/tick_clock.h"
 

@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_delayed_task_controller.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 
 namespace gcm {

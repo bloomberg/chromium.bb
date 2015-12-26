@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/web_graphics_context_3d_command_buffer_impl.h"
 
+#include <stdint.h>
+
 #include "components/html_viewer/blink_basic_type_converters.h"
 #include "components/html_viewer/global_state.h"
 #include "components/mus/public/cpp/context_provider.h"

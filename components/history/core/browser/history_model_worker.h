@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MODEL_WORKER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"

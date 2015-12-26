@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_NACL_BROWSER_NACL_BROKER_HOST_WIN_H_
 #define COMPONENTS_NACL_BROWSER_NACL_BROKER_HOST_WIN_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -31,7 +33,7 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   // a Native Client loader process.
   bool LaunchLoader(const std::string& loader_channel_id);
 
-  bool LaunchDebugExceptionHandler(int32 pid,
+  bool LaunchDebugExceptionHandler(int32_t pid,
                                    base::ProcessHandle process_handle,
                                    const std::string& startup_info);
 
@@ -48,7 +50,7 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   void OnLoaderLaunched(const std::string& loader_channel_id,
                         base::ProcessHandle handle);
   // Handler for NaClProcessMsg_DebugExceptionHandlerLaunched message
-  void OnDebugExceptionHandlerLaunched(int32 pid, bool success);
+  void OnDebugExceptionHandlerLaunched(int32_t pid, bool success);
 
   // BrowserChildProcessHostDelegate implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;

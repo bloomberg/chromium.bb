@@ -4,6 +4,8 @@
 
 #include "components/mus/public/cpp/property_type_converters.h"
 
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

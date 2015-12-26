@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_BLINK_SETTINGS_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_BLINK_SETTINGS_IMPL_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/html_viewer/blink_settings.h"
 
 namespace blink {

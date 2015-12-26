@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "build/build_config.h"
 #include "net/base/mac/url_conversions.h"
 
 #if defined(OS_IOS)

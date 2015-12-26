@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_CACHE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_CACHE_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_utils.h"

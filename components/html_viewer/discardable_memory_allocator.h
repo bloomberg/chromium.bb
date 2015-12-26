@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_HTML_VIEWER_DISCARDABLE_MEMORY_ALLOCATOR_H_
 #define COMPONENTS_HTML_VIEWER_DISCARDABLE_MEMORY_ALLOCATOR_H_
 
+#include <stddef.h>
+
 #include <list>
 
+#include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/synchronization/lock.h"
 

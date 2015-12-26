@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 
 namespace base {

@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_KEYWORD_ID_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_KEYWORD_ID_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace history {
 
 // ID of a keyword associated with a URL and a search term.
 // 0 is the invalid value.
-typedef int64 KeywordID;
+typedef int64_t KeywordID;
 
 }  // namespace history
 

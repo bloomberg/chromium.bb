@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_UNACKED_INVALIDATION_SET_H_
 #define COMPONENTS_INVALIDATION_IMPL_UNACKED_INVALIDATION_SET_H_
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/memory/weak_ptr.h"

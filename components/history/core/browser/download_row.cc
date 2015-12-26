@@ -29,8 +29,8 @@ DownloadRow::DownloadRow(const base::FilePath& current_path,
                          const base::Time& end,
                          const std::string& etag,
                          const std::string& last_modified,
-                         int64 received,
-                         int64 total,
+                         int64_t received,
+                         int64_t total,
                          DownloadState download_state,
                          DownloadDangerType danger_type,
                          DownloadInterruptReason interrupt_reason,
@@ -56,8 +56,7 @@ DownloadRow::DownloadRow(const base::FilePath& current_path,
       id(id),
       opened(download_opened),
       by_ext_id(ext_id),
-      by_ext_name(ext_name) {
-}
+      by_ext_name(ext_name) {}
 
 DownloadRow::~DownloadRow() {
 }

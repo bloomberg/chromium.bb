@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_SUITE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_SUITE_H_
 
+#include "base/macros.h"
 #include "base/test/test_suite.h"
 #include "mojo/public/cpp/system/macros.h"
 

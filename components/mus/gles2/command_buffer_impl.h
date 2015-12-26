@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_MUS_GLES2_COMMAND_BUFFER_IMPL_H_
 #define COMPONENTS_MUS_GLES2_COMMAND_BUFFER_IMPL_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"

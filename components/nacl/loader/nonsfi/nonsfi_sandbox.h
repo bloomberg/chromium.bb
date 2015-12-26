@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_NACL_LOADER_NONSFI_NONSFI_SANDBOX_H_
 #define COMPONENTS_NACL_LOADER_NONSFI_NONSFI_SANDBOX_H_
 
-#include "base/basictypes.h"
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 

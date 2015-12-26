@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_METRICS_LEAK_DETECTOR_CALL_STACK_TABLE_H_
 #define COMPONENTS_METRICS_LEAK_DETECTOR_CALL_STACK_TABLE_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <functional>  // For std::equal_to.

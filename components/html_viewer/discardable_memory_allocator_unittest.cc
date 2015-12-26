@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/discardable_memory_allocator.h"
 
+#include <stddef.h>
+
 #include "base/memory/discardable_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

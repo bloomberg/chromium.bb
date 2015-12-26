@@ -4,8 +4,12 @@
 
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 
+#include <stddef.h>
+
 #include <cmath>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"

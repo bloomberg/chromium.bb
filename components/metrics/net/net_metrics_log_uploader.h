@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "net/url_request/url_fetcher_delegate.h"

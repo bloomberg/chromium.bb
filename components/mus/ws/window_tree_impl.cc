@@ -4,7 +4,10 @@
 
 #include "components/mus/ws/window_tree_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
@@ -971,7 +974,7 @@ void WindowTreeImpl::GetWindowManagerInternalClient(
                                  ->GetWindowManagerInternal();
 }
 
-void WindowTreeImpl::WmResponse(uint32 change_id, bool response) {
+void WindowTreeImpl::WmResponse(uint32_t change_id, bool response) {
   if (GetHost() && GetHost()->GetWindowTree() == this)
     connection_manager_->WindowManagerChangeCompleted(change_id, response);
 }

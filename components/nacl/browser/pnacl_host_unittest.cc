@@ -4,13 +4,16 @@
 
 #include "components/nacl/browser/pnacl_host.h"
 
+#include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <string>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "build/build_config.h"
 #include "components/nacl/browser/pnacl_translation_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"

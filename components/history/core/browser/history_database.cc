@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/history_database.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <set>
 #include <string>
@@ -18,6 +20,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/url_utils.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -115,7 +118,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
 void HistoryDatabase::ComputeDatabaseMetrics(
     const base::FilePath& history_name) {
   base::TimeTicks start_time = base::TimeTicks::Now();
-  int64 file_size = 0;
+  int64_t file_size = 0;
   if (!base::GetFileSize(history_name, &file_size))
     return;
   int file_mb = static_cast<int>(file_size / (1024 * 1024));
@@ -208,7 +211,7 @@ TopHostsList HistoryDatabase::TopHosts(size_t num_hosts) {
     if (!(url.is_valid() && (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs("ftp"))))
       continue;
 
-    int64 visit_count = url_sql.ColumnInt64(1);
+    int64_t visit_count = url_sql.ColumnInt64(1);
     host_count[HostForTopHosts(url)] += visit_count;
 
     // kMaxHostsInMemory is well above typical values for
@@ -321,7 +324,7 @@ base::Time HistoryDatabase::GetEarlyExpirationThreshold() {
   if (!cached_early_expiration_threshold_.is_null())
     return cached_early_expiration_threshold_;
 
-  int64 threshold;
+  int64_t threshold;
   if (!meta_table_.GetValue(kEarlyExpirationThresholdKey, &threshold)) {
     // Set to a very early non-zero time, so it's before all history, but not
     // zero to avoid re-retrieval.

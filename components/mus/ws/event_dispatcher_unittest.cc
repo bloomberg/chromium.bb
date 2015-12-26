@@ -4,6 +4,10 @@
 
 #include "components/mus/ws/event_dispatcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/server_window.h"

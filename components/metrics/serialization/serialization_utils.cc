@@ -5,6 +5,7 @@
 #include "components/metrics/serialization/serialization_utils.h"
 
 #include <errno.h>
+#include <stdint.h>
 #include <sys/file.h>
 
 #include <string>
@@ -196,7 +197,7 @@ bool SerializationUtils::WriteMetricToFile(const MetricSample& sample,
   }
 
   std::string msg = sample.ToString();
-  int32 size = msg.length() + sizeof(int32);
+  int32_t size = msg.length() + sizeof(int32_t);
   if (size > kMessageMaxLength) {
     DPLOG(ERROR) << "cannot write message: too long: " << filename;
     return false;

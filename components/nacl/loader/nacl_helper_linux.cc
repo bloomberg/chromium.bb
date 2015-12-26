@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -31,6 +32,7 @@
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
+#include "build/build_config.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/sandbox_linux/nacl_sandbox_linux.h"
 #include "content/public/common/content_descriptors.h"

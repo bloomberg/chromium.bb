@@ -5,6 +5,7 @@
 #include "components/history/content/browser/content_visit_delegate.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"

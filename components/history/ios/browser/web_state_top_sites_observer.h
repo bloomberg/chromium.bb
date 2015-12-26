@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HISTORY_IOS_BROWSER_WEB_STATE_TOP_SITES_OBSERVER_H_
 #define COMPONENTS_HISTORY_IOS_BROWSER_WEB_STATE_TOP_SITES_OBSERVER_H_
 
+#include "base/macros.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 

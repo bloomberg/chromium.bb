@@ -4,6 +4,9 @@
 
 #include "components/history/core/browser/top_sites_database.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
@@ -209,7 +212,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
 
   // For generating histogram stats.
   size_t thumbnails_recovered = 0;
-  int64 original_size = 0;
+  int64_t original_size = 0;
   base::GetFileSize(db_path, &original_size);
 
   scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
@@ -296,7 +299,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // database.  The size should almost always be smaller, unless the input
   // database was empty to start with.  If the percentage results are very low,
   // something is awry.
-  int64 final_size = 0;
+  int64_t final_size = 0;
   if (original_size > 0 && base::GetFileSize(db_path, &final_size) &&
       final_size > 0) {
     UMA_HISTOGRAM_PERCENTAGE("History.TopSitesRecoveredPercentage",
@@ -548,7 +551,7 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
   statement.BindBool(7, score.at_top);
   statement.BindInt64(8, score.time_at_snapshot.ToInternalValue());
   statement.BindBool(9, score.load_completed);
-  int64 last_forced = url.last_forced_time.ToInternalValue();
+  int64_t last_forced = url.last_forced_time.ToInternalValue();
   DCHECK((last_forced == 0) == (new_rank != kRankOfForcedURL))
       << "Thumbnail without a forced time stamp has a forced rank, or the "
       << "opposite.";

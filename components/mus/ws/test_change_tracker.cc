@@ -4,6 +4,8 @@
 
 #include "components/mus/ws/test_change_tracker.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/mus/common/util.h"

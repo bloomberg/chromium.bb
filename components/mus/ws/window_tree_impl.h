@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_MUS_WS_WINDOW_TREE_IMPL_H_
 #define COMPONENTS_MUS_WS_WINDOW_TREE_IMPL_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
@@ -260,7 +262,7 @@ class WindowTreeImpl : public mojom::WindowTree,
           internal) override;
 
   // mojom::WindowManagerInternalClient:
-  void WmResponse(uint32 change_id, bool response) override;
+  void WmResponse(uint32_t change_id, bool response) override;
   void WmRequestClose(Id transport_window_id) override;
 
   // AccessPolicyDelegate:

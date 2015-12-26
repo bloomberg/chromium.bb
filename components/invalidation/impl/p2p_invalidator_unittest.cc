@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/p2p_invalidator.h"
 
+#include <stddef.h>
+
 #include <cstddef>
 
 #include "components/invalidation/impl/fake_invalidation_handler.h"

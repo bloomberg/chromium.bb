@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"

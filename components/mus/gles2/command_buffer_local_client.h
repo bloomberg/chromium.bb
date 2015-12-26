@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_GLES2_COMMAND_BUFFER_LOCAL_CLIENT_H_
 #define COMPONENTS_MUS_GLES2_COMMAND_BUFFER_LOCAL_CLIENT_H_
 
+#include <stdint.h>
+
 namespace mus {
 
 class CommandBufferLocalClient {

@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/mus/ws/server_window_observer.h"
 
 namespace mus {

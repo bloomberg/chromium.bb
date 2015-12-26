@@ -19,6 +19,9 @@
 
 #include "components/history/core/browser/history_backend.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "components/history/core/test/history_backend_db_base_test.h"
 
 namespace history {

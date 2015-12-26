@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_METRICS_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_METRICS_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace metrics {
 

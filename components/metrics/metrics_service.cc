@@ -126,6 +126,8 @@
 
 #include <algorithm>
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -147,6 +149,7 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -298,7 +301,7 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
   DCHECK(local_state_);
 
   // Set the install date if this is our first run.
-  int64 install_date = local_state_->GetInt64(prefs::kInstallDate);
+  int64_t install_date = local_state_->GetInt64(prefs::kInstallDate);
   if (install_date == 0)
     local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
 }
@@ -355,11 +358,11 @@ std::string MetricsService::GetClientId() {
   return state_manager_->client_id();
 }
 
-int64 MetricsService::GetInstallDate() {
+int64_t MetricsService::GetInstallDate() {
   return local_state_->GetInt64(prefs::kInstallDate);
 }
 
-int64 MetricsService::GetMetricsReportingEnabledDate() {
+int64_t MetricsService::GetMetricsReportingEnabledDate() {
   return local_state_->GetInt64(prefs::kMetricsReportingEnabledTimestamp);
 }
 
@@ -547,7 +550,7 @@ void MetricsService::PushExternalLog(const std::string& log) {
 // Initialization methods
 
 void MetricsService::InitializeMetricsState() {
-  const int64 buildtime = MetricsLog::GetBuildTime();
+  const int64_t buildtime = MetricsLog::GetBuildTime();
   const std::string version = client_->GetVersionString();
   bool version_changed = false;
   if (local_state_->GetInt64(prefs::kStabilityStatsBuildTime) != buildtime ||
@@ -665,9 +668,9 @@ void MetricsService::GetUptimes(PrefService* pref,
   *uptime = now - first_updated_time_;
   last_updated_time_ = now;
 
-  const int64 incremental_time_secs = incremental_uptime->InSeconds();
+  const int64_t incremental_time_secs = incremental_uptime->InSeconds();
   if (incremental_time_secs > 0) {
-    int64 metrics_uptime = pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
+    int64_t metrics_uptime = pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
     metrics_uptime += incremental_time_secs;
     pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
   }
@@ -1005,7 +1008,7 @@ void MetricsService::IncrementPrefValue(const char* path) {
 }
 
 void MetricsService::IncrementLongPrefsValue(const char* path) {
-  int64 value = local_state_->GetInt64(path);
+  int64_t value = local_state_->GetInt64(path);
   local_state_->SetInt64(path, value + 1);
 }
 

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_OBSERVER_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_OBSERVER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "components/mus/public/cpp/window.h"

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_FORWARDING_WINDOW_MANAGER_H_
 #define COMPONENTS_MUS_WS_FORWARDING_WINDOW_MANAGER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 

@@ -5,6 +5,7 @@
 #include "components/invalidation/impl/push_client_channel.h"
 
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/invalidation/impl/notifier_reason_util.h"
 #include "google/cacheinvalidation/client_gateway.pb.h"
 #include "google/cacheinvalidation/types.pb.h"
@@ -84,7 +85,7 @@ void PushClientChannel::OnIncomingNotification(
     const notifier::Notification& notification) {
   std::string message;
   std::string service_context;
-  int64 scheduling_hash;
+  int64_t scheduling_hash;
   if (!DecodeMessage(
            notification.data, &message, &service_context, &scheduling_hash)) {
     DLOG(ERROR) << "Could not parse ClientGatewayMessage";
@@ -100,14 +101,14 @@ const std::string& PushClientChannel::GetServiceContextForTest() const {
   return service_context_;
 }
 
-int64 PushClientChannel::GetSchedulingHashForTest() const {
+int64_t PushClientChannel::GetSchedulingHashForTest() const {
   return scheduling_hash_;
 }
 
 std::string PushClientChannel::EncodeMessageForTest(
     const std::string& message,
     const std::string& service_context,
-    int64 scheduling_hash) {
+    int64_t scheduling_hash) {
   std::string encoded_message;
   EncodeMessage(&encoded_message, message, service_context, scheduling_hash);
   return encoded_message;
@@ -116,14 +117,14 @@ std::string PushClientChannel::EncodeMessageForTest(
 bool PushClientChannel::DecodeMessageForTest(const std::string& data,
                                              std::string* message,
                                              std::string* service_context,
-                                             int64* scheduling_hash) {
+                                             int64_t* scheduling_hash) {
   return DecodeMessage(data, message, service_context, scheduling_hash);
 }
 
 void PushClientChannel::EncodeMessage(std::string* encoded_message,
                                       const std::string& message,
                                       const std::string& service_context,
-                                      int64 scheduling_hash) {
+                                      int64_t scheduling_hash) {
   ipc::invalidation::ClientGatewayMessage envelope;
   envelope.set_is_client_to_server(true);
   if (!service_context.empty()) {
@@ -137,7 +138,7 @@ void PushClientChannel::EncodeMessage(std::string* encoded_message,
 bool PushClientChannel::DecodeMessage(const std::string& data,
                                       std::string* message,
                                       std::string* service_context,
-                                      int64* scheduling_hash) {
+                                      int64_t* scheduling_hash) {
   ipc::invalidation::ClientGatewayMessage envelope;
   if (!envelope.ParseFromString(data)) {
     return false;

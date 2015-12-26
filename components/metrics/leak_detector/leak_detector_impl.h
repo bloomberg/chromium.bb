@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_METRICS_LEAK_DETECTOR_LEAK_DETECTOR_IMPL_H_
 #define COMPONENTS_METRICS_LEAK_DETECTOR_LEAK_DETECTOR_IMPL_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

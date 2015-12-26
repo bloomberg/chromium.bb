@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_PRIVATE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_PRIVATE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "components/mus/public/cpp/window.h"
 #include "mojo/public/cpp/bindings/array.h"
 

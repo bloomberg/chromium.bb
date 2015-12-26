@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"

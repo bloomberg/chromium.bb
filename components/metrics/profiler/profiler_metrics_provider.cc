@@ -5,6 +5,7 @@
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 
 #include <ctype.h>
+#include <stddef.h>
 #include <string>
 #include <vector>
 

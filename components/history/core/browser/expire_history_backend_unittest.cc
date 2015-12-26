@@ -4,11 +4,12 @@
 
 #include "components/history/core/browser/expire_history_backend.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

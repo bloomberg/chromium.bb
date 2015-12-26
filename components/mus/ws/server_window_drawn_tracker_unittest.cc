@@ -4,6 +4,9 @@
 
 #include "components/mus/ws/server_window_drawn_tracker.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_drawn_tracker_observer.h"
 #include "components/mus/ws/test_server_window_delegate.h"

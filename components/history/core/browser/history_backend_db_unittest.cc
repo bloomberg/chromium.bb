@@ -19,6 +19,8 @@
 
 #include "components/history/core/browser/history_backend.h"
 
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -50,7 +52,7 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   // Add a download, test that it was added correctly, remove it, test that it
   // was removed.
   base::Time now = base::Time();
-  uint32 id = 1;
+  uint32_t id = 1;
   EXPECT_TRUE(AddDownload(id, DownloadState::COMPLETE, base::Time()));
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(1U, downloads.size());
@@ -165,7 +167,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
         "received_bytes, total_bytes, state, end_time, opened) VALUES "
         "(?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
-    int64 id = 0;
+    int64_t id = 0;
     // Null path.
     s.BindInt64(0, ++id);
     s.BindString(1, std::string());
@@ -272,7 +274,7 @@ TEST_F(HistoryBackendDBTest, MigrateReferrer) {
         "INSERT INTO downloads (id, full_path, url, start_time, "
         "received_bytes, total_bytes, state, end_time, opened) VALUES "
         "(?, ?, ?, ?, ?, ?, ?, ?, ?)"));
-    int64 db_handle = 0;
+    int64_t db_handle = 0;
     s.BindInt64(0, ++db_handle);
     s.BindString(1, "full_path");
     s.BindString(2, "http://whatever.com/index.html");
@@ -513,7 +515,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   base::Time now(base::Time::Now());
 
   // Add some downloads.
-  uint32 id1 = 1, id2 = 2, id3 = 3;
+  uint32_t id1 = 1, id2 = 2, id3 = 3;
   AddDownload(id1, DownloadState::COMPLETE, now);
   AddDownload(id2, DownloadState::COMPLETE, now + base::TimeDelta::FromDays(2));
   AddDownload(id3, DownloadState::COMPLETE, now - base::TimeDelta::FromDays(2));

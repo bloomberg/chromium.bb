@@ -4,6 +4,7 @@
 
 #include "components/memory_pressure/filtered_memory_pressure_calculator.h"
 
+#include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/memory_pressure/test_memory_pressure_calculator.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -7,11 +7,15 @@
 
 #include "build/build_config.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -77,7 +81,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
       const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
       ppapi::PpapiPermissions permissions,
       int render_view_id,
-      uint32 permission_bits,
+      uint32_t permission_bits,
       bool uses_nonsfi_mode,
       bool off_the_record,
       NaClAppProcessType process_type,
@@ -98,7 +102,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
               IPC::Message* reply_msg,
               const base::FilePath& manifest_path);
 
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
 
 #if defined(OS_WIN)
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
@@ -181,7 +185,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Message handlers for validation caching.
   void OnQueryKnownToValidate(const std::string& signature, bool* result);
   void OnSetKnownToValidate(const std::string& signature);
-  void OnResolveFileToken(uint64 file_token_lo, uint64 file_token_hi);
+  void OnResolveFileToken(uint64_t file_token_lo, uint64_t file_token_hi);
   void FileResolved(uint64_t file_token_lo,
                     uint64_t file_token_hi,
                     const base::FilePath& file_path,

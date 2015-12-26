@@ -6,7 +6,9 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "url/gurl.h"
 

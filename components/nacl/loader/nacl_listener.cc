@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_renderer_messages.h"
 #include "components/nacl/common/nacl_switches.h"

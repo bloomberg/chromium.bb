@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_MUS_WS_EVENT_DISPATCHER_H_
 #define COMPONENTS_MUS_WS_EVENT_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/surface_id.h"
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"

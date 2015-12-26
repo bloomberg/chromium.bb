@@ -5,6 +5,7 @@
 #include "components/invalidation/impl/invalidation_service_android.h"
 
 #include "base/android/context_utils.h"
+#include "build/build_config.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/invalidation_service_test_template.h"
 #include "testing/gtest/include/gtest/gtest.h"

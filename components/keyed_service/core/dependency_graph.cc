@@ -4,6 +4,8 @@
 
 #include "components/keyed_service/core/dependency_graph.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <deque>
 #include <iterator>

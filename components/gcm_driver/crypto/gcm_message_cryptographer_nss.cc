@@ -6,6 +6,7 @@
 
 #include <pk11pub.h>
 #include <secerr.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"

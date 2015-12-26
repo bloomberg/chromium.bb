@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/fake_gcm_client.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

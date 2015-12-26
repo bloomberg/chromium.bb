@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_SERVER_WINDOW_OBSERVER_H_
 #define COMPONENTS_MUS_WS_SERVER_WINDOW_OBSERVER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "components/mus/public/interfaces/mus_constants.mojom.h"

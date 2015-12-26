@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_account_tracker.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -27,9 +29,10 @@ const char kGCMCheckinServerScope[] =
 // Name of the GCM account tracker for the OAuth2TokenService.
 const char kGCMAccountTrackerName[] = "gcm_account_tracker";
 // Minimum token validity when sending to GCM groups server.
-const int64 kMinimumTokenValidityMs = 500;
+const int64_t kMinimumTokenValidityMs = 500;
 // Token reporting interval, when no account changes are detected.
-const int64 kTokenReportingIntervalMs = 12 * 60 * 60 * 1000;  // 12 hours in ms.
+const int64_t kTokenReportingIntervalMs =
+    12 * 60 * 60 * 1000;  // 12 hours in ms.
 
 }  // namespace
 

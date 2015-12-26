@@ -4,6 +4,8 @@
 
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/input_event_handler.h"
@@ -387,7 +389,7 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
                                        ConnectionSpecificId connection_id,
                                        mojom::WindowDataPtr root_data,
                                        Id focused_window_id,
-                                       uint32 access_policy) {
+                                       uint32_t access_policy) {
   tree_ = window_tree;
   connection_id_ = connection_id;
   is_embed_root_ =
@@ -466,7 +468,7 @@ void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
                                    mojom::WindowDataPtr root_data,
                                    mojom::WindowTreePtr tree,
                                    Id focused_window_id,
-                                   uint32 access_policy) {
+                                   uint32_t access_policy) {
   DCHECK(!tree_ptr_);
   tree_ptr_ = std::move(tree);
   tree_ptr_.set_connection_error_handler([this]() { delete this; });
@@ -679,7 +681,7 @@ void WindowTreeClientImpl::OnWindowPredefinedCursorChanged(
   WindowPrivate(window).LocalSetPredefinedCursor(cursor);
 }
 
-void WindowTreeClientImpl::OnChangeCompleted(uint32 change_id, bool success) {
+void WindowTreeClientImpl::OnChangeCompleted(uint32_t change_id, bool success) {
   scoped_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
   in_flight_map_.erase(change_id);
   if (!change)

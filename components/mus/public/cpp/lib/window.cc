@@ -4,10 +4,14 @@
 
 #include "components/mus/public/cpp/window.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "components/mus/common/transient_window_utils.h"
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
@@ -494,12 +498,12 @@ void Window::SetSharedPropertyInternal(const std::string& name,
   LocalSetSharedProperty(name, value);
 }
 
-int64 Window::SetLocalPropertyInternal(const void* key,
-                                       const char* name,
-                                       PropertyDeallocator deallocator,
-                                       int64 value,
-                                       int64 default_value) {
-  int64 old = GetLocalPropertyInternal(key, default_value);
+int64_t Window::SetLocalPropertyInternal(const void* key,
+                                         const char* name,
+                                         PropertyDeallocator deallocator,
+                                         int64_t value,
+                                         int64_t default_value) {
+  int64_t old = GetLocalPropertyInternal(key, default_value);
   if (value == default_value) {
     prop_map_.erase(key);
   } else {
@@ -514,8 +518,8 @@ int64 Window::SetLocalPropertyInternal(const void* key,
   return old;
 }
 
-int64 Window::GetLocalPropertyInternal(const void* key,
-                                       int64 default_value) const {
+int64_t Window::GetLocalPropertyInternal(const void* key,
+                                         int64_t default_value) const {
   std::map<const void*, Value>::const_iterator iter = prop_map_.find(key);
   if (iter == prop_map_.end())
     return default_value;

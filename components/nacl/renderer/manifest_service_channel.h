@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_NACL_RENDERER_MANIFEST_SERVICE_CHANNEL_H_
 #define COMPONENTS_NACL_RENDERER_MANIFEST_SERVICE_CHANNEL_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -56,7 +58,7 @@ class ManifestServiceChannel : public IPC::Listener {
 
   // Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
  private:

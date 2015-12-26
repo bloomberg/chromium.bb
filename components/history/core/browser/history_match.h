@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MATCH_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_MATCH_H_
 
+#include <stddef.h>
+
 #include <deque>
 
 #include "components/history/core/browser/url_row.h"

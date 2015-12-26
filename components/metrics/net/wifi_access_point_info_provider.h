@@ -6,7 +6,8 @@
 #define COMPONENTS_METRICS_NET_WIFI_ACCESS_POINT_INFO_PROVIDER_H_
 
 #include <string>
-#include "base/basictypes.h"
+
+#include "base/macros.h"
 
 namespace metrics {
 

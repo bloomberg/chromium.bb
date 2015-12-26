@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/instance_id/instance_id_impl.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include "base/base64.h"
 #include "base/bind.h"
@@ -233,7 +235,7 @@ void InstanceIDImpl::GetInstanceIDDataCompleted(
   if (extra_data.empty()) {
     creation_time_ = base::Time();
   } else {
-    int64 time_internal = 0LL;
+    int64_t time_internal = 0LL;
     if (!base::StringToInt64(extra_data, &time_internal)) {
       DVLOG(1) << "Failed to parse the time data: " + extra_data;
       return;
@@ -259,7 +261,7 @@ void InstanceIDImpl::EnsureIDGenerated() {
   // 1) Generates the random number in 8 bytes which is required by the server.
   //    We don't want to be strictly cryptographically secure. The server might
   //    reject the ID if there is a conflict or problem.
-  uint8 bytes[kInstanceIDByteLength];
+  uint8_t bytes[kInstanceIDByteLength];
   crypto::RandBytes(bytes, sizeof(bytes));
 
   // 2) Transforms the first 4 bits to 0x7. Note that this is required by the

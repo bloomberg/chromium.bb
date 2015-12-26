@@ -4,6 +4,9 @@
 
 #include "components/nacl/renderer/json_manifest.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/json/json_reader.h"

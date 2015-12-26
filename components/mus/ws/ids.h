@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_IDS_H_
 #define COMPONENTS_MUS_WS_IDS_H_
 
+#include <stdint.h>
+
 #include <tuple>
 
 #include "components/mus/common/types.h"

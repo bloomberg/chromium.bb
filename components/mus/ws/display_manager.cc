@@ -5,6 +5,7 @@
 #include "components/mus/ws/display_manager.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass.h"

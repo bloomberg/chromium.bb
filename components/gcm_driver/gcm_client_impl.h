@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_CLIENT_IMPL_H_
 #define COMPONENTS_GCM_DRIVER_GCM_CLIENT_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -12,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -154,9 +157,9 @@ class GCMClientImpl
     void Reset();
 
     // Android ID of the device as assigned by the server.
-    uint64 android_id;
+    uint64_t android_id;
     // Security token of the device as assigned by the server.
-    uint64 secret;
+    uint64_t secret;
     // True if accounts were already provided through SetAccountsForCheckin(),
     // or when |last_checkin_accounts| was loaded as empty.
     bool accounts_set;
@@ -192,7 +195,7 @@ class GCMClientImpl
   // Receives messages and dispatches them to relevant user delegates.
   void OnMessageReceivedFromMCS(const gcm::MCSMessage& message);
   // Receives confirmation of sent messages or information about errors.
-  void OnMessageSentToMCS(int64 user_serial_number,
+  void OnMessageSentToMCS(int64_t user_serial_number,
                           const std::string& app_id,
                           const std::string& message_id,
                           MCSClient::MessageSendStatus status);

@@ -9,10 +9,12 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_PLUGIN_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_PLUGIN_H_
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include <string>
 
+#include "base/macros.h"
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 #include "components/nacl/renderer/plugin/pnacl_coordinator.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"

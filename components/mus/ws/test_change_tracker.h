@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_MUS_WS_TEST_CHANGE_TRACKER_H_
 #define COMPONENTS_MUS_WS_TEST_CHANGE_TRACKER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"

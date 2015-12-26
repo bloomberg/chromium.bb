@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_LIB_IN_FLIGHT_CHANGE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_LIB_IN_FLIGHT_CHANGE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 

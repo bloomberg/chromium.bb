@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "components/mus/common/types.h"
 #include "components/mus/common/util.h"

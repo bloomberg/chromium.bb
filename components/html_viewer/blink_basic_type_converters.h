@@ -7,6 +7,9 @@
 
 #include "mojo/public/cpp/bindings/type_converter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "mojo/public/cpp/bindings/array.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/mojo/geometry/geometry.mojom.h"

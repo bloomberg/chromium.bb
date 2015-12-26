@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/registration_manager.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -240,7 +242,7 @@ void RegistrationManager::TryRegisterId(const invalidation::ObjectId& id,
                          GetJitter(),
                          kRegistrationDelayMaxJitter);
     status->next_delay =
-        base::TimeDelta::FromSeconds(static_cast<int64>(next_delay_seconds));
+        base::TimeDelta::FromSeconds(static_cast<int64_t>(next_delay_seconds));
     DVLOG(2) << "New next delay for "
              << ObjectIdToString(id) << " is "
              << status->next_delay.InSeconds() << " seconds";

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_SCOPED_WINDOW_PTR_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_SCOPED_WINDOW_PTR_H_
 
+#include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
 
 namespace mus {

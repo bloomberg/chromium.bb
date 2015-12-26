@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_METRICS_LEAK_DETECTOR_CALL_STACK_MANAGER_H_
 #define COMPONENTS_METRICS_LEAK_DETECTOR_CALL_STACK_MANAGER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/containers/hash_tables.h"

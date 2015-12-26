@@ -4,6 +4,8 @@
 
 #include "components/metrics/cloned_install_detector.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -21,8 +23,8 @@ namespace metrics {
 
 namespace {
 
-uint32 HashRawId(const std::string& value) {
-  uint64 hash = base::HashMetricName(value);
+uint32_t HashRawId(const std::string& value) {
+  uint64_t hash = base::HashMetricName(value);
 
   // Only use 24 bits from the 64-bit hash.
   return hash & ((1 << 24) - 1);

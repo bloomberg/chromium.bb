@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_RESOURCES_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_RESOURCES_H_
 
+#include "base/macros.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"

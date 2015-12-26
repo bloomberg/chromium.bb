@@ -5,6 +5,7 @@
 #include "components/html_viewer/layout_test_content_handler_impl.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document_application_delegate.h"
 #include "components/html_viewer/html_widget.h"

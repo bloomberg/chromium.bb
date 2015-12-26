@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MEMORY_PRESSURE_MEMORY_PRESSURE_STATS_COLLECTOR_H_
 #define COMPONENTS_MEMORY_PRESSURE_MEMORY_PRESSURE_STATS_COLLECTOR_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/memory_pressure/memory_pressure_listener.h"
 

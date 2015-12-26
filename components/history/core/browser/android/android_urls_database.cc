@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/android/android_urls_database.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -58,7 +60,7 @@ AndroidURLID AndroidURLsDatabase::AddAndroidURLRow(const std::string& raw_url,
       "INSERT INTO android_urls (raw_url, url_id) VALUES (?, ?)"));
 
   statement.BindString(0, raw_url);
-  statement.BindInt64(1, static_cast<int64>(url_id));
+  statement.BindInt64(1, static_cast<int64_t>(url_id));
 
   if (!statement.Run()) {
     LOG(ERROR) << GetDB().GetErrorMessage();

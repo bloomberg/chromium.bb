@@ -4,7 +4,7 @@
 
 #include "components/metrics/stability_metrics_helper.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"

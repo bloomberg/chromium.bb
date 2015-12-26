@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_MUS_WS_WINDOW_MANAGER_ACCESS_POLICY_H_
 #define COMPONENTS_MUS_WS_WINDOW_MANAGER_ACCESS_POLICY_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/mus/ws/access_policy.h"
 
 namespace mus {

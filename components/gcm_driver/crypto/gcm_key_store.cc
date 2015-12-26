@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/crypto/gcm_key_store.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/logging.h"

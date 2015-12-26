@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "components/nacl/browser/nacl_broker_service_win.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_cmd_line.h"
@@ -94,7 +95,8 @@ void NaClBrokerHost::OnLoaderLaunched(const std::string& loader_channel_id,
 }
 
 bool NaClBrokerHost::LaunchDebugExceptionHandler(
-    int32 pid, base::ProcessHandle process_handle,
+    int32_t pid,
+    base::ProcessHandle process_handle,
     const std::string& startup_info) {
   base::ProcessHandle broker_process = process_->GetData().handle;
   base::ProcessHandle handle_in_broker_process;
@@ -106,7 +108,8 @@ bool NaClBrokerHost::LaunchDebugExceptionHandler(
       pid, handle_in_broker_process, startup_info));
 }
 
-void NaClBrokerHost::OnDebugExceptionHandlerLaunched(int32 pid, bool success) {
+void NaClBrokerHost::OnDebugExceptionHandlerLaunched(int32_t pid,
+                                                     bool success) {
   NaClBrokerService::GetInstance()->OnDebugExceptionHandlerLaunched(pid,
                                                                     success);
 }

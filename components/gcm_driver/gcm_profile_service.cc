@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"

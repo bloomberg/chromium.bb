@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/crypto/gcm_crypto_test_helpers.h"
 
+#include <stddef.h>
+
 #include <sstream>
 #include <string>
 

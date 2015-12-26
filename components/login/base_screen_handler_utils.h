@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_LOGIN_BASE_SCREEN_HANDLER_UTILS_H_
 #define COMPONENTS_LOGIN_BASE_SCREEN_HANDLER_UTILS_H_
 
+#include <stddef.h>
+
 #include <cstddef>
 #include <string>
 

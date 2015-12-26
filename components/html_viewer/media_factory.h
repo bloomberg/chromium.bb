@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/blink/url_index.h"

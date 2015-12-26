@@ -4,10 +4,15 @@
 
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -114,26 +119,21 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   // perl -MDigest::MD5=md5
   //     -e 'for(@ARGV){printf "%x\n", unpack "Q>", md5 $_}'
   //     chrome third_party.so third_party2.so
-  const uint64 profile_expected_name_md5_prefixes[][2] = {
-    {
+  const uint64_t profile_expected_name_md5_prefixes[][2] = {
+      {
 #if defined(OS_WIN)
-      0x46c3e4166659ac02ULL,
-      0x7e2b8bfddeae1abaULL
+          0x46c3e4166659ac02ULL, 0x7e2b8bfddeae1abaULL
 #else
-      0x554838a8451ac36cUL,
-      0x843661148659c9f8UL
+          0x554838a8451ac36cUL, 0x843661148659c9f8UL
 #endif
-    },
-    {
+      },
+      {
 #if defined(OS_WIN)
-      0x87b66f4573a4d5caULL,
-      0x46c3e4166659ac02ULL
+          0x87b66f4573a4d5caULL, 0x46c3e4166659ac02ULL
 #else
-      0xb4647e539fa6ec9eUL,
-      0x554838a8451ac36cUL
+          0xb4647e539fa6ec9eUL, 0x554838a8451ac36cUL
 #endif
-    }
-  };
+      }};
 
   // Represents two stack samples for each of two profiles, where each stack
   // contains three frames. Each frame contains an instruction pointer and a
@@ -238,8 +238,9 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
         const char* module_base_address = reinterpret_cast<const char*>(
             profile_modules[i][profile_sample_frames[i][j][k].module_index]
             .base_address);
-        EXPECT_EQ(static_cast<uint64>(instruction_pointer -
-                                      module_base_address), entry.address());
+        EXPECT_EQ(
+            static_cast<uint64_t>(instruction_pointer - module_base_address),
+            entry.address());
         ASSERT_TRUE(entry.has_module_id_index());
         EXPECT_EQ(profile_sample_frames[i][j][k].module_index,
                   static_cast<size_t>(entry.module_id_index()));
@@ -340,8 +341,9 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
           sample_frames[i][j].instruction_pointer);
       const char* module_base_address = reinterpret_cast<const char*>(
           modules[sample_frames[i][j].module_index].base_address);
-      EXPECT_EQ(static_cast<uint64>(instruction_pointer - module_base_address),
-                entry.address());
+      EXPECT_EQ(
+          static_cast<uint64_t>(instruction_pointer - module_base_address),
+          entry.address());
       ASSERT_TRUE(entry.has_module_id_index());
       EXPECT_EQ(sample_frames[i][j].module_index,
                 static_cast<size_t>(entry.module_id_index()));
@@ -418,8 +420,9 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
           sample_frames[i][j].instruction_pointer);
       const char* module_base_address = reinterpret_cast<const char*>(
           modules[sample_frames[i][j].module_index].base_address);
-      EXPECT_EQ(static_cast<uint64>(instruction_pointer - module_base_address),
-                entry.address());
+      EXPECT_EQ(
+          static_cast<uint64_t>(instruction_pointer - module_base_address),
+          entry.address());
       ASSERT_TRUE(entry.has_module_id_index());
       EXPECT_EQ(sample_frames[i][j].module_index,
                 static_cast<size_t>(entry.module_id_index()));

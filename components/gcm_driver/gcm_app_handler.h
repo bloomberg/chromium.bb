@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "components/gcm_driver/gcm_client.h"
 
 namespace gcm {

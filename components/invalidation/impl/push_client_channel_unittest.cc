@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -50,7 +52,7 @@ class PushClientChannelTest
 
 const char kMessage[] = "message";
 const char kServiceContext[] = "service context";
-const int64 kSchedulingHash = 100;
+const int64_t kSchedulingHash = 100;
 
 // Make sure the channel subscribes to the correct notifications
 // channel on construction.
@@ -110,7 +112,7 @@ TEST_F(PushClientChannelTest, EncodeDecode) {
       kMessage, kServiceContext, kSchedulingHash);
   std::string message;
   std::string service_context;
-  int64 scheduling_hash = 0LL;
+  int64_t scheduling_hash = 0LL;
   EXPECT_TRUE(PushClientChannel::DecodeMessageForTest(
       data, &message, &service_context, &scheduling_hash));
   EXPECT_EQ(kMessage, message);
@@ -126,7 +128,7 @@ TEST_F(PushClientChannelTest, EncodeDecodeNoContext) {
       kMessage, std::string(), kSchedulingHash);
   std::string message;
   std::string service_context = kServiceContext;
-  int64 scheduling_hash = kSchedulingHash + 1;
+  int64_t scheduling_hash = kSchedulingHash + 1;
   EXPECT_TRUE(PushClientChannel::DecodeMessageForTest(
       data, &message, &service_context, &scheduling_hash));
   EXPECT_EQ(kMessage, message);
@@ -139,7 +141,7 @@ TEST_F(PushClientChannelTest, EncodeDecodeNoContext) {
 TEST_F(PushClientChannelTest, DecodeEmpty) {
   std::string message = kMessage;
   std::string service_context = kServiceContext;
-  int64 scheduling_hash = kSchedulingHash;
+  int64_t scheduling_hash = kSchedulingHash;
   EXPECT_TRUE(PushClientChannel::DecodeMessageForTest(
       std::string(), &message, &service_context, &scheduling_hash));
   EXPECT_TRUE(message.empty());
@@ -153,7 +155,7 @@ TEST_F(PushClientChannelTest, DecodeGarbage) {
   std::string data = "garbage";
   std::string message = kMessage;
   std::string service_context = kServiceContext;
-  int64 scheduling_hash = kSchedulingHash;
+  int64_t scheduling_hash = kSchedulingHash;
   EXPECT_FALSE(PushClientChannel::DecodeMessageForTest(
       data, &message, &service_context, &scheduling_hash));
   EXPECT_EQ(kMessage, message);
@@ -188,7 +190,7 @@ TEST_F(PushClientChannelTest, OnIncomingMessageNoReceiver) {
   fake_push_client_->SimulateIncomingNotification(notification);
 
   EXPECT_TRUE(push_client_channel_.GetServiceContextForTest().empty());
-  EXPECT_EQ(static_cast<int64>(0),
+  EXPECT_EQ(static_cast<int64_t>(0),
             push_client_channel_.GetSchedulingHashForTest());
   EXPECT_TRUE(last_message_.empty());
 }
@@ -200,7 +202,7 @@ TEST_F(PushClientChannelTest, OnIncomingMessageGarbage) {
   notification.data = "garbage";
   fake_push_client_->SimulateIncomingNotification(notification);
   EXPECT_TRUE(push_client_channel_.GetServiceContextForTest().empty());
-  EXPECT_EQ(static_cast<int64>(0),
+  EXPECT_EQ(static_cast<int64_t>(0),
             push_client_channel_.GetSchedulingHashForTest());
   EXPECT_TRUE(last_message_.empty());
 }
@@ -215,7 +217,7 @@ TEST_F(PushClientChannelTest, PersistedMessageState) {
   {
     std::string message;
     std::string service_context;
-    int64 scheduling_hash = 0LL;
+    int64_t scheduling_hash = 0LL;
     EXPECT_TRUE(PushClientChannel::DecodeMessageForTest(
         fake_push_client_->sent_notifications()[0].data,
         &message,
@@ -236,7 +238,7 @@ TEST_F(PushClientChannelTest, PersistedMessageState) {
   {
     std::string message;
     std::string service_context;
-    int64 scheduling_hash = 0LL;
+    int64_t scheduling_hash = 0LL;
     EXPECT_TRUE(PushClientChannel::DecodeMessageForTest(
         fake_push_client_->sent_notifications()[1].data,
         &message,

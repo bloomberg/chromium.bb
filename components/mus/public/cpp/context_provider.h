@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_CONTEXT_PROVIDER_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_CONTEXT_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"

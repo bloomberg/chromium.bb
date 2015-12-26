@@ -5,6 +5,7 @@
 #include "components/history/core/browser/android/android_urls_sql_handler.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/history/core/browser/android/android_urls_database.h"
 
 namespace history {

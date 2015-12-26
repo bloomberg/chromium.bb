@@ -4,6 +4,8 @@
 
 #include "components/metrics/metrics_state_manager.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
@@ -14,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/metrics/cloned_install_detector.h"
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_pref_names.h"

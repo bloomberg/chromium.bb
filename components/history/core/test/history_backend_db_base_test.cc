@@ -116,7 +116,7 @@ void HistoryBackendDBBaseTest::DeleteBackend() {
   }
 }
 
-bool HistoryBackendDBBaseTest::AddDownload(uint32 id,
+bool HistoryBackendDBBaseTest::AddDownload(uint32_t id,
                                            DownloadState state,
                                            base::Time time) {
   std::vector<GURL> url_chain;

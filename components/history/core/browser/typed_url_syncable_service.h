@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNCABLE_SERVICE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNCABLE_SERVICE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_backend_observer.h"
@@ -95,7 +98,7 @@ class TypedUrlSyncableService : public syncer::SyncableService,
   typedef std::map<GURL, VisitVector> UrlVisitVectorMap;
 
   // Bitfield returned from MergeUrls to specify the result of a merge.
-  typedef uint32 MergeResult;
+  typedef uint32_t MergeResult;
   static const MergeResult DIFF_NONE = 0;
   static const MergeResult DIFF_UPDATE_NODE = 1 << 0;
   static const MergeResult DIFF_LOCAL_ROW_CHANGED = 1 << 1;

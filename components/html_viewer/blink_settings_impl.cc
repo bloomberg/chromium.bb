@@ -4,7 +4,10 @@
 
 #include "components/html_viewer/blink_settings_impl.h"
 
+#include <stdint.h>
+
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "components/html_viewer/web_preferences.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
@@ -135,7 +138,7 @@ void ApplyFontsFromMap(const ScriptFontFamilyMap& map,
                        blink::WebSettings* settings) {
   for (ScriptFontFamilyMap::const_iterator it = map.begin(); it != map.end();
        ++it) {
-    int32 script = u_getPropertyValueEnum(UCHAR_SCRIPT, (it->first).c_str());
+    int32_t script = u_getPropertyValueEnum(UCHAR_SCRIPT, (it->first).c_str());
     if (script >= 0 && script < USCRIPT_CODE_LIMIT) {
       UScriptCode code = static_cast<UScriptCode>(script);
       (*setter)(settings, it->second, GetScriptForWebSettings(code));

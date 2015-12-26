@@ -4,6 +4,8 @@
 
 #include "components/nacl/browser/nacl_browser.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_proxy.h"
 #include "base/files/file_util.h"
@@ -111,7 +113,7 @@ void LogCacheSet(nacl::NaClBrowser::ValidationCacheStatus status) {
 
 // Crash throttling parameters.
 const size_t kMaxCrashesPerInterval = 3;
-const int64 kCrashesIntervalInSeconds = 120;
+const int64_t kCrashesIntervalInSeconds = 120;
 
 }  // namespace
 
@@ -123,7 +125,7 @@ base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
   // memory map the executable.
   // IMPORTANT: This file descriptor must not have write access - that could
   // allow a NaCl inner sandbox escape.
-  uint32 flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  uint32_t flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
   if (is_executable)
     flags |= base::File::FLAG_EXECUTE;  // Windows only flag.
   base::File file(file_path, flags);
@@ -404,11 +406,12 @@ const base::FilePath& NaClBrowser::GetIrtFilePath() {
   return irt_filepath_;
 }
 
-void NaClBrowser::PutFilePath(const base::FilePath& path, uint64* file_token_lo,
-                              uint64* file_token_hi) {
+void NaClBrowser::PutFilePath(const base::FilePath& path,
+                              uint64_t* file_token_lo,
+                              uint64_t* file_token_hi) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   while (true) {
-    uint64 file_token[2] = {base::RandUint64(), base::RandUint64()};
+    uint64_t file_token[2] = {base::RandUint64(), base::RandUint64()};
     // A zero file_token indicates there is no file_token, if we get zero, ask
     // for another number.
     if (file_token[0] != 0 || file_token[1] != 0) {
@@ -425,10 +428,11 @@ void NaClBrowser::PutFilePath(const base::FilePath& path, uint64* file_token_lo,
   }
 }
 
-bool NaClBrowser::GetFilePath(uint64 file_token_lo, uint64 file_token_hi,
+bool NaClBrowser::GetFilePath(uint64_t file_token_lo,
+                              uint64_t file_token_hi,
                               base::FilePath* path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  uint64 file_token[2] = {file_token_lo, file_token_hi};
+  uint64_t file_token[2] = {file_token_lo, file_token_hi};
   std::string key(reinterpret_cast<char*>(file_token), sizeof(file_token));
   PathCacheType::iterator iter = path_cache_.Peek(key);
   if (iter == path_cache_.end()) {

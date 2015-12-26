@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_METRICS_METRICS_REPORTING_SCHEDULER_H_
 #define COMPONENTS_METRICS_METRICS_REPORTING_SCHEDULER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

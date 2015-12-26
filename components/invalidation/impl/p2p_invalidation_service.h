@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/invalidation/impl/p2p_invalidator.h"

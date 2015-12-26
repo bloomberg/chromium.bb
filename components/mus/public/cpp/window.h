@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"

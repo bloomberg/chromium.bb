@@ -4,6 +4,9 @@
 
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <numeric>
 #include <string>
 #include <vector>
@@ -18,11 +21,13 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_nonsfi_util.h"

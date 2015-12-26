@@ -7,6 +7,7 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_SRPC_PARAMS_H
 #define COMPONENTS_NACL_RENDERER_PLUGIN_SRPC_PARAMS_H
 
+#include "base/macros.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"

@@ -5,6 +5,7 @@
 #include "components/mus/mus_app.h"
 
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/mus/common/args.h"
 #include "components/mus/gles2/gpu_impl.h"
 #include "components/mus/surfaces/surfaces_scheduler.h"

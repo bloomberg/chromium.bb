@@ -4,6 +4,8 @@
 
 #include "components/metrics/net/wifi_access_point_info_provider_chromeos.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
@@ -72,7 +74,7 @@ void WifiAccessPointInfoProviderChromeos::ParseInfo(
     return;
 
   // Filter out BSSID with local bit set in the first byte.
-  uint32 first_octet;
+  uint32_t first_octet;
   if (!base::HexStringToUInt(bssid.substr(0, 2), &first_octet))
     NOTREACHED();
   if (first_octet & 0x2)

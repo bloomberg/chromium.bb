@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_WS_FOCUS_CONTROLLER_H_
 #define COMPONENTS_MUS_WS_FOCUS_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/mus/ws/server_window_drawn_tracker_observer.h"

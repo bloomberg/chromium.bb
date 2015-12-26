@@ -4,11 +4,14 @@
 
 #include "components/mus/gles2/command_buffer_driver.h"
 
+#include <stddef.h>
+
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "components/mus/gles2/gpu_memory_tracker.h"
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
@@ -130,7 +133,7 @@ bool CommandBufferDriver::DoInitialize(
   gpu::gles2::DisallowedFeatures disallowed_features;
 
   const bool offscreen = true;
-  std::vector<int32> attrib_vector;
+  std::vector<int32_t> attrib_vector;
   attrib_helper.Serialize(&attrib_vector);
   if (!decoder_->Initialize(surface_, context_, offscreen, gfx::Size(1, 1),
                             disallowed_features, attrib_vector))
@@ -191,7 +194,7 @@ void CommandBufferDriver::DestroyTransferBuffer(int32_t id) {
 
 void CommandBufferDriver::CreateImage(int32_t id,
                                       mojo::ScopedHandle memory_handle,
-                                      int32 type,
+                                      int32_t type,
                                       mojo::SizePtr size,
                                       int32_t format,
                                       int32_t internal_format) {

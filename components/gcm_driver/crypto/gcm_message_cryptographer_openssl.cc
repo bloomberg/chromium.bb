@@ -5,6 +5,8 @@
 #include "components/gcm_driver/crypto/gcm_message_cryptographer.h"
 
 #include <openssl/aead.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"

@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/impl/gcm_network_channel_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"

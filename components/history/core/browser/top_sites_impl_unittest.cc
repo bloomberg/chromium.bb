@@ -4,14 +4,19 @@
 
 #include "components/history/core/browser/top_sites_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -966,15 +971,15 @@ TEST_F(TopSitesImplTest, DeleteNotifications) {
 // Makes sure GetUpdateDelay is updated appropriately.
 TEST_F(TopSitesImplTest, GetUpdateDelay) {
 #if defined(OS_IOS)
-  const int64 kExpectedUpdateDelayInSecondEmpty = 30;
-  const int64 kExpectedUpdateDelayInSecond0Changed = 5;
-  const int64 kExpectedUpdateDelayInSecond3Changed = 5;
-  const int64 kExpectedUpdateDelayInSecond20Changed = 1;
+  const int64_t kExpectedUpdateDelayInSecondEmpty = 30;
+  const int64_t kExpectedUpdateDelayInSecond0Changed = 5;
+  const int64_t kExpectedUpdateDelayInSecond3Changed = 5;
+  const int64_t kExpectedUpdateDelayInSecond20Changed = 1;
 #else
-  const int64 kExpectedUpdateDelayInSecondEmpty = 30;
-  const int64 kExpectedUpdateDelayInSecond0Changed = 60;
-  const int64 kExpectedUpdateDelayInSecond3Changed = 52;
-  const int64 kExpectedUpdateDelayInSecond20Changed = 1;
+  const int64_t kExpectedUpdateDelayInSecondEmpty = 30;
+  const int64_t kExpectedUpdateDelayInSecond0Changed = 60;
+  const int64_t kExpectedUpdateDelayInSecond3Changed = 52;
+  const int64_t kExpectedUpdateDelayInSecond20Changed = 1;
 #endif
 
   SetLastNumUrlsChanged(0);

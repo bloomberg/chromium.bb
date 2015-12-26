@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_NACL_BROWSER_NACL_BROKER_SERVICE_WIN_H_
 #define COMPONENTS_NACL_BROWSER_NACL_BROKER_SERVICE_WIN_H_
 
+#include <stdint.h>
+
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "components/nacl/browser/nacl_broker_host_win.h"
@@ -37,13 +39,13 @@ class NaClBrokerService {
   void OnLoaderDied();
 
   bool LaunchDebugExceptionHandler(base::WeakPtr<NaClProcessHost> client,
-                                   int32 pid,
+                                   int32_t pid,
                                    base::ProcessHandle process_handle,
                                    const std::string& startup_info);
 
   // Called by NaClBrokerHost to notify the service that a debug
   // exception handler was started.
-  void OnDebugExceptionHandlerLaunched(int32 pid, bool success);
+  void OnDebugExceptionHandlerLaunched(int32_t pid, bool success);
 
  private:
   typedef std::map<std::string, base::WeakPtr<NaClProcessHost> >

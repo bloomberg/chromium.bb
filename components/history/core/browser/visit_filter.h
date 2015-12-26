@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_VISIT_FILTER_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_VISIT_FILTER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/gtest_prod_util.h"

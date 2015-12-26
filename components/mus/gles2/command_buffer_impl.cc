@@ -5,6 +5,7 @@
 #include "components/mus/gles2/command_buffer_impl.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "components/mus/gles2/command_buffer_driver.h"
 #include "components/mus/gles2/command_buffer_impl_observer.h"
@@ -150,7 +151,7 @@ void CommandBufferImpl::RetireSyncPoint(uint32_t sync_point) {
 
 void CommandBufferImpl::CreateImage(int32_t id,
                                     mojo::ScopedHandle memory_handle,
-                                    int32 type,
+                                    int32_t type,
                                     mojo::SizePtr size,
                                     int32_t format,
                                     int32_t internal_format) {

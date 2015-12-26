@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_EVENT_DISPATCHER_DELEGATE_H_
 #define COMPONENTS_MUS_WS_EVENT_DISPATCHER_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "components/mus/public/interfaces/input_events.mojom.h"
 
 namespace mus {

@@ -4,9 +4,12 @@
 
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/public/nonsfi/elf_loader.h"
 #include "ppapi/nacl_irt/irt_interfaces.h"

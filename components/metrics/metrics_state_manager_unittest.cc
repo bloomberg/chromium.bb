@@ -5,10 +5,13 @@
 #include "components/metrics/metrics_state_manager.h"
 
 #include <ctype.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -218,10 +221,10 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
 }
 
 TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
-  const int64 kFakeInstallationDate = 12345;
+  const int64_t kFakeInstallationDate = 12345;
   prefs_.SetInt64(prefs::kInstallDate, kFakeInstallationDate);
 
-  const int64 test_begin_time = base::Time::Now().ToTimeT();
+  const int64_t test_begin_time = base::Time::Now().ToTimeT();
 
   // Holds ClientInfo from previous scoped test for extra checks.
   scoped_ptr<ClientInfo> previous_client_info;
@@ -281,8 +284,8 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
     EXPECT_EQ(previous_client_info->client_id, state_manager->client_id());
   }
 
-  const int64 kBackupInstallationDate = 1111;
-  const int64 kBackupReportingEnabledDate = 2222;
+  const int64_t kBackupInstallationDate = 1111;
+  const int64_t kBackupReportingEnabledDate = 2222;
   const char kBackupClientId[] = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
   fake_client_info_backup_.reset(new ClientInfo);
   fake_client_info_backup_->client_id = kBackupClientId;

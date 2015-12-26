@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_NACL_LOADER_NACL_MAIN_PLATFORM_DELEGATE_H_
 #define COMPONENTS_NACL_LOADER_NACL_MAIN_PLATFORM_DELEGATE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace content {
 struct MainFunctionParams;

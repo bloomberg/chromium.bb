@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_HTML_VIEWER_HTML_FRAME_TREE_MANAGER_H_
 #define COMPONENTS_HTML_VIEWER_HTML_FRAME_TREE_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

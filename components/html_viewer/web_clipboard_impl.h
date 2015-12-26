@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_HTML_VIEWER_WEB_CLIPBOARD_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_WEB_CLIPBOARD_IMPL_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 

@@ -4,6 +4,9 @@
 
 #include "components/history/core/browser/url_utils.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

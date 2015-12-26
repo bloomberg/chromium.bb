@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_REQUEST_H_
 #define COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_REQUEST_H_
 
+#include "base/macros.h"
 #include "ipc/ipc_message.h"
 #include "v8/include/v8.h"
 

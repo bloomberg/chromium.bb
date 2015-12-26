@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CORE_COMMON_THUMBNAIL_SCORE_H_
 #define COMPONENTS_HISTORY_CORE_COMMON_THUMBNAIL_SCORE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include "base/time/time.h"
 
@@ -89,7 +91,7 @@ struct ThumbnailScore {
   // Time before we take a worse thumbnail (subject to
   // kThumbnailMaximumBoringness) over what's currently in the database
   // for freshness.
-  static const int64 kUpdateThumbnailTimeDays;
+  static const int64_t kUpdateThumbnailTimeDays;
 
   // Penalty of how much more boring a thumbnail should be per hour.
   static const double kThumbnailDegradePerHour;

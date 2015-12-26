@@ -4,6 +4,9 @@
 
 #include "components/metrics/serialization/serialization_utils.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -71,7 +74,7 @@ TEST_F(SerializationUtilsTest, IllegalNameAreFilteredTest) {
 
   EXPECT_FALSE(SerializationUtils::WriteMetricToFile(*sample1.get(), filename));
   EXPECT_FALSE(SerializationUtils::WriteMetricToFile(*sample2.get(), filename));
-  int64 size = 0;
+  int64_t size = 0;
 
   ASSERT_TRUE(!PathExists(filepath) || base::GetFileSize(filepath, &size));
 
@@ -88,7 +91,7 @@ TEST_F(SerializationUtilsTest, MessageSeparatedByZero) {
   scoped_ptr<MetricSample> crash = MetricSample::CrashSample("mycrash");
 
   SerializationUtils::WriteMetricToFile(*crash.get(), filename);
-  int64 size = 0;
+  int64_t size = 0;
   ASSERT_TRUE(base::GetFileSize(filepath, &size));
   // 4 bytes for the size
   // 5 bytes for crash
@@ -106,7 +109,7 @@ TEST_F(SerializationUtilsTest, MessagesTooLongAreDiscardedTest) {
 
   scoped_ptr<MetricSample> crash = MetricSample::CrashSample(name);
   EXPECT_FALSE(SerializationUtils::WriteMetricToFile(*crash.get(), filename));
-  int64 size = 0;
+  int64_t size = 0;
   ASSERT_TRUE(base::GetFileSize(filepath, &size));
   EXPECT_EQ(0, size);
 }
@@ -116,7 +119,7 @@ TEST_F(SerializationUtilsTest, ReadLongMessageTest) {
                        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
   std::string message(SerializationUtils::kMessageMaxLength + 1, 'c');
 
-  int32 message_size = message.length() + sizeof(int32);
+  int32_t message_size = message.length() + sizeof(int32_t);
   test_file.WriteAtCurrentPos(reinterpret_cast<const char*>(&message_size),
                               sizeof(message_size));
   test_file.WriteAtCurrentPos(message.c_str(), message.length());
@@ -159,7 +162,7 @@ TEST_F(SerializationUtilsTest, WriteReadTest) {
   EXPECT_TRUE(shist->IsEqual(*vect[3]));
   EXPECT_TRUE(action->IsEqual(*vect[4]));
 
-  int64 size = 0;
+  int64_t size = 0;
   ASSERT_TRUE(base::GetFileSize(filepath, &size));
   ASSERT_EQ(0, size);
 }

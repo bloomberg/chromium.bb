@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_HTML_VIEWER_DOCUMENT_RESOURCE_WAITER_H_
 #define COMPONENTS_HTML_VIEWER_DOCUMENT_RESOURCE_WAITER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/html_viewer/html_frame_tree_manager_observer.h"
 #include "components/mus/public/cpp/window_observer.h"

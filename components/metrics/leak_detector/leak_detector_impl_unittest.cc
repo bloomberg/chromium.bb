@@ -5,6 +5,7 @@
 #include "components/metrics/leak_detector/leak_detector_impl.h"
 
 #include <math.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <complex>

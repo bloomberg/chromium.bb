@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "url/gurl.h"
 
 namespace base {

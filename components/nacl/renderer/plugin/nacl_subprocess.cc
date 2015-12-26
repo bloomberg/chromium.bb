@@ -5,6 +5,8 @@
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 
 #include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <sstream>
 

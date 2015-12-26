@@ -8,6 +8,7 @@
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "build/build_config.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/loader/nacl_trusted_listener.h"

@@ -7,6 +7,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/invalidation/impl/gcm_network_channel.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/test_url_fetcher_factory.h"

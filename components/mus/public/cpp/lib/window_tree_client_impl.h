@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_TREE_CLIENT_IMPL_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_TREE_CLIENT_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window.h"
@@ -131,7 +134,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                    ConnectionSpecificId connection_id,
                    mojom::WindowDataPtr root_data,
                    Id focused_window_id,
-                   uint32 access_policy);
+                   uint32_t access_policy);
 
   // Overridden from WindowTreeConnection:
   Window* GetRoot() override;

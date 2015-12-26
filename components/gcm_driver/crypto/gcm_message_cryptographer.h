@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_GCM_DRIVER_CRYPTO_GCM_MESSAGE_CRYPTOGRAPHER_H_
 #define COMPONENTS_GCM_DRIVER_CRYPTO_GCM_MESSAGE_CRYPTOGRAPHER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string>
 

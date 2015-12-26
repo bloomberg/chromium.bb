@@ -4,6 +4,9 @@
 
 #include "components/history/core/browser/visit_database.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 #include <map>
@@ -311,11 +314,11 @@ bool VisitDatabase::GetAllVisitsInRange(base::Time begin_time,
       "ORDER BY visit_time LIMIT ?"));
 
   // See GetVisibleVisitsInRange for more info on how these times are bound.
-  int64 end = end_time.ToInternalValue();
+  int64_t end = end_time.ToInternalValue();
   statement.BindInt64(0, begin_time.ToInternalValue());
-  statement.BindInt64(1, end ? end : std::numeric_limits<int64>::max());
-  statement.BindInt64(2,
-      max_results ? max_results : std::numeric_limits<int64>::max());
+  statement.BindInt64(1, end ? end : std::numeric_limits<int64_t>::max());
+  statement.BindInt64(
+      2, max_results ? max_results : std::numeric_limits<int64_t>::max());
 
   return FillVisitVector(statement, visits);
 }
@@ -336,13 +339,13 @@ bool VisitDatabase::GetVisitsInRangeForTransition(
       "ORDER BY visit_time LIMIT ?"));
 
   // See GetVisibleVisitsInRange for more info on how these times are bound.
-  int64 end = end_time.ToInternalValue();
+  int64_t end = end_time.ToInternalValue();
   statement.BindInt64(0, begin_time.ToInternalValue());
-  statement.BindInt64(1, end ? end : std::numeric_limits<int64>::max());
+  statement.BindInt64(1, end ? end : std::numeric_limits<int64_t>::max());
   statement.BindInt(2, ui::PAGE_TRANSITION_CORE_MASK);
   statement.BindInt(3, transition);
-  statement.BindInt64(4,
-      max_results ? max_results : std::numeric_limits<int64>::max());
+  statement.BindInt64(
+      4, max_results ? max_results : std::numeric_limits<int64_t>::max());
 
   return FillVisitVector(statement, visits);
 }

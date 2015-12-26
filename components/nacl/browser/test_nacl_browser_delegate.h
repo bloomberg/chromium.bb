@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_NACL_BROWSER_TEST_NACL_BROWSER_DELEGATE_H_
 #define COMPONENTS_NACL_BROWSER_TEST_NACL_BROWSER_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
 
 // This is a base test implementation of NaClBrowserDelegate which

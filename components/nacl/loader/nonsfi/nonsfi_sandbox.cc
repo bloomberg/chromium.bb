@@ -7,13 +7,13 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/net.h>
+#include <stdint.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

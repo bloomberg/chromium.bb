@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <cstddef>
 #include <map>
 #include <set>
@@ -39,8 +42,8 @@ const char kNewState[] = "new_state";
 const char kPayload1[] = "payload1";
 const char kPayload2[] = "payload2";
 
-const int64 kVersion1 = 1LL;
-const int64 kVersion2 = 2LL;
+const int64_t kVersion1 = 1LL;
+const int64_t kVersion2 = 2LL;
 
 const int kChromeSyncSourceId = 1004;
 
@@ -143,7 +146,7 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
     }
   }
 
-  int64 GetVersion(const ObjectId& id) const {
+  int64_t GetVersion(const ObjectId& id) const {
     Map::const_iterator it = invalidations_.find(id);
     if (it == invalidations_.end()) {
       ADD_FAILURE() << "No invalidations for ID " << ObjectIdToString(id);
@@ -307,7 +310,7 @@ class SyncInvalidationListenerTest : public testing::Test {
     return fake_delegate_.GetInvalidationCount(id);
   }
 
-  int64 GetVersion(const ObjectId& id) const {
+  int64_t GetVersion(const ObjectId& id) const {
     return fake_delegate_.GetVersion(id);
   }
 
@@ -383,7 +386,8 @@ class SyncInvalidationListenerTest : public testing::Test {
 
   // |payload| can be NULL.
   void FireInvalidate(const ObjectId& object_id,
-                      int64 version, const char* payload) {
+                      int64_t version,
+                      const char* payload) {
     invalidation::Invalidation inv;
     if (payload) {
       inv = invalidation::Invalidation(object_id, version, payload);
@@ -510,8 +514,8 @@ TEST_F(SyncInvalidationListenerTest, InvalidateWithPayload) {
 TEST_F(SyncInvalidationListenerTest, ManyInvalidations_NoDrop) {
   const int kRepeatCount = 10;
   const ObjectId& id = kPreferencesId_;
-  int64 initial_version = kVersion1;
-  for (int64 i = initial_version; i < initial_version + kRepeatCount; ++i) {
+  int64_t initial_version = kVersion1;
+  for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
     FireInvalidate(id, i, kPayload1);
   }
   ASSERT_EQ(static_cast<size_t>(kRepeatCount), GetInvalidationCount(id));
@@ -556,8 +560,8 @@ TEST_F(SyncInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 
   EXPECT_EQ(0U, GetInvalidationCount(id));
 
-  int64 initial_version = kVersion1;
-  for (int64 i = initial_version; i < initial_version + kRepeatCount; ++i) {
+  int64_t initial_version = kVersion1;
+  for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
     FireInvalidate(id, i, kPayload1);
   }
 

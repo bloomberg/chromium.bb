@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "components/nacl/common/nacl_types.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -67,10 +68,10 @@ NaClLaunchParams::NaClLaunchParams(
     const IPC::PlatformFileForTransit& nexe_file,
     uint64_t nexe_token_lo,
     uint64_t nexe_token_hi,
-    const std::vector<
-        NaClResourcePrefetchRequest>& resource_prefetch_request_list,
+    const std::vector<NaClResourcePrefetchRequest>&
+        resource_prefetch_request_list,
     int render_view_id,
-    uint32 permission_bits,
+    uint32_t permission_bits,
     bool uses_nonsfi_mode,
     NaClAppProcessType process_type)
     : manifest_url(manifest_url),
@@ -81,8 +82,7 @@ NaClLaunchParams::NaClLaunchParams(
       render_view_id(render_view_id),
       permission_bits(permission_bits),
       uses_nonsfi_mode(uses_nonsfi_mode),
-      process_type(process_type) {
-}
+      process_type(process_type) {}
 
 NaClLaunchParams::~NaClLaunchParams() {
 }

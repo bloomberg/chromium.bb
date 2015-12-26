@@ -4,6 +4,9 @@
 
 #include "components/nacl/loader/nacl_validation_query.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include "base/logging.h"
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "crypto/nss_util.h"
@@ -102,7 +105,7 @@ static void* CreateQuery(void* handle) {
   return static_cast<NaClValidationQueryContext*>(handle)->CreateQuery();
 }
 
-static void AddData(void* query, const uint8* data, size_t length) {
+static void AddData(void* query, const uint8_t* data, size_t length) {
   static_cast<NaClValidationQuery*>(query)->AddData(data, length);
 }
 

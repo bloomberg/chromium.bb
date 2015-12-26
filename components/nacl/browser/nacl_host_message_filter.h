@@ -9,6 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"

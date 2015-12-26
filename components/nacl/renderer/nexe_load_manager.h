@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_NACL_RENDERER_NEXE_LOAD_MANAGER_H_
 #define COMPONENTS_NACL_RENDERER_NEXE_LOAD_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 

@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/typed_url_syncable_service.h"
 
+#include <stddef.h>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -40,7 +42,7 @@ static const int kTypedUrlVisitThrottleMultiple = 10;
 
 // Enforce oldest to newest visit order.
 static bool CheckVisitOrdering(const VisitVector& visits) {
-  int64 previous_visit_time = 0;
+  int64_t previous_visit_time = 0;
   for (VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
     if (visit != visits.begin()) {

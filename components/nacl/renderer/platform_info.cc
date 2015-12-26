@@ -5,6 +5,7 @@
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif

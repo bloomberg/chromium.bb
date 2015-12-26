@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_GLES2_COMMAND_BUFFER_DRIVER_H_
 #define COMPONENTS_MUS_GLES2_COMMAND_BUFFER_DRIVER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

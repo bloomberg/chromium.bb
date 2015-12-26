@@ -9,6 +9,8 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_
 
+#include <stdint.h>
+
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"

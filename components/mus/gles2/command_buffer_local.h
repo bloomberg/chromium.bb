@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_MUS_GLES2_COMMAND_BUFFER_LOCAL_H_
 #define COMPONENTS_MUS_GLES2_COMMAND_BUFFER_LOCAL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/macros.h"
@@ -63,12 +66,12 @@ class CommandBufferLocal : public gpu::GpuControl {
                                      size_t height,
                                      unsigned internalformat,
                                      unsigned usage) override;
-  uint32 InsertSyncPoint() override;
-  uint32 InsertFutureSyncPoint() override;
-  void RetireSyncPoint(uint32 sync_point) override;
-  void SignalSyncPoint(uint32 sync_point,
+  uint32_t InsertSyncPoint() override;
+  uint32_t InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32_t sync_point) override;
+  void SignalSyncPoint(uint32_t sync_point,
                        const base::Closure& callback) override;
-  void SignalQuery(uint32 query, const base::Closure& callback) override;
+  void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   bool IsGpuChannelLost() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;

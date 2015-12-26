@@ -4,6 +4,8 @@
 
 #include "components/nacl/renderer/plugin/pnacl_resources.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/logging.h"

@@ -4,9 +4,12 @@
 
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace mus {
@@ -63,7 +66,7 @@ bool MojoGpuMemoryBufferImpl::Map() {
 void* MojoGpuMemoryBufferImpl::memory(size_t plane) {
   DCHECK(mapped_);
   DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
-  return reinterpret_cast<uint8*>(shared_memory_->memory()) +
+  return reinterpret_cast<uint8_t*>(shared_memory_->memory()) +
          gfx::BufferOffsetForBufferFormat(size_, format_, plane);
 }
 

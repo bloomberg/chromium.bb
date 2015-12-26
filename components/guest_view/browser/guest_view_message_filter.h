@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MESSAGE_FILTER_H_
 #define COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MESSAGE_FILTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/macros.h"
@@ -37,7 +40,7 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
                          content::BrowserContext* context);
 
  protected:
-  GuestViewMessageFilter(const uint32* message_classes_to_filter,
+  GuestViewMessageFilter(const uint32_t* message_classes_to_filter,
                          size_t num_message_classes_to_filter,
                          int render_process_id,
                          content::BrowserContext* context);

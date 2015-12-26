@@ -7,6 +7,7 @@
 
 #include "blink/public/resources/grit/blink_image_resources.h"
 #include "blink/public/resources/grit/blink_resources.h"
+#include "build/build_config.h"
 
 namespace html_viewer {
 

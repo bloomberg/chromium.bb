@@ -4,6 +4,8 @@
 
 #include "components/metrics/net/network_metrics_provider.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -12,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
+#include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/metrics/net/wifi_access_point_info_provider_chromeos.h"
@@ -192,12 +195,12 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
   access_point_info->set_security_mode(security);
 
   // |bssid| is xx:xx:xx:xx:xx:xx, extract the first three components and
-  // pack into a uint32.
+  // pack into a uint32_t.
   std::string bssid = info.bssid;
   if (bssid.size() == 17 && bssid[2] == ':' && bssid[5] == ':' &&
       bssid[8] == ':' && bssid[11] == ':' && bssid[14] == ':') {
     std::string vendor_prefix_str;
-    uint32 vendor_prefix;
+    uint32_t vendor_prefix;
 
     base::RemoveChars(bssid.substr(0, 9), ":", &vendor_prefix_str);
     DCHECK_EQ(6U, vendor_prefix_str.size());
@@ -228,7 +231,7 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
   // Parse OUI list.
   for (const base::StringPiece& oui_str : base::SplitStringPiece(
            info.oui_list, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    uint32 oui;
+    uint32_t oui;
     if (base::HexStringToUInt(oui_str, &oui))
       vendor->add_element_identifier(oui);
     else

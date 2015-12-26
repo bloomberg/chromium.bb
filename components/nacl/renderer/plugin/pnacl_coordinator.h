@@ -5,8 +5,12 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_COORDINATOR_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_PNACL_COORDINATOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/pnacl_resources.h"

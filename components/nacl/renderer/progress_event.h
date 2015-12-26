@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_NACL_RENDERER_NEXE_PROGRESS_EVENT_H_
 #define COMPONENTS_NACL_RENDERER_NEXE_PROGRESS_EVENT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "components/nacl/renderer/ppb_nacl_private.h"

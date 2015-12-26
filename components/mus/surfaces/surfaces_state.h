@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_MUS_SURFACES_SURFACES_STATE_H_
 #define COMPONENTS_MUS_SURFACES_SURFACES_STATE_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/surface_hittest.h"

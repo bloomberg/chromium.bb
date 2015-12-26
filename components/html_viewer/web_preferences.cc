@@ -4,9 +4,9 @@
 
 #include "components/html_viewer/web_preferences.h"
 
-#include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 

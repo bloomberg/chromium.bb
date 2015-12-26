@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_CLIENT_H_
 #define COMPONENTS_GCM_DRIVER_GCM_CLIENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/gcm_driver/common/gcm_messages.h"
@@ -119,7 +120,7 @@ class GCMClient {
     std::string gcm_client_state;
     bool connection_client_created;
     std::string connection_state;
-    uint64 android_id;
+    uint64_t android_id;
     std::vector<std::string> registered_app_ids;
     int send_queue_size;
     int resend_queue_size;

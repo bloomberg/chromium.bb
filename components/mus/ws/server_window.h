@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_SERVER_WINDOW_H_
 #define COMPONENTS_MUS_WS_SERVER_WINDOW_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"

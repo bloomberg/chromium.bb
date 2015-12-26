@@ -4,6 +4,9 @@
 
 #include "components/gcm_driver/crypto/encryption_header_parsers.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

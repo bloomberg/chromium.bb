@@ -4,7 +4,10 @@
 
 #include "components/history/core/test/fake_web_history_service.h"
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "net/base/url_util.h"
@@ -142,7 +145,7 @@ base::Time FakeWebHistoryService::GetTimeForKeyInQuery(
   if (!net::GetValueForKeyInQuery(url, key, &value))
     return base::Time();
 
-  int64 us;
+  int64_t us;
   if (!base::StringToInt64(value, &us))
      return base::Time();
   return base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(us);

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_SURFACES_SURFACES_CONTEXT_PROVIDER_DELEGATE_H_
 #define COMPONENTS_MUS_SURFACES_SURFACES_CONTEXT_PROVIDER_DELEGATE_H_
 
+#include <stdint.h>
+
 namespace mus {
 
 class SurfacesContextProviderDelegate {

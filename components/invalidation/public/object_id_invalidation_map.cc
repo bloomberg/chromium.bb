@@ -4,6 +4,8 @@
 
 #include "components/invalidation/public/object_id_invalidation_map.h"
 
+#include <stddef.h>
+
 #include "base/json/json_string_value_serializer.h"
 
 namespace syncer {

@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_PUSH_CLIENT_CHANNEL_H_
 #define COMPONENTS_INVALIDATION_IMPL_PUSH_CLIENT_CHANNEL_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/invalidation/impl/sync_system_resources.h"
 #include "components/invalidation/public/invalidation_export.h"
@@ -54,31 +56,31 @@ class INVALIDATION_EXPORT PushClientChannel
 
   const std::string& GetServiceContextForTest() const;
 
-  int64 GetSchedulingHashForTest() const;
+  int64_t GetSchedulingHashForTest() const;
 
   static std::string EncodeMessageForTest(const std::string& message,
                                           const std::string& service_context,
-                                          int64 scheduling_hash);
+                                          int64_t scheduling_hash);
 
   static bool DecodeMessageForTest(const std::string& notification,
                                    std::string* message,
                                    std::string* service_context,
-                                   int64* scheduling_hash);
+                                   int64_t* scheduling_hash);
 
  private:
   static void EncodeMessage(std::string* encoded_message,
                             const std::string& message,
                             const std::string& service_context,
-                            int64 scheduling_hash);
+                            int64_t scheduling_hash);
   static bool DecodeMessage(const std::string& data,
                             std::string* message,
                             std::string* service_context,
-                            int64* scheduling_hash);
+                            int64_t* scheduling_hash);
   scoped_ptr<base::DictionaryValue> CollectDebugData() const;
 
   scoped_ptr<notifier::PushClient> push_client_;
   std::string service_context_;
-  int64 scheduling_hash_;
+  int64_t scheduling_hash_;
 
   // This count is saved for displaying statatistics.
   int sent_messages_count_;

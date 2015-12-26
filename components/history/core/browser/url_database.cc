@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/i18n/case_conversion.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/keyword_search_term.h"

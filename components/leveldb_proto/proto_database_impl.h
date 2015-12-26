@@ -10,13 +10,14 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
-#include "base/strings/string_split.h"
 #include "components/leveldb_proto/leveldb_database.h"
 #include "components/leveldb_proto/proto_database.h"
 

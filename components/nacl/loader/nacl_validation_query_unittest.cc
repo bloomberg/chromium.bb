@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "components/nacl/loader/nacl_validation_query.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,8 +73,8 @@ class MockValidationDB : public NaClValidationDB {
   bool did_set_;
   bool status_;
 
-  uint8 query_signature_[NaClValidationQuery::kDigestLength];
-  uint8 set_signature_[NaClValidationQuery::kDigestLength];
+  uint8_t query_signature_[NaClValidationQuery::kDigestLength];
+  uint8_t set_signature_[NaClValidationQuery::kDigestLength];
 };
 
 class TestQuery {

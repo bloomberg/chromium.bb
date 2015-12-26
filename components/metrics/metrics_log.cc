@@ -4,12 +4,13 @@
 
 #include "components/metrics/metrics_log.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/build_time.h"
 #include "base/cpu.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/metrics/histogram_encoder.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
@@ -76,7 +78,7 @@ void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
 // Round a timestamp measured in seconds since epoch to one with a granularity
 // of an hour. This can be used before uploaded potentially sensitive
 // timestamps.
-int64 RoundSecondsToHour(int64 time_in_seconds) {
+int64_t RoundSecondsToHour(int64_t time_in_seconds) {
   return 3600 * (time_in_seconds / 3600);
 }
 
@@ -99,7 +101,7 @@ MetricsLog::MetricsLog(const std::string& client_id,
 
   uma_proto_.set_session_id(session_id);
 
-  const int32 product = client_->GetProduct();
+  const int32_t product = client_->GetProduct();
   // Only set the product if it differs from the default value.
   if (product != uma_proto_.product())
     uma_proto_.set_product(product);
@@ -133,8 +135,8 @@ void MetricsLog::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-uint64 MetricsLog::Hash(const std::string& value) {
-  uint64 hash = base::HashMetricName(value);
+uint64_t MetricsLog::Hash(const std::string& value) {
+  uint64_t hash = base::HashMetricName(value);
 
   // The following log is VERY helpful when folks add some named histogram into
   // the code, but forgot to update the descriptive list of histograms.  When
@@ -148,15 +150,15 @@ uint64 MetricsLog::Hash(const std::string& value) {
 }
 
 // static
-int64 MetricsLog::GetBuildTime() {
-  static int64 integral_build_time = 0;
+int64_t MetricsLog::GetBuildTime() {
+  static int64_t integral_build_time = 0;
   if (!integral_build_time)
-    integral_build_time = static_cast<int64>(base::GetBuildTime().ToTimeT());
+    integral_build_time = static_cast<int64_t>(base::GetBuildTime().ToTimeT());
   return integral_build_time;
 }
 
 // static
-int64 MetricsLog::GetCurrentTime() {
+int64_t MetricsLog::GetCurrentTime() {
   return (base::TimeTicks::Now() - base::TimeTicks()).InSeconds();
 }
 
@@ -283,10 +285,10 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
 
-  const uint64 incremental_uptime_sec = incremental_uptime.InSeconds();
+  const uint64_t incremental_uptime_sec = incremental_uptime.InSeconds();
   if (incremental_uptime_sec)
     stability->set_incremental_uptime_sec(incremental_uptime_sec);
-  const uint64 uptime_sec = uptime.InSeconds();
+  const uint64_t uptime_sec = uptime.InSeconds();
   if (uptime_sec)
     stability->set_uptime_sec(uptime_sec);
 }
@@ -294,8 +296,8 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
 void MetricsLog::RecordEnvironment(
     const std::vector<MetricsProvider*>& metrics_providers,
     const std::vector<variations::ActiveGroupId>& synthetic_trials,
-    int64 install_date,
-    int64 metrics_reporting_enabled_date) {
+    int64_t install_date,
+    int64_t metrics_reporting_enabled_date) {
   DCHECK(!HasEnvironment());
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
@@ -322,7 +324,7 @@ void MetricsLog::RecordEnvironment(
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
 #if defined(OS_WIN)
-  hardware->set_dll_base(reinterpret_cast<uint64>(&__ImageBase));
+  hardware->set_dll_base(reinterpret_cast<uint64_t>(&__ImageBase));
 #endif
 
   SystemProfileProto::OS* os = system_profile->mutable_os();

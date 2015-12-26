@@ -4,7 +4,9 @@
 
 #include "components/gcm_driver/crypto/p256_key_util.h"
 
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <vector>
 
 #include "base/logging.h"

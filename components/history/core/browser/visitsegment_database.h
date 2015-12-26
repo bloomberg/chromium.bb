@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_VISITSEGMENT_DATABASE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_VISITSEGMENT_DATABASE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
 
 namespace sql {

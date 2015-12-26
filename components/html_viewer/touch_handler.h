@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_TOUCH_HANDLER_H_
 #define COMPONENTS_HTML_VIEWER_TOUCH_HANDLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 

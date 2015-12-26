@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_COMMON_TRANSIENT_WINDOW_UTILS_H_
 #define COMPONENTS_MUS_COMMON_TRANSIENT_WINDOW_UTILS_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "components/mus/public/interfaces/mus_constants.mojom.h"

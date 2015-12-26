@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 

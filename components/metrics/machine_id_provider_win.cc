@@ -5,6 +5,7 @@
 #include "components/metrics/machine_id_provider.h"
 
 #include <windows.h>
+#include <stdint.h>
 #include <winioctl.h>
 
 #include "base/base_paths.h"
@@ -73,7 +74,7 @@ std::string MachineIdProvider::GetMachineId() {
     return std::string();
 
   // Query for the actual serial number.
-  std::vector<int8> output_buf(header.Size);
+  std::vector<int8_t> output_buf(header.Size);
   status = DeviceIoControl(drive_handle.Get(),
                            IOCTL_STORAGE_QUERY_PROPERTY,
                            &query,
@@ -96,9 +97,9 @@ std::string MachineIdProvider::GetMachineId() {
     return std::string();
 
   // Make sure that the null-terminator exists.
-  const std::vector<int8>::iterator serial_number_begin =
+  const std::vector<int8_t>::iterator serial_number_begin =
       output_buf.begin() + offset;
-  const std::vector<int8>::iterator null_location =
+  const std::vector<int8_t>::iterator null_location =
       std::find(serial_number_begin, output_buf.end(), '\0');
   if (null_location == output_buf.end())
     return std::string();

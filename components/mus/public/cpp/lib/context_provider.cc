@@ -4,6 +4,8 @@
 
 #include "components/mus/public/cpp/context_provider.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "mojo/gles2/gles2_context.h"
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"

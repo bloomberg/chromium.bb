@@ -4,6 +4,8 @@
 
 #include "components/mus/surfaces/surfaces_context_provider.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/synchronization/waitable_event.h"

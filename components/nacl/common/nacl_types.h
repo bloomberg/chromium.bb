@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_NACL_COMMON_NACL_TYPES_H_
 #define COMPONENTS_NACL_COMMON_NACL_TYPES_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
@@ -118,17 +119,16 @@ struct NaClStartParams {
 // nacl_host_messages.h.
 struct NaClLaunchParams {
   NaClLaunchParams();
-  NaClLaunchParams(
-      const std::string& manifest_url,
-      const IPC::PlatformFileForTransit& nexe_file,
-      uint64_t nexe_token_lo,
-      uint64_t nexe_token_hi,
-      const std::vector<
-          NaClResourcePrefetchRequest>& resource_prefetch_request_list,
-      int render_view_id,
-      uint32 permission_bits,
-      bool uses_nonsfi_mode,
-      NaClAppProcessType process_type);
+  NaClLaunchParams(const std::string& manifest_url,
+                   const IPC::PlatformFileForTransit& nexe_file,
+                   uint64_t nexe_token_lo,
+                   uint64_t nexe_token_hi,
+                   const std::vector<NaClResourcePrefetchRequest>&
+                       resource_prefetch_request_list,
+                   int render_view_id,
+                   uint32_t permission_bits,
+                   bool uses_nonsfi_mode,
+                   NaClAppProcessType process_type);
   ~NaClLaunchParams();
 
   std::string manifest_url;
@@ -141,7 +141,7 @@ struct NaClLaunchParams {
   std::vector<NaClResourcePrefetchRequest> resource_prefetch_request_list;
 
   int render_view_id;
-  uint32 permission_bits;
+  uint32_t permission_bits;
   bool uses_nonsfi_mode;
 
   NaClAppProcessType process_type;

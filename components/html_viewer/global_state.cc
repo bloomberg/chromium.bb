@@ -4,11 +4,14 @@
 
 #include "components/html_viewer/global_state.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer_settings.h"
 #include "components/html_viewer/blink_platform_impl.h"

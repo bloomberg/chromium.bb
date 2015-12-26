@@ -4,6 +4,8 @@
 
 #include "components/leveldb_proto/proto_database_impl.h"
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/bind.h"

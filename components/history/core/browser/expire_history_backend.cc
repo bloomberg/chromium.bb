@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/expire_history_backend.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 #include <limits>

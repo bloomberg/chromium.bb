@@ -9,8 +9,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
-
 class GURL;
 
 // This namespace provides various helpers around handling Google-related URLs.

@@ -22,11 +22,11 @@ const char kObjectIdKey[] = "objectId";
 const char kIsUnknownVersionKey[] = "isUnknownVersion";
 const char kVersionKey[] = "version";
 const char kPayloadKey[] = "payload";
-const int64 kInvalidVersion = -1;
+const int64_t kInvalidVersion = -1;
 }
 
 Invalidation Invalidation::Init(const invalidation::ObjectId& id,
-                                int64 version,
+                                int64_t version,
                                 const std::string& payload) {
   return Invalidation(id, false, version, payload, AckHandle::CreateUnique());
 }
@@ -66,7 +66,7 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
         std::string(),
         AckHandle::CreateUnique()));
   }
-  int64 version = 0;
+  int64_t version = 0;
   std::string version_as_string;
   if (!value.GetString(kVersionKey, &version_as_string)
       || !base::StringToInt64(version_as_string, &version)) {
@@ -97,7 +97,7 @@ bool Invalidation::is_unknown_version() const {
   return is_unknown_version_;
 }
 
-int64 Invalidation::version() const {
+int64_t Invalidation::version() const {
   DCHECK(!is_unknown_version_);
   return version_;
 }
@@ -166,14 +166,13 @@ std::string Invalidation::ToString() const {
 
 Invalidation::Invalidation(const invalidation::ObjectId& id,
                            bool is_unknown_version,
-                           int64 version,
+                           int64_t version,
                            const std::string& payload,
                            AckHandle ack_handle)
     : id_(id),
       is_unknown_version_(is_unknown_version),
       version_(version),
       payload_(payload),
-      ack_handle_(ack_handle) {
-}
+      ack_handle_(ack_handle) {}
 
 }  // namespace syncer

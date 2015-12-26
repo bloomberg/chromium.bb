@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_HTML_WIDGET_H_
 #define COMPONENTS_HTML_VIEWER_HTML_WIDGET_H_
 
+#include "base/macros.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 #include "third_party/WebKit/public/web/WebWidgetClient.h"
 

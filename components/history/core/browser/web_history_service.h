@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_WEB_HISTORY_SERVICE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_WEB_HISTORY_SERVICE_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/history/core/browser/history_types.h"

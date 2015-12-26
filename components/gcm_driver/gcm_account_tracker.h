@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_ACCOUNT_TRACKER_H_
 #define COMPONENTS_GCM_DRIVER_GCM_ACCOUNT_TRACKER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"

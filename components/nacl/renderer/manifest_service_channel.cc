@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "build/build_config.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_channel.h"
@@ -56,7 +57,7 @@ bool ManifestServiceChannel::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ManifestServiceChannel::OnChannelConnected(int32 peer_pid) {
+void ManifestServiceChannel::OnChannelConnected(int32_t peer_pid) {
   peer_pid_ = peer_pid;
   if (!connected_callback_.is_null())
     base::ResetAndReturn(&connected_callback_).Run(PP_OK);

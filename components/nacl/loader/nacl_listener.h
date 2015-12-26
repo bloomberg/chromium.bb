@@ -5,13 +5,18 @@
 #ifndef COMPONENTS_NACL_LOADER_NACL_LISTENER_H_
 #define COMPONENTS_NACL_LOADER_NACL_LISTENER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/loader/nacl_trusted_listener.h"
 #include "ipc/ipc_listener.h"

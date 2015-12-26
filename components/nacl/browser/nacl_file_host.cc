@@ -4,6 +4,9 @@
 
 #include "components/nacl/browser/nacl_file_host.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -40,8 +43,8 @@ void NotifyRendererOfError(
 
 typedef void (*WriteFileInfoReply)(IPC::Message* reply_msg,
                                    IPC::PlatformFileForTransit file_desc,
-                                   uint64 file_token_lo,
-                                   uint64 file_token_hi);
+                                   uint64_t file_token_lo,
+                                   uint64_t file_token_hi);
 
 void DoRegisterOpenedNaClExecutableFile(
     scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
@@ -53,8 +56,8 @@ void DoRegisterOpenedNaClExecutableFile(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
-  uint64 file_token_lo = 0;
-  uint64 file_token_hi = 0;
+  uint64_t file_token_lo = 0;
+  uint64_t file_token_hi = 0;
   nacl_browser->PutFilePath(file_path, &file_token_lo, &file_token_hi);
 
   IPC::PlatformFileForTransit file_desc = IPC::TakeFileHandleForProcess(

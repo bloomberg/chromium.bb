@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_MUS_WS_CONNECTION_MANAGER_H_
 #define COMPONENTS_MUS_WS_CONNECTION_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"

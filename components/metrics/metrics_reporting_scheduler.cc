@@ -4,9 +4,12 @@
 
 #include "components/metrics/metrics_reporting_scheduler.h"
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/variations/variations_associated_data.h"
 
 using base::TimeDelta;
@@ -162,9 +165,8 @@ void MetricsReportingScheduler::ScheduleNextUpload() {
 
 void MetricsReportingScheduler::BackOffUploadInterval() {
   DCHECK_GT(kBackoffMultiplier, 1.0);
-  upload_interval_ = TimeDelta::FromMicroseconds(
-      static_cast<int64>(kBackoffMultiplier *
-                         upload_interval_.InMicroseconds()));
+  upload_interval_ = TimeDelta::FromMicroseconds(static_cast<int64_t>(
+      kBackoffMultiplier * upload_interval_.InMicroseconds()));
 
   TimeDelta max_interval = kMaxBackoffMultiplier * GetStandardUploadInterval();
   if (upload_interval_ > max_interval || upload_interval_.InSeconds() < 0) {

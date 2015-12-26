@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_INFOBARS_CORE_INFOBAR_MANAGER_H_
 #define COMPONENTS_INFOBARS_CORE_INFOBAR_MANAGER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/infobars/core/infobar_delegate.h"

@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_HTML_VIEWER_HTML_FRAME_H_
 #define COMPONENTS_HTML_VIEWER_HTML_FRAME_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/layers/surface_layer.h"
@@ -302,7 +304,7 @@ class HTMLFrame : public blink::WebFrameClient,
                       const OnWillNavigateCallback& callback) override;
   void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override;
   void OnDispatchFrameLoadEvent(uint32_t frame_id) override;
-  void Find(int32 request_id,
+  void Find(int32_t request_id,
             const mojo::String& search_text,
             web_view::mojom::FindOptionsPtr options,
             bool wrap_within_frame,

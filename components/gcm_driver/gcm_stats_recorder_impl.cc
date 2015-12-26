@@ -15,8 +15,8 @@
 
 namespace gcm {
 
-const uint32 MAX_LOGGED_ACTIVITY_COUNT = 100;
-const int64 RECEIVED_DATA_MESSAGE_BURST_LENGTH_SECONDS = 2;
+const uint32_t MAX_LOGGED_ACTIVITY_COUNT = 100;
+const int64_t RECEIVED_DATA_MESSAGE_BURST_LENGTH_SECONDS = 2;
 
 namespace {
 
@@ -181,14 +181,15 @@ void GCMStatsRecorderImpl::RecordCheckin(
   NotifyActivityRecorded();
 }
 
-void GCMStatsRecorderImpl::RecordCheckinInitiated(uint64 android_id) {
+void GCMStatsRecorderImpl::RecordCheckinInitiated(uint64_t android_id) {
   if (!is_recording_)
     return;
   RecordCheckin("Checkin initiated",
                 base::StringPrintf("Android Id: %" PRIu64, android_id));
 }
 
-void GCMStatsRecorderImpl::RecordCheckinDelayedDueToBackoff(int64 delay_msec) {
+void GCMStatsRecorderImpl::RecordCheckinDelayedDueToBackoff(
+    int64_t delay_msec) {
   if (!is_recording_)
     return;
   RecordCheckin("Checkin backoff",
@@ -233,7 +234,7 @@ void GCMStatsRecorderImpl::RecordConnectionInitiated(const std::string& host) {
 }
 
 void GCMStatsRecorderImpl::RecordConnectionDelayedDueToBackoff(
-    int64 delay_msec) {
+    int64_t delay_msec) {
   if (!is_recording_)
     return;
   RecordConnection("Connection backoff",
@@ -307,7 +308,7 @@ void GCMStatsRecorderImpl::RecordRegistrationResponse(
 void GCMStatsRecorderImpl::RecordRegistrationRetryDelayed(
     const std::string& app_id,
     const std::string& source,
-    int64 delay_msec,
+    int64_t delay_msec,
     int retries_left) {
   if (!is_recording_)
     return;
@@ -344,7 +345,7 @@ void GCMStatsRecorderImpl::RecordUnregistrationResponse(
 void GCMStatsRecorderImpl::RecordUnregistrationRetryDelayed(
     const std::string& app_id,
     const std::string& source,
-    int64 delay_msec,
+    int64_t delay_msec,
     int retries_left) {
   if (!is_recording_)
     return;

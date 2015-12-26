@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/top_sites_impl.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <set>
 
@@ -23,6 +25,7 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -75,16 +78,16 @@ const size_t kMaxTempTopImages = 8;
 
 const int kDaysOfHistory = 90;
 // Time from startup to first HistoryService query.
-const int64 kUpdateIntervalSecs = 15;
+const int64_t kUpdateIntervalSecs = 15;
 // Intervals between requests to HistoryService.
-const int64 kMinUpdateIntervalMinutes = 1;
+const int64_t kMinUpdateIntervalMinutes = 1;
 #if !defined(OS_IOS)
-const int64 kMaxUpdateIntervalMinutes = 60;
+const int64_t kMaxUpdateIntervalMinutes = 60;
 #else
 // On iOS, having the max at 60 results in the topsites database being
 // not updated often enough since the app isn't usually running for long
 // stretches of time.
-const int64 kMaxUpdateIntervalMinutes = 5;
+const int64_t kMaxUpdateIntervalMinutes = 5;
 #endif  // !defined(OS_IOS)
 
 // Use 100 quality (highest quality) because we're very sensitive to
@@ -735,9 +738,9 @@ base::TimeDelta TopSitesImpl::GetUpdateDelay() {
   if (cache_->top_sites().size() <= prepopulated_pages_.size())
     return base::TimeDelta::FromSeconds(30);
 
-  int64 range = kMaxUpdateIntervalMinutes - kMinUpdateIntervalMinutes;
-  int64 minutes = kMaxUpdateIntervalMinutes -
-      last_num_urls_changed_ * range / cache_->top_sites().size();
+  int64_t range = kMaxUpdateIntervalMinutes - kMinUpdateIntervalMinutes;
+  int64_t minutes = kMaxUpdateIntervalMinutes -
+                    last_num_urls_changed_ * range / cache_->top_sites().size();
   return base::TimeDelta::FromMinutes(minutes);
 }
 

@@ -4,7 +4,10 @@
 
 #include "components/gcm_driver/crypto/gcm_message_cryptographer.h"
 
+#include <stddef.h>
+
 #include "base/base64url.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"

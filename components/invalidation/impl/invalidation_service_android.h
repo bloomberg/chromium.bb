@@ -6,12 +6,14 @@
 #define COMPONENTS_INVALIDATION_IMPL_INVALIDATION_SERVICE_ANDROID_H_
 
 #include <jni.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/invalidation/impl/invalidation_logger.h"
@@ -64,9 +66,8 @@ class InvalidationServiceAndroid
   static bool RegisterJni(JNIEnv* env);
 
  private:
-  typedef std::map<invalidation::ObjectId,
-                   int64,
-                   syncer::ObjectIdLessThan> ObjectIdVersionMap;
+  typedef std::map<invalidation::ObjectId, int64_t, syncer::ObjectIdLessThan>
+      ObjectIdVersionMap;
 
   // Friend class so that InvalidationServiceFactoryAndroid has access to
   // private member object java_ref_.

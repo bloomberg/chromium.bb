@@ -5,6 +5,7 @@
 #include "components/html_viewer/html_document.h"
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"

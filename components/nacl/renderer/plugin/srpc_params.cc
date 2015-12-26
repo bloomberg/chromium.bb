@@ -7,7 +7,10 @@
 
 #include "components/nacl/renderer/plugin/srpc_params.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 

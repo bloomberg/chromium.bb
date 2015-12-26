@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_ACCESS_POLICY_H_
 #define COMPONENTS_MUS_WS_ACCESS_POLICY_H_
 
+#include <stdint.h>
+
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"

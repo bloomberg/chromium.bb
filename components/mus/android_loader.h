@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_ANDROID_LOADER_H_
 #define COMPONENTS_MUS_ANDROID_LOADER_H_
 
+#include "base/macros.h"
 #include "mojo/shell/application_loader.h"
 
 namespace mojo {

@@ -4,8 +4,11 @@
 
 #include "components/mime_util/mime_util.h"
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 

@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
 
 namespace history {

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_COMMON_UTIL_H_
 #define COMPONENTS_MUS_COMMON_UTIL_H_
 
+#include <stdint.h>
+
 #include "components/mus/common/types.h"
 
 // TODO(beng): #$*&@#(@ MacOSX SDK!

@@ -4,6 +4,7 @@
 
 #include "components/nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.h"
 
+#include "base/macros.h"
 #include "build/build_config.h"
 
 #if defined(USE_SECCOMP_BPF)
@@ -14,7 +15,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"

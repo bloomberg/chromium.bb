@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/base_switches.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
 

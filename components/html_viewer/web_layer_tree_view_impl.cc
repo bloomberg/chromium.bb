@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 
+#include <stddef.h>
+
 #include "base/thread_task_runner_handle.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"

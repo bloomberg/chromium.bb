@@ -77,8 +77,8 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_INVALIDATOR_TEST_TEMPLATE_H_
 #define COMPONENTS_INVALIDATION_IMPL_INVALIDATOR_TEST_TEMPLATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"

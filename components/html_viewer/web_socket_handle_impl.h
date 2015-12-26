@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_HTML_VIEWER_WEB_SOCKET_HANDLE_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_WEB_SOCKET_HANDLE_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/message_pump/handle_watcher.h"

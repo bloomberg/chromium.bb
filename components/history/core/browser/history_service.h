@@ -5,16 +5,19 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_SERVICE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_SERVICE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +26,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/delete_directive_handler.h"
@@ -426,7 +430,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Implemented by the caller of 'GetNextDownloadId' below, and is called with
   // the maximum id of all downloads records in the database plus 1.
-  typedef base::Callback<void(uint32)> DownloadIdCallback;
+  typedef base::Callback<void(uint32_t)> DownloadIdCallback;
 
   // Responds on the calling thread with the maximum id of all downloads records
   // in the database plus 1.
@@ -450,7 +454,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Permanently remove some downloads from the history system. This is a 'fire
   // and forget' operation.
-  void RemoveDownloads(const std::set<uint32>& ids);
+  void RemoveDownloads(const std::set<uint32_t>& ids);
 
   // Keyword search terms -----------------------------------------------------
 

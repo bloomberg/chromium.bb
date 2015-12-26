@@ -4,6 +4,8 @@
 
 #include "components/mus/surfaces/direct_output_surface.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"

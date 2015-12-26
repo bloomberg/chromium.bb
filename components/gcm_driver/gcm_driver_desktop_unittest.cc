@@ -4,10 +4,13 @@
 
 #include "components/gcm_driver/gcm_driver_desktop.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
@@ -839,8 +842,8 @@ class GCMChannelStatusSyncerTest : public GCMDriverTest {
   void SetUp() override;
 
   void CompleteGCMChannelStatusRequest(bool enabled, int poll_interval_seconds);
-  bool CompareDelaySeconds(int64 expected_delay_seconds,
-                           int64 actual_delay_seconds);
+  bool CompareDelaySeconds(int64_t expected_delay_seconds,
+                           int64_t actual_delay_seconds);
 
   GCMChannelStatusSyncer* syncer() {
     return driver()->gcm_channel_status_syncer_for_testing();
@@ -888,7 +891,8 @@ void GCMChannelStatusSyncerTest::CompleteGCMChannelStatusRequest(
 }
 
 bool GCMChannelStatusSyncerTest::CompareDelaySeconds(
-    int64 expected_delay_seconds, int64 actual_delay_seconds) {
+    int64_t expected_delay_seconds,
+    int64_t actual_delay_seconds) {
   // Most of time, the actual delay should not be smaller than the expected
   // delay.
   if (actual_delay_seconds >= expected_delay_seconds)
@@ -1006,9 +1010,9 @@ TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithDefaultInterval) {
   CompleteGCMChannelStatusRequest(true, 0);
 
   // The next request should be scheduled at the expected default interval.
-  int64 actual_delay_seconds =
+  int64_t actual_delay_seconds =
       syncer()->current_request_delay_interval().InSeconds();
-  int64 expected_delay_seconds =
+  int64_t expected_delay_seconds =
       GCMChannelStatusRequest::default_poll_interval_seconds();
   EXPECT_TRUE(CompareDelaySeconds(expected_delay_seconds, actual_delay_seconds))
       << "expected delay: " << expected_delay_seconds
@@ -1050,9 +1054,9 @@ TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithUpdatedInterval) {
   CompleteGCMChannelStatusRequest(true, new_poll_interval_seconds);
 
   // The next request should be scheduled at the expected updated interval.
-  int64 actual_delay_seconds =
+  int64_t actual_delay_seconds =
       syncer()->current_request_delay_interval().InSeconds();
-  int64 expected_delay_seconds = new_poll_interval_seconds;
+  int64_t expected_delay_seconds = new_poll_interval_seconds;
   EXPECT_TRUE(CompareDelaySeconds(expected_delay_seconds, actual_delay_seconds))
       << "expected delay: " << expected_delay_seconds
       << " actual delay: " << actual_delay_seconds;

@@ -8,8 +8,8 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 
 namespace language_usage_metrics {
 

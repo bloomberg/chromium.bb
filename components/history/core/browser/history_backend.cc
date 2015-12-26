@@ -11,7 +11,6 @@
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_enumerator.h"
@@ -24,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -1154,7 +1154,7 @@ void HistoryBackend::RemoveObserver(HistoryBackendObserver* observer) {
 
 // Downloads -------------------------------------------------------------------
 
-uint32 HistoryBackend::GetNextDownloadId() {
+uint32_t HistoryBackend::GetNextDownloadId() {
   return db_ ? db_->GetNextDownloadId() : kInvalidDownloadId;
 }
 
@@ -1180,14 +1180,14 @@ bool HistoryBackend::CreateDownload(const DownloadRow& history_info) {
   return success;
 }
 
-void HistoryBackend::RemoveDownloads(const std::set<uint32>& ids) {
+void HistoryBackend::RemoveDownloads(const std::set<uint32_t>& ids) {
   if (!db_)
     return;
   size_t downloads_count_before = db_->CountDownloads();
   base::TimeTicks started_removing = base::TimeTicks::Now();
   // HistoryBackend uses a long-running Transaction that is committed
   // periodically, so this loop doesn't actually hit the disk too hard.
-  for (std::set<uint32>::const_iterator it = ids.begin(); it != ids.end();
+  for (std::set<uint32_t>::const_iterator it = ids.begin(); it != ids.end();
        ++it) {
     db_->RemoveDownload(*it);
   }

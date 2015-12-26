@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
 
 #if defined(OS_WIN)

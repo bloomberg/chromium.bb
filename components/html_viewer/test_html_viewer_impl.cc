@@ -5,6 +5,7 @@
 #include "components/html_viewer/test_html_viewer_impl.h"
 
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "gin/converter.h"

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_WINDOW_TREE_HOST_IMPL_H_
 #define COMPONENTS_MUS_WS_WINDOW_TREE_HOST_IMPL_H_
 
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/macros.h"

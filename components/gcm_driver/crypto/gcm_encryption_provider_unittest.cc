@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 
+#include <stddef.h>
+
 #include <sstream>
 #include <string>
 

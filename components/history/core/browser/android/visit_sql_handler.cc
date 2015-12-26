@@ -4,7 +4,10 @@
 
 #include "components/history/core/browser/android/visit_sql_handler.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/browser/visit_database.h"
 
@@ -125,7 +128,7 @@ bool VisitSQLHandler::AddVisit(URLID url_id, const Time& visit_time) {
 bool VisitSQLHandler::AddVisitRows(URLID url_id,
                                    int visit_count,
                                    const Time& last_visit_time) {
-  int64 last_update_value = last_visit_time.ToInternalValue();
+  int64_t last_update_value = last_visit_time.ToInternalValue();
   for (int i = 0; i < visit_count; i++) {
     if (!AddVisit(url_id, Time::FromInternalValue(last_update_value - i)))
       return false;

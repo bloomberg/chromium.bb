@@ -5,15 +5,17 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_IMPL_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_IMPL_H_
 
+#include <stddef.h>
+
 #include <list>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"

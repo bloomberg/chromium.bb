@@ -8,6 +8,8 @@
 #ifndef COMPONENTS_NACL_RENDERER_HISTOGRAM_H_
 #define COMPONENTS_NACL_RENDERER_HISTOGRAM_H_
 
+#include <stdint.h>
+
 #include <string>
 #include "base/time/time.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"

@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_TYPES_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_TYPES_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <set>
@@ -12,8 +15,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/stack_container.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
@@ -36,9 +39,9 @@ class URLDatabase;
 // Container for a list of URLs.
 typedef std::vector<GURL> RedirectList;
 
-typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
-typedef int64 SegmentID;  // URL segments for the most visited view.
-typedef int64 IconMappingID; // For page url and icon mapping.
+typedef int64_t FaviconBitmapID;  // Identifier for a bitmap in a favicon.
+typedef int64_t SegmentID;        // URL segments for the most visited view.
+typedef int64_t IconMappingID;    // For page url and icon mapping.
 
 // The enumeration of all possible sources of visits is listed below.
 // The source will be propagated along with a URL or a visit item
@@ -56,7 +59,7 @@ enum VisitSource {
   SOURCE_SAFARI_IMPORTED = 5,
 };
 
-typedef int64 VisitID;
+typedef int64_t VisitID;
 // Structure to hold the mapping between each visit's id and its source.
 typedef std::map<VisitID, VisitSource> VisitSourceMap;
 
@@ -272,8 +275,8 @@ struct QueryOptions {
   // Helpers to get the effective parameters values, since a value of 0 means
   // "unspecified".
   int EffectiveMaxCount() const;
-  int64 EffectiveBeginTime() const;
-  int64 EffectiveEndTime() const;
+  int64_t EffectiveBeginTime() const;
+  int64_t EffectiveEndTime() const;
 };
 
 // QueryURLResult -------------------------------------------------------------
@@ -340,7 +343,7 @@ struct FilteredURL {
     // The number of visits, as seen by the Most Visited NTP pane.
     unsigned int visits;
     // The total number of seconds that the page was open.
-    int64 duration_opened;
+    int64_t duration_opened;
     // The time when the page was last visited.
     base::Time last_visit_time;
   };

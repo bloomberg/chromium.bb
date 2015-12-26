@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -13,7 +14,6 @@
 
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"

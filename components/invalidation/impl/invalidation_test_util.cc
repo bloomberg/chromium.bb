@@ -4,9 +4,9 @@
 
 #include "components/invalidation/impl/invalidation_test_util.h"
 
-#include "base/basictypes.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "components/invalidation/public/invalidation.h"
 

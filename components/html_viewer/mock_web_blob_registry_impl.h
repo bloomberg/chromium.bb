@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_HTML_VIEWER_MOCK_WEB_BLOB_REGISTRY_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_MOCK_WEB_BLOB_REGISTRY_IMPL_H_
 
+#include <stddef.h>
+
 #include <map>
 
 #include "base/containers/scoped_ptr_hash_map.h"

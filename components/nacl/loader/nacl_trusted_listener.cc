@@ -5,6 +5,7 @@
 #include "components/nacl/loader/nacl_trusted_listener.h"
 
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "ipc/message_filter.h"
 #include "native_client/src/public/chrome_main.h"
 

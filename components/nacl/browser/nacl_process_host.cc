@@ -4,6 +4,8 @@
 
 #include "components/nacl/browser/nacl_process_host.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -13,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -133,9 +136,8 @@ void* AllocateAddressSpaceASLR(base::ProcessHandle process, size_t size) {
     return NULL;
   size_t offset = base::RandGenerator(avail_size - size);
   const int kPageSize = 0x10000;
-  void* request_addr =
-      reinterpret_cast<void*>(reinterpret_cast<uint64>(addr + offset)
-                              & ~(kPageSize - 1));
+  void* request_addr = reinterpret_cast<void*>(
+      reinterpret_cast<uint64_t>(addr + offset) & ~(kPageSize - 1));
   return VirtualAllocEx(process, request_addr, size,
                         MEM_RESERVE, PAGE_NOACCESS);
 }
@@ -281,7 +283,7 @@ NaClProcessHost::NaClProcessHost(
     const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
     ppapi::PpapiPermissions permissions,
     int render_view_id,
-    uint32 permission_bits,
+    uint32_t permission_bits,
     bool uses_nonsfi_mode,
     bool off_the_record,
     NaClAppProcessType process_type,
@@ -526,7 +528,7 @@ void NaClProcessHost::Launch(
   }
 }
 
-void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
+void NaClProcessHost::OnChannelConnected(int32_t peer_pid) {
   if (!base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kNaClGdb).empty()) {
     LaunchNaClGdb();
@@ -826,7 +828,7 @@ net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
   // allocate any available port.
   // On success, if the test system has register a handler
   // (GdbDebugStubPortListener), we fire a notification.
-  uint16 port = kInitialDebugStubPort;
+  uint16_t port = kInitialDebugStubPort;
   net::SocketDescriptor s =
       net::CreatePlatformSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (s != net::kInvalidSocket) {
@@ -1235,8 +1237,8 @@ void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
       signature, off_the_record_);
 }
 
-void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
-                                         uint64 file_token_hi) {
+void NaClProcessHost::OnResolveFileToken(uint64_t file_token_lo,
+                                         uint64_t file_token_hi) {
   // Was the file registered?
   //
   // Note that the file path cache is of bounded size, and old entries can get

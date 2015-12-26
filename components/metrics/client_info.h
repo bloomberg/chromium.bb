@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_METRICS_CLIENT_INFO_H_
 #define COMPONENTS_METRICS_CLIENT_INFO_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 
 namespace metrics {
@@ -23,11 +24,11 @@ struct ClientInfo {
   std::string client_id;
 
   // The installation date: represented as an epoch time in seconds.
-  int64 installation_date;
+  int64_t installation_date;
 
   // The date on which metrics reporting was enabled: represented as an epoch
   // time in seconds.
-  int64 reporting_enabled_date;
+  int64_t reporting_enabled_date;
 };
 
 }  // namespace metrics

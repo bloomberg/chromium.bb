@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_DATABASE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_DATABASE_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/history/core/browser/url_database.h"
 #include "sql/connection.h"
 

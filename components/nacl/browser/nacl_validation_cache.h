@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_NACL_BROWSER_NACL_VALIDATION_CACHE_H_
 #define COMPONENTS_NACL_BROWSER_NACL_VALIDATION_CACHE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/containers/mru_cache.h"
+#include "base/macros.h"
 
 namespace base {
 class Pickle;

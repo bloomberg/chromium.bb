@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/tests/window_server_test_base.h"

@@ -4,6 +4,8 @@
 
 #include "components/metrics/metrics_log_manager.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <utility>
 #include <vector>

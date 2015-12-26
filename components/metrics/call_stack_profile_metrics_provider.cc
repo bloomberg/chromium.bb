@@ -4,6 +4,9 @@
 
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstring>
 #include <map>
@@ -201,7 +204,7 @@ void IgnoreCompletedProfiles(
 // Functions to encode protobufs ----------------------------------------------
 
 // The protobuf expects the MD5 checksum prefix of the module name.
-uint64 HashModuleFilename(const base::FilePath& filename) {
+uint64_t HashModuleFilename(const base::FilePath& filename) {
   const base::FilePath::StringType basename = filename.BaseName().value();
   // Copy the bytes in basename into a string buffer.
   size_t basename_length_in_bytes =
@@ -224,11 +227,11 @@ void CopySampleToProto(
     // leave call_stack_entry empty.
     if (frame.module_index == StackSamplingProfiler::Frame::kUnknownModuleIndex)
       continue;
-    int64 module_offset =
+    int64_t module_offset =
         reinterpret_cast<const char*>(frame.instruction_pointer) -
         reinterpret_cast<const char*>(modules[frame.module_index].base_address);
     DCHECK_GE(module_offset, 0);
-    entry->set_address(static_cast<uint64>(module_offset));
+    entry->set_address(static_cast<uint64_t>(module_offset));
     entry->set_module_id_index(frame.module_index);
   }
 }

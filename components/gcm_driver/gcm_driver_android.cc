@@ -4,6 +4,7 @@
 
 #include "components/gcm_driver/gcm_driver_android.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/android/context_utils.h"

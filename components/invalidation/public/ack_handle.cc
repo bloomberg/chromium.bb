@@ -4,7 +4,9 @@
 
 #include "components/invalidation/public/ack_handle.h"
 
-#include <cstddef>
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -18,7 +20,7 @@ const size_t kBytesInHandle = 16;
 
 AckHandle AckHandle::CreateUnique() {
   // This isn't a valid UUID, so we don't attempt to format it like one.
-  uint8 random_bytes[kBytesInHandle];
+  uint8_t random_bytes[kBytesInHandle];
   base::RandBytes(random_bytes, sizeof(random_bytes));
   return AckHandle(base::HexEncode(random_bytes, sizeof(random_bytes)),
                    base::Time::Now());
@@ -46,7 +48,7 @@ bool AckHandle::ResetFromValue(const base::DictionaryValue& value) {
   std::string timestamp_as_string;
   if (!value.GetString("timestamp", &timestamp_as_string))
     return false;
-  int64 timestamp_value;
+  int64_t timestamp_value;
   if (!base::StringToInt64(timestamp_as_string, &timestamp_value))
     return false;
   timestamp_ = base::Time::FromInternalValue(timestamp_value);

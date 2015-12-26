@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_METRICS_PERSISTED_LOGS_H_
 #define COMPONENTS_METRICS_PERSISTED_LOGS_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/values.h"
 
 class PrefService;

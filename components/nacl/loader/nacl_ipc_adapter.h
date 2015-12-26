@@ -5,20 +5,23 @@
 #ifndef COMPONENTS_NACL_LOADER_NACL_IPC_ADAPTER_H_
 #define COMPONENTS_NACL_LOADER_NACL_IPC_ADAPTER_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <queue>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
+#include "build/build_config.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_stdint.h"
@@ -62,11 +65,11 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   // header we're exposing to NaCl.
 #pragma pack(push, 4)
   struct NaClMessageHeader : public base::Pickle::Header {
-    int32 routing;
-    uint32 type;
-    uint32 flags;
-    uint16 num_fds;
-    uint16 pad;
+    int32_t routing;
+    uint32_t type;
+    uint32_t flags;
+    uint16_t num_fds;
+    uint16_t pad;
   };
 #pragma pack(pop)
 
@@ -139,7 +142,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
   // Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
  private:
@@ -182,7 +185,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
     // When we send a synchronous message (from untrusted to trusted), we store
     // its type here, so that later we can associate the reply with its type
     // for scanning.
-    typedef std::map<int, uint32> PendingSyncMsgMap;
+    typedef std::map<int, uint32_t> PendingSyncMsgMap;
     PendingSyncMsgMap pending_sync_msgs_;
   };
 

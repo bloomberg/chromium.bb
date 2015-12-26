@@ -230,7 +230,7 @@ bool DownloadDatabase::InitDownloadTable() {
   }
 }
 
-uint32 DownloadDatabase::GetNextDownloadId() {
+uint32_t DownloadDatabase::GetNextDownloadId() {
   sql::Statement select_max_id(GetDB().GetUniqueStatement(
       "SELECT max(id) FROM downloads"));
   bool result = select_max_id.Step();
@@ -247,9 +247,9 @@ uint32 DownloadDatabase::GetNextDownloadId() {
   // QueryDownloads().
   //
   // SQLITE doesn't have unsigned integers.
-  return 1 + static_cast<uint32>(std::max(
-      static_cast<int64>(kInvalidDownloadId),
-      select_max_id.ColumnInt64(0)));
+  return 1 + static_cast<uint32_t>(
+                 std::max(static_cast<int64_t>(kInvalidDownloadId),
+                          select_max_id.ColumnInt64(0)));
 }
 
 bool DownloadDatabase::DropDownloadTable() {
@@ -260,9 +260,9 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
   EnsureInProgressEntriesCleanedUp();
 
   results->clear();
-  std::set<uint32> ids;
+  std::set<uint32_t> ids;
 
-  std::map<uint32, DownloadRow*> info_map;
+  std::map<uint32_t, DownloadRow*> info_map;
 
   sql::Statement statement_main(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, current_path, target_path, "
@@ -279,7 +279,7 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
     // SQLITE does not have unsigned integers, so explicitly handle negative
     // |id|s instead of casting them to very large uint32s, which would break
     // the max(id) logic in GetNextDownloadId().
-    int64 signed_id = statement_main.ColumnInt64(column++);
+    int64_t signed_id = statement_main.ColumnInt64(column++);
     info->id = IntToDownloadId(signed_id);
     info->current_path = ColumnFilePath(statement_main, column++);
     info->target_path = ColumnFilePath(statement_main, column++);
@@ -309,7 +309,7 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
     // If the record is corrupted, note that and drop it.
     // http://crbug.com/251269
     DroppedReason dropped_reason = DROPPED_REASON_MAX;
-    if (signed_id <= static_cast<int64>(kInvalidDownloadId)) {
+    if (signed_id <= static_cast<int64_t>(kInvalidDownloadId)) {
       // SQLITE doesn't have unsigned integers.
       dropped_reason = DROPPED_REASON_BAD_ID;
     } else if (!ids.insert(info->id).second) {
@@ -326,7 +326,7 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
                                 DROPPED_REASON_MAX + 1);
     } else {
       DCHECK(!ContainsKey(info_map, info->id));
-      uint32 id = info->id;
+      uint32_t id = info->id;
       info_map[id] = info.release();
     }
   }
@@ -339,12 +339,12 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
   while (statement_chain.Step()) {
     int column = 0;
     // See the comment above about SQLITE lacking unsigned integers.
-    int64 signed_id = statement_chain.ColumnInt64(column++);
+    int64_t signed_id = statement_chain.ColumnInt64(column++);
     int chain_index = statement_chain.ColumnInt(column++);
 
-    if (signed_id <= static_cast<int64>(kInvalidDownloadId))
+    if (signed_id <= static_cast<int64_t>(kInvalidDownloadId))
       continue;
-    uint32 id = IntToDownloadId(signed_id);
+    uint32_t id = IntToDownloadId(signed_id);
 
     // Note that these DCHECKs may trip as a result of corrupted databases.
     // We have them because in debug builds the chances are higher there's
@@ -373,8 +373,8 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
     url_chain->push_back(GURL(statement_chain.ColumnString(2)));
   }
 
-  for (std::map<uint32, DownloadRow*>::iterator
-           it = info_map.begin(); it != info_map.end(); ++it) {
+  for (std::map<uint32_t, DownloadRow*>::iterator it = info_map.begin();
+       it != info_map.end(); ++it) {
     DownloadRow* row = it->second;
     bool empty_url_chain = row->url_chain.empty();
     UMA_HISTOGRAM_BOOLEAN("Download.DatabaseEmptyUrlChain", empty_url_chain);
@@ -541,7 +541,7 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
   return true;
 }
 
-void DownloadDatabase::RemoveDownload(uint32 id) {
+void DownloadDatabase::RemoveDownload(uint32_t id) {
   EnsureInProgressEntriesCleanedUp();
 
   sql::Statement downloads_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -555,7 +555,7 @@ void DownloadDatabase::RemoveDownload(uint32 id) {
   RemoveDownloadURLs(id);
 }
 
-void DownloadDatabase::RemoveDownloadURLs(uint32 id) {
+void DownloadDatabase::RemoveDownloadURLs(uint32_t id) {
   sql::Statement urlchain_statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads_url_chains WHERE id=?"));
   urlchain_statement.BindInt(0, id);

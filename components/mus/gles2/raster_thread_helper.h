@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MUS_GLES2_RASTER_THREAD_HELPER_H_
 #define COMPONENTS_MUS_GLES2_RASTER_THREAD_HELPER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace cc {

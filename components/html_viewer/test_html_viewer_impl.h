@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

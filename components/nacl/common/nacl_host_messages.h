@@ -4,9 +4,10 @@
 
 // Multiply-included file, no traditional include guard.
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_types.h"
@@ -115,8 +116,8 @@ IPC_SYNC_MESSAGE_CONTROL3_3(NaClHostMsg_OpenNaClExecutable,
                             GURL /* URL of NaCl executable file */,
                             bool /* enable_validation_caching */,
                             IPC::PlatformFileForTransit /* output file */,
-                            uint64 /* file_token_lo */,
-                            uint64 /* file_token_hi */)
+                            uint64_t /* file_token_lo */,
+                            uint64_t /* file_token_hi */)
 
 // A renderer sends this to the browser process to determine how many
 // processors are online.

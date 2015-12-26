@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_INFOBARS_CORE_INFOBAR_CONTAINER_H_
 #define COMPONENTS_INFOBARS_CORE_INFOBAR_CONTAINER_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "third_party/skia/include/core/SkColor.h"

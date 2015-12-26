@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_MEMORY_PRESSURE_MEMORY_PRESSURE_CALCULATOR_H_
 #define COMPONENTS_MEMORY_PRESSURE_MEMORY_PRESSURE_CALCULATOR_H_
 
+#include "base/macros.h"
 #include "components/memory_pressure/memory_pressure_listener.h"
 
 namespace memory_pressure {

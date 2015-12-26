@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NACL_LOADER_NACL_TRUSTED_LISTENER_H_
 #define COMPONENTS_NACL_LOADER_NACL_TRUSTED_LISTENER_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
