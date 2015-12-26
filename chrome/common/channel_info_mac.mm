@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/basictypes.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/version_info/version_info.h"

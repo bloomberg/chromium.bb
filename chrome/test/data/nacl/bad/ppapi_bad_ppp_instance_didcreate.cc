@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -14,8 +16,8 @@
 
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp.h"
+#include "ppapi/c/ppp_instance.h"
 
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module module_id,
                                        PPB_GetInterface get_browser_interface) {

@@ -10,11 +10,12 @@
 #include <string>
 
 #include <assert.h>
+#include <inttypes.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
-#include <sys/fcntl.h>
 #include <string.h>
+#include <sys/fcntl.h>
 #include <unistd.h>
 
 #include "ppapi/cpp/instance.h"

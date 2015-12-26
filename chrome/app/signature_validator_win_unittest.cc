@@ -4,14 +4,16 @@
 
 #include <windows.h>
 #include <atlstr.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <wintrust.h>
 
 #include "base/base_paths.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -76,9 +78,9 @@ class SignatureValidatorTest : public testing::Test {
 
     CRYPT_BIT_BLOB blob = cert->pCertInfo->SubjectPublicKeyInfo.PublicKey;
     size_t public_key_length = blob.cbData;
-    uint8* public_key = blob.pbData;
+    uint8_t* public_key = blob.pbData;
 
-    uint8 hash[crypto::kSHA256Length] = {0};
+    uint8_t hash[crypto::kSHA256Length] = {0};
 
     base::StringPiece key_bytes(reinterpret_cast<char*>(public_key),
                                 public_key_length);

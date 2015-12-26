@@ -5,7 +5,7 @@
 #ifndef CHROME_RENDERER_WORKER_CONTENT_SETTINGS_CLIENT_PROXY_H_
 #define CHROME_RENDERER_WORKER_CONTENT_SETTINGS_CLIENT_PROXY_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/web/WebWorkerContentSettingsClientProxy.h"
 #include "url/gurl.h"

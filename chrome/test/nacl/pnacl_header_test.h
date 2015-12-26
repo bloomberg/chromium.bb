@@ -6,6 +6,7 @@
 #define CHROME_TEST_NACL_PNACL_HEADER_TEST_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"

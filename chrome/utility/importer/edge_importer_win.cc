@@ -154,7 +154,7 @@ void BuildBookmarkEntries(const EdgeFavoriteEntry& current_entry,
 EdgeImporter::EdgeImporter() {}
 
 void EdgeImporter::StartImport(const importer::SourceProfile& source_profile,
-                               uint16 items,
+                               uint16_t items,
                                ImporterBridge* bridge) {
   bridge_ = bridge;
   bridge_->NotifyStarted();

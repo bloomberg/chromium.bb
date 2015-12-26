@@ -4,6 +4,9 @@
 
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
 #include "base/win/scoped_bstr.h"

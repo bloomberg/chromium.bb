@@ -5,6 +5,7 @@
 #include <windows.h>  // NOLINT
 #include <fcntl.h>  // for _O_* constants
 #include <fdi.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 #include "chrome/installer/mini_installer/decompress.h"

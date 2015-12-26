@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/cloud_print_connector.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"

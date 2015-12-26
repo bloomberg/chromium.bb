@@ -5,7 +5,8 @@
 #ifndef CHROME_UTILITY_PROFILE_IMPORT_HANDLER_H_
 #define CHROME_UTILITY_PROFILE_IMPORT_HANDLER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -33,12 +34,11 @@ class ProfileImportHandler : public UtilityMessageHandler {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  void OnImportStart(
-      const importer::SourceProfile& source_profile,
-      uint16 items,
-      const base::DictionaryValue& localized_strings);
+  void OnImportStart(const importer::SourceProfile& source_profile,
+                     uint16_t items,
+                     const base::DictionaryValue& localized_strings);
   void OnImportCancel();
-  void OnImportItemFinished(uint16 item);
+  void OnImportItemFinished(uint16_t item);
 
   // The following are used with out of process profile import:
   void ImporterCleanup();
@@ -52,7 +52,7 @@ class ProfileImportHandler : public UtilityMessageHandler {
   scoped_refptr<ExternalProcessImporterBridge> bridge_;
 
   // A bitmask of importer::ImportItem.
-  uint16 items_to_import_;
+  uint16_t items_to_import_;
 
   // Importer of the appropriate type (Firefox, Safari, IE, etc.)
   scoped_refptr<Importer> importer_;

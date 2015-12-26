@@ -6,11 +6,14 @@
 
 #include "chrome/installer/util/installation_validator.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/common/chrome_switches.h"

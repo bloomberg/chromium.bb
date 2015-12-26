@@ -5,7 +5,7 @@
 #ifndef CHROME_RENDERER_MEDIA_CAST_UDP_TRANSPORT_H_
 #define CHROME_RENDERER_MEDIA_CAST_UDP_TRANSPORT_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/renderer/media/cast_session_delegate.h"

@@ -14,6 +14,7 @@
 #define CHROME_RENDERER_MEDIA_CAST_THREADS_H_
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/threading/thread.h"
 
 class CastThreads {

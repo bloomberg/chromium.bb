@@ -5,6 +5,10 @@
 // This is a stub for the code signing utilities on Mac and Linux.
 // It should eventually be replaced with a real implementation.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "build/build_config.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 
 namespace safe_browsing {

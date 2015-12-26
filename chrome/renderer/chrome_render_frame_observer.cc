@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/chrome_render_frame_observer.h"
 
+#include <stddef.h>
+
 #include <limits>
 #include <string>
 #include <vector>
@@ -11,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_BASE_TEST_BROWSER_WINDOW_AURA_H_
 #define CHROME_TEST_BASE_TEST_BROWSER_WINDOW_AURA_H_
 
+#include "base/macros.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "ui/aura/window.h"
 

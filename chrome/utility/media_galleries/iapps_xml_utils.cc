@@ -70,7 +70,7 @@ bool ReadString(XmlReader* reader, std::string* result) {
   return ReadSimpleValue(reader, "string", result);
 }
 
-bool ReadInteger(XmlReader* reader, uint64* result) {
+bool ReadInteger(XmlReader* reader, uint64_t* result) {
   std::string value;
   if (!ReadSimpleValue(reader, "integer", &value))
     return false;
@@ -84,7 +84,7 @@ std::string ReadFileAsString(base::File file) {
 
   // A "reasonable" artificial limit.
   // TODO(vandebo): Add a UMA to figure out what common values are.
-  const int64 kMaxLibraryFileSize = 150 * 1024 * 1024;
+  const int64_t kMaxLibraryFileSize = 150 * 1024 * 1024;
   base::File::Info file_info;
   if (!file.GetInfo(&file_info) || file_info.size > kMaxLibraryFileSize)
     return result;

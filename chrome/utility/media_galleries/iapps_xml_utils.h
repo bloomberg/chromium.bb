@@ -5,10 +5,13 @@
 #ifndef CHROME_UTILITY_MEDIA_GALLERIES_IAPPS_XML_UTILS_H_
 #define CHROME_UTILITY_MEDIA_GALLERIES_IAPPS_XML_UTILS_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 
 class XmlReader;
@@ -31,7 +34,7 @@ bool SeekInDict(XmlReader* reader, const std::string& key);
 bool ReadString(XmlReader* reader, std::string* result);
 
 // Get the value out of an integer node.
-bool ReadInteger(XmlReader* reader, uint64* result);
+bool ReadInteger(XmlReader* reader, uint64_t* result);
 
 // Read in the contents of the given library xml |file| and return as a string.
 std::string ReadFileAsString(base::File file);

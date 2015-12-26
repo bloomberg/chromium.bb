@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/test/remoting/qunit_browser_test_runner.h"
 
 #if defined(OS_MACOSX)

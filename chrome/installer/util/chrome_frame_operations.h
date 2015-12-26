@@ -5,8 +5,8 @@
 #ifndef CHROME_INSTALLER_UTIL_CHROME_FRAME_OPERATIONS_H_
 #define CHROME_INSTALLER_UTIL_CHROME_FRAME_OPERATIONS_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/installer/util/product_operations.h"
 
 namespace installer {

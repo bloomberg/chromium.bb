@@ -6,8 +6,10 @@
 
 #include <windows.h>
 #include <shlwapi.h>  // For SHDeleteKey.
+#include <stddef.h>
 
 #include "base/base_paths.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"

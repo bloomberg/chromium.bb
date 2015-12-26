@@ -4,14 +4,17 @@
 
 #include "chrome/test/chromedriver/logging.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/console_logger.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -29,7 +32,7 @@ namespace {
 
 Log::Level g_log_level = Log::kWarning;
 
-int64 g_start_time = 0;
+int64_t g_start_time = 0;
 
 // Array indices are the Log::Level enum values.
 const char* const kLevelToName[] = {
@@ -179,7 +182,7 @@ void WebDriverLog::AddEntryTimestamped(const base::Time& timestamp,
 
   scoped_ptr<base::DictionaryValue> log_entry_dict(new base::DictionaryValue());
   log_entry_dict->SetDouble("timestamp",
-                            static_cast<int64>(timestamp.ToJsTime()));
+                            static_cast<int64_t>(timestamp.ToJsTime()));
   log_entry_dict->SetString("level", LevelToName(level));
   if (!source.empty())
     log_entry_dict->SetString("source", source);

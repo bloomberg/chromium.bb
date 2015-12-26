@@ -4,6 +4,9 @@
 
 #include "chrome/utility/importer/bookmarks_file_importer.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

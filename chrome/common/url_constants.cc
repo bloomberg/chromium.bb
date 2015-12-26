@@ -6,7 +6,8 @@
 
 #include <algorithm>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
 #include "url/url_util.h"

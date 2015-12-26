@@ -5,6 +5,8 @@
 #include "chrome/utility/importer/edge_database_reader_win.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <vector>
 

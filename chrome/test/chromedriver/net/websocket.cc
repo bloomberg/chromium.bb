@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/net/websocket.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <vector>
 
@@ -15,6 +17,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -80,7 +83,7 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
     }
   }
   net::AddressList addresses(
-      net::IPEndPoint(address, static_cast<uint16>(url_.EffectiveIntPort())));
+      net::IPEndPoint(address, static_cast<uint16_t>(url_.EffectiveIntPort())));
   net::NetLog::Source source;
   socket_.reset(new net::TCPClientSocket(addresses, NULL, source));
 

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, no traditional include guard.
+
+#include <stdint.h>
+
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/referrer.h"
 #include "ipc/ipc_message.h"
@@ -19,7 +22,7 @@
 
 IPC_STRUCT_BEGIN(PrerenderAttributes)
   IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(uint32, rel_types)
+  IPC_STRUCT_MEMBER(uint32_t, rel_types)
 IPC_STRUCT_END()
 
 // Notifies of the insertion of a <link rel=prerender> element in the

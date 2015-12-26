@@ -5,9 +5,9 @@
 #ifndef CHROME_TEST_BASE_HISTORY_INDEX_RESTORE_OBSERVER_H_
 #define CHROME_TEST_BASE_HISTORY_INDEX_RESTORE_OBSERVER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
 
 // HistoryIndexRestoreObserver is used when blocking until the InMemoryURLIndex

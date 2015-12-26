@@ -7,8 +7,8 @@
 
 namespace safe_browsing {
 
-uint32 MurmurHash3String(const std::string& str, uint32 seed) {
-  uint32 output;
+uint32_t MurmurHash3String(const std::string& str, uint32_t seed) {
+  uint32_t output;
   MurmurHash3_x86_32(str.data(), str.size(), seed, &output);
   return output;
 }

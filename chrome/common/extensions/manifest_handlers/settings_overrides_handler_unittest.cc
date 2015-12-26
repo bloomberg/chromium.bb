@@ -6,6 +6,7 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"

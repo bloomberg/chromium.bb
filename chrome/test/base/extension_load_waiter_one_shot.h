@@ -6,6 +6,7 @@
 #define CHROME_TEST_BASE_EXTENSION_LOAD_WAITER_ONE_SHOT_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/test/test_utils.h"

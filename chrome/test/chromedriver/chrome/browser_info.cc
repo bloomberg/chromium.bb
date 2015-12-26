@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 
+#include <stddef.h>
+
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"

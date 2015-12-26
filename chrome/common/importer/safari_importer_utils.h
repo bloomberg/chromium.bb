@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_IMPORTER_SAFARI_IMPORTER_UTILS_H_
 #define CHROME_COMMON_IMPORTER_SAFARI_IMPORTER_UTILS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 namespace base {
 class FilePath;
@@ -17,6 +17,6 @@ class FilePath;
 // out: services_supported - the service supported for import.
 // Returns true if we can import the Safari profile.
 bool SafariImporterCanImport(const base::FilePath& library_dir,
-                             uint16* services_supported);
+                             uint16_t* services_supported);
 
 #endif  // CHROME_COMMON_IMPORTER_SAFARI_IMPORTER_UTILS_H_

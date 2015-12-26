@@ -14,15 +14,15 @@ namespace {
 // Transforms |str_value| into the byte-by-byte representation of its underlying
 // string, stores the result in |binary_data|.
 void StringToBinaryData(const std::wstring& str_value,
-                        std::vector<uint8>* binary_data) {
+                        std::vector<uint8_t>* binary_data) {
   DCHECK(binary_data);
-  const uint8* data = reinterpret_cast<const uint8*>(str_value.c_str());
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(str_value.c_str());
   binary_data->assign(data, data + (str_value.length() + 1) * sizeof(wchar_t));
 }
 
 // Transforms |binary_data| into its wstring representation (assuming
 // |binary_data| is a sequence of wchar_t's).
-void BinaryDataToString(const std::vector<uint8>& binary_data,
+void BinaryDataToString(const std::vector<uint8_t>& binary_data,
                         std::wstring* str_value) {
   DCHECK(str_value);
   if (binary_data.size() < sizeof(wchar_t)) {
@@ -83,7 +83,7 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
   DCHECK(wow64_access == 0 ||
          wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
-  const uint8* data = reinterpret_cast<const uint8*>(&value_data);
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(&value_data);
   value_.assign(data, data + sizeof(value_data));
 }
 
@@ -91,7 +91,7 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
                                          const std::wstring& key_path,
                                          REGSAM wow64_access,
                                          const std::wstring& value_name,
-                                         int64 value_data,
+                                         int64_t value_data,
                                          bool overwrite)
     : predefined_root_(predefined_root),
       key_path_(key_path),
@@ -104,7 +104,7 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
   DCHECK(wow64_access == 0 ||
          wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
-  const uint8* data = reinterpret_cast<const uint8*>(&value_data);
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(&value_data);
   value_.assign(data, data + sizeof(value_data));
 }
 

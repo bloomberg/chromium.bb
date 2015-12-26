@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/shell_util.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/base_paths.h"
@@ -13,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"

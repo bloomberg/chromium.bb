@@ -12,7 +12,9 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 
 namespace base {
 class DictionaryValue;

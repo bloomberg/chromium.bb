@@ -4,9 +4,10 @@
 
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
 
-#include <VersionHelpers.h>
-#include <stdlib.h>
 #include <windows.h>
+#include <stdlib.h>
+#include <string.h>
+#include <VersionHelpers.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"

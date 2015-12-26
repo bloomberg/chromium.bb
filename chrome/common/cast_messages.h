@@ -5,6 +5,8 @@
 // IPC messages for the Cast transport API.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include "ipc/ipc_message_macros.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
@@ -115,83 +117,71 @@ IPC_STRUCT_TRAITS_END()
 // Cast messages sent from the browser to the renderer.
 
 IPC_MESSAGE_CONTROL2(CastMsg_ReceivedPacket,
-                     int32 /* channel_id */,
+                     int32_t /* channel_id */,
                      media::cast::Packet /* packet */)
 
 IPC_MESSAGE_CONTROL3(CastMsg_Rtt,
-                     int32 /* channel_id */,
-                     uint32 /* ssrc */,
+                     int32_t /* channel_id */,
+                     uint32_t /* ssrc */,
                      base::TimeDelta /* rtt */)
 
 IPC_MESSAGE_CONTROL3(CastMsg_RtcpCastMessage,
-                     int32 /* channel_id */,
-                     uint32 /* ssrc */,
+                     int32_t /* channel_id */,
+                     uint32_t /* ssrc */,
                      media::cast::RtcpCastMessage /* cast_message */)
 
-IPC_MESSAGE_CONTROL2(
-    CastMsg_NotifyStatusChange,
-    int32 /* channel_id */,
-    media::cast::CastTransportStatus /* status */)
+IPC_MESSAGE_CONTROL2(CastMsg_NotifyStatusChange,
+                     int32_t /* channel_id */,
+                     media::cast::CastTransportStatus /* status */)
 
 IPC_MESSAGE_CONTROL3(CastMsg_RawEvents,
-                     int32 /* channel_id */,
+                     int32_t /* channel_id */,
                      std::vector<media::cast::PacketEvent> /* packet_events */,
                      std::vector<media::cast::FrameEvent> /* frame_events */)
 
 // Cast messages sent from the renderer to the browser.
 
-IPC_MESSAGE_CONTROL2(
-  CastHostMsg_InitializeAudio,
-  int32 /*channel_id*/,
-  media::cast::CastTransportRtpConfig /*config*/)
+IPC_MESSAGE_CONTROL2(CastHostMsg_InitializeAudio,
+                     int32_t /*channel_id*/,
+                     media::cast::CastTransportRtpConfig /*config*/)
 
-IPC_MESSAGE_CONTROL2(
-  CastHostMsg_InitializeVideo,
-  int32 /*channel_id*/,
-  media::cast::CastTransportRtpConfig /*config*/)
+IPC_MESSAGE_CONTROL2(CastHostMsg_InitializeVideo,
+                     int32_t /*channel_id*/,
+                     media::cast::CastTransportRtpConfig /*config*/)
 
-IPC_MESSAGE_CONTROL3(
-    CastHostMsg_InsertFrame,
-    int32 /* channel_id */,
-    uint32 /* ssrc */,
-    media::cast::EncodedFrame /* audio/video frame */)
+IPC_MESSAGE_CONTROL3(CastHostMsg_InsertFrame,
+                     int32_t /* channel_id */,
+                     uint32_t /* ssrc */,
+                     media::cast::EncodedFrame /* audio/video frame */)
 
-IPC_MESSAGE_CONTROL4(
-    CastHostMsg_SendSenderReport,
-    int32 /* channel_id */,
-    uint32 /* ssrc */,
-    base::TimeTicks /* current_time */,
-    uint32 /* current_time_as_rtp_timestamp */)
+IPC_MESSAGE_CONTROL4(CastHostMsg_SendSenderReport,
+                     int32_t /* channel_id */,
+                     uint32_t /* ssrc */,
+                     base::TimeTicks /* current_time */,
+                     uint32_t /* current_time_as_rtp_timestamp */)
 
-IPC_MESSAGE_CONTROL3(
-    CastHostMsg_CancelSendingFrames,
-    int32 /* channel_id */,
-    uint32 /* ssrc */,
-    std::vector<uint32> /* frame_ids */)
+IPC_MESSAGE_CONTROL3(CastHostMsg_CancelSendingFrames,
+                     int32_t /* channel_id */,
+                     uint32_t /* ssrc */,
+                     std::vector<uint32_t> /* frame_ids */)
 
-IPC_MESSAGE_CONTROL3(
-    CastHostMsg_ResendFrameForKickstart,
-    int32 /* channel_id */,
-    uint32 /* ssrc */,
-    uint32 /* frame_id */)
+IPC_MESSAGE_CONTROL3(CastHostMsg_ResendFrameForKickstart,
+                     int32_t /* channel_id */,
+                     uint32_t /* ssrc */,
+                     uint32_t /* frame_id */)
 
-IPC_MESSAGE_CONTROL2(
-    CastHostMsg_AddValidSsrc,
-    int32 /* channel id */,
-    uint32 /* ssrc */)
+IPC_MESSAGE_CONTROL2(CastHostMsg_AddValidSsrc,
+                     int32_t /* channel id */,
+                     uint32_t /* ssrc */)
 
-IPC_MESSAGE_CONTROL2(
-    CastHostMsg_SendRtcpFromRtpReceiver,
-    int32 /* channel id */,
-    media::cast::SendRtcpFromRtpReceiver_Params /* data */)
+IPC_MESSAGE_CONTROL2(CastHostMsg_SendRtcpFromRtpReceiver,
+                     int32_t /* channel id */,
+                     media::cast::SendRtcpFromRtpReceiver_Params /* data */)
 
-IPC_MESSAGE_CONTROL4(
-    CastHostMsg_New,
-    int32 /* channel_id */,
-    net::IPEndPoint /* local_end_point */,
-    net::IPEndPoint /* remote_end_point */,
-    base::DictionaryValue /* options */)
+IPC_MESSAGE_CONTROL4(CastHostMsg_New,
+                     int32_t /* channel_id */,
+                     net::IPEndPoint /* local_end_point */,
+                     net::IPEndPoint /* remote_end_point */,
+                     base::DictionaryValue /* options */)
 
-IPC_MESSAGE_CONTROL1(
-    CastHostMsg_Delete,
-    int32 /* channel_id */)
+IPC_MESSAGE_CONTROL1(CastHostMsg_Delete, int32_t /* channel_id */)

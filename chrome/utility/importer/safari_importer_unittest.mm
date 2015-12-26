@@ -4,10 +4,13 @@
 
 #include "chrome/utility/importer/safari_importer.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -258,7 +261,7 @@ TEST_F(SafariImporterTest, FaviconImport) {
 }
 
 TEST_F(SafariImporterTest, CanImport) {
-  uint16 items = importer::NONE;
+  uint16_t items = importer::NONE;
   EXPECT_TRUE(SafariImporterCanImport(
       GetTestSafariLibraryPath("default"), &items));
   EXPECT_EQ(items, importer::HISTORY | importer::FAVORITES);

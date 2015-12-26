@@ -14,9 +14,10 @@ namespace {
 // Populates |resource_data| with the address and size of the resource in
 // |module| identified by |name_or_id| of type |type_name_or_id|, returning
 // true on success.
-bool DoLoad(HMODULE module, const wchar_t* name_or_id,
+bool DoLoad(HMODULE module,
+            const wchar_t* name_or_id,
             const wchar_t* type_name_or_id,
-            std::pair<const uint8*, DWORD>* resource_data) {
+            std::pair<const uint8_t*, DWORD>* resource_data) {
   bool loaded = false;
   HRSRC resource_info;
 
@@ -27,7 +28,7 @@ bool DoLoad(HMODULE module, const wchar_t* name_or_id,
     loaded_resource = LoadResource(module, resource_info);
     if (loaded_resource != NULL) {
       resource_data->first =
-          static_cast<const uint8*>(LockResource(loaded_resource));
+          static_cast<const uint8_t*>(LockResource(loaded_resource));
       if (resource_data->first != NULL) {
         resource_data->second = SizeofResource(module, resource_info);
         DPCHECK(resource_data->second != 0);
@@ -71,7 +72,7 @@ bool ResourceLoader::Initialize(const base::FilePath& pe_image_path) {
 
 bool ResourceLoader::Load(const std::wstring& name,
                           const std::wstring& type,
-                          std::pair<const uint8*, DWORD>* resource_data) {
+                          std::pair<const uint8_t*, DWORD>* resource_data) {
   DCHECK(resource_data != NULL);
   DCHECK(module_ != NULL);
 
@@ -80,7 +81,7 @@ bool ResourceLoader::Load(const std::wstring& name,
 
 bool ResourceLoader::Load(WORD id,
                           WORD type,
-                          std::pair<const uint8*, DWORD>* resource_data) {
+                          std::pair<const uint8_t*, DWORD>* resource_data) {
   DCHECK(resource_data != NULL);
   DCHECK(module_ != NULL);
 

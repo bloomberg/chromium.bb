@@ -34,9 +34,9 @@ const char kPicasaAlbumTableName[] = "albumdata";
 const char kAlbumTokenPrefix[] = "]album:";
 const char kPicasaINIFilename[] = ".picasa.ini";
 
-const uint32 kAlbumCategoryAlbum = 0;
-const uint32 kAlbumCategoryFolder = 2;
-const uint32 kAlbumCategoryInvalid = 0xffff;  // Sentinel value.
+const uint32_t kAlbumCategoryAlbum = 0;
+const uint32_t kAlbumCategoryFolder = 2;
+const uint32_t kAlbumCategoryInvalid = 0xffff;  // Sentinel value.
 
 AlbumInfo::AlbumInfo() {
 }

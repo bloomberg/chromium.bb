@@ -5,10 +5,13 @@
 #ifndef CHROME_INSTALLER_UTIL_PRODUCT_H_
 #define CHROME_INSTALLER_UTIL_PRODUCT_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
@@ -88,7 +91,7 @@ class Product {
   // The program part will be ignored.
   bool LaunchChromeAndWait(const base::FilePath& application_path,
                            const base::CommandLine& options,
-                           int32* exit_code) const;
+                           int32_t* exit_code) const;
 
   // Sets the boolean MSI marker for this installation if set is true or clears
   // it otherwise. The MSI marker is stored in the registry under the

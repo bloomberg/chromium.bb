@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -12,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/port_server.h"
 #include "net/base/sys_addrinfo.h"
@@ -141,7 +146,7 @@ TEST_F(PortServerTest, Reserve) {
   std::string request;
   RunServer(path, "12345\n", &request);
 
-  uint16 port = 0;
+  uint16_t port = 0;
   scoped_ptr<PortReservation> reservation;
   Status status = server.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
@@ -155,7 +160,7 @@ TEST_F(PortServerTest, ReserveResetReserve) {
   std::string request;
   RunServer(path, "12345\n", &request);
 
-  uint16 port = 0;
+  uint16_t port = 0;
   scoped_ptr<PortReservation> reservation;
   Status status = server.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
@@ -174,7 +179,7 @@ TEST_F(PortServerTest, ReserveReserve) {
   std::string request;
   RunServer(path, "12345\n", &request);
 
-  uint16 port = 0;
+  uint16_t port = 0;
   scoped_ptr<PortReservation> reservation;
   Status status = server.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
@@ -189,7 +194,7 @@ TEST_F(PortServerTest, ReserveReserve) {
 
 TEST(PortManagerTest, ReservePort) {
   PortManager mgr(15000, 16000);
-  uint16 port = 0;
+  uint16_t port = 0;
   scoped_ptr<PortReservation> reservation;
   Status status = mgr.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
@@ -201,7 +206,7 @@ TEST(PortManagerTest, ReservePort) {
 
 TEST(PortManagerTest, ReservePortFromPool) {
   PortManager mgr(15000, 16000);
-  uint16 first_port = 0, port = 1;
+  uint16_t first_port = 0, port = 1;
   for (int i = 0; i < 10; i++) {
     scoped_ptr<PortReservation> reservation;
     Status status = mgr.ReservePortFromPool(&port, &reservation);

@@ -84,9 +84,9 @@ struct PhishingTermFeatureExtractor::ExtractionState {
 
 PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
     const base::hash_set<std::string>* page_term_hashes,
-    const base::hash_set<uint32>* page_word_hashes,
+    const base::hash_set<uint32_t>* page_word_hashes,
     size_t max_words_per_term,
-    uint32 murmurhash3_seed,
+    uint32_t murmurhash3_seed,
     size_t max_shingles_per_page,
     size_t shingle_size,
     FeatureExtractorClock* clock)
@@ -110,7 +110,7 @@ PhishingTermFeatureExtractor::~PhishingTermFeatureExtractor() {
 void PhishingTermFeatureExtractor::ExtractFeatures(
     const base::string16* page_text,
     FeatureMap* features,
-    std::set<uint32>* shingle_hashes,
+    std::set<uint32_t>* shingle_hashes,
     const DoneCallback& done_callback) {
   // The RenderView should have called CancelPendingExtraction() before
   // starting a new extraction, so DCHECK this.
@@ -208,12 +208,12 @@ void PhishingTermFeatureExtractor::HandleWord(
   // Check if the size of shingle hashes is over the limit.
   if (shingle_hashes_->size() > max_shingles_per_page_) {
     // Pop the largest one.
-    std::set<uint32>::iterator it = shingle_hashes_->end();
+    std::set<uint32_t>::iterator it = shingle_hashes_->end();
     shingle_hashes_->erase(--it);
   }
 
   // Next, extract page terms.
-  uint32 word_hash = MurmurHash3String(word_lower, murmurhash3_seed_);
+  uint32_t word_hash = MurmurHash3String(word_lower, murmurhash3_seed_);
 
   // Quick out if the word is not part of any term, which is the common case.
   if (page_word_hashes_->find(word_hash) == page_word_hashes_->end()) {

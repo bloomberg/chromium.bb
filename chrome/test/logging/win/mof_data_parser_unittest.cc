@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/test/logging/win/mof_data_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +25,7 @@ class MofDataParserTest : public ::testing::Test {
                                          DWORD size);
   EVENT_TRACE* MakeEventWithString(const char* a_string, size_t length);
 
-  std::vector<uint8> buffer_;
+  std::vector<uint8_t> buffer_;
 };
 
 EVENT_TRACE* MofDataParserTest::MakeEventWithDataOfSize(size_t size) {

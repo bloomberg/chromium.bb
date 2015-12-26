@@ -5,6 +5,8 @@
 #ifndef CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 #define CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>

@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"

@@ -7,6 +7,7 @@
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_CHROME_BINARIES_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_CHROME_BINARIES_DISTRIBUTION_H_
 
+#include "base/macros.h"
 #include "chrome/installer/util/chromium_binaries_distribution.h"
 
 class GoogleChromeBinariesDistribution : public ChromiumBinariesDistribution {

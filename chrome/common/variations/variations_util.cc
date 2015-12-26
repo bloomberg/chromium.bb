@@ -4,6 +4,8 @@
 
 #include "chrome/common/variations/variations_util.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

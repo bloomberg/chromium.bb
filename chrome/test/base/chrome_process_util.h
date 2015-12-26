@@ -5,11 +5,15 @@
 #ifndef CHROME_TEST_BASE_CHROME_PROCESS_UTIL_H_
 #define CHROME_TEST_BASE_CHROME_PROCESS_UTIL_H_
 
+#include <stddef.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
+#include "build/build_config.h"
 
 typedef std::vector<base::ProcessId> ChromeProcessList;
 

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "build/build_config.h"
 
 #include "ipc/ipc_message_macros.h"

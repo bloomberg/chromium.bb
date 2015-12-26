@@ -4,12 +4,16 @@
 
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
 
-#include <algorithm>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <algorithm>
 
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "ui/base/x/x11_util.h"
@@ -219,7 +223,7 @@ bool ConvertKeyCodeToText(
     key_event->state |= x_modifier;
   }
   key_event->type = KeyPress;
-  uint16 character = ui::GetCharacterFromXEvent(&event);
+  uint16_t character = ui::GetCharacterFromXEvent(&event);
 
   if (!character)
     *text = std::string();

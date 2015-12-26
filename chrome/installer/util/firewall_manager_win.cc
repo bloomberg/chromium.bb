@@ -4,7 +4,10 @@
 
 #include "chrome/installer/util/firewall_manager_win.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -17,7 +20,7 @@ namespace installer {
 
 namespace {
 
-const uint16 kDefaultMdnsPort = 5353;
+const uint16_t kDefaultMdnsPort = 5353;
 
 class FirewallManagerAdvancedImpl : public FirewallManager {
  public:

@@ -7,11 +7,13 @@
 #include <atlstr.h>
 #include <softpub.h>
 #include <windows.h>
+#include <stdint.h>
 #include <wintrust.h>
 
 #include <algorithm>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,7 +35,7 @@ bool ExtractPublicKeyHash(const CERT_CONTEXT* cert_context,
   if (crypt_blob.cUnusedBits != 0)
     return false;
 
-  uint8 hash[crypto::kSHA256Length] = {};
+  uint8_t hash[crypto::kSHA256Length] = {};
 
   base::StringPiece key_bytes(reinterpret_cast<char*>(
       crypt_blob.pbData), crypt_blob.cbData);

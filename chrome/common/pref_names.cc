@@ -4,7 +4,8 @@
 
 #include "chrome/common/pref_names.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/common/pref_font_webkit_names.h"
 
 namespace prefs {

@@ -8,6 +8,8 @@
 #include <libkern/OSByteOrder.h>
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <uuid/uuid.h>
 

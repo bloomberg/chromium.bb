@@ -4,9 +4,10 @@
 
 #include "chrome/common/switch_utils.h"
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SwitchUtilsTest, RemoveSwitches) {

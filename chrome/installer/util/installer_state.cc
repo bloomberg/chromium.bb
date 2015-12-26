@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/installer_state.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 #include <utility>
@@ -13,6 +15,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -475,9 +478,8 @@ void InstallerState::Clear() {
   verbose_logging_ = false;
 }
 
-bool InstallerState::AnyExistsAndIsInUse(
-    const InstallationState& machine_state,
-    uint32 file_bits) const {
+bool InstallerState::AnyExistsAndIsInUse(const InstallationState& machine_state,
+                                         uint32_t file_bits) const {
   static const wchar_t* const kBinaryFileNames[] = {
     kChromeDll,
     kChromeFrameDll,

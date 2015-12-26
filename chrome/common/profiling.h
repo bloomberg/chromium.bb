@@ -7,8 +7,8 @@
 
 #include "build/build_config.h"
 
-#include "base/basictypes.h"
 #include "base/debug/profiler.h"
+#include "base/macros.h"
 
 // The Profiling class manages the interaction with a sampling based profiler.
 // Its function is controlled by the kProfilingAtStart, kProfilingFile, and

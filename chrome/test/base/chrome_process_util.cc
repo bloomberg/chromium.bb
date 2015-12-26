@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/test_switches.h"
 #include "content/public/common/result_codes.h"

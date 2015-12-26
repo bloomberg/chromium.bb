@@ -7,9 +7,11 @@
 
 #include <windows.h>
 #include <netfw.h>
+#include <stdint.h>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
 

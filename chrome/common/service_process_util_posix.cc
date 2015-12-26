@@ -4,12 +4,14 @@
 
 #include "chrome/common/service_process_util_posix.h"
 
-#include "base/basictypes.h"
+#include <string.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "chrome/common/multi_process_lock.h"
 
 namespace {

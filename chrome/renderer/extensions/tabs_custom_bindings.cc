@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"

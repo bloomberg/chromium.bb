@@ -5,6 +5,7 @@
 #ifndef CHROME_INSTALLER_UTIL_FIREWALL_MANAGER_WIN_H_
 #define CHROME_INSTALLER_UTIL_FIREWALL_MANAGER_WIN_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 class BrowserDistribution;

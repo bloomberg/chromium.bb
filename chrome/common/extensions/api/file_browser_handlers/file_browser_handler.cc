@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

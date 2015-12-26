@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_API_STORAGE_STORAGE_SCHEMA_MANIFEST_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_API_STORAGE_STORAGE_SCHEMA_MANIFEST_HANDLER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "extensions/common/manifest_handler.h"
 
 namespace policy {

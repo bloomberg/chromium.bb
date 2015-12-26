@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/page_load_histograms.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/bind.h"

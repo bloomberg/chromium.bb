@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"

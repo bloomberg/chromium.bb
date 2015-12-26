@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_MEDIA_CAST_RECEIVER_SESSION_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/renderer/media/cast_receiver_session_delegate.h"

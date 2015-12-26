@@ -6,6 +6,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/utility/importer/firefox_importer_unittest_utils.h"
 #include "chrome/utility/importer/nss_decryptor.h"

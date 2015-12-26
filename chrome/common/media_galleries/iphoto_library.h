@@ -8,6 +8,8 @@
 #ifndef CHROME_COMMON_MEDIA_GALLERIES_IPHOTO_LIBRARY_H_
 #define CHROME_COMMON_MEDIA_GALLERIES_IPHOTO_LIBRARY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -18,17 +20,17 @@ namespace parser {
 
 struct Photo {
   Photo();
-  Photo(uint64 id,
+  Photo(uint64_t id,
         const base::FilePath& location,
         const base::FilePath& original_location);
   bool operator<(const Photo& other) const;
 
-  uint64 id;
+  uint64_t id;
   base::FilePath location;
   base::FilePath original_location;
 };
 
-typedef std::set<uint64> Album;
+typedef std::set<uint64_t> Album;
 typedef std::map<std::string /*album name*/, Album> Albums;
 
 struct Library {

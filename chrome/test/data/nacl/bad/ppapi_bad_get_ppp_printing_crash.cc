@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -12,10 +14,10 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 
-#include "ppapi/c/ppb.h"
-#include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
+#include "ppapi/c/ppb.h"
 #include "ppapi/c/ppp.h"
+#include "ppapi/c/ppp_instance.h"
 
 #include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 

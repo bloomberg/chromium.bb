@@ -4,10 +4,13 @@
 
 #include "chrome/service/cloud_print/connector_settings.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

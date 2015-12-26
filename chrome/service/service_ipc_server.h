@@ -5,14 +5,17 @@
 #ifndef CHROME_SERVICE_SERVICE_IPC_SERVER_H_
 #define CHROME_SERVICE_SERVICE_IPC_SERVER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/ipc_sync_channel.h"
 
 namespace base {
 
@@ -72,7 +75,7 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
-  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
 
   // IPC message handlers.

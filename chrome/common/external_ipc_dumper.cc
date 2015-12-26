@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/common/external_ipc_dumper.h"
 
 typedef IPC::ChannelProxy::OutgoingMessageFilter* (*GetFilterFunction)();

@@ -12,10 +12,10 @@
 #include <windows.h>
 #include <tchar.h>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"

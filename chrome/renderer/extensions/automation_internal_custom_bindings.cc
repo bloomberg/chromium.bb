@@ -4,7 +4,11 @@
 
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -490,7 +494,7 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
       "GetState", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                      TreeCache* cache, ui::AXNode* node) {
         v8::Local<v8::Object> state(v8::Object::New(isolate));
-        uint32 state_pos = 0, state_shifter = node->data().state;
+        uint32_t state_pos = 0, state_shifter = node->data().state;
         while (state_shifter) {
           if (state_shifter & 1) {
             std::string key = ToString(static_cast<ui::AXState>(state_pos));
@@ -618,13 +622,13 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
             ui::ParseAXIntListAttribute(attribute_name);
         if (!node->data().HasIntListAttribute(attribute))
           return;
-        const std::vector<int32>& attr_value =
+        const std::vector<int32_t>& attr_value =
             node->data().GetIntListAttribute(attribute);
 
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, attr_value.size()));
         for (size_t i = 0; i < attr_value.size(); ++i)
-          array_result->Set(static_cast<uint32>(i),
+          array_result->Set(static_cast<uint32_t>(i),
                             v8::Integer::New(isolate, attr_value[i]));
         result.Set(array_result);
       });

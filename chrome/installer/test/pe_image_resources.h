@@ -9,11 +9,12 @@
 #define CHROME_INSTALLER_TEST_PE_IMAGE_RESOURCES_H_
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace base { namespace win { class PEImage; } }
@@ -48,8 +49,11 @@ typedef std::vector<EntryId> EntryPath;
 // |code_page| - the code page to be used to interpret string data in the
 // entry's data.
 // |context| - the context given to EnumResources.
-typedef void (*EnumResource_Fn)(const EntryPath& path, uint8* data,
-                                DWORD size, DWORD code_page, uintptr_t context);
+typedef void (*EnumResource_Fn)(const EntryPath& path,
+                                uint8_t* data,
+                                DWORD size,
+                                DWORD code_page,
+                                uintptr_t context);
 
 // Enumerates all data entries in |image|'s resource directory.  |callback| is
 // invoked (and provided with |context|) once per entry.  Returns false if

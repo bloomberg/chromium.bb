@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"

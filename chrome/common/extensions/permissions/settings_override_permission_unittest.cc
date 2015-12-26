@@ -4,9 +4,11 @@
 
 // These tests make sure SettingsOverridePermission values are set correctly.
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_message_test_util.h"
@@ -27,7 +29,7 @@ class SettingsOverridePermissionTest : public ChromeManifestTest {
     kSearchProvider = 1 << 2,
   };
 
-  scoped_refptr<Extension> GetPermissionSet(uint32 flags) {
+  scoped_refptr<Extension> GetPermissionSet(uint32_t flags) {
     base::DictionaryValue ext_manifest;
     ext_manifest.SetString(manifest_keys::kName, "test");
     ext_manifest.SetString(manifest_keys::kVersion, "0.1");

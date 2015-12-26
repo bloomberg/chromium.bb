@@ -5,6 +5,8 @@
 #include "chrome/service/cloud_print/printer_job_queue_handler.h"
 
 #include <math.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 
@@ -85,11 +87,12 @@ base::TimeDelta PrinterJobQueueHandler::ComputeBackoffTime(
   base::TimeDelta backoff_time =
       base::TimeDelta::FromSeconds(kJobFirstWaitTimeSecs);
   backoff_time *=
-      // casting argument to double and result to uint64 to avoid compilation
+      // casting argument to double and result to uint64_t to avoid compilation
       // issues
-      static_cast<int64>(pow(
-          static_cast<long double>(kJobWaitTimeExponentialMultiplier),
-          job_location->second.retries_) + 0.5);
+      static_cast<int64_t>(
+          pow(static_cast<long double>(kJobWaitTimeExponentialMultiplier),
+              job_location->second.retries_) +
+          0.5);
   base::Time scheduled_retry =
       job_location->second.last_retry_ + backoff_time;
   base::Time now = time_provider_->GetNow();

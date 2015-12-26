@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/chrome_key_systems.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -11,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/render_messages.h"
 #include "components/cdm/renderer/widevine_key_systems.h"
 #include "content/public/renderer/render_thread.h"

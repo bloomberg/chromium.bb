@@ -5,8 +5,11 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_LOCALIZATION_PEER_H_
 #define CHROME_RENDERER_EXTENSIONS_EXTENSION_LOCALIZATION_PEER_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"
 
@@ -32,7 +35,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
       const GURL& request_url);
 
   // content::RequestPeer methods.
-  void OnUploadProgress(uint64 position, uint64 size) override;
+  void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const content::ResourceResponseInfo& info) override;
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
@@ -43,7 +46,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
                           bool stale_copy_in_cache,
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
-                          int64 total_transfer_size) override;
+                          int64_t total_transfer_size) override;
   void OnReceivedCompletedResponse(const content::ResourceResponseInfo& info,
                                    scoped_ptr<ReceivedData> data,
                                    int error_code,
@@ -51,7 +54,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
                                    bool stale_copy_in_cache,
                                    const std::string& security_info,
                                    const base::TimeTicks& completion_time,
-                                   int64 total_transfer_size) override;
+                                   int64_t total_transfer_size) override;
 
  private:
   friend class ExtensionLocalizationPeerTest;

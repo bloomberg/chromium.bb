@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
@@ -11,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"

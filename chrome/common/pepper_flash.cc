@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/ppapi_utils.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -12,10 +15,9 @@
 
 namespace chrome {
 
-const int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
-                                      ppapi::PERMISSION_PRIVATE |
-                                      ppapi::PERMISSION_BYPASS_USER_GESTURE |
-                                      ppapi::PERMISSION_FLASH;
+const int32_t kPepperFlashPermissions =
+    ppapi::PERMISSION_DEV | ppapi::PERMISSION_PRIVATE |
+    ppapi::PERMISSION_BYPASS_USER_GESTURE | ppapi::PERMISSION_FLASH;
 namespace {
 
 // File name of the Pepper Flash component manifest on different platforms.

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/renderer/platform_info.h"

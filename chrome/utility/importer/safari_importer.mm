@@ -49,7 +49,7 @@ SafariImporter::~SafariImporter() {
 }
 
 void SafariImporter::StartImport(const importer::SourceProfile& source_profile,
-                                 uint16 items,
+                                 uint16_t items,
                                  ImporterBridge* bridge) {
   bridge_ = bridge;
   // The order here is important!
@@ -123,7 +123,7 @@ void SafariImporter::ImportFaviconURLs(sql::Connection* db,
   sql::Statement s(db->GetUniqueStatement(query));
 
   while (s.Step() && !cancelled()) {
-    int64 icon_id = s.ColumnInt64(0);
+    int64_t icon_id = s.ColumnInt64(0);
     GURL url = GURL(s.ColumnString(1));
     (*favicon_map)[icon_id].insert(url);
   }

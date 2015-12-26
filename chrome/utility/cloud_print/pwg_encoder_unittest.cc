@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
@@ -29,8 +31,8 @@ scoped_ptr<BitmapImage> MakeSampleBitmap() {
       new BitmapImage(gfx::Size(kRasterWidth, kRasterHeight),
                       BitmapImage::RGBA));
 
-  uint32* bitmap_data = reinterpret_cast<uint32*>(
-      bitmap_image->pixel_data());
+  uint32_t* bitmap_data =
+      reinterpret_cast<uint32_t*>(bitmap_image->pixel_data());
 
   for (int i = 0; i < kRasterWidth * kRasterHeight; i++) {
     bitmap_data[i] = 0xFFFFFF;
@@ -40,7 +42,7 @@ scoped_ptr<BitmapImage> MakeSampleBitmap() {
   for (int i = 0; i < kRasterWidth; i++) {
     for (int j = 200; j < 300; j++) {
       int row_start = j * kRasterWidth;
-      uint32 red = (i * 255)/kRasterWidth;
+      uint32_t red = (i * 255) / kRasterWidth;
       bitmap_data[row_start + i] = red;
     }
   }

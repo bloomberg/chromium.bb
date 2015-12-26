@@ -5,13 +5,16 @@
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_SETTINGS_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_SETTINGS_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/metrics/client_info.h"
 

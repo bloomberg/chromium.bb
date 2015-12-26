@@ -7,6 +7,7 @@
 #include "chrome/installer/setup/setup_util.h"
 
 #include <windows.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <iterator>
@@ -18,6 +19,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -154,7 +156,7 @@ base::FilePath FindArchiveToPatch(const InstallationState& original_state,
 }
 
 bool DeleteFileFromTempProcess(const base::FilePath& path,
-                               uint32 delay_before_delete_ms) {
+                               uint32_t delay_before_delete_ms) {
   static const wchar_t kRunDll32Path[] =
       L"%SystemRoot%\\System32\\rundll32.exe";
   wchar_t rundll32[MAX_PATH];

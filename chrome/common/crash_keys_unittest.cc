@@ -13,6 +13,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class CrashKeysTest : public testing::Test {

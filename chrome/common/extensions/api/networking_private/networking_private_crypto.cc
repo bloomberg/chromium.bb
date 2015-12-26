@@ -8,6 +8,7 @@
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
+#include <stddef.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

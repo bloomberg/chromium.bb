@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "content/public/test/mock_render_thread.h"
 
 struct ExtensionMsg_ExternalConnectionInfo;

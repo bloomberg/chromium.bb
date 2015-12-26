@@ -14,10 +14,13 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_SCORER_H_
 #define CHROME_RENDERER_SAFE_BROWSING_SCORER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 
@@ -49,13 +52,13 @@ class Scorer {
 
   // Returns a set of hashed page words that appear in the model in binary
   // format.
-  const base::hash_set<uint32>& page_words() const;
+  const base::hash_set<uint32_t>& page_words() const;
 
   // Return the maximum number of words per term for the loaded model.
   size_t max_words_per_term() const;
 
   // Returns the murmurhash3 seed for the loaded model.
-  uint32 murmurhash3_seed() const;
+  uint32_t murmurhash3_seed() const;
 
   // Return the maximum number of unique shingle hashes per page.
   size_t max_shingles_per_page() const;
@@ -81,7 +84,7 @@ class Scorer {
 
   ClientSideModel model_;
   base::hash_set<std::string> page_terms_;
-  base::hash_set<uint32> page_words_;
+  base::hash_set<uint32_t> page_words_;
 
   DISALLOW_COPY_AND_ASSIGN(Scorer);
 };

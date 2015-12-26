@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -22,7 +24,7 @@ class NetworkingPrivateCryptoTest : public testing::Test {
   // |plain| data.
   bool VerifyByteString(const std::string& private_key_pem,
                         const std::string& plain,
-                        const std::vector<uint8>& encrypted) {
+                        const std::vector<uint8_t>& encrypted) {
     std::string decrypted;
     if (networking_private_crypto::DecryptByteString(
             private_key_pem, encrypted, &decrypted))
@@ -206,16 +208,16 @@ TEST_F(NetworkingPrivateCryptoTest, EncryptByteString) {
       "e5ZqY4RmsQmv6K0rn5k+UT4qlPeVp1e6LnvO/PcKWOaUvDK59qFZoX4vN+iFUAbk"
       "IuvhmL9u/uPWWck="
       "-----END PRIVATE KEY-----";
-  static const std::vector<uint8> kBadKeyData(5, 111);
+  static const std::vector<uint8_t> kBadKeyData(5, 111);
   static const char kTestData[] = "disco boy";
   static const char kEmptyData[] = "";
 
   std::string public_key_string;
   base::Base64Decode(kPublicKey, &public_key_string);
-  std::vector<uint8> public_key(public_key_string.begin(),
-                                public_key_string.end());
+  std::vector<uint8_t> public_key(public_key_string.begin(),
+                                  public_key_string.end());
   std::string plain;
-  std::vector<uint8> encrypted_output;
+  std::vector<uint8_t> encrypted_output;
 
   // Checking basic encryption operation.
   plain = kTestData;

@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_DESCRIPTORS_ANDROID_H_
 #define CHROME_COMMON_DESCRIPTORS_ANDROID_H_
 
+#include "build/build_config.h"
 #include "content/public/common/content_descriptors.h"
 
 enum {

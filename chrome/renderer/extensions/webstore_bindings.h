@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_EXTENSIONS_WEBSTORE_BINDINGS_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"

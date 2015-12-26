@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/element_commands.h"
 
+#include <stddef.h>
+
 #include <cmath>
 #include <list>
 #include <vector>

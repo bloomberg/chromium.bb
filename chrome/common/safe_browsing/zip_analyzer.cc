@@ -4,6 +4,9 @@
 
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
 #include "base/i18n/streaming_utf8_validator.h"

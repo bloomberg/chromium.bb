@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/master_preferences.h"

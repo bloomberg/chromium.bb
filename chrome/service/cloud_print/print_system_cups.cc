@@ -8,6 +8,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <pthread.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <list>
@@ -18,6 +19,7 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"

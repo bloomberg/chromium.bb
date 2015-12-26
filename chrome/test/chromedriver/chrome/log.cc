@@ -4,10 +4,13 @@
 
 #include "chrome/test/chromedriver/chrome/log.h"
 
+#include <stddef.h>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 
 void Log::AddEntry(Level level, const std::string& message) {
   AddEntry(level, "", message);

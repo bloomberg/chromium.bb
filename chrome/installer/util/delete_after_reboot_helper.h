@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <windows.h>
+#include <stddef.h>
 
 namespace base {
 class FilePath;

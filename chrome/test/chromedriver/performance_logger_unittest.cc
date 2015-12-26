@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/performance_logger.h"
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"

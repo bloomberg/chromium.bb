@@ -69,7 +69,7 @@ bool Product::LaunchChrome(const base::FilePath& application_path) const {
 
 bool Product::LaunchChromeAndWait(const base::FilePath& application_path,
                                   const base::CommandLine& options,
-                                  int32* exit_code) const {
+                                  int32_t* exit_code) const {
   if (application_path.empty())
     return false;
 

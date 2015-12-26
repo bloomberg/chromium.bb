@@ -7,6 +7,7 @@
 #include "chrome/app/kasko_client.h"
 
 #include <windows.h>
+#include <stddef.h>
 
 #include <string>
 #include <vector>

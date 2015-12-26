@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <grp.h>
 #include <pwd.h>
+#include <stddef.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>

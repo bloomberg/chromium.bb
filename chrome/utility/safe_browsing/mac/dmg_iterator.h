@@ -5,6 +5,8 @@
 #ifndef CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_ITERATOR_H_
 #define CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_ITERATOR_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"

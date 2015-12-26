@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_H_
 
 #include <windows.h>
+#include <stddef.h>
 
 // This class models a windows PE resource. It does not pretend to be a full
 // API wrapper and it is just concerned with loading it to memory and writing

@@ -4,7 +4,10 @@
 
 #include "chrome/installer/util/app_command.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/work_item_list.h"

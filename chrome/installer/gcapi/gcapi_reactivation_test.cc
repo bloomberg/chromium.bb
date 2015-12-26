@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -36,7 +37,7 @@ class GCAPIReactivationTest : public ::testing::Test {
                 google_update::kRegVersionField, L"1.2.3.4") == ERROR_SUCCESS);
   }
 
-  bool SetLastRunTime(HKEY hive, int64 last_run_time) {
+  bool SetLastRunTime(HKEY hive, int64_t last_run_time) {
     return SetLastRunTimeString(hive, base::Int64ToString16(last_run_time));
   }
 

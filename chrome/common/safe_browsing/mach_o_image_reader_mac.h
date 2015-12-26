@@ -6,6 +6,7 @@
 #define CHROME_COMMON_SAFE_BROWSING_MACH_O_IMAGE_READER_MAC_H_
 
 #include <mach-o/loader.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>

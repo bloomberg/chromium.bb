@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/lzma_file_allocator.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/files/file_util.h"

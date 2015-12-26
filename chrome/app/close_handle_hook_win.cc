@@ -6,15 +6,18 @@
 
 #include <Windows.h>
 #include <psapi.h>
+#include <stddef.h>
 
 #include <algorithm>
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
+#include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 

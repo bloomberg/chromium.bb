@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptResult.h"

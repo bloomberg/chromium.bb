@@ -6,11 +6,14 @@
 
 #include <windows.h>
 #include <sddl.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <wtsapi32.h>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/rand_util.h"
@@ -499,7 +502,7 @@ void InactiveUserToastExperiment(int flavor,
             options.GetCommandLineString().find(L" -- " + url));
 
   // Launch chrome now. It will show the toast UI.
-  int32 exit_code = 0;
+  int32_t exit_code = 0;
   if (!product.LaunchChromeAndWait(application_path, options, &exit_code))
     return;
 

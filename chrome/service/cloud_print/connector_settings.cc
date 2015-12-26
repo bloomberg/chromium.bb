@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/connector_settings.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"

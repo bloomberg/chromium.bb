@@ -6,6 +6,8 @@
 
 #include <windows.h>
 #include <softpub.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <wintrust.h>
 
 #include "base/files/file_path.h"

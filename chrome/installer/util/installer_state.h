@@ -5,17 +5,20 @@
 #ifndef CHROME_INSTALLER_UTIL_INSTALLER_STATE_H_
 #define CHROME_INSTALLER_UTIL_INSTALLER_STATE_H_
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
@@ -227,7 +230,7 @@ class InstallerState {
   // Returns true if any file corresponding to a bit in |file_bits| (from the
   // enum above) for the currently installed version exists and is in use.
   bool AnyExistsAndIsInUse(const InstallationState& machine_state,
-                           uint32 file_bits) const;
+                           uint32_t file_bits) const;
   base::FilePath GetDefaultProductInstallPath(BrowserDistribution* dist) const;
   bool CanAddProduct(const Product& product,
                      const base::FilePath* product_dir) const;

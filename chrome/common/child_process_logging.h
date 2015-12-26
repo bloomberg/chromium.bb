@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_CHILD_PROCESS_LOGGING_H_
 #define CHROME_COMMON_CHILD_PROCESS_LOGGING_H_
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
 namespace child_process_logging {
 

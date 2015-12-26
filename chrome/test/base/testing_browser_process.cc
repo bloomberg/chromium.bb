@@ -260,8 +260,7 @@ IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {
 void TestingBrowserProcess::CreateDevToolsHttpProtocolHandler(
     chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
-    uint16 port) {
-}
+    uint16_t port) {}
 
 unsigned int TestingBrowserProcess::AddRefModule() {
   return ++module_ref_count_;

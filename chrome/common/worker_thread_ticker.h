@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 

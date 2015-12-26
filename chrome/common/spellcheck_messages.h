@@ -5,6 +5,8 @@
 // IPC messages for spellcheck.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include "chrome/common/spellcheck_bdict_language.h"
 #include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_result.h"
@@ -62,7 +64,7 @@ IPC_MESSAGE_CONTROL0(SpellCheckMsg_RequestDocumentMarkers)
 // Send a list of document markers in the renderer to the spelling service
 // feedback sender.
 IPC_MESSAGE_CONTROL1(SpellCheckHostMsg_RespondDocumentMarkers,
-                     std::vector<uint32> /* document marker identifiers */)
+                     std::vector<uint32_t> /* document marker identifiers */)
 
 #if !defined(USE_BROWSER_SPELLCHECKER)
 // Sends text-check results from the Spelling service when the service finishes

@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/registry_key_backup.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <utility>
@@ -26,8 +28,11 @@ class ValueData {
 
   // Initializes this object with a name (the first |name_size| characters in
   // |name_buffer|, |type|, and data (the first |data_size| bytes in |data|).
-  void Initialize(const wchar_t* name_buffer, DWORD name_size,
-                  DWORD type, const uint8* data, DWORD data_size);
+  void Initialize(const wchar_t* name_buffer,
+                  DWORD name_size,
+                  DWORD type,
+                  const uint8_t* data,
+                  DWORD data_size);
 
   // The possibly empty name of this value.
   const std::wstring& name_str() const { return name_; }
@@ -40,7 +45,7 @@ class ValueData {
 
   // A pointer to a buffer of |data_len()| bytes containing the value's data,
   // or NULL if the value has no data.
-  const uint8* data() const { return data_.empty() ? NULL : &data_[0]; }
+  const uint8_t* data() const { return data_.empty() ? NULL : &data_[0]; }
 
   // The size, in bytes, of the value's data.
   DWORD data_len() const { return static_cast<DWORD>(data_.size()); }
@@ -50,7 +55,7 @@ class ValueData {
   // value.
   std::wstring name_;
   // This value's data.
-  std::vector<uint8> data_;
+  std::vector<uint8_t> data_;
   // This value's type (e.g., REG_DWORD, REG_SZ, REG_QWORD, etc).
   DWORD type_;
 
@@ -92,12 +97,11 @@ ValueData::ValueData() : type_(REG_NONE) {
 ValueData::~ValueData() {
 }
 
-void ValueData::Initialize(
-    const wchar_t* name_buffer,
-    DWORD name_size,
-    DWORD type,
-    const uint8* data,
-    DWORD data_size) {
+void ValueData::Initialize(const wchar_t* name_buffer,
+                           DWORD name_size,
+                           DWORD type,
+                           const uint8_t* data,
+                           DWORD data_size) {
   name_.assign(name_buffer, name_size);
   type_ = type;
   data_.assign(data, data + data_size);
@@ -132,7 +136,7 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
   // Backup the values.
   if (num_values != 0) {
     values.reserve(num_values);
-    std::vector<uint8> value_buffer(max_value_len != 0 ? max_value_len : 1);
+    std::vector<uint8_t> value_buffer(max_value_len != 0 ? max_value_len : 1);
     DWORD name_size = 0;
     DWORD value_type = REG_NONE;
     DWORD value_size = 0;

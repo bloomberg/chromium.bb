@@ -7,12 +7,14 @@
 #include <windows.h>
 #include <guiddef.h>
 #include <objbase.h>
+#include <stddef.h>
 
 #include <ios>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/event_trace_consumer.h"
@@ -43,8 +45,8 @@ const GUID kChromeTestsProvider =
 // FileLogger::EventProviderBits.
 const struct {
   const GUID* provider_name;
-  uint8 level;
-  uint32 flags;
+  uint8_t level;
+  uint32_t flags;
 } kProviders[] = {
   { &kChromeTraceProviderName, 255, 0 },
   { &kChromeFrameProvider, 255, 0 },
@@ -128,7 +130,7 @@ void FileLogger::Initialize() {
   Initialize(kAllEventProviders);
 }
 
-void FileLogger::Initialize(uint32 event_provider_mask) {
+void FileLogger::Initialize(uint32_t event_provider_mask) {
   CHECK(!is_initialized_);
 
   // Stop a previous session that wasn't shut down properly.

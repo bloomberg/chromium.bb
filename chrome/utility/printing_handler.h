@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "ipc/ipc_platform_file.h"
 #include "printing/pdf_render_settings.h"

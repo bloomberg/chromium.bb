@@ -5,10 +5,11 @@
 #ifndef CHROME_COMMON_MEDIA_GALLERIES_PICASA_TEST_UTIL_H_
 #define CHROME_COMMON_MEDIA_GALLERIES_PICASA_TEST_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 
 namespace base {
 class FilePath;
@@ -17,7 +18,7 @@ class FilePath;
 namespace picasa {
 
 void WriteAlbumTable(const base::FilePath& column_file_destination,
-                     const std::vector<uint32>& category_vector,
+                     const std::vector<uint32_t>& category_vector,
                      const std::vector<double>& date_vector,
                      const std::vector<std::string>& filename_vector,
                      const std::vector<std::string>& name_vector,

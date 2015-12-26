@@ -6,6 +6,7 @@
 #define CHROME_UTILITY_SAFE_BROWSING_MAC_CONVERT_BIG_ENDIAN_H_
 
 #include <libkern/OSByteOrder.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 // This file contains byte swapping routines for use in safe_browsing::dmg. The

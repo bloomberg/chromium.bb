@@ -6,11 +6,12 @@
 #define CHROME_INSTALLER_UTIL_LZMA_UTIL_H_
 
 #include <windows.h>
+#include <stdint.h>
 
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 class FilePath;
@@ -21,9 +22,9 @@ class LzmaUtil {
  public:
   // Utility method that does the job of calling OpenArchive(), UnPack()
   // and CloseArchive() in order. Returns error code (NO_ERROR if successful).
-  static int32 UnPackArchive(const std::wstring& archive,
-                             const std::wstring& output_dir,
-                             std::wstring* output_file);
+  static int32_t UnPackArchive(const std::wstring& archive,
+                               const std::wstring& output_dir,
+                               std::wstring* output_file);
 
   LzmaUtil();
   ~LzmaUtil();

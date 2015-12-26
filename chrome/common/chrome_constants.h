@@ -7,7 +7,10 @@
 #ifndef CHROME_COMMON_CHROME_CONSTANTS_H_
 #define CHROME_COMMON_CHROME_CONSTANTS_H_
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)

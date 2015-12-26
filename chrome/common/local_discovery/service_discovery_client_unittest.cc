@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -29,7 +31,7 @@ namespace local_discovery {
 
 namespace {
 
-const uint8 kSamplePacketPTR[] = {
+const uint8_t kSamplePacketPTR[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x81, 0x80,               // Standard query response, RA, no error
@@ -51,7 +53,7 @@ const uint8 kSamplePacketPTR[] = {
   0xc0, 0x0c
 };
 
-const uint8 kSamplePacketSRV[] = {
+const uint8_t kSamplePacketSRV[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x81, 0x80,               // Standard query response, RA, no error
@@ -78,7 +80,7 @@ const uint8 kSamplePacketSRV[] = {
   0x00,
 };
 
-const uint8 kSamplePacketTXT[] = {
+const uint8_t kSamplePacketTXT[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x81, 0x80,               // Standard query response, RA, no error
@@ -100,7 +102,7 @@ const uint8 kSamplePacketTXT[] = {
   0x05, 'h', 'e', 'l', 'l', 'o'
 };
 
-const uint8 kSamplePacketSRVA[] = {
+const uint8_t kSamplePacketSRVA[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x81, 0x80,               // Standard query response, RA, no error
@@ -138,7 +140,7 @@ const uint8 kSamplePacketSRVA[] = {
   0x03, 0x04,
 };
 
-const uint8 kSamplePacketPTR2[] = {
+const uint8_t kSamplePacketPTR2[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x81, 0x80,               // Standard query response, RA, no error
@@ -172,7 +174,7 @@ const uint8 kSamplePacketPTR2[] = {
   0xc0, 0x0c
 };
 
-const uint8 kSamplePacketQuerySRV[] = {
+const uint8_t kSamplePacketQuerySRV[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x00, 0x00,               // No flags.

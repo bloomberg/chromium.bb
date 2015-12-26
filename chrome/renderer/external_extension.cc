@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/external_extension.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search_provider.h"
 #include "content/public/renderer/render_view.h"

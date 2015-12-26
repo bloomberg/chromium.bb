@@ -4,9 +4,12 @@
 
 #include "chrome/test/logging/win/log_file_reader.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging_win.h"
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/win/event_trace_consumer.h"
 #include "chrome/test/logging/win/mof_data_parser.h"
@@ -18,7 +21,7 @@ namespace {
 // TODO(grt) This reverses a mapping produced by base/logging_win.cc's
 // LogEventProvider::LogMessage.  LogEventProvider should expose a way to map an
 // event level back to a log severity.
-logging::LogSeverity EventLevelToSeverity(uint8 level) {
+logging::LogSeverity EventLevelToSeverity(uint8_t level) {
   switch (level) {
   case TRACE_LEVEL_NONE:
     NOTREACHED();

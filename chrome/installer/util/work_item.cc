@@ -11,9 +11,9 @@
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/create_dir_work_item.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
-#include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/delete_reg_value_work_item.h"
+#include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/move_tree_work_item.h"
 #include "chrome/installer/util/self_reg_work_item.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
@@ -121,7 +121,7 @@ SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(
     const std::wstring& key_path,
     REGSAM wow64_access,
     const std::wstring& value_name,
-    int64 value_data,
+    int64_t value_data,
     bool overwrite) {
   return new SetRegValueWorkItem(predefined_root,
                                  key_path,

@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_MEDIA_CAST_RECEIVER_SESSION_DELEGATE_H_
 #define CHROME_RENDERER_MEDIA_CAST_RECEIVER_SESSION_DELEGATE_H_
 
+#include "base/macros.h"
 #include "chrome/renderer/media/cast_receiver_audio_valve.h"
 #include "chrome/renderer/media/cast_session_delegate.h"
 #include "content/public/renderer/media_stream_video_sink.h"

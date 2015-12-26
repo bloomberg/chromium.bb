@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/tuple.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"

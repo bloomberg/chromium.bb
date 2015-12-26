@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/files/file.h"
@@ -77,9 +79,8 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
   EXPECT_EQ(static_cast<int64_t>(test_data.size()), file_size);
 
   // Prevent the log file from being moved or deleted.
-  uint32 file_flags = base::File::FLAG_OPEN |
-                      base::File::FLAG_READ |
-                      base::File::FLAG_EXCLUSIVE_READ;
+  uint32_t file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+                        base::File::FLAG_EXCLUSIVE_READ;
   base::File temp_platform_file(temp_file, file_flags);
   ASSERT_TRUE(temp_platform_file.IsValid());
 
@@ -107,9 +108,8 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
 
   // Create an inconvenient, non-deletable file in the location that
   // TruncateLogFileIfNeeded would like to move the log file to.
-  uint32 file_flags = base::File::FLAG_CREATE |
-                      base::File::FLAG_READ |
-                      base::File::FLAG_EXCLUSIVE_READ;
+  uint32_t file_flags = base::File::FLAG_CREATE | base::File::FLAG_READ |
+                        base::File::FLAG_EXCLUSIVE_READ;
   base::FilePath temp_file_move_dest(
       temp_file.value() + FILE_PATH_LITERAL(".tmp"));
   base::File temp_move_destination_file(temp_file_move_dest, file_flags);

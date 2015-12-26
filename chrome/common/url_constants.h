@@ -7,6 +7,8 @@
 #ifndef CHROME_COMMON_URL_CONSTANTS_H_
 #define CHROME_COMMON_URL_CONSTANTS_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

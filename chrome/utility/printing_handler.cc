@@ -4,7 +4,10 @@
 
 #include "chrome/utility/printing_handler.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/utility/cloud_print/bitmap_image.h"
@@ -114,7 +117,7 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
 
 #if defined(OS_WIN)
 int PrintingHandler::LoadPDF(base::File pdf_file) {
-  int64 length64 = pdf_file.GetLength();
+  int64_t length64 = pdf_file.GetLength();
   if (length64 <= 0 || length64 > std::numeric_limits<int>::max())
     return 0;
   int length = static_cast<int>(length64);

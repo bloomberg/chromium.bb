@@ -5,8 +5,10 @@
 #ifndef CHROME_COMMON_REF_COUNTED_UTIL_H__
 #define CHROME_COMMON_REF_COUNTED_UTIL_H__
 
-#include "base/memory/ref_counted.h"
 #include <vector>
+
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 
 // RefCountedVector is just a vector wrapped up with
 // RefCountedThreadSafe.

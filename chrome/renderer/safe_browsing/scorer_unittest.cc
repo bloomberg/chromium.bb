@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/safe_browsing/scorer.h"
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -99,14 +101,14 @@ TEST_F(PhishingScorerTest, PageTerms) {
 TEST_F(PhishingScorerTest, PageWords) {
   scoped_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
   ASSERT_TRUE(scorer.get());
-  std::vector<uint32> expected_page_words;
+  std::vector<uint32_t> expected_page_words;
   expected_page_words.push_back(1000U);
   expected_page_words.push_back(2000U);
   expected_page_words.push_back(3000U);
   std::sort(expected_page_words.begin(), expected_page_words.end());
 
-  base::hash_set<uint32> page_words = scorer->page_words();
-  std::vector<uint32> page_words_v(page_words.begin(), page_words.end());
+  base::hash_set<uint32_t> page_words = scorer->page_words();
+  std::vector<uint32_t> page_words_v(page_words.begin(), page_words.end());
   std::sort(page_words_v.begin(), page_words_v.end());
 
   EXPECT_THAT(page_words_v, ::testing::ContainerEq(expected_page_words));

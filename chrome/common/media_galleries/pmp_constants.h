@@ -5,9 +5,10 @@
 #ifndef CHROME_COMMON_MEDIA_GALLERIES_PMP_CONSTANTS_H_
 #define CHROME_COMMON_MEDIA_GALLERIES_PMP_CONSTANTS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/time/time.h"
 
 namespace picasa {
@@ -22,17 +23,17 @@ const base::Time::Exploded kPmpVariantTimeEpoch = {
   0, 0, 0, 0        // 00:00:00.000
 };
 
-const int64 kPmpHeaderSize = 20;
+const int64_t kPmpHeaderSize = 20;
 
 const int kPmpMagic1Offset = 0;
 const int kPmpMagic2Offset = 6;
 const int kPmpMagic3Offset = 8;
 const int kPmpMagic4Offset = 14;
 
-const uint32 kPmpMagic1 = 0x3fcccccd;
-const uint16 kPmpMagic2 = 0x1332;
-const uint32 kPmpMagic3 = 0x00000002;
-const uint16 kPmpMagic4 = 0x1332;
+const uint32_t kPmpMagic1 = 0x3fcccccd;
+const uint16_t kPmpMagic2 = 0x1332;
+const uint32_t kPmpMagic3 = 0x00000002;
+const uint16_t kPmpMagic4 = 0x1332;
 
 const int kPmpFieldType1Offset = 4;
 const int kPmpFieldType2Offset = 12;

@@ -4,13 +4,17 @@
 
 #include "chrome/utility/local_discovery/service_discovery_message_handler.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "content/public/utility/utility_thread.h"
@@ -57,14 +61,13 @@ class ScopedSocketFactory : public net::PlatformSocketFactory {
 struct SocketInfo {
   SocketInfo(net::SocketDescriptor socket,
              net::AddressFamily address_family,
-             uint32 interface_index)
+             uint32_t interface_index)
       : socket(socket),
         address_family(address_family),
-        interface_index(interface_index) {
-  }
+        interface_index(interface_index) {}
   net::SocketDescriptor socket;
   net::AddressFamily address_family;
-  uint32 interface_index;
+  uint32_t interface_index;
 };
 
 // Returns list of sockets preallocated before.
@@ -267,14 +270,14 @@ void ServiceDiscoveryMessageHandler::OnSetSockets(
 #endif  // OS_POSIX
 
 void ServiceDiscoveryMessageHandler::OnStartWatcher(
-    uint64 id,
+    uint64_t id,
     const std::string& service_type) {
   PostTask(FROM_HERE,
            base::Bind(&ServiceDiscoveryMessageHandler::StartWatcher,
                       base::Unretained(this), id, service_type));
 }
 
-void ServiceDiscoveryMessageHandler::OnDiscoverServices(uint64 id,
+void ServiceDiscoveryMessageHandler::OnDiscoverServices(uint64_t id,
                                                         bool force_update) {
   PostTask(FROM_HERE,
            base::Bind(&ServiceDiscoveryMessageHandler::DiscoverServices,
@@ -282,42 +285,44 @@ void ServiceDiscoveryMessageHandler::OnDiscoverServices(uint64 id,
 }
 
 void ServiceDiscoveryMessageHandler::OnSetActivelyRefreshServices(
-    uint64 id, bool actively_refresh_services) {
+    uint64_t id,
+    bool actively_refresh_services) {
   PostTask(FROM_HERE,
            base::Bind(
                &ServiceDiscoveryMessageHandler::SetActivelyRefreshServices,
                base::Unretained(this), id, actively_refresh_services));
 }
 
-void ServiceDiscoveryMessageHandler::OnDestroyWatcher(uint64 id) {
+void ServiceDiscoveryMessageHandler::OnDestroyWatcher(uint64_t id) {
   PostTask(FROM_HERE,
            base::Bind(&ServiceDiscoveryMessageHandler::DestroyWatcher,
                       base::Unretained(this), id));
 }
 
 void ServiceDiscoveryMessageHandler::OnResolveService(
-    uint64 id,
+    uint64_t id,
     const std::string& service_name) {
   PostTask(FROM_HERE,
            base::Bind(&ServiceDiscoveryMessageHandler::ResolveService,
                       base::Unretained(this), id, service_name));
 }
 
-void ServiceDiscoveryMessageHandler::OnDestroyResolver(uint64 id) {
+void ServiceDiscoveryMessageHandler::OnDestroyResolver(uint64_t id) {
   PostTask(FROM_HERE,
            base::Bind(&ServiceDiscoveryMessageHandler::DestroyResolver,
                       base::Unretained(this), id));
 }
 
 void ServiceDiscoveryMessageHandler::OnResolveLocalDomain(
-    uint64 id, const std::string& domain,
+    uint64_t id,
+    const std::string& domain,
     net::AddressFamily address_family) {
     PostTask(FROM_HERE,
            base::Bind(&ServiceDiscoveryMessageHandler::ResolveLocalDomain,
                       base::Unretained(this), id, domain, address_family));
 }
 
-void ServiceDiscoveryMessageHandler::OnDestroyLocalDomainResolver(uint64 id) {
+void ServiceDiscoveryMessageHandler::OnDestroyLocalDomainResolver(uint64_t id) {
   PostTask(FROM_HERE,
            base::Bind(
                &ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver,
@@ -325,7 +330,7 @@ void ServiceDiscoveryMessageHandler::OnDestroyLocalDomainResolver(uint64 id) {
 }
 
 void ServiceDiscoveryMessageHandler::StartWatcher(
-    uint64 id,
+    uint64_t id,
     const std::string& service_type) {
   VLOG(1) << "StartWatcher, id=" << id << ", type=" << service_type;
   if (!service_discovery_client_)
@@ -340,7 +345,7 @@ void ServiceDiscoveryMessageHandler::StartWatcher(
   service_watchers_[id].reset(watcher.release());
 }
 
-void ServiceDiscoveryMessageHandler::DiscoverServices(uint64 id,
+void ServiceDiscoveryMessageHandler::DiscoverServices(uint64_t id,
                                                       bool force_update) {
   VLOG(1) << "DiscoverServices, id=" << id;
   if (!service_discovery_client_)
@@ -350,7 +355,7 @@ void ServiceDiscoveryMessageHandler::DiscoverServices(uint64 id,
 }
 
 void ServiceDiscoveryMessageHandler::SetActivelyRefreshServices(
-    uint64 id,
+    uint64_t id,
     bool actively_refresh_services) {
   VLOG(1) << "ActivelyRefreshServices, id=" << id;
   if (!service_discovery_client_)
@@ -359,7 +364,7 @@ void ServiceDiscoveryMessageHandler::SetActivelyRefreshServices(
   service_watchers_[id]->SetActivelyRefreshServices(actively_refresh_services);
 }
 
-void ServiceDiscoveryMessageHandler::DestroyWatcher(uint64 id) {
+void ServiceDiscoveryMessageHandler::DestroyWatcher(uint64_t id) {
   VLOG(1) << "DestoryWatcher, id=" << id;
   if (!service_discovery_client_)
     return;
@@ -367,7 +372,7 @@ void ServiceDiscoveryMessageHandler::DestroyWatcher(uint64 id) {
 }
 
 void ServiceDiscoveryMessageHandler::ResolveService(
-    uint64 id,
+    uint64_t id,
     const std::string& service_name) {
   VLOG(1) << "ResolveService, id=" << id << ", name=" << service_name;
   if (!service_discovery_client_)
@@ -382,7 +387,7 @@ void ServiceDiscoveryMessageHandler::ResolveService(
   service_resolvers_[id].reset(resolver.release());
 }
 
-void ServiceDiscoveryMessageHandler::DestroyResolver(uint64 id) {
+void ServiceDiscoveryMessageHandler::DestroyResolver(uint64_t id) {
   VLOG(1) << "DestroyResolver, id=" << id;
   if (!service_discovery_client_)
     return;
@@ -390,7 +395,7 @@ void ServiceDiscoveryMessageHandler::DestroyResolver(uint64 id) {
 }
 
 void ServiceDiscoveryMessageHandler::ResolveLocalDomain(
-    uint64 id,
+    uint64_t id,
     const std::string& domain,
     net::AddressFamily address_family) {
   VLOG(1) << "ResolveLocalDomain, id=" << id << ", domain=" << domain;
@@ -406,7 +411,7 @@ void ServiceDiscoveryMessageHandler::ResolveLocalDomain(
   local_domain_resolvers_[id].reset(resolver.release());
 }
 
-void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64 id) {
+void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64_t id) {
   VLOG(1) << "DestroyLocalDomainResolver, id=" << id;
   if (!service_discovery_client_)
     return;
@@ -437,7 +442,7 @@ void ServiceDiscoveryMessageHandler::ShutdownOnIOThread() {
 }
 
 void ServiceDiscoveryMessageHandler::OnServiceUpdated(
-    uint64 id,
+    uint64_t id,
     ServiceWatcher::UpdateType update,
     const std::string& name) {
   VLOG(1) << "OnServiceUpdated, id=" << id
@@ -448,7 +453,7 @@ void ServiceDiscoveryMessageHandler::OnServiceUpdated(
 }
 
 void ServiceDiscoveryMessageHandler::OnServiceResolved(
-    uint64 id,
+    uint64_t id,
     ServiceResolver::RequestStatus status,
     const ServiceDescription& description) {
   VLOG(1) << "OnServiceResolved, id=" << id
@@ -460,7 +465,7 @@ void ServiceDiscoveryMessageHandler::OnServiceResolved(
 }
 
 void ServiceDiscoveryMessageHandler::OnLocalDomainResolved(
-    uint64 id,
+    uint64_t id,
     bool success,
     const net::IPAddressNumber& address_ipv4,
     const net::IPAddressNumber& address_ipv6) {

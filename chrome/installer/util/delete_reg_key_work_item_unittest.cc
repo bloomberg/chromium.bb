@@ -4,7 +4,10 @@
 
 #include <windows.h>
 #include <atlsecurity.h>  // NOLINT
+#include <stddef.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/delete_reg_key_work_item.h"

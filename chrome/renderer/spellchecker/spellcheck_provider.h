@@ -5,9 +5,13 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_PROVIDER_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_PROVIDER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
@@ -80,7 +84,7 @@ class SpellCheckProvider
 
   void requestCheckingOfText(
       const blink::WebString& text,
-      const blink::WebVector<uint32>& markers,
+      const blink::WebVector<uint32_t>& markers,
       const blink::WebVector<unsigned>& marker_offsets,
       blink::WebTextCheckingCompletion* completion) override;
 

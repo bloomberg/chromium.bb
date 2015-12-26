@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
 
 class MultiProcessLock;

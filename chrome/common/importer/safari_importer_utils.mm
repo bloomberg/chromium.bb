@@ -9,7 +9,7 @@
 #include "chrome/common/importer/importer_data_types.h"
 
 bool SafariImporterCanImport(const base::FilePath& library_dir,
-                             uint16* services_supported) {
+                             uint16_t* services_supported) {
   DCHECK(services_supported);
   *services_supported = importer::NONE;
 

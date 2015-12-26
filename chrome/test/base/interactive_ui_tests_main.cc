@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/chrome_test_launcher.h"
 
+#include "build/build_config.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "ui/base/test/ui_controls.h"
 

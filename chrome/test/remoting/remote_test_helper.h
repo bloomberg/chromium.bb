@@ -6,6 +6,7 @@
 #define CHROME_TEST_REMOTING_REMOTE_TEST_HELPER_H_
 
 #include "base/debug/stack_trace.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

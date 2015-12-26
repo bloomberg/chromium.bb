@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/media_galleries/pmp_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,7 +14,7 @@
 namespace picasa {
 
 void WriteAlbumTable(const base::FilePath& column_file_destination,
-                     const std::vector<uint32>& category_vector,
+                     const std::vector<uint32_t>& category_vector,
                      const std::vector<double>& date_vector,
                      const std::vector<std::string>& filename_vector,
                      const std::vector<std::string>& name_vector,
@@ -45,7 +46,7 @@ void WriteTestAlbumTable(
     const base::FilePath& column_file_destination,
     const base::FilePath& test_folder_1_path,
     const base::FilePath& test_folder_2_path) {
-  std::vector<uint32> category_vector;
+  std::vector<uint32_t> category_vector;
   category_vector.push_back(kAlbumCategoryFolder);
   category_vector.push_back(kAlbumCategoryInvalid);
   category_vector.push_back(kAlbumCategoryAlbum);

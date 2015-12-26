@@ -6,6 +6,8 @@
 
 #include <hfs/hfs_format.h>
 #include <libkern/OSByteOrder.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/files/file.h"
 #include "base/strings/stringprintf.h"

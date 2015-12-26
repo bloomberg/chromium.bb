@@ -5,14 +5,16 @@
 #ifndef CHROME_UTILITY_IMPORTER_SAFARI_IMPORTER_H_
 #define CHROME_UTILITY_IMPORTER_SAFARI_IMPORTER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "chrome/utility/importer/importer.h"
 #include "components/favicon_base/favicon_usage_data.h"
@@ -41,7 +43,7 @@ class SafariImporter : public Importer {
 
   // Importer:
   void StartImport(const importer::SourceProfile& source_profile,
-                   uint16 items,
+                   uint16_t items,
                    ImporterBridge* bridge) override;
 
  private:
@@ -56,7 +58,7 @@ class SafariImporter : public Importer {
   // Multiple URLs can share the same favicon; this is a map
   // of URLs -> IconIDs that we load as a temporary step before
   // actually loading the icons.
-  typedef std::map<int64, std::set<GURL> > FaviconMap;
+  typedef std::map<int64_t, std::set<GURL>> FaviconMap;
 
   void ImportBookmarks();
   void ImportPasswords();

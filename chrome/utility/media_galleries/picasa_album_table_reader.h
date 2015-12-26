@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 
 namespace picasa {

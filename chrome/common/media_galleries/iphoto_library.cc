@@ -11,13 +11,10 @@ Photo::Photo()
     : id(0) {
 }
 
-Photo::Photo(uint64 id,
+Photo::Photo(uint64_t id,
              const base::FilePath& location,
              const base::FilePath& original_location)
-    : id(id),
-      location(location),
-      original_location(original_location) {
-}
+    : id(id), location(location), original_location(original_location) {}
 
 bool Photo::operator<(const Photo& other) const {
   return id < other.id;

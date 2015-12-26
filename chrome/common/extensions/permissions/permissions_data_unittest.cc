@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <utility>
 #include <vector>
 
@@ -9,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/common/socket_permission_request.h"
@@ -40,11 +43,10 @@ namespace {
 
 const char kAllHostsPermission[] = "*://*/*";
 
-bool CheckSocketPermission(
-    scoped_refptr<Extension> extension,
-    SocketPermissionRequest::OperationType type,
-    const char* host,
-    uint16 port) {
+bool CheckSocketPermission(scoped_refptr<Extension> extension,
+                           SocketPermissionRequest::OperationType type,
+                           const char* host,
+                           uint16_t port) {
   SocketPermission::CheckParam param(type, host, port);
   return extension->permissions_data()->CheckAPIPermissionWithParam(
       APIPermission::kSocket, &param);

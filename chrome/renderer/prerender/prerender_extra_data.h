@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_PRERENDER_PRERENDER_EXTRA_DATA_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebPrerender.h"
 #include "ui/gfx/geometry/size.h"
 

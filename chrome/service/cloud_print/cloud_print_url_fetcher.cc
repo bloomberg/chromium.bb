@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

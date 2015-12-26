@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_MINI_STRING_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_MINI_STRING_H_
 
+#include <stddef.h>
+
 #ifndef COMPILE_ASSERT
 // Some bots that build mini_installer don't know static_assert.
 #if __cplusplus >= 201103L

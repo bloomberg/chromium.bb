@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_MEDIA_MOCK_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 #define CHROME_RENDERER_MEDIA_MOCK_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
 

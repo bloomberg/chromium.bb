@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <locale>
 #include <string>
@@ -14,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -25,6 +28,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
+#include "build/build_config.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/net/port_server.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
@@ -53,7 +57,7 @@ class HttpServer : public net::HttpServer::Delegate {
 
   ~HttpServer() override {}
 
-  bool Start(uint16 port, bool allow_remote) {
+  bool Start(uint16_t port, bool allow_remote) {
     std::string binding_ip = kLocalHostAddress;
     if (allow_remote)
       binding_ip = "0.0.0.0";
@@ -153,7 +157,7 @@ void StopServerOnIOThread() {
   delete server;
 }
 
-void StartServerOnIOThread(uint16 port,
+void StartServerOnIOThread(uint16_t port,
                            bool allow_remote,
                            const HttpRequestHandlerFunc& handle_request_func) {
   scoped_ptr<HttpServer> temp_server(new HttpServer(handle_request_func));
@@ -164,7 +168,7 @@ void StartServerOnIOThread(uint16 port,
   lazy_tls_server.Pointer()->Set(temp_server.release());
 }
 
-void RunServer(uint16 port,
+void RunServer(uint16_t port,
                bool allow_remote,
                const std::vector<std::string>& whitelisted_ips,
                const std::string& url_base,
@@ -212,7 +216,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Parse command line flags.
-  uint16 port = 9515;
+  uint16_t port = 9515;
   int adb_port = 5037;
   bool allow_remote = false;
   std::vector<std::string> whitelisted_ips;
@@ -253,7 +257,7 @@ int main(int argc, char *argv[]) {
       printf("Invalid port. Exiting...\n");
       return 1;
     }
-    port = static_cast<uint16>(cmd_line_port);
+    port = static_cast<uint16_t>(cmd_line_port);
   }
   if (cmd_line->HasSwitch("adb-port")) {
     if (!base::StringToInt(cmd_line->GetSwitchValueASCII("adb-port"),

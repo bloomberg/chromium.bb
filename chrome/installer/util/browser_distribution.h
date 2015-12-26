@@ -9,11 +9,12 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/installer/util/util_constants.h"
 
 #if defined(OS_WIN)

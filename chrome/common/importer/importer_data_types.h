@@ -5,14 +5,16 @@
 #ifndef CHROME_COMMON_IMPORTER_IMPORTER_DATA_TYPES_H_
 #define CHROME_COMMON_IMPORTER_IMPORTER_DATA_TYPES_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/common/importer/importer_type.h"
 #include "url/gurl.h"
 
@@ -41,7 +43,7 @@ struct SourceProfile {
   ImporterType importer_type;
   base::FilePath source_path;
   base::FilePath app_path;
-  uint16 services_supported;  // Bitmask of ImportItem.
+  uint16_t services_supported;  // Bitmask of ImportItem.
   // The application locale. Stored because we can only access it from the UI
   // thread on the browser process. This is only used by the Firefox importer.
   std::string locale;

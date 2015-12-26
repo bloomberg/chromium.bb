@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 

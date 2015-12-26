@@ -4,10 +4,13 @@
 
 #include "chrome/utility/image_writer/image_writer.h"
 
+#include <string.h>
+
 #include "base/location.h"
 #include "base/memory/aligned_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/utility/image_writer/error_messages.h"
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #include "content/public/utility/utility_thread.h"
@@ -75,7 +78,7 @@ void ImageWriter::PostTask(const base::Closure& task) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
 }
 
-void ImageWriter::PostProgress(int64 progress) {
+void ImageWriter::PostProgress(int64_t progress) {
   handler_->SendProgress(progress);
 }
 

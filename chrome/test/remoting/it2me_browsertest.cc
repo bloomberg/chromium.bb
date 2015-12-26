@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "chrome/test/remoting/remote_desktop_browsertest.h"
 
@@ -79,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(It2MeBrowserTest, MANUAL_InvalidAccessCode) {
   // changing its PIN portion.
   std::string access_code = GetAccessCode(helpee_content);
 
-  uint64 invalid_access_code = 0;
+  uint64_t invalid_access_code = 0;
   ASSERT_TRUE(base::StringToUint64(access_code, &invalid_access_code));
   std::ostringstream invalid_access_code_string;
 

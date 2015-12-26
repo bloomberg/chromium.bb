@@ -163,7 +163,7 @@ void SpellCheckProvider::checkTextOfParagraph(
 
 void SpellCheckProvider::requestCheckingOfText(
     const WebString& text,
-    const WebVector<uint32>& markers,
+    const WebVector<uint32_t>& markers,
     const WebVector<unsigned>& marker_offsets,
     WebTextCheckingCompletion* completion) {
   std::vector<SpellCheckMarker> spellcheck_markers;
@@ -234,7 +234,7 @@ bool SpellCheckProvider::HasWordCharacters(
   const base::char16* data = text.data();
   int length = text.length();
   while (index < length) {
-    uint32 code = 0;
+    uint32_t code = 0;
     U16_NEXT(data, index, length, code);
     UErrorCode error = U_ZERO_ERROR;
     if (uscript_getScript(code, &error) != USCRIPT_COMMON)

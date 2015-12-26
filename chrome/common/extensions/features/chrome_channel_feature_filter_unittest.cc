@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/features/feature_channel.h"

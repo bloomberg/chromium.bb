@@ -5,10 +5,11 @@
 #ifndef CHROME_COMMON_INSTANT_TYPES_H_
 #define CHROME_COMMON_INSTANT_TYPES_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 
@@ -61,10 +62,10 @@ struct RGBAColor {
 
   // The color in RGBA format where the R, G, B and A values
   // are between 0 and 255 inclusive and always valid.
-  uint8 r;
-  uint8 g;
-  uint8 b;
-  uint8 a;
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+  uint8_t a;
 };
 
 // Theme background settings for the NTP.
@@ -112,7 +113,7 @@ struct ThemeBackgroundInfo {
 
   // The theme background image height.
   // Value is only valid if |theme_id| is valid.
-  uint16 image_height;
+  uint16_t image_height;
 
   // True if theme has attribution logo.
   // Value is only valid if |theme_id| is valid.

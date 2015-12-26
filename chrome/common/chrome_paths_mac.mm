@@ -15,6 +15,7 @@
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 
 namespace {

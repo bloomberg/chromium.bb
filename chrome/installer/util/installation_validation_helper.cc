@@ -8,6 +8,8 @@
 
 #include "chrome/installer/util/installation_validation_helper.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "chrome/installer/util/installation_state.h"

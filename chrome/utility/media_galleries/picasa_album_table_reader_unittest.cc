@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/common/media_galleries/picasa_test_util.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
@@ -18,7 +20,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
 
   int test_time_delta = 100;
 
-  std::vector<uint32> category_vector;
+  std::vector<uint32_t> category_vector;
   category_vector.push_back(kAlbumCategoryFolder);
   category_vector.push_back(kAlbumCategoryInvalid);
   category_vector.push_back(kAlbumCategoryAlbum);

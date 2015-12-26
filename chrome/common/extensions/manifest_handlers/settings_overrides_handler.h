@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_SETTINGS_OVERRIDES_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_SETTINGS_OVERRIDES_HANDLER_H_
 
+#include "base/macros.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"

@@ -5,10 +5,13 @@
 #ifndef CHROME_UTILITY_LOCAL_DISCOVERY_SERVICE_DISCOVERY_MESSAGE_HANDLER_H_
 #define CHROME_UTILITY_LOCAL_DISCOVERY_SERVICE_DISCOVERY_MESSAGE_HANDLER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
 #include "base/memory/linked_ptr.h"
+#include "build/build_config.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "chrome/utility/utility_message_handler.h"
 
@@ -44,9 +47,9 @@ class ServiceDiscoveryMessageHandler : public UtilityMessageHandler {
   static void PreSandboxStartup();
 
  private:
-  typedef std::map<uint64, linked_ptr<ServiceWatcher> > ServiceWatchers;
-  typedef std::map<uint64, linked_ptr<ServiceResolver> > ServiceResolvers;
-  typedef std::map<uint64, linked_ptr<LocalDomainResolver> >
+  typedef std::map<uint64_t, linked_ptr<ServiceWatcher>> ServiceWatchers;
+  typedef std::map<uint64_t, linked_ptr<ServiceResolver>> ServiceResolvers;
+  typedef std::map<uint64_t, linked_ptr<LocalDomainResolver>>
       LocalDomainResolvers;
 
   // Lazy initializes ServiceDiscoveryClient.
@@ -58,42 +61,45 @@ class ServiceDiscoveryMessageHandler : public UtilityMessageHandler {
 #if defined(OS_POSIX)
   void OnSetSockets(const std::vector<LocalDiscoveryMsg_SocketInfo>& sockets);
 #endif  // OS_POSIX
-  void OnStartWatcher(uint64 id, const std::string& service_type);
-  void OnDiscoverServices(uint64 id, bool force_update);
-  void OnSetActivelyRefreshServices(uint64 id, bool actively_refresh_services);
-  void OnDestroyWatcher(uint64 id);
-  void OnResolveService(uint64 id, const std::string& service_name);
-  void OnDestroyResolver(uint64 id);
-  void OnResolveLocalDomain(uint64 id, const std::string& domain,
+  void OnStartWatcher(uint64_t id, const std::string& service_type);
+  void OnDiscoverServices(uint64_t id, bool force_update);
+  void OnSetActivelyRefreshServices(uint64_t id,
+                                    bool actively_refresh_services);
+  void OnDestroyWatcher(uint64_t id);
+  void OnResolveService(uint64_t id, const std::string& service_name);
+  void OnDestroyResolver(uint64_t id);
+  void OnResolveLocalDomain(uint64_t id,
+                            const std::string& domain,
                             net::AddressFamily address_family);
-  void OnDestroyLocalDomainResolver(uint64 id);
+  void OnDestroyLocalDomainResolver(uint64_t id);
 
   void InitializeMdns();
-  void StartWatcher(uint64 id, const std::string& service_type);
-  void DiscoverServices(uint64 id, bool force_update);
-  void SetActivelyRefreshServices(uint64 id, bool actively_refresh_services);
-  void DestroyWatcher(uint64 id);
-  void ResolveService(uint64 id, const std::string& service_name);
-  void DestroyResolver(uint64 id);
-  void ResolveLocalDomain(uint64 id, const std::string& domain,
+  void StartWatcher(uint64_t id, const std::string& service_type);
+  void DiscoverServices(uint64_t id, bool force_update);
+  void SetActivelyRefreshServices(uint64_t id, bool actively_refresh_services);
+  void DestroyWatcher(uint64_t id);
+  void ResolveService(uint64_t id, const std::string& service_name);
+  void DestroyResolver(uint64_t id);
+  void ResolveLocalDomain(uint64_t id,
+                          const std::string& domain,
                           net::AddressFamily address_family);
-  void DestroyLocalDomainResolver(uint64 id);
+  void DestroyLocalDomainResolver(uint64_t id);
 
   void ShutdownLocalDiscovery();
   void ShutdownOnIOThread();
 
   // Is called by ServiceWatcher as callback.
-  void OnServiceUpdated(uint64 id,
+  void OnServiceUpdated(uint64_t id,
                         ServiceWatcher::UpdateType update,
                         const std::string& name);
 
   // Is called by ServiceResolver as callback.
-  void OnServiceResolved(uint64 id,
+  void OnServiceResolved(uint64_t id,
                          ServiceResolver::RequestStatus status,
                          const ServiceDescription& description);
 
   // Is called by LocalDomainResolver as callback.
-  void OnLocalDomainResolved(uint64 id,
+  void OnLocalDomainResolved(uint64_t id,
                              bool success,
                              const net::IPAddressNumber& address_ipv4,
                              const net::IPAddressNumber& address_ipv6);

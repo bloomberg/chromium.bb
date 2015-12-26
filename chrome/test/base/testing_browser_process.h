@@ -10,8 +10,11 @@
 #ifndef CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_H_
 #define CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
@@ -89,7 +92,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
-      uint16 port) override;
+      uint16_t port) override;
   unsigned int AddRefModule() override;
   unsigned int ReleaseModule() override;
   bool IsShuttingDown() override;

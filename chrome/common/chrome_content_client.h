@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "content/public/common/content_client.h"
 
 #if defined(ENABLE_PLUGINS)

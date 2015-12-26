@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/spellchecker/hunspell_engine.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 

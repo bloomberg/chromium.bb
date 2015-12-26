@@ -5,6 +5,7 @@
 #include "chrome/installer/mini_installer/configuration.h"
 
 #include <shellapi.h>  // NOLINT
+#include <stddef.h>
 
 #include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/mini_installer_constants.h"

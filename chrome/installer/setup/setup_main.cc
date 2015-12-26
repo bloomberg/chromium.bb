@@ -8,16 +8,18 @@
 #include <msi.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -1445,7 +1447,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     VLOG(1) << "version to install: " << installer_version->GetString();
     bool proceed_with_installation = true;
 
-    uint32 higher_products = 0;
+    uint32_t higher_products = 0;
     static_assert(sizeof(higher_products) * 8 > BrowserDistribution::NUM_TYPES,
                   "too many distribution types");
     const Products& products = installer_state.products();

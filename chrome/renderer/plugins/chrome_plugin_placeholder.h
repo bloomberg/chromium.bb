@@ -5,6 +5,9 @@
 #ifndef CHROME_RENDERER_PLUGINS_CHROME_PLUGIN_PLACEHOLDER_H_
 #define CHROME_RENDERER_PLUGINS_CHROME_PLUGIN_PLACEHOLDER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 #include "content/public/renderer/context_menu_client.h"
@@ -40,7 +43,7 @@ class ChromePluginPlaceholder final
   void SetStatus(ChromeViewHostMsg_GetPluginInfo_Status status);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  int32 CreateRoutingId();
+  int32_t CreateRoutingId();
 #endif
 
  private:
@@ -93,7 +96,7 @@ class ChromePluginPlaceholder final
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // |routing_id()| is the routing ID of our associated RenderView, but we have
   // a separate routing ID for messages specific to this placeholder.
-  int32 placeholder_routing_id_;
+  int32_t placeholder_routing_id_;
 #endif
 
   bool has_host_;

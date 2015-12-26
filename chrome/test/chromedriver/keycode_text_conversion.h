@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 // These functions only support conversion of characters in the BMP

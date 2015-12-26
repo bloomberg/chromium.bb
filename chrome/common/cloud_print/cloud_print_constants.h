@@ -5,7 +5,6 @@
 #ifndef CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CONSTANTS_H_
 #define CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CONSTANTS_H_
 
-#include "base/basictypes.h"
 
 namespace cloud_print {
 

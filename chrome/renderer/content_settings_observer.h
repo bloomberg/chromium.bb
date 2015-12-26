@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/renderer/render_frame_observer.h"

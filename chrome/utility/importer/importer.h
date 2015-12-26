@@ -5,7 +5,9 @@
 #ifndef CHROME_UTILITY_IMPORTER_IMPORTER_H_
 #define CHROME_UTILITY_IMPORTER_IMPORTER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 class ImporterBridge;
@@ -22,7 +24,7 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
   // import, the importer should invoke ImporterHost::NotifyImportEnded() to
   // notify its host that import stuff have been finished.
   virtual void StartImport(const importer::SourceProfile& source_profile,
-                           uint16 items,
+                           uint16_t items,
                            ImporterBridge* bridge) = 0;
 
   // Cancels the import process.

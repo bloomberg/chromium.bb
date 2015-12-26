@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_core.h"

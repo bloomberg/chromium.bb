@@ -4,7 +4,10 @@
 
 #include "chrome/utility/importer/bookmarks_file_importer.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
@@ -80,7 +83,7 @@ BookmarksFileImporter::~BookmarksFileImporter() {}
 
 void BookmarksFileImporter::StartImport(
     const importer::SourceProfile& source_profile,
-    uint16 items,
+    uint16_t items,
     ImporterBridge* bridge) {
   // The only thing this importer can import is a bookmarks file, aka
   // "favorites".

@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_UTIL_WORK_ITEM_LIST_H_
 
 #include <windows.h>
+#include <stdint.h>
 
 #include <list>
 #include <string>
@@ -117,7 +118,7 @@ class WorkItemList : public WorkItem {
                                            const std::wstring& key_path,
                                            REGSAM wow64_access,
                                            const std::wstring& value_name,
-                                           int64 value_data,
+                                           int64_t value_data,
                                            bool overwrite);
 
   // Add a SetRegValueWorkItem that sets a registry value based on the value

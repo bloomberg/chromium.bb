@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/lzma_util.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -78,9 +80,9 @@ SRes SzFileReadImp(void *object, void *buffer, size_t *size) {
 }  // namespace
 
 // static
-int32 LzmaUtil::UnPackArchive(const std::wstring& archive,
-                             const std::wstring& output_dir,
-                             std::wstring* output_file) {
+int32_t LzmaUtil::UnPackArchive(const std::wstring& archive,
+                                const std::wstring& output_dir,
+                                std::wstring* output_file) {
   VLOG(1) << "Opening archive " << archive;
   LzmaUtil lzma_util;
   DWORD ret;

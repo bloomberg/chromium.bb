@@ -5,8 +5,8 @@
 #include "chrome/installer/util/wmi.h"
 
 #include <windows.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
@@ -85,8 +85,8 @@ bool SetParameter(IWbemClassObject* class_method,
 // CIM class is documented here:
 // http://msdn2.microsoft.com/en-us/library/aa389388(VS.85).aspx
 // NOTE: The documentation for the Create method suggests that the ProcessId
-// parameter and return value are of type uint32, but when we call the method
-// the values in the returned out_params, are VT_I4, which is int32.
+// parameter and return value are of type uint32_t, but when we call the method
+// the values in the returned out_params, are VT_I4, which is int32_t.
 
 bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
   base::win::ScopedComPtr<IWbemServices> wmi_local;
@@ -113,7 +113,8 @@ bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
   if (FAILED(hr))
     return false;
 
-  // We're only expecting int32 or uint32 values, so no need for ScopedVariant.
+  // We're only expecting int32_t or uint32_t values, so no need for
+  // ScopedVariant.
   VARIANT ret_value = {{{VT_EMPTY}}};
   hr = out_params->Get(L"ReturnValue", 0, &ret_value, NULL, 0);
   if (FAILED(hr) || 0 != V_I4(&ret_value))

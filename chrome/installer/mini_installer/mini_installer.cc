@@ -33,6 +33,7 @@
 #include <sddl.h>
 #include <shellapi.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 #include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/configuration.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_PARTIAL_CIRCULAR_BUFFER_H_
 #define CHROME_COMMON_PARTIAL_CIRCULAR_BUFFER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
 
 // A wrapper around a memory buffer that allows circular read and write with a
 // selectable wrapping position. Buffer layout (after wrap; H is header):
@@ -25,18 +25,18 @@ class PartialCircularBuffer {
  public:
   // Use for reading. |buffer_size| is in bytes and must be larger than the
   // header size (see above).
-  PartialCircularBuffer(void* buffer, uint32 buffer_size);
+  PartialCircularBuffer(void* buffer, uint32_t buffer_size);
 
   // Use for writing. |buffer_size| is in bytes and must be larger than the
   // header size (see above). If |append| is true, the header data is not reset
   // and writing will continue were left off, |wrap_position| is then ignored.
   PartialCircularBuffer(void* buffer,
-                        uint32 buffer_size,
-                        uint32 wrap_position,
+                        uint32_t buffer_size,
+                        uint32_t wrap_position,
                         bool append);
 
-  uint32 Read(void* buffer, uint32 buffer_size);
-  void Write(const void* buffer, uint32 buffer_size);
+  uint32_t Read(void* buffer, uint32_t buffer_size);
+  void Write(const void* buffer, uint32_t buffer_size);
 
  private:
   friend class PartialCircularBufferTest;
@@ -44,23 +44,23 @@ class PartialCircularBuffer {
 #pragma pack(push)
 #pragma pack(4)
   struct BufferData {
-    uint32 total_written;
-    uint32 wrap_position;
-    uint32 end_position;
-    uint8 data[1];
+    uint32_t total_written;
+    uint32_t wrap_position;
+    uint32_t end_position;
+    uint8_t data[1];
   };
 #pragma pack(pop)
 
-  void DoWrite(const uint8* input, uint32 input_size);
+  void DoWrite(const uint8_t* input, uint32_t input_size);
 
   // Used for reading and writing.
   BufferData* buffer_data_;
-  uint32 memory_buffer_size_;
-  uint32 data_size_;
-  uint32 position_;
+  uint32_t memory_buffer_size_;
+  uint32_t data_size_;
+  uint32_t position_;
 
   // Used for reading.
-  uint32 total_read_;
+  uint32_t total_read_;
 };
 
 #endif  // CHROME_COMMON_PARTIAL_CIRCULAR_BUFFER_H_

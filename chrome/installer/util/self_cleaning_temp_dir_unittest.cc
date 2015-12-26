@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+#include <stdint.h>
 #include <wincrypt.h>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +18,7 @@ namespace {
 // Returns a string of 8 characters consisting of the letter 'R' followed by
 // seven random hex digits.
 std::string GetRandomFilename() {
-  uint8 data[4];
+  uint8_t data[4];
   HCRYPTPROV crypt_ctx = NULL;
 
   // Get four bytes of randomness.  Use CAPI rather than the CRT since I've

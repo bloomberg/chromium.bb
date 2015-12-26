@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALLER_SETUP_INSTALLER_CRASH_REPORTING_H_
 #define CHROME_INSTALLER_SETUP_INSTALLER_CRASH_REPORTING_H_
 
+#include <stddef.h>
+
 namespace base {
 class CommandLine;
 class Version;

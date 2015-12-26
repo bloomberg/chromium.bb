@@ -4,12 +4,15 @@
 
 #include "chrome/app/chrome_main_delegate.h"
 
+#include <stddef.h>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"

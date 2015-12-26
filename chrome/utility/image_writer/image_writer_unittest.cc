@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+#include <string.h>
+
 #include <string>
 
 #include "base/files/file_util.h"
@@ -22,7 +25,7 @@ using testing::Lt;
 
 namespace {
 
-const int64 kTestFileSize = 1 << 15;  // 32 kB
+const int64_t kTestFileSize = 1 << 15;  // 32 kB
 const int kTestPattern = 0x55555555;
 
 class ImageWriterUtilityTest : public testing::Test {
@@ -55,7 +58,7 @@ class ImageWriterUtilityTest : public testing::Test {
 
 class MockHandler : public ImageWriterHandler {
  public:
-  MOCK_METHOD1(SendProgress, void(int64));
+  MOCK_METHOD1(SendProgress, void(int64_t));
   MOCK_METHOD1(SendFailed, void(const std::string& message));
   MOCK_METHOD0(SendSucceeded, void());
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));

@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/safe_browsing/features.h"
 
+#include <stddef.h>
+
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/renderer/safe_browsing/test_utils.h"

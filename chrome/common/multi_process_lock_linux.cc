@@ -4,13 +4,16 @@
 
 #include "chrome/common/multi_process_lock.h"
 
+#include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 
 class MultiProcessLockLinux : public MultiProcessLock {

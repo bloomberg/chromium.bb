@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/searchbox/searchbox.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/logging.h"
@@ -252,10 +255,13 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
   base::TimeDelta delta;
   if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame()) {
     // navigation_start in ms.
-    uint64 start = 1000 * (render_view()->GetMainRenderFrame()->GetWebFrame()->
-        performance().navigationStart());
-    uint64 now = (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch())
-                     .InMilliseconds();
+    uint64_t start = 1000 * (render_view()
+                                 ->GetMainRenderFrame()
+                                 ->GetWebFrame()
+                                 ->performance()
+                                 .navigationStart());
+    uint64_t now = (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch())
+                       .InMilliseconds();
     DCHECK(now >= start);
     delta = base::TimeDelta::FromMilliseconds(now - start);
   }

@@ -5,8 +5,12 @@
 // Defines local discovery messages between the browser and utility process.
 
 // Multiple-included file, no traditional include guard.
+
+#include <stdint.h>
+
 #include <vector>
 
+#include "build/build_config.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -26,7 +30,7 @@ struct LocalDiscoveryMsg_SocketInfo {
 
   base::FileDescriptor descriptor;
   net::AddressFamily address_family;
-  uint32 interface_index;
+  uint32_t interface_index;
 };
 #endif  // OS_POSIX
 
@@ -69,41 +73,39 @@ IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_SetSockets,
 
 // Creates watcher and starts listening in utility process.
 IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_StartWatcher,
-                     uint64 /* id */,
+                     uint64_t /* id */,
                      std::string /* service_type */)
 
 // Discovers new services.
 IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_DiscoverServices,
-                     uint64 /* id */,
+                     uint64_t /* id */,
                      bool /* force_update */)
 
 // Discovers new services.
 IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_SetActivelyRefreshServices,
-                     uint64 /* id */,
+                     uint64_t /* id */,
                      bool /* actively_refresh_services */)
 
 // Destroys watcher in utility process.
-IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyWatcher,
-                     uint64 /* id */)
+IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyWatcher, uint64_t /* id */)
 
 // Creates service resolver and starts resolving service in utility process.
 IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_ResolveService,
-                     uint64 /* id */,
+                     uint64_t /* id */,
                      std::string /* service_name */)
 
 // Destroys service resolver in utility process.
-IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyResolver,
-                     uint64 /* id */)
+IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyResolver, uint64_t /* id */)
 
 // Creates a local domain resolver and starts resolving in utility process.
 IPC_MESSAGE_CONTROL3(LocalDiscoveryMsg_ResolveLocalDomain,
-                     uint64 /* id */,
+                     uint64_t /* id */,
                      std::string /* domain */,
                      net::AddressFamily /* address_family */)
 
 // Destroys local domain resolver in utility process.
 IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyLocalDomainResolver,
-                     uint64 /* id */)
+                     uint64_t /* id */)
 
 // Stops local discovery in utility process. http://crbug.com/268466.
 IPC_MESSAGE_CONTROL0(LocalDiscoveryMsg_ShutdownLocalDiscovery)
@@ -118,21 +120,20 @@ IPC_MESSAGE_CONTROL0(LocalDiscoveryHostMsg_Error)
 
 // Notifies browser process about new services.
 IPC_MESSAGE_CONTROL3(LocalDiscoveryHostMsg_WatcherCallback,
-                     uint64 /* id */,
+                     uint64_t /* id */,
                      local_discovery::ServiceWatcher::UpdateType /* update */,
                      std::string /* service_name */)
 
 // Notifies browser process about service resolution results.
 IPC_MESSAGE_CONTROL3(
     LocalDiscoveryHostMsg_ResolverCallback,
-    uint64 /* id */,
+    uint64_t /* id */,
     local_discovery::ServiceResolver::RequestStatus /* status */,
     local_discovery::ServiceDescription /* description */)
 
 // Notifies browser process about local domain resolution results.
-IPC_MESSAGE_CONTROL4(
-    LocalDiscoveryHostMsg_LocalDomainResolverCallback,
-    uint64 /* id */,
-    bool /* success */,
-    net::IPAddressNumber /* ip_address_ipv4 */,
-    net::IPAddressNumber /* ip_address_ipv6 */)
+IPC_MESSAGE_CONTROL4(LocalDiscoveryHostMsg_LocalDomainResolverCallback,
+                     uint64_t /* id */,
+                     bool /* success */,
+                     net::IPAddressNumber /* ip_address_ipv4 */,
+                     net::IPAddressNumber /* ip_address_ipv6 */)

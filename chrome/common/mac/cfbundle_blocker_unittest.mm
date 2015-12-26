@@ -5,8 +5,9 @@
 #include "chrome/common/mac/cfbundle_blocker.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {

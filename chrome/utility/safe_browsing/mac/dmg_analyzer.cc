@@ -4,6 +4,9 @@
 
 #include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"

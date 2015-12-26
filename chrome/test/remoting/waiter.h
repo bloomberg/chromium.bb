@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_REMOTING_WAITER_H_
 #define CHROME_TEST_REMOTING_WAITER_H_
 
+#include "base/macros.h"
 #include "base/timer/timer.h"
 
 namespace content {

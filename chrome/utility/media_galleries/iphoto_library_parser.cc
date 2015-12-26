@@ -4,6 +4,8 @@
 
 #include "chrome/utility/media_galleries/iphoto_library_parser.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/logging.h"
@@ -18,15 +20,15 @@ namespace iphoto {
 namespace {
 
 struct PhotoInfo {
-  uint64 id;
+  uint64_t id;
   base::FilePath location;
   base::FilePath original_location;
 };
 
 struct AlbumInfo {
-  std::set<uint64> photo_ids;
+  std::set<uint64_t> photo_ids;
   std::string name;
-  uint64 id;
+  uint64_t id;
 };
 
 class PhotosXmlDictReader : public iapps::XmlDictReader {
@@ -63,7 +65,7 @@ class PhotosXmlDictReader : public iapps::XmlDictReader {
 //  <string>2</string>
 //  <string>3</string>
 // </array>
-bool ReadStringArray(XmlReader* reader, std::set<uint64>* photo_ids) {
+bool ReadStringArray(XmlReader* reader, std::set<uint64_t>* photo_ids) {
   if (reader->NodeName() != "array")
     return false;
 
@@ -79,7 +81,7 @@ bool ReadStringArray(XmlReader* reader, std::set<uint64>* photo_ids) {
     std::string photo_id;
     if (!iapps::ReadString(reader, &photo_id))
       continue;
-    uint64 id;
+    uint64_t id;
     if (!base::StringToUint64(photo_id, &id))
       continue;
     photo_ids->insert(id);
@@ -152,7 +154,7 @@ bool ParseAllPhotos(XmlReader* reader,
       errors = true;
       break;
     }
-    uint64 id;
+    uint64_t id;
     bool id_valid = base::StringToUint64(key, &id);
 
     if (!id_valid ||

@@ -9,6 +9,9 @@
 // included here. Message classes used exclusively outside of chrome
 // should not be listed here and instead get an exemption in
 // chrome/tools/ipclist/ipclist.cc.
+
+#include "build/build_config.h"
+
 #if !defined(OS_ANDROID)
 #include "chrome/common/importer/profile_import_process_messages.h"
 #endif

@@ -4,6 +4,8 @@
 
 #include "chrome/common/resource_usage_reporter_type_converters.h"
 
+#include <stddef.h>
+
 #include "base/numerics/safe_conversions.h"
 
 namespace mojo {

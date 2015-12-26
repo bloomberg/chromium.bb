@@ -4,8 +4,11 @@
 
 #include "chrome/common/importer/firefox_importer_utils.h"
 
+#include <stddef.h>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"

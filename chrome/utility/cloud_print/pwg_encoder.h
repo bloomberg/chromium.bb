@@ -5,9 +5,10 @@
 #ifndef CHROME_UTILITY_CLOUD_PRINT_PWG_ENCODER_H_
 #define CHROME_UTILITY_CLOUD_PRINT_PWG_ENCODER_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 
 namespace cloud_print {
 
@@ -23,8 +24,8 @@ struct PwgHeaderInfo {
         duplex(false),
         tumble(false) {}
   enum ColorSpace { SGRAY = 18, SRGB = 19 };
-  uint32 dpi;
-  uint32 total_pages;
+  uint32_t dpi;
+  uint32_t total_pages;
   bool flipx;
   bool flipy;
   ColorSpace color_space;
@@ -57,7 +58,7 @@ class PwgEncoder {
                                 const PwgHeaderInfo& pwg_header_info,
                                 std::string* output) const;
 
-  const uint8* GetRow(const BitmapImage& image, int row, bool flipy) const;
+  const uint8_t* GetRow(const BitmapImage& image, int row, bool flipy) const;
 };
 
 }  // namespace cloud_print

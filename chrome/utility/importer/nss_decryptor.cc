@@ -4,6 +4,8 @@
 
 #include "chrome/utility/importer/nss_decryptor.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 

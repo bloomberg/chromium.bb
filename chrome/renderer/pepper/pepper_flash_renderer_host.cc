@@ -4,10 +4,13 @@
 
 #include "chrome/renderer/pepper/pepper_flash_renderer_host.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"

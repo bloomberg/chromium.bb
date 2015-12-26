@@ -5,9 +5,10 @@
 #ifndef CHROME_UTILITY_IMPORTER_FAVICON_REENCODE_H_
 #define CHROME_UTILITY_IMPORTER_FAVICON_REENCODE_H_
 
+#include <stddef.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 
 namespace importer {
 

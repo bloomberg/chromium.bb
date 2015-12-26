@@ -7,13 +7,12 @@
 namespace logging_win {
 
 MofDataParser::MofDataParser(const EVENT_TRACE* event)
-    : scan_(reinterpret_cast<const uint8*>(event->MofData)),
-      length_(event->MofLength) {
-}
+    : scan_(reinterpret_cast<const uint8_t*>(event->MofData)),
+      length_(event->MofLength) {}
 
 bool MofDataParser::ReadString(base::StringPiece* value) {
-  const uint8* str_scan = scan_;
-  const uint8* const str_end = str_scan + length_;
+  const uint8_t* str_scan = scan_;
+  const uint8_t* const str_end = str_scan + length_;
   while (str_scan < str_end && *str_scan != 0)
     ++str_scan;
   if (str_scan == str_end)

@@ -4,6 +4,8 @@
 
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
 
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/installer/gcapi/gcapi.h"
@@ -60,7 +62,7 @@ bool SetReactivationBrandCode(const std::wstring& brand_code, int shell_mode) {
                             GetReactivationHistoryKeyPath().c_str(),
                             KEY_WRITE | KEY_WOW64_32KEY);
     if (reactivation_key.Valid()) {
-      int64 timestamp = Time::Now().ToInternalValue();
+      int64_t timestamp = Time::Now().ToInternalValue();
       reactivation_key.WriteValue(brand_code.c_str(),
                                   &timestamp,
                                   sizeof(timestamp),

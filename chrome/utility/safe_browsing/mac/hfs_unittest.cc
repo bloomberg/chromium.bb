@@ -4,8 +4,12 @@
 
 #include "chrome/utility/safe_browsing/mac/hfs.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

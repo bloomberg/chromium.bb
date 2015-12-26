@@ -5,7 +5,7 @@
 #ifndef CHROME_INSTALLER_UTIL_HTML_DIALOG_H_
 #define CHROME_INSTALLER_UTIL_HTML_DIALOG_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 // This is the interface for creating HTML-based Dialogs *before* Chrome has

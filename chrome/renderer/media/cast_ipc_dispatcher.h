@@ -5,8 +5,11 @@
 #ifndef CHROME_RENDERER_MEDIA_CAST_IPC_DISPATCHER_H_
 #define CHROME_RENDERER_MEDIA_CAST_IPC_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/id_map.h"
+#include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/message_filter.h"
@@ -25,8 +28,8 @@ class CastIPCDispatcher : public IPC::MessageFilter {
 
   static CastIPCDispatcher* Get();
   void Send(IPC::Message* message);
-  int32 AddSender(CastTransportSenderIPC* sender);
-  void RemoveSender(int32 channel_id);
+  int32_t AddSender(CastTransportSenderIPC* sender);
+  void RemoveSender(int32_t channel_id);
 
   // IPC::MessageFilter implementation
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -38,23 +41,21 @@ class CastIPCDispatcher : public IPC::MessageFilter {
   ~CastIPCDispatcher() override;
 
  private:
-  void OnNotifyStatusChange(
-      int32 channel_id,
-      media::cast::CastTransportStatus status);
-  void OnRtpStatistics(
-      int32 channel_id,
-      bool audio,
-      const media::cast::RtcpSenderInfo& sender_info,
-      base::TimeTicks time_sent,
-      uint32 rtp_timestamp);
-  void OnRawEvents(int32 channel_id,
+  void OnNotifyStatusChange(int32_t channel_id,
+                            media::cast::CastTransportStatus status);
+  void OnRtpStatistics(int32_t channel_id,
+                       bool audio,
+                       const media::cast::RtcpSenderInfo& sender_info,
+                       base::TimeTicks time_sent,
+                       uint32_t rtp_timestamp);
+  void OnRawEvents(int32_t channel_id,
                    const std::vector<media::cast::PacketEvent>& packet_events,
                    const std::vector<media::cast::FrameEvent>& frame_events);
-  void OnRtt(int32 channel_id, uint32 ssrc, base::TimeDelta rtt);
-  void OnRtcpCastMessage(int32 channel_id,
-                         uint32 ssrc,
+  void OnRtt(int32_t channel_id, uint32_t ssrc, base::TimeDelta rtt);
+  void OnRtcpCastMessage(int32_t channel_id,
+                         uint32_t ssrc,
                          const media::cast::RtcpCastMessage& cast_message);
-  void OnReceivedPacket(int32 channel_id, const media::cast::Packet& packet);
+  void OnReceivedPacket(int32_t channel_id, const media::cast::Packet& packet);
 
   static CastIPCDispatcher* global_instance_;
 

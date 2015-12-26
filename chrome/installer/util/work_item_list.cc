@@ -195,7 +195,7 @@ WorkItem* WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& key_path,
                                                REGSAM wow64_access,
                                                const std::wstring& value_name,
-                                               int64 value_data,
+                                               int64_t value_data,
                                                bool overwrite) {
   WorkItem* item = reinterpret_cast<WorkItem*>(
       WorkItem::CreateSetRegValueWorkItem(predefined_root,

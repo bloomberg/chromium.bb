@@ -14,8 +14,8 @@ namespace {
 
 // Performs a cast to type |T| of |data| iff |data_size| is sufficient to hold
 // an instance of type |T|.  Returns true on success.
-template<class T>
-bool StructureAt(const uint8* data, size_t data_size, const T** structure) {
+template <class T>
+bool StructureAt(const uint8_t* data, size_t data_size, const T** structure) {
   if (sizeof(T) <= data_size) {
     *structure = reinterpret_cast<const T*>(data);
     return true;
@@ -25,10 +25,13 @@ bool StructureAt(const uint8* data, size_t data_size, const T** structure) {
 
 // Recursive function for enumerating entries in an image's resource segment.
 // static
-bool EnumResourcesWorker(
-    const base::win::PEImage& image, const uint8* tree_base, DWORD tree_size,
-    DWORD directory_offset, upgrade_test::EntryPath* path,
-    upgrade_test::EnumResource_Fn callback, uintptr_t context) {
+bool EnumResourcesWorker(const base::win::PEImage& image,
+                         const uint8_t* tree_base,
+                         DWORD tree_size,
+                         DWORD directory_offset,
+                         upgrade_test::EntryPath* path,
+                         upgrade_test::EnumResource_Fn callback,
+                         uintptr_t context) {
   bool success = true;
   const IMAGE_RESOURCE_DIRECTORY* resource_directory;
 
@@ -83,14 +86,14 @@ bool EnumResourcesWorker(
       const IMAGE_RESOURCE_DATA_ENTRY* data_entry;
       if (StructureAt(tree_base + scan->OffsetToData,
                       tree_size - scan->OffsetToData, &data_entry) &&
-          reinterpret_cast<uint8*>(
-              image.RVAToAddr(data_entry->OffsetToData)) + data_entry->Size <=
-          tree_base + tree_size) {
+          reinterpret_cast<uint8_t*>(
+              image.RVAToAddr(data_entry->OffsetToData)) +
+                  data_entry->Size <=
+              tree_base + tree_size) {
         // Despite what winnt.h says, OffsetToData is an RVA.
-        callback(
-            *path,
-            reinterpret_cast<uint8*>(image.RVAToAddr(data_entry->OffsetToData)),
-            data_entry->Size, data_entry->CodePage, context);
+        callback(*path, reinterpret_cast<uint8_t*>(
+                            image.RVAToAddr(data_entry->OffsetToData)),
+                 data_entry->Size, data_entry->CodePage, context);
       } else {
         LOG(DFATAL) << "Insufficient room in resource segment for data entry.";
         success = false;
@@ -114,9 +117,8 @@ bool EnumResources(const base::win::PEImage& image, EnumResource_Fn callback,
   if (resources_size != 0) {
     EntryPath path_storage;
     return EnumResourcesWorker(
-        image,
-        reinterpret_cast<uint8*>(
-            image.GetImageDirectoryEntryAddr(IMAGE_DIRECTORY_ENTRY_RESOURCE)),
+        image, reinterpret_cast<uint8_t*>(image.GetImageDirectoryEntryAddr(
+                   IMAGE_DIRECTORY_ENTRY_RESOURCE)),
         resources_size, 0, &path_storage, callback, context);
   }
   return true;

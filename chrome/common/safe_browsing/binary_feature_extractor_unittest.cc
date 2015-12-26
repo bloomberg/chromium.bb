@@ -4,6 +4,9 @@
 
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include "base/base_paths.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"

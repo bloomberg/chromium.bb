@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <objbase.h>
+#include <stddef.h>
 
 #include <string>
 
@@ -10,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

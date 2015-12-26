@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"

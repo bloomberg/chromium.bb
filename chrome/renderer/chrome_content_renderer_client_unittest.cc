@@ -4,9 +4,12 @@
 
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/common/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest.h"

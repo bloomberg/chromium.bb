@@ -4,9 +4,7 @@
 
 #include "chrome/common/chrome_content_client.h"
 
-#if defined(OS_LINUX)
-#include <fcntl.h>
-#endif  // defined(OS_LINUX)
+#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
@@ -47,6 +45,7 @@
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_LINUX)
+#include <fcntl.h>
 #include "chrome/common/component_flash_hint_file_linux.h"
 #endif  // defined(OS_LINUX)
 
@@ -85,8 +84,8 @@ const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
 const char kPDFPluginOutOfProcessMimeType[] =
     "application/x-google-chrome-pdf";
-const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
-                                     ppapi::PERMISSION_DEV;
+const uint32_t kPDFPluginPermissions =
+    ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
 #endif  // defined(ENABLE_PDF)
 
 content::PepperPluginInfo::GetInterfaceFunc g_pdf_get_interface;

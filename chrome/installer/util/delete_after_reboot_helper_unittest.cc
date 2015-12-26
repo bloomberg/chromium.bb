@@ -4,8 +4,10 @@
 
 #include <windows.h>
 #include <shlobj.h>
+#include <stddef.h>
 
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"

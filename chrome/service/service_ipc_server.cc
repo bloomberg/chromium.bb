@@ -5,6 +5,7 @@
 #include "chrome/service/service_ipc_server.h"
 
 #include "base/metrics/histogram_delta_serialization.h"
+#include "build/build_config.h"
 #include "chrome/common/service_messages.h"
 #include "ipc/ipc_logging.h"
 
@@ -47,7 +48,7 @@ ServiceIPCServer::~ServiceIPCServer() {
 #endif
 }
 
-void ServiceIPCServer::OnChannelConnected(int32 peer_pid) {
+void ServiceIPCServer::OnChannelConnected(int32_t peer_pid) {
   DCHECK(!ipc_client_connected_);
   ipc_client_connected_ = true;
 }

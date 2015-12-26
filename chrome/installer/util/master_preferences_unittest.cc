@@ -4,7 +4,10 @@
 //
 // Unit tests for master preferences related methods.
 
+#include <stddef.h>
+
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"

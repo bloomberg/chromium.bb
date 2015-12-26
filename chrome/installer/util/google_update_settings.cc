@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/google_update_settings.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <limits>
 
@@ -389,7 +391,7 @@ int GoogleUpdateSettings::GetLastRunTime() {
   base::string16 time_s;
   if (!ReadGoogleUpdateStrKey(google_update::kRegLastRunTimeField, &time_s))
     return -1;
-  int64 time_i;
+  int64_t time_i;
   if (!base::StringToInt64(time_s, &time_i))
     return -1;
   base::TimeDelta td =
@@ -398,7 +400,7 @@ int GoogleUpdateSettings::GetLastRunTime() {
 }
 
 bool GoogleUpdateSettings::SetLastRunTime() {
-  int64 time = base::Time::NowFromSystemTime().ToInternalValue();
+  int64_t time = base::Time::NowFromSystemTime().ToInternalValue();
   return WriteGoogleUpdateStrKey(google_update::kRegLastRunTimeField,
                                  base::Int64ToString16(time));
 }

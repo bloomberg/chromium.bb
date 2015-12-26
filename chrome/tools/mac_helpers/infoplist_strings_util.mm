@@ -7,6 +7,7 @@
 // Mac OS X app bundles.
 
 #import <Foundation/Foundation.h>
+#include <stdint.h>
 
 #include <stdio.h>
 #include <unistd.h>

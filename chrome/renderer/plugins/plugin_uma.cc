@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstring>
 
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_constants.h"

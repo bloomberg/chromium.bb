@@ -5,6 +5,8 @@
 #ifndef CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_TEST_UTILS_H_
 #define CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_TEST_UTILS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file.h"

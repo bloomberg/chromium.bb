@@ -4,6 +4,7 @@
 
 #include "chrome/app/chrome_main_delegate.h"
 
+#include "build/build_config.h"
 #include "content/public/app/content_main.h"
 
 #if defined(OS_WIN)

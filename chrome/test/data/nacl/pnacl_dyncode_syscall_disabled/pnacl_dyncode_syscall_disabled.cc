@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <nacl/nacl_dyncode.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>

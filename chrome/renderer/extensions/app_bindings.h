@@ -12,6 +12,7 @@
 #define CHROME_RENDERER_EXTENSIONS_APP_BINDINGS_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "third_party/WebKit/public/web/WebFrame.h"

@@ -11,6 +11,9 @@
 #include "chrome/installer/gcapi/gcapi.h"
 
 #include <sddl.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 #define STRSAFE_NO_DEPRECATE
 #include <windows.h>
 #include <strsafe.h>
@@ -22,9 +25,9 @@
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -603,7 +606,7 @@ int __stdcall GoogleChromeDaysSinceLastRun() {
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY);
     if (client_state.Valid()) {
       base::string16 last_run;
-      int64 last_run_value = 0;
+      int64_t last_run_value = 0;
       if (client_state.ReadValue(google_update::kRegLastRunTimeField,
                                  &last_run) == ERROR_SUCCESS &&
           base::StringToInt64(last_run, &last_run_value)) {
@@ -611,7 +614,7 @@ int __stdcall GoogleChromeDaysSinceLastRun() {
         TimeDelta difference = Time::NowFromSystemTime() - last_run_time;
 
         // We can end up with negative numbers here, given changes in system
-        // clock time or due to TimeDelta's int64 -> int truncation.
+        // clock time or due to TimeDelta's int64_t -> int truncation.
         int new_days_since_last_run = difference.InDays();
         if (new_days_since_last_run >= 0 &&
             new_days_since_last_run < days_since_last_run) {

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"

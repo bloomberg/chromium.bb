@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/chrome_finder.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -12,6 +14,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 

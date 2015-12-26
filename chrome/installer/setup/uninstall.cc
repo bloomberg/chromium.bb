@@ -7,12 +7,15 @@
 #include "chrome/installer/setup/uninstall.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <vector>
 
 #include "base/base_paths.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
@@ -492,7 +495,7 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
     // We cannot delete the file right away, but try to delete it some other
     // way. Either with the help of a different process or the system.
     if (!base::DeleteFileAfterReboot(temp_file)) {
-      const uint32 kDeleteAfterMs = 10 * 1000;
+      const uint32_t kDeleteAfterMs = 10 * 1000;
       installer::DeleteFileFromTempProcess(temp_file, kDeleteAfterMs);
     }
   }
@@ -568,7 +571,7 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
 InstallStatus IsChromeActiveOrUserCancelled(
     const InstallerState& installer_state,
     const Product& product) {
-  int32 exit_code = content::RESULT_CODE_NORMAL_EXIT;
+  int32_t exit_code = content::RESULT_CODE_NORMAL_EXIT;
   base::CommandLine options(base::CommandLine::NO_PROGRAM);
   options.AppendSwitch(installer::switches::kUninstall);
 

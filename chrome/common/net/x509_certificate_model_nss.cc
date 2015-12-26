@@ -12,6 +12,9 @@
 #include <pk11pub.h>  // PK11_FindKeyByAnyCert
 #include <seccomon.h>  // SECItem
 #include <sechash.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -126,7 +129,7 @@ string GetVersion(X509Certificate::OSCertHandle cert_handle) {
   unsigned long version = 0;
   if (cert_handle->version.len == 0 ||
       SEC_ASN1DecodeInteger(&cert_handle->version, &version) == SECSuccess) {
-    return base::Uint64ToString(base::strict_cast<uint64>(version + 1));
+    return base::Uint64ToString(base::strict_cast<uint64_t>(version + 1));
   }
   return std::string();
 }

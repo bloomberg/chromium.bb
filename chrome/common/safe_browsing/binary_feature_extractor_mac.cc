@@ -4,6 +4,9 @@
 
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/mach_o_image_reader_mac.h"
 

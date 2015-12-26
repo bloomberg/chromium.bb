@@ -4,6 +4,8 @@
 
 #include "chrome/installer/setup/archive_patch_helper.h"
 
+#include <stdint.h>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "chrome/installer/util/lzma_util.h"
@@ -41,9 +43,8 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
 
   // UnPackArchive takes care of logging.
   base::string16 output_file;
-  int32 lzma_result = LzmaUtil::UnPackArchive(compressed_archive_.value(),
-                                              working_directory_.value(),
-                                              &output_file);
+  int32_t lzma_result = LzmaUtil::UnPackArchive(
+      compressed_archive_.value(), working_directory_.value(), &output_file);
   if (lzma_result != NO_ERROR)
     return false;
 

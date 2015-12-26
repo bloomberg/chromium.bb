@@ -10,11 +10,11 @@
 #define CHROME_INSTALLER_UTIL_WORK_ITEM_H_
 
 #include <windows.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 
 class CallbackWorkItem;
@@ -161,7 +161,7 @@ class WorkItem {
       const std::wstring& key_path,
       REGSAM wow64_access,
       const std::wstring& value_name,
-      int64 value_data,
+      int64_t value_data,
       bool overwrite);
 
   // Create a SetRegValueWorkItem that sets a registry value based on the value

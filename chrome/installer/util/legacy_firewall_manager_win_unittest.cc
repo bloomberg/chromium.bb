@@ -4,6 +4,7 @@
 
 #include "chrome/installer/util/legacy_firewall_manager_win.h"
 
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
 #include "testing/gtest/include/gtest/gtest.h"

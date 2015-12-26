@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -47,7 +49,7 @@ TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
 
   // Size is calculated as (sizeof(kTestString) - 1 for terminating null
   // + 1 for eol added for each log message in LogMessage) * 2.
-  const uint32 kExpectedSize = sizeof(kTestString) * 2;
+  const uint32_t kExpectedSize = sizeof(kTestString) * 2;
   EXPECT_EQ(kExpectedSize, log_message_filter->log_buffer_.size());
 
   std::string ref_output = kTestString;

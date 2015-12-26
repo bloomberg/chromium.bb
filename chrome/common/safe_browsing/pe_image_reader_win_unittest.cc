@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <wintrust.h>
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/pe_image_reader_win.h"

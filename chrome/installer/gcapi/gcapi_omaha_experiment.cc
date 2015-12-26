@@ -4,7 +4,6 @@
 
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 
-#include "base/basictypes.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

@@ -9,10 +9,12 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_THREAT_DOM_DETAILS_H_
 #define CHROME_RENDERER_SAFE_BROWSING_THREAT_DOM_DETAILS_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
 
 struct SafeBrowsingHostMsg_ThreatDOMDetails_Node;
@@ -23,7 +25,7 @@ namespace safe_browsing {
 class ThreatDOMDetails : public content::RenderViewObserver {
  public:
   // An upper limit on the number of nodes we collect. Not const for the test.
-  static uint32 kMaxNodes;
+  static uint32_t kMaxNodes;
 
   static ThreatDOMDetails* Create(content::RenderView* render_view);
   ~ThreatDOMDetails() override;

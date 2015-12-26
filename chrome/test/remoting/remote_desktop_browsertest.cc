@@ -4,6 +4,8 @@
 
 #include "chrome/test/remoting/remote_desktop_browsertest.h"
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"

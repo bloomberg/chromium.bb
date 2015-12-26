@@ -4,6 +4,9 @@
 
 #include "chrome/test/base/chrome_process_util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -60,9 +63,9 @@ MacChromeProcessInfoList GetRunningMacProcessInfo(
 // We fill in both values we may get called for, even though our
 // callers typically only care about one, just to keep the code
 // simple and because this is a test.
-static bool GetMemoryValuesHack(uint32 process_id,
-                          size_t* virtual_size,
-                          size_t* working_set_size) {
+static bool GetMemoryValuesHack(uint32_t process_id,
+                                size_t* virtual_size,
+                                size_t* working_set_size) {
   DCHECK(virtual_size && working_set_size);
 
   std::vector<base::ProcessId> processes;

@@ -5,10 +5,11 @@
 #ifndef CHROME_COMMON_MEDIA_GALLERIES_PMP_TEST_UTIL_H_
 #define CHROME_COMMON_MEDIA_GALLERIES_PMP_TEST_UTIL_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
@@ -30,11 +31,11 @@ bool WriteColumnFileFromVector(
     const std::vector<T>& elements_vector);
 
 std::vector<char> MakeHeader(const PmpFieldType field_type,
-                             const uint32 row_count);
+                             const uint32_t row_count);
 
-template<class T>
+template <class T>
 std::vector<char> MakeHeaderAndBody(const PmpFieldType field_type,
-                                    const uint32 row_count,
+                                    const uint32_t row_count,
                                     const std::vector<T>& elems);
 
 }  // namespace PmpTestUtil

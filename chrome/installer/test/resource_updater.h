@@ -12,7 +12,7 @@
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace base {
 class FilePath;
@@ -39,6 +39,7 @@ class ResourceUpdater {
 
  private:
   HANDLE handle_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceUpdater);
 };  // class ResourceUpdater
 

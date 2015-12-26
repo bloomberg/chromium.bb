@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 
+#include "build/build_config.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"

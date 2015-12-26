@@ -4,19 +4,22 @@
 
 #include "chrome/service/net/service_url_request_context_getter.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include <sys/utsname.h>
-#endif
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 #include "chrome/service/service_process.h"
 #include "components/version_info/version_info.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context_builder.h"
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#include <sys/utsname.h>
+#endif
 
 namespace {
 // Copied from webkit/glue/user_agent.cc. We don't want to pull in a dependency
@@ -27,9 +30,9 @@ std::string BuildOSCpuInfo() {
   std::string os_cpu;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
+  int32_t os_major_version = 0;
+  int32_t os_minor_version = 0;
+  int32_t os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                &os_minor_version,
                                                &os_bugfix_version);
@@ -42,7 +45,7 @@ std::string BuildOSCpuInfo() {
   std::string cputype;
   // special case for biarch systems
   if (strcmp(unixinfo.machine, "x86_64") == 0 &&
-      sizeof(void*) == sizeof(int32)) {  // NOLINT
+      sizeof(void*) == sizeof(int32_t)) {  // NOLINT
     cputype.assign("i686 (x86_64)");
   } else {
     cputype.assign(unixinfo.machine);

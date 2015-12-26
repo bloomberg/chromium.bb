@@ -11,10 +11,8 @@ Track::Track()
     : id(0) {
 }
 
-Track::Track(uint64 id, const base::FilePath& location)
-    : id(id),
-      location(location) {
-}
+Track::Track(uint64_t id, const base::FilePath& location)
+    : id(id), location(location) {}
 
 bool Track::operator<(const Track& other) const {
   return id < other.id;

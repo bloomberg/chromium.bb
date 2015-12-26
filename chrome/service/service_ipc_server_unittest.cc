@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "chrome/common/service_messages.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"

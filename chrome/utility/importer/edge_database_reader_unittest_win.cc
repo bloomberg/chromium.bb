@@ -5,9 +5,13 @@
 #include "chrome/utility/importer/edge_database_reader_win.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

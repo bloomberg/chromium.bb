@@ -5,10 +5,12 @@
 #ifndef CHROME_UTILITY_MEDIA_GALLERIES_PMP_COLUMN_READER_H_
 #define CHROME_UTILITY_MEDIA_GALLERIES_PMP_COLUMN_READER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
 
@@ -32,27 +34,27 @@ class PmpColumnReader {
   // These functions read the value of that |row| into |result|.
   // Functions return false if the column is of the wrong type or the row
   // is out of range. May only be called after successful ReadColumn.
-  bool ReadString(const uint32 row, std::string* result) const;
-  bool ReadUInt32(const uint32 row, uint32* result) const;
-  bool ReadDouble64(const uint32 row, double* result) const;
-  bool ReadUInt8(const uint32 row, uint8* result) const;
-  bool ReadUInt64(const uint32 row, uint64* result) const;
+  bool ReadString(const uint32_t row, std::string* result) const;
+  bool ReadUInt32(const uint32_t row, uint32_t* result) const;
+  bool ReadDouble64(const uint32_t row, double* result) const;
+  bool ReadUInt8(const uint32_t row, uint8_t* result) const;
+  bool ReadUInt64(const uint32_t row, uint64_t* result) const;
 
   // May only be called after successful ReadColumn.
-  uint32 rows_read() const;
+  uint32_t rows_read() const;
 
  private:
   bool ParseData(const PmpFieldType expected_type);
   // Returns the number of bytes parsed in the body, or, -1 on failure.
-  int64 IndexStrings();
+  int64_t IndexStrings();
 
   // Source data
-  scoped_ptr<uint8[]> data_;
-  int64 length_;
+  scoped_ptr<uint8_t[]> data_;
+  int64_t length_;
 
   // Header data
   PmpFieldType field_type_;
-  uint32 rows_read_;
+  uint32_t rows_read_;
 
   // Index of string start locations if fields are strings. Empty otherwise.
   std::vector<const char*> strings_;

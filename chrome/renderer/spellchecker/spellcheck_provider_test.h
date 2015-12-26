@@ -5,6 +5,8 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_PROVIDER_TEST_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_PROVIDER_TEST_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/scoped_vector.h"

@@ -4,8 +4,11 @@
 
 #include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

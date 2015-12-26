@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "content/public/browser/web_ui.h"
 

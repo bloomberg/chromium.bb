@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 // Helper class to temporarily set the locale of the browser process.
 class ScopedBrowserLocale {

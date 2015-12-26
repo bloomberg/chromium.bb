@@ -4,7 +4,9 @@
 
 #include "chrome/common/switch_utils.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace switches {

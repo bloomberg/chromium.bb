@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <shlwapi.h>
+#include <stddef.h>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"

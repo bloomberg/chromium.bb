@@ -5,8 +5,10 @@
 #ifndef CHROME_RENDERER_PEPPER_PEPPER_FLASH_DRM_RENDERER_HOST_H_
 #define CHROME_RENDERER_PEPPER_PEPPER_FLASH_DRM_RENDERER_HOST_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/host/resource_host.h"
 

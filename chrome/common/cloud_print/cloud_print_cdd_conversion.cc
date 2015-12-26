@@ -4,6 +4,8 @@
 
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"

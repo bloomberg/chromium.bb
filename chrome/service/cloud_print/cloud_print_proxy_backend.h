@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/macros.h"
 #include "base/threading/thread.h"
 #include "chrome/service/cloud_print/connector_settings.h"
 #include "printing/backend/print_backend.h"

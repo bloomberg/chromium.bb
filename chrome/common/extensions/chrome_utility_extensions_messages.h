@@ -4,11 +4,13 @@
 
 // Multiply-included message file, so no include guard.
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "chrome/common/media_galleries/iphoto_library.h"
 #include "chrome/common/media_galleries/itunes_library.h"
 #include "chrome/common/media_galleries/metadata_types.h"
@@ -113,16 +115,16 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_IndexPicasaAlbumsContents,
 // |milliseconds_of_decoding| wall clock time. It is still not safe to decode
 // the file in the browser process after this check.
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_CheckMediaFile,
-                     int64 /* milliseconds_of_decoding */,
+                     int64_t /* milliseconds_of_decoding */,
                      IPC::PlatformFileForTransit /* Media file to parse */)
 
 IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_ParseMediaMetadata,
                      std::string /* mime_type */,
-                     int64 /* total_size */,
+                     int64_t /* total_size */,
                      bool /* get_attached_images */)
 
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RequestBlobBytes_Finished,
-                     int64 /* request_id */,
+                     int64_t /* request_id */,
                      std::string /* bytes */)
 
 // Requests that the utility process write the contents of the source file to
@@ -193,9 +195,9 @@ IPC_MESSAGE_CONTROL3(
     std::vector<metadata::AttachedImage> /* attached_images */)
 
 IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_RequestBlobBytes,
-                     int64 /* request_id */,
-                     int64 /* start_byte */,
-                     int64 /* length */)
+                     int64_t /* request_id */,
+                     int64_t /* start_byte */,
+                     int64_t /* length */)
 
 // Reply when a write or verify operation succeeds.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_ImageWriter_Succeeded)
@@ -209,7 +211,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ImageWriter_Failed,
 
 // Periodic status update about the progress of an operation.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ImageWriter_Progress,
-                     int64 /* number of bytes processed */)
+                     int64_t /* number of bytes processed */)
 
 #if defined(OS_WIN)
 // Get plain-text WiFi credentials from the system (requires UAC privilege

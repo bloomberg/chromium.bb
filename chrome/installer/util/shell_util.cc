@@ -23,6 +23,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -618,7 +619,7 @@ void GetXPStyleDefaultBrowserUserEntries(BrowserDistribution* dist,
 // |removal_flag_| is set). |look_for_in| is passed to
 // RegistryEntry::ExistsInRegistry(). Documentation for it can be found there.
 bool AreEntriesAsDesired(const ScopedVector<RegistryEntry>& entries,
-                          uint32 look_for_in) {
+                         uint32_t look_for_in) {
   for (const auto* entry : entries) {
     if (entry->ExistsInRegistry(look_for_in) != !entry->IsFlaggedForRemoval())
       return false;
@@ -639,7 +640,7 @@ bool AreEntriesAsDesired(const ScopedVector<RegistryEntry>& entries,
 bool IsChromeRegistered(BrowserDistribution* dist,
                         const base::FilePath& chrome_exe,
                         const base::string16& suffix,
-                        uint32 look_for_in) {
+                        uint32_t look_for_in) {
   ScopedVector<RegistryEntry> entries;
   GetChromeProgIdEntries(dist, chrome_exe, suffix, &entries);
   GetShellIntegrationEntries(dist, chrome_exe, suffix, &entries);
@@ -653,7 +654,7 @@ bool IsChromeRegistered(BrowserDistribution* dist,
 bool IsChromeRegisteredForProtocol(BrowserDistribution* dist,
                                    const base::string16& suffix,
                                    const base::string16& protocol,
-                                   uint32 look_for_in) {
+                                   uint32_t look_for_in) {
   ScopedVector<RegistryEntry> entries;
   GetProtocolCapabilityEntries(dist, suffix, protocol, &entries);
   return AreEntriesAsDesired(entries, look_for_in);
@@ -2033,8 +2034,8 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   // install is also present, it will lead IsChromeRegistered() to think this
   // system-level install isn't registered properly as it is shadowed by the
   // user-level install's registrations).
-  uint32 look_for_in = user_level ?
-      RegistryEntry::LOOK_IN_HKCU_THEN_HKLM : RegistryEntry::LOOK_IN_HKLM;
+  uint32_t look_for_in = user_level ? RegistryEntry::LOOK_IN_HKCU_THEN_HKLM
+                                    : RegistryEntry::LOOK_IN_HKLM;
 
   // Check if chrome is already registered with this suffix.
   if (IsChromeRegistered(dist, chrome_exe, suffix, look_for_in))
@@ -2115,8 +2116,8 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
   // install is also present, it could lead IsChromeRegisteredForProtocol() to
   // think this system-level install isn't registered properly as it may be
   // shadowed by the user-level install's registrations).
-  uint32 look_for_in = user_level ?
-      RegistryEntry::LOOK_IN_HKCU_THEN_HKLM : RegistryEntry::LOOK_IN_HKLM;
+  uint32_t look_for_in = user_level ? RegistryEntry::LOOK_IN_HKCU_THEN_HKLM
+                                    : RegistryEntry::LOOK_IN_HKLM;
 
   // Check if chrome is already registered with this suffix.
   if (IsChromeRegisteredForProtocol(dist, suffix, protocol, look_for_in))
@@ -2225,7 +2226,7 @@ bool ShellUtil::GetOldUserSpecificRegistrySuffix(base::string16* suffix) {
   return true;
 }
 
-base::string16 ShellUtil::ByteArrayToBase32(const uint8* bytes, size_t size) {
+base::string16 ShellUtil::ByteArrayToBase32(const uint8_t* bytes, size_t size) {
   static const char kEncoding[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
   // Eliminate special cases first.
@@ -2252,7 +2253,7 @@ base::string16 ShellUtil::ByteArrayToBase32(const uint8* bytes, size_t size) {
 
   // A bit stream which will be read from the left and appended to from the
   // right as it's emptied.
-  uint16 bit_stream = (bytes[0] << 8) + bytes[1];
+  uint16_t bit_stream = (bytes[0] << 8) + bytes[1];
   size_t next_byte_index = 2;
   int free_bits = 0;
   while (free_bits < 16) {

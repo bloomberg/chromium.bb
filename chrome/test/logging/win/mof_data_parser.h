@@ -5,12 +5,12 @@
 #ifndef CHROME_TEST_LOGGING_WIN_MOF_DATA_PARSER_H_
 #define CHROME_TEST_LOGGING_WIN_MOF_DATA_PARSER_H_
 
-#include <stddef.h>
 #include <windows.h>
-#include <wmistr.h>
 #include <evntrace.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <wmistr.h>
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 
 namespace logging_win {
@@ -81,8 +81,8 @@ class MofDataParser {
     return true;
   }
 
-  const uint8* scan_;
-  uint32 length_;
+  const uint8_t* scan_;
+  uint32_t length_;
 };
 
 }  // namespace logging_win

@@ -5,6 +5,8 @@
 #ifndef CHROME_UTILITY_IMAGE_WRITER_IMAGE_WRITER_HANDLER_H_
 #define CHROME_UTILITY_IMAGE_WRITER_IMAGE_WRITER_HANDLER_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "chrome/utility/image_writer/image_writer.h"
@@ -29,7 +31,7 @@ class ImageWriterHandler : public UtilityMessageHandler {
   virtual void SendSucceeded();
   virtual void SendCancelled();
   virtual void SendFailed(const std::string& message);
-  virtual void SendProgress(int64 progress);
+  virtual void SendProgress(int64_t progress);
 
  private:
   bool OnMessageReceived(const IPC::Message& message) override;

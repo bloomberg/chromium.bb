@@ -13,6 +13,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 

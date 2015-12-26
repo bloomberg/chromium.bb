@@ -8,6 +8,8 @@
 #ifndef CHROME_COMMON_MEDIA_GALLERIES_ITUNES_LIBRARY_H_
 #define CHROME_COMMON_MEDIA_GALLERIES_ITUNES_LIBRARY_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -18,10 +20,10 @@ namespace parser {
 
 struct Track {
   Track();
-  Track(uint64 id, const base::FilePath& location);
+  Track(uint64_t id, const base::FilePath& location);
   bool operator<(const Track& other) const;
 
-  uint64 id;
+  uint64_t id;
   base::FilePath location;
 };
 

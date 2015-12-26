@@ -5,6 +5,7 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 
 #include "base/debug/leak_annotations.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_content_client.h"

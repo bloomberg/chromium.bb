@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/beacons.h"
 
+#include <stdint.h>
+
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/installer/util/app_registration_data.h"

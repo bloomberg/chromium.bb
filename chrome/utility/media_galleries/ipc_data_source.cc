@@ -10,7 +10,7 @@
 
 namespace metadata {
 
-IPCDataSource::IPCDataSource(int64 total_size)
+IPCDataSource::IPCDataSource(int64_t total_size)
     : total_size_(total_size),
       utility_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       next_request_id_(0) {
@@ -25,7 +25,9 @@ void IPCDataSource::Stop() {
   DCHECK(data_source_thread_checker_.CalledOnValidThread());
 }
 
-void IPCDataSource::Read(int64 position, int size, uint8* data,
+void IPCDataSource::Read(int64_t position,
+                         int size,
+                         uint8_t* data,
                          const DataSource::ReadCB& read_cb) {
   DCHECK(data_source_thread_checker_.CalledOnValidThread());
   utility_task_runner_->PostTask(
@@ -34,7 +36,7 @@ void IPCDataSource::Read(int64 position, int size, uint8* data,
                  position, size, data, read_cb));
 }
 
-bool IPCDataSource::GetSize(int64* size_out) {
+bool IPCDataSource::GetSize(int64_t* size_out) {
   DCHECK(data_source_thread_checker_.CalledOnValidThread());
   *size_out = total_size_;
   return true;
@@ -67,7 +69,9 @@ IPCDataSource::Request::Request()
 IPCDataSource::Request::~Request() {
 }
 
-void IPCDataSource::ReadOnUtilityThread(int64 position, int size, uint8* data,
+void IPCDataSource::ReadOnUtilityThread(int64_t position,
+                                        int size,
+                                        uint8_t* data,
                                         const DataSource::ReadCB& read_cb) {
   DCHECK(utility_thread_checker_.CalledOnValidThread());
   CHECK_GE(total_size_, 0);
@@ -76,10 +80,10 @@ void IPCDataSource::ReadOnUtilityThread(int64 position, int size, uint8* data,
 
   // Cap position and size within bounds.
   position = std::min(position, total_size_);
-  int64 clamped_size =
-      std::min(static_cast<int64>(size), total_size_ - position);
+  int64_t clamped_size =
+      std::min(static_cast<int64_t>(size), total_size_ - position);
 
-  int64 request_id = ++next_request_id_;
+  int64_t request_id = ++next_request_id_;
 
   Request request;
   request.destination = data;
@@ -90,10 +94,10 @@ void IPCDataSource::ReadOnUtilityThread(int64 position, int size, uint8* data,
       request_id, position, clamped_size));
 }
 
-void IPCDataSource::OnRequestBlobBytesFinished(int64 request_id,
+void IPCDataSource::OnRequestBlobBytesFinished(int64_t request_id,
                                                const std::string& bytes) {
   DCHECK(utility_thread_checker_.CalledOnValidThread());
-  std::map<int64, Request>::iterator it = pending_requests_.find(request_id);
+  std::map<int64_t, Request>::iterator it = pending_requests_.find(request_id);
 
   if (it == pending_requests_.end())
     return;

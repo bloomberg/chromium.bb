@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/json/json_writer.h"

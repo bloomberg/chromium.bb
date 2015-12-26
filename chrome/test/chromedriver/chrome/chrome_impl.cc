@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
+#include <stddef.h>
+
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"

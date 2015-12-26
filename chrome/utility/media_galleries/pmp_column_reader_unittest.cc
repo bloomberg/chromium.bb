@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -42,23 +45,23 @@ bool InitColumnReaderFromBytes(
 }
 
 // Overridden version of Read method to make test code templatable.
-bool DoRead(const PmpColumnReader* reader, uint32 row, std::string* target) {
+bool DoRead(const PmpColumnReader* reader, uint32_t row, std::string* target) {
   return reader->ReadString(row, target);
 }
 
-bool DoRead(const PmpColumnReader* reader, uint32 row, uint32* target) {
+bool DoRead(const PmpColumnReader* reader, uint32_t row, uint32_t* target) {
   return reader->ReadUInt32(row, target);
 }
 
-bool DoRead(const PmpColumnReader* reader, uint32 row, double* target) {
+bool DoRead(const PmpColumnReader* reader, uint32_t row, double* target) {
   return reader->ReadDouble64(row, target);
 }
 
-bool DoRead(const PmpColumnReader* reader, uint32 row, uint8* target) {
+bool DoRead(const PmpColumnReader* reader, uint32_t row, uint8_t* target) {
   return reader->ReadUInt8(row, target);
 }
 
-bool DoRead(const PmpColumnReader* reader, uint32 row, uint64* target) {
+bool DoRead(const PmpColumnReader* reader, uint32_t row, uint64_t* target) {
   return reader->ReadUInt64(row, target);
 }
 
@@ -72,7 +75,7 @@ void TestValid(const PmpFieldType field_type,
   ASSERT_TRUE(InitColumnReaderFromBytes(&reader, data, field_type));
   EXPECT_EQ(elems.size(), reader.rows_read());
 
-  for (uint32 i = 0; i < elems.size() && i < reader.rows_read(); i++) {
+  for (uint32_t i = 0; i < elems.size() && i < reader.rows_read(); i++) {
     T target;
     EXPECT_TRUE(DoRead(&reader, i, &target));
     EXPECT_EQ(elems[i], target);
@@ -116,9 +119,9 @@ void TestMalformed(const PmpFieldType field_type,
 template<class T>
 void TestPrimitive(const PmpFieldType field_type) {
   // Make an ascending vector of the primitive.
-  uint32 n = 100;
+  uint32_t n = 100;
   std::vector<T> data(n, 0);
-  for (uint32 i = 0; i < n; i++) {
+  for (uint32_t i = 0; i < n; i++) {
     data[i] = i*3;
   }
 
@@ -194,10 +197,10 @@ TEST(PmpColumnReaderTest, StringParsing) {
 }
 
 TEST(PmpColumnReaderTest, PrimitiveParsing) {
-  TestPrimitive<uint32>(PMP_TYPE_UINT32);
+  TestPrimitive<uint32_t>(PMP_TYPE_UINT32);
   TestPrimitive<double>(PMP_TYPE_DOUBLE64);
-  TestPrimitive<uint8>(PMP_TYPE_UINT8);
-  TestPrimitive<uint64>(PMP_TYPE_UINT64);
+  TestPrimitive<uint8_t>(PMP_TYPE_UINT8);
+  TestPrimitive<uint64_t>(PMP_TYPE_UINT64);
 }
 
 }  // namespace

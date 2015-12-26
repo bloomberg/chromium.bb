@@ -4,6 +4,8 @@
 
 #include "chrome/common/media_galleries/pmp_test_util.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 
@@ -23,7 +25,7 @@ std::vector<char> Flatten(const std::vector<T>& elems) {
   if (elems.empty())
     return std::vector<char>();
 
-  const uint8* elems0 = reinterpret_cast<const uint8*>(&elems[0]);
+  const uint8_t* elems0 = reinterpret_cast<const uint8_t*>(&elems[0]);
   std::vector<char> data_body(elems0, elems0 + sizeof(T) * elems.size());
   return data_body;
 }
@@ -86,22 +88,31 @@ bool PmpTestUtil::WriteColumnFileFromVector(
 template bool PmpTestUtil::WriteColumnFileFromVector<std::string>(
     const base::FilePath&, const std::string&, const std::string&,
     const PmpFieldType, const std::vector<std::string>&);
-template bool PmpTestUtil::WriteColumnFileFromVector<uint32>(
-    const base::FilePath&, const std::string&, const std::string&,
-    const PmpFieldType, const std::vector<uint32>&);
+template bool PmpTestUtil::WriteColumnFileFromVector<uint32_t>(
+    const base::FilePath&,
+    const std::string&,
+    const std::string&,
+    const PmpFieldType,
+    const std::vector<uint32_t>&);
 template bool PmpTestUtil::WriteColumnFileFromVector<double>(
     const base::FilePath&, const std::string&, const std::string&,
     const PmpFieldType, const std::vector<double>&);
-template bool PmpTestUtil::WriteColumnFileFromVector<uint8>(
-    const base::FilePath&, const std::string&, const std::string&,
-    const PmpFieldType, const std::vector<uint8>&);
-template bool PmpTestUtil::WriteColumnFileFromVector<uint64>(
-    const base::FilePath&, const std::string&, const std::string&,
-    const PmpFieldType, const std::vector<uint64>&);
+template bool PmpTestUtil::WriteColumnFileFromVector<uint8_t>(
+    const base::FilePath&,
+    const std::string&,
+    const std::string&,
+    const PmpFieldType,
+    const std::vector<uint8_t>&);
+template bool PmpTestUtil::WriteColumnFileFromVector<uint64_t>(
+    const base::FilePath&,
+    const std::string&,
+    const std::string&,
+    const PmpFieldType,
+    const std::vector<uint64_t>&);
 
 // Return a vector so we don't have to worry about memory management.
 std::vector<char> PmpTestUtil::MakeHeader(const PmpFieldType field_type,
-                                            const uint32 row_count) {
+                                          const uint32_t row_count) {
   std::vector<char> header(picasa::kPmpHeaderSize);
 
   // Copy in magic bytes.
@@ -115,36 +126,46 @@ std::vector<char> PmpTestUtil::MakeHeader(const PmpFieldType field_type,
          sizeof(picasa::kPmpMagic4));
 
   // Copy in field type.
-  uint16 field_type_short = static_cast<uint16>(field_type);
+  uint16_t field_type_short = static_cast<uint16_t>(field_type);
   memcpy(&header[picasa::kPmpFieldType1Offset], &field_type_short,
-         sizeof(uint16));
+         sizeof(uint16_t));
   memcpy(&header[picasa::kPmpFieldType2Offset], &field_type_short,
-         sizeof(uint16));
+         sizeof(uint16_t));
 
   // Copy in row count.
-  memcpy(&header[picasa::kPmpRowCountOffset], &row_count, sizeof(uint32));
+  memcpy(&header[picasa::kPmpRowCountOffset], &row_count, sizeof(uint32_t));
 
   return header;
 }
 
-template<class T>
-std::vector<char> PmpTestUtil::MakeHeaderAndBody(
-    const PmpFieldType field_type, const uint32 row_count,
-    const std::vector<T>& elems) {
+template <class T>
+std::vector<char> PmpTestUtil::MakeHeaderAndBody(const PmpFieldType field_type,
+                                                 const uint32_t row_count,
+                                                 const std::vector<T>& elems) {
   return CombinedVectors(PmpTestUtil::MakeHeader(field_type, row_count),
                          Flatten(elems));
 }
 
 // Explicit Instantiation for all the valid types.
 template std::vector<char> PmpTestUtil::MakeHeaderAndBody<std::string>(
-    const PmpFieldType, const uint32, const std::vector<std::string>&);
-template std::vector<char> PmpTestUtil::MakeHeaderAndBody<uint32>(
-    const PmpFieldType, const uint32, const std::vector<uint32>&);
+    const PmpFieldType,
+    const uint32_t,
+    const std::vector<std::string>&);
+template std::vector<char> PmpTestUtil::MakeHeaderAndBody<uint32_t>(
+    const PmpFieldType,
+    const uint32_t,
+    const std::vector<uint32_t>&);
 template std::vector<char> PmpTestUtil::MakeHeaderAndBody<double>(
-    const PmpFieldType, const uint32, const std::vector<double>&);
-template std::vector<char> PmpTestUtil::MakeHeaderAndBody<uint8>(
-    const PmpFieldType, const uint32, const std::vector<uint8>&);
-template std::vector<char> PmpTestUtil::MakeHeaderAndBody<uint64>(
-    const PmpFieldType, const uint32, const std::vector<uint64>&);
+    const PmpFieldType,
+    const uint32_t,
+    const std::vector<double>&);
+template std::vector<char> PmpTestUtil::MakeHeaderAndBody<uint8_t>(
+    const PmpFieldType,
+    const uint32_t,
+    const std::vector<uint8_t>&);
+template std::vector<char> PmpTestUtil::MakeHeaderAndBody<uint64_t>(
+    const PmpFieldType,
+    const uint32_t,
+    const std::vector<uint64_t>&);
 
 }  // namespace picasa

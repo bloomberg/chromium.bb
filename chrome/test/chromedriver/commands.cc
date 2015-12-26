@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/commands.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <list>
 #include <utility>

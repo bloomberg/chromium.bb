@@ -4,9 +4,7 @@
 
 #include "chrome/test/base/ui_test_utils.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
+#include <stddef.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -14,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -22,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -70,6 +70,10 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/geometry/rect.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 #if defined(USE_AURA)
 #include "ash/shell.h"

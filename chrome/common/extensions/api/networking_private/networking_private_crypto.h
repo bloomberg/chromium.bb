@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 
 namespace networking_private_crypto {
 

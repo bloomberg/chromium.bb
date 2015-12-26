@@ -4,6 +4,8 @@
 
 #include "chrome/common/auto_start_linux.h"
 
+#include <stddef.h>
+
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"

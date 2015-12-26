@@ -5,6 +5,9 @@
 #ifndef CHROME_COMMON_SPELLCHECK_MARKER_H_
 #define CHROME_COMMON_SPELLCHECK_MARKER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 class SpellCheckMarker {
  public:
   // A predicate to test spellcheck marker validity.
@@ -22,9 +25,9 @@ class SpellCheckMarker {
   // IPC requires a default constructor.
   SpellCheckMarker() : hash(0xFFFFFFFF), offset(static_cast<size_t>(-1)) {}
 
-  SpellCheckMarker(uint32 hash, size_t offset) : hash(hash), offset(offset) {}
+  SpellCheckMarker(uint32_t hash, size_t offset) : hash(hash), offset(offset) {}
 
-  uint32 hash;
+  uint32_t hash;
   size_t offset;
 };
 

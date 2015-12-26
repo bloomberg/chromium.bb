@@ -8,6 +8,8 @@
 //
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/strings/string16.h"
@@ -50,7 +52,7 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_InlineInstallDownloadProgress,
 // Send to renderer once the installation mentioned on
 // ExtensionHostMsg_InlineWebstoreInstall is complete.
 IPC_MESSAGE_ROUTED4(ExtensionMsg_InlineWebstoreInstallResponse,
-                    int32 /* install id */,
+                    int32_t /* install id */,
                     bool /* whether the install was successful */,
                     std::string /* error */,
                     extensions::webstore_install::Result /* result */)
@@ -119,8 +121,8 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_AccessibilityEvent,
 
 // Sent by the renderer to implement chrome.webstore.install().
 IPC_MESSAGE_ROUTED5(ExtensionHostMsg_InlineWebstoreInstall,
-                    int32 /* install id */,
-                    int32 /* return route id */,
+                    int32_t /* install id */,
+                    int32_t /* return route id */,
                     std::string /* Web Store item ID */,
                     GURL /* requestor URL */,
                     int /* listeners_mask */)

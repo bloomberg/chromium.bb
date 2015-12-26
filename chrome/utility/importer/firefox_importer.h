@@ -5,14 +5,18 @@
 #ifndef CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_H_
 #define CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/utility/importer/importer.h"
 #include "components/favicon_base/favicon_usage_data.h"
 
@@ -31,11 +35,11 @@ class FirefoxImporter : public Importer {
 
   // Importer:
   void StartImport(const importer::SourceProfile& source_profile,
-                   uint16 items,
+                   uint16_t items,
                    ImporterBridge* bridge) override;
 
  private:
-  typedef std::map<int64, std::set<GURL> > FaviconMap;
+  typedef std::map<int64_t, std::set<GURL>> FaviconMap;
 
   ~FirefoxImporter() override;
 

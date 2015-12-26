@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "chrome/common/importer/profile_import_process_messages.h"
 #include "chrome/utility/importer/external_process_importer_bridge.h"
 #include "chrome/utility/importer/importer.h"
@@ -42,7 +43,7 @@ bool ProfileImportHandler::OnMessageReceived(const IPC::Message& message) {
 
 void ProfileImportHandler::OnImportStart(
     const importer::SourceProfile& source_profile,
-    uint16 items,
+    uint16_t items,
     const base::DictionaryValue& localized_strings) {
   content::UtilityThread::Get()->EnsureBlinkInitialized();
   bridge_ = new ExternalProcessImporterBridge(
@@ -76,7 +77,7 @@ void ProfileImportHandler::OnImportCancel() {
   ImporterCleanup();
 }
 
-void ProfileImportHandler::OnImportItemFinished(uint16 item) {
+void ProfileImportHandler::OnImportItemFinished(uint16_t item) {
   items_to_import_ ^= item;  // Remove finished item from mask.
   // If we've finished with all items, notify the browser process.
   if (items_to_import_ == 0) {

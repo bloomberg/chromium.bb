@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <limits>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -49,7 +50,7 @@ class GCAPILastRunTest : public ::testing::Test {
     client_key.WriteValue(L"pv", L"1.2.3.4");
   }
 
-  bool SetLastRunTime(int64 last_run_time) {
+  bool SetLastRunTime(int64_t last_run_time) {
     return SetLastRunTimeString(base::Int64ToString16(last_run_time));
   }
 

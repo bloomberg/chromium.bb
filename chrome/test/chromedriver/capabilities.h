@@ -5,6 +5,8 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_
 #define CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <set>
 #include <string>

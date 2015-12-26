@@ -4,6 +4,8 @@
 
 #include "chrome/app/chrome_watcher_command_line_win.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/command_line.h"

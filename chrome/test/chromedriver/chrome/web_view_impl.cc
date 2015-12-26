@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"

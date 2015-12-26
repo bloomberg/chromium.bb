@@ -8,10 +8,13 @@
 #ifndef CHROME_COMMON_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
 #define CHROME_COMMON_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 

@@ -4,6 +4,8 @@
 
 #include "chrome/common/ini_parser.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_tokenizer.h"
 

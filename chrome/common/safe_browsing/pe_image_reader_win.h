@@ -6,8 +6,10 @@
 #define CHROME_COMMON_SAFE_BROWSING_PE_IMAGE_READER_WIN_H_
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace safe_browsing {

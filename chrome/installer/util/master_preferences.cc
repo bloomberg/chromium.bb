@@ -4,12 +4,16 @@
 
 #include "chrome/installer/util/master_preferences.h"
 
+#include <stddef.h>
+
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/master_preferences_constants.h"

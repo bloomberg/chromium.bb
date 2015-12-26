@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_SPELLCHECK_RESULT_H_
 #define CHROME_COMMON_SPELLCHECK_RESULT_H_
 
+#include <stdint.h>
+
 #include "base/strings/string16.h"
 
 // This class mirrors blink::WebTextCheckingResult which holds a
@@ -24,20 +26,18 @@ struct SpellCheckResult {
     INVISIBLE = 1 << 3,
   };
 
-  explicit SpellCheckResult(
-      Decoration d = SPELLING,
-      int loc = 0,
-      int len = 0,
-      const base::string16& rep = base::string16(),
-      uint32 h = 0)
-      : decoration(d), location(loc), length(len), replacement(rep), hash(h) {
-  }
+  explicit SpellCheckResult(Decoration d = SPELLING,
+                            int loc = 0,
+                            int len = 0,
+                            const base::string16& rep = base::string16(),
+                            uint32_t h = 0)
+      : decoration(d), location(loc), length(len), replacement(rep), hash(h) {}
 
   Decoration decoration;
   int location;
   int length;
   base::string16 replacement;
-  uint32 hash;
+  uint32_t hash;
 };
 
 #endif  // CHROME_COMMON_SPELLCHECK_RESULT_H_

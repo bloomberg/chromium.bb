@@ -5,6 +5,7 @@
 #ifndef CHROME_INSTALLER_GCAPI_GCAPI_TEST_REGISTRY_OVERRIDER_H_
 #define CHROME_INSTALLER_GCAPI_GCAPI_TEST_REGISTRY_OVERRIDER_H_
 
+#include "base/macros.h"
 #include "base/test/test_reg_util_win.h"
 
 // Overrides the registry throughout its lifetime; used by GCAPI tests

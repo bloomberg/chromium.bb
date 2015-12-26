@@ -4,7 +4,6 @@
 
 #include "chrome/common/service_process_util.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -13,6 +12,7 @@
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
 
 #if !defined(OS_MACOSX)
 #include "base/at_exit.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/tools/convert_dict/dic_reader.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 

@@ -4,12 +4,15 @@
 
 #include "chrome/renderer/media/cast_rtp_stream.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -484,8 +487,8 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   media::AudioParameters input_params_;
   scoped_ptr<media::AudioConverter> converter_;
   const media::AudioBus* current_input_bus_;
-  int64 sample_frames_in_;
-  int64 sample_frames_out_;
+  int64_t sample_frames_in_;
+  int64_t sample_frames_out_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioSink);
 };

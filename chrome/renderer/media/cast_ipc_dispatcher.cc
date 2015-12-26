@@ -37,11 +37,11 @@ void CastIPCDispatcher::Send(IPC::Message* message) {
   }
 }
 
-int32 CastIPCDispatcher::AddSender(CastTransportSenderIPC* sender) {
+int32_t CastIPCDispatcher::AddSender(CastTransportSenderIPC* sender) {
   return id_map_.Add(sender);
 }
 
-void CastIPCDispatcher::RemoveSender(int32 channel_id) {
+void CastIPCDispatcher::RemoveSender(int32_t channel_id) {
   return id_map_.Remove(channel_id);
 }
 
@@ -79,7 +79,7 @@ void CastIPCDispatcher::OnChannelClosing() {
 }
 
 void CastIPCDispatcher::OnNotifyStatusChange(
-    int32 channel_id,
+    int32_t channel_id,
     media::cast::CastTransportStatus status) {
   CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
@@ -91,7 +91,7 @@ void CastIPCDispatcher::OnNotifyStatusChange(
 }
 
 void CastIPCDispatcher::OnRawEvents(
-    int32 channel_id,
+    int32_t channel_id,
     const std::vector<media::cast::PacketEvent>& packet_events,
     const std::vector<media::cast::FrameEvent>& frame_events) {
   CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
@@ -102,8 +102,8 @@ void CastIPCDispatcher::OnRawEvents(
   }
 }
 
-void CastIPCDispatcher::OnRtt(int32 channel_id,
-                              uint32 ssrc,
+void CastIPCDispatcher::OnRtt(int32_t channel_id,
+                              uint32_t ssrc,
                               base::TimeDelta rtt) {
   CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
@@ -114,8 +114,8 @@ void CastIPCDispatcher::OnRtt(int32 channel_id,
 }
 
 void CastIPCDispatcher::OnRtcpCastMessage(
-    int32 channel_id,
-    uint32 ssrc,
+    int32_t channel_id,
+    uint32_t ssrc,
     const media::cast::RtcpCastMessage& cast_message) {
   CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
@@ -125,9 +125,8 @@ void CastIPCDispatcher::OnRtcpCastMessage(
   }
 }
 
-void CastIPCDispatcher::OnReceivedPacket(
-    int32 channel_id,
-    const media::cast::Packet& packet) {
+void CastIPCDispatcher::OnReceivedPacket(int32_t channel_id,
+                                         const media::cast::Packet& packet) {
   CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnReceivedPacket(packet);

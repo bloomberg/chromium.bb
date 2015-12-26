@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALLER_UTIL_DELETE_TREE_WORK_ITEM_H_
 #define CHROME_INSTALLER_UTIL_DELETE_TREE_WORK_ITEM_H_
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"

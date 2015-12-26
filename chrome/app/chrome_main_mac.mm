@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #import "base/mac/bundle_locations.h"

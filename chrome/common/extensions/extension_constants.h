@@ -5,10 +5,12 @@
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "url/gurl.h"
 
 namespace extension_urls {
@@ -245,7 +247,7 @@ extern const char kAppStateReadyToRun[];
 extern const char kMediaFileSystemPathPart[];
 
 // The key used for signing some pieces of data from the webstore.
-extern const uint8 kWebstoreSignaturesPublicKey[];
+extern const uint8_t kWebstoreSignaturesPublicKey[];
 extern const int kWebstoreSignaturesPublicKeySize;
 
 }  // namespace extension_misc

@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/prerender_types.h"

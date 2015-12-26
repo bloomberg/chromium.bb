@@ -5,6 +5,7 @@
 #include "chrome/common/component_flash_hint_file_linux.h"
 
 #include <errno.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <sys/mount.h>
 

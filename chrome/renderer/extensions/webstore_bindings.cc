@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/extensions/webstore_bindings.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"

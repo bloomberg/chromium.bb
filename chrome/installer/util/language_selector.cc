@@ -7,10 +7,13 @@
 
 #include "chrome/installer/util/language_selector.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/win/i18n.h"

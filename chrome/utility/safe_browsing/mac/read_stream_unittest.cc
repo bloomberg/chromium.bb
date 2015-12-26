@@ -4,6 +4,9 @@
 
 #include "chrome/utility/safe_browsing/mac/read_stream.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/file.h"

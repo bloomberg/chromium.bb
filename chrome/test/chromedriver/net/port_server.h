@@ -5,6 +5,8 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_NET_PORT_SERVER_H_
 #define CHROME_TEST_CHROMEDRIVER_NET_PORT_SERVER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <set>
 #include <string>
@@ -17,14 +19,14 @@ class Status;
 
 class PortReservation {
  public:
-  PortReservation(const base::Closure& on_free_func, uint16 port);
+  PortReservation(const base::Closure& on_free_func, uint16_t port);
   ~PortReservation();
 
   void Leak();
 
  private:
   base::Closure on_free_func_;
-  uint16 port_;
+  uint16_t port_;
 };
 
 // Communicates with a port reservation management server.
@@ -35,40 +37,40 @@ class PortServer {
   explicit PortServer(const std::string& path);
   ~PortServer();
 
-  Status ReservePort(uint16* port, scoped_ptr<PortReservation>* reservation);
+  Status ReservePort(uint16_t* port, scoped_ptr<PortReservation>* reservation);
 
  private:
-  Status RequestPort(uint16* port);
-  void ReleasePort(uint16 port);
+  Status RequestPort(uint16_t* port);
+  void ReleasePort(uint16_t port);
 
   std::string path_;
 
   base::Lock free_lock_;
-  std::list<uint16> free_;
+  std::list<uint16_t> free_;
 };
 
 // Manages reservation of a block of local ports.
 class PortManager {
  public:
-  PortManager(uint16 min_port, uint16 max_port);
+  PortManager(uint16_t min_port, uint16_t max_port);
   ~PortManager();
 
-  Status ReservePort(uint16* port, scoped_ptr<PortReservation>* reservation);
+  Status ReservePort(uint16_t* port, scoped_ptr<PortReservation>* reservation);
   // Since we cannot remove forwarded adb ports on older SDKs,
   // maintain a pool of forwarded ports for reuse.
-  Status ReservePortFromPool(uint16* port,
+  Status ReservePortFromPool(uint16_t* port,
                              scoped_ptr<PortReservation>* reservation);
 
  private:
-  uint16 FindAvailablePort() const;
-  void ReleasePort(uint16 port);
-  void ReleasePortToPool(uint16 port);
+  uint16_t FindAvailablePort() const;
+  void ReleasePort(uint16_t port);
+  void ReleasePortToPool(uint16_t port);
 
   base::Lock lock_;
-  std::set<uint16> taken_;
-  std::list<uint16> unused_forwarded_port_;
-  uint16 min_port_;
-  uint16 max_port_;
+  std::set<uint16_t> taken_;
+  std::list<uint16_t> unused_forwarded_port_;
+  uint16_t min_port_;
+  uint16_t max_port_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_NET_PORT_SERVER_H_

@@ -4,11 +4,13 @@
 
 #include "chrome/test/chromedriver/chrome_launcher.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
 #include "base/base64.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -28,6 +30,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
@@ -113,7 +116,7 @@ Status UnpackAutomationExtension(const base::FilePath& temp_dir,
   return Status(kOk);
 }
 
-Status PrepareCommandLine(uint16 port,
+Status PrepareCommandLine(uint16_t port,
                           const Capabilities& capabilities,
                           base::CommandLine* prepared_command,
                           base::ScopedTempDir* user_data_dir,
@@ -295,7 +298,7 @@ Status LaunchRemoteChromeSession(
 
 Status LaunchDesktopChrome(
     URLRequestContextGetter* context_getter,
-    uint16 port,
+    uint16_t port,
     scoped_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
@@ -450,7 +453,7 @@ Status LaunchDesktopChrome(
 
 Status LaunchAndroidChrome(
     URLRequestContextGetter* context_getter,
-    uint16 port,
+    uint16_t port,
     scoped_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
@@ -529,7 +532,7 @@ Status LaunchChrome(
         capabilities, devtools_event_listeners, chrome);
   }
 
-  uint16 port = 0;
+  uint16_t port = 0;
   scoped_ptr<PortReservation> port_reservation;
   Status port_status(kOk);
 
@@ -583,7 +586,7 @@ void ConvertHexadecimalToIDAlphabet(std::string* id) {
 }
 
 std::string GenerateExtensionId(const std::string& input) {
-  uint8 hash[16];
+  uint8_t hash[16];
   crypto::SHA256HashString(input, hash, sizeof(hash));
   std::string output = base::ToLowerASCII(base::HexEncode(hash, sizeof(hash)));
   ConvertHexadecimalToIDAlphabet(&output);
@@ -635,7 +638,7 @@ Status ProcessExtension(const std::string& extension,
     std::string key_len_str = decoded_extension.substr(8, 4);
     if (key_len_str.size() != 4)
       return Status(kUnknownError, "cannot extract public key length");
-    uint32 key_len = *reinterpret_cast<const uint32*>(key_len_str.c_str());
+    uint32_t key_len = *reinterpret_cast<const uint32_t*>(key_len_str.c_str());
     public_key = decoded_extension.substr(16, key_len);
     if (key_len != public_key.size())
       return Status(kUnknownError, "invalid public key length");
@@ -645,7 +648,7 @@ Status ProcessExtension(const std::string& extension,
         crypto::RSAPrivateKey::Create(2048));
     if (!key_pair)
       return Status(kUnknownError, "cannot generate RSA key pair");
-    std::vector<uint8> public_key_vector;
+    std::vector<uint8_t> public_key_vector;
     if (!key_pair->ExportPublicKey(&public_key_vector))
       return Status(kUnknownError, "cannot extract public key");
     public_key =

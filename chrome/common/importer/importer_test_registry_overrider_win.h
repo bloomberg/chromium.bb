@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_IMPORTER_IMPORTER_TEST_REGISTRY_OVERRIDER_WIN_H_
 #define CHROME_COMMON_IMPORTER_IMPORTER_TEST_REGISTRY_OVERRIDER_WIN_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 // A helper class to let tests generate a random registry key to be used in

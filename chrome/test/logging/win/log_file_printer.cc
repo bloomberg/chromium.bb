@@ -6,15 +6,16 @@
 
 #include <windows.h>
 #include <objbase.h>
+#include <stddef.h>
 
 #include <iomanip>
 #include <ios>
 #include <ostream>
 #include <sstream>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"

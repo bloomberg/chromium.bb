@@ -5,6 +5,7 @@
 #ifndef CHROME_UTILITY_SAFE_BROWSING_MAC_READ_STREAM_H_
 #define CHROME_UTILITY_SAFE_BROWSING_MAC_READ_STREAM_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
 

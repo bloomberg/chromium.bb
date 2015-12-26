@@ -4,8 +4,11 @@
 
 #include "chrome/test/chromedriver/chrome/heap_snapshot_taker.h"
 
+#include <stddef.h>
+
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"

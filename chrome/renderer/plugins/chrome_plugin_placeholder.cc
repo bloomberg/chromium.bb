@@ -166,7 +166,7 @@ void ChromePluginPlaceholder::SetStatus(
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-int32 ChromePluginPlaceholder::CreateRoutingId() {
+int32_t ChromePluginPlaceholder::CreateRoutingId() {
   placeholder_routing_id_ = RenderThread::Get()->GenerateRoutingID();
   RenderThread::Get()->AddRoute(placeholder_routing_id_, this);
   return placeholder_routing_id_;

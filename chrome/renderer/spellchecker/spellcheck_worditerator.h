@@ -9,9 +9,11 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_WORDITERATOR_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_WORDITERATOR_H_
 
+#include <stddef.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "third_party/icu/source/common/unicode/uscript.h"

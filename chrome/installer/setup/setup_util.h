@@ -10,10 +10,11 @@
 #define CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
 
 #include <windows.h>
+#include <stdint.h>
 
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -68,7 +69,7 @@ base::FilePath FindArchiveToPatch(const InstallationState& original_state,
 // given the nature of this function, it is not possible to know if the
 // delete operation itself succeeded.
 bool DeleteFileFromTempProcess(const base::FilePath& path,
-                               uint32 delay_before_delete_ms);
+                               uint32_t delay_before_delete_ms);
 
 // Returns true if the product |type| will be installed after the current
 // setup.exe instance have carried out installation / uninstallation, at

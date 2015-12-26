@@ -5,6 +5,8 @@
 #include "chrome/common/component_flash_hint_file_linux.h"
 
 #include <fcntl.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/mman.h>
 
 #include "base/base64.h"

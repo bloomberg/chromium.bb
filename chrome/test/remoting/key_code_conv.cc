@@ -4,6 +4,9 @@
 
 #include "chrome/test/remoting/key_code_conv.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "chrome/test/remoting/key_code_map.h"
 
 namespace remoting {

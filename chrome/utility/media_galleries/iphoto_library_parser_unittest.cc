@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/common/media_galleries/iphoto_library.h"
 #include "chrome/utility/media_galleries/iphoto_library_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -161,7 +164,7 @@ class IPhotoLibraryParserTest : public testing::Test {
     CompareLibrary(expected_library_, parser.library());
   }
 
-  void AddExpectedPhoto(uint32 id,
+  void AddExpectedPhoto(uint32_t id,
                         const std::string& location,
                         const std::string& album) {
     parser::Photo photo(id, base::FilePath::FromUTF8Unsafe(location),

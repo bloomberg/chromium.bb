@@ -5,15 +5,17 @@
 // This file provides a command-line interface to
 // upgrade_test::GenerateAlternateVersion().
 
+#include <stddef.h>
+
 #include <cstdio>
 #include <cstdlib>
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "chrome/installer/test/alternate_version_generator.h"
 

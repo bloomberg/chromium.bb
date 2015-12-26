@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/interactive_test_utils_aura.h"
 
+#include "build/build_config.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "ui/aura/window.h"
 

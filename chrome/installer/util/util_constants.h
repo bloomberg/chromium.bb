@@ -8,7 +8,7 @@
 #ifndef CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_
 #define CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
 
 namespace installer {
 

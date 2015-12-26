@@ -5,12 +5,14 @@
 #ifndef CHROME_UTILITY_IMPORTER_IE_IMPORTER_WIN_H_
 #define CHROME_UTILITY_IMPORTER_IE_IMPORTER_WIN_H_
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/utility/importer/importer.h"
 #include "components/favicon_base/favicon_usage_data.h"
@@ -23,7 +25,7 @@ class IEImporter : public Importer {
 
   // Importer:
   void StartImport(const importer::SourceProfile& source_profile,
-                   uint16 items,
+                   uint16_t items,
                    ImporterBridge* bridge) override;
 
  private:

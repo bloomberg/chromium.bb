@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "build/build_config.h"
+
 namespace version_info {
 enum class Channel;
 }

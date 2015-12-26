@@ -5,9 +5,12 @@
 #ifndef CHROME_APP_CHROME_CRASH_REPORTER_CLIENT_H_
 #define CHROME_APP_CHROME_CRASH_REPORTER_CLIENT_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 
 namespace browser_watcher {

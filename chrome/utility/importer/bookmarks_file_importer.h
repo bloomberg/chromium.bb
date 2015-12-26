@@ -5,8 +5,10 @@
 #ifndef CHROME_UTILITY_IMPORTER_BOOKMARKS_FILE_IMPORTER_H_
 #define CHROME_UTILITY_IMPORTER_BOOKMARKS_FILE_IMPORTER_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/utility/importer/importer.h"
 
 // Importer for bookmarks files.
@@ -15,7 +17,7 @@ class BookmarksFileImporter : public Importer {
   BookmarksFileImporter();
 
   void StartImport(const importer::SourceProfile& source_profile,
-                   uint16 items,
+                   uint16_t items,
                    ImporterBridge* bridge) override;
 
  private:

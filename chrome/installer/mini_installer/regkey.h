@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_MINI_INSTALLER_REGKEY_H_
 
 #include <windows.h>
+#include <stddef.h>
 
 namespace mini_installer {
 

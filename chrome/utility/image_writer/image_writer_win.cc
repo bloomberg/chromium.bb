@@ -4,6 +4,7 @@
 
 #include <windows.h>
 #include <setupapi.h>
+#include <stddef.h>
 #include <winioctl.h>
 
 #include "chrome/utility/image_writer/error_messages.h"

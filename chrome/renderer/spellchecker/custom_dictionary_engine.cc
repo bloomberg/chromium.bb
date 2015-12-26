@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
 
+#include <stddef.h>
+
 #include "base/strings/utf_string_conversions.h"
 
 CustomDictionaryEngine::CustomDictionaryEngine() {

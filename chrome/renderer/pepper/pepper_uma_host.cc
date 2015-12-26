@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/pepper/pepper_uma_host.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"

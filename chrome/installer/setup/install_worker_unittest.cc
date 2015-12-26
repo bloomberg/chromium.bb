@@ -6,23 +6,23 @@
 
 #include <vector>
 
-#include "base/win/registry.h"
+#include "base/macros.h"
 #include "base/version.h"
+#include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
-#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
-
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
 using installer::InstallationState;

@@ -9,6 +9,8 @@
 
 #include <oaidl.h>
 #include <shlobj.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <time.h>
 
 #include <vector>
@@ -18,6 +20,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"

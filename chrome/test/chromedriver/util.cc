@@ -4,6 +4,9 @@
 
 #include "chrome/test/chromedriver/util.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -27,8 +30,8 @@
 #include "third_party/zlib/google/zip.h"
 
 std::string GenerateId() {
-  uint64 msb = base::RandUint64();
-  uint64 lsb = base::RandUint64();
+  uint64_t msb = base::RandUint64();
+  uint64_t lsb = base::RandUint64();
   return base::StringPrintf("%016" PRIx64 "%016" PRIx64, msb, lsb);
 }
 
@@ -109,13 +112,9 @@ class DataOutputStream {
   DataOutputStream() {}
   ~DataOutputStream() {}
 
-  void WriteUInt16(uint16 data) {
-    WriteBytes(&data, sizeof(data));
-  }
+  void WriteUInt16(uint16_t data) { WriteBytes(&data, sizeof(data)); }
 
-  void WriteUInt32(uint32 data) {
-    WriteBytes(&data, sizeof(data));
-  }
+  void WriteUInt32(uint32_t data) { WriteBytes(&data, sizeof(data)); }
 
   void WriteString(const std::string& data) {
     WriteBytes(data.c_str(), data.length());
@@ -142,13 +141,9 @@ class DataInputStream {
       : data_(data), size_(size), iter_(0) {}
   ~DataInputStream() {}
 
-  bool ReadUInt16(uint16* data) {
-    return ReadBytes(data, sizeof(*data));
-  }
+  bool ReadUInt16(uint16_t* data) { return ReadBytes(data, sizeof(*data)); }
 
-  bool ReadUInt32(uint32* data) {
-    return ReadBytes(data, sizeof(*data));
-  }
+  bool ReadUInt32(uint32_t* data) { return ReadBytes(data, sizeof(*data)); }
 
   bool ReadString(std::string* data, int length) {
     if (length < 0)
@@ -189,7 +184,7 @@ struct ZipEntry {
                         std::string* error_msg) {
     DataInputStream stream(bytes.c_str(), bytes.length());
 
-    uint32 signature;
+    uint32_t signature;
     if (!stream.ReadUInt32(&signature) || signature != kFileHeaderSignature) {
       *error_msg = "invalid file header signature";
       return false;
@@ -218,7 +213,7 @@ struct ZipEntry {
       *error_msg = "invalid crc";
       return false;
     }
-    uint32 compressed_size;
+    uint32_t compressed_size;
     if (!stream.ReadUInt32(&compressed_size)) {
       *error_msg = "invalid compressed size";
       return false;
@@ -227,12 +222,12 @@ struct ZipEntry {
       *error_msg = "invalid compressed size";
       return false;
     }
-    uint16 name_length;
+    uint16_t name_length;
     if (!stream.ReadUInt16(&name_length)) {
       *error_msg = "invalid name length";
       return false;
     }
-    uint16 field_length;
+    uint16_t field_length;
     if (!stream.ReadUInt16(&field_length)) {
       *error_msg = "invalid field length";
       return false;
@@ -309,7 +304,7 @@ struct ZipEntry {
     stream.WriteString(name);
     stream.WriteString(fields);
     stream.WriteString(compressed_data);
-    uint32 entry_size = stream.buffer().length();
+    uint32_t entry_size = stream.buffer().length();
 
     // Write central directory.
     stream.WriteUInt32(kCentralDirSignature);
@@ -331,7 +326,7 @@ struct ZipEntry {
     stream.WriteUInt32(0);  // Offset to file.
     stream.WriteString(name);
     stream.WriteString(fields);
-    uint32 cd_size = stream.buffer().length() - entry_size;
+    uint32_t cd_size = stream.buffer().length() - entry_size;
 
     // End of central directory.
     stream.WriteUInt32(kEndOfCentralDirSignature);
@@ -346,26 +341,26 @@ struct ZipEntry {
     return stream.buffer();
   }
 
-  static const uint32 kFileHeaderSignature;
-  static const uint32 kDataDescriptorSignature;
-  static const uint32 kCentralDirSignature;
-  static const uint32 kEndOfCentralDirSignature;
-  uint16 version_needed;
-  uint16 bit_flag;
-  uint16 compression_method;
-  uint16 mod_time;
-  uint16 mod_date;
-  uint32 crc;
-  uint32 uncompressed_size;
+  static const uint32_t kFileHeaderSignature;
+  static const uint32_t kDataDescriptorSignature;
+  static const uint32_t kCentralDirSignature;
+  static const uint32_t kEndOfCentralDirSignature;
+  uint16_t version_needed;
+  uint16_t bit_flag;
+  uint16_t compression_method;
+  uint16_t mod_time;
+  uint16_t mod_date;
+  uint32_t crc;
+  uint32_t uncompressed_size;
   std::string name;
   std::string fields;
   std::string compressed_data;
 };
 
-const uint32 ZipEntry::kFileHeaderSignature = 0x04034b50;
-const uint32 ZipEntry::kDataDescriptorSignature = 0x08074b50;
-const uint32 ZipEntry::kCentralDirSignature = 0x02014b50;
-const uint32 ZipEntry::kEndOfCentralDirSignature = 0x06054b50;
+const uint32_t ZipEntry::kFileHeaderSignature = 0x04034b50;
+const uint32_t ZipEntry::kDataDescriptorSignature = 0x08074b50;
+const uint32_t ZipEntry::kCentralDirSignature = 0x02014b50;
+const uint32_t ZipEntry::kEndOfCentralDirSignature = 0x06054b50;
 
 Status UnzipEntry(const base::FilePath& unzip_dir,
                   const std::string& bytes) {

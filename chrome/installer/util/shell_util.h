@@ -10,15 +10,17 @@
 #define CHROME_INSTALLER_UTIL_SHELL_UTIL_H_
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <map>
 #include <set>
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
@@ -210,7 +212,7 @@ class ShellUtil {
     // be used to create/update the shortcut, others will be ignored on update
     // and possibly replaced by default values on create (see individual
     // property setters above for details on default values).
-    uint32 options;
+    uint32_t options;
   };
 
   // Relative path of the URL Protocol registry entry (prefixed with '\').
@@ -616,7 +618,7 @@ class ShellUtil {
   // Note: This method does not suffix the output with '=' signs as technically
   // required by the base32 standard for inputs that aren't a multiple of 5
   // bytes.
-  static base::string16 ByteArrayToBase32(const uint8* bytes, size_t size);
+  static base::string16 ByteArrayToBase32(const uint8_t* bytes, size_t size);
 
   // Associates a set of file extensions with a particular application in the
   // Windows registry, for the current user only. If an extension has no

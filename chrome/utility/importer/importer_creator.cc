@@ -5,6 +5,7 @@
 #include "chrome/utility/importer/importer_creator.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/utility/importer/bookmarks_file_importer.h"
 #include "chrome/utility/importer/firefox_importer.h"
 

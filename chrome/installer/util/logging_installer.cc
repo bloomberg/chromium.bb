@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "chrome/installer/util/logging_installer.h"
 
@@ -33,14 +34,13 @@ bool installer_logging_ = false;
 TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
   TruncateResult result = LOGFILE_UNTOUCHED;
 
-  int64 log_size = 0;
+  int64_t log_size = 0;
   if (base::GetFileSize(log_file, &log_size) &&
       log_size > kMaxInstallerLogFileSize) {
     // Cause the old log file to be deleted when we are done with it.
-    uint32 file_flags = base::File::FLAG_OPEN |
-                        base::File::FLAG_READ |
-                        base::File::FLAG_SHARE_DELETE |
-                        base::File::FLAG_DELETE_ON_CLOSE;
+    uint32_t file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+                          base::File::FLAG_SHARE_DELETE |
+                          base::File::FLAG_DELETE_ON_CLOSE;
     base::File old_log_file(log_file, file_flags);
 
     if (old_log_file.IsValid()) {
@@ -48,7 +48,7 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
       base::FilePath tmp_log(log_file.value() + FILE_PATH_LITERAL(".tmp"));
       // Note that base::Move will attempt to replace existing files.
       if (base::Move(log_file, tmp_log)) {
-        int64 offset = log_size - kTruncatedInstallerLogFileSize;
+        int64_t offset = log_size - kTruncatedInstallerLogFileSize;
         std::string old_log_data(kTruncatedInstallerLogFileSize, 0);
         int bytes_read = old_log_file.Read(offset,
                                            &old_log_data[0],

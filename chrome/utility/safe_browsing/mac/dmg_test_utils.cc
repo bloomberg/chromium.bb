@@ -4,6 +4,8 @@
 
 #include "chrome/utility/safe_browsing/mac/dmg_test_utils.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"

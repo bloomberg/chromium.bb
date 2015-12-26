@@ -4,8 +4,11 @@
 
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 
+#include <stddef.h>
+
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"

@@ -24,6 +24,8 @@
 #include "chrome/installer/test/alternate_version_generator.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <limits>
@@ -31,13 +33,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
@@ -183,7 +185,7 @@ bool MappedFile::Initialize(base::File file) {
 
   if (file.GetInfo(&file_info)) {
     if (file_info.size <=
-        static_cast<int64>(std::numeric_limits<DWORD>::max())) {
+        static_cast<int64_t>(std::numeric_limits<DWORD>::max())) {
       mapping_ = CreateFileMapping(file.GetPlatformFile(), NULL, PAGE_READWRITE,
                                    0, static_cast<DWORD>(file_info.size), NULL);
       if (mapping_ != NULL) {
@@ -241,7 +243,7 @@ bool GetFileVersion(const base::FilePath& pe_file, ChromeVersion* version) {
   DCHECK(version);
   bool result = false;
   upgrade_test::ResourceLoader pe_file_loader;
-  std::pair<const uint8*, DWORD> version_info_data;
+  std::pair<const uint8_t*, DWORD> version_info_data;
 
   if (pe_file_loader.Initialize(pe_file) &&
       pe_file_loader.Load(
@@ -278,9 +280,12 @@ bool GetSetupExeVersion(const base::FilePath& work_dir,
 // equals [|src_first|, |src_last) with the sequence at |replacement_first| of
 // the same length.  Returns true on success.  If non-NULL, |replacements_made|
 // is set to true/false accordingly.
-bool ReplaceAll(uint8* dest_first, uint8* dest_last,
-                const uint8* src_first, const uint8* src_last,
-                const uint8* replacement_first, bool* replacements_made) {
+bool ReplaceAll(uint8_t* dest_first,
+                uint8_t* dest_last,
+                const uint8_t* src_first,
+                const uint8_t* src_last,
+                const uint8_t* replacement_first,
+                bool* replacements_made) {
   bool result = true;
   bool changed = false;
   do {
@@ -316,19 +321,20 @@ struct VisitResourceContext {
 // replace the string form (e.g., "9.0.584.0").  If any replacements are made, a
 // second pass is made to replace the binary form (e.g., 0x0000024800000009).
 void VisitResource(const upgrade_test::EntryPath& path,
-                   uint8* data, DWORD size, DWORD code_page,
+                   uint8_t* data,
+                   DWORD size,
+                   DWORD code_page,
                    uintptr_t context) {
   VisitResourceContext& ctx = *reinterpret_cast<VisitResourceContext*>(context);
 
   // Replace all occurrences of current_version_str with new_version_str
   bool changing_version = false;
   if (ReplaceAll(
-          data,
-          data + size,
-          reinterpret_cast<const uint8*>(ctx.current_version_str.c_str()),
-          reinterpret_cast<const uint8*>(ctx.current_version_str.c_str() +
-              ctx.current_version_str.size() + 1),
-          reinterpret_cast<const uint8*>(ctx.new_version_str.c_str()),
+          data, data + size,
+          reinterpret_cast<const uint8_t*>(ctx.current_version_str.c_str()),
+          reinterpret_cast<const uint8_t*>(ctx.current_version_str.c_str() +
+                                           ctx.current_version_str.size() + 1),
+          reinterpret_cast<const uint8_t*>(ctx.new_version_str.c_str()),
           &changing_version) &&
       changing_version) {
     // Replace all occurrences of current_version with new_version
@@ -342,9 +348,9 @@ void VisitResource(const upgrade_test::EntryPath& path,
     VersionPair new_ver = {
       ctx.new_version.high(), ctx.new_version.low()
     };
-    ReplaceAll(data, data + size, reinterpret_cast<const uint8*>(&cur_ver),
-               reinterpret_cast<const uint8*>(&cur_ver) + sizeof(cur_ver),
-               reinterpret_cast<const uint8*>(&new_ver), NULL);
+    ReplaceAll(data, data + size, reinterpret_cast<const uint8_t*>(&cur_ver),
+               reinterpret_cast<const uint8_t*>(&cur_ver) + sizeof(cur_ver),
+               reinterpret_cast<const uint8_t*>(&new_ver), NULL);
   }
 }
 
@@ -357,9 +363,9 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
   }
 
   bool result = false;
-  uint32 flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-                 base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_READ |
-                 base::File::FLAG_EXCLUSIVE_WRITE;
+  uint32_t flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+                   base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_READ |
+                   base::File::FLAG_EXCLUSIVE_WRITE;
   base::File file(image_file, flags);
   // It turns out that the underlying CreateFile can fail due to unhelpful
   // security software locking the newly created DLL. So add a few brief
@@ -536,7 +542,7 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   // Load the original file and extract setup.ex_ and chrome.packed.7z
   {
     ResourceLoader resource_loader;
-    std::pair<const uint8*, DWORD> resource_data;
+    std::pair<const uint8_t*, DWORD> resource_data;
 
     if (!resource_loader.Initialize(mini_installer))
       return false;

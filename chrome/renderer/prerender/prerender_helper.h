@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_PRERENDER_PRERENDER_HELPER_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"

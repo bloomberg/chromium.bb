@@ -5,9 +5,9 @@
 #ifndef CHROME_INSTALLER_UTIL_SELF_CLEANING_TEMP_DIR_H_
 #define CHROME_INSTALLER_UTIL_SELF_CLEANING_TEMP_DIR_H_
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 
 namespace installer {
 

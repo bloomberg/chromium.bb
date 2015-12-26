@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_API_SPELLCHECK_SPELLCHECK_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_API_SPELLCHECK_SPELLCHECK_HANDLER_H_
 
+#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 

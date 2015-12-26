@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
@@ -121,7 +122,7 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ExtensionsHandler::OnCheckMediaFile(
-    int64 milliseconds_of_decoding,
+    int64_t milliseconds_of_decoding,
     const IPC::PlatformFileForTransit& media_file) {
 #if !defined(MEDIA_DISABLE_FFMPEG)
   media::MediaFileChecker checker(
@@ -135,8 +136,9 @@ void ExtensionsHandler::OnCheckMediaFile(
   ReleaseProcessIfNeeded();
 }
 
-void ExtensionsHandler::OnParseMediaMetadata(
-    const std::string& mime_type, int64 total_size, bool get_attached_images) {
+void ExtensionsHandler::OnParseMediaMetadata(const std::string& mime_type,
+                                             int64_t total_size,
+                                             bool get_attached_images) {
   // Only one IPCDataSource may be created and added to the list of handlers.
   scoped_ptr<metadata::IPCDataSource> source(
       new metadata::IPCDataSource(total_size));

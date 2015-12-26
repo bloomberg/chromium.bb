@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/printer_job_queue_handler.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/json/json_reader.h"

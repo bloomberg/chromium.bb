@@ -4,6 +4,7 @@
 
 #include <windows.h>  // NOLINT
 #include <shlwapi.h>  // NOLINT
+#include <stddef.h>
 #include <userenv.h>  // NOLINT
 
 #include "chrome/app/main_dll_loader_win.h"
@@ -16,6 +17,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"

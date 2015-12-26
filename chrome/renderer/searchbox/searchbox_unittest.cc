@@ -4,10 +4,12 @@
 
 #include "chrome/renderer/searchbox/searchbox.h"
 
+#include <stddef.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/common/instant_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

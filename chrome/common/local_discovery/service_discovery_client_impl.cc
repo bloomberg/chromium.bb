@@ -529,7 +529,7 @@ void LocalDomainResolverImpl::Start() {
 }
 
 scoped_ptr<net::MDnsTransaction> LocalDomainResolverImpl::CreateTransaction(
-    uint16 type) {
+    uint16_t type) {
   return mdns_client_->CreateTransaction(
       type, domain_, net::MDnsTransaction::SINGLE_RESULT |
                      net::MDnsTransaction::QUERY_CACHE |

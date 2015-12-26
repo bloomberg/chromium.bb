@@ -6,6 +6,7 @@
 #define CHROME_TEST_BASE_EXTENSION_JS_BROWSER_TEST_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "chrome/test/base/extension_load_waiter_one_shot.h"
 #include "chrome/test/base/javascript_browser_test.h"
 

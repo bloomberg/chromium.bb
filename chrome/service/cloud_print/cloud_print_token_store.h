@@ -7,6 +7,7 @@
 
 #include <string>
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 
 // This class serves as the single repository for cloud print auth tokens. This

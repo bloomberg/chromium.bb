@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <malloc.h>
 #include <shellscalingapi.h>
+#include <stddef.h>
 #include <tchar.h>
 
 #include <algorithm>
@@ -15,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"

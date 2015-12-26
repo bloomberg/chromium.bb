@@ -9,8 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "url/gurl.h"

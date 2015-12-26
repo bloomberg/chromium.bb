@@ -6,6 +6,7 @@
 #define CHROME_TEST_BASE_TESTING_IO_THREAD_STATE_H_
 
 #include "base/callback_forward.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
 class IOThread;

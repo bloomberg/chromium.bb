@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/permissions/chrome_permission_message_rules.h"
 
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

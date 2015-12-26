@@ -8,7 +8,7 @@
 #include <list>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "url/gurl.h"
 

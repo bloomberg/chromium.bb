@@ -4,9 +4,9 @@
 
 #include "chrome/installer/mini_installer/configuration.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
-#include "base/basictypes.h"
 #include "chrome/installer/mini_installer/appid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

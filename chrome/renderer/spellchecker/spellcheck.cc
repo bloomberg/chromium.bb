@@ -4,15 +4,19 @@
 
 #include "chrome/renderer/spellchecker/spellcheck.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/spellcheck_common.h"
@@ -61,18 +65,18 @@ class DocumentMarkersCollector : public content::RenderViewVisitor {
  public:
   DocumentMarkersCollector() {}
   ~DocumentMarkersCollector() override {}
-  const std::vector<uint32>& markers() const { return markers_; }
+  const std::vector<uint32_t>& markers() const { return markers_; }
   bool Visit(content::RenderView* render_view) override;
 
  private:
-  std::vector<uint32> markers_;
+  std::vector<uint32_t> markers_;
   DISALLOW_COPY_AND_ASSIGN(DocumentMarkersCollector);
 };
 
 bool DocumentMarkersCollector::Visit(content::RenderView* render_view) {
   if (!render_view || !render_view->GetWebView())
     return true;
-  WebVector<uint32> markers;
+  WebVector<uint32_t> markers;
   render_view->GetWebView()->spellingMarkers(&markers);
   for (size_t i = 0; i < markers.size(); ++i)
     markers_.push_back(markers[i]);

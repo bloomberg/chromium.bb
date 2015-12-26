@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "url/gurl.h"
 

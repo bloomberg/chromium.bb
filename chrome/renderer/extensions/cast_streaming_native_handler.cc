@@ -4,6 +4,9 @@
 
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -12,6 +15,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -77,7 +81,7 @@ void FromCastCodecSpecificParams(const CastCodecSpecificParams& cast_params,
 
 namespace {
 bool HexDecode(const std::string& input, std::string* output) {
-  std::vector<uint8> bytes;
+  std::vector<uint8_t> bytes;
   if (!base::HexStringToBytes(input, &bytes))
     return false;
   output->assign(reinterpret_cast<const char*>(&bytes[0]), bytes.size());

@@ -6,6 +6,8 @@
 #define CHROME_UTILITY_SAFE_BROWSING_MAC_UDIF_H_
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>

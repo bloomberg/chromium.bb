@@ -4,9 +4,13 @@
 
 #include "chrome/utility/importer/bookmark_html_reader.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/i18n/icu_string_conversions.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -323,7 +327,7 @@ bool ParseFolderNameFromLine(const std::string& line,
 
   // Add date
   if (GetAttribute(attribute_list, kAddDateAttribute, &value)) {
-    int64 time;
+    int64_t time;
     base::StringToInt64(value, &time);
     // Upper bound it at 32 bits.
     if (0 < time && time < (1LL << 32))
@@ -409,7 +413,7 @@ bool ParseBookmarkFromLine(const std::string& line,
 
   // Add date
   if (GetAttribute(attribute_list, kAddDateAttribute, &value)) {
-    int64 time;
+    int64_t time;
     base::StringToInt64(value, &time);
     // Upper bound it at 32 bits.
     if (0 < time && time < (1LL << 32))

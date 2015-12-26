@@ -5,7 +5,7 @@
 #ifndef CHROME_RENDERER_SEARCHBOX_SEARCHBOX_EXTENSION_H_
 #define CHROME_RENDERER_SEARCHBOX_SEARCHBOX_EXTENSION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 namespace v8 {

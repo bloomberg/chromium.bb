@@ -47,7 +47,7 @@ void HandleElement(
 }  // namespace
 
 // An upper limit on the number of nodes we collect.
-uint32 ThreatDOMDetails::kMaxNodes = 500;
+uint32_t ThreatDOMDetails::kMaxNodes = 500;
 
 // static
 ThreatDOMDetails* ThreatDOMDetails::Create(content::RenderView* render_view) {

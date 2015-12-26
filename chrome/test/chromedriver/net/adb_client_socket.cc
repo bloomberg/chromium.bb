@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/net/adb_client_socket.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "chrome/installer/mini_installer/mini_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

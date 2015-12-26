@@ -5,8 +5,11 @@
 #ifndef CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 #define CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"
 #include "content/public/common/resource_type.h"
@@ -32,7 +35,7 @@ class SecurityFilterPeer : public content::RequestPeer {
       int os_error);
 
   // content::RequestPeer methods.
-  void OnUploadProgress(uint64 position, uint64 size) override;
+  void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const content::ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override {}
@@ -60,7 +63,7 @@ class BufferedPeer : public SecurityFilterPeer {
                           bool stale_copy_in_cache,
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
-                          int64 total_transfer_size) override;
+                          int64_t total_transfer_size) override;
   void OnReceivedCompletedResponse(const content::ResourceResponseInfo& info,
                                    scoped_ptr<ReceivedData> data,
                                    int error_code,
@@ -68,7 +71,7 @@ class BufferedPeer : public SecurityFilterPeer {
                                    bool stale_copy_in_cache,
                                    const std::string& security_info,
                                    const base::TimeTicks& completion_time,
-                                   int64 total_transfer_size) override;
+                                   int64_t total_transfer_size) override;
 
  protected:
   // Invoked when the entire request has been processed before the data is sent
@@ -107,7 +110,7 @@ class ReplaceContentPeer : public SecurityFilterPeer {
                           bool stale_copy_in_cache,
                           const std::string& security_info,
                           const base::TimeTicks& completion_time,
-                          int64 total_transfer_size) override;
+                          int64_t total_transfer_size) override;
   void OnReceivedCompletedResponse(const content::ResourceResponseInfo& info,
                                    scoped_ptr<ReceivedData> data,
                                    int error_code,
@@ -115,7 +118,7 @@ class ReplaceContentPeer : public SecurityFilterPeer {
                                    bool stale_copy_in_cache,
                                    const std::string& security_info,
                                    const base::TimeTicks& completion_time,
-                                   int64 total_transfer_size) override;
+                                   int64_t total_transfer_size) override;
 
  private:
   content::ResourceResponseInfo response_info_;

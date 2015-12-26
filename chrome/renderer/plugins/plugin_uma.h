@@ -5,8 +5,11 @@
 #ifndef CHROME_RENDERER_PLUGINS_PLUGIN_UMA_H_
 #define CHROME_RENDERER_PLUGINS_PLUGIN_UMA_H_
 
+#include <stddef.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "url/gurl.h"

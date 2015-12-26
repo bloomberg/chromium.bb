@@ -5,6 +5,7 @@
 #include "chrome/installer/util/installer_state.h"
 
 #include <windows.h>
+#include <stddef.h>
 
 #include <fstream>
 

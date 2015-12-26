@@ -9,11 +9,13 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/importer_autofill_form_data_entry.h"
@@ -87,7 +89,7 @@ struct FirefoxImporter::BookmarkItem {
   BookmarkItemType type;
   std::string keyword;
   base::Time date_added;
-  int64 favicon;
+  int64_t favicon;
   bool empty_folder;
 };
 
@@ -97,10 +99,9 @@ FirefoxImporter::FirefoxImporter() {
 FirefoxImporter::~FirefoxImporter() {
 }
 
-void FirefoxImporter::StartImport(
-    const importer::SourceProfile& source_profile,
-    uint16 items,
-    ImporterBridge* bridge) {
+void FirefoxImporter::StartImport(const importer::SourceProfile& source_profile,
+                                  uint16_t items,
+                                  ImporterBridge* bridge) {
   bridge_ = bridge;
   source_path_ = source_profile.source_path;
   app_path_ = source_profile.app_path;

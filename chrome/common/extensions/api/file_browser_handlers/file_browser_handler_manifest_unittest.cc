@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/common/media_galleries/iphoto_library.h"
 
 namespace iphoto {

@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/mock_webrtc_logging_message_filter.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 

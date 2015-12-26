@@ -4,6 +4,8 @@
 
 #include "chrome/common/net/x509_certificate_model.h"
 
+#include <stddef.h>
+
 #include "base/files/file_path.h"
 #include "net/base/test_data_directory.h"
 #include "net/test/cert_test_util.h"

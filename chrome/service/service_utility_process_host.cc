@@ -4,6 +4,8 @@
 
 #include "chrome/service/service_utility_process_host.h"
 
+#include <stdint.h>
+
 #include <queue>
 
 #include "base/bind.h"
@@ -13,10 +15,12 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/process/launch.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "content/public/common/child_process_host.h"
@@ -403,7 +407,7 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
 bool ServiceUtilityProcessHost::Client::MetafileAvailable(float scale_factor,
                                                           base::File file) {
   file.Seek(base::File::FROM_BEGIN, 0);
-  int64 size = file.GetLength();
+  int64_t size = file.GetLength();
   if (size <= 0) {
     OnRenderPDFPagesToMetafileDone(false);
     return false;

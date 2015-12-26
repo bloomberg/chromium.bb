@@ -8,6 +8,7 @@
  * This is a minimal NaCl program without libc. It uses NaCl's stable IRT ABI.
  */
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "native_client/src/include/elf_auxv.h"

@@ -5,12 +5,15 @@
 #ifndef CHROME_COMMON_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_IMPL_H_
 #define CHROME_COMMON_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_IMPL_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
+#include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -239,7 +242,7 @@ class LocalDomainResolverImpl : public LocalDomainResolver {
       net::MDnsTransaction::Result result,
       const net::RecordParsed* record);
 
-  scoped_ptr<net::MDnsTransaction> CreateTransaction(uint16 type);
+  scoped_ptr<net::MDnsTransaction> CreateTransaction(uint16_t type);
 
   bool IsSuccess();
 

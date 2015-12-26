@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <DelayIMP.h>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/scoped_native_library.h"
 #include "chrome/app/delay_load_hook_win.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "chrome/installer/gcapi/gcapi_test_registry_overrider.h"
@@ -17,7 +19,7 @@ using base::ASCIIToUTF16;
 namespace {
 
 const wchar_t kBrand[] = L"ABCD";
-const uint16 kUserLevel = GCAPI_INVOKED_STANDARD_SHELL;
+const uint16_t kUserLevel = GCAPI_INVOKED_STANDARD_SHELL;
 
 const wchar_t kSomeExperiments[] = L"myexp=1|Aug 2;yourexp=2|Sep 5";
 const wchar_t kSomeOtherExperiments[] = L"anotherexp=joe|Jun 7 2008";

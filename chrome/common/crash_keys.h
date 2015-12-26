@@ -5,11 +5,15 @@
 #ifndef CHROME_COMMON_CRASH_KEYS_H_
 #define CHROME_COMMON_CRASH_KEYS_H_
 
+#include <stddef.h>
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/debug/crash_logging.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "components/crash/core/common/crash_keys.h"
 
 namespace base {

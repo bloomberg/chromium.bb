@@ -29,7 +29,7 @@ void ImageWriterHandler::SendFailed(const std::string& message) {
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
-void ImageWriterHandler::SendProgress(int64 progress) {
+void ImageWriterHandler::SendProgress(int64_t progress) {
   Send(new ChromeUtilityHostMsg_ImageWriter_Progress(progress));
 }
 

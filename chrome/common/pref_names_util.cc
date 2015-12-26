@@ -4,6 +4,8 @@
 
 #include "chrome/common/pref_names_util.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 
 namespace pref_names_util {

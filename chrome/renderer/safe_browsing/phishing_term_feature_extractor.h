@@ -16,12 +16,15 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_TERM_FEATURE_EXTRACTOR_H_
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_TERM_FEATURE_EXTRACTOR_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -56,9 +59,9 @@ class PhishingTermFeatureExtractor {
   // for testing.  The caller keeps ownership of the clock.
   PhishingTermFeatureExtractor(
       const base::hash_set<std::string>* page_term_hashes,
-      const base::hash_set<uint32>* page_word_hashes,
+      const base::hash_set<uint32_t>* page_word_hashes,
       size_t max_words_per_term,
-      uint32 murmurhash3_seed,
+      uint32_t murmurhash3_seed,
       size_t max_shingles_per_page,
       size_t shingle_size,
       FeatureExtractorClock* clock);
@@ -79,7 +82,7 @@ class PhishingTermFeatureExtractor {
   // CancelPendingExtraction() is called.
   void ExtractFeatures(const base::string16* page_text,
                        FeatureMap* features,
-                       std::set<uint32>* shingle_hashes,
+                       std::set<uint32_t>* shingle_hashes,
                        const DoneCallback& done_callback);
 
   // Cancels any pending feature extraction.  The DoneCallback will not be run.
@@ -131,13 +134,13 @@ class PhishingTermFeatureExtractor {
   // would contain (hashed) "one" and "two".  We do this so that we can have a
   // quick out in the common case that the current word we are processing
   // doesn't contain any part of one of our terms.
-  const base::hash_set<uint32>* page_word_hashes_;
+  const base::hash_set<uint32_t>* page_word_hashes_;
 
   // The maximum number of words in an n-gram.
   const size_t max_words_per_term_;
 
   // The seed for murmurhash3.
-  const uint32 murmurhash3_seed_;
+  const uint32_t murmurhash3_seed_;
 
   // The maximum number of unique shingle hashes we extract in a page.
   const size_t max_shingles_per_page_;
@@ -151,7 +154,7 @@ class PhishingTermFeatureExtractor {
   // The output parameters from the most recent call to ExtractFeatures().
   const base::string16* page_text_;  // The caller keeps ownership of this.
   FeatureMap* features_;  // The caller keeps ownership of this.
-  std::set<uint32>* shingle_hashes_;
+  std::set<uint32_t>* shingle_hashes_;
   DoneCallback done_callback_;
 
   // Stores the current state of term extraction from |page_text_|.

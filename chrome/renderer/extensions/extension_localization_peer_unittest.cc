@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/renderer/extensions/extension_localization_peer.h"
 #include "content/public/child/fixed_received_data.h"
@@ -58,7 +61,7 @@ class MockRequestPeer : public content::RequestPeer {
   MockRequestPeer() {}
   virtual ~MockRequestPeer() {}
 
-  MOCK_METHOD2(OnUploadProgress, void(uint64 position, uint64 size));
+  MOCK_METHOD2(OnUploadProgress, void(uint64_t position, uint64_t size));
   MOCK_METHOD2(OnReceivedRedirect,
                bool(const net::RedirectInfo& redirect_info,
                     const content::ResourceResponseInfo& info));

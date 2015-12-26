@@ -6,6 +6,7 @@
 #define CHROME_UTILITY_FONT_CACHE_HANDLER_WIN_H_
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/utility/utility_message_handler.h"

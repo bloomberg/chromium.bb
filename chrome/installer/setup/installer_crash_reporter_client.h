@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALLER_SETUP_INSTALLER_CRASH_REPORTER_CLIENT_H_
 #define CHROME_INSTALLER_SETUP_INSTALLER_CRASH_REPORTER_CLIENT_H_
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 

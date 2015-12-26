@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 

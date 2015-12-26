@@ -5,6 +5,7 @@
 #include "chrome/installer/test/resource_updater.h"
 
 #include <windows.h>
+#include <stdint.h>
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
@@ -43,9 +44,8 @@ bool ResourceUpdater::Update(const std::wstring& name,
 
   if (input.Initialize(input_file)) {
     if (UpdateResource(handle_, type.c_str(), name.c_str(), language_id,
-                       const_cast<uint8*>(input.data()),
-                       static_cast<DWORD>(input.length()))
-        != FALSE) {
+                       const_cast<uint8_t*>(input.data()),
+                       static_cast<DWORD>(input.length())) != FALSE) {
       return true;
     }
     PLOG(DFATAL) << "UpdateResource failed for resource \"" << name << "\"";

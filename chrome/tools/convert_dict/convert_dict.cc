@@ -11,6 +11,7 @@
 //
 // See PrintHelp() below for usage.
 
+#include <stddef.h>
 #include <stdio.h>
 
 #include "base/at_exit.h"
@@ -20,6 +21,7 @@
 #include "base/logging.h"
 #include "base/process/memory.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/tools/convert_dict/aff_reader.h"
 #include "chrome/tools/convert_dict/dic_reader.h"
 #include "third_party/hunspell/google/bdict_reader.h"

@@ -7,6 +7,7 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_MOCK_FEATURE_EXTRACTOR_CLOCK_H_
 #define CHROME_RENDERER_SAFE_BROWSING_MOCK_FEATURE_EXTRACTOR_CLOCK_H_
 
+#include "base/macros.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

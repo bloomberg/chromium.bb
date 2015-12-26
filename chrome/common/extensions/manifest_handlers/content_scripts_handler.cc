@@ -4,8 +4,11 @@
 
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 
+#include <stddef.h>
+
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

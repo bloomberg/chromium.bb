@@ -4,6 +4,8 @@
 
 #include "chrome/tools/convert_dict/aff_reader.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/files/file_util.h"

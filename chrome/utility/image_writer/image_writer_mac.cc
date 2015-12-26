@@ -8,6 +8,7 @@
 #include <IOKit/storage/IOBlockStorageDevice.h>
 #include <IOKit/storage/IOMedia.h>
 #include <IOKit/storage/IOStorageProtocolCharacteristics.h>
+#include <stddef.h>
 #include <sys/socket.h>
 
 #include "base/command_line.h"

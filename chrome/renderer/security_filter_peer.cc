@@ -67,7 +67,7 @@ SecurityFilterPeer* SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
   return new ReplaceContentPeer(peer, "text/html", html);
 }
 
-void SecurityFilterPeer::OnUploadProgress(uint64 position, uint64 size) {
+void SecurityFilterPeer::OnUploadProgress(uint64_t position, uint64_t size) {
   original_peer_->OnUploadProgress(position, size);
 }
 
@@ -130,7 +130,7 @@ void BufferedPeer::OnCompletedRequest(int error_code,
                                       bool stale_copy_in_cache,
                                       const std::string& security_info,
                                       const base::TimeTicks& completion_time,
-                                      int64 total_transfer_size) {
+                                      int64_t total_transfer_size) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<BufferedPeer> this_deleter(this);
 
@@ -159,7 +159,7 @@ void BufferedPeer::OnReceivedCompletedResponse(
     bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time,
-    int64 total_transfer_size) {
+    int64_t total_transfer_size) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<BufferedPeer> this_deleter(this);
   original_peer_->OnReceivedCompletedResponse(
@@ -195,7 +195,7 @@ void ReplaceContentPeer::OnCompletedRequest(
     bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time,
-    int64 total_transfer_size) {
+    int64_t total_transfer_size) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<ReplaceContentPeer> this_deleter(this);
 
@@ -220,7 +220,7 @@ void ReplaceContentPeer::OnReceivedCompletedResponse(
     bool stale_copy_in_cache,
     const std::string& security_info,
     const base::TimeTicks& completion_time,
-    int64 total_transfer_size) {
+    int64_t total_transfer_size) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<ReplaceContentPeer> this_deleter(this);
 

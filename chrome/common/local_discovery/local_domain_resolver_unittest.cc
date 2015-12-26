@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -17,7 +19,7 @@ namespace local_discovery {
 
 namespace {
 
-const uint8 kSamplePacketA[] = {
+const uint8_t kSamplePacketA[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x81, 0x80,               // Standard query response, RA, no error
@@ -38,7 +40,7 @@ const uint8 kSamplePacketA[] = {
   0x03, 0x04,
 };
 
-const uint8 kSamplePacketAAAA[] = {
+const uint8_t kSamplePacketAAAA[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
   0x81, 0x80,               // Standard query response, RA, no error

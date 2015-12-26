@@ -7,6 +7,7 @@
 #include <wintrust.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace safe_browsing {
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_REMOTING_PAGE_LOAD_NOTIFICATION_OBSERVER_H_
 #define CHROME_TEST_REMOTING_PAGE_LOAD_NOTIFICATION_OBSERVER_H_
 
+#include "base/macros.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 

@@ -8,6 +8,7 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_FEATURE_EXTRACTOR_CLOCK_H_
 #define CHROME_RENDERER_SAFE_BROWSING_FEATURE_EXTRACTOR_CLOCK_H_
 
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace safe_browsing {

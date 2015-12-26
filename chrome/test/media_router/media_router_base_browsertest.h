@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/extension_apitest.h"

@@ -4,12 +4,15 @@
 
 #include "chrome/utility/media_galleries/itunes_library_parser.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/utility/media_galleries/iapps_xml_utils.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 #include "url/gurl.h"
@@ -21,7 +24,7 @@ namespace itunes {
 namespace {
 
 struct TrackInfo {
-  uint64 id;
+  uint64_t id;
   base::FilePath location;
   std::string artist;
   std::string album;
@@ -135,7 +138,7 @@ bool ITunesLibraryParser::Parse(const std::string& library_xml) {
     std::string key;  // Should match track id below.
     if (!reader.ReadElementContent(&key))
       return track_found;
-    uint64 id;
+    uint64_t id;
     bool id_valid = base::StringToUint64(key, &id);
     if (!reader.SkipToElement())
       return track_found;

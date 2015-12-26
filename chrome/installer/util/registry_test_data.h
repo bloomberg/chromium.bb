@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 // A helper class for use by unit tests that need some registry space and data.
 // BEWARE: Instances of this class irrevocably and recursively delete keys and

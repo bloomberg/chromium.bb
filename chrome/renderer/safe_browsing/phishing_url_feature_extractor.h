@@ -9,10 +9,12 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_URL_FEATURE_EXTRACTOR_H_
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_URL_FEATURE_EXTRACTOR_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 class GURL;
 

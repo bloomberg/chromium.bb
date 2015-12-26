@@ -6,8 +6,9 @@
 
 #include <pk11pub.h>
 #include <pk11sdr.h>
+#include <stdint.h>
+#include <string.h>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -121,7 +122,7 @@ unpadBlock(SECItem *data, int blockSize, SECItem *result)
   if (padLength > blockSize) { rv = SECFailure; goto loser; }
 
   /* verify padding */
-  for (i=data->len - padLength; static_cast<uint32>(i) < data->len; i++) {
+  for (i = data->len - padLength; static_cast<uint32_t>(i) < data->len; i++) {
     if (data->data[i] != padLength) {
         rv = SECFailure;
         goto loser;

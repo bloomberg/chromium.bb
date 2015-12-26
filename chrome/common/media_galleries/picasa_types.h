@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_MEDIA_GALLERIES_PICASA_TYPES_H_
 #define CHROME_COMMON_MEDIA_GALLERIES_PICASA_TYPES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -37,9 +39,9 @@ extern const char kPicasaINIFilename[];
 extern const char kPicasaAlbumTableName[];
 extern const char kAlbumTokenPrefix[];
 
-extern const uint32 kAlbumCategoryAlbum;
-extern const uint32 kAlbumCategoryFolder;
-extern const uint32 kAlbumCategoryInvalid;
+extern const uint32_t kAlbumCategoryAlbum;
+extern const uint32_t kAlbumCategoryFolder;
+extern const uint32_t kAlbumCategoryInvalid;
 
 struct AlbumInfo {
   AlbumInfo();

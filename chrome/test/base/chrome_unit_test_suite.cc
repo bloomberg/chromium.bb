@@ -4,9 +4,11 @@
 
 #include "chrome/test/base/chrome_unit_test_suite.h"
 
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/chrome_content_client.h"

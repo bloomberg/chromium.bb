@@ -5,6 +5,7 @@
 #ifndef CHROME_APP_ANDROID_CHROME_MAIN_DELEGATE_ANDROID_H_
 #define CHROME_APP_ANDROID_CHROME_MAIN_DELEGATE_ANDROID_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "content/public/browser/browser_main_runner.h"

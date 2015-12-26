@@ -7,6 +7,7 @@
 
 #include "base/time/time.h"
 
+#include "base/macros.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 
 namespace history {

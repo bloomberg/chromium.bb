@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_NET_X509_CERTIFICATE_MODEL_H_
 #define CHROME_COMMON_NET_X509_CERTIFICATE_MODEL_H_
 
+#include <stddef.h>
+
 #include "net/cert/cert_type.h"
 #include "net/cert/x509_certificate.h"
 
