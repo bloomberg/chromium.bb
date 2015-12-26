@@ -57,7 +57,7 @@ MersenneTwister::~MersenneTwister() {
 }
 
 /* initializes mt[N] with a seed */
-void MersenneTwister::init_genrand(uint32 s)
+void MersenneTwister::init_genrand(uint32_t s)
 {
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<N; mti++) {
@@ -76,7 +76,7 @@ void MersenneTwister::init_genrand(uint32 s)
 /* init_key is the array for initializing keys */
 /* key_length is its length */
 /* slight change for C++, 2004/2/26 */
-void MersenneTwister::init_by_array(uint32 init_key[], int key_length)
+void MersenneTwister::init_by_array(uint32_t init_key[], int key_length)
 {
     int i, j, k;
     init_genrand(19650218UL);
@@ -102,10 +102,10 @@ void MersenneTwister::init_by_array(uint32 init_key[], int key_length)
 }
 
 /* generates a random number on [0,0xffffffff]-interval */
-uint32 MersenneTwister::genrand_int32(void)
+uint32_t MersenneTwister::genrand_int32(void)
 {
-    uint32 y;
-    static uint32 mag01[2]={0x0UL, MATRIX_A};
+    uint32_t y;
+    static uint32_t mag01[2]={0x0UL, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if (mti >= N) { /* generate N words at one time */

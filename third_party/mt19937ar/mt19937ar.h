@@ -44,21 +44,21 @@
 #ifndef THIRD_PARTY_MT19937AR_MT19937AR_H_
 #define THIRD_PARTY_MT19937AR_MT19937AR_H_
 
-#include <vector>
+#include <stdint.h>
 
-#include "base/basictypes.h"
+#include <vector>
 
 class MersenneTwister {
  public:
   MersenneTwister();
   ~MersenneTwister();
 
-  void init_genrand(uint32 s);
-  void init_by_array(uint32 init_key[], int key_length);
-  uint32 genrand_int32(void);
+  void init_genrand(uint32_t s);
+  void init_by_array(uint32_t init_key[], int key_length);
+  uint32_t genrand_int32(void);
 
  private:
-  std::vector<uint32> mt; /* the array for the state vector  */
+  std::vector<uint32_t> mt; /* the array for the state vector  */
   int mti; /* mti==N+1 means mt[N] is not initialized */
 };
 
