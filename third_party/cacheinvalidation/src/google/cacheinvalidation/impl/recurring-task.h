@@ -30,6 +30,7 @@
 #ifndef GOOGLE_CACHEINVALIDATION_IMPL_RECURRING_TASK_H_
 #define GOOGLE_CACHEINVALIDATION_IMPL_RECURRING_TASK_H_
 
+#include "base/macros.h"
 #include "google/cacheinvalidation/include/system-resources.h"
 #include "google/cacheinvalidation/impl/exponential-backoff-delay-generator.h"
 #include "google/cacheinvalidation/impl/smearer.h"

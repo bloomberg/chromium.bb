@@ -14,6 +14,9 @@
 
 // Unit tests for the ProtocolHandler class.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "google/cacheinvalidation/types.pb.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/deps/gmock.h"
@@ -388,7 +391,7 @@ TEST_F(ProtocolHandlerTest, SendMultipleMessageTypes) {
   info_message->set_server_registration_summary_requested(true);
   info_message->mutable_client_config()->CopyFrom(client_config);
   PropertyRecord* prop_rec;
-  for (uint32 i = 0; i < perf_counters.size(); ++i) {
+  for (uint32_t i = 0; i < perf_counters.size(); ++i) {
     prop_rec = info_message->add_performance_counter();
     prop_rec->set_name(perf_counters[i].first);
     prop_rec->set_value(perf_counters[i].second);

@@ -18,6 +18,8 @@
 
 #include "google/cacheinvalidation/impl/registration-manager.h"
 
+#include <stddef.h>
+
 #include "google/cacheinvalidation/impl/client-protocol-namespace-fix.h"
 #include "google/cacheinvalidation/impl/log-macro.h"
 #include "google/cacheinvalidation/impl/proto-helpers.h"

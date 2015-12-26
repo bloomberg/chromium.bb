@@ -14,6 +14,8 @@
 
 #include "google/cacheinvalidation/include/invalidation-client-factory.h"
 
+#include <stdint.h>
+
 #include "google/cacheinvalidation/impl/invalidation-client-impl.h"
 
 namespace invalidation {
@@ -36,7 +38,7 @@ InvalidationClient* ClientFactory::Create(
 // InvalidationClientConfig instead.
 InvalidationClient* CreateInvalidationClient(
     SystemResources* resources,
-    int32 client_type,
+    int32_t client_type,
     const string& client_name,
     const string& application_name,
     InvalidationListener* listener) {
@@ -62,7 +64,7 @@ InvalidationClient* ClientFactory::CreateForTest(
 
 InvalidationClient* CreateInvalidationClientForTest(
     SystemResources* resources,
-    int32 client_type,
+    int32_t client_type,
     const string& client_name,
     const string& application_name,
     InvalidationListener* listener) {

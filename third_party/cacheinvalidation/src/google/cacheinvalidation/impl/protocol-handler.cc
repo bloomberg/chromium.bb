@@ -16,6 +16,8 @@
 
 #include "google/cacheinvalidation/impl/protocol-handler.h"
 
+#include <stddef.h>
+
 #include "google/cacheinvalidation/deps/string_util.h"
 #include "google/cacheinvalidation/impl/constants.h"
 #include "google/cacheinvalidation/impl/invalidation-client-core.h"

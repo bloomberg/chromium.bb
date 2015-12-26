@@ -17,6 +17,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_IMPL_PROTO_HELPERS_H_
 #define GOOGLE_CACHEINVALIDATION_IMPL_PROTO_HELPERS_H_
 
+#include <stdint.h>
+
 #include <sstream>
 #include <string>
 
@@ -61,7 +63,7 @@ struct ProtoCompareLess {
     // versions.
 
     // We define an unknown version to be less than a known version.
-    int64 known_version_diff =
+    int64_t known_version_diff =
         inv1.is_known_version() - inv2.is_known_version();
     if (known_version_diff != 0) {
       return known_version_diff < 0;

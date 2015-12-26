@@ -16,6 +16,8 @@
 
 #include "google/cacheinvalidation/impl/proto-helpers.h"
 
+#include <stddef.h>
+
 #include <sstream>
 
 #include "google/cacheinvalidation/client_test_internal.pb.h"
@@ -76,7 +78,7 @@ DEFINE_TO_STRING(int) {
   return stream.str();
 }
 
-DEFINE_TO_STRING(int64) {
+DEFINE_TO_STRING(int64_t) {
   std::stringstream stream;
   stream << message;
   return stream.str();

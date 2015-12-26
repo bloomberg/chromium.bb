@@ -16,6 +16,8 @@
 
 #include "google/cacheinvalidation/impl/simple-registration-store.h"
 
+#include <stddef.h>
+
 #include "google/cacheinvalidation/impl/object-id-digest-utils.h"
 
 namespace invalidation {

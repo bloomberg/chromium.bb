@@ -17,6 +17,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_IMPL_INVALIDATION_CLIENT_UTIL_H_
 #define GOOGLE_CACHEINVALIDATION_IMPL_INVALIDATION_CLIENT_UTIL_H_
 
+#include <stdint.h>
+
 #include "google/cacheinvalidation/include/system-resources.h"
 #include "google/cacheinvalidation/deps/time.h"
 
@@ -25,12 +27,12 @@ namespace invalidation {
 class InvalidationClientUtil {
  public:
   /* Returns the time in milliseconds. */
-  static int64 GetTimeInMillis(const Time& time) {
+  static int64_t GetTimeInMillis(const Time& time) {
     return time.ToInternalValue() / Time::kMicrosecondsPerMillisecond;
   }
 
   /* Returns the current time in the scheduler's epoch in milliseconds. */
-  static int64 GetCurrentTimeMs(Scheduler* scheduler) {
+  static int64_t GetCurrentTimeMs(Scheduler* scheduler) {
     return GetTimeInMillis(scheduler->GetCurrentTime());
   }
 };

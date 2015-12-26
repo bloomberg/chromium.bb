@@ -16,6 +16,8 @@
 // Helper classes for tests including a mock Scheduler, a mock network and a
 // mock storage layer.
 
+#include <stdint.h>
+
 #include <set>
 
 #include "google/cacheinvalidation/impl/proto-converter.h"
@@ -193,7 +195,7 @@ void UnitTestBase::MakeRegistrationStatusesFromObjectIds(
 }
 
 TimeDelta UnitTestBase::GetMaxDelay(int delay_ms) {
-  int64 extra_delay_ms = (delay_ms * kDefaultSmearPercent) / 100.0;
+  int64_t extra_delay_ms = (delay_ms * kDefaultSmearPercent) / 100.0;
   return TimeDelta::FromMilliseconds(extra_delay_ms + delay_ms);
 }
 

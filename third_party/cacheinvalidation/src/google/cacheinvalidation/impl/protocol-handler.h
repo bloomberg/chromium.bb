@@ -17,6 +17,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_IMPL_PROTOCOL_HANDLER_H_
 #define GOOGLE_CACHEINVALIDATION_IMPL_PROTOCOL_HANDLER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <sstream>
@@ -24,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "google/cacheinvalidation/include/system-resources.h"
 #include "google/cacheinvalidation/deps/scoped_ptr.h"
 #include "google/cacheinvalidation/impl/client-protocol-namespace-fix.h"
@@ -281,7 +284,7 @@ class ProtocolHandler {
    * Typically, this will be in the past, meaning that the client is free to
    * send a message at any time.
    */
-  int64 GetNextMessageSendTimeMsForTest() {
+  int64_t GetNextMessageSendTimeMsForTest() {
     return next_message_send_time_ms_;
   }
 
@@ -363,7 +366,7 @@ class ProtocolHandler {
   void InitClientHeader(ClientHeader* header);
 
   // Returns the current time in milliseconds.
-  int64 GetCurrentTimeMs() {
+  int64_t GetCurrentTimeMs() {
     return InvalidationClientUtil::GetCurrentTimeMs(internal_scheduler_);
   }
 
@@ -400,12 +403,12 @@ class ProtocolHandler {
   // could be in a map or could be eliminated (e.g., no batching).
 
   /* The last known time from the server. */
-  int64 last_known_server_time_ms_;
+  int64_t last_known_server_time_ms_;
 
   /* The next time before which a message cannot be sent to the server. If
    * this is less than current time, a message can be sent at any time.
    */
-  int64 next_message_send_time_ms_;
+  int64_t next_message_send_time_ms_;
 
   /* Statistics objects to track number of sent messages, etc. */
   Statistics* statistics_;

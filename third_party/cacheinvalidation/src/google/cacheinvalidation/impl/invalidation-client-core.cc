@@ -16,6 +16,8 @@
 
 #include "google/cacheinvalidation/impl/invalidation-client-core.h"
 
+#include <stddef.h>
+
 #include <sstream>
 
 #include "google/cacheinvalidation/client_test_internal.pb.h"
@@ -899,7 +901,7 @@ void InvalidationClientCore::SendInfoMessageToServer(
 
 string InvalidationClientCore::GenerateNonce(Random* random) {
   // Return a nonce computed by converting a random 64-bit number to a string.
-  return SimpleItoa(static_cast<int64>(random->RandUint64()));
+  return SimpleItoa(static_cast<int64_t>(random->RandUint64()));
 }
 
 void InvalidationClientCore::set_nonce(const string& new_nonce) {

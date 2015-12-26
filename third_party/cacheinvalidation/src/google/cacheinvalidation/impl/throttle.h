@@ -17,7 +17,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_IMPL_THROTTLE_H_
 #define GOOGLE_CACHEINVALIDATION_IMPL_THROTTLE_H_
 
-#include <cstddef>
+#include <stddef.h>
+
 #include <deque>
 #include <vector>
 

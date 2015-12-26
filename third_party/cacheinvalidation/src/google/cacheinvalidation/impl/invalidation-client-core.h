@@ -17,9 +17,12 @@
 #ifndef GOOGLE_CACHEINVALIDATION_IMPL_INVALIDATION_CLIENT_CORE_H_
 #define GOOGLE_CACHEINVALIDATION_IMPL_INVALIDATION_CLIENT_CORE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "google/cacheinvalidation/deps/digest-function.h"
@@ -180,7 +183,7 @@ class InvalidationClientCore : public InvalidationClient,
   /* Returns the next time a message is allowed to be sent to the server (could
    * be in the past).
    */
-  int64 GetNextMessageSendTimeMsForTest() {
+  int64_t GetNextMessageSendTimeMsForTest() {
     return protocol_handler_.GetNextMessageSendTimeMsForTest();
   }
 

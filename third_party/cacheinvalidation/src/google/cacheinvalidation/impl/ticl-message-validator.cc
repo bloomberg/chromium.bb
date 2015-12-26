@@ -16,6 +16,8 @@
 
 #include "google/cacheinvalidation/impl/ticl-message-validator.h"
 
+#include <stdint.h>
+
 #include "google/cacheinvalidation/impl/log-macro.h"
 #include "google/cacheinvalidation/impl/proto-helpers.h"
 #include "google/cacheinvalidation/include/system-resources.h"
@@ -163,7 +165,7 @@ namespace invalidation {
 // No constraints on primitive types by default.
 DEFINE_VALIDATOR(bool) {}
 DEFINE_VALIDATOR(int) {}
-DEFINE_VALIDATOR(int64) {}
+DEFINE_VALIDATOR(int64_t) {}
 DEFINE_VALIDATOR(string) {}
 
 // Similarly, for now enum values are always considered valid.

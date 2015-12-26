@@ -18,6 +18,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_INCLUDE_INVALIDATION_CLIENT_FACTORY_H_
 #define GOOGLE_CACHEINVALIDATION_INCLUDE_INVALIDATION_CLIENT_FACTORY_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "google/cacheinvalidation/include/types.h"
@@ -53,7 +55,7 @@ class InvalidationClientConfig {
       allow_suppression_(allow_suppression) {
   }
 
-  int32 client_type() const {
+  int32_t client_type() const {
     return client_type_;
   }
 
@@ -70,7 +72,7 @@ class InvalidationClientConfig {
   }
 
  private:
-  const int32 client_type_;
+  const int32_t client_type_;
   const string client_name_;
   const string application_name_;
   const bool allow_suppression_;

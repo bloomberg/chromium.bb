@@ -18,6 +18,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_TEST_DETERMINISTIC_SCHEDULER_H_
 #define GOOGLE_CACHEINVALIDATION_TEST_DETERMINISTIC_SCHEDULER_H_
 
+#include <stdint.h>
+
 #include <queue>
 #include <string>
 #include <utility>
@@ -36,7 +38,7 @@ namespace invalidation {
 // scheduled time, and for a given time, they run in the order in which they
 // were enqueued.
 struct TaskEntry {
-  TaskEntry(Time time, int64 id, Closure* task)
+  TaskEntry(Time time, int64_t id, Closure* task)
       : time(time), id(id), task(task) {}
 
   bool operator<(const TaskEntry& other) const {
@@ -45,7 +47,7 @@ struct TaskEntry {
         ((time == other.time) && (id > other.id));
   }
   Time time;  // the time at which to run
-  int64 id;  // the order in which this task was enqueued
+  int64_t id;  // the order in which this task was enqueued
   Closure* task;  // the task to be run
 };
 
@@ -119,7 +121,7 @@ class DeterministicScheduler : public Scheduler {
   Time current_time_;
 
   // The id number of the next task.
-  uint64 current_id_;
+  uint64_t current_id_;
 
   // Whether or not the scheduler has been started/stopped.
   RunState run_state_;

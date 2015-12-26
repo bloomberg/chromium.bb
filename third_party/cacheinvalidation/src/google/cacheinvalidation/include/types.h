@@ -17,6 +17,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_INCLUDE_TYPES_H_
 #define GOOGLE_CACHEINVALIDATION_INCLUDE_TYPES_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "google/cacheinvalidation/deps/logging.h"
@@ -219,12 +221,12 @@ class Invalidation {
   Invalidation() : is_initialized_(false) {}
 
   /* Creates a restarted invalidation for the given object and version. */
-  Invalidation(const ObjectId& object_id, int64 version) {
+  Invalidation(const ObjectId& object_id, int64_t version) {
     Init(object_id, version, true);
   }
 
   /* Creates an invalidation for the given object, version, and payload. */
-  Invalidation(const ObjectId& object_id, int64 version,
+  Invalidation(const ObjectId& object_id, int64_t version,
                const string& payload) {
     Init(object_id, version, payload, true);
   }
@@ -233,17 +235,17 @@ class Invalidation {
    * Creates an invalidation for the given object, version, payload,
    * and restarted flag.
    */
-  Invalidation(const ObjectId& object_id, int64 version, const string& payload,
+  Invalidation(const ObjectId& object_id, int64_t version, const string& payload,
                bool is_trickle_restart) {
     Init(object_id, version, payload, is_trickle_restart);
   }
 
 
-  void Init(const ObjectId& object_id, int64 version, bool is_trickle_restart) {
+  void Init(const ObjectId& object_id, int64_t version, bool is_trickle_restart) {
     Init(object_id, version, false, "", is_trickle_restart);
   }
 
-  void Init(const ObjectId& object_id, int64 version, const string& payload,
+  void Init(const ObjectId& object_id, int64_t version, const string& payload,
             bool is_trickle_restart) {
     Init(object_id, version, true, payload, is_trickle_restart);
   }
@@ -252,7 +254,7 @@ class Invalidation {
     return object_id_;
   }
 
-  int64 version() const {
+  int64_t version() const {
     return version_;
   }
 
@@ -279,7 +281,7 @@ class Invalidation {
   }
 
  private:
-  void Init(const ObjectId& object_id, int64 version, bool has_payload,
+  void Init(const ObjectId& object_id, int64_t version, bool has_payload,
             const string& payload, bool is_trickle_restart) {
     is_initialized_ = true;
     object_id_.Init(object_id.source(), object_id.name());
@@ -296,7 +298,7 @@ class Invalidation {
   ObjectId object_id_;
 
   /* The new version of the object. */
-  int64 version_;
+  int64_t version_;
 
   /* Whether or not the invalidation includes a payload. */
   bool has_payload_;

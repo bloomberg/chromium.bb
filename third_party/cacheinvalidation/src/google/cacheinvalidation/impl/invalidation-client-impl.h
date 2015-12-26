@@ -20,6 +20,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "google/cacheinvalidation/impl/checking-invalidation-listener.h"
