@@ -14,8 +14,8 @@ const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("DriveMetadata_v2");
 
 const char kDatabaseVersionKey[] = "VERSION";
-const int64 kCurrentDatabaseVersion = 3;
-const int64 kDatabaseOnDiskVersion = 4;
+const int64_t kCurrentDatabaseVersion = 3;
+const int64_t kDatabaseOnDiskVersion = 4;
 const char kServiceMetadataKey[] = "SERVICE";
 const char kFileMetadataKeyPrefix[] = "FILE: ";
 const char kFileTrackerKeyPrefix[] = "TRACKER: ";
@@ -32,9 +32,9 @@ const char kDirtyIDKeyPrefix[] = "DIRTY: ";
 const char kDemotedDirtyIDKeyPrefix[] = "DEMOTED_DIRTY: ";
 
 const int kMaxRetry = 5;
-const int64 kListChangesRetryDelaySeconds = 60 * 60;
+const int64_t kListChangesRetryDelaySeconds = 60 * 60;
 
-const int64 kInvalidTrackerID = 0;
+const int64_t kInvalidTrackerID = 0;
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

@@ -8,11 +8,14 @@
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <propkey.h>  // Needs to come after shobjidl.h.
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -469,7 +472,7 @@ void ShellIntegration::MigrateChromiumShortcuts() {
   // This needs to happen eventually (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but this is not
   // urgent and shouldn't delay Chrome startup.
-  static const int64 kMigrateChromiumShortcutsDelaySeconds = 15;
+  static const int64_t kMigrateChromiumShortcutsDelaySeconds = 15;
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MigrateChromiumShortcutsCallback),

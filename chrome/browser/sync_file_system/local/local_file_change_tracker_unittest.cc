@@ -4,11 +4,13 @@
 
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 
+#include <stdint.h>
+
 #include <deque>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -294,9 +296,9 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
             file_system_.TruncateFile(URL(kPath3), 1));  // Modifies the file.
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.CreateFile(URL(kPath4)));    // Creates another file.
-  EXPECT_EQ(static_cast<int64>(kData.size()),         // Modifies the file.
-            file_system_.Write(&url_request_context,
-                               URL(kPath4), blob.GetBlobDataHandle()));
+  EXPECT_EQ(static_cast<int64_t>(kData.size()),       // Modifies the file.
+            file_system_.Write(&url_request_context, URL(kPath4),
+                               blob.GetBlobDataHandle()));
 
   // Verify the changes.
   file_system_.GetChangedURLsInTracker(&urls);
@@ -445,8 +447,8 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCopyChanges) {
             file_system_.TruncateFile(URL(kPath3), 1));  // Modifies the file.
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.CreateFile(URL(kPath4)));    // Creates another file.
-  EXPECT_EQ(static_cast<int64>(kData.size()),
-            file_system_.Write(&url_request_context,   // Modifies the file.
+  EXPECT_EQ(static_cast<int64_t>(kData.size()),
+            file_system_.Write(&url_request_context,  // Modifies the file.
                                URL(kPath4), blob.GetBlobDataHandle()));
 
   // Verify we have 5 changes for preparation.

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -297,7 +300,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
         syncer::BaseNode::INIT_OK)
       return;
 
-    int64 child_id = typed_url_root.GetFirstChildId();
+    int64_t child_id = typed_url_root.GetFirstChildId();
     while (child_id != syncer::kInvalidId) {
       syncer::ReadNode child_node(&trans);
       if (child_node.InitByIdLookup(child_id) != syncer::BaseNode::INIT_OK)
@@ -378,7 +381,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   static history::URLRow MakeTypedUrlEntry(const char* url,
                                            const char* title,
                                            int typed_count,
-                                           int64 last_visit,
+                                           int64_t last_visit,
                                            bool hidden,
                                            history::VisitVector* visits) {
     // Give each URL a unique ID, to mimic the behavior of the real database.

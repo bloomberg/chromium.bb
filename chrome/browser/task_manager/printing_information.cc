@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_manager/printing_information.h"
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

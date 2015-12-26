@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"

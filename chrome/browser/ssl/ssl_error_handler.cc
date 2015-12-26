@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ssl/ssl_error_handler.h"
 
+#include <stdint.h>
+
 #include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
@@ -38,7 +41,7 @@ namespace {
 // - If a "captive portal detected" result arrives during this time,
 //   a captive portal interstitial is displayed.
 // - Otherwise, an SSL interstitial is displayed.
-int64 g_interstitial_delay_in_milliseconds = 2000;
+int64_t g_interstitial_delay_in_milliseconds = 2000;
 
 // Callback to call when the interstitial timer is started. Used for testing.
 SSLErrorHandler::TimerStartedCallback* g_timer_started_callback = nullptr;

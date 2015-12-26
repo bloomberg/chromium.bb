@@ -4,6 +4,8 @@
 
 #include "chrome/browser/shell_integration.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/files/file_path.h"

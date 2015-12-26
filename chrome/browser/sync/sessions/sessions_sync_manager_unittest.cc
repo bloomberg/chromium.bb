@@ -4,7 +4,12 @@
 
 #include "components/sync_sessions/sessions_sync_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
@@ -184,10 +189,9 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
   syncer::SyncDataList sync_data_to_return_;
 };
 
-syncer::SyncChange MakeRemoteChange(
-    int64 id,
-    const sync_pb::SessionSpecifics& specifics,
-    SyncChange::SyncChangeType type) {
+syncer::SyncChange MakeRemoteChange(int64_t id,
+                                    const sync_pb::SessionSpecifics& specifics,
+                                    SyncChange::SyncChangeType type) {
   sync_pb::EntitySpecifics entity;
   entity.mutable_session()->CopyFrom(specifics);
   return syncer::SyncChange(

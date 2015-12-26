@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/folder_creator.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "components/drive/drive_api_util.h"

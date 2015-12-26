@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_LOCAL_FILE_CHANGE_TRACKER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_LOCAL_FILE_CHANGE_TRACKER_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -52,7 +54,7 @@ class LocalFileChangeTracker : public storage::FileUpdateObserver,
 
   // FileUpdateObserver overrides.
   void OnStartUpdate(const storage::FileSystemURL& url) override;
-  void OnUpdate(const storage::FileSystemURL& url, int64 delta) override {}
+  void OnUpdate(const storage::FileSystemURL& url, int64_t delta) override {}
   void OnEndUpdate(const storage::FileSystemURL& url) override;
 
   // FileChangeObserver overrides.
@@ -113,7 +115,7 @@ class LocalFileChangeTracker : public storage::FileUpdateObserver,
   void ResetForFileSystem(const GURL& origin, storage::FileSystemType type);
 
   // This method is (exceptionally) thread-safe.
-  int64 num_changes() const {
+  int64_t num_changes() const {
     base::AutoLock lock(num_changes_lock_);
     return num_changes_;
   }
@@ -130,13 +132,13 @@ class LocalFileChangeTracker : public storage::FileUpdateObserver,
     ChangeInfo();
     ~ChangeInfo();
     FileChangeList change_list;
-    int64 change_seq;
+    int64_t change_seq;
   };
 
   typedef std::map<storage::FileSystemURL,
                    ChangeInfo,
                    storage::FileSystemURL::Comparator> FileChangeMap;
-  typedef std::map<int64, storage::FileSystemURL> ChangeSeqMap;
+  typedef std::map<int64_t, storage::FileSystemURL> ChangeSeqMap;
 
   void UpdateNumChanges();
 
@@ -182,10 +184,10 @@ class LocalFileChangeTracker : public storage::FileUpdateObserver,
   // Change sequence number. Briefly gives a hint about the order of changes,
   // but they are updated when a new change comes on the same file (as
   // well as Drive's changestamps).
-  int64 current_change_seq_number_;
+  int64_t current_change_seq_number_;
 
   // This can be accessed on any threads (with num_changes_lock_).
-  int64 num_changes_;
+  int64_t num_changes_;
   mutable base::Lock num_changes_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileChangeTracker);

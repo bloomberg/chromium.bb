@@ -4,6 +4,7 @@
 
 #include "chrome/browser/status_icons/status_icon.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 
 StatusIcon::StatusIcon() {

@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_RENDERER_RESOURCE_H_
 #define CHROME_BROWSER_TASK_MANAGER_RENDERER_RESOURCE_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 

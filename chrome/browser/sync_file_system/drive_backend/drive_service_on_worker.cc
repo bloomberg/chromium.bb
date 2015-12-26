@@ -106,7 +106,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::GetChangeList(
-    int64 start_changestamp,
+    int64_t start_changestamp,
     const google_apis::ChangeListCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
@@ -335,7 +335,7 @@ google_apis::CancelCallback DriveServiceOnWorker::AddResourceToDirectory(
 
 google_apis::CancelCallback DriveServiceOnWorker::InitiateUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const drive::UploadNewFileOptions& options,
@@ -346,7 +346,7 @@ google_apis::CancelCallback DriveServiceOnWorker::InitiateUploadNewFile(
 
 google_apis::CancelCallback DriveServiceOnWorker::InitiateUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& resource_id,
     const drive::UploadExistingFileOptions& options,
     const google_apis::InitiateUploadCallback& callback) {
@@ -356,9 +356,9 @@ google_apis::CancelCallback DriveServiceOnWorker::InitiateUploadExistingFile(
 
 google_apis::CancelCallback DriveServiceOnWorker::ResumeUpload(
     const GURL& upload_url,
-    int64 start_position,
-    int64 end_position,
-    int64 content_length,
+    int64_t start_position,
+    int64_t end_position,
+    int64_t content_length,
     const std::string& content_type,
     const base::FilePath& local_file_path,
     const google_apis::drive::UploadRangeCallback& callback,
@@ -369,7 +369,7 @@ google_apis::CancelCallback DriveServiceOnWorker::ResumeUpload(
 
 google_apis::CancelCallback DriveServiceOnWorker::GetUploadStatus(
     const GURL& upload_url,
-    int64 content_length,
+    int64_t content_length,
     const google_apis::drive::UploadRangeCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
@@ -377,7 +377,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetUploadStatus(
 
 google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadNewFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const std::string& title,
     const base::FilePath& local_file_path,
@@ -390,7 +390,7 @@ google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadNewFile(
 
 google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadExistingFile(
     const std::string& content_type,
-    int64 content_length,
+    int64_t content_length,
     const std::string& parent_resource_id,
     const base::FilePath& local_file_path,
     const drive::UploadExistingFileOptions& options,

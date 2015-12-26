@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_EXPERIMENTAL_SUPERVISED_USER_ASYNC_URL_CHECKER_H_
 #define CHROME_BROWSER_SUPERVISED_USER_EXPERIMENTAL_SUPERVISED_USER_ASYNC_URL_CHECKER_H_
 
+#include <stddef.h>
+
 #include "base/callback_forward.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"

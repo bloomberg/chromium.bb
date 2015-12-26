@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <iterator>
 
@@ -12,6 +14,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
@@ -168,19 +171,22 @@ class WriteHelper {
 
   ScopedTextBlob* scoped_text_blob() const { return blob_data_.get(); }
 
-  void DidWrite(const base::Callback<void(int64 result)>& completion_callback,
-                File::Error error, int64 bytes, bool complete) {
+  void DidWrite(const base::Callback<void(int64_t result)>& completion_callback,
+                File::Error error,
+                int64_t bytes,
+                bool complete) {
     if (error == base::File::FILE_OK) {
       bytes_written_ += bytes;
       if (!complete)
         return;
     }
-    completion_callback.Run(error == base::File::FILE_OK ?
-                            bytes_written_ : static_cast<int64>(error));
+    completion_callback.Run(error == base::File::FILE_OK
+                                ? bytes_written_
+                                : static_cast<int64_t>(error));
   }
 
  private:
-  int64 bytes_written_;
+  int64_t bytes_written_;
   scoped_ptr<MockBlobURLRequestContext> request_context_;
   scoped_ptr<ScopedTextBlob> blob_data_;
 
@@ -188,11 +194,11 @@ class WriteHelper {
 };
 
 void DidGetUsageAndQuota(const storage::StatusCallback& callback,
-                         int64* usage_out,
-                         int64* quota_out,
+                         int64_t* usage_out,
+                         int64_t* quota_out,
                          storage::QuotaStatusCode status,
-                         int64 usage,
-                         int64 quota) {
+                         int64_t usage,
+                         int64_t quota) {
   *usage_out = usage;
   *quota_out = quota;
   callback.Run(status);
@@ -373,8 +379,8 @@ File::Error CannedSyncableFileSystem::Move(
                                              dest_url));
 }
 
-File::Error CannedSyncableFileSystem::TruncateFile(
-    const FileSystemURL& url, int64 size) {
+File::Error CannedSyncableFileSystem::TruncateFile(const FileSystemURL& url,
+                                                   int64_t size) {
   return RunOnThread<File::Error>(
       io_task_runner_.get(),
       FROM_HERE,
@@ -467,27 +473,22 @@ File::Error CannedSyncableFileSystem::ReadDirectory(
                  entries));
 }
 
-int64 CannedSyncableFileSystem::Write(
+int64_t CannedSyncableFileSystem::Write(
     net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
-  return RunOnThread<int64>(io_task_runner_.get(),
-                            FROM_HERE,
-                            base::Bind(&CannedSyncableFileSystem::DoWrite,
-                                       base::Unretained(this),
-                                       url_request_context,
-                                       url,
-                                       base::Passed(&blob_data_handle)));
+  return RunOnThread<int64_t>(
+      io_task_runner_.get(), FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoWrite, base::Unretained(this),
+                 url_request_context, url, base::Passed(&blob_data_handle)));
 }
 
-int64 CannedSyncableFileSystem::WriteString(
-    const FileSystemURL& url, const std::string& data) {
-  return RunOnThread<int64>(io_task_runner_.get(),
-                            FROM_HERE,
-                            base::Bind(&CannedSyncableFileSystem::DoWriteString,
-                                       base::Unretained(this),
-                                       url,
-                                       data));
+int64_t CannedSyncableFileSystem::WriteString(const FileSystemURL& url,
+                                              const std::string& data) {
+  return RunOnThread<int64_t>(
+      io_task_runner_.get(), FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoWriteString,
+                 base::Unretained(this), url, data));
 }
 
 File::Error CannedSyncableFileSystem::DeleteFileSystem() {
@@ -502,8 +503,8 @@ File::Error CannedSyncableFileSystem::DeleteFileSystem() {
 }
 
 storage::QuotaStatusCode CannedSyncableFileSystem::GetUsageAndQuota(
-    int64* usage,
-    int64* quota) {
+    int64_t* usage,
+    int64_t* quota) {
   return RunOnThread<storage::QuotaStatusCode>(
       io_task_runner_.get(),
       FROM_HERE,
@@ -610,9 +611,9 @@ void CannedSyncableFileSystem::DoMove(
       src_url, dest_url, storage::FileSystemOperation::OPTION_NONE, callback);
 }
 
-void CannedSyncableFileSystem::DoTruncateFile(
-    const FileSystemURL& url, int64 size,
-    const StatusCallback& callback) {
+void CannedSyncableFileSystem::DoTruncateFile(const FileSystemURL& url,
+                                              int64_t size,
+                                              const StatusCallback& callback) {
   EXPECT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
   EXPECT_TRUE(is_filesystem_opened_);
   operation_runner()->Truncate(url, size, callback);
@@ -713,8 +714,8 @@ void CannedSyncableFileSystem::DoWriteString(
 }
 
 void CannedSyncableFileSystem::DoGetUsageAndQuota(
-    int64* usage,
-    int64* quota,
+    int64_t* usage,
+    int64_t* quota,
     const storage::StatusCallback& callback) {
   // crbug.com/349708
   TRACE_EVENT0("io", "CannedSyncableFileSystem::DoGetUsageAndQuota");

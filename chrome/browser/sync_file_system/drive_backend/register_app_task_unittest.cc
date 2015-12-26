@@ -4,10 +4,14 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/register_app_task.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -33,7 +37,7 @@ namespace sync_file_system {
 namespace drive_backend {
 
 namespace {
-const int64 kSyncRootTrackerID = 100;
+const int64_t kSyncRootTrackerID = 100;
 }  // namespace
 
 class RegisterAppTaskTest : public testing::Test {
@@ -261,8 +265,8 @@ class RegisterAppTaskTest : public testing::Test {
 
   std::string sync_root_folder_id_;
 
-  int64 next_file_id_;
-  int64 next_tracker_id_;
+  int64_t next_file_id_;
+  int64_t next_tracker_id_;
 
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir database_dir_;

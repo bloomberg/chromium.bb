@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/callback_list.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "content/public/browser/notification_observer.h"

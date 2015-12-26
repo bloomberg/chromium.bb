@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 

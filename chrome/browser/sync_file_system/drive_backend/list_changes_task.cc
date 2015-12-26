@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -108,7 +110,7 @@ void ListChangesTask::DidListChanges(
                  change_list->largest_change_id()));
 }
 
-void ListChangesTask::CheckInChangeList(int64 largest_change_id,
+void ListChangesTask::CheckInChangeList(int64_t largest_change_id,
                                         scoped_ptr<SyncTaskToken> token) {
   token->RecordLog(base::StringPrintf(
       "Got %" PRIuS " changes, updating MetadataDatabase.",

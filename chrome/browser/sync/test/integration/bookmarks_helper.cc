@@ -4,12 +4,15 @@
 
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 
+#include <stddef.h>
+
 #include <set>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"

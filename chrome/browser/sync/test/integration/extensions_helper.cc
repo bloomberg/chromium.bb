@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SSL_CHROME_SSL_HOST_STATE_DELEGATE_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/ssl_host_state_delegate.h"

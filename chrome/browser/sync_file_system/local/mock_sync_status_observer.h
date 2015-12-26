@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_MOCK_SYNC_STATUS_OBSERVER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_MOCK_SYNC_STATUS_OBSERVER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

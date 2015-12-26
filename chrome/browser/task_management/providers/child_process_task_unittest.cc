@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/task_management/providers/child_process_task.h"
@@ -139,7 +142,7 @@ TEST_F(ChildProcessTaskTest, TestAll) {
   Task* found_task =
       provider.GetTaskOfUrlRequest(base::GetCurrentProcId(), 0, 0);
   ASSERT_EQ(task, found_task);
-  const int64 bytes_read = 1024;
+  const int64_t bytes_read = 1024;
   found_task->OnNetworkBytesRead(bytes_read);
   found_task->Refresh(base::TimeDelta::FromSeconds(1),
                       REFRESH_TYPE_NETWORK_USAGE);

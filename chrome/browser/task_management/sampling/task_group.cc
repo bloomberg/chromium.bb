@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,10 +24,10 @@ inline bool IsResourceRefreshEnabled(RefreshType refresh_type,
 #if defined(OS_WIN)
 // Gets the GDI and USER Handles on Windows at one shot.
 void GetWindowsHandles(base::ProcessHandle handle,
-                       int64* out_gdi_current,
-                       int64* out_gdi_peak,
-                       int64* out_user_current,
-                       int64* out_user_peak) {
+                       int64_t* out_gdi_current,
+                       int64_t* out_gdi_peak,
+                       int64_t* out_user_current,
+                       int64_t* out_user_peak) {
   *out_gdi_current = 0;
   *out_gdi_peak = 0;
   *out_user_current = 0;
@@ -37,13 +38,13 @@ void GetWindowsHandles(base::ProcessHandle handle,
   if (DuplicateHandle(current_process, handle, current_process,
                       &process_with_query_rights, PROCESS_QUERY_INFORMATION,
                       false, 0)) {
-    *out_gdi_current = static_cast<int64>(
+    *out_gdi_current = static_cast<int64_t>(
         GetGuiResources(process_with_query_rights, GR_GDIOBJECTS));
-    *out_gdi_peak = static_cast<int64>(
+    *out_gdi_peak = static_cast<int64_t>(
         GetGuiResources(process_with_query_rights, GR_GDIOBJECTS_PEAK));
-    *out_user_current = static_cast<int64>(
+    *out_user_current = static_cast<int64_t>(
         GetGuiResources(process_with_query_rights, GR_USEROBJECTS));
-    *out_user_peak = static_cast<int64>(
+    *out_user_peak = static_cast<int64_t>(
         GetGuiResources(process_with_query_rights, GR_USEROBJECTS_PEAK));
     CloseHandle(process_with_query_rights);
   }
@@ -119,7 +120,7 @@ void TaskGroup::RemoveTask(Task* task) {
 void TaskGroup::Refresh(
     const content::GPUVideoMemoryUsageStats& gpu_memory_stats,
     base::TimeDelta update_interval,
-    int64 refresh_flags) {
+    int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // First refresh the enabled non-expensive resources usages on the UI thread.
@@ -187,7 +188,7 @@ void TaskGroup::RefreshGpuMemory(
     return;
   }
 
-  gpu_memory_ = static_cast<int64>(itr->second.video_memory);
+  gpu_memory_ = static_cast<int64_t>(itr->second.video_memory);
   gpu_memory_has_duplicates_ = itr->second.has_duplicates;
 }
 

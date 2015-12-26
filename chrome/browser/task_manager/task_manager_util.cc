@@ -4,7 +4,8 @@
 
 #include "chrome/browser/task_manager/task_manager_util.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

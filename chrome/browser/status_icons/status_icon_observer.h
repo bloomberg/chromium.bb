@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_OBSERVER_H_
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_OBSERVER_H_
 
+#include "build/build_config.h"
+
 class StatusIconObserver {
  public:
   // Called when the user clicks on the system tray icon. Clicks that result

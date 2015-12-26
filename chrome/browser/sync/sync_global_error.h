@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_SYNC_GLOBAL_ERROR_H_
 #define CHROME_BROWSER_SYNC_SYNC_GLOBAL_ERROR_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync_driver/sync_error_controller.h"

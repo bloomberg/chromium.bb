@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 

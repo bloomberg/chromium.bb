@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_SAMPLING_TASK_MANAGER_IMPL_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_SAMPLING_TASK_MANAGER_IMPL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/task_management/providers/task_provider.h"
@@ -32,18 +36,19 @@ class TaskManagerImpl :
   // task_management::TaskManagerInterface:
   void ActivateTask(TaskId task_id) override;
   double GetCpuUsage(TaskId task_id) const override;
-  int64 GetPhysicalMemoryUsage(TaskId task_id) const override;
-  int64 GetPrivateMemoryUsage(TaskId task_id) const override;
-  int64 GetSharedMemoryUsage(TaskId task_id) const override;
-  int64 GetGpuMemoryUsage(TaskId task_id, bool* has_duplicates) const override;
+  int64_t GetPhysicalMemoryUsage(TaskId task_id) const override;
+  int64_t GetPrivateMemoryUsage(TaskId task_id) const override;
+  int64_t GetSharedMemoryUsage(TaskId task_id) const override;
+  int64_t GetGpuMemoryUsage(TaskId task_id,
+                            bool* has_duplicates) const override;
   int GetIdleWakeupsPerSecond(TaskId task_id) const override;
   int GetNaClDebugStubPort(TaskId task_id) const override;
   void GetGDIHandles(TaskId task_id,
-                     int64* current,
-                     int64* peak) const override;
+                     int64_t* current,
+                     int64_t* peak) const override;
   void GetUSERHandles(TaskId task_id,
-                      int64* current,
-                      int64* peak) const override;
+                      int64_t* current,
+                      int64_t* peak) const override;
   int GetOpenFdCount(TaskId task_id) const override;
   bool IsTaskOnBackgroundedProcess(TaskId task_id) const override;
   const base::string16& GetTitle(TaskId task_id) const override;
@@ -53,12 +58,12 @@ class TaskManagerImpl :
   const base::ProcessHandle& GetProcessHandle(TaskId task_id) const override;
   const base::ProcessId& GetProcessId(TaskId task_id) const override;
   Task::Type GetType(TaskId task_id) const override;
-  int64 GetNetworkUsage(TaskId task_id) const override;
-  int64 GetProcessTotalNetworkUsage(TaskId task_id) const override;
-  int64 GetSqliteMemoryUsed(TaskId task_id) const override;
+  int64_t GetNetworkUsage(TaskId task_id) const override;
+  int64_t GetProcessTotalNetworkUsage(TaskId task_id) const override;
+  int64_t GetSqliteMemoryUsed(TaskId task_id) const override;
   bool GetV8Memory(TaskId task_id,
-                   int64* allocated,
-                   int64* used) const override;
+                   int64_t* allocated,
+                   int64_t* used) const override;
   bool GetWebCacheStats(
       TaskId task_id,
       blink::WebCache::ResourceTypeStats* stats) const override;

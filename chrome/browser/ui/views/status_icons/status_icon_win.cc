@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 
+#include <string.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/ui/views/status_icons/status_tray_win.h"

@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_LOCAL_FILE_SYNC_SERVICE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_LOCAL_FILE_SYNC_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -60,7 +62,7 @@ class LocalFileSyncService
     // |pending_changes_hint| indicates the pending queue length to help sync
     // scheduling but the value may not be accurately reflect the real-time
     // value.
-    virtual void OnLocalChangeAvailable(int64 pending_changes_hint) = 0;
+    virtual void OnLocalChangeAvailable(int64_t pending_changes_hint) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -157,7 +159,7 @@ class LocalFileSyncService
 
   class OriginChangeMap {
    public:
-    typedef std::map<GURL, int64> Map;
+    typedef std::map<GURL, int64_t> Map;
 
     OriginChangeMap();
     ~OriginChangeMap();
@@ -167,10 +169,10 @@ class LocalFileSyncService
     // Returns false if no origins to process.
     bool NextOriginToProcess(GURL* origin);
 
-    int64 GetTotalChangeCount() const;
+    int64_t GetTotalChangeCount() const;
 
     // Update change_count_map_ for |origin|.
-    void SetOriginChangeCount(const GURL& origin, int64 changes);
+    void SetOriginChangeCount(const GURL& origin, int64_t changes);
 
     void SetOriginEnabled(const GURL& origin, bool enabled);
 

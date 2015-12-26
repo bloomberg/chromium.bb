@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_MANAGER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_MANAGER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <queue>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -119,7 +123,7 @@ class SyncTaskManager {
                                 scoped_ptr<TaskBlocker> task_blocker,
                                 const Continuation& continuation);
 
-  bool IsRunningTask(int64 task_token_id) const;
+  bool IsRunningTask(int64_t task_token_id) const;
 
   void DetachFromSequence();
   bool ShouldTrackTaskToken() const;
@@ -128,7 +132,7 @@ class SyncTaskManager {
   struct PendingTask {
     base::Closure task;
     Priority priority;
-    int64 seq;
+    int64_t seq;
 
     PendingTask();
     PendingTask(const base::Closure& task, Priority pri, int seq);
@@ -176,7 +180,8 @@ class SyncTaskManager {
 
   // Owns running backgrounded SyncTask to cancel the task on SyncTaskManager
   // deletion.
-  base::ScopedPtrHashMap<int64, scoped_ptr<SyncTask>> running_background_tasks_;
+  base::ScopedPtrHashMap<int64_t, scoped_ptr<SyncTask>>
+      running_background_tasks_;
 
   size_t maximum_background_task_;
 
@@ -185,8 +190,8 @@ class SyncTaskManager {
 
   std::priority_queue<PendingTask, std::vector<PendingTask>,
                       PendingTaskComparator> pending_tasks_;
-  int64 pending_task_seq_;
-  int64 task_token_seq_;
+  int64_t pending_task_seq_;
+  int64_t task_token_seq_;
 
   // Absence of |token_| implies a task is running. Incoming tasks should
   // wait for the task to finish in |pending_tasks_| if |token_| is null.

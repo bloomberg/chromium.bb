@@ -57,7 +57,7 @@ void TaskManagerInterface::RemoveObserver(TaskManagerObserver* observer) {
   observer->observed_task_manager_ = nullptr;
 
   // Recalculate the minimum refresh rate and the enabled resource flags.
-  int64 flags = 0;
+  int64_t flags = 0;
   base::TimeDelta min_time = base::TimeDelta::Max();
   base::ObserverList<TaskManagerObserver>::Iterator itr(&observers_);
   while (TaskManagerObserver* obs = itr.GetNext()) {
@@ -79,7 +79,7 @@ void TaskManagerInterface::RemoveObserver(TaskManagerObserver* observer) {
 }
 
 void TaskManagerInterface::RecalculateRefreshFlags() {
-  int64 flags = 0;
+  int64_t flags = 0;
   base::ObserverList<TaskManagerObserver>::Iterator itr(&observers_);
   while (TaskManagerObserver* obs = itr.GetNext())
     flags |= obs->desired_resources_flags();
@@ -120,11 +120,11 @@ base::TimeDelta TaskManagerInterface::GetCurrentRefreshTime() const {
                                      : base::TimeDelta::Max();
 }
 
-void TaskManagerInterface::ResourceFlagsAdded(int64 flags) {
+void TaskManagerInterface::ResourceFlagsAdded(int64_t flags) {
   enabled_resources_flags_ |= flags;
 }
 
-void TaskManagerInterface::SetEnabledResourceFlags(int64 flags) {
+void TaskManagerInterface::SetEnabledResourceFlags(int64_t flags) {
   enabled_resources_flags_ = flags;
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/upgrade_detector_impl.h"
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -19,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/common/channel_info.h"
@@ -54,7 +57,7 @@ const int kNotifyCycleTimeMs = 20 * 60 * 1000;  // 20 minutes.
 const int kNotifyCycleTimeForTestingMs = 500;  // Half a second.
 
 // The number of days after which we identify a build/install as outdated.
-const uint64 kOutdatedBuildAgeInDays = 12 * 7;
+const uint64_t kOutdatedBuildAgeInDays = 12 * 7;
 
 // Return the string that was passed as a value for the
 // kCheckForUpdateIntervalSec switch.

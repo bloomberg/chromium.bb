@@ -4,6 +4,8 @@
 
 #include "chrome/browser/usb/web_usb_permission_provider.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"

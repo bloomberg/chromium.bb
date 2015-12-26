@@ -4,7 +4,10 @@
 
 #include "chrome/browser/spellchecker/spellcheck_platform.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

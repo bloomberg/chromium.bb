@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_THUMBNAILS_THUMBNAIL_SERVICE_IMPL_H_
 #define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_SERVICE_IMPL_H_
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"

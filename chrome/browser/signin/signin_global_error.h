@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_GLOBAL_ERROR_H_
 
 #include <set>
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"

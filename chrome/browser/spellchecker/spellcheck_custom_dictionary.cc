@@ -4,6 +4,8 @@
 
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 
+#include <stddef.h>
+
 #include <functional>
 
 #include "base/files/file_util.h"

@@ -4,13 +4,16 @@
 //
 // An object to store user feedback to a single spellcheck suggestion.
 //
-// Stores the spellcheck suggestion, its uint32 hash identifier, and user's
+// Stores the spellcheck suggestion, its uint32_t hash identifier, and user's
 // feedback. The feedback is indirect, in the sense that we record user's
 // |action| instead of asking them how they feel about a spellcheck suggestion.
 // The object can serialize itself.
 
 #ifndef CHROME_BROWSER_SPELLCHECKER_MISSPELLING_H_
 #define CHROME_BROWSER_SPELLCHECKER_MISSPELLING_H_
+
+#include <stddef.h>
+#include <stdint.h>
 
 #include <vector>
 
@@ -34,7 +37,7 @@ struct Misspelling {
               size_t location,
               size_t length,
               const std::vector<base::string16>& suggestions,
-              uint32 hash);
+              uint32_t hash);
   ~Misspelling();
 
   // A several-word text snippet that immediately surrounds the misspelling.
@@ -51,7 +54,7 @@ struct Misspelling {
   std::vector<base::string16> suggestions;
 
   // The hash that identifies the misspelling.
-  uint32 hash;
+  uint32_t hash;
 
   // User action.
   SpellcheckAction action;

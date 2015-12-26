@@ -4,10 +4,13 @@
 
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 
+#include <stddef.h>
+
 #include <queue>
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
@@ -305,7 +308,7 @@ void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
 
 void LocalFileChangeTracker::UpdateNumChanges() {
   base::AutoLock lock(num_changes_lock_);
-  num_changes_ = static_cast<int64>(change_seqs_.size());
+  num_changes_ = static_cast<int64_t>(change_seqs_.size());
 }
 
 void LocalFileChangeTracker::GetAllChangedURLs(FileSystemURLSet* urls) {

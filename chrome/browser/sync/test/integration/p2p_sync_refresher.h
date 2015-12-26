@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_P2P_SYNC_REFRESHER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_P2P_SYNC_REFRESHER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/sync_driver/sync_service_observer.h"
 
 class Profile;

@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_METADATA_DATABASE_INDEX_ON_DISK_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_METADATA_DATABASE_INDEX_ON_DISK_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
 
@@ -36,49 +40,49 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   void RemoveUnreachableItems() override;
   bool GetFileMetadata(const std::string& file_id,
                        FileMetadata* metadata) const override;
-  bool GetFileTracker(int64 tracker_id, FileTracker* tracker) const override;
+  bool GetFileTracker(int64_t tracker_id, FileTracker* tracker) const override;
   void StoreFileMetadata(scoped_ptr<FileMetadata> metadata) override;
   void StoreFileTracker(scoped_ptr<FileTracker> tracker) override;
   void RemoveFileMetadata(const std::string& file_id) override;
-  void RemoveFileTracker(int64 tracker_id) override;
+  void RemoveFileTracker(int64_t tracker_id) override;
   TrackerIDSet GetFileTrackerIDsByFileID(
       const std::string& file_id) const override;
-  int64 GetAppRootTracker(const std::string& app_id) const override;
+  int64_t GetAppRootTracker(const std::string& app_id) const override;
   TrackerIDSet GetFileTrackerIDsByParentAndTitle(
-      int64 parent_tracker_id,
+      int64_t parent_tracker_id,
       const std::string& title) const override;
-  std::vector<int64> GetFileTrackerIDsByParent(
-      int64 parent_tracker_id) const override;
+  std::vector<int64_t> GetFileTrackerIDsByParent(
+      int64_t parent_tracker_id) const override;
   std::string PickMultiTrackerFileID() const override;
   ParentIDAndTitle PickMultiBackingFilePath() const override;
-  int64 PickDirtyTracker() const override;
-  void DemoteDirtyTracker(int64 tracker_id) override;
+  int64_t PickDirtyTracker() const override;
+  void DemoteDirtyTracker(int64_t tracker_id) override;
   bool HasDemotedDirtyTracker() const override;
-  bool IsDemotedDirtyTracker(int64 tracker_id) const override;
-  void PromoteDemotedDirtyTracker(int64 tracker_id) override;
+  bool IsDemotedDirtyTracker(int64_t tracker_id) const override;
+  void PromoteDemotedDirtyTracker(int64_t tracker_id) override;
   bool PromoteDemotedDirtyTrackers() override;
   size_t CountDirtyTracker() const override;
   size_t CountFileMetadata() const override;
   size_t CountFileTracker() const override;
   void SetSyncRootRevalidated() const override;
-  void SetSyncRootTrackerID(int64 sync_root_id) const override;
-  void SetLargestChangeID(int64 largest_change_id) const override;
-  void SetNextTrackerID(int64 next_tracker_id) const override;
+  void SetSyncRootTrackerID(int64_t sync_root_id) const override;
+  void SetLargestChangeID(int64_t largest_change_id) const override;
+  void SetNextTrackerID(int64_t next_tracker_id) const override;
   bool IsSyncRootRevalidated() const override;
-  int64 GetSyncRootTrackerID() const override;
-  int64 GetLargestChangeID() const override;
-  int64 GetNextTrackerID() const override;
+  int64_t GetSyncRootTrackerID() const override;
+  int64_t GetLargestChangeID() const override;
+  int64_t GetNextTrackerID() const override;
   std::vector<std::string> GetRegisteredAppIDs() const override;
-  std::vector<int64> GetAllTrackerIDs() const override;
+  std::vector<int64_t> GetAllTrackerIDs() const override;
   std::vector<std::string> GetAllMetadataIDs() const override;
 
   // Builds on-disk indexes from FileTracker entries on disk.
   // Returns the number of newly added entries for indexing.
-  int64 BuildTrackerIndexes();
+  int64_t BuildTrackerIndexes();
 
   // Deletes entries used for indexes on on-disk database.
   // Returns the number of the deleted entries.
-  int64 DeleteTrackerIndexes();
+  int64_t DeleteTrackerIndexes();
 
   LevelDBWrapper* GetDBForTesting();
 
@@ -133,24 +137,21 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
 
   // Returns true if |tracker_id| is removed successfully.  If no other entries
   // are stored with |key_prefix|, the entry for |active_key| is also removed.
-  bool EraseInTrackerIDSetWithPrefix(
-      const std::string& active_tracker_key,
-      const std::string& key_prefix,
-      int64 tracker_id);
+  bool EraseInTrackerIDSetWithPrefix(const std::string& active_tracker_key,
+                                     const std::string& key_prefix,
+                                     int64_t tracker_id);
 
   // Adds an entry for |active_key| on DB, if |tracker_id| has an entry with
   // |key_prefix|.
-  void ActivateInTrackerIDSetWithPrefix(
-      const std::string& active_tracker_key,
-      const std::string& key_prefix,
-      int64 tracker_id);
+  void ActivateInTrackerIDSetWithPrefix(const std::string& active_tracker_key,
+                                        const std::string& key_prefix,
+                                        int64_t tracker_id);
 
   // Removes an entry for |active_key| on DB, if the value of |active_key| key
   // is |tracker_id|.
-  void DeactivateInTrackerIDSetWithPrefix(
-      const std::string& active_tracker_key,
-      const std::string& key_prefix,
-      int64 tracker_id);
+  void DeactivateInTrackerIDSetWithPrefix(const std::string& active_tracker_key,
+                                          const std::string& key_prefix,
+                                          int64_t tracker_id);
 
   // Checks if |db_| has an entry whose key is |key|.
   bool DBHasKey(const std::string& key) const;
@@ -160,7 +161,7 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
 
   // Returns the number of entries starting with |prefix| in NumEntries format.
   // Entries for |ignored_id| are not counted in.
-  NumEntries CountWithPrefix(const std::string& prefix, int64 ignored_id);
+  NumEntries CountWithPrefix(const std::string& prefix, int64_t ignored_id);
 
   // Deletes entries whose keys start from |prefix|.
   void DeleteKeyStartsWith(const std::string& prefix);

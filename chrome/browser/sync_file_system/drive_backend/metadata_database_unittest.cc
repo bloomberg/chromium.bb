@@ -4,8 +4,11 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -34,8 +37,8 @@ namespace {
 
 typedef MetadataDatabase::FileIDList FileIDList;
 
-const int64 kInitialChangeID = 1234;
-const int64 kSyncRootTrackerID = 100;
+const int64_t kInitialChangeID = 1234;
+const int64_t kSyncRootTrackerID = 100;
 const char kSyncRootFolderID[] = "sync_root_folder_id";
 
 // This struct is used to setup initial state of the database in the test and
@@ -82,7 +85,7 @@ void ExpectEquivalent(const FileTracker* left, const FileTracker* right) {
   test_util::ExpectEquivalentTrackers(*left, *right);
 }
 
-void ExpectEquivalent(int64 left, int64 right) {
+void ExpectEquivalent(int64_t left, int64_t right) {
   EXPECT_EQ(left, right);
 }
 
@@ -192,7 +195,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     return "file_id_" + base::Int64ToString(next_file_id_number_++);
   }
 
-  int64 GetTrackerIDByFileID(const std::string& file_id) {
+  int64_t GetTrackerIDByFileID(const std::string& file_id) {
     TrackerIDSet trackers;
     if (metadata_database_->FindTrackersByFileID(file_id, &trackers)) {
       EXPECT_FALSE(trackers.empty());
@@ -587,7 +590,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
   }
 
   SyncStatusCode PopulateInitialData(
-      int64 largest_change_id,
+      int64_t largest_change_id,
       const google_apis::FileResource& sync_root_folder,
       const ScopedVector<google_apis::FileResource>& app_root_folders) {
     return metadata_database_->PopulateInitialData(
@@ -598,9 +601,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     tracker->set_tracker_id(GetTrackerIDByFileID(tracker->file_id()));
   }
 
-  int64 current_change_id() const {
-    return current_change_id_;
-  }
+  int64_t current_change_id() const { return current_change_id_; }
 
  private:
   base::ScopedTempDir database_dir_;
@@ -609,10 +610,10 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
   scoped_ptr<leveldb::Env> in_memory_env_;
   scoped_ptr<MetadataDatabase> metadata_database_;
 
-  int64 current_change_id_;
-  int64 next_tracker_id_;
-  int64 next_file_id_number_;
-  int64 next_md5_sequence_number_;
+  int64_t current_change_id_;
+  int64_t next_tracker_id_;
+  int64_t next_file_id_number_;
+  int64_t next_md5_sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabaseTest);
 };

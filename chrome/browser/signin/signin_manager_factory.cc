@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 
 #include "base/prefs/pref_registry_simple.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"

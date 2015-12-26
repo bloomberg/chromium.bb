@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 // The |Feedback| object keeps track of each instance of user feedback in a map
-// |misspellings_|. This is a map from uint32 hashes to |Misspelling| objects.
+// |misspellings_|. This is a map from uint32_t hashes to |Misspelling| objects.
 //
 // Each misspelling should be present in only one renderer process. The
 // |Feedback| objects keeps track of misspelling-renderer relationship in the
@@ -32,7 +32,7 @@ Feedback::Feedback(size_t max_total_text_size)
 
 Feedback::~Feedback() {}
 
-Misspelling* Feedback::GetMisspelling(uint32 hash) {
+Misspelling* Feedback::GetMisspelling(uint32_t hash) {
   HashMisspellingMap::iterator misspelling_it = misspellings_.find(hash);
   if (misspelling_it == misspellings_.end())
     return NULL;
@@ -41,7 +41,7 @@ Misspelling* Feedback::GetMisspelling(uint32 hash) {
 
 void Feedback::FinalizeRemovedMisspellings(
     int renderer_process_id,
-    const std::vector<uint32>& remaining_markers) {
+    const std::vector<uint32_t>& remaining_markers) {
   RendererHashesMap::iterator renderer_it =
       renderers_.find(renderer_process_id);
   if (renderer_it == renderers_.end() || renderer_it->second.empty())
@@ -49,10 +49,10 @@ void Feedback::FinalizeRemovedMisspellings(
   HashCollection& renderer_hashes = renderer_it->second;
   HashCollection remaining_hashes(remaining_markers.begin(),
                                   remaining_markers.end());
-  std::vector<uint32> removed_hashes =
-      base::STLSetDifference<std::vector<uint32>>(renderer_hashes,
-                                                  remaining_hashes);
-  for (std::vector<uint32>::const_iterator hash_it = removed_hashes.begin();
+  std::vector<uint32_t> removed_hashes =
+      base::STLSetDifference<std::vector<uint32_t>>(renderer_hashes,
+                                                    remaining_hashes);
+  for (std::vector<uint32_t>::const_iterator hash_it = removed_hashes.begin();
        hash_it != removed_hashes.end(); ++hash_it) {
     HashMisspellingMap::iterator misspelling_it = misspellings_.find(*hash_it);
     if (misspelling_it != misspellings_.end() &&
@@ -116,7 +116,7 @@ void Feedback::EraseFinalizedMisspellings(int renderer_process_id) {
     renderers_.erase(renderer_it);
 }
 
-bool Feedback::HasMisspelling(uint32 hash) const {
+bool Feedback::HasMisspelling(uint32_t hash) const {
   return !!misspellings_.count(hash);
 }
 
@@ -190,7 +190,7 @@ void Feedback::Clear() {
   renderers_.clear();
 }
 
-const std::set<uint32>& Feedback::FindMisspellings(
+const std::set<uint32_t>& Feedback::FindMisspellings(
     const base::string16& misspelled_text) const {
   const TextHashesMap::const_iterator text_it = text_.find(misspelled_text);
   return text_it == text_.end() ? empty_hash_collection_ : text_it->second;

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/thumbnails/content_analysis.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -35,8 +38,8 @@ unsigned long ImagePixelSum(const SkBitmap& bitmap, const gfx::Rect& rect) {
   DCHECK_EQ(kAlpha_8_SkColorType, bitmap.colorType());
   unsigned long total = 0;
   for (int r = rect.y(); r < rect.bottom(); ++r) {
-    const uint8* row_data = static_cast<const uint8*>(
-        bitmap.getPixels()) + r * bitmap.rowBytes();
+    const uint8_t* row_data =
+        static_cast<const uint8_t*>(bitmap.getPixels()) + r * bitmap.rowBytes();
     for (int c = rect.x(); c < rect.right(); ++c)
       total += row_data[c];
   }

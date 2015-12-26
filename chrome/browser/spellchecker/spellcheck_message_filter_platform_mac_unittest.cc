@@ -4,6 +4,10 @@
 
 #include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
@@ -45,8 +49,8 @@ TEST(SpellcheckMessageFilterPlatformMacTest, CombineResults) {
 }
 
 TEST(SpellCheckMessageFilterPlatformMacTest, TestOverrideThread) {
-  static const uint32 kSpellcheckMessages[] = {
-    SpellCheckHostMsg_RequestTextCheck::ID,
+  static const uint32_t kSpellcheckMessages[] = {
+      SpellCheckHostMsg_RequestTextCheck::ID,
   };
   scoped_refptr<SpellCheckMessageFilterPlatform> filter(
       new SpellCheckMessageFilterPlatform(0));

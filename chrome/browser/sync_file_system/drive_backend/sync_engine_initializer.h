@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_ENGINE_INITIALIZER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_ENGINE_INITIALIZER_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -110,7 +113,7 @@ class SyncEngineInitializer : public SyncTask {
   scoped_ptr<MetadataDatabase> metadata_database_;
   ScopedVector<google_apis::FileResource> app_root_folders_;
 
-  int64 largest_change_id_;
+  int64_t largest_change_id_;
   std::string root_folder_id_;
 
   scoped_ptr<google_apis::FileResource> sync_root_folder_;

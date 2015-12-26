@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -14,6 +17,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -580,7 +584,7 @@ class ProfileSyncServiceAutofillTest
       return false;
     }
 
-    int64 child_id = autofill_root.GetFirstChildId();
+    int64_t child_id = autofill_root.GetFirstChildId();
     while (child_id != syncer::kInvalidId) {
       syncer::ReadNode child_node(&trans);
       if (child_node.InitByIdLookup(child_id) != BaseNode::INIT_OK)
@@ -619,7 +623,7 @@ class ProfileSyncServiceAutofillTest
       return false;
     }
 
-    int64 child_id = autofill_root.GetFirstChildId();
+    int64_t child_id = autofill_root.GetFirstChildId();
     while (child_id != syncer::kInvalidId) {
       syncer::ReadNode child_node(&trans);
       if (child_node.InitByIdLookup(child_id) != BaseNode::INIT_OK)

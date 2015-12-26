@@ -4,8 +4,12 @@
 
 #include "chrome/browser/signin/signin_error_notifier_ash.h"
 
+#include <stddef.h>
+
 #include "ash/test/ash_test_base.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"

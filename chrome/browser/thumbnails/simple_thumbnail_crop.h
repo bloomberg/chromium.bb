@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_THUMBNAILS_SIMPLE_THUMBNAIL_CROP_H_
 #define CHROME_BROWSER_THUMBNAILS_SIMPLE_THUMBNAIL_CROP_H_
 
+#include "base/macros.h"
 #include "chrome/browser/thumbnails/thumbnailing_algorithm.h"
 
 namespace thumbnails {

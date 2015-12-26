@@ -4,7 +4,10 @@
 
 #include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"

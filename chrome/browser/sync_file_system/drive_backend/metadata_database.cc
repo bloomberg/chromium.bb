@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -112,7 +113,7 @@ void PopulateFileDetailsByFileResource(
 }
 
 scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
-    int64 change_id,
+    int64_t change_id,
     const google_apis::FileResource& resource) {
   scoped_ptr<FileMetadata> file(new FileMetadata);
   file->set_file_id(resource.file_id());
@@ -146,9 +147,8 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
   return file.Pass();
 }
 
-scoped_ptr<FileMetadata> CreateDeletedFileMetadata(
-    int64 change_id,
-    const std::string& file_id) {
+scoped_ptr<FileMetadata> CreateDeletedFileMetadata(int64_t change_id,
+                                                   const std::string& file_id) {
   scoped_ptr<FileMetadata> file(new FileMetadata);
   file->set_file_id(file_id);
 
@@ -159,7 +159,7 @@ scoped_ptr<FileMetadata> CreateDeletedFileMetadata(
 }
 
 scoped_ptr<FileTracker> CreateSyncRootTracker(
-    int64 tracker_id,
+    int64_t tracker_id,
     const FileMetadata& sync_root_metadata) {
   scoped_ptr<FileTracker> sync_root_tracker(new FileTracker);
   sync_root_tracker->set_tracker_id(tracker_id);
@@ -174,8 +174,8 @@ scoped_ptr<FileTracker> CreateSyncRootTracker(
 }
 
 scoped_ptr<FileTracker> CreateInitialAppRootTracker(
-    int64 tracker_id,
-    int64 parent_tracker_id,
+    int64_t tracker_id,
+    int64_t parent_tracker_id,
     const FileMetadata& app_root_metadata) {
   scoped_ptr<FileTracker> app_root_tracker(new FileTracker);
   app_root_tracker->set_tracker_id(tracker_id);
@@ -242,7 +242,7 @@ SyncStatusCode MigrateDatabaseIfNeeded(LevelDBWrapper* db) {
   DCHECK(db);
   std::string value;
   leveldb::Status status = db->Get(kDatabaseVersionKey, &value);
-  int64 version = 0;
+  int64_t version = 0;
   if (status.ok()) {
     if (!base::StringToInt64(value, &version))
       return SYNC_DATABASE_ERROR_FAILED;
@@ -294,7 +294,7 @@ void MarkTrackerSetDirty(const TrackerIDSet& trackers,
   }
 }
 
-void MarkTrackersDirtyByPath(int64 parent_tracker_id,
+void MarkTrackersDirtyByPath(int64_t parent_tracker_id,
                              const std::string& title,
                              MetadataDatabaseIndexInterface* index) {
   if (parent_tracker_id == kInvalidTrackerID || title.empty())
@@ -309,12 +309,12 @@ void MarkTrackersDirtyByFileID(const std::string& file_id,
   MarkTrackerSetDirty(index->GetFileTrackerIDsByFileID(file_id), index);
 }
 
-void MarkTrackersDirtyRecursively(int64 root_tracker_id,
+void MarkTrackersDirtyRecursively(int64_t root_tracker_id,
                                   MetadataDatabaseIndexInterface* index) {
-  std::vector<int64> stack;
+  std::vector<int64_t> stack;
   stack.push_back(root_tracker_id);
   while (!stack.empty()) {
-    int64 tracker_id = stack.back();
+    int64_t tracker_id = stack.back();
     stack.pop_back();
     AppendContents(index->GetFileTrackerIDsByParent(tracker_id), &stack);
 
@@ -326,17 +326,17 @@ void MarkTrackersDirtyRecursively(int64 root_tracker_id,
   }
 }
 
-void RemoveAllDescendantTrackers(int64 root_tracker_id,
+void RemoveAllDescendantTrackers(int64_t root_tracker_id,
                                  MetadataDatabaseIndexInterface* index) {
-  std::vector<int64> pending_trackers;
+  std::vector<int64_t> pending_trackers;
   AppendContents(index->GetFileTrackerIDsByParent(root_tracker_id),
                  &pending_trackers);
 
-  std::vector<int64> to_be_removed;
+  std::vector<int64_t> to_be_removed;
 
   // List trackers to remove.
   while (!pending_trackers.empty()) {
-    int64 tracker_id = pending_trackers.back();
+    int64_t tracker_id = pending_trackers.back();
     pending_trackers.pop_back();
     AppendContents(index->GetFileTrackerIDsByParent(tracker_id),
                    &pending_trackers);
@@ -345,7 +345,7 @@ void RemoveAllDescendantTrackers(int64 root_tracker_id,
 
   // Remove trackers in the reversed order.
   base::hash_set<std::string> affected_file_ids;
-  for (std::vector<int64>::reverse_iterator itr = to_be_removed.rbegin();
+  for (std::vector<int64_t>::reverse_iterator itr = to_be_removed.rbegin();
        itr != to_be_removed.rend(); ++itr) {
     FileTracker tracker;
     index->GetFileTracker(*itr, &tracker);
@@ -365,11 +365,10 @@ void RemoveAllDescendantTrackers(int64 root_tracker_id,
   }
 }
 
-bool FilterFileTrackersByParent(
-    const MetadataDatabaseIndexInterface* index,
-    const TrackerIDSet& trackers,
-    int64 parent_tracker_id,
-    FileTracker* tracker_out) {
+bool FilterFileTrackersByParent(const MetadataDatabaseIndexInterface* index,
+                                const TrackerIDSet& trackers,
+                                int64_t parent_tracker_id,
+                                FileTracker* tracker_out) {
   FileTracker tracker;
   for (TrackerIDSet::const_iterator itr = trackers.begin();
        itr != trackers.end(); ++itr) {
@@ -390,7 +389,7 @@ bool FilterFileTrackersByParent(
 bool FilterFileTrackersByParentAndTitle(
     const MetadataDatabaseIndexInterface* index,
     const TrackerIDSet& trackers,
-    int64 parent_tracker_id,
+    int64_t parent_tracker_id,
     const std::string& title,
     FileTracker* result) {
   bool found = false;
@@ -452,7 +451,7 @@ enum DirtyingOption {
   MARK_SAME_PATH_TRACKERS_DIRTY = 1 << 2,
 };
 
-void ActivateFileTracker(int64 tracker_id,
+void ActivateFileTracker(int64_t tracker_id,
                          int dirtying_options,
                          MetadataDatabaseIndexInterface* index) {
   DCHECK(dirtying_options == MARK_NOTHING_DIRTY ||
@@ -474,7 +473,7 @@ void ActivateFileTracker(int64 tracker_id,
   index->StoreFileTracker(tracker.Pass());
 }
 
-void DeactivateFileTracker(int64 tracker_id,
+void DeactivateFileTracker(int64_t tracker_id,
                            int dirtying_options,
                            MetadataDatabaseIndexInterface* index) {
   RemoveAllDescendantTrackers(tracker_id, index);
@@ -494,7 +493,7 @@ void DeactivateFileTracker(int64 tracker_id,
   index->StoreFileTracker(tracker.Pass());
 }
 
-void RemoveFileTracker(int64 tracker_id,
+void RemoveFileTracker(int64_t tracker_id,
                        int dirtying_options,
                        MetadataDatabaseIndexInterface* index) {
   DCHECK(!(dirtying_options & MARK_ITSELF_DIRTY));
@@ -504,7 +503,7 @@ void RemoveFileTracker(int64 tracker_id,
     return;
 
   std::string file_id = tracker.file_id();
-  int64 parent_tracker_id = tracker.parent_tracker_id();
+  int64_t parent_tracker_id = tracker.parent_tracker_id();
   std::string title = GetTrackerTitle(tracker);
 
   RemoveAllDescendantTrackers(tracker_id, index);
@@ -595,20 +594,20 @@ void MetadataDatabase::ClearDatabase(
   base::DeleteFile(database_path, true /* recursive */);
 }
 
-int64 MetadataDatabase::GetLargestFetchedChangeID() const {
+int64_t MetadataDatabase::GetLargestFetchedChangeID() const {
   return index_->GetLargestChangeID();
 }
 
-int64 MetadataDatabase::GetSyncRootTrackerID() const {
+int64_t MetadataDatabase::GetSyncRootTrackerID() const {
   return index_->GetSyncRootTrackerID();
 }
 
-int64 MetadataDatabase::GetLargestKnownChangeID() const {
+int64_t MetadataDatabase::GetLargestKnownChangeID() const {
   DCHECK_LE(GetLargestFetchedChangeID(), largest_known_change_id_);
   return largest_known_change_id_;
 }
 
-void MetadataDatabase::UpdateLargestKnownChangeID(int64 change_id) {
+void MetadataDatabase::UpdateLargestKnownChangeID(int64_t change_id) {
   if (largest_known_change_id_ < change_id)
     largest_known_change_id_ = change_id;
 }
@@ -622,7 +621,7 @@ bool MetadataDatabase::HasSyncRoot() const {
 }
 
 SyncStatusCode MetadataDatabase::PopulateInitialData(
-    int64 largest_change_id,
+    int64_t largest_change_id,
     const google_apis::FileResource& sync_root_folder,
     const ScopedVector<google_apis::FileResource>& app_root_folders) {
   index_->SetLargestChangeID(largest_change_id);
@@ -641,7 +640,7 @@ SyncStatusCode MetadataDatabase::PopulateInitialData(
 }
 
 bool MetadataDatabase::IsAppEnabled(const std::string& app_id) const {
-  int64 tracker_id = index_->GetAppRootTracker(app_id);
+  int64_t tracker_id = index_->GetAppRootTracker(app_id);
   if (tracker_id == kInvalidTrackerID)
     return false;
 
@@ -670,7 +669,7 @@ SyncStatusCode MetadataDatabase::RegisterApp(const std::string& app_id,
     return SYNC_STATUS_HAS_CONFLICT;
   }
 
-  int64 sync_root_tracker_id = index_->GetSyncRootTrackerID();
+  int64_t sync_root_tracker_id = index_->GetSyncRootTrackerID();
   if (!sync_root_tracker_id) {
     util::Log(logging::LOG_WARNING, FROM_HERE,
               "Sync-root needs to be set up before registering app-root");
@@ -694,7 +693,7 @@ SyncStatusCode MetadataDatabase::RegisterApp(const std::string& app_id,
 }
 
 SyncStatusCode MetadataDatabase::DisableApp(const std::string& app_id) {
-  int64 tracker_id = index_->GetAppRootTracker(app_id);
+  int64_t tracker_id = index_->GetAppRootTracker(app_id);
   scoped_ptr<FileTracker> tracker(new FileTracker);
   if (!index_->GetFileTracker(tracker_id, tracker.get())) {
     return SYNC_DATABASE_ERROR_NOT_FOUND;
@@ -716,7 +715,7 @@ SyncStatusCode MetadataDatabase::DisableApp(const std::string& app_id) {
 }
 
 SyncStatusCode MetadataDatabase::EnableApp(const std::string& app_id) {
-  int64 tracker_id = index_->GetAppRootTracker(app_id);
+  int64_t tracker_id = index_->GetAppRootTracker(app_id);
   scoped_ptr<FileTracker> tracker(new FileTracker);
   if (!index_->GetFileTracker(tracker_id, tracker.get())) {
     return SYNC_DATABASE_ERROR_NOT_FOUND;
@@ -737,7 +736,7 @@ SyncStatusCode MetadataDatabase::EnableApp(const std::string& app_id) {
 }
 
 SyncStatusCode MetadataDatabase::UnregisterApp(const std::string& app_id) {
-  int64 tracker_id = index_->GetAppRootTracker(app_id);
+  int64_t tracker_id = index_->GetAppRootTracker(app_id);
   scoped_ptr<FileTracker> tracker(new FileTracker);
   if (!index_->GetFileTracker(tracker_id, tracker.get()) ||
       tracker->tracker_kind() == TRACKER_KIND_REGULAR) {
@@ -757,7 +756,7 @@ SyncStatusCode MetadataDatabase::UnregisterApp(const std::string& app_id) {
 
 bool MetadataDatabase::FindAppRootTracker(const std::string& app_id,
                                           FileTracker* tracker_out) const {
-  int64 app_root_tracker_id = index_->GetAppRootTracker(app_id);
+  int64_t app_root_tracker_id = index_->GetAppRootTracker(app_id);
   if (!app_root_tracker_id)
     return false;
 
@@ -787,7 +786,7 @@ bool MetadataDatabase::FindTrackersByFileID(const std::string& file_id,
 }
 
 bool MetadataDatabase::FindTrackersByParentAndTitle(
-    int64 parent_tracker_id,
+    int64_t parent_tracker_id,
     const std::string& title,
     TrackerIDSet* trackers_out) const {
   TrackerIDSet trackers =
@@ -800,12 +799,12 @@ bool MetadataDatabase::FindTrackersByParentAndTitle(
   return true;
 }
 
-bool MetadataDatabase::FindTrackerByTrackerID(int64 tracker_id,
+bool MetadataDatabase::FindTrackerByTrackerID(int64_t tracker_id,
                                               FileTracker* tracker_out) const {
   return index_->GetFileTracker(tracker_id, tracker_out);
 }
 
-bool MetadataDatabase::BuildPathForTracker(int64 tracker_id,
+bool MetadataDatabase::BuildPathForTracker(int64_t tracker_id,
                                            base::FilePath* path) const {
   FileTracker current;
   if (!FindTrackerByTrackerID(tracker_id, &current) || !current.active())
@@ -890,7 +889,7 @@ bool MetadataDatabase::FindNearestActiveAncestor(
 }
 
 SyncStatusCode MetadataDatabase::UpdateByChangeList(
-    int64 largest_change_id,
+    int64_t largest_change_id,
     ScopedVector<google_apis::ChangeResource> changes) {
   DCHECK_LE(index_->GetLargestChangeID(), largest_change_id);
 
@@ -954,7 +953,7 @@ SyncStatusCode MetadataDatabase::UpdateByDeletedRemoteFileList(
 }
 
 SyncStatusCode MetadataDatabase::ReplaceActiveTrackerWithNewResource(
-    int64 parent_tracker_id,
+    int64_t parent_tracker_id,
     const google_apis::FileResource& resource) {
   DCHECK(!index_->GetFileMetadata(resource.file_id(), nullptr));
   DCHECK(index_->GetFileTracker(parent_tracker_id, nullptr));
@@ -977,7 +976,7 @@ SyncStatusCode MetadataDatabase::ReplaceActiveTrackerWithNewResource(
     return SYNC_STATUS_FAILED;
   }
 
-  int64 tracker_id = to_be_activated.tracker_id();
+  int64_t tracker_id = to_be_activated.tracker_id();
   if (same_path_trackers.has_active()) {
     DeactivateFileTracker(same_path_trackers.active_tracker(),
                           MARK_ITSELF_DIRTY |
@@ -1009,7 +1008,7 @@ SyncStatusCode MetadataDatabase::PopulateFolderByChildList(
   base::hash_set<std::string> children(child_file_ids.begin(),
                                        child_file_ids.end());
 
-  std::vector<int64> known_children =
+  std::vector<int64_t> known_children =
       index_->GetFileTrackerIDsByParent(folder_tracker->tracker_id());
   for (size_t i = 0; i < known_children.size(); ++i) {
     FileTracker tracker;
@@ -1032,7 +1031,7 @@ SyncStatusCode MetadataDatabase::PopulateFolderByChildList(
 }
 
 SyncStatusCode MetadataDatabase::UpdateTracker(
-    int64 tracker_id,
+    int64_t tracker_id,
     const FileDetails& updated_details) {
   FileTracker tracker;
   if (!index_->GetFileTracker(tracker_id, &tracker)) {
@@ -1127,7 +1126,7 @@ SyncStatusCode MetadataDatabase::UpdateTracker(
 }
 
 MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
-    int64 parent_tracker_id,
+    int64_t parent_tracker_id,
     const std::string& file_id,
     SyncStatusCode* status_out) {
   FileMetadata metadata;
@@ -1191,7 +1190,7 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
   return ACTIVATION_PENDING;
 }
 
-void MetadataDatabase::DemoteTracker(int64 tracker_id) {
+void MetadataDatabase::DemoteTracker(int64_t tracker_id) {
   index_->DemoteDirtyTracker(tracker_id);
   WriteToDatabase();
 }
@@ -1202,14 +1201,14 @@ bool MetadataDatabase::PromoteDemotedTrackers() {
   return promoted;
 }
 
-void MetadataDatabase::PromoteDemotedTracker(int64 tracker_id) {
+void MetadataDatabase::PromoteDemotedTracker(int64_t tracker_id) {
   index_->PromoteDemotedDirtyTracker(tracker_id);
   WriteToDatabase();
 }
 
 bool MetadataDatabase::GetDirtyTracker(
     FileTracker* tracker_out) const {
-  int64 dirty_tracker_id = index_->PickDirtyTracker();
+  int64_t dirty_tracker_id = index_->PickDirtyTracker();
   if (!dirty_tracker_id)
     return false;
 
@@ -1287,7 +1286,7 @@ void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
 
 SyncStatusCode MetadataDatabase::SweepDirtyTrackers(
     const std::vector<std::string>& file_ids) {
-  std::set<int64> tracker_ids;
+  std::set<int64_t> tracker_ids;
   for (size_t i = 0; i < file_ids.size(); ++i) {
     TrackerIDSet trackers_for_file_id =
         index_->GetFileTrackerIDsByFileID(file_ids[i]);
@@ -1296,7 +1295,7 @@ SyncStatusCode MetadataDatabase::SweepDirtyTrackers(
       tracker_ids.insert(*itr);
   }
 
-  for (std::set<int64>::iterator itr = tracker_ids.begin();
+  for (std::set<int64_t>::iterator itr = tracker_ids.begin();
        itr != tracker_ids.end(); ++itr) {
     scoped_ptr<FileTracker> tracker(new FileTracker);
     if (!index_->GetFileTracker(*itr, tracker.get()) ||
@@ -1383,7 +1382,7 @@ void MetadataDatabase::CreateTrackerInternal(const FileTracker& parent_tracker,
                                              const std::string& file_id,
                                              const FileDetails* details,
                                              UpdateOption option) {
-  int64 tracker_id = IncrementTrackerID();
+  int64_t tracker_id = IncrementTrackerID();
   scoped_ptr<FileTracker> tracker(new FileTracker);
   tracker->set_tracker_id(tracker_id);
   tracker->set_parent_tracker_id(parent_tracker.tracker_id());
@@ -1406,7 +1405,7 @@ void MetadataDatabase::CreateTrackerInternal(const FileTracker& parent_tracker,
 void MetadataDatabase::MaybeAddTrackersForNewFile(
     const FileMetadata& metadata,
     UpdateOption option) {
-  std::set<int64> parents_to_exclude;
+  std::set<int64_t> parents_to_exclude;
   TrackerIDSet existing_trackers =
       index_->GetFileTrackerIDsByFileID(metadata.file_id());
   for (TrackerIDSet::const_iterator itr = existing_trackers.begin();
@@ -1417,7 +1416,7 @@ void MetadataDatabase::MaybeAddTrackersForNewFile(
       continue;
     }
 
-    int64 parent_tracker_id = tracker.parent_tracker_id();
+    int64_t parent_tracker_id = tracker.parent_tracker_id();
     if (!parent_tracker_id)
       continue;
 
@@ -1449,8 +1448,8 @@ void MetadataDatabase::MaybeAddTrackersForNewFile(
   }
 }
 
-int64 MetadataDatabase::IncrementTrackerID() {
-  int64 tracker_id = index_->GetNextTrackerID();
+int64_t MetadataDatabase::IncrementTrackerID() {
+  int64_t tracker_id = index_->GetNextTrackerID();
   index_->SetNextTrackerID(tracker_id + 1);
   DCHECK_GT(tracker_id, 0);
   return tracker_id;
@@ -1512,7 +1511,7 @@ bool MetadataDatabase::ShouldKeepDirty(const FileTracker& tracker) const {
 }
 
 bool MetadataDatabase::HasDisabledAppRoot(const FileTracker& tracker) const {
-  int64 app_root_tracker_id = index_->GetAppRootTracker(tracker.app_id());
+  int64_t app_root_tracker_id = index_->GetAppRootTracker(tracker.app_id());
   if (app_root_tracker_id == kInvalidTrackerID)
     return false;
 
@@ -1529,7 +1528,7 @@ bool MetadataDatabase::HasActiveTrackerForFileID(
   return index_->GetFileTrackerIDsByFileID(file_id).has_active();
 }
 
-bool MetadataDatabase::HasActiveTrackerForPath(int64 parent_tracker_id,
+bool MetadataDatabase::HasActiveTrackerForPath(int64_t parent_tracker_id,
                                                const std::string& title) const {
   return index_->GetFileTrackerIDsByParentAndTitle(parent_tracker_id, title)
       .has_active();
@@ -1592,11 +1591,11 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
   if (!FindAppRootTracker(app_id, &app_root_tracker))
     return files.Pass();
 
-  std::vector<int64> stack;
+  std::vector<int64_t> stack;
   AppendContents(
       index_->GetFileTrackerIDsByParent(app_root_tracker.tracker_id()), &stack);
   while (!stack.empty()) {
-    int64 tracker_id = stack.back();
+    int64_t tracker_id = stack.back();
     stack.pop_back();
     AppendContents(index_->GetFileTrackerIDsByParent(tracker_id), &stack);
 
@@ -1639,7 +1638,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpDatabase() {
 }
 
 bool MetadataDatabase::HasNewerFileMetadata(const std::string& file_id,
-                                            int64 change_id) {
+                                            int64_t change_id) {
   FileMetadata metadata;
   if (!index_->GetFileMetadata(file_id, &metadata))
     return false;
@@ -1666,10 +1665,10 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
   trackers->Append(metadata);
 
   // Append tracker data.
-  std::vector<int64> tracker_ids(index_->GetAllTrackerIDs());
-  for (std::vector<int64>::const_iterator itr = tracker_ids.begin();
+  std::vector<int64_t> tracker_ids(index_->GetAllTrackerIDs());
+  for (std::vector<int64_t>::const_iterator itr = tracker_ids.begin();
        itr != tracker_ids.end(); ++itr) {
-    const int64 tracker_id = *itr;
+    const int64_t tracker_id = *itr;
     FileTracker tracker;
     if (!index_->GetFileTracker(tracker_id, &tracker)) {
       NOTREACHED();

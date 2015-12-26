@@ -45,7 +45,7 @@ base::string16 GetRendererProfileName(
   return Task::GetProfileNameFromProfile(profile);
 }
 
-inline bool IsRendererResourceSamplingDisabled(int64 flags) {
+inline bool IsRendererResourceSamplingDisabled(int64_t flags) {
   return (flags & (REFRESH_TYPE_V8_MEMORY | REFRESH_TYPE_WEBCACHE_STATS)) == 0;
 }
 
@@ -100,7 +100,7 @@ void RendererTask::Activate() {
 }
 
 void RendererTask::Refresh(const base::TimeDelta& update_interval,
-                           int64 refresh_flags) {
+                           int64_t refresh_flags) {
   Task::Refresh(update_interval, refresh_flags);
 
   if (IsRendererResourceSamplingDisabled(refresh_flags))
@@ -112,9 +112,9 @@ void RendererTask::Refresh(const base::TimeDelta& update_interval,
   // having valid values).
   renderer_resources_sampler_->Refresh(base::Closure());
 
-  v8_memory_allocated_ = base::saturated_cast<int64>(
+  v8_memory_allocated_ = base::saturated_cast<int64_t>(
       renderer_resources_sampler_->GetV8MemoryAllocated());
-  v8_memory_used_ = base::saturated_cast<int64>(
+  v8_memory_used_ = base::saturated_cast<int64_t>(
       renderer_resources_sampler_->GetV8MemoryUsed());
   webcache_stats_ = renderer_resources_sampler_->GetWebCoreCacheStats();
 }
@@ -131,11 +131,11 @@ base::string16 RendererTask::GetProfileName() const {
   return profile_name_;
 }
 
-int64 RendererTask::GetV8MemoryAllocated() const {
+int64_t RendererTask::GetV8MemoryAllocated() const {
   return v8_memory_allocated_;
 }
 
-int64 RendererTask::GetV8MemoryUsed() const {
+int64_t RendererTask::GetV8MemoryUsed() const {
   return v8_memory_used_;
 }
 

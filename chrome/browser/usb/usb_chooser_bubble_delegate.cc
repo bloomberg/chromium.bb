@@ -4,6 +4,8 @@
 
 #include "chrome/browser/usb/usb_chooser_bubble_delegate.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"

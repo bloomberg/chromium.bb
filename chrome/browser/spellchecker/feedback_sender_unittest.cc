@@ -6,6 +6,9 @@
 
 #include "chrome/browser/spellchecker/feedback_sender.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -93,7 +96,7 @@ class FeedbackSenderTest : public testing::Test {
     feedback_->StartFeedbackCollection();
   }
 
-  uint32 AddPendingFeedback() {
+  uint32_t AddPendingFeedback() {
     std::vector<SpellCheckResult> results(1, BuildSpellCheckResult());
     feedback_->OnSpellcheckResults(kRendererProcessId,
                                    base::UTF8ToUTF16(kText),
@@ -153,14 +156,14 @@ class FeedbackSenderTest : public testing::Test {
 TEST_F(FeedbackSenderTest, NoFeedback) {
   EXPECT_FALSE(IsUploadingData());
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_FALSE(IsUploadingData());
 }
 
 // Do not send data if not aware of which markers are still in the document.
 TEST_F(FeedbackSenderTest, NoDocumentMarkersReceived) {
   EXPECT_FALSE(IsUploadingData());
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   EXPECT_FALSE(IsUploadingData());
   static const int kSuggestionIndex = 1;
   feedback_->SelectedSuggestion(hash, kSuggestionIndex);
@@ -170,9 +173,9 @@ TEST_F(FeedbackSenderTest, NoDocumentMarkersReceived) {
 // Send PENDING feedback message if the marker is still in the document, and the
 // user has not performed any action on it.
 TEST_F(FeedbackSenderTest, PendingFeedback) {
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>(1, hash));
+                                      std::vector<uint32_t>(1, hash));
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"PENDING\""));
 }
 
@@ -181,17 +184,17 @@ TEST_F(FeedbackSenderTest, PendingFeedback) {
 TEST_F(FeedbackSenderTest, NoActionFeedback) {
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"NO_ACTION\""));
 }
 
 // Send SELECT feedback message if the user has selected a spelling suggestion.
 TEST_F(FeedbackSenderTest, SelectFeedback) {
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   static const int kSuggestionIndex = 0;
   feedback_->SelectedSuggestion(hash, kSuggestionIndex);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"SELECT\""));
   EXPECT_TRUE(UploadDataContains("\"actionTargetIndex\":" + kSuggestionIndex));
 }
@@ -199,51 +202,51 @@ TEST_F(FeedbackSenderTest, SelectFeedback) {
 // Send ADD_TO_DICT feedback message if the user has added the misspelled word
 // to the custom dictionary.
 TEST_F(FeedbackSenderTest, AddToDictFeedback) {
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   feedback_->AddedToDictionary(hash);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"ADD_TO_DICT\""));
 }
 
 // Send IN_DICTIONARY feedback message if the user has the misspelled word in
 // the custom dictionary.
 TEST_F(FeedbackSenderTest, InDictionaryFeedback) {
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   feedback_->RecordInDictionary(hash);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"IN_DICTIONARY\""));
 }
 
 // Send PENDING feedback message if the user saw the spelling suggestion, but
 // decided to not select it, and the marker is still in the document.
 TEST_F(FeedbackSenderTest, IgnoreFeedbackMarkerInDocument) {
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   feedback_->IgnoredSuggestions(hash);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>(1, hash));
+                                      std::vector<uint32_t>(1, hash));
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"PENDING\""));
 }
 
 // Send IGNORE feedback message if the user saw the spelling suggestion, but
 // decided to not select it, and the marker is no longer in the document.
 TEST_F(FeedbackSenderTest, IgnoreFeedbackMarkerNotInDocument) {
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   feedback_->IgnoredSuggestions(hash);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"IGNORE\""));
 }
 
 // Send MANUALLY_CORRECTED feedback message if the user manually corrected the
 // misspelled word.
 TEST_F(FeedbackSenderTest, ManuallyCorrectedFeedback) {
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   static const std::string kManualCorrection = "Howdy";
   feedback_->ManuallyCorrected(hash, base::ASCIIToUTF16(kManualCorrection));
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"MANUALLY_CORRECTED\""));
   EXPECT_TRUE(UploadDataContains("\"actionTargetValue\":\"" +
                                  kManualCorrection + "\""));
@@ -267,15 +270,15 @@ TEST_F(FeedbackSenderTest, BatchFeedback) {
                                  std::vector<SpellCheckMarker>(),
                                  &results);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"NO_ACTION\"", 2));
 }
 
 // Send a series of PENDING feedback messages and one final NO_ACTION feedback
 // message with the same hash identifier for a single misspelling.
 TEST_F(FeedbackSenderTest, SameHashFeedback) {
-  uint32 hash = AddPendingFeedback();
-  std::vector<uint32> remaining_markers(1, hash);
+  uint32_t hash = AddPendingFeedback();
+  std::vector<uint32_t> remaining_markers(1, hash);
 
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId, remaining_markers);
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"PENDING\""));
@@ -289,13 +292,13 @@ TEST_F(FeedbackSenderTest, SameHashFeedback) {
   ClearUploadData();
 
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"NO_ACTION\""));
   EXPECT_TRUE(UploadDataContains(hash_string));
   ClearUploadData();
 
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_FALSE(IsUploadingData());
 }
 
@@ -315,8 +318,8 @@ TEST_F(FeedbackSenderTest, SessionExpirationFeedback) {
                                  base::UTF8ToUTF16(kText),
                                  std::vector<SpellCheckMarker>(),
                                  &results);
-  uint32 original_hash = results[0].hash;
-  std::vector<uint32> remaining_markers(1, original_hash);
+  uint32_t original_hash = results[0].hash;
+  std::vector<uint32_t> remaining_markers(1, original_hash);
 
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId, remaining_markers);
   EXPECT_FALSE(UploadDataContains("\"actionType\":\"NO_ACTION\""));
@@ -350,7 +353,7 @@ TEST_F(FeedbackSenderTest, SessionExpirationFeedback) {
                                 base::ASCIIToUTF16("Hello"));
   feedback_->OnSpellcheckResults(
       kRendererProcessId, base::UTF8ToUTF16(kText), original_markers, &results);
-  uint32 updated_hash = results[0].hash;
+  uint32_t updated_hash = results[0].hash;
   EXPECT_NE(updated_hash, original_hash);
   remaining_markers[0] = updated_hash;
 
@@ -370,13 +373,13 @@ TEST_F(FeedbackSenderTest, FirstMessageInSessionIndicator) {
   // Session 1, message 1
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"isFirstInSession\":true"));
 
   // Session 1, message 2
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"isFirstInSession\":false"));
 
   ExpireSession();
@@ -384,19 +387,19 @@ TEST_F(FeedbackSenderTest, FirstMessageInSessionIndicator) {
   // Session 1, message 3 (last)
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"isFirstInSession\":false"));
 
   // Session 2, message 1
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"isFirstInSession\":true"));
 
   // Session 2, message 2
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"isFirstInSession\":false"));
 }
 
@@ -414,7 +417,7 @@ TEST_F(FeedbackSenderTest, OnLanguageCountryChange) {
 TEST_F(FeedbackSenderTest, FeedbackAPI) {
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   std::string actual_data = GetUploadData();
   scoped_ptr<base::DictionaryValue> actual(static_cast<base::DictionaryValue*>(
       base::JSONReader::Read(actual_data).release()));
@@ -453,7 +456,7 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
 TEST_F(FeedbackSenderTest, DefaultApiVersion) {
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("\"apiVersion\":\"v2\""));
   EXPECT_FALSE(UploadDataContains("\"apiVersion\":\"v2-internal\""));
 }
@@ -465,7 +468,7 @@ TEST_F(FeedbackSenderTest, FieldTrialAloneHasSameApiVersion) {
 
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
 
   EXPECT_TRUE(UploadDataContains("\"apiVersion\":\"v2\""));
   EXPECT_FALSE(UploadDataContains("\"apiVersion\":\"v2-internal\""));
@@ -478,7 +481,7 @@ TEST_F(FeedbackSenderTest, CommandLineSwitchAloneHasSameApiVersion) {
 
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
 
   EXPECT_TRUE(UploadDataContains("\"apiVersion\":\"v2\""));
   EXPECT_FALSE(UploadDataContains("\"apiVersion\":\"v2-internal\""));
@@ -492,7 +495,7 @@ TEST_F(FeedbackSenderTest, InternalApiVersion) {
 
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
 
   EXPECT_FALSE(UploadDataContains("\"apiVersion\":\"v2\""));
   EXPECT_TRUE(UploadDataContains("\"apiVersion\":\"v2-internal\""));
@@ -500,7 +503,7 @@ TEST_F(FeedbackSenderTest, InternalApiVersion) {
 
 // Duplicate spellcheck results should be matched to the existing markers.
 TEST_F(FeedbackSenderTest, MatchDupliateResultsWithExistingMarkers) {
-  uint32 hash = AddPendingFeedback();
+  uint32_t hash = AddPendingFeedback();
   std::vector<SpellCheckResult> results(
       1,
       SpellCheckResult(SpellCheckResult::SPELLING,
@@ -509,7 +512,7 @@ TEST_F(FeedbackSenderTest, MatchDupliateResultsWithExistingMarkers) {
                        base::ASCIIToUTF16("Hello")));
   std::vector<SpellCheckMarker> markers(
       1, SpellCheckMarker(hash, results[0].location));
-  EXPECT_EQ(static_cast<uint32>(0), results[0].hash);
+  EXPECT_EQ(static_cast<uint32_t>(0), results[0].hash);
   feedback_->OnSpellcheckResults(
       kRendererProcessId, base::UTF8ToUTF16(kText), markers, &results);
   EXPECT_EQ(hash, results[0].hash);
@@ -538,7 +541,7 @@ TEST_F(FeedbackSenderTest, MultipleAddToDictFeedback) {
                                    &results);
     last_renderer_process_id = kRendererProcessId + i;
   }
-  std::vector<uint32> remaining_markers;
+  std::vector<uint32_t> remaining_markers;
   for (size_t i = 0; i < results.size(); ++i)
     remaining_markers.push_back(results[i].hash);
   feedback_->OnReceiveDocumentMarkers(last_renderer_process_id,
@@ -557,12 +560,12 @@ TEST_F(FeedbackSenderTest, MultipleAddToDictFeedback) {
 // for pending feedback.
 TEST_F(FeedbackSenderTest, AddToDictOnlyPending) {
   AddPendingFeedback();
-  uint32 add_to_dict_hash = AddPendingFeedback();
-  uint32 select_hash = AddPendingFeedback();
+  uint32_t add_to_dict_hash = AddPendingFeedback();
+  uint32_t select_hash = AddPendingFeedback();
   feedback_->SelectedSuggestion(select_hash, 0);
   feedback_->AddedToDictionary(add_to_dict_hash);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(UploadDataContains("SELECT", 1));
   EXPECT_TRUE(UploadDataContains("ADD_TO_DICT", 2));
 }
@@ -585,7 +588,7 @@ TEST_F(FeedbackSenderTest, IgnoreOutOfBounds) {
                                  std::vector<SpellCheckMarker>(),
                                  &results);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_FALSE(IsUploadingData());
 }
 
@@ -594,7 +597,7 @@ TEST_F(FeedbackSenderTest, CanStopFeedbackCollection) {
   feedback_->StopFeedbackCollection();
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_FALSE(IsUploadingData());
 }
 
@@ -605,7 +608,7 @@ TEST_F(FeedbackSenderTest, CanResumeFeedbackCollection) {
   feedback_->StartFeedbackCollection();
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(IsUploadingData());
 }
 
@@ -614,10 +617,10 @@ TEST_F(FeedbackSenderTest, NoFeedbackCollectionWhenStopped) {
   feedback_->StopFeedbackCollection();
   AddPendingFeedback();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   feedback_->StartFeedbackCollection();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_FALSE(IsUploadingData());
 }
 
@@ -633,7 +636,7 @@ TEST_F(FeedbackSenderTest, TrimFeedback) {
                         "the chance to work hard at work worth doing."),
       std::vector<SpellCheckMarker>(), &results);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
-                                      std::vector<uint32>());
+                                      std::vector<uint32_t>());
   EXPECT_TRUE(
       UploadDataContains(",\"originalText\":\"and away teh best prize\","));
   EXPECT_TRUE(UploadDataContains(",\"misspelledStart\":9,"));

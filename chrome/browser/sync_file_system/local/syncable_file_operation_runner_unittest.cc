@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -119,7 +122,9 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   void DidWrite(const tracked_objects::Location& location,
-                File::Error status, int64 bytes, bool complete) {
+                File::Error status,
+                int64_t bytes,
+                bool complete) {
     SCOPED_TRACE(testing::Message() << location.ToString());
     write_status_ = status;
     write_bytes_ += bytes;

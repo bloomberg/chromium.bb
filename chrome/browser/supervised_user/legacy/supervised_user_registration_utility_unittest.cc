@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -133,7 +135,7 @@ class SupervisedUserRegistrationUtilityTest : public ::testing::Test {
   MockChangeProcessor* change_processor_;
 
   // A unique ID for creating "remote" Sync data.
-  int64 sync_data_id_;
+  int64_t sync_data_id_;
 
   // Whether OnSupervisedUserRegistered has been called.
   bool received_callback_;

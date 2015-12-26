@@ -48,7 +48,7 @@ SupervisedUserSiteList::HostnameHash::HostnameHash(
 }
 
 SupervisedUserSiteList::HostnameHash::HostnameHash(
-    const std::vector<uint8>& bytes) {
+    const std::vector<uint8_t>& bytes) {
   CHECK_GE(bytes.size(), base::kSHA1Length);
   std::copy(bytes.begin(), bytes.end(), bytes_.begin());
 }
@@ -98,7 +98,7 @@ SupervisedUserSiteList::SupervisedUserSiteList(
     for (const base::Value* entry : *hostname_hashes) {
       // |hash_str| should be a hex-encoded SHA1 hash string.
       std::string hash_str;
-      std::vector<uint8> hash_bytes;
+      std::vector<uint8_t> hash_bytes;
       if (!entry->GetAsString(&hash_str) ||
           hash_str.size() != 2 * base::kSHA1Length ||
           !base::HexStringToBytes(hash_str, &hash_bytes)) {

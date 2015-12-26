@@ -4,6 +4,7 @@
 
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkModel;

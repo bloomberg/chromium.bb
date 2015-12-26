@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_BROWSER_PROCESS_TASK_PROVIDER_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_BROWSER_PROCESS_TASK_PROVIDER_H_
 
+#include "base/macros.h"
 #include "chrome/browser/task_management/providers/browser_process_task.h"
 #include "chrome/browser/task_management/providers/task_provider.h"
 

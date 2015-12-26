@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_TRACKER_ID_SET_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_TRACKER_ID_SET_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 
-#include "base/basictypes.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -16,7 +18,7 @@ class FileTracker;
 
 class TrackerIDSet {
  public:
-  typedef std::set<int64> RawTrackerIDSet;
+  typedef std::set<int64_t> RawTrackerIDSet;
   typedef RawTrackerIDSet::iterator iterator;
   typedef RawTrackerIDSet::const_iterator const_iterator;
 
@@ -25,13 +27,13 @@ class TrackerIDSet {
 
   bool has_active() const { return !!active_tracker_; }
   void Insert(const FileTracker& tracker);
-  void InsertActiveTracker(int64 tracker_id);
-  void InsertInactiveTracker(int64 tracker_id);
-  void Erase(int64 tracker_id);
-  void Activate(int64 tracker_id);
-  void Deactivate(int64 tracker_id);
+  void InsertActiveTracker(int64_t tracker_id);
+  void InsertInactiveTracker(int64_t tracker_id);
+  void Erase(int64_t tracker_id);
+  void Activate(int64_t tracker_id);
+  void Deactivate(int64_t tracker_id);
 
-  int64 active_tracker() const { return active_tracker_; }
+  int64_t active_tracker() const { return active_tracker_; }
   const RawTrackerIDSet& tracker_set() const { return tracker_ids_; }
 
   iterator begin() { return tracker_ids_.begin(); }
@@ -42,7 +44,7 @@ class TrackerIDSet {
   size_t size() const { return tracker_ids_.size(); }
 
  private:
-  int64 active_tracker_;
+  int64_t active_tracker_;
   RawTrackerIDSet tracker_ids_;
 };
 

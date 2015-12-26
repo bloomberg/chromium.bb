@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
 #define CHROME_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -27,13 +29,14 @@ struct UserShare;
 class ProfileSyncServiceTestHelper {
  public:
   static syncer::ImmutableChangeRecordList MakeSingletonChangeRecordList(
-      int64 node_id, syncer::ChangeRecord::Action action);
+      int64_t node_id,
+      syncer::ChangeRecord::Action action);
 
   // Deletions must provide an EntitySpecifics for the deleted data.
   static syncer::ImmutableChangeRecordList
-      MakeSingletonDeletionChangeRecordList(
-          int64 node_id,
-          const sync_pb::EntitySpecifics& specifics);
+  MakeSingletonDeletionChangeRecordList(
+      int64_t node_id,
+      const sync_pb::EntitySpecifics& specifics);
 };
 
 class AbstractProfileSyncServiceTest : public testing::Test {

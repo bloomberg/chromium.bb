@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/signin/easy_unlock_service_signin_chromeos.h"
 
+#include <stdint.h>
+
 #include "base/base64url.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -30,15 +31,15 @@
 namespace {
 
 // The maximum allowed backoff interval when waiting for cryptohome to start.
-uint32 kMaxCryptohomeBackoffIntervalMs = 10000u;
+uint32_t kMaxCryptohomeBackoffIntervalMs = 10000u;
 
 // If the data load fails, the initial interval after which the load will be
 // retried. Further intervals will exponentially increas by factor 2.
-uint32 kInitialCryptohomeBackoffIntervalMs = 200u;
+uint32_t kInitialCryptohomeBackoffIntervalMs = 200u;
 
 // Calculates the backoff interval that should be used next.
 // |backoff| The last backoff interval used.
-uint32 GetNextBackoffInterval(uint32 backoff) {
+uint32_t GetNextBackoffInterval(uint32_t backoff) {
   if (backoff == 0u)
     return kInitialCryptohomeBackoffIntervalMs;
   return backoff * 2;
@@ -46,7 +47,7 @@ uint32 GetNextBackoffInterval(uint32 backoff) {
 
 void LoadDataForUser(
     const AccountId& account_id,
-    uint32 backoff_ms,
+    uint32_t backoff_ms,
     const chromeos::EasyUnlockKeyManager::GetDeviceDataListCallback& callback);
 
 // Callback passed to |LoadDataForUser()|.
@@ -57,7 +58,7 @@ void LoadDataForUser(
 // it invokes |callback| with the |LoadDataForUser| results.
 void RetryDataLoadOnError(
     const AccountId& account_id,
-    uint32 backoff_ms,
+    uint32_t backoff_ms,
     const chromeos::EasyUnlockKeyManager::GetDeviceDataListCallback& callback,
     bool success,
     const chromeos::EasyUnlockDeviceKeyDataList& data_list) {
@@ -66,7 +67,7 @@ void RetryDataLoadOnError(
     return;
   }
 
-  uint32 next_backoff_ms = GetNextBackoffInterval(backoff_ms);
+  uint32_t next_backoff_ms = GetNextBackoffInterval(backoff_ms);
   if (next_backoff_ms > kMaxCryptohomeBackoffIntervalMs) {
     callback.Run(false, data_list);
     return;
@@ -81,7 +82,7 @@ void RetryDataLoadOnError(
 // Loads device data list associated with the user's Easy unlock keys.
 void LoadDataForUser(
     const AccountId& account_id,
-    uint32 backoff_ms,
+    uint32_t backoff_ms,
     const chromeos::EasyUnlockKeyManager::GetDeviceDataListCallback& callback) {
   chromeos::EasyUnlockKeyManager* key_manager =
       chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
@@ -204,7 +205,7 @@ EasyUnlockService::TurnOffFlowStatus
 std::string EasyUnlockServiceSignin::GetChallenge() const {
   const UserData* data = FindLoadedDataForCurrentUser();
   // TODO(xiyuan): Use correct remote device instead of hard coded first one.
-  uint32 device_index = 0;
+  uint32_t device_index = 0;
   if (!data || data->devices.size() <= device_index)
     return std::string();
   return data->devices[device_index].challenge;
@@ -213,7 +214,7 @@ std::string EasyUnlockServiceSignin::GetChallenge() const {
 std::string EasyUnlockServiceSignin::GetWrappedSecret() const {
   const UserData* data = FindLoadedDataForCurrentUser();
   // TODO(xiyuan): Use correct remote device instead of hard coded first one.
-  uint32 device_index = 0;
+  uint32_t device_index = 0;
   if (!data || data->devices.size() <= device_index)
     return std::string();
   return data->devices[device_index].wrapped_secret;

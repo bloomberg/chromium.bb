@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_theme.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

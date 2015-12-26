@@ -4,6 +4,8 @@
 
 #include "chrome/browser/thumbnails/content_based_thumbnailing_algorithm.h"
 
+#include <stddef.h>
+
 #include "base/metrics/histogram.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/thumbnails/content_analysis.h"

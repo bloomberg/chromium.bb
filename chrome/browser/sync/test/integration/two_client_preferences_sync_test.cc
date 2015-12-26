@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"

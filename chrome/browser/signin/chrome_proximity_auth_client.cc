@@ -4,10 +4,13 @@
 
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
 
+#include <stdint.h>
+
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
@@ -110,7 +113,7 @@ cryptauth::DeviceClassifier ChromeProximityAuthClient::GetDeviceClassifier() {
   cryptauth::DeviceClassifier device_classifier;
 
 #if defined(OS_CHROMEOS)
-  int32 major_version, minor_version, bugfix_version;
+  int32_t major_version, minor_version, bugfix_version;
   // TODO(tengs): base::OperatingSystemVersionNumbers only works for ChromeOS.
   // We need to get different numbers for other platforms.
   base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,

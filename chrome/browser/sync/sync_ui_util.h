@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 
 class Profile;
 class ProfileSyncService;

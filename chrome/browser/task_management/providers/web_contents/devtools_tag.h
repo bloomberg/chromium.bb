@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_DEVTOOLS_TAG_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_DEVTOOLS_TAG_H_
 
+#include "base/macros.h"
 #include "chrome/browser/task_management/providers/web_contents/devtools_task.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tag.h"
 

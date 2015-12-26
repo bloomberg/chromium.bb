@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 #include "google_apis/gaia/google_service_auth_error.h"

@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_FILE_CHANGE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_FILE_CHANGE_H_
 
+#include <stddef.h>
+
 #include <deque>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/sync_file_system/sync_file_type.h"
 #include "storage/browser/fileapi/file_system_url.h"

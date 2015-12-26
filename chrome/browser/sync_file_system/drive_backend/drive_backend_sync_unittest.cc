@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
 #include <stack>
 
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -156,11 +160,11 @@ class DriveBackendSyncTest : public testing::Test,
     RevokeSyncableFileSystem();
   }
 
-  void OnRemoteChangeQueueUpdated(int64 pending_changes_hint) override {
+  void OnRemoteChangeQueueUpdated(int64_t pending_changes_hint) override {
     pending_remote_changes_ = pending_changes_hint;
   }
 
-  void OnLocalChangeAvailable(int64 pending_changes_hint) override {
+  void OnLocalChangeAvailable(int64_t pending_changes_hint) override {
     pending_local_changes_ = pending_changes_hint;
   }
 
@@ -274,8 +278,8 @@ class DriveBackendSyncTest : public testing::Test,
     storage::FileSystemURL url(CreateURL(app_id, path));
     ASSERT_TRUE(ContainsKey(file_systems_, app_id));
     EXPECT_EQ(base::File::FILE_OK, file_systems_[app_id]->CreateFile(url));
-    int64 bytes_written = file_systems_[app_id]->WriteString(url, content);
-    EXPECT_EQ(static_cast<int64>(content.size()), bytes_written);
+    int64_t bytes_written = file_systems_[app_id]->WriteString(url, content);
+    EXPECT_EQ(static_cast<int64_t>(content.size()), bytes_written);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -283,9 +287,9 @@ class DriveBackendSyncTest : public testing::Test,
                        const base::FilePath::StringType& path,
                        const std::string& content) {
     ASSERT_TRUE(ContainsKey(file_systems_, app_id));
-    int64 bytes_written = file_systems_[app_id]->WriteString(
-        CreateURL(app_id, path), content);
-    EXPECT_EQ(static_cast<int64>(content.size()), bytes_written);
+    int64_t bytes_written =
+        file_systems_[app_id]->WriteString(CreateURL(app_id, path), content);
+    EXPECT_EQ(static_cast<int64_t>(content.size()), bytes_written);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -319,7 +323,7 @@ class DriveBackendSyncTest : public testing::Test,
     return status;
   }
 
-  int64 GetLargestChangeID() {
+  int64_t GetLargestChangeID() {
     scoped_ptr<google_apis::AboutResource> about_resource;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_service_helper()->GetAboutResource(&about_resource));
@@ -374,14 +378,12 @@ class DriveBackendSyncTest : public testing::Test,
           continue;
 
         base::RunLoop run_loop;
-        int64 largest_fetched_change_id = -1;
+        int64_t largest_fetched_change_id = -1;
         PostTaskAndReplyWithResult(
-            worker_task_runner_.get(),
-            FROM_HERE,
+            worker_task_runner_.get(), FROM_HERE,
             base::Bind(&MetadataDatabase::GetLargestFetchedChangeID,
                        base::Unretained(metadata_database())),
-            base::Bind(&SetValueAndCallClosure<int64>,
-                       run_loop.QuitClosure(),
+            base::Bind(&SetValueAndCallClosure<int64_t>, run_loop.QuitClosure(),
                        &largest_fetched_change_id));
         run_loop.Run();
         if (largest_fetched_change_id != GetLargestChangeID()) {
@@ -627,8 +629,8 @@ class DriveBackendSyncTest : public testing::Test,
   scoped_ptr<SyncEngine> remote_sync_service_;
   scoped_ptr<LocalFileSyncService> local_sync_service_;
 
-  int64 pending_remote_changes_;
-  int64 pending_local_changes_;
+  int64_t pending_remote_changes_;
+  int64_t pending_local_changes_;
 
   scoped_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
   std::map<std::string, CannedSyncableFileSystem*> file_systems_;

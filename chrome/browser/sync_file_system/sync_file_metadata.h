@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_METADATA_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_METADATA_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/time/time.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -16,12 +17,12 @@ class SyncFileMetadata {
  public:
   SyncFileMetadata();
   SyncFileMetadata(SyncFileType file_type,
-                   int64 size,
+                   int64_t size,
                    const base::Time& last_modified);
   ~SyncFileMetadata();
 
   SyncFileType file_type;
-  int64 size;
+  int64_t size;
   base::Time last_modified;
 
   bool operator==(const SyncFileMetadata& that) const;

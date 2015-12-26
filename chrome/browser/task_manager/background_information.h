@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_BACKGROUND_INFORMATION_H_
 #define CHROME_BROWSER_TASK_MANAGER_BACKGROUND_INFORMATION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/task_manager/web_contents_information.h"
 
 namespace task_manager {

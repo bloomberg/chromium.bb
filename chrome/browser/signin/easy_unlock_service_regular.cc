@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 
+#include <stdint.h>
+
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,6 +15,7 @@
 #include "base/sys_info.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -619,7 +622,8 @@ cryptauth::GcmDeviceInfo EasyUnlockServiceRegular::GetGcmDeviceInfo() {
 
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
-  int64 primary_display_id = display_manager->GetPrimaryDisplayCandidate().id();
+  int64_t primary_display_id =
+      display_manager->GetPrimaryDisplayCandidate().id();
   ash::DisplayInfo display_info =
       display_manager->GetDisplayInfo(primary_display_id);
   gfx::Rect bounds = display_info.bounds_in_native();

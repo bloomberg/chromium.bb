@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"

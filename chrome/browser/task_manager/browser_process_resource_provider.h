@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_BROWSER_PROCESS_RESOURCE_PROVIDER_H_
 #define CHROME_BROWSER_TASK_MANAGER_BROWSER_PROCESS_RESOURCE_PROVIDER_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/child_process_data.h"

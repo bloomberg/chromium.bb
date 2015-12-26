@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/quiesce_status_change_checker.h"
 
+#include <stddef.h>
+
 #include "base/format_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"

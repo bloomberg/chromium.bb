@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_LOCAL_FILE_SYNC_STATUS_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_LOCAL_FILE_SYNC_STATUS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -83,7 +85,7 @@ class LocalFileSyncStatus
   typedef std::set<base::FilePath> PathSet;
   typedef std::map<OriginAndType, PathSet> URLSet;
 
-  typedef std::map<base::FilePath, int64> PathBucket;
+  typedef std::map<base::FilePath, int64_t> PathBucket;
   typedef std::map<OriginAndType, PathBucket> URLBucket;
 
   bool IsChildOrParentWriting(const storage::FileSystemURL& url) const;

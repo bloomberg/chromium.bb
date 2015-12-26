@@ -4,12 +4,16 @@
 
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <set>
 #include <utility>
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -102,7 +106,7 @@ FilterBuilder::~FilterBuilder() {
 bool FilterBuilder::AddPattern(const std::string& pattern) {
   std::string scheme;
   std::string host;
-  uint16 port = 0;
+  uint16_t port = 0;
   std::string path;
   std::string query;
   bool match_subdomains = true;

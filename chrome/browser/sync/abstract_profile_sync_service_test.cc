@@ -20,8 +20,9 @@ using syncer::UserShare;
 
 /* static */
 syncer::ImmutableChangeRecordList
-    ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
-        int64 node_id, syncer::ChangeRecord::Action action) {
+ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
+    int64_t node_id,
+    syncer::ChangeRecord::Action action) {
   syncer::ChangeRecord record;
   record.action = action;
   record.id = node_id;
@@ -31,8 +32,9 @@ syncer::ImmutableChangeRecordList
 
 /* static */
 syncer::ImmutableChangeRecordList
-    ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
-        int64 node_id, const sync_pb::EntitySpecifics& specifics) {
+ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
+    int64_t node_id,
+    const sync_pb::EntitySpecifics& specifics) {
   syncer::ChangeRecord record;
   record.action = syncer::ChangeRecord::ACTION_DELETE;
   record.id = node_id;

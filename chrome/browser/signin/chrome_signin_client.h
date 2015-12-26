@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_CLIENT_H_
 #define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_CLIENT_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/gaia_oauth_client.h"

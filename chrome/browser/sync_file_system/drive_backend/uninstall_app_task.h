@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_UNINSTALL_APP_TASK_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_UNINSTALL_APP_TASK_H_
 
+#include <stdint.h>
+
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
@@ -38,7 +41,7 @@ class UninstallAppTask : public ExclusiveTask {
 
  private:
   void DidDeleteAppRoot(const SyncStatusCallback& callback,
-                        int64 change_id,
+                        int64_t change_id,
                         google_apis::DriveApiErrorCode error);
 
   bool IsContextReady();
@@ -49,7 +52,7 @@ class UninstallAppTask : public ExclusiveTask {
 
   std::string app_id_;
   UninstallFlag uninstall_flag_;
-  int64 app_root_tracker_id_;
+  int64_t app_root_tracker_id_;
 
   base::WeakPtrFactory<UninstallAppTask> weak_ptr_factory_;
 

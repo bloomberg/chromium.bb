@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_THEME_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_THEME_H_
 
+#include "base/macros.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 

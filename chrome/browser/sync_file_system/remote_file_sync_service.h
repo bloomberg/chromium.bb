@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_FILE_SYNC_SERVICE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_FILE_SYNC_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -92,7 +94,7 @@ class RemoteFileSyncService {
     // |pending_changes_hint| indicates the pending queue length to help sync
     // scheduling but the value may not be accurately reflect the real-time
     // value.
-    virtual void OnRemoteChangeQueueUpdated(int64 pending_changes_hint) = 0;
+    virtual void OnRemoteChangeQueueUpdated(int64_t pending_changes_hint) = 0;
 
     // This is called when RemoteFileSyncService updates its state.
     virtual void OnRemoteServiceStateUpdated(

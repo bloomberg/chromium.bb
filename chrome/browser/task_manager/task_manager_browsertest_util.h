@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSERTEST_UTIL_H_
 
+#include <stddef.h>
+
 #include "base/strings/string16.h"
 
 namespace task_manager {

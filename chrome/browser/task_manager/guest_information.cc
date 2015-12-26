@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_manager/guest_information.h"
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"

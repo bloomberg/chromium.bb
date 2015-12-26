@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
@@ -26,6 +27,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"

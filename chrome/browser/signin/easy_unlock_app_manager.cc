@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"

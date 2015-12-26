@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SITE_LIST_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SITE_LIST_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <array>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
@@ -40,7 +44,7 @@ class SupervisedUserSiteList
    public:
     explicit HostnameHash(const std::string& hostname);
     // |bytes| must have a size of at least |base::kSHA1Length|.
-    explicit HostnameHash(const std::vector<uint8>& bytes);
+    explicit HostnameHash(const std::vector<uint8_t>& bytes);
 
     bool operator==(const HostnameHash& rhs) const;
 
@@ -48,7 +52,7 @@ class SupervisedUserSiteList
     size_t hash() const;
 
    private:
-    std::array<uint8, base::kSHA1Length> bytes_;
+    std::array<uint8_t, base::kSHA1Length> bytes_;
     // Copy and assign are allowed.
   };
 

@@ -24,20 +24,20 @@ double TestTaskManager::GetCpuUsage(TaskId task_id) const {
   return 0.0;
 }
 
-int64 TestTaskManager::GetPhysicalMemoryUsage(TaskId task_id) const {
+int64_t TestTaskManager::GetPhysicalMemoryUsage(TaskId task_id) const {
   return -1;
 }
 
-int64 TestTaskManager::GetPrivateMemoryUsage(TaskId task_id) const {
+int64_t TestTaskManager::GetPrivateMemoryUsage(TaskId task_id) const {
   return -1;
 }
 
-int64 TestTaskManager::GetSharedMemoryUsage(TaskId task_id) const {
+int64_t TestTaskManager::GetSharedMemoryUsage(TaskId task_id) const {
   return -1;
 }
 
-int64 TestTaskManager::GetGpuMemoryUsage(TaskId task_id,
-                                         bool* has_duplicates) const {
+int64_t TestTaskManager::GetGpuMemoryUsage(TaskId task_id,
+                                           bool* has_duplicates) const {
   return -1;
 }
 
@@ -50,14 +50,12 @@ int TestTaskManager::GetNaClDebugStubPort(TaskId task_id) const {
 }
 
 void TestTaskManager::GetGDIHandles(TaskId task_id,
-                                    int64* current,
-                                    int64* peak) const {
-}
+                                    int64_t* current,
+                                    int64_t* peak) const {}
 
 void TestTaskManager::GetUSERHandles(TaskId task_id,
-                                     int64* current,
-                                     int64* peak) const {
-}
+                                     int64_t* current,
+                                     int64_t* peak) const {}
 
 int TestTaskManager::GetOpenFdCount(TaskId task_id) const {
   return -1;
@@ -96,21 +94,21 @@ Task::Type TestTaskManager::GetType(TaskId task_id) const {
   return Task::UNKNOWN;
 }
 
-int64 TestTaskManager::GetNetworkUsage(TaskId task_id) const {
+int64_t TestTaskManager::GetNetworkUsage(TaskId task_id) const {
   return -1;
 }
 
-int64 TestTaskManager::GetProcessTotalNetworkUsage(TaskId task_id) const {
+int64_t TestTaskManager::GetProcessTotalNetworkUsage(TaskId task_id) const {
   return -1;
 }
 
-int64 TestTaskManager::GetSqliteMemoryUsed(TaskId task_id) const {
+int64_t TestTaskManager::GetSqliteMemoryUsed(TaskId task_id) const {
   return -1;
 }
 
 bool TestTaskManager::GetV8Memory(TaskId task_id,
-                                  int64* allocated,
-                                  int64* used) const {
+                                  int64_t* allocated,
+                                  int64_t* used) const {
   return false;
 }
 
@@ -132,7 +130,7 @@ base::TimeDelta TestTaskManager::GetRefreshTime() {
   return GetCurrentRefreshTime();
 }
 
-int64 TestTaskManager::GetEnabledFlags() {
+int64_t TestTaskManager::GetEnabledFlags() {
   return enabled_resources_flags();
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/task_logger.h"
 
+#include <stddef.h>
+
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"

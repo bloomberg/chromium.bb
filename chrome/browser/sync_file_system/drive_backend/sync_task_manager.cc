@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
@@ -189,7 +190,7 @@ void SyncTaskManager::UpdateTaskBlocker(
                                  continuation);
 }
 
-bool SyncTaskManager::IsRunningTask(int64 token_id) const {
+bool SyncTaskManager::IsRunningTask(int64_t token_id) const {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   // If the client is gone, all task should be aborted.

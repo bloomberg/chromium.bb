@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/cross_device_promo.h"
 
+#include <stdint.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -321,7 +323,7 @@ bool CrossDevicePromo::CheckPromoEligibility() {
     // The missing preference indicates CheckPromoEligibility() has never been
     // called. Determine when to call the DeviceActivityFetcher for the first
     // time.
-    const uint64 milliseconds_until_next_activity_fetch = base::RandGenerator(
+    const uint64_t milliseconds_until_next_activity_fetch = base::RandGenerator(
         delay_until_next_device_activity_fetch_.InMilliseconds());
     const base::Time time_of_next_device_activity_fetch = base::Time::Now() +
         base::TimeDelta::FromMilliseconds(

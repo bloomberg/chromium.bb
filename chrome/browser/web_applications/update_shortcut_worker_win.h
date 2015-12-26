@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_UPDATE_SHORTCUT_WORKER_WIN_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_UPDATE_SHORTCUT_WORKER_WIN_H_
 
+#include "base/macros.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/notification_observer.h"

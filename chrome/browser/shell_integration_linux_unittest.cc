@@ -4,6 +4,8 @@
 
 #include "chrome/browser/shell_integration_linux.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <cstdlib>
 #include <map>
@@ -15,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

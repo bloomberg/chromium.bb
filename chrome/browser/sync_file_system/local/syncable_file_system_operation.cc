@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/local/syncable_file_system_operation.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/sync_file_system/local/syncable_file_operation_runner.h"
@@ -237,9 +238,9 @@ void SyncableFileSystemOperation::Write(
   operation_runner_->PostOperationTask(task.Pass());
 }
 
-void SyncableFileSystemOperation::Truncate(
-    const FileSystemURL& url, int64 length,
-    const StatusCallback& callback) {
+void SyncableFileSystemOperation::Truncate(const FileSystemURL& url,
+                                           int64_t length,
+                                           const StatusCallback& callback) {
   DCHECK(CalledOnValidThread());
   if (!operation_runner_.get()) {
     callback.Run(base::File::FILE_ERROR_NOT_FOUND);
@@ -374,11 +375,10 @@ void SyncableFileSystemOperation::DidFinish(base::File::Error status) {
   completion_callback_.Run(status);
 }
 
-void SyncableFileSystemOperation::DidWrite(
-    const WriteCallback& callback,
-    base::File::Error result,
-    int64 bytes,
-    bool complete) {
+void SyncableFileSystemOperation::DidWrite(const WriteCallback& callback,
+                                           base::File::Error result,
+                                           int64_t bytes,
+                                           bool complete) {
   DCHECK(CalledOnValidThread());
   if (!complete) {
     callback.Run(result, bytes, complete);

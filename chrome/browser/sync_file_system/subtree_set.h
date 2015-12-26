@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SUBTREE_SET_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SUBTREE_SET_H_
 
+#include <stddef.h>
+
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 

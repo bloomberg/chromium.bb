@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_THUMBNAILS_THUMBNAILING_CONTEXT_H_
 #define CHROME_BROWSER_THUMBNAILS_THUMBNAILING_CONTEXT_H_
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "components/history/core/common/thumbnail_score.h"

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
@@ -9,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "build/build_config.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -106,7 +109,7 @@ class SupervisedUserSyncServiceTest : public ::testing::Test {
   MockChangeProcessor* change_processor_;
 
   // A unique ID for creating "remote" Sync data.
-  int64 sync_data_id_;
+  int64_t sync_data_id_;
 };
 
 SupervisedUserSyncServiceTest::SupervisedUserSyncServiceTest()

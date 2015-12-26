@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "components/signin/core/browser/signin_metrics.h"
 

@@ -37,7 +37,7 @@ namespace drive_backend {
 namespace {
 
 scoped_ptr<FileTracker> FindTrackerByID(MetadataDatabase* metadata_database,
-                                        int64 tracker_id) {
+                                        int64_t tracker_id) {
   scoped_ptr<FileTracker> tracker(new FileTracker);
   if (metadata_database->FindTrackerByTrackerID(tracker_id, tracker.get()))
     return tracker.Pass();
@@ -46,7 +46,7 @@ scoped_ptr<FileTracker> FindTrackerByID(MetadataDatabase* metadata_database,
 
 bool GetKnownChangeID(MetadataDatabase* metadata_database,
                       const std::string& file_id,
-                      int64* change_id) {
+                      int64_t* change_id) {
   FileMetadata remote_file_metadata;
   if (!metadata_database->FindFileByFileID(file_id, &remote_file_metadata))
     return false;
@@ -295,7 +295,7 @@ void LocalToRemoteSyncer::ContinueAsBackgroundTask(
   // - Others, SyncEngineInitializer and RegisterAppTask doesn't affect to
   //   LocalToRemoteSyncer.
   if (remote_file_tracker_) {
-    int64 latest_change_id = 0;
+    int64_t latest_change_id = 0;
     if (!GetKnownChangeID(metadata_database(),
                           remote_file_tracker_->file_id(),
                           &latest_change_id) ||

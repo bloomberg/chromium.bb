@@ -4,9 +4,12 @@
 
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

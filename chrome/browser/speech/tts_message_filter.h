@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SPEECH_TTS_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_SPEECH_TTS_MESSAGE_FILTER_H_
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/speech/tts_controller.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 
+#include <stddef.h>
+
 #include "net/android/network_library.h"
 
 namespace chrome {

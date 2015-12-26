@@ -11,6 +11,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/sync_driver/sync_prefs.h"

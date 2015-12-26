@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 
-#include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

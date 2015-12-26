@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/local/syncable_file_operation_runner.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <functional>
 
@@ -43,7 +45,7 @@ void SyncableFileOperationRunner::Task::Start(LocalFileSyncStatus* status) {
 // SyncableFileOperationRunner -------------------------------------------------
 
 SyncableFileOperationRunner::SyncableFileOperationRunner(
-    int64 max_inflight_tasks,
+    int64_t max_inflight_tasks,
     LocalFileSyncStatus* sync_status)
     : sync_status_(sync_status),
       max_inflight_tasks_(max_inflight_tasks),

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"

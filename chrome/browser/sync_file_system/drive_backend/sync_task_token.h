@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_TOKEN_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_TOKEN_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
@@ -22,9 +25,9 @@ struct TaskBlocker;
 // should run exclusively, and held by SyncTaskManager when no task is running.
 class SyncTaskToken {
  public:
-  static const int64 kTestingTaskTokenID;
-  static const int64 kForegroundTaskTokenID;
-  static const int64 kMinimumBackgroundTaskTokenID;
+  static const int64_t kTestingTaskTokenID;
+  static const int64_t kForegroundTaskTokenID;
+  static const int64_t kMinimumBackgroundTaskTokenID;
 
   static scoped_ptr<SyncTaskToken> CreateForTesting(
       const SyncStatusCallback& callback);
@@ -34,7 +37,7 @@ class SyncTaskToken {
   static scoped_ptr<SyncTaskToken> CreateForBackgroundTask(
       const base::WeakPtr<SyncTaskManager>& manager,
       base::SequencedTaskRunner* task_runner,
-      int64 token_id,
+      int64_t token_id,
       scoped_ptr<TaskBlocker> task_blocker);
 
   void UpdateTask(const tracked_objects::Location& location,
@@ -54,7 +57,7 @@ class SyncTaskToken {
   const TaskBlocker* task_blocker() const;
   void clear_task_blocker();
 
-  int64 token_id() const { return token_id_; }
+  int64_t token_id() const { return token_id_; }
 
   void InitializeTaskLog(const std::string& task_description);
   void FinalizeTaskLog(const std::string& result_description);
@@ -67,14 +70,14 @@ class SyncTaskToken {
  private:
   SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
                 const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-                int64 token_id,
+                int64_t token_id,
                 scoped_ptr<TaskBlocker> task_blocker,
                 const SyncStatusCallback& callback);
 
   base::WeakPtr<SyncTaskManager> manager_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   tracked_objects::Location location_;
-  int64 token_id_;
+  int64_t token_id_;
   SyncStatusCallback callback_;
 
   scoped_ptr<TaskLogger::TaskLog> task_log_;

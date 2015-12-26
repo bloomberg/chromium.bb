@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tag.h"
 
 namespace base {

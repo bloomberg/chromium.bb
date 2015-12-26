@@ -4,6 +4,8 @@
 
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/json/json_reader.h"

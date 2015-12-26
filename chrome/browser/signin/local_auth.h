@@ -9,6 +9,8 @@
 #ifndef CHROME_BROWSER_SIGNIN_LOCAL_AUTH_H_
 #define CHROME_BROWSER_SIGNIN_LOCAL_AUTH_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/gtest_prod_util.h"

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_H_
 
+#include <stdint.h>
+
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
@@ -32,7 +34,7 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
 
   void OnSpellCheckerRequestDictionary();
   void OnNotifyChecked(const base::string16& word, bool misspelled);
-  void OnRespondDocumentMarkers(const std::vector<uint32>& markers);
+  void OnRespondDocumentMarkers(const std::vector<uint32_t>& markers);
 #if !defined(USE_BROWSER_SPELLCHECKER)
   void OnCallSpellingService(int route_id,
                              int identifier,

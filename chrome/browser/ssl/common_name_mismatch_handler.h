@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SSL_COMMON_NAME_MISMATCH_HANDLER_H_
 #define CHROME_BROWSER_SSL_COMMON_NAME_MISMATCH_HANDLER_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"

@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_THEMES_BROWSER_THEME_PACK_H_
 #define CHROME_BROWSER_THEMES_BROWSER_THEME_PACK_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
@@ -97,7 +99,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   typedef std::map<int, scoped_refptr<base::RefCountedMemory> > RawImages;
 
   // The type passed to ui::DataPack::WritePack.
-  typedef std::map<uint16, base::StringPiece> RawDataForWriting;
+  typedef std::map<uint16_t, base::StringPiece> RawDataForWriting;
 
   // Maps scale factors (enum values) to file paths.
   typedef std::map<ui::ScaleFactor, base::FilePath> ScaleFactorToFileMap;
@@ -217,33 +219,33 @@ class BrowserThemePack : public CustomThemeSupplier {
   // Header that is written to disk.
   struct BrowserThemePackHeader {
     // Numeric version to make sure we're compatible in the future.
-    int32 version;
+    int32_t version;
 
     // 1 if little_endian. 0 if big_endian. On mismatch, abort load.
-    int32 little_endian;
+    int32_t little_endian;
 
     // theme_id without NULL terminator.
-    uint8 theme_id[16];
+    uint8_t theme_id[16];
   } *header_;
 
   // The remaining structs represent individual entries in an array. For the
   // following three structs, BrowserThemePack will either allocate an array or
   // will point directly to mmapped data.
   struct TintEntry {
-    int32 id;
+    int32_t id;
     double h;
     double s;
     double l;
   } *tints_;
 
   struct ColorPair {
-    int32 id;
+    int32_t id;
     SkColor color;
   } *colors_;
 
   struct DisplayPropertyPair {
-    int32 id;
-    int32 property;
+    int32_t id;
+    int32_t property;
   } *display_properties_;
 
   // A list of included source images. A pointer to a -1 terminated array of

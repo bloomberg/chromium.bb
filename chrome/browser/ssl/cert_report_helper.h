@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "components/certificate_reporting/error_report.h"
 #include "net/ssl/ssl_info.h"

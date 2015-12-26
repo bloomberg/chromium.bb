@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
@@ -53,7 +57,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
 };
 
 TEST(SpellCheckMessageFilterTest, TestOverrideThread) {
-  static const uint32 kSpellcheckMessages[] = {
+  static const uint32_t kSpellcheckMessages[] = {
     SpellCheckHostMsg_RequestDictionary::ID,
     SpellCheckHostMsg_NotifyChecked::ID,
     SpellCheckHostMsg_RespondDocumentMarkers::ID,

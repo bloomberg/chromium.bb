@@ -4,6 +4,8 @@
 
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

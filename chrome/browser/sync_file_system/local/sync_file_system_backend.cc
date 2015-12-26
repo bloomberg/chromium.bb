@@ -189,8 +189,8 @@ bool SyncFileSystemBackend::HasInplaceCopyImplementation(
 scoped_ptr<storage::FileStreamReader>
 SyncFileSystemBackend::CreateFileStreamReader(
     const storage::FileSystemURL& url,
-    int64 offset,
-    int64 max_bytes_to_read,
+    int64_t offset,
+    int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     storage::FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
@@ -201,7 +201,7 @@ SyncFileSystemBackend::CreateFileStreamReader(
 scoped_ptr<storage::FileStreamWriter>
 SyncFileSystemBackend::CreateFileStreamWriter(
     const storage::FileSystemURL& url,
-    int64 offset,
+    int64_t offset,
     storage::FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
   return GetDelegate()->CreateFileStreamWriter(

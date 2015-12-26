@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_FACTORY_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_FACTORY_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/signin_tracker.h"
 

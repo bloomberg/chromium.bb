@@ -5,6 +5,7 @@
 #include "chrome/browser/shell_integration_linux.h"
 
 #include <fcntl.h>
+#include <stddef.h>
 
 #if defined(USE_GLIB)
 #include <glib.h>

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/thumbnails/thumbnail_service_impl.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/top_sites_factory.h"

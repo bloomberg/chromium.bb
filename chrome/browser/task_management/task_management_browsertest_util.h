@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGEMENT_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGEMENT_BROWSERTEST_UTIL_H_
 
+#include "base/macros.h"
 #include "chrome/browser/task_management/providers/task_provider_observer.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_task_provider.h"

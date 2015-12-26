@@ -38,7 +38,7 @@ Misspelling::Misspelling(const base::string16& context,
                          size_t location,
                          size_t length,
                          const std::vector<base::string16>& suggestions,
-                         uint32 hash)
+                         uint32_t hash)
     : context(context),
       location(location),
       length(length),

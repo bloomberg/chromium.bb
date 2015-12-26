@@ -4,12 +4,15 @@
 
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_paths.h"

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"

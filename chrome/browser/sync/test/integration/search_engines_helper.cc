@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/search_engines_helper.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/strings/string_util.h"

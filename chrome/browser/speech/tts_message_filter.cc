@@ -4,6 +4,8 @@
 
 #include "chrome/browser/speech/tts_message_filter.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"

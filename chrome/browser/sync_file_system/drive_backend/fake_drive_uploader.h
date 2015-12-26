@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_util.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"

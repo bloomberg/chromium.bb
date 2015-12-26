@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "components/update_client/update_query_params_delegate.h"
 
 class ChromeUpdateQueryParamsDelegate

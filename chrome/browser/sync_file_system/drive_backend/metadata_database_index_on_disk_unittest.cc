@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_on_disk.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/files/scoped_temp_dir.h"
@@ -24,10 +26,10 @@ namespace drive_backend {
 
 namespace {
 
-const int64 kSyncRootTrackerID = 1;
-const int64 kAppRootTrackerID = 2;
-const int64 kFileTrackerID = 3;
-const int64 kPlaceholderTrackerID = 4;
+const int64_t kSyncRootTrackerID = 1;
+const int64_t kAppRootTrackerID = 2;
+const int64_t kFileTrackerID = 3;
+const int64_t kPlaceholderTrackerID = 4;
 
 }  // namespace
 
@@ -154,7 +156,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, GetEntryTest) {
 TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
   CreateTestDatabase(false, nullptr);
 
-  const int64 tracker_id = 10;
+  const int64_t tracker_id = 10;
   scoped_ptr<FileMetadata> metadata =
       test_util::CreateFileMetadata("test_file_id", "test_title", "test_md5");
   FileTracker root_tracker;
@@ -230,7 +232,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SyncRootInvalidation) {
   CreateTestDatabase(true, nullptr);
   EXPECT_NE(kInvalidTrackerID, index()->GetAppRootTracker("app_id"));
 
-  const int64 kNewSyncRootTrackerID = 10;
+  const int64_t kNewSyncRootTrackerID = 10;
   scoped_ptr<FileMetadata> new_sync_root_metadata =
       test_util::CreateFolderMetadata("new_sync_root_folder_id",
                                       kSyncRootFolderTitle);
@@ -280,7 +282,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, BuildIndexTest) {
 
 TEST_F(MetadataDatabaseIndexOnDiskTest, BuildAndDeleteIndexTest) {
   CreateTestDatabase(false, nullptr);
-  int64 answer = index()->BuildTrackerIndexes();
+  int64_t answer = index()->BuildTrackerIndexes();
   WriteToDB();
   ASSERT_EQ(16, answer);
   EXPECT_EQ(answer, index()->DeleteTrackerIndexes());
@@ -301,7 +303,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, AllEntriesTest) {
   EXPECT_EQ("sync_root_folder_id", file_ids[2]);
 
   EXPECT_EQ(4U, index()->CountFileTracker());
-  std::vector<int64> tracker_ids = index()->GetAllTrackerIDs();
+  std::vector<int64_t> tracker_ids = index()->GetAllTrackerIDs();
   ASSERT_EQ(4U, tracker_ids.size());
   std::sort(tracker_ids.begin(), tracker_ids.end());
   EXPECT_EQ(kSyncRootTrackerID, tracker_ids[0]);
@@ -320,7 +322,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker(""));
   EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
 
-  const int64 kAppRootTrackerID2 = 12;
+  const int64_t kAppRootTrackerID2 = 12;
   FileTracker sync_root_tracker;
   index()->GetFileTracker(kSyncRootTrackerID, &sync_root_tracker);
   scoped_ptr<FileMetadata> app_root_metadata =
@@ -383,7 +385,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
   EXPECT_EQ(1U, tracker_ids.size());
   EXPECT_EQ(kFileTrackerID, tracker_ids.active_tracker());
 
-  const int64 tracker_id = 21;
+  const int64_t tracker_id = 21;
   // Testing AddToFileIDIndexes
   scoped_ptr<FileTracker> file_tracker =
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
@@ -452,7 +454,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
       kAppRootTrackerID, "file2");
   EXPECT_TRUE(tracker_ids.empty());
 
-  const int64 tracker_id = 72;
+  const int64_t tracker_id = 72;
   // Testing AddToFileIDIndexes
   scoped_ptr<FileTracker> file_tracker =
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
@@ -515,8 +517,8 @@ TEST_F(MetadataDatabaseIndexOnDiskTest,
        TrackerIDSetByParentIDAndTitleTest_EmptyTitle) {
   CreateTestDatabase(true, nullptr);
 
-  const int64 kFolderTrackerID = 23;
-  const int64 kNewFileTrackerID = 42;
+  const int64_t kFolderTrackerID = 23;
+  const int64_t kNewFileTrackerID = 42;
   {
     FileTracker app_root_tracker;
     EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
@@ -575,8 +577,8 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetDetailsTest) {
   FileTracker app_root;
   EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root));
 
-  const int64 kFileTrackerID2 = 123;
-  const int64 kFileTrackerID3 = 124;
+  const int64_t kFileTrackerID2 = 123;
+  const int64_t kFileTrackerID3 = 124;
   scoped_ptr<FileMetadata> file_metadata =
       test_util::CreateFileMetadata("file_id2", "file_2", "file_md5_2");
   scoped_ptr<FileTracker> file_tracker =
@@ -619,7 +621,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
   EXPECT_TRUE(index()->HasDemotedDirtyTracker());
   EXPECT_EQ(0U, index()->CountDirtyTracker());
 
-  const int64 tracker_id = 13;
+  const int64_t tracker_id = 13;
   scoped_ptr<FileTracker> app_root_tracker(new FileTracker);
   index()->GetFileTracker(kAppRootTrackerID, app_root_tracker.get());
 

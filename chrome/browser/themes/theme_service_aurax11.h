@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_THEMES_THEME_SERVICE_AURAX11_H_
 #define CHROME_BROWSER_THEMES_THEME_SERVICE_AURAX11_H_
 
+#include "base/macros.h"
 #include "chrome/browser/themes/theme_service.h"
 
 // A subclass of ThemeService that manages the CustomThemeSupplier which

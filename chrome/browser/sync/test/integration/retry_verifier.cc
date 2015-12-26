@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/retry_verifier.h"
 
+#include <string.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -13,20 +15,23 @@
 namespace {
 // Given the current delay calculate the minimum and maximum wait times for
 // the next retry.
-DelayInfo CalculateDelay(int64 current_delay) {
-  int64 backoff_s = std::max(static_cast<int64>(1), current_delay *
-                             syncer::kBackoffRandomizationFactor);
+DelayInfo CalculateDelay(int64_t current_delay) {
+  int64_t backoff_s =
+      std::max(static_cast<int64_t>(1),
+               current_delay * syncer::kBackoffRandomizationFactor);
 
   DelayInfo delay_info;
   delay_info.min_delay = backoff_s + (-1 * current_delay/
                              syncer::kBackoffRandomizationFactor);
   delay_info.max_delay = backoff_s + current_delay/2;
 
-  delay_info.min_delay = std::max(static_cast<int64>(1),
-      std::min(delay_info.min_delay, syncer::kMaxBackoffSeconds));
+  delay_info.min_delay =
+      std::max(static_cast<int64_t>(1),
+               std::min(delay_info.min_delay, syncer::kMaxBackoffSeconds));
 
-  delay_info.max_delay = std::max(static_cast<int64>(1),
-      std::min(delay_info.max_delay, syncer::kMaxBackoffSeconds));
+  delay_info.max_delay =
+      std::max(static_cast<int64_t>(1),
+               std::min(delay_info.max_delay, syncer::kMaxBackoffSeconds));
 
   return delay_info;
 }
@@ -37,8 +42,8 @@ void FillDelayTable(DelayInfo* delay_table, int count) {
   DCHECK(count > 1);
 
   // We start off with the minimum value of 2 seconds.
-  delay_table[0].min_delay = static_cast<int64>(2);
-  delay_table[0].max_delay = static_cast<int64>(2);
+  delay_table[0].min_delay = static_cast<int64_t>(2);
+  delay_table[0].max_delay = static_cast<int64_t>(2);
 
   for (int i = 1 ; i < count ; ++i) {
     delay_table[i].min_delay = CalculateDelay(delay_table[i-1].min_delay).

@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_THEMES_THEME_SYNCABLE_SERVICE_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
-#include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error.h"
+#include "sync/api/sync_error_factory.h"
 #include "sync/api/syncable_service.h"
 
 class Profile;

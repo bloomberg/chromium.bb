@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/sync/test/integration/password_manager_setting_migrator_helper.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"

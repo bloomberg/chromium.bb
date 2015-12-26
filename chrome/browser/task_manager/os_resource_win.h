@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_OS_RESOURCE_WIN_H_
 #define CHROME_BROWSER_TASK_MANAGER_OS_RESOURCE_WIN_H_
 
+#include <stddef.h>
+
 #include "base/process/process_handle.h"
 
 namespace task_manager {

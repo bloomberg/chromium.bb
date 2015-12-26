@@ -4,6 +4,8 @@
 
 #include "chrome/browser/themes/theme_syncable_service.h"
 
+#include <stddef.h>
+
 #include "base/strings/stringprintf.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"

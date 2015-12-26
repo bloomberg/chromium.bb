@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 

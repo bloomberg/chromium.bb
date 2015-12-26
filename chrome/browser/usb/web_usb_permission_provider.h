@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_USB_WEB_USB_PERMISSION_PROVIDER_H_
 #define CHROME_BROWSER_USB_WEB_USB_PERMISSION_PROVIDER_H_
 
+#include <stdint.h>
+
 #include "device/devices_app/usb/public/interfaces/permission_provider.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/array.h"

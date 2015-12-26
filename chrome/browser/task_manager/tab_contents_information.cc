@@ -4,7 +4,10 @@
 
 #include "chrome/browser/task_manager/tab_contents_information.h"
 
+#include <stddef.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"

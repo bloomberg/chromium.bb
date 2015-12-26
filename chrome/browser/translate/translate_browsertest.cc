@@ -6,8 +6,11 @@
 // from Aura. The file should be ported to use the bubble.
 #if !defined(USE_AURA)
 
+#include <stddef.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

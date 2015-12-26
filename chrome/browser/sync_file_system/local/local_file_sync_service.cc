@@ -70,8 +70,8 @@ bool LocalFileSyncService::OriginChangeMap::NextOriginToProcess(GURL* origin) {
   return false;
 }
 
-int64 LocalFileSyncService::OriginChangeMap::GetTotalChangeCount() const {
-  int64 num_changes = 0;
+int64_t LocalFileSyncService::OriginChangeMap::GetTotalChangeCount() const {
+  int64_t num_changes = 0;
   for (Map::const_iterator iter = change_count_map_.begin();
        iter != change_count_map_.end(); ++iter) {
     if (ContainsKey(disabled_origins_, iter->first))
@@ -82,7 +82,8 @@ int64 LocalFileSyncService::OriginChangeMap::GetTotalChangeCount() const {
 }
 
 void LocalFileSyncService::OriginChangeMap::SetOriginChangeCount(
-    const GURL& origin, int64 changes) {
+    const GURL& origin,
+    int64_t changes) {
   if (changes != 0) {
     change_count_map_[origin] = changes;
     return;
@@ -329,7 +330,7 @@ void LocalFileSyncService::OnChangesAvailableInOrigins(
   }
   if (!need_notification)
     return;
-  int64 num_changes = origin_change_map_.GetTotalChangeCount();
+  int64_t num_changes = origin_change_map_.GetTotalChangeCount();
   FOR_EACH_OBSERVER(Observer, change_observers_,
                     OnLocalChangeAvailable(num_changes));
 }
@@ -376,7 +377,7 @@ void LocalFileSyncService::DidInitializeFileSystemContext(
     DCHECK(backend->change_tracker());
     origin_change_map_.SetOriginChangeCount(
         app_origin, backend->change_tracker()->num_changes());
-    int64 num_changes = origin_change_map_.GetTotalChangeCount();
+    int64_t num_changes = origin_change_map_.GetTotalChangeCount();
     FOR_EACH_OBSERVER(Observer, change_observers_,
                       OnLocalChangeAvailable(num_changes));
   }

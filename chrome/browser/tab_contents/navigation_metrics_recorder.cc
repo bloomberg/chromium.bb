@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/rappor/rappor_utils.h"

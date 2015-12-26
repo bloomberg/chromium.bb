@@ -4,12 +4,15 @@
 
 #include "chrome/browser/sync/sync_ui_util.h"
 
+#include <stdint.h>
+
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -392,7 +395,7 @@ MessageType GetStatus(Profile* profile,
                                      nullptr, nullptr);
 }
 
-base::string16 ConstructTime(int64 time_in_int) {
+base::string16 ConstructTime(int64_t time_in_int) {
   base::Time time = base::Time::FromInternalValue(time_in_int);
 
   // If time is null the format function returns a time in 1969.

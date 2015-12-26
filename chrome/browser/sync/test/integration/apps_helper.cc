@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"

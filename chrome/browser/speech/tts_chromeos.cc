@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "chrome/browser/speech/tts_platform.h"
 
 // Chrome OS doesn't have native TTS, instead it includes a built-in

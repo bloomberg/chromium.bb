@@ -88,12 +88,12 @@ scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
 }
 
 scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
-                                      int64 tracker_id,
+                                      int64_t tracker_id,
                                       const FileTracker* parent_tracker) {
   scoped_ptr<FileTracker> tracker(new FileTracker);
   tracker->set_tracker_id(tracker_id);
-  int64 parent_id = parent_tracker ?
-      parent_tracker->tracker_id() : kInvalidTrackerID;
+  int64_t parent_id =
+      parent_tracker ? parent_tracker->tracker_id() : kInvalidTrackerID;
   tracker->set_parent_tracker_id(parent_id);
   tracker->set_file_id(metadata.file_id());
   if (parent_tracker)
@@ -108,7 +108,7 @@ scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
 
 scoped_ptr<FileTracker> CreatePlaceholderTracker(
     const std::string& file_id,
-    int64 tracker_id,
+    int64_t tracker_id,
     const FileTracker* parent_tracker) {
   scoped_ptr<FileTracker> tracker(new FileTracker);
   tracker->set_tracker_id(tracker_id);

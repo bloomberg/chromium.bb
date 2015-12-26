@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 
+#include <stdint.h>
+
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/leveldb_wrapper.h"
@@ -19,10 +21,10 @@ namespace drive_backend {
 
 namespace {
 
-const int64 kSyncRootTrackerID = 1;
-const int64 kAppRootTrackerID = 2;
-const int64 kFileTrackerID = 3;
-const int64 kPlaceholderTrackerID = 4;
+const int64_t kSyncRootTrackerID = 1;
+const int64_t kAppRootTrackerID = 2;
+const int64_t kFileTrackerID = 3;
+const int64_t kPlaceholderTrackerID = 4;
 
 scoped_ptr<DatabaseContents> CreateTestDatabaseContents() {
   scoped_ptr<DatabaseContents> contents(new DatabaseContents);
@@ -117,7 +119,7 @@ TEST_F(MetadataDatabaseIndexTest, IndexLookUpTest) {
   EXPECT_TRUE(trackers.has_active());
   EXPECT_EQ(kFileTrackerID, trackers.active_tracker());
 
-  int64 app_root_tracker_id = index()->GetAppRootTracker("app_id");
+  int64_t app_root_tracker_id = index()->GetAppRootTracker("app_id");
   EXPECT_EQ(kAppRootTrackerID, app_root_tracker_id);
 
   trackers = index()->GetFileTrackerIDsByParentAndTitle(
@@ -145,7 +147,7 @@ TEST_F(MetadataDatabaseIndexTest, UpdateTest) {
   FileTracker app_root_tracker;
   ASSERT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
 
-  int64 new_tracker_id = 100;
+  int64_t new_tracker_id = 100;
   scoped_ptr<FileTracker> new_tracker =
       test_util::CreateTracker(metadata, new_tracker_id, &app_root_tracker);
   new_tracker->set_active(false);

@@ -5,22 +5,26 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_SAMPLING_TASK_GROUP_SAMPLER_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_SAMPLING_TASK_GROUP_SAMPLER_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "build/build_config.h"
 
 namespace task_management {
 
 // Wraps the memory usage stats values together so that it can be sent between
 // the UI and the worker threads.
 struct MemoryUsageStats {
-  int64 private_bytes;
-  int64 shared_bytes;
-  int64 physical_bytes;
+  int64_t private_bytes;
+  int64_t shared_bytes;
+  int64_t physical_bytes;
 
   MemoryUsageStats()
       : private_bytes(-1),
@@ -58,7 +62,7 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
 
   // Refreshes the expensive process' stats (CPU usage, memory usage, and idle
   // wakeups per second) on the worker thread.
-  void Refresh(int64 refresh_flags);
+  void Refresh(int64_t refresh_flags);
 
  private:
   friend class base::RefCountedThreadSafe<TaskGroupSampler>;

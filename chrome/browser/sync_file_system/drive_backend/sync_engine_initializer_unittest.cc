@@ -4,8 +4,12 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -29,7 +33,7 @@ namespace drive_backend {
 
 namespace {
 
-const int64 kInitialLargestChangeID = 1234;
+const int64_t kInitialLargestChangeID = 1234;
 
 }  // namespace
 
@@ -163,7 +167,7 @@ class SyncEngineInitializerTest : public testing::Test {
   }
 
   std::string GetSyncRootFolderID() {
-    int64 sync_root_tracker_id = metadata_database_->GetSyncRootTrackerID();
+    int64_t sync_root_tracker_id = metadata_database_->GetSyncRootTrackerID();
     FileTracker sync_root_tracker;
     EXPECT_TRUE(metadata_database_->FindTrackerByTrackerID(
         sync_root_tracker_id, &sync_root_tracker));

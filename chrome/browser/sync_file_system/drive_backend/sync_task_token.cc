@@ -13,9 +13,9 @@
 namespace sync_file_system {
 namespace drive_backend {
 
-const int64 SyncTaskToken::kTestingTaskTokenID = -1;
-const int64 SyncTaskToken::kForegroundTaskTokenID = 0;
-const int64 SyncTaskToken::kMinimumBackgroundTaskTokenID = 1;
+const int64_t SyncTaskToken::kTestingTaskTokenID = -1;
+const int64_t SyncTaskToken::kForegroundTaskTokenID = 0;
+const int64_t SyncTaskToken::kMinimumBackgroundTaskTokenID = 1;
 
 // static
 scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForTesting(
@@ -44,7 +44,7 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForForegroundTask(
 scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForBackgroundTask(
     const base::WeakPtr<SyncTaskManager>& manager,
     base::SequencedTaskRunner* task_runner,
-    int64 token_id,
+    int64_t token_id,
     scoped_ptr<TaskBlocker> task_blocker) {
   return make_scoped_ptr(new SyncTaskToken(
       manager,
@@ -144,15 +144,14 @@ scoped_ptr<TaskLogger::TaskLog> SyncTaskToken::PassTaskLog() {
 SyncTaskToken::SyncTaskToken(
     const base::WeakPtr<SyncTaskManager>& manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    int64 token_id,
+    int64_t token_id,
     scoped_ptr<TaskBlocker> task_blocker,
     const SyncStatusCallback& callback)
     : manager_(manager),
       task_runner_(task_runner),
       token_id_(token_id),
       callback_(callback),
-      task_blocker_(task_blocker.Pass()) {
-}
+      task_blocker_(task_blocker.Pass()) {}
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/private_working_set_snapshot.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -308,7 +309,7 @@ int TaskManagerModel::GetNaClDebugStubPort(int index) const {
   return values.nacl_debug_stub_port;
 }
 
-int64 TaskManagerModel::GetNetworkUsage(int index) const {
+int64_t TaskManagerModel::GetNetworkUsage(int index) const {
   return GetNetworkUsage(GetResource(index));
 }
 
@@ -432,7 +433,7 @@ base::string16 TaskManagerModel::GetResourceNaClDebugStubPort(int index) const {
 }
 
 base::string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
-  int64 net_usage = GetNetworkUsage(index);
+  int64_t net_usage = GetNetworkUsage(index);
   if (net_usage == -1)
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   if (net_usage == 0)
@@ -1331,7 +1332,7 @@ void TaskManagerModel::RefreshVideoMemoryUsageStats() {
   content::GpuDataManager::GetInstance()->RequestVideoMemoryUsageStatsUpdate();
 }
 
-int64 TaskManagerModel::GetNetworkUsageForResource(Resource* resource) const {
+int64_t TaskManagerModel::GetNetworkUsageForResource(Resource* resource) const {
   // Returns default of 0 if no network usage.
   return per_resource_cache_[resource].network_usage;
 }
@@ -1407,8 +1408,8 @@ void TaskManagerModel::SetUpdatingByteCount(bool is_updating) {
   is_updating_byte_count_ = is_updating;
 }
 
-int64 TaskManagerModel::GetNetworkUsage(Resource* resource) const {
-  int64 net_usage = GetNetworkUsageForResource(resource);
+int64_t TaskManagerModel::GetNetworkUsage(Resource* resource) const {
+  int64_t net_usage = GetNetworkUsageForResource(resource);
   if (net_usage == 0 && !resource->SupportNetworkUsage())
     return -1;
   return net_usage;
@@ -1426,7 +1427,7 @@ int TaskManagerModel::GetIdleWakeupsPerSecond(Resource* resource) const {
   return values.idle_wakeups;
 }
 
-base::string16 TaskManagerModel::GetMemCellText(int64 number) const {
+base::string16 TaskManagerModel::GetMemCellText(int64_t number) const {
 #if !defined(OS_MACOSX)
   base::string16 str = base::FormatNumber(number / 1024);
 

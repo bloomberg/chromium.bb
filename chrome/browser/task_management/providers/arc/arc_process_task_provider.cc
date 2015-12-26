@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_management/providers/arc/arc_process_task_provider.h"
 
+#include <stddef.h>
+
 #include <queue>
 #include <set>
 #include <utility>

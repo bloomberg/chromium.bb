@@ -96,7 +96,7 @@ void SpellCheckMessageFilter::OnNotifyChecked(const base::string16& word,
 }
 
 void SpellCheckMessageFilter::OnRespondDocumentMarkers(
-    const std::vector<uint32>& markers) {
+    const std::vector<uint32_t>& markers) {
   SpellcheckService* spellcheck = GetSpellcheckService();
   // Spellcheck service may not be available for a renderer process that is
   // shutting down.

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
 
+#include <string.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"

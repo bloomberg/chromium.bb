@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_service_aurax11.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"

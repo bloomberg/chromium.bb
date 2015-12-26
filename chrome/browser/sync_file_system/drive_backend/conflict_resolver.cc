@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -96,7 +98,7 @@ void ConflictResolver::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   if (metadata_database()->GetConflictingTrackers(&trackers)) {
     target_file_id_ = PickPrimaryFile(trackers);
     DCHECK(!target_file_id_.empty());
-    int64 primary_tracker_id = -1;
+    int64_t primary_tracker_id = -1;
     for (TrackerIDSet::const_iterator itr = trackers.begin();
          itr != trackers.end(); ++itr) {
       FileTracker tracker;

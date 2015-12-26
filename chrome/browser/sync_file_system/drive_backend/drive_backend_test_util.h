@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_BACKEND_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_BACKEND_TEST_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -36,11 +38,11 @@ scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
                                             const std::string& title,
                                             const std::string& md5);
 scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
-                                      int64 tracker_id,
+                                      int64_t tracker_id,
                                       const FileTracker* parent_tracker);
 scoped_ptr<FileTracker> CreatePlaceholderTracker(
     const std::string& file_id,
-    int64 tracker_id,
+    int64_t tracker_id,
     const FileTracker* parent_tracker);
 
 // The return value type of GetFileResourceKind().

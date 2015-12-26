@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 
+#include <stddef.h>
+
 #include <set>
 
 #include "base/bind.h"
@@ -12,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/signin_manager_factory.h"

@@ -5,11 +5,13 @@
 #include "chrome/browser/web_applications/web_app_win.h"
 
 #include <shlobj.h>
+#include <stddef.h>
 
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"

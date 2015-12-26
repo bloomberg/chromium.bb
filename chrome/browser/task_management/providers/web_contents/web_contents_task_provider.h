@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "chrome/browser/task_management/providers/task_provider.h"
 
 namespace content {

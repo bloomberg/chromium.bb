@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
 
+#include <stdint.h>
+
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -94,7 +96,7 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_Basic) {
   FireBookmarksApiEvent<extensions::BookmarksUpdateFunction>(extension1_, 2);
   FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 3);
   FireBookmarksApiEvent<extensions::BookmarksSearchFunction>(extension1_, 5);
-  const uint32 writes_by_extension1 = 1 + 1 + 2 + 3;
+  const uint32_t writes_by_extension1 = 1 + 1 + 2 + 3;
 
   FireBookmarksApiEvent<extensions::BookmarksRemoveTreeFunction>(
       extension2_, 8);
@@ -103,7 +105,7 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, DISABLED_Basic) {
   FireBookmarksApiEvent<extensions::BookmarksGetChildrenFunction>(
       extension2_, 21);
   FireBookmarksApiEvent<extensions::BookmarksGetTreeFunction>(extension2_, 33);
-  const uint32 writes_by_extension2 = 8;
+  const uint32_t writes_by_extension2 = 8;
 
   syncer::ExtensionsActivity::Records results;
   monitor_.GetExtensionsActivity()->GetAndClearRecords(&results);

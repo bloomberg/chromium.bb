@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/command_line.h"

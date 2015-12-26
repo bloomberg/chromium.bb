@@ -4,11 +4,15 @@
 
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -157,7 +161,7 @@ class LocalSyncRunner : public SyncProcessRunner,
   }
 
   // LocalFileSyncService::Observer overrides.
-  void OnLocalChangeAvailable(int64 pending_changes) override {
+  void OnLocalChangeAvailable(int64_t pending_changes) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     OnChangesUpdated(pending_changes);
@@ -207,7 +211,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
   }
 
   // RemoteFileSyncService::Observer overrides.
-  void OnRemoteChangeQueueUpdated(int64 pending_changes) override {
+  void OnRemoteChangeQueueUpdated(int64_t pending_changes) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     OnChangesUpdated(pending_changes);
@@ -365,7 +369,7 @@ void SyncFileSystemService::OnSyncIdle() {
       base::Bind(&SyncFileSystemService::OnPromotionCompleted,
                  AsWeakPtr(), base::Owned(job_count));
 
-  int64 remote_changes = 0;
+  int64_t remote_changes = 0;
   for (size_t i = 0; i < remote_sync_runners_.size(); ++i)
     remote_changes += remote_sync_runners_[i]->pending_changes();
   if (remote_changes == 0) {
@@ -373,7 +377,7 @@ void SyncFileSystemService::OnSyncIdle() {
     local_service_->PromoteDemotedChanges(promote_completion_callback);
   }
 
-  int64 local_changes = 0;
+  int64_t local_changes = 0;
   for (size_t i = 0; i < local_sync_runners_.size(); ++i)
     local_changes += local_sync_runners_[i]->pending_changes();
   if (local_changes == 0) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 
+#include <stdint.h>
+
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
 
@@ -18,7 +20,7 @@ SpellCheckHostMetrics::SpellCheckHostMetrics()
       last_replaced_word_count_(-1),
       last_unique_word_count_(-1),
       start_time_(base::TimeTicks::Now()) {
-  const uint64 kHistogramTimerDurationInMinutes = 30;
+  const uint64_t kHistogramTimerDurationInMinutes = 30;
   recording_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMinutes(kHistogramTimerDurationInMinutes),
       this, &SpellCheckHostMetrics::OnHistogramTimerExpired);

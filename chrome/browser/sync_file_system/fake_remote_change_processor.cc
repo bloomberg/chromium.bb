@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 
+#include <stddef.h>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"

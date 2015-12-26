@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_THUMBNAILS_THUMBNAIL_TAB_HELPER_H_
 #define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_TAB_HELPER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,7 +60,7 @@ TaskGroupSampler::TaskGroupSampler(
   worker_pool_sequenced_checker_.DetachFromSequence();
 }
 
-void TaskGroupSampler::Refresh(int64 refresh_flags) {
+void TaskGroupSampler::Refresh(int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (IsResourceRefreshEnabled(REFRESH_TYPE_CPU, refresh_flags)) {
@@ -126,8 +127,8 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
   // Refreshing the physical/private/shared memory at one shot.
   base::WorkingSetKBytes ws_usage;
   if (process_metrics_->GetWorkingSetKBytes(&ws_usage)) {
-    memory_usage.private_bytes = static_cast<int64>(ws_usage.priv * 1024);
-    memory_usage.shared_bytes = static_cast<int64>(ws_usage.shared * 1024);
+    memory_usage.private_bytes = static_cast<int64_t>(ws_usage.priv * 1024);
+    memory_usage.shared_bytes = static_cast<int64_t>(ws_usage.shared * 1024);
 #if defined(OS_LINUX)
     // On Linux private memory is also resident. Just use it.
     memory_usage.physical_bytes = memory_usage.private_bytes;
@@ -138,9 +139,9 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
     // not counted when two or more are open) and it is much more efficient to
     // calculate on Windows.
     memory_usage.physical_bytes =
-        static_cast<int64>(process_metrics_->GetWorkingSetSize());
+        static_cast<int64_t>(process_metrics_->GetWorkingSetSize());
     memory_usage.physical_bytes -=
-        static_cast<int64>(ws_usage.shareable * 1024);
+        static_cast<int64_t>(ws_usage.shareable * 1024);
 #endif
   }
 

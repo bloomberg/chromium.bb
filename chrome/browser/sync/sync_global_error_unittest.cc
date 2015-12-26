@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sync_global_error.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"

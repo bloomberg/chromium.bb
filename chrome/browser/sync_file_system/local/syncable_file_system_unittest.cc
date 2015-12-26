@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
@@ -123,11 +126,11 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.CreateFile(URL("dir/foo")));
 
-  const int64 kOriginalQuota = QuotaManager::kSyncableStorageDefaultHostQuota;
+  const int64_t kOriginalQuota = QuotaManager::kSyncableStorageDefaultHostQuota;
 
-  const int64 kQuota = 12345 * 1024;
+  const int64_t kQuota = 12345 * 1024;
   QuotaManager::kSyncableStorageDefaultHostQuota = kQuota;
-  int64 usage, quota;
+  int64_t usage, quota;
   EXPECT_EQ(storage::kQuotaStatusOk,
             file_system_.GetUsageAndQuota(&usage, &quota));
 
@@ -137,14 +140,14 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
   EXPECT_GT(usage, 0);
 
   // Truncate to extend an existing file and see if the usage reflects it.
-  const int64 kFileSizeToExtend = 333;
+  const int64_t kFileSizeToExtend = 333;
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.CreateFile(URL("dir/foo")));
 
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.TruncateFile(URL("dir/foo"), kFileSizeToExtend));
 
-  int64 new_usage;
+  int64_t new_usage;
   EXPECT_EQ(storage::kQuotaStatusOk,
             file_system_.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_EQ(kFileSizeToExtend, new_usage - usage);

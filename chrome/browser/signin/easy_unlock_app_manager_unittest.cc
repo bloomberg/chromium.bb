@@ -4,11 +4,15 @@
 
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_WEB_CONTENTS_TAG_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_WEB_CONTENTS_TAG_H_
 
+#include "base/macros.h"
 #include "base/supports_user_data.h"
 
 namespace content {

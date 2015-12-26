@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/task_management/providers/task_provider.h"
 #include "content/public/browser/browser_child_process_observer.h"

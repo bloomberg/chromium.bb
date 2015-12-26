@@ -13,14 +13,10 @@ SyncFileMetadata::SyncFileMetadata()
       size(-1) {
 }
 
-SyncFileMetadata::SyncFileMetadata(
-    SyncFileType file_type,
-    int64 size,
-    const base::Time& last_modified)
-    : file_type(file_type),
-      size(size),
-      last_modified(last_modified) {
-}
+SyncFileMetadata::SyncFileMetadata(SyncFileType file_type,
+                                   int64_t size,
+                                   const base::Time& last_modified)
+    : file_type(file_type), size(size), last_modified(last_modified) {}
 
 SyncFileMetadata::~SyncFileMetadata() {}
 

@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/tracing/tracing_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,8 +92,8 @@ void TraceCrashServiceUploader::OnURLFetchComplete(
 
 void TraceCrashServiceUploader::OnURLFetchUploadProgress(
     const net::URLFetcher* source,
-    int64 current,
-    int64 total) {
+    int64_t current,
+    int64_t total) {
   DCHECK(url_fetcher_.get());
 
   LOG(WARNING) << "Upload progress: " << current << " of " << total;
@@ -271,9 +272,9 @@ bool TraceCrashServiceUploader::Compress(std::string input,
                             8,  // memLevel = 8 is default.
                             Z_DEFAULT_STRATEGY);
   DCHECK_EQ(Z_OK, result);
-  stream.next_in = reinterpret_cast<uint8*>(&input[0]);
+  stream.next_in = reinterpret_cast<uint8_t*>(&input[0]);
   stream.avail_in = input.size();
-  stream.next_out = reinterpret_cast<uint8*>(compressed);
+  stream.next_out = reinterpret_cast<uint8_t*>(compressed);
   stream.avail_out = max_compressed_bytes;
   // Do a one-shot compression. This will return Z_STREAM_END only if |output|
   // is large enough to hold all compressed data.

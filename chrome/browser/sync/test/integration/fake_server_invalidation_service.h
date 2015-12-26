@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"

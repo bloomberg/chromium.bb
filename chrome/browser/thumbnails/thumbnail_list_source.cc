@@ -4,6 +4,8 @@
 
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/base64.h"

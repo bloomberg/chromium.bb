@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LEVELDB_WRAPPER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LEVELDB_WRAPPER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
@@ -93,8 +94,8 @@ class LevelDBWrapper {
   // Returns the number of pending PUT/DELETE operations.
   // Each counter counts operations independently, so operations on a key
   // may be counted more than once.
-  int64 num_puts() { return num_puts_; }
-  int64 num_deletes() { return num_deletes_; }
+  int64_t num_puts() { return num_puts_; }
+  int64_t num_deletes() { return num_deletes_; }
 
   // TODO(peria): Rename this method to GetLevelDBForTesting, after removing
   // usages of drive_backend::MigrateDatabaseFromVxToVy() under
@@ -105,8 +106,8 @@ class LevelDBWrapper {
   scoped_ptr<leveldb::DB> db_;
 
   PendingOperationMap pending_;
-  int64 num_puts_;
-  int64 num_deletes_;
+  int64_t num_puts_;
+  int64_t num_deletes_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBWrapper);
 };

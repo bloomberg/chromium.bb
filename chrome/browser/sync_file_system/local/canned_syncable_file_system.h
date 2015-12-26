@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_CANNED_SYNCABLE_FILE_SYSTEM_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_CANNED_SYNCABLE_FILE_SYSTEM_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -62,7 +65,7 @@ class CannedSyncableFileSystem
                               base::File::Error result)>
       OpenFileSystemCallback;
   typedef base::Callback<void(base::File::Error)> StatusCallback;
-  typedef base::Callback<void(int64)> WriteCallback;
+  typedef base::Callback<void(int64_t)> WriteCallback;
   typedef storage::FileSystemOperation::FileEntryList FileEntryList;
 
   enum QuotaMode {
@@ -121,7 +124,8 @@ class CannedSyncableFileSystem
                          const storage::FileSystemURL& dest_url);
   base::File::Error Move(const storage::FileSystemURL& src_url,
                          const storage::FileSystemURL& dest_url);
-  base::File::Error TruncateFile(const storage::FileSystemURL& url, int64 size);
+  base::File::Error TruncateFile(const storage::FileSystemURL& url,
+                                 int64_t size);
   base::File::Error TouchFile(const storage::FileSystemURL& url,
                               const base::Time& last_access_time,
                               const base::Time& last_modified_time);
@@ -138,16 +142,17 @@ class CannedSyncableFileSystem
                                   FileEntryList* entries);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
-  int64 Write(net::URLRequestContext* url_request_context,
-              const storage::FileSystemURL& url,
-              scoped_ptr<storage::BlobDataHandle> blob_data_handle);
-  int64 WriteString(const storage::FileSystemURL& url, const std::string& data);
+  int64_t Write(net::URLRequestContext* url_request_context,
+                const storage::FileSystemURL& url,
+                scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+  int64_t WriteString(const storage::FileSystemURL& url,
+                      const std::string& data);
 
   // Purges the file system local storage.
   base::File::Error DeleteFileSystem();
 
   // Retrieves the quota and usage.
-  storage::QuotaStatusCode GetUsageAndQuota(int64* usage, int64* quota);
+  storage::QuotaStatusCode GetUsageAndQuota(int64_t* usage, int64_t* quota);
 
   // ChangeTracker related methods. They run on file task runner.
   void GetChangedURLsInTracker(storage::FileSystemURLSet* urls);
@@ -176,7 +181,7 @@ class CannedSyncableFileSystem
               const storage::FileSystemURL& dest_url,
               const StatusCallback& callback);
   void DoTruncateFile(const storage::FileSystemURL& url,
-                      int64 size,
+                      int64_t size,
                       const StatusCallback& callback);
   void DoTouchFile(const storage::FileSystemURL& url,
                    const base::Time& last_access_time,
@@ -206,8 +211,8 @@ class CannedSyncableFileSystem
   void DoWriteString(const storage::FileSystemURL& url,
                      const std::string& data,
                      const WriteCallback& callback);
-  void DoGetUsageAndQuota(int64* usage,
-                          int64* quota,
+  void DoGetUsageAndQuota(int64_t* usage,
+                          int64_t* quota,
                           const storage::StatusCallback& callback);
 
  private:

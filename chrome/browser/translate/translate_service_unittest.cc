@@ -4,6 +4,7 @@
 
 #include "chrome/browser/translate/translate_service.h"
 
+#include "build/build_config.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

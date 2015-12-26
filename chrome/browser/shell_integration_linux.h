@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "url/gurl.h"

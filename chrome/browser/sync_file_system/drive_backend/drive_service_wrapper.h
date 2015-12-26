@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_SERVICE_WRAPPER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_SERVICE_WRAPPER_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/drive/service/drive_service_interface.h"
@@ -40,9 +43,8 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
   void GetAboutResource(
       const google_apis::AboutResourceCallback& callback);
 
-  void GetChangeList(
-      int64 start_changestamp,
-      const google_apis::ChangeListCallback& callback);
+  void GetChangeList(int64_t start_changestamp,
+                     const google_apis::ChangeListCallback& callback);
 
   void GetRemainingChangeList(
       const GURL& next_link,

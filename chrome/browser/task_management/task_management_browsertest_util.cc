@@ -5,6 +5,7 @@
 #include "chrome/browser/task_management/task_management_browsertest_util.h"
 
 #include "base/stl_util.h"
+#include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"

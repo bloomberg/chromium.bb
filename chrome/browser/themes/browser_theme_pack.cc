@@ -4,9 +4,12 @@
 
 #include "chrome/browser/themes/browser_theme_pack.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -16,6 +19,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "components/crx_file/id_util.h"
@@ -46,7 +50,7 @@ namespace {
 const int kThemePackVersion = 36;
 
 // IDs that are in the DataPack won't clash with the positive integer
-// uint16. kHeaderID should always have the maximum value because we want the
+// uint16_t. kHeaderID should always have the maximum value because we want the
 // "header" to be written last. That way we can detect whether the pack was
 // successfully written and ignore and regenerate if it was only partially
 // written (i.e. chrome crashed on a different thread while writing the pack).
@@ -448,7 +452,7 @@ base::RefCountedMemory* ReadFileData(const base::FilePath& path) {
   if (!path.empty()) {
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     if (file.IsValid()) {
-      int64 length = file.GetLength();
+      int64_t length = file.GetLength();
       if (length > 0 && length < INT_MAX) {
         int size = static_cast<int>(length);
         std::vector<unsigned char> raw_data;

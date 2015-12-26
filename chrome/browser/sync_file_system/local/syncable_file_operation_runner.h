@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_SYNCABLE_FILE_OPERATION_RUNNER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_SYNCABLE_FILE_OPERATION_RUNNER_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -52,7 +54,7 @@ class SyncableFileOperationRunner
     DISALLOW_COPY_AND_ASSIGN(Task);
   };
 
-  SyncableFileOperationRunner(int64 max_inflight_tasks,
+  SyncableFileOperationRunner(int64_t max_inflight_tasks,
                               LocalFileSyncStatus* sync_status);
   ~SyncableFileOperationRunner() override;
 
@@ -78,11 +80,11 @@ class SyncableFileOperationRunner
 
   LocalFileSyncStatus* sync_status() const { return sync_status_; }
 
-  int64 num_pending_tasks() const {
-    return static_cast<int64>(pending_tasks_.size());
+  int64_t num_pending_tasks() const {
+    return static_cast<int64_t>(pending_tasks_.size());
   }
 
-  int64 num_inflight_tasks() const { return num_inflight_tasks_; }
+  int64_t num_inflight_tasks() const { return num_inflight_tasks_; }
 
  private:
   // Returns true if we should start more tasks.
@@ -93,8 +95,8 @@ class SyncableFileOperationRunner
 
   std::list<Task*> pending_tasks_;
 
-  const int64 max_inflight_tasks_;
-  int64 num_inflight_tasks_;
+  const int64_t max_inflight_tasks_;
+  int64_t num_inflight_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncableFileOperationRunner);
 };

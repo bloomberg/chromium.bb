@@ -61,7 +61,7 @@ void DriveServiceWrapper::GetAboutResource(
 }
 
 void DriveServiceWrapper::GetChangeList(
-    int64 start_changestamp,
+    int64_t start_changestamp,
     const google_apis::ChangeListCallback& callback) {
   DCHECK(sequece_checker_.CalledOnValidSequencedThread());
   drive_service_->GetChangeList(start_changestamp, callback);

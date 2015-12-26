@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 
+#include "build/build_config.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 
 namespace content {

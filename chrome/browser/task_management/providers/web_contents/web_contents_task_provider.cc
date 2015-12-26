@@ -5,6 +5,7 @@
 #include "chrome/browser/task_management/providers/web_contents/web_contents_task_provider.h"
 
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/task_management/providers/web_contents/subframe_task.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"

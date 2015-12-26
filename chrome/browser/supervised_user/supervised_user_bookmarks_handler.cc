@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/supervised_user_bookmarks_handler.h"
 
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"

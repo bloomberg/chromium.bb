@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_THEME_DATA_TYPE_CONTROLLER_H_
 #define CHROME_BROWSER_SYNC_GLUE_THEME_DATA_TYPE_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 
 class Profile;

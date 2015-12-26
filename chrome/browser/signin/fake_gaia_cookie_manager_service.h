@@ -6,6 +6,7 @@
 
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 

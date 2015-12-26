@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <deque>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -57,7 +59,7 @@ class TaskManagerClient
     : public SyncTaskManager::Client,
       public base::SupportsWeakPtr<TaskManagerClient> {
  public:
-  explicit TaskManagerClient(int64 maximum_background_task)
+  explicit TaskManagerClient(int64_t maximum_background_task)
       : maybe_schedule_next_task_count_(0),
         task_scheduled_count_(0),
         idle_task_scheduled_count_(0),
@@ -169,9 +171,9 @@ class MultihopSyncTask : public ExclusiveTask {
 class BackgroundTask : public SyncTask {
  public:
   struct Stats {
-    int64 running_background_task;
-    int64 finished_task;
-    int64 max_parallel_task;
+    int64_t running_background_task;
+    int64_t finished_task;
+    int64_t max_parallel_task;
 
     Stats()
         : running_background_task(0),

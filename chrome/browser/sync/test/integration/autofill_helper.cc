@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 
+#include <stddef.h>
+
 #include "base/guid.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/chrome_notification_types.h"

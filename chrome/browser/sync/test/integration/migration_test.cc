@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 
+#include <stdint.h>
+
 #include <set>
 
 #include "base/base64.h"
@@ -187,7 +189,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   base::Time decision_expiration;
   if (dict->HasKey(kSSLCertDecisionExpirationTimeKey)) {
     std::string decision_expiration_string;
-    int64 decision_expiration_int64;
+    int64_t decision_expiration_int64;
     success = dict->GetString(kSSLCertDecisionExpirationTimeKey,
                               &decision_expiration_string);
     if (!base::StringToInt64(base::StringPiece(decision_expiration_string),
@@ -217,7 +219,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
     expired = true;
     base::Time expiration_time =
         now + base::TimeDelta::FromSeconds(kDeltaDefaultExpirationInSeconds);
-    // Unfortunately, JSON (and thus content settings) doesn't support int64
+    // Unfortunately, JSON (and thus content settings) doesn't support int64_t
     // values, only doubles. Since this mildly depends on precision, it is
     // better to store the value as a string.
     dict->SetString(kSSLCertDecisionExpirationTimeKey,

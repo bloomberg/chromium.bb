@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_STACK_SAMPLING_CONFIGURATION_H_
 #define CHROME_BROWSER_STACK_SAMPLING_CONFIGURATION_H_
 
+#include "base/macros.h"
 #include "base/profiler/stack_sampling_profiler.h"
 
 // Chooses a configuration for the stack sampling profiler for browser process

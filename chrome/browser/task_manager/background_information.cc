@@ -4,7 +4,10 @@
 
 #include "chrome/browser/task_manager/background_information.h"
 
+#include <stddef.h>
+
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents.h"

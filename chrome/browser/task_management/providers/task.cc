@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_management/providers/task.h"
 
+#include <stddef.h>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -15,7 +17,7 @@ namespace task_management {
 namespace {
 
 // The last ID given to the previously created task.
-int64 g_last_id = 0;
+int64_t g_last_id = 0;
 
 }  // namespace
 
@@ -54,7 +56,7 @@ void Task::Activate() {
 }
 
 void Task::Refresh(const base::TimeDelta& update_interval,
-                   int64 refresh_flags) {
+                   int64_t refresh_flags) {
   if ((refresh_flags & REFRESH_TYPE_NETWORK_USAGE) == 0)
     return;
 
@@ -68,7 +70,7 @@ void Task::Refresh(const base::TimeDelta& update_interval,
   current_byte_count_ = 0;
 }
 
-void Task::OnNetworkBytesRead(int64 bytes_read) {
+void Task::OnNetworkBytesRead(int64_t bytes_read) {
   if (current_byte_count_ == -1)
     current_byte_count_ = 0;
 
@@ -83,7 +85,7 @@ bool Task::ReportsSqliteMemory() const {
   return GetSqliteMemoryUsed() != -1;
 }
 
-int64 Task::GetSqliteMemoryUsed() const {
+int64_t Task::GetSqliteMemoryUsed() const {
   return -1;
 }
 
@@ -91,11 +93,11 @@ bool Task::ReportsV8Memory() const {
   return GetV8MemoryAllocated() != -1;
 }
 
-int64 Task::GetV8MemoryAllocated() const {
+int64_t Task::GetV8MemoryAllocated() const {
   return -1;
 }
 
-int64 Task::GetV8MemoryUsed() const {
+int64_t Task::GetV8MemoryUsed() const {
   return -1;
 }
 

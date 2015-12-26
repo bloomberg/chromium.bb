@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_RENDERER_TASK_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_RENDERER_TASK_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "chrome/browser/task_management/providers/task.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "content/public/browser/navigation_entry.h"
@@ -48,12 +51,12 @@ class RendererTask : public Task,
   // task_management::Task:
   void Activate() override;
   void Refresh(const base::TimeDelta& update_interval,
-               int64 refresh_flags) override;
+               int64_t refresh_flags) override;
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
   base::string16 GetProfileName() const override;
-  int64 GetV8MemoryAllocated() const override;
-  int64 GetV8MemoryUsed() const override;
+  int64_t GetV8MemoryAllocated() const override;
+  int64_t GetV8MemoryUsed() const override;
   bool ReportsWebCacheStats() const override;
   blink::WebCache::ResourceTypeStats GetWebCacheStats() const override;
 
@@ -101,8 +104,8 @@ class RendererTask : public Task,
   const int render_process_id_;
 
   // The allocated and used V8 memory (in bytes).
-  int64 v8_memory_allocated_;
-  int64 v8_memory_used_;
+  int64_t v8_memory_allocated_;
+  int64_t v8_memory_used_;
 
   // The WebKit resource cache statistics for this renderer.
   blink::WebCache::ResourceTypeStats webcache_stats_;

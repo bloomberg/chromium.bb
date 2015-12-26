@@ -4,7 +4,8 @@
 
 #include "chrome/browser/sync_file_system/file_change.h"
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

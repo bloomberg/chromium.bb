@@ -56,7 +56,7 @@ void MockRemoteFileSyncService::SetServiceState(RemoteServiceState state) {
 }
 
 void MockRemoteFileSyncService::NotifyRemoteChangeQueueUpdated(
-    int64 pending_changes) {
+    int64_t pending_changes) {
   FOR_EACH_OBSERVER(Observer, service_observers_,
                     OnRemoteChangeQueueUpdated(pending_changes));
 }

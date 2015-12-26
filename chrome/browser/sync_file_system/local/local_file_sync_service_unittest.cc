@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
@@ -148,7 +151,7 @@ class LocalFileSyncServiceTest
   }
 
   // LocalChangeObserver overrides.
-  void OnLocalChangeAvailable(int64 num_changes) override {
+  void OnLocalChangeAvailable(int64_t num_changes) override {
     num_changes_ = num_changes;
   }
 
@@ -190,7 +193,7 @@ class LocalFileSyncServiceTest
     return sync_status;
   }
 
-  int64 GetNumChangesInTracker() const {
+  int64_t GetNumChangesInTracker() const {
     return file_system_->backend()->change_tracker()->num_changes();
   }
 
@@ -203,7 +206,7 @@ class LocalFileSyncServiceTest
   scoped_ptr<CannedSyncableFileSystem> file_system_;
   scoped_ptr<LocalFileSyncService> local_service_;
 
-  int64 num_changes_;
+  int64_t num_changes_;
 };
 
 // More complete tests for PrepareForProcessRemoteChange and ApplyRemoteChange
@@ -597,11 +600,9 @@ class OriginChangeMapTest : public testing::Test {
     return map_.NextOriginToProcess(origin);
   }
 
-  int64 GetTotalChangeCount() const {
-    return map_.GetTotalChangeCount();
-  }
+  int64_t GetTotalChangeCount() const { return map_.GetTotalChangeCount(); }
 
-  void SetOriginChangeCount(const GURL& origin, int64 changes) {
+  void SetOriginChangeCount(const GURL& origin, int64_t changes) {
     map_.SetOriginChangeCount(origin, changes);
   }
 

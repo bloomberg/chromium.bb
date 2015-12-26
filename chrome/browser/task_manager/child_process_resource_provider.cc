@@ -4,9 +4,12 @@
 
 #include "chrome/browser/task_manager/child_process_resource_provider.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/process_resource_usage.h"

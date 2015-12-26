@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <errno.h>
+#include <stddef.h>
 #include <sys/xattr.h>
 
 #include "base/command_line.h"
@@ -13,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"

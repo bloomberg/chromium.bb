@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_CROSS_DEVICE_PROMO_H_
 #define CHROME_BROWSER_SIGNIN_CROSS_DEVICE_PROMO_H_
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"

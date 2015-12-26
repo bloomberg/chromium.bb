@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_store.h"

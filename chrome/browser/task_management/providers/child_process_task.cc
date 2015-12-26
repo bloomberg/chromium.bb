@@ -180,7 +180,7 @@ ChildProcessTask::~ChildProcessTask() {
 }
 
 void ChildProcessTask::Refresh(const base::TimeDelta& update_interval,
-                               int64 refresh_flags) {
+                               int64_t refresh_flags) {
   Task::Refresh(update_interval, refresh_flags);
 
   if ((refresh_flags & REFRESH_TYPE_V8_MEMORY) == 0)
@@ -195,9 +195,9 @@ void ChildProcessTask::Refresh(const base::TimeDelta& update_interval,
   // potentially having valid values).
   process_resources_sampler_->Refresh(base::Closure());
 
-  v8_memory_allocated_ = base::saturated_cast<int64>(
+  v8_memory_allocated_ = base::saturated_cast<int64_t>(
       process_resources_sampler_->GetV8MemoryAllocated());
-  v8_memory_used_ = base::saturated_cast<int64>(
+  v8_memory_used_ = base::saturated_cast<int64_t>(
       process_resources_sampler_->GetV8MemoryUsed());
 }
 
@@ -232,11 +232,11 @@ bool ChildProcessTask::ReportsV8Memory() const {
   return uses_v8_memory_ && process_resources_sampler_->ReportsV8MemoryStats();
 }
 
-int64 ChildProcessTask::GetV8MemoryAllocated() const {
+int64_t ChildProcessTask::GetV8MemoryAllocated() const {
   return v8_memory_allocated_;
 }
 
-int64 ChildProcessTask::GetV8MemoryUsed() const {
+int64_t ChildProcessTask::GetV8MemoryUsed() const {
   return v8_memory_used_;
 }
 

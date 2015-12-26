@@ -5,13 +5,16 @@
 #ifndef CHROME_BROWSER_SITE_DETAILS_H_
 #define CHROME_BROWSER_SITE_DETAILS_H_
 
+#include <stdint.h>
+
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 // Maps an ID representing each BrowsingInstance to a set of site URLs.
-using BrowsingInstanceSiteMap = base::hash_map<int32, std::set<GURL>>;
+using BrowsingInstanceSiteMap = base::hash_map<int32_t, std::set<GURL>>;
 
 // Maps a SiteInstance to a set of all SiteInstances in the same
 // BrowsingInstance.

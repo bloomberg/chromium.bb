@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_TRACING_CRASH_SERVICE_UPLOADER_H_
 #define CHROME_BROWSER_TRACING_CRASH_SERVICE_UPLOADER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -34,8 +36,8 @@ class TraceCrashServiceUploader : public content::TraceUploader,
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                int64 current,
-                                int64 total) override;
+                                int64_t current,
+                                int64_t total) override;
 
   // content::TraceUploader
   void DoUpload(const std::string& file_contents,

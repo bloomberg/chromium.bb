@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 
 #include "base/bind.h"

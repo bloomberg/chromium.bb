@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_SYNCABLE_FILE_SYSTEM_OPERATION_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_SYNCABLE_FILE_SYSTEM_OPERATION_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -66,7 +69,7 @@ class SyncableFileSystemOperation
              scoped_ptr<net::URLRequest> blob_request,
              const WriteCallback& callback) override;
   void Truncate(const storage::FileSystemURL& url,
-                int64 length,
+                int64_t length,
                 const StatusCallback& callback) override;
   void TouchFile(const storage::FileSystemURL& url,
                  const base::Time& last_access_time,
@@ -112,7 +115,7 @@ class SyncableFileSystemOperation
   void DidFinish(base::File::Error status);
   void DidWrite(const WriteCallback& callback,
                 base::File::Error result,
-                int64 bytes,
+                int64_t bytes,
                 bool complete);
 
   void OnCancelled();

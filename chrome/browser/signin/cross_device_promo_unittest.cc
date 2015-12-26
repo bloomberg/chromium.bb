@@ -4,6 +4,9 @@
 
 #include "chrome/browser/signin/cross_device_promo.h"
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -35,7 +38,7 @@ namespace {
 
 typedef std::map<std::string, std::string> VariationsMap;
 
-int64 InTwoHours() {
+int64_t InTwoHours() {
   return (base::Time::Now() + base::TimeDelta::FromHours(2)).ToInternalValue();
 }
 
@@ -413,16 +416,16 @@ TEST_F(CrossDevicePromoTest, NumDevicesEligibility) {
   // Ensure we appropriate schedule a check for device activity.
   {
     base::HistogramTester test_missing_list_devices;
-    int64 earliest_time_to_check_list_devices =
+    int64_t earliest_time_to_check_list_devices =
         base::Time::Now().ToInternalValue();
     EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
-    int64 latest_time_to_check_list_devices = InTwoHours();
+    int64_t latest_time_to_check_list_devices = InTwoHours();
     test_missing_list_devices.ExpectUniqueSample(
         "Signin.XDevicePromo.Eligibility",
         signin_metrics::UNKNOWN_COUNT_DEVICES, 1);
     EXPECT_TRUE(
         prefs()->HasPrefPath(prefs::kCrossDevicePromoNextFetchListDevicesTime));
-    int64 when_to_check_list_devices =
+    int64_t when_to_check_list_devices =
         prefs()->GetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime);
     EXPECT_LT(earliest_time_to_check_list_devices, when_to_check_list_devices);
     EXPECT_GT(latest_time_to_check_list_devices, when_to_check_list_devices);
@@ -431,7 +434,7 @@ TEST_F(CrossDevicePromoTest, NumDevicesEligibility) {
   // Don't reschedule the device activity check if there's one pending.
   {
     base::HistogramTester test_unknown_devices;
-    int64 list_devices_time = InTwoHours();
+    int64_t list_devices_time = InTwoHours();
     prefs()->SetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime,
                       list_devices_time);
     EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
@@ -549,7 +552,7 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
   {
     base::HistogramTester test_no_devices;
     std::vector<DeviceActivityFetcher::DeviceActivity> devices;
-    int64 in_two_hours = InTwoHours();
+    int64_t in_two_hours = InTwoHours();
     promo()->OnFetchDeviceActivitySuccess(devices);
     EXPECT_LE(
         in_two_hours,
@@ -574,7 +577,7 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
     device.name = "Aslan";
     devices.push_back(device);
 
-    int64 in_two_hours = InTwoHours();
+    int64_t in_two_hours = InTwoHours();
     promo()->OnFetchDeviceActivitySuccess(devices);
     EXPECT_LE(
         in_two_hours,
@@ -604,7 +607,7 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
     device.name = "Aslan";
     devices.push_back(device);
 
-    int64 in_two_hours = InTwoHours();
+    int64_t in_two_hours = InTwoHours();
     promo()->OnFetchDeviceActivitySuccess(devices);
     EXPECT_LE(
         in_two_hours,
@@ -639,7 +642,7 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
     device2.name = "Balrog";
     devices.push_back(device2);
 
-    int64 in_two_hours = InTwoHours();
+    int64_t in_two_hours = InTwoHours();
     promo()->OnFetchDeviceActivitySuccess(devices);
     EXPECT_LE(
         in_two_hours,

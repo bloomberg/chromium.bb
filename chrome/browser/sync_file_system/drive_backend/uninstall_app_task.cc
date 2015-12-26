@@ -46,7 +46,7 @@ void UninstallAppTask::RunExclusive(const SyncStatusCallback& callback) {
   }
   DCHECK_EQ(RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE, uninstall_flag_);
 
-  int64 sync_root_tracker_id = metadata_database()->GetSyncRootTrackerID();
+  int64_t sync_root_tracker_id = metadata_database()->GetSyncRootTrackerID();
   TrackerIDSet trackers;
   if (!metadata_database()->FindTrackersByParentAndTitle(
           sync_root_tracker_id, app_id_, &trackers) ||
@@ -75,7 +75,7 @@ void UninstallAppTask::RunExclusive(const SyncStatusCallback& callback) {
 }
 
 void UninstallAppTask::DidDeleteAppRoot(const SyncStatusCallback& callback,
-                                        int64 change_id,
+                                        int64_t change_id,
                                         google_apis::DriveApiErrorCode error) {
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK &&

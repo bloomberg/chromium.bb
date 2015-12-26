@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SSL_SSL_ADD_CERTIFICATE_H_
 #define CHROME_BROWSER_SSL_SSL_ADD_CERTIFICATE_H_
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
 #include "net/base/mime_util.h"
 
 namespace net {

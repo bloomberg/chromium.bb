@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/security_state_model.h"
 
+#include <stdint.h>
+
 #include "chrome/browser/ssl/security_state_model_client.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -39,7 +41,7 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   void set_connection_status(int connection_status) {
     connection_status_ = connection_status;
   }
-  void SetCipherSuite(uint16 ciphersuite) {
+  void SetCipherSuite(uint16_t ciphersuite) {
     net::SSLConnectionStatusSetCipherSuite(ciphersuite, &connection_status_);
   }
   void AddCertStatus(net::CertStatus cert_status) {
@@ -155,7 +157,7 @@ TEST_F(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
   model.SetClient(&client);
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
-  const uint16 ciphersuite = 0xc02f;
+  const uint16_t ciphersuite = 0xc02f;
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);
@@ -170,7 +172,7 @@ TEST_F(SecurityStateModelTest, NonsecureProtocol) {
   model.SetClient(&client);
   // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
-  const uint16 ciphersuite = 0xc02f;
+  const uint16_t ciphersuite = 0xc02f;
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_1
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);
@@ -185,7 +187,7 @@ TEST_F(SecurityStateModelTest, NonsecureCiphersuite) {
   model.SetClient(&client);
   // TLS_RSA_WITH_AES_128_CCM_8 from
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-4
-  const uint16 ciphersuite = 0xc0a0;
+  const uint16_t ciphersuite = 0xc0a0;
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);

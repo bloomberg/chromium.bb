@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_DICTIONARY_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_DICTIONARY_HELPER_H_
 
+#include <stddef.h>
+
 #include <string>
 
 namespace dictionary_helper {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_STATUS_METRICS_PROVIDER_CHROMEOS_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_base.h"
 
 // Record and report the browser sign-in status on ChromeOS during each UMA

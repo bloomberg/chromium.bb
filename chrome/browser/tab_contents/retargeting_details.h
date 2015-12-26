@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_RETARGETING_DETAILS_H_
 #define CHROME_BROWSER_TAB_CONTENTS_RETARGETING_DETAILS_H_
 
+#include <stdint.h>
+
 #include "url/gurl.h"
 
 namespace content {
@@ -18,7 +20,7 @@ struct RetargetingDetails {
 
   // The routing id of the source render frame from which the retargeting was
   // triggered.
-  int64 source_render_frame_id;
+  int64_t source_render_frame_id;
 
   // The target URL.
   GURL target_url;

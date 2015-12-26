@@ -4,6 +4,8 @@
 
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/lazy_instance.h"

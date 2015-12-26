@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -11,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -610,8 +613,8 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   // Record the initial usage (likely 0).
-  int64 initial_usage = -1;
-  int64 quota = -1;
+  int64_t initial_usage = -1;
+  int64_t quota = -1;
   EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&initial_usage, &quota));
 
@@ -637,7 +640,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   }
 
   // At this point the usage must be greater than the initial usage.
-  int64 new_usage = -1;
+  int64_t new_usage = -1;
   EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_GT(new_usage, initial_usage);
@@ -698,8 +701,8 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
   ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   // Record the initial usage (likely 0).
-  int64 initial_usage = -1;
-  int64 quota = -1;
+  int64_t initial_usage = -1;
+  int64_t quota = -1;
   EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&initial_usage, &quota));
 
@@ -713,7 +716,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
   EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kChild));
 
   // At this point the usage must be greater than the initial usage.
-  int64 new_usage = -1;
+  int64_t new_usage = -1;
   EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_GT(new_usage, initial_usage);
@@ -777,7 +780,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
 
   // Create kFile1 and populate it with kTestFileData0.
   EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kFile1));
-  EXPECT_EQ(static_cast<int64>(arraysize(kTestFileData0) - 1),
+  EXPECT_EQ(static_cast<int64_t>(arraysize(kTestFileData0) - 1),
             file_system.WriteString(kFile1, kTestFileData0));
 
   // kFile2 and kDir are not there yet.
@@ -805,8 +808,8 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
                             arraysize(kTestFileData2) - 1));
 
   // Record the usage.
-  int64 usage = -1, new_usage = -1;
-  int64 quota = -1;
+  int64_t usage = -1, new_usage = -1;
+  int64_t quota = -1;
   EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&usage, &quota));
 
@@ -884,7 +887,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_GT(new_usage,
-            static_cast<int64>(usage + arraysize(kTestFileData2) - 1));
+            static_cast<int64_t>(usage + arraysize(kTestFileData2) - 1));
 
   // The changes applied by ApplyRemoteChange should not be recorded in
   // the change tracker.

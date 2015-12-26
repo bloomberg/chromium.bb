@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/sync/test/integration/password_manager_setting_migrator_helper.h"

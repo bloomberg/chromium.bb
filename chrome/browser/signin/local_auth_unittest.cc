@@ -4,8 +4,11 @@
 
 #include "chrome/browser/signin/local_auth.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"

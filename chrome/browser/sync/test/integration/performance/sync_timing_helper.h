@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_PERFORMANCE_SYNC_TIMING_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_PERFORMANCE_SYNC_TIMING_HELPER_H_
 
-#include "base/basictypes.h"
-
 #include <string>
 #include <vector>
+
+#include "base/macros.h"
 
 namespace base {
 class TimeDelta;

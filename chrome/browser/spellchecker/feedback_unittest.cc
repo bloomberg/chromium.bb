@@ -6,6 +6,9 @@
 
 #include "chrome/browser/spellchecker/feedback.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +25,7 @@ const size_t kMaxFeedbackSize = 1024;
 const int kRendererProcessId = 7;
 
 // Hash identifier for a misspelling.
-const uint32 kMisspellingHash = 42;
+const uint32_t kMisspellingHash = 42;
 
 }  // namespace
 
@@ -33,7 +36,7 @@ class FeedbackTest : public testing::Test {
   ~FeedbackTest() override {}
 
  protected:
-  void AddMisspelling(int renderer_process_id, uint32 hash) {
+  void AddMisspelling(int renderer_process_id, uint32_t hash) {
     feedback_.AddMisspelling(renderer_process_id,
                              Misspelling(base::string16(), 0, 0,
                                          std::vector<base::string16>(), hash));
@@ -77,7 +80,7 @@ TEST_F(FeedbackTest, LimitFeedbackSize) {
           std::vector<base::string16>(50, base::ASCIIToUTF16("9876543210")),
           0));
   feedback_.FinalizeRemovedMisspellings(kRendererProcessId,
-                                        std::vector<uint32>());
+                                        std::vector<uint32_t>());
   feedback_.EraseFinalizedMisspellings(kRendererProcessId);
   feedback_.AddMisspelling(
       kRendererProcessId,
@@ -103,7 +106,7 @@ TEST_F(FeedbackTest, FinalizeRemovedMisspellings) {
   static const int kRemainingMisspellingHash = 2;
   AddMisspelling(kRendererProcessId, kRemovedMisspellingHash);
   AddMisspelling(kRendererProcessId, kRemainingMisspellingHash);
-  std::vector<uint32> remaining_markers(1, kRemainingMisspellingHash);
+  std::vector<uint32_t> remaining_markers(1, kRemainingMisspellingHash);
   feedback_.FinalizeRemovedMisspellings(kRendererProcessId, remaining_markers);
   Misspelling* removed_misspelling =
       feedback_.GetMisspelling(kRemovedMisspellingHash);
@@ -119,7 +122,7 @@ TEST_F(FeedbackTest, FinalizeRemovedMisspellings) {
 TEST_F(FeedbackTest, DuplicateMisspellingFinalization) {
   AddMisspelling(kRendererProcessId, kMisspellingHash);
   AddMisspelling(kRendererProcessId, kMisspellingHash);
-  std::vector<uint32> remaining_markers(1, kMisspellingHash);
+  std::vector<uint32_t> remaining_markers(1, kMisspellingHash);
   feedback_.FinalizeRemovedMisspellings(kRendererProcessId, remaining_markers);
   std::vector<Misspelling> misspellings = feedback_.GetAllMisspellings();
   EXPECT_EQ(static_cast<size_t>(1), misspellings.size());
@@ -149,7 +152,7 @@ TEST_F(FeedbackTest, GetMisspellingsInRenderer) {
 TEST_F(FeedbackTest, EraseFinalizedMisspellings) {
   AddMisspelling(kRendererProcessId, kMisspellingHash);
   feedback_.FinalizeRemovedMisspellings(kRendererProcessId,
-                                        std::vector<uint32>());
+                                        std::vector<uint32_t>());
   EXPECT_TRUE(feedback_.RendererHasMisspellings(kRendererProcessId));
   feedback_.EraseFinalizedMisspellings(kRendererProcessId);
   EXPECT_FALSE(feedback_.RendererHasMisspellings(kRendererProcessId));
@@ -238,7 +241,7 @@ TEST_F(FeedbackTest, FindMisspellingsByText) {
   static const int kSentenceLength = 14;
   static const int kNumberOfSentences = 2;
   static const int kNumberOfRenderers = 2;
-  uint32 hash = kMisspellingHash;
+  uint32_t hash = kMisspellingHash;
   for (int renderer_process_id = kRendererProcessId;
        renderer_process_id < kRendererProcessId + kNumberOfRenderers;
        ++renderer_process_id) {
@@ -263,12 +266,12 @@ TEST_F(FeedbackTest, FindMisspellingsByText) {
                   std::vector<base::string16>(1, kOtherSuggestion), hash + 1));
 
   static const base::string16 kMisspelledWord = ASCIIToUTF16("Helllo");
-  const std::set<uint32>& misspellings =
+  const std::set<uint32_t>& misspellings =
       feedback_.FindMisspellings(kMisspelledWord);
   EXPECT_EQ(static_cast<size_t>(kNumberOfSentences * kNumberOfRenderers),
             misspellings.size());
 
-  for (std::set<uint32>::const_iterator it = misspellings.begin();
+  for (std::set<uint32_t>::const_iterator it = misspellings.begin();
        it != misspellings.end(); ++it) {
     Misspelling* misspelling = feedback_.GetMisspelling(*it);
     EXPECT_NE(nullptr, misspelling);

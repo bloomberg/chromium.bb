@@ -5,6 +5,7 @@
 #include "chrome/browser/translate/cld_data_harness.h"
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "chrome/browser/translate/component_cld_data_harness.h"
 #include "chrome/browser/translate/standalone_cld_data_harness.h"

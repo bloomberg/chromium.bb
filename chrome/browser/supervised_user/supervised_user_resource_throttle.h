@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_RESOURCE_THROTTLE_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"

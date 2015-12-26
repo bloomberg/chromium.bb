@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"

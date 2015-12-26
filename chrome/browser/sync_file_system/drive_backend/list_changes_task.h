@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LIST_CHANGES_TASK_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LIST_CHANGES_TASK_H_
 
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -38,7 +41,7 @@ class ListChangesTask : public SyncTask {
   void DidListChanges(scoped_ptr<SyncTaskToken> token,
                       google_apis::DriveApiErrorCode error,
                       scoped_ptr<google_apis::ChangeList> change_list);
-  void CheckInChangeList(int64 largest_change_id,
+  void CheckInChangeList(int64_t largest_change_id,
                          scoped_ptr<SyncTaskToken> token);
 
   bool IsContextReady();

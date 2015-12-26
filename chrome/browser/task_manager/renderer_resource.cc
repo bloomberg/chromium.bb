@@ -4,7 +4,6 @@
 
 #include "chrome/browser/task_manager/renderer_resource.h"
 
-#include "base/basictypes.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/profiles/profile.h"

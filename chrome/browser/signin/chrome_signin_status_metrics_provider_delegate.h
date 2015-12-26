@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"

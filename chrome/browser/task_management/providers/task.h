@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_TASK_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_TASK_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
+#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -61,12 +63,12 @@ class Task {
   // the |refresh_flags| indicate which resources should be calculated on each
   // refresh.
   virtual void Refresh(const base::TimeDelta& update_interval,
-                       int64 refresh_flags);
+                       int64_t refresh_flags);
 
   // Will receive this notification through the task manager from
   // |ChromeNetworkDelegate::OnNetworkBytesReceived()|. The task will add to the
   // |current_byte_count_| in this refresh cycle.
-  void OnNetworkBytesRead(int64 bytes_read);
+  void OnNetworkBytesRead(int64_t bytes_read);
 
   // Returns the task type.
   virtual Type GetType() const = 0;
@@ -85,14 +87,14 @@ class Task {
   // memory, in this case a default invalid value of -1 will be returned.
   // Check for whether the task reports it or not first.
   bool ReportsSqliteMemory() const;
-  virtual int64 GetSqliteMemoryUsed() const;
+  virtual int64_t GetSqliteMemoryUsed() const;
 
   // Getting the allocated and used V8 memory (in bytes). Not all tasks reports
   // V8 memory, in this case a default invalid value of -1 will be returned.
   // Check for whether the task reports it or not first.
   bool ReportsV8Memory() const;
-  virtual int64 GetV8MemoryAllocated() const;
-  virtual int64 GetV8MemoryUsed() const;
+  virtual int64_t GetV8MemoryAllocated() const;
+  virtual int64_t GetV8MemoryUsed() const;
 
   // Checking if the task reports Webkit resource cache statistics and getting
   // them if it does.
@@ -102,8 +104,8 @@ class Task {
   // Checking whether the task reports network usage.
   bool ReportsNetworkUsage() const;
 
-  int64 task_id() const { return task_id_; }
-  int64 network_usage() const { return network_usage_; }
+  int64_t task_id() const { return task_id_; }
+  int64_t network_usage() const { return network_usage_; }
   const base::string16& title() const { return title_; }
   const std::string& rappor_sample_name() const { return rappor_sample_name_; }
   const gfx::ImageSkia& icon() const { return icon_; }
@@ -119,16 +121,16 @@ class Task {
 
  private:
   // The unique ID of this task.
-  const int64 task_id_;
+  const int64_t task_id_;
 
   // The task's network usage in the current refresh cycle measured in bytes per
   // second. A value of -1 means this task doesn't report network usage data.
-  int64 network_usage_;
+  int64_t network_usage_;
 
   // The current network bytes received by this task during the current refresh
   // cycle. A value of -1 means this task has never been notified of any network
   // usage.
-  int64 current_byte_count_;
+  int64_t current_byte_count_;
 
   // The title of the task.
   base::string16 title_;

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/common/pref_names.h"
