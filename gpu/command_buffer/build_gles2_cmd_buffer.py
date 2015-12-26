@@ -7807,7 +7807,7 @@ class PUTSTRHandler(ArrayArgTypeHandler):
     """Overrriden from TypeHandler."""
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
-  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
   const char* kString1 = "happy";
   const char* kString2 = "ending";
   const size_t kString1Size = ::strlen(kString1) + 1;
@@ -7878,7 +7878,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       return
     code = """
 TEST_F(GLES2ImplementationTest, %(name)sWithLength) {
-  const uint32 kBucketId = GLES2Implementation::kResultBucketId;
+  const uint32_t kBucketId = GLES2Implementation::kResultBucketId;
   const char* kString = "foobar******";
   const size_t kStringSize = 6;  // We only need "foobar".
   const size_t kHeaderSize = sizeof(GLint) * 2;
@@ -7958,7 +7958,7 @@ TEST_F(GLES2ImplementationTest, %(name)sWithLength) {
     test = """
 TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = { kSource0 };
   const char kValidStrEnd = 0;
@@ -7982,7 +7982,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 
     test = """
 TEST_P(%(test_name)s, %(name)sInvalidArgs) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = { kSource0 };
   const char kValidStrEnd = 0;
@@ -8005,7 +8005,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
     test = """
 TEST_P(%(test_name)s, %(name)sInvalidHeader) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = { kSource0 };
   const char kValidStrEnd = 0;
@@ -8031,7 +8031,7 @@ TEST_P(%(test_name)s, %(name)sInvalidHeader) {
 
     test = """
 TEST_P(%(test_name)s, %(name)sInvalidStringEnding) {
-  const uint32 kBucketId = 123;
+  const uint32_t kBucketId = 123;
   const char kSource0[] = "hello";
   const char* kSource[] = { kSource0 };
   const char kInvalidStrEnd = '*';
@@ -9344,7 +9344,7 @@ class ResourceIdZeroArgument(Argument):
 
 
 class Int64Argument(Argument):
-  """Represents a GLuint64 argument which splits up into 2 uint32 items."""
+  """Represents a GLuint64 argument which splits up into 2 uint32_t items."""
 
   def __init__(self, name, type):
     Argument.__init__(self, name, type)
@@ -9723,7 +9723,7 @@ class Function(object):
     else:
       cmd_flags = 0
 
-    f.write("  static const uint8 cmd_flags = %s;\n" % cmd_flags)
+    f.write("  static const uint8_t cmd_flags = %s;\n" % cmd_flags)
 
 
   def WriteCmdArgFlag(self, f):
