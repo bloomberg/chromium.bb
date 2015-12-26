@@ -2010,27 +2010,27 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeOutlineColor(CSSParserTokenRange&
     return consumeColor(range, cssParserMode);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLineWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     CSSValueID id = range.peek().id();
     if (id == CSSValueThin || id == CSSValueMedium || id == CSSValueThick)
         return consumeIdent(range);
-    return consumeLength(range, cssParserMode, ValueRangeNonNegative, unitless);
+    return consumeLength(range, cssParserMode, ValueRangeNonNegative);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBorderWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBorderWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
-    return consumeLineWidth(range, cssParserMode, unitless);
+    return consumeLineWidth(range, cssParserMode);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeTextStrokeWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
-    return consumeLineWidth(range, cssParserMode, UnitlessQuirk::Forbid);
+    return consumeLineWidth(range, cssParserMode);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeColumnRuleWidth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
-    return consumeLineWidth(range, cssParserMode, UnitlessQuirk::Forbid);
+    return consumeLineWidth(range, cssParserMode);
 }
 
 static bool consumeTranslate3d(CSSParserTokenRange& args, CSSParserMode cssParserMode, RefPtrWillBeRawPtr<CSSFunctionValue>& transformValue)
@@ -2879,11 +2879,6 @@ static PassRefPtrWillBeRawPtr<CSSValueList> consumeContent(CSSParserTokenRange& 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
-    if (CSSParserFastPaths::isKeywordPropertyID(property)) {
-        if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(property, m_range.peek().id()))
-            return nullptr;
-        return consumeIdent(m_range);
-    }
     switch (property) {
     case CSSPropertyWillChange:
         return consumeWillChange(m_range);
@@ -3038,24 +3033,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitBorderEndWidth:
     case CSSPropertyWebkitBorderBeforeWidth:
     case CSSPropertyWebkitBorderAfterWidth:
-        return consumeBorderWidth(m_range, m_context.mode(), UnitlessQuirk::Forbid);
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderTopColor: {
-        bool allowQuirkyColors = inQuirksMode()
-            && (m_currentShorthand == CSSPropertyInvalid || m_currentShorthand == CSSPropertyBorderColor);
-        return consumeColor(m_range, m_context.mode(), allowQuirkyColors);
-    }
-    case CSSPropertyBorderBottomWidth:
-    case CSSPropertyBorderLeftWidth:
-    case CSSPropertyBorderRightWidth:
-    case CSSPropertyBorderTopWidth: {
-        bool allowQuirkyLengths = inQuirksMode()
-            && (m_currentShorthand == CSSPropertyInvalid || m_currentShorthand == CSSPropertyBorderWidth);
-        UnitlessQuirk unitless = allowQuirkyLengths ? UnitlessQuirk::Allow : UnitlessQuirk::Forbid;
-        return consumeBorderWidth(m_range, m_context.mode(), unitless);
-    }
+        return consumeBorderWidth(m_range, m_context.mode());
     case CSSPropertyZIndex:
         return consumeZIndex(m_range);
     case CSSPropertyTextShadow: // CSS2 property, dropped in CSS2.1, back in CSS3, so treat as CSS3
@@ -3082,7 +3060,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyOutlineOffset:
         return consumeLength(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyOutlineWidth:
-        return consumeLineWidth(m_range, m_context.mode(), UnitlessQuirk::Forbid);
+        return consumeLineWidth(m_range, m_context.mode());
     case CSSPropertyTransform:
         return consumeTransform(m_range, m_context.mode(), unresolvedProperty == CSSPropertyAliasWebkitTransform);
     case CSSPropertyWebkitTransformOriginX:
@@ -3512,7 +3490,13 @@ bool CSSPropertyParser::consumeShorthandGreedily(const StylePropertyShorthand& s
         for (size_t i = 0; !foundLonghand && i < shorthand.length(); ++i) {
             if (longhands[i])
                 continue;
-            longhands[i] = parseSingleValue(shorthandProperties[i]);
+            // TODO: parseSingleValue needs to handle fastpath keywords.
+            if (CSSParserFastPaths::isKeywordPropertyID(shorthandProperties[i])) {
+                if (CSSParserFastPaths::isValidKeywordPropertyAndValue(shorthandProperties[i], m_range.peek().id()))
+                    longhands[i] = consumeIdent(m_range);
+            } else {
+                longhands[i] = parseSingleValue(shorthandProperties[i]);
+            }
             if (longhands[i])
                 foundLonghand = true;
         }
@@ -3582,40 +3566,6 @@ bool CSSPropertyParser::consumeFlex(bool important)
     addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(clampTo<float>(flexShrink), CSSPrimitiveValue::UnitType::Number), important);
     addProperty(CSSPropertyFlexBasis, flexBasis, important);
     return true;
-}
-
-bool CSSPropertyParser::consumeBorder(bool important)
-{
-    RefPtrWillBeRawPtr<CSSValue> width = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> style = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> color = nullptr;
-
-    while (!width || !style || !color) {
-        if (!width && (width = consumeLineWidth(m_range, m_context.mode(), UnitlessQuirk::Forbid)))
-            continue;
-        if (!style && (style = parseSingleValue(CSSPropertyBorderLeftStyle)))
-            continue;
-        if (!color && (color = consumeColor(m_range, m_context.mode())))
-            continue;
-        break;
-    }
-
-    if (!width && !style && !color)
-        return false;
-
-    if (!width)
-        width = cssValuePool().createImplicitInitialValue();
-    if (!style)
-        style = cssValuePool().createImplicitInitialValue();
-    if (!color)
-        color = cssValuePool().createImplicitInitialValue();
-
-    addExpandedPropertyForValue(CSSPropertyBorderWidth, width.release(), important);
-    addExpandedPropertyForValue(CSSPropertyBorderStyle, style.release(), important);
-    addExpandedPropertyForValue(CSSPropertyBorderColor, color.release(), important);
-    addExpandedPropertyForValue(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);
-
-    return m_range.atEnd();
 }
 
 bool CSSPropertyParser::consume4Values(const StylePropertyShorthand& shorthand, bool important)
@@ -3763,22 +3713,6 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeShorthandGreedily(webkitColumnRuleShorthand(), important);
     case CSSPropertyListStyle:
         return consumeShorthandGreedily(listStyleShorthand(), important);
-    case CSSPropertyBorderColor:
-        return consume4Values(borderColorShorthand(), important);
-    case CSSPropertyBorderStyle:
-        return consume4Values(borderStyleShorthand(), important);
-    case CSSPropertyBorderWidth:
-        return consume4Values(borderWidthShorthand(), important);
-    case CSSPropertyBorderTop:
-        return consumeShorthandGreedily(borderTopShorthand(), important);
-    case CSSPropertyBorderRight:
-        return consumeShorthandGreedily(borderRightShorthand(), important);
-    case CSSPropertyBorderBottom:
-        return consumeShorthandGreedily(borderBottomShorthand(), important);
-    case CSSPropertyBorderLeft:
-        return consumeShorthandGreedily(borderLeftShorthand(), important);
-    case CSSPropertyBorder:
-        return consumeBorder(important);
     default:
         m_currentShorthand = oldShorthand;
         return false;

@@ -32,6 +32,7 @@ class StylePropertyShorthand {
 public:
     StylePropertyShorthand()
         : m_properties(0)
+        , m_propertiesForInitialization(0)
         , m_length(0)
         , m_shorthandID(CSSPropertyInvalid)
     {
@@ -39,17 +40,28 @@ public:
 
     StylePropertyShorthand(CSSPropertyID id, const CSSPropertyID* properties, unsigned numProperties)
         : m_properties(properties)
+        , m_propertiesForInitialization(0)
+        , m_length(numProperties)
+        , m_shorthandID(id)
+    {
+    }
+
+    StylePropertyShorthand(CSSPropertyID id, const CSSPropertyID* properties, const StylePropertyShorthand** propertiesForInitialization, unsigned numProperties)
+        : m_properties(properties)
+        , m_propertiesForInitialization(propertiesForInitialization)
         , m_length(numProperties)
         , m_shorthandID(id)
     {
     }
 
     const CSSPropertyID* properties() const { return m_properties; }
+    const StylePropertyShorthand** propertiesForInitialization() const { return m_propertiesForInitialization; }
     unsigned length() const { return m_length; }
     CSSPropertyID id() const { return m_shorthandID; }
 
 private:
     const CSSPropertyID* m_properties;
+    const StylePropertyShorthand** m_propertiesForInitialization;
     unsigned m_length;
     CSSPropertyID m_shorthandID;
 };
