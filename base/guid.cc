@@ -4,6 +4,8 @@
 
 #include "base/guid.h"
 
+#include <stddef.h>
+
 #include "base/strings/string_util.h"
 
 namespace base {

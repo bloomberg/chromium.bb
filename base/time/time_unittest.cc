@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -494,7 +495,7 @@ TEST_F(TimeTest, Max) {
 
 TEST_F(TimeTest, MaxConversions) {
   Time t = Time::Max();
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.ToInternalValue());
+  EXPECT_EQ(std::numeric_limits<int64_t>::max(), t.ToInternalValue());
 
   t = Time::FromDoubleT(std::numeric_limits<double>::infinity());
   EXPECT_TRUE(t.is_max());
@@ -541,7 +542,7 @@ TEST_F(TimeTest, MaxConversions) {
 
 #if defined(OS_MACOSX)
 TEST_F(TimeTest, TimeTOverflow) {
-  Time t = Time::FromInternalValue(std::numeric_limits<int64>::max() - 1);
+  Time t = Time::FromInternalValue(std::numeric_limits<int64_t>::max() - 1);
   EXPECT_FALSE(t.is_max());
   EXPECT_EQ(std::numeric_limits<time_t>::max(), t.ToTimeT());
 }
@@ -799,19 +800,19 @@ std::string AnyToString(Any any) {
 }
 
 TEST(TimeDelta, Magnitude) {
-  const int64 zero = 0;
+  const int64_t zero = 0;
   EXPECT_EQ(TimeDelta::FromMicroseconds(zero),
             TimeDelta::FromMicroseconds(zero).magnitude());
 
-  const int64 one = 1;
-  const int64 negative_one = -1;
+  const int64_t one = 1;
+  const int64_t negative_one = -1;
   EXPECT_EQ(TimeDelta::FromMicroseconds(one),
             TimeDelta::FromMicroseconds(one).magnitude());
   EXPECT_EQ(TimeDelta::FromMicroseconds(one),
             TimeDelta::FromMicroseconds(negative_one).magnitude());
 
-  const int64 max_int64_minus_one = std::numeric_limits<int64>::max() - 1;
-  const int64 min_int64_plus_two = std::numeric_limits<int64>::min() + 2;
+  const int64_t max_int64_minus_one = std::numeric_limits<int64_t>::max() - 1;
+  const int64_t min_int64_plus_two = std::numeric_limits<int64_t>::min() + 2;
   EXPECT_EQ(TimeDelta::FromMicroseconds(max_int64_minus_one),
             TimeDelta::FromMicroseconds(max_int64_minus_one).magnitude());
   EXPECT_EQ(TimeDelta::FromMicroseconds(max_int64_minus_one),
@@ -832,16 +833,16 @@ bool IsMin(TimeDelta delta) {
 
 TEST(TimeDelta, MaxConversions) {
   TimeDelta t = TimeDelta::Max();
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.ToInternalValue());
+  EXPECT_EQ(std::numeric_limits<int64_t>::max(), t.ToInternalValue());
 
   EXPECT_EQ(std::numeric_limits<int>::max(), t.InDays());
   EXPECT_EQ(std::numeric_limits<int>::max(), t.InHours());
   EXPECT_EQ(std::numeric_limits<int>::max(), t.InMinutes());
   EXPECT_EQ(std::numeric_limits<double>::infinity(), t.InSecondsF());
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.InSeconds());
+  EXPECT_EQ(std::numeric_limits<int64_t>::max(), t.InSeconds());
   EXPECT_EQ(std::numeric_limits<double>::infinity(), t.InMillisecondsF());
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.InMilliseconds());
-  EXPECT_EQ(std::numeric_limits<int64>::max(), t.InMillisecondsRoundedUp());
+  EXPECT_EQ(std::numeric_limits<int64_t>::max(), t.InMilliseconds());
+  EXPECT_EQ(std::numeric_limits<int64_t>::max(), t.InMillisecondsRoundedUp());
 
   t = TimeDelta::FromDays(std::numeric_limits<int>::max());
   EXPECT_TRUE(t.is_max());
@@ -852,7 +853,7 @@ TEST(TimeDelta, MaxConversions) {
   t = TimeDelta::FromMinutes(std::numeric_limits<int>::max());
   EXPECT_TRUE(t.is_max());
 
-  int64 max_int = std::numeric_limits<int64>::max();
+  int64_t max_int = std::numeric_limits<int64_t>::max();
 
   t = TimeDelta::FromSeconds(max_int / Time::kMicrosecondsPerSecond + 1);
   EXPECT_TRUE(t.is_max());
@@ -872,7 +873,7 @@ TEST(TimeDelta, MaxConversions) {
   t = TimeDelta::FromMicroseconds(-max_int);
   EXPECT_TRUE(IsMin(t));
 
-  t = -TimeDelta::FromMicroseconds(std::numeric_limits<int64>::min());
+  t = -TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min());
   EXPECT_FALSE(IsMin(t));
 
   t = TimeDelta::FromSecondsD(std::numeric_limits<double>::infinity());

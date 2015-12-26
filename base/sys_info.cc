@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info_internal.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 

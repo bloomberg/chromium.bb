@@ -4,7 +4,10 @@
 
 #include "base/metrics/field_trial.h"
 
+#include <stddef.h>
+
 #include "base/build_time.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"

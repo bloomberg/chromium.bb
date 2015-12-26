@@ -5,6 +5,8 @@
 #ifndef BASE_BIND_INTERNAL_H_
 #define BASE_BIND_INTERNAL_H_
 
+#include <stddef.h>
+
 #include <type_traits>
 
 #include "base/bind_helpers.h"

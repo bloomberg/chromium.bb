@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/profiler/scoped_profile.h"
 
 namespace tracked_objects {

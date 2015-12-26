@@ -6,6 +6,7 @@
 
 #include <asm/unistd.h>
 #include <errno.h>
+#include <limits.h>
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>

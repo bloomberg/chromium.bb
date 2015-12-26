@@ -12,9 +12,11 @@
 #include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/macros.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 #if !defined(OS_IOS)
 #import <AppKit/AppKit.h>

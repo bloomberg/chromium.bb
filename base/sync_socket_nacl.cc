@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <sys/types.h>
 

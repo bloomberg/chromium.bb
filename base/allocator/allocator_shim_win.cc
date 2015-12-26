@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits.h>
 #include <malloc.h>
 #include <new.h>
 #include <windows.h>
-
-#include "base/basictypes.h"
+#include <stddef.h>
 
 // This shim make it possible to perform additional checks on allocations
 // before passing them to the Heap functions.

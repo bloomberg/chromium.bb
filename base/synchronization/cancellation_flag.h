@@ -5,8 +5,9 @@
 #ifndef BASE_SYNCHRONIZATION_CANCELLATION_FLAG_H_
 #define BASE_SYNCHRONIZATION_CANCELLATION_FLAG_H_
 
-#include "base/base_export.h"
 #include "base/atomicops.h"
+#include "base/base_export.h"
+#include "base/macros.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {

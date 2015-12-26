@@ -773,7 +773,7 @@ static ATTRIBUTE_NOINLINE bool SymbolizeAndDemangle(void *pc, char *out,
     // Run the call back if it's installed.
     // Note: relocation (and much of the rest of this code) will be
     // wrong for prelinked shared libraries and PIE executables.
-    uint64 relocation = (elf_type == ET_DYN) ? start_address : 0;
+    uint64_t relocation = (elf_type == ET_DYN) ? start_address : 0;
     int num_bytes_written = g_symbolize_callback(wrapped_object_fd.get(),
                                                  pc, out, out_size,
                                                  relocation);

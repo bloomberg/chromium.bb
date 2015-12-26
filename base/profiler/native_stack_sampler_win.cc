@@ -4,6 +4,7 @@
 
 #include <objbase.h>
 #include <windows.h>
+#include <stddef.h>
 #include <winternl.h>
 
 #include <cstdlib>

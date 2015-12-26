@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"

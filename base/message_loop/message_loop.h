@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/debug/task_annotator.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/incoming_task_queue.h"
@@ -25,6 +25,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/tracking_info.h"
+#include "build/build_config.h"
 
 // TODO(sky): these includes should not be necessary. Nuke them.
 #if defined(OS_WIN)

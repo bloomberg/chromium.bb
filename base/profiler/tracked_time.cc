@@ -13,7 +13,7 @@
 namespace tracked_objects {
 
 Duration::Duration() : ms_(0) {}
-Duration::Duration(int32 duration) : ms_(duration) {}
+Duration::Duration(int32_t duration) : ms_(duration) {}
 
 Duration& Duration::operator+=(const Duration& other) {
   ms_ += other.ms_;
@@ -39,15 +39,16 @@ bool Duration::operator>(const Duration& other) const {
 // static
 Duration Duration::FromMilliseconds(int ms) { return Duration(ms); }
 
-int32 Duration::InMilliseconds() const { return ms_; }
+int32_t Duration::InMilliseconds() const {
+  return ms_;
+}
 
 //------------------------------------------------------------------------------
 
 TrackedTime::TrackedTime() : ms_(0) {}
-TrackedTime::TrackedTime(int32 ms) : ms_(ms) {}
+TrackedTime::TrackedTime(int32_t ms) : ms_(ms) {}
 TrackedTime::TrackedTime(const base::TimeTicks& time)
-    : ms_(static_cast<int32>((time - base::TimeTicks()).InMilliseconds())) {
-}
+    : ms_(static_cast<int32_t>((time - base::TimeTicks()).InMilliseconds())) {}
 
 // static
 TrackedTime TrackedTime::Now() {

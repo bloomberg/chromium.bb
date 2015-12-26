@@ -55,7 +55,7 @@ template <typename T, size_t N> char (&ArraySizeHelper(T (&array)[N]))[N];
 // support.
 //
 //   float f = 3.14159265358979;
-//   int i = bit_cast<int32>(f);
+//   int i = bit_cast<int32_t>(f);
 //   // i = 0x40490fdb
 //
 // The classical address-casting method is:

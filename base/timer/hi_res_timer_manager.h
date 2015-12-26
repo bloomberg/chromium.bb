@@ -6,7 +6,7 @@
 #define BASE_TIMER_HI_RES_TIMER_MANAGER_H_
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
 
 namespace base {

@@ -298,7 +298,7 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
     const int month,
     const int day_of_month,
     FieldTrial::RandomizationType randomization_type,
-    uint32 randomization_seed,
+    uint32_t randomization_seed,
     int* default_group_number) {
   if (default_group_number)
     *default_group_number = FieldTrial::kDefaultGroupNumber;

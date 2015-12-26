@@ -4,6 +4,8 @@
 
 #include "media/cast/net/rtcp/rtcp_utility.h"
 
+#include <stdint.h>
+
 #include <cmath>
 
 #include "base/logging.h"

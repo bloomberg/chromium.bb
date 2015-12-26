@@ -7,6 +7,7 @@
 #include "base/tracked_objects.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
@@ -184,7 +185,7 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
   // execution.
   // Create a child (using the same birth location).
   // TrackingInfo will call TallyABirth() during construction.
-  const int32 start_time = 1;
+  const int32_t start_time = 1;
   base::TimeTicks kBogusBirthTime = base::TimeTicks() +
       base::TimeDelta::FromMilliseconds(start_time);
   base::TrackingInfo pending_task(location, kBogusBirthTime);
@@ -192,7 +193,7 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
   TaskStopwatch stopwatch;
   stopwatch.Start();
   // Finally conclude the outer run.
-  const int32 time_elapsed = 1000;
+  const int32_t time_elapsed = 1000;
   SetTestTime(start_time + time_elapsed);
   stopwatch.Stop();
 
@@ -250,8 +251,8 @@ TEST_F(TrackedObjectsTest, DeathDataTestRecordDeath) {
   EXPECT_EQ(data->count(), 0);
   EXPECT_EQ(nullptr, data->last_phase_snapshot());
 
-  int32 run_ms = 42;
-  int32 queue_ms = 8;
+  int32_t run_ms = 42;
+  int32_t queue_ms = 8;
 
   const int kUnrandomInt = 0;  // Fake random int that ensure we sample data.
   data->RecordDeath(queue_ms, run_ms, kUnrandomInt);
@@ -281,8 +282,8 @@ TEST_F(TrackedObjectsTest, DeathDataTest2Phases) {
   scoped_ptr<DeathData> data(new DeathData());
   ASSERT_NE(data, nullptr);
 
-  int32 run_ms = 42;
-  int32 queue_ms = 8;
+  int32_t run_ms = 42;
+  int32_t queue_ms = 8;
 
   const int kUnrandomInt = 0;  // Fake random int that ensure we sample data.
   data->RecordDeath(queue_ms, run_ms, kUnrandomInt);
@@ -312,8 +313,8 @@ TEST_F(TrackedObjectsTest, DeathDataTest2Phases) {
             data->last_phase_snapshot()->death_data.queue_duration_sample);
   EXPECT_EQ(nullptr, data->last_phase_snapshot()->prev);
 
-  int32 run_ms1 = 21;
-  int32 queue_ms1 = 4;
+  int32_t run_ms1 = 21;
+  int32_t queue_ms1 = 4;
 
   data->RecordDeath(queue_ms1, run_ms1, kUnrandomInt);
   EXPECT_EQ(data->run_duration_sum(), run_ms + run_ms + run_ms1);

@@ -5,12 +5,14 @@
 #ifndef BASE_CONTAINERS_SCOPED_PTR_HASH_MAP_H_
 #define BASE_CONTAINERS_SCOPED_PTR_HASH_MAP_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 

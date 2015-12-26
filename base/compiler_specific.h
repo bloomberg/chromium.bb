@@ -112,7 +112,7 @@
 
 // Return the byte alignment of the given type (available at compile time).
 // Use like:
-//   ALIGNOF(int32)  // this would be 4
+//   ALIGNOF(int32_t)  // this would be 4
 #if defined(COMPILER_MSVC)
 #define ALIGNOF(type) __alignof(type)
 #elif defined(COMPILER_GCC)

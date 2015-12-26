@@ -5,7 +5,7 @@
 #ifndef BASE_AUTO_RESET_H_
 #define BASE_AUTO_RESET_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 // base::AutoReset<> is useful for setting a variable to a new value only within
 // a particular scope. An base::AutoReset<> object resets a variable to its

@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <mmsystem.h>
 #include <process.h>
+#include <stdint.h>
 
 #include <cmath>
 #include <limits>
@@ -44,14 +45,14 @@ MockTimeTicks::TickFunctionType MockTimeTicks::old_tick_function_;
 HANDLE g_rollover_test_start;
 
 unsigned __stdcall RolloverTestThreadMain(void* param) {
-  int64 counter = reinterpret_cast<int64>(param);
+  int64_t counter = reinterpret_cast<int64_t>(param);
   DWORD rv = WaitForSingleObject(g_rollover_test_start, INFINITE);
   EXPECT_EQ(rv, WAIT_OBJECT_0);
 
   TimeTicks last = TimeTicks::Now();
   for (int index = 0; index < counter; index++) {
     TimeTicks now = TimeTicks::Now();
-    int64 milliseconds = (now - last).InMilliseconds();
+    int64_t milliseconds = (now - last).InMilliseconds();
     // This is a tight loop; we could have looped faster than our
     // measurements, so the time might be 0 millis.
     EXPECT_GE(milliseconds, 0);
@@ -81,8 +82,8 @@ TEST(TimeTicks, MAYBE_WinRollover) {
   //   5) Each thread verifies integrity of result.
 
   const int kThreads = 8;
-  // Use int64 so we can cast into a void* without a compiler warning.
-  const int64 kChecks = 10;
+  // Use int64_t so we can cast into a void* without a compiler warning.
+  const int64_t kChecks = 10;
 
   // It takes a lot of iterations to reproduce the bug!
   // (See bug 1081395)
@@ -240,18 +241,18 @@ TEST(TimeTicks, FromQPCValue) {
 
   LARGE_INTEGER frequency;
   ASSERT_TRUE(QueryPerformanceFrequency(&frequency));
-  const int64 ticks_per_second = frequency.QuadPart;
+  const int64_t ticks_per_second = frequency.QuadPart;
   ASSERT_GT(ticks_per_second, 0);
 
   // Generate the tick values to convert, advancing the tick count by varying
   // amounts.  These values will ensure that both the fast and overflow-safe
   // conversion logic in FromQPCValue() is tested, and across the entire range
   // of possible QPC tick values.
-  std::vector<int64> test_cases;
+  std::vector<int64_t> test_cases;
   test_cases.push_back(0);
   const int kNumAdvancements = 100;
-  int64 ticks = 0;
-  int64 ticks_increment = 10;
+  int64_t ticks = 0;
+  int64_t ticks_increment = 10;
   for (int i = 0; i < kNumAdvancements; ++i) {
     test_cases.push_back(ticks);
     ticks += ticks_increment;
@@ -267,14 +268,14 @@ TEST(TimeTicks, FromQPCValue) {
     ticks += ticks_increment;
     ticks_increment = ticks_increment * 6 / 5;
   }
-  test_cases.push_back(std::numeric_limits<int64>::max());
+  test_cases.push_back(std::numeric_limits<int64_t>::max());
 
   // Test that the conversions using FromQPCValue() match those computed here
   // using simple floating-point arithmetic.  The floating-point math provides
   // enough precision to confirm the implementation is correct to the
   // microsecond for all |test_cases| (though it would be insufficient to
   // confirm many "very large" tick values which are not being tested here).
-  for (int64 ticks : test_cases) {
+  for (int64_t ticks : test_cases) {
     const double expected_microseconds_since_origin =
         (static_cast<double>(ticks) * Time::kMicrosecondsPerSecond) /
             ticks_per_second;

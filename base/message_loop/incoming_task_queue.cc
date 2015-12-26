@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {

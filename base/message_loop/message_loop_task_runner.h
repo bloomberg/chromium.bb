@@ -6,6 +6,7 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_TASK_RUNNER_H_
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/pending_task.h"
 #include "base/single_thread_task_runner.h"

@@ -5,6 +5,7 @@
 #include "base/strings/string_number_conversions.h"
 
 #include <errno.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>

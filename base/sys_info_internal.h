@@ -5,6 +5,8 @@
 #ifndef BASE_SYS_INFO_INTERNAL_H_
 #define BASE_SYS_INFO_INTERNAL_H_
 
+#include "base/macros.h"
+
 namespace base {
 
 namespace internal {

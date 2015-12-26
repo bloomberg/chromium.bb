@@ -4,7 +4,6 @@
 
 #include "base/deferred_sequenced_task_runner.h"
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"

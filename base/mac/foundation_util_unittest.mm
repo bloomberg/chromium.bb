@@ -4,6 +4,7 @@
 
 #include "base/mac/foundation_util.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include "base/compiler_specific.h"

@@ -6,6 +6,7 @@
 #define BASE_MESSAGE_LOOP_INCOMING_TASK_QUEUE_H_
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/pending_task.h"
 #include "base/synchronization/lock.h"

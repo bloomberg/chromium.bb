@@ -4,9 +4,10 @@
 
 #include "base/sha1.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
-#include "base/basictypes.h"
 
 namespace base {
 
@@ -50,20 +51,20 @@ class SecureHashAlgorithm {
   void Pad();
   void Process();
 
-  uint32 A, B, C, D, E;
+  uint32_t A, B, C, D, E;
 
-  uint32 H[5];
+  uint32_t H[5];
 
   union {
-    uint32 W[80];
-    uint8 M[64];
+    uint32_t W[80];
+    uint8_t M[64];
   };
 
-  uint32 cursor;
-  uint64 l;
+  uint32_t cursor;
+  uint64_t l;
 };
 
-static inline uint32 f(uint32 t, uint32 B, uint32 C, uint32 D) {
+static inline uint32_t f(uint32_t t, uint32_t B, uint32_t C, uint32_t D) {
   if (t < 20) {
     return (B & C) | ((~B) & D);
   } else if (t < 40) {
@@ -75,11 +76,11 @@ static inline uint32 f(uint32 t, uint32 B, uint32 C, uint32 D) {
   }
 }
 
-static inline uint32 S(uint32 n, uint32 X) {
+static inline uint32_t S(uint32_t n, uint32_t X) {
   return (X << n) | (X >> (32-n));
 }
 
-static inline uint32 K(uint32 t) {
+static inline uint32_t K(uint32_t t) {
   if (t < 20) {
     return 0x5a827999;
   } else if (t < 40) {
@@ -91,7 +92,7 @@ static inline uint32 K(uint32 t) {
   }
 }
 
-static inline void swapends(uint32* t) {
+static inline void swapends(uint32_t* t) {
   *t = (*t >> 24) | ((*t >> 8) & 0xff00) | ((*t & 0xff00) << 8) | (*t << 24);
 }
 
@@ -121,7 +122,7 @@ void SecureHashAlgorithm::Final() {
 }
 
 void SecureHashAlgorithm::Update(const void* data, size_t nbytes) {
-  const uint8* d = reinterpret_cast<const uint8*>(data);
+  const uint8_t* d = reinterpret_cast<const uint8_t*>(data);
   while (nbytes--) {
     M[cursor++] = *d++;
     if (cursor >= 64)
@@ -155,7 +156,7 @@ void SecureHashAlgorithm::Pad() {
 }
 
 void SecureHashAlgorithm::Process() {
-  uint32 t;
+  uint32_t t;
 
   // Each a...e corresponds to a section in the FIPS 180-3 algorithm.
 
@@ -179,7 +180,7 @@ void SecureHashAlgorithm::Process() {
 
   // d.
   for (t = 0; t < 80; ++t) {
-    uint32 TEMP = S(5, A) + f(t, B, C, D) + E + W[t] + K(t);
+    uint32_t TEMP = S(5, A) + f(t, B, C, D) + E + W[t] + K(t);
     E = D;
     D = C;
     C = S(30, B);

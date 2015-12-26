@@ -5,6 +5,8 @@
 #include "base/sys_info.h"
 
 #include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/param.h>
 #include <sys/resource.h>
@@ -17,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info_internal.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 #if defined(OS_ANDROID)
 #include <sys/vfs.h>

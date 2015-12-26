@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/scoped_native_library.h"
+
+#include "build/build_config.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
 #endif
-
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 

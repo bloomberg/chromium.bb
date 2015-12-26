@@ -5,11 +5,13 @@
 #ifndef BASE_ID_MAP_H_
 #define BASE_ID_MAP_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <set>
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/sequence_checker.h"
 
 // Ownership semantics - own pointer means the pointer is deleted in Remove()

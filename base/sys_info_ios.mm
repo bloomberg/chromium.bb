@@ -5,6 +5,8 @@
 #include "base/sys_info.h"
 
 #include <mach/mach.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #import <UIKit/UIKit.h>
@@ -12,6 +14,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace base {

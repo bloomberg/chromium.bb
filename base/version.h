@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 
 namespace base {
 
@@ -25,7 +24,7 @@ class BASE_EXPORT Version {
   ~Version();
 
   // Initializes from a decimal dotted version number, like "0.1.1".
-  // Each component is limited to a uint16. Call IsValid() to learn
+  // Each component is limited to a uint16_t. Call IsValid() to learn
   // the outcome.
   explicit Version(const std::string& version_str);
 

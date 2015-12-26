@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include "base/message_loop/message_pump_dispatcher.h"

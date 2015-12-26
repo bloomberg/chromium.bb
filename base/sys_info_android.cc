@@ -5,6 +5,8 @@
 #include "base/sys_info.h"
 
 #include <dlfcn.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/system_properties.h>
 
 #include "base/android/sys_utils.h"

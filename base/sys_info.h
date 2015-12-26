@@ -5,6 +5,7 @@
 #ifndef BASE_SYS_INFO_H_
 #define BASE_SYS_INFO_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>

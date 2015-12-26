@@ -4,9 +4,12 @@
 
 #include "base/synchronization/waitable_event.h"
 
+#include <stddef.h>
+
 #include "base/compiler_specific.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

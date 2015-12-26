@@ -10,6 +10,7 @@
 
 #include "base/file_version_info.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/macros.h"
 
 @class NSBundle;
 

@@ -6,7 +6,7 @@
 #define BASE_SYSTEM_MONITOR_SYSTEM_MONITOR_H_
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "build/build_config.h"

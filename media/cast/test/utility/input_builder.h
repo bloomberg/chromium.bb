@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_TEST_UTILITY_INPUT_BUILDER_
 #define MEDIA_CAST_TEST_UTILITY_INPUT_BUILDER_
 
+#include <limits.h>
+
 #include <string>
 
 namespace media {

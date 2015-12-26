@@ -5,12 +5,14 @@
 #ifndef BASE_JSON_JSON_VALUE_CONVERTER_H_
 #define BASE_JSON_JSON_VALUE_CONVERTER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"

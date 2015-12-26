@@ -5,8 +5,11 @@
 #ifndef BASE_SYNCHRONIZATION_WAITABLE_EVENT_H_
 #define BASE_SYNCHRONIZATION_WAITABLE_EVENT_H_
 
+#include <stddef.h>
+
 #include "base/base_export.h"
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"

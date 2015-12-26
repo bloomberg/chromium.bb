@@ -4,9 +4,12 @@
 
 #include "base/guid.h"
 
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -26,13 +29,13 @@ bool IsGUIDv4(const std::string& guid) {
 }  // namespace
 
 TEST(GUIDTest, GUIDGeneratesAllZeroes) {
-  uint64 bytes[] = { 0, 0 };
+  uint64_t bytes[] = {0, 0};
   std::string clientid = RandomDataToGUIDString(bytes);
   EXPECT_EQ("00000000-0000-0000-0000-000000000000", clientid);
 }
 
 TEST(GUIDTest, GUIDGeneratesCorrectly) {
-  uint64 bytes[] = { 0x0123456789ABCDEFULL, 0xFEDCBA9876543210ULL };
+  uint64_t bytes[] = {0x0123456789ABCDEFULL, 0xFEDCBA9876543210ULL};
   std::string clientid = RandomDataToGUIDString(bytes);
   EXPECT_EQ("01234567-89AB-CDEF-FEDC-BA9876543210", clientid);
 }

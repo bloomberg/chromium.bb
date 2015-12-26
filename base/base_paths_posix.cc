@@ -7,6 +7,7 @@
 // Android).
 
 #include <limits.h>
+#include <stddef.h>
 
 #include <ostream>
 #include <string>

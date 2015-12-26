@@ -5,6 +5,8 @@
 #include "base/rand_util.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 // #define needed to link in RtlGenRandom(), a.k.a. SystemFunction036.  See the
 // "Community Additions" comment on MSDN here:
@@ -21,8 +23,8 @@
 namespace base {
 
 // NOTE: This function must be cryptographically secure. http://crbug.com/140076
-uint64 RandUint64() {
-  uint64 number;
+uint64_t RandUint64() {
+  uint64_t number;
   RandBytes(&number, sizeof(number));
   return number;
 }

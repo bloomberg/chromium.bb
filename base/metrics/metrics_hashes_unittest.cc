@@ -4,6 +4,9 @@
 
 #include "base/metrics/metrics_hashes.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"

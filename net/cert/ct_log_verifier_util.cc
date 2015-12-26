@@ -4,6 +4,8 @@
 
 #include "net/cert/ct_log_verifier_util.h"
 
+#include <stdint.h>
+
 #include <cmath>
 
 #include "base/memory/scoped_ptr.h"

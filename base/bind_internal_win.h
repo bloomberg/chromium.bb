@@ -8,6 +8,8 @@
 #ifndef BASE_BIND_INTERNAL_WIN_H_
 #define BASE_BIND_INTERNAL_WIN_H_
 
+#include "build/build_config.h"
+
 // In the x64 architecture in Windows, __fastcall, __stdcall, etc, are all
 // the same as __cdecl which would turn the following specializations into
 // multiple definitions.

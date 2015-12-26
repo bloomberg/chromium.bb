@@ -4,6 +4,8 @@
 
 // Test of classes in tracked_time.cc
 
+#include <stdint.h>
+
 #include "base/profiler/tracked_time.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
@@ -14,8 +16,8 @@ namespace tracked_objects {
 TEST(TrackedTimeTest, TrackedTimerMilliseconds) {
   // First make sure we basicallly transfer simple milliseconds values as
   // expected.  Most critically, things should not become null.
-  int32 kSomeMilliseconds = 243;  // Some example times.
-  int64 kReallyBigMilliseconds = (1LL << 35) + kSomeMilliseconds;
+  int32_t kSomeMilliseconds = 243;  // Some example times.
+  int64_t kReallyBigMilliseconds = (1LL << 35) + kSomeMilliseconds;
 
   TrackedTime some = TrackedTime() +
       Duration::FromMilliseconds(kSomeMilliseconds);

@@ -38,7 +38,6 @@
 #include <mmsystem.h>
 #include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/cpu.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -53,23 +52,23 @@ namespace {
 
 // From MSDN, FILETIME "Contains a 64-bit value representing the number of
 // 100-nanosecond intervals since January 1, 1601 (UTC)."
-int64 FileTimeToMicroseconds(const FILETIME& ft) {
+int64_t FileTimeToMicroseconds(const FILETIME& ft) {
   // Need to bit_cast to fix alignment, then divide by 10 to convert
   // 100-nanoseconds to microseconds. This only works on little-endian
   // machines.
-  return bit_cast<int64, FILETIME>(ft) / 10;
+  return bit_cast<int64_t, FILETIME>(ft) / 10;
 }
 
-void MicrosecondsToFileTime(int64 us, FILETIME* ft) {
+void MicrosecondsToFileTime(int64_t us, FILETIME* ft) {
   DCHECK_GE(us, 0LL) << "Time is less than 0, negative values are not "
       "representable in FILETIME";
 
   // Multiply by 10 to convert microseconds to 100-nanoseconds. Bit_cast will
   // handle alignment problems. This only works on little-endian machines.
-  *ft = bit_cast<FILETIME, int64>(us * 10);
+  *ft = bit_cast<FILETIME, int64_t>(us * 10);
 }
 
-int64 CurrentWallclockMicroseconds() {
+int64_t CurrentWallclockMicroseconds() {
   FILETIME ft;
   ::GetSystemTimeAsFileTime(&ft);
   return FileTimeToMicroseconds(ft);
@@ -78,7 +77,7 @@ int64 CurrentWallclockMicroseconds() {
 // Time between resampling the un-granular clock for this API.  60 seconds.
 const int kMaxMillisecondsToAvoidDrift = 60 * Time::kMillisecondsPerSecond;
 
-int64 initial_time = 0;
+int64_t initial_time = 0;
 TimeTicks initial_ticks;
 
 void InitializeClock() {
@@ -110,7 +109,7 @@ QueryThreadCycleTimePtr GetQueryThreadCycleTimeFunction() {
 }
 
 // Returns the current value of the performance counter.
-uint64 QPCNowRaw() {
+uint64_t QPCNowRaw() {
   LARGE_INTEGER perf_counter_now = {};
   // According to the MSDN documentation for QueryPerformanceCounter(), this
   // will never fail on systems that run XP or later.
@@ -128,7 +127,7 @@ uint64 QPCNowRaw() {
 // number of leap year days between 1601 and 1970: (1970-1601)/4 excluding
 // 1700, 1800, and 1900.
 // static
-const int64 Time::kTimeTToMicrosecondsOffset = INT64_C(11644473600000000);
+const int64_t Time::kTimeTToMicrosecondsOffset = INT64_C(11644473600000000);
 
 // static
 Time Time::Now() {
@@ -170,7 +169,7 @@ Time Time::NowFromSystemTime() {
 
 // static
 Time Time::FromFileTime(FILETIME ft) {
-  if (bit_cast<int64, FILETIME>(ft) == 0)
+  if (bit_cast<int64_t, FILETIME>(ft) == 0)
     return Time();
   if (ft.dwHighDateTime == std::numeric_limits<DWORD>::max() &&
       ft.dwLowDateTime == std::numeric_limits<DWORD>::max())
@@ -180,7 +179,7 @@ Time Time::FromFileTime(FILETIME ft) {
 
 FILETIME Time::ToFileTime() const {
   if (is_null())
-    return bit_cast<FILETIME, int64>(0);
+    return bit_cast<FILETIME, int64_t>(0);
   if (is_max()) {
     FILETIME result;
     result.dwHighDateTime = std::numeric_limits<DWORD>::max();
@@ -332,7 +331,7 @@ DWORD timeGetTimeWrapper() {
 DWORD (*g_tick_function)(void) = &timeGetTimeWrapper;
 
 // Accumulation of time lost due to rollover (in milliseconds).
-int64 g_rollover_ms = 0;
+int64_t g_rollover_ms = 0;
 
 // The last timeGetTime value we saw, to detect rollover.
 DWORD g_last_seen_now = 0;
@@ -403,7 +402,7 @@ TimeDelta InitialNowFunction();
 // See "threading notes" in InitializeNowFunctionPointer() for details on how
 // concurrent reads/writes to these globals has been made safe.
 NowFunction g_now_function = &InitialNowFunction;
-int64 g_qpc_ticks_per_second = 0;
+int64_t g_qpc_ticks_per_second = 0;
 
 // As of January 2015, use of <atomic> is forbidden in Chromium code. This is
 // what std::atomic_thread_fence does on Windows on all Intel architectures when
@@ -425,8 +424,8 @@ TimeDelta QPCValueToTimeDelta(LONGLONG qpc_value) {
   }
   // Otherwise, calculate microseconds in a round about manner to avoid
   // overflow and precision issues.
-  int64 whole_seconds = qpc_value / g_qpc_ticks_per_second;
-  int64 leftover_ticks = qpc_value - (whole_seconds * g_qpc_ticks_per_second);
+  int64_t whole_seconds = qpc_value / g_qpc_ticks_per_second;
+  int64_t leftover_ticks = qpc_value - (whole_seconds * g_qpc_ticks_per_second);
   return TimeDelta::FromMicroseconds(
       (whole_seconds * Time::kMicrosecondsPerSecond) +
       ((leftover_ticks * Time::kMicrosecondsPerSecond) /
@@ -526,8 +525,8 @@ ThreadTicks ThreadTicks::Now() {
 
   // Return the CPU time of the current thread.
   double thread_time_seconds = thread_cycle_time / tsc_ticks_per_second;
-  return ThreadTicks(static_cast<int64>(
-      thread_time_seconds * Time::kMicrosecondsPerSecond));
+  return ThreadTicks(
+      static_cast<int64_t>(thread_time_seconds * Time::kMicrosecondsPerSecond));
 }
 
 // static
@@ -564,13 +563,13 @@ double ThreadTicks::TSCTicksPerSecond() {
 
   // The first time that this function is called, make an initial reading of the
   // TSC and the performance counter.
-  static const uint64 tsc_initial = __rdtsc();
-  static const uint64 perf_counter_initial = QPCNowRaw();
+  static const uint64_t tsc_initial = __rdtsc();
+  static const uint64_t perf_counter_initial = QPCNowRaw();
 
   // Make a another reading of the TSC and the performance counter every time
   // that this function is called.
-  uint64 tsc_now = __rdtsc();
-  uint64 perf_counter_now = QPCNowRaw();
+  uint64_t tsc_now = __rdtsc();
+  uint64_t perf_counter_now = QPCNowRaw();
 
   // Reset the thread priority.
   ::SetThreadPriority(::GetCurrentThread(), previous_priority);
@@ -587,7 +586,7 @@ double ThreadTicks::TSCTicksPerSecond() {
   LARGE_INTEGER perf_counter_frequency = {};
   ::QueryPerformanceFrequency(&perf_counter_frequency);
   DCHECK_GE(perf_counter_now, perf_counter_initial);
-  uint64 perf_counter_ticks = perf_counter_now - perf_counter_initial;
+  uint64_t perf_counter_ticks = perf_counter_now - perf_counter_initial;
   double elapsed_time_seconds =
       perf_counter_ticks / static_cast<double>(perf_counter_frequency.QuadPart);
 
@@ -597,7 +596,7 @@ double ThreadTicks::TSCTicksPerSecond() {
 
   // Compute the frequency of the TSC.
   DCHECK_GE(tsc_now, tsc_initial);
-  uint64 tsc_ticks = tsc_now - tsc_initial;
+  uint64_t tsc_ticks = tsc_now - tsc_initial;
   tsc_ticks_per_second = tsc_ticks / elapsed_time_seconds;
 
   return tsc_ticks_per_second;

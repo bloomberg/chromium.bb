@@ -4,7 +4,6 @@
 
 #include "base/template_util.h"
 
-#include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

@@ -4,9 +4,12 @@
 
 #include "base/feature_list.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

@@ -5,8 +5,9 @@
 #ifndef BASE_IOS_IOS_UTIL_H_
 #define BASE_IOS_IOS_UTIL_H_
 
+#include <stdint.h>
+
 #include "base/base_export.h"
-#include "base/basictypes.h"
 
 namespace base {
 namespace ios {
@@ -18,7 +19,9 @@ BASE_EXPORT bool IsRunningOnIOS8OrLater();
 BASE_EXPORT bool IsRunningOnIOS9OrLater();
 
 // Returns whether the operating system is at the given version or later.
-BASE_EXPORT bool IsRunningOnOrLater(int32 major, int32 minor, int32 bug_fix);
+BASE_EXPORT bool IsRunningOnOrLater(int32_t major,
+                                    int32_t minor,
+                                    int32_t bug_fix);
 
 // Returns whether iOS is signalling that an RTL text direction should be used
 // regardless of the current locale. This should not return true if the current

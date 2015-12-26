@@ -5,11 +5,13 @@
 #ifndef BASE_SCOPED_OBSERVER_H_
 #define BASE_SCOPED_OBSERVER_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/stl_util.h"
 
 // ScopedObserver is used to keep track of the set of sources an object has

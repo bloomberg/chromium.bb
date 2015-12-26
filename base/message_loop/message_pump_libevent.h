@@ -5,8 +5,8 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_LIBEVENT_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_LIBEVENT_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"

@@ -5,8 +5,9 @@
 #include "base/rand_util.h"
 
 #include <nacl/nacl_random.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 
 namespace {
@@ -28,8 +29,8 @@ void GetRandomBytes(void* output, size_t num_bytes) {
 namespace base {
 
 // NOTE: This function must be cryptographically secure. http://crbug.com/140076
-uint64 RandUint64() {
-  uint64 result;
+uint64_t RandUint64() {
+  uint64_t result;
   GetRandomBytes(&result, sizeof(result));
   return result;
 }

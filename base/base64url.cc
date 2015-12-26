@@ -4,7 +4,10 @@
 
 #include "base/base64url.h"
 
+#include <stddef.h>
+
 #include "base/base64.h"
+#include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "third_party/modp_b64/modp_b64.h"

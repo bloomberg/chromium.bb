@@ -5,6 +5,8 @@
 #include "base/sys_info.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <limits>
 

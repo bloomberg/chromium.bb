@@ -4,6 +4,7 @@
 
 #include "base/process/process_metrics.h"
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/resource.h>

@@ -4,6 +4,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

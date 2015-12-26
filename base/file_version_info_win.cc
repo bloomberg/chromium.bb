@@ -5,10 +5,13 @@
 #include "base/file_version_info_win.h"
 
 #include <windows.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/threading/thread_restrictions.h"
 
 using base::FilePath;
@@ -68,7 +71,7 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
   }
 
   LanguageAndCodePage* translate = NULL;
-  uint32 page_count;
+  uint32_t page_count;
   BOOL query_result = VerQueryValue(data, L"\\VarFileInfo\\Translation",
                                    (void**) &translate, &page_count);
 
@@ -171,7 +174,7 @@ bool FileVersionInfoWin::GetValue(const wchar_t* name,
     _snwprintf_s(sub_block, MAX_PATH, MAX_PATH,
                  L"\\StringFileInfo\\%04x%04x\\%ls", language, code_page, name);
     LPVOID value = NULL;
-    uint32 size;
+    uint32_t size;
     BOOL r = ::VerQueryValue(data_.get(), sub_block, &value, &size);
     if (r && value) {
       value_str->assign(static_cast<wchar_t*>(value));

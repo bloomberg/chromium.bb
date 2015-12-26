@@ -5,10 +5,12 @@
 #ifndef BASE_CONTAINERS_STACK_CONTAINER_H_
 #define BASE_CONTAINERS_STACK_CONTAINER_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"

@@ -4,13 +4,15 @@
 
 #include "base/guid.h"
 
+#include <stdint.h>
+
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace base {
 
 std::string GenerateGUID() {
-  uint64 sixteen_bytes[2] = { base::RandUint64(), base::RandUint64() };
+  uint64_t sixteen_bytes[2] = {base::RandUint64(), base::RandUint64()};
 
   // Set the GUID to version 4 as described in RFC 4122, section 4.4.
   // The format of GUID version 4 must be xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx,
@@ -30,7 +32,7 @@ std::string GenerateGUID() {
 
 // TODO(cmasone): Once we're comfortable this works, migrate Windows code to
 // use this as well.
-std::string RandomDataToGUIDString(const uint64 bytes[2]) {
+std::string RandomDataToGUIDString(const uint64_t bytes[2]) {
   return StringPrintf("%08X-%04X-%04X-%04X-%012llX",
                       static_cast<unsigned int>(bytes[0] >> 32),
                       static_cast<unsigned int>((bytes[0] >> 16) & 0x0000ffff),

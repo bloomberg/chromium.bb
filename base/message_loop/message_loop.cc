@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"

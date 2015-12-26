@@ -5,9 +5,9 @@
 #ifndef BASE_PROFILER_TRACKED_TIME_H_
 #define BASE_PROFILER_TRACKED_TIME_H_
 
+#include <stdint.h>
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/time/time.h"
 
 namespace tracked_objects {
@@ -36,14 +36,14 @@ class BASE_EXPORT Duration {  // Similar to base::TimeDelta.
 
   static Duration FromMilliseconds(int ms);
 
-  int32 InMilliseconds() const;
+  int32_t InMilliseconds() const;
 
  private:
   friend class TrackedTime;
-  explicit Duration(int32 duration);
+  explicit Duration(int32_t duration);
 
   // Internal time is stored directly in milliseconds.
-  int32 ms_;
+  int32_t ms_;
 };
 
 class BASE_EXPORT TrackedTime {  // Similar to base::TimeTicks.
@@ -56,14 +56,14 @@ class BASE_EXPORT TrackedTime {  // Similar to base::TimeTicks.
   TrackedTime operator+(const Duration& other) const;
   bool is_null() const;
 
-  static TrackedTime FromMilliseconds(int32 ms) { return TrackedTime(ms); }
+  static TrackedTime FromMilliseconds(int32_t ms) { return TrackedTime(ms); }
 
  private:
   friend class Duration;
-  explicit TrackedTime(int32 ms);
+  explicit TrackedTime(int32_t ms);
 
   // Internal duration is stored directly in milliseconds.
-  uint32 ms_;
+  uint32_t ms_;
 };
 
 }  // namespace tracked_objects

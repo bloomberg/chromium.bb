@@ -143,13 +143,15 @@
 #ifndef BASE_BIND_HELPERS_H_
 #define BASE_BIND_HELPERS_H_
 
+#include <stddef.h>
+
 #include <type_traits>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/template_util.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {

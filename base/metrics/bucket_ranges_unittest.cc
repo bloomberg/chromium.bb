@@ -4,6 +4,8 @@
 
 #include "base/metrics/bucket_ranges.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -76,9 +78,9 @@ TEST(BucketRangesTest, Checksum) {
 // http://www.w3.org/TR/PNG/#D-CRCAppendix.
 TEST(BucketRangesTest, Crc32TableTest) {
   for (int i = 0; i < 256; ++i) {
-    uint32 checksum = i;
+    uint32_t checksum = i;
     for (int j = 0; j < 8; ++j) {
-      const uint32 kReversedPolynomial = 0xedb88320L;
+      const uint32_t kReversedPolynomial = 0xedb88320L;
       if (checksum & 1)
         checksum = kReversedPolynomial ^ (checksum >> 1);
       else

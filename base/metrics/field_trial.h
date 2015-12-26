@@ -54,6 +54,9 @@
 #ifndef BASE_METRICS_FIELD_TRIAL_H_
 #define BASE_METRICS_FIELD_TRIAL_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -61,6 +64,7 @@
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
@@ -97,7 +101,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
     // providers that support it. A given instance should always return the same
     // value given the same input |trial_name| and |randomization_seed| values.
     virtual double GetEntropyForTrial(const std::string& trial_name,
-                                      uint32 randomization_seed) const = 0;
+                                      uint32_t randomization_seed) const = 0;
   };
 
   // A pair representing a Field Trial and its selected group.
@@ -398,7 +402,7 @@ class BASE_EXPORT FieldTrialList {
       const int month,
       const int day_of_month,
       FieldTrial::RandomizationType randomization_type,
-      uint32 randomization_seed,
+      uint32_t randomization_seed,
       int* default_group_number);
 
   // The Find() method can be used to test to see if a named trial was already

@@ -43,19 +43,19 @@ bool BigEndianReader::Read(T* value) {
   return true;
 }
 
-bool BigEndianReader::ReadU8(uint8* value) {
+bool BigEndianReader::ReadU8(uint8_t* value) {
   return Read(value);
 }
 
-bool BigEndianReader::ReadU16(uint16* value) {
+bool BigEndianReader::ReadU16(uint16_t* value) {
   return Read(value);
 }
 
-bool BigEndianReader::ReadU32(uint32* value) {
+bool BigEndianReader::ReadU32(uint32_t* value) {
   return Read(value);
 }
 
-bool BigEndianReader::ReadU64(uint64* value) {
+bool BigEndianReader::ReadU64(uint64_t* value) {
   return Read(value);
 }
 
@@ -86,19 +86,19 @@ bool BigEndianWriter::Write(T value) {
   return true;
 }
 
-bool BigEndianWriter::WriteU8(uint8 value) {
+bool BigEndianWriter::WriteU8(uint8_t value) {
   return Write(value);
 }
 
-bool BigEndianWriter::WriteU16(uint16 value) {
+bool BigEndianWriter::WriteU16(uint16_t value) {
   return Write(value);
 }
 
-bool BigEndianWriter::WriteU32(uint32 value) {
+bool BigEndianWriter::WriteU32(uint32_t value) {
   return Write(value);
 }
 
-bool BigEndianWriter::WriteU64(uint64 value) {
+bool BigEndianWriter::WriteU64(uint64_t value) {
   return Write(value);
 }
 

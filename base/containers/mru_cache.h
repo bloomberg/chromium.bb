@@ -16,14 +16,16 @@
 #ifndef BASE_CONTAINERS_MRU_CACHE_H_
 #define BASE_CONTAINERS_MRU_CACHE_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <list>
 #include <map>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace base {
 

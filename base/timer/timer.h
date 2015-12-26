@@ -50,11 +50,11 @@
 // should be able to tell the difference.
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace base {

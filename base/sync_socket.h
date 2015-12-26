@@ -9,17 +9,20 @@
 // data.  Because the receiving is blocking, they can be used to perform
 // rudimentary cross-process synchronization with low latency.
 
-#include "base/basictypes.h"
+#include <stddef.h>
+
+#include "base/base_export.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "base/process/process_handle.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
 #include <sys/types.h>
-
-#include "base/base_export.h"
-#include "base/compiler_specific.h"
-#include "base/process/process_handle.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/time/time.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
 #include "base/at_exit.h"
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"

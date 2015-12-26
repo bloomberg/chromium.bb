@@ -4,6 +4,7 @@
 
 #include "base/process/internal_linux.h"
 
+#include <limits.h>
 #include <unistd.h>
 
 #include <map>

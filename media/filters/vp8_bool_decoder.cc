@@ -40,6 +40,8 @@
 // project. (http://www.webmproject.org/code)
 // It is used to decode bits from a vp8 stream.
 
+#include <limits.h>
+
 #include <algorithm>
 
 #include "base/numerics/safe_conversions.h"

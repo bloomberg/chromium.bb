@@ -4,8 +4,12 @@
 
 #include "base/metrics/histogram.h"
 
-#include <climits>
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <algorithm>
+#include <climits>
 #include <vector>
 
 #include "base/logging.h"
@@ -414,11 +418,11 @@ TEST_F(HistogramTest, HistogramSerializeInfo) {
   EXPECT_TRUE(iter.ReadInt(&max));
   EXPECT_EQ(64, max);
 
-  int64 bucket_count;
+  int64_t bucket_count;
   EXPECT_TRUE(iter.ReadInt64(&bucket_count));
   EXPECT_EQ(8, bucket_count);
 
-  uint32 checksum;
+  uint32_t checksum;
   EXPECT_TRUE(iter.ReadUInt32(&checksum));
   EXPECT_EQ(histogram->bucket_ranges()->checksum(), checksum);
 
@@ -443,8 +447,8 @@ TEST_F(HistogramTest, CustomHistogramSerializeInfo) {
 
   int i;
   std::string s;
-  int64 bucket_count;
-  uint32 ui32;
+  int64_t bucket_count;
+  uint32_t ui32;
   EXPECT_TRUE(iter.ReadInt(&i) && iter.ReadString(&s) && iter.ReadInt(&i) &&
               iter.ReadInt(&i) && iter.ReadInt(&i) &&
               iter.ReadInt64(&bucket_count) && iter.ReadUInt32(&ui32));

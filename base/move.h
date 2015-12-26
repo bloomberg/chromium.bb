@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 
 // TODO(crbug.com/566182): DEPRECATED!
 // Use DISALLOW_COPY_AND_ASSIGN instead, or if your type will be used in

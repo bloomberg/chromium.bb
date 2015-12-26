@@ -5,6 +5,7 @@
 #import "base/ios/crb_protocol_observers.h"
 
 #include <objc/runtime.h>
+#include <stddef.h>
 #include <algorithm>
 #include <vector>
 

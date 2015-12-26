@@ -4,9 +4,12 @@
 
 #include "base/metrics/user_metrics.h"
 
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 
 namespace base {

@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/message_loop/message_pump.h"
 
 namespace base {

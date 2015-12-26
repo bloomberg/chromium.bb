@@ -4,6 +4,9 @@
 
 #include "base/sys_info.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <limits>
 
 #include "base/files/file_util.h"
@@ -12,6 +15,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info_internal.h"
+#include "build/build_config.h"
 
 namespace {
 

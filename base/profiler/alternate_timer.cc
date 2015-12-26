@@ -4,11 +4,9 @@
 
 #include "base/profiler/alternate_timer.h"
 
-#include "base/basictypes.h"
-
 namespace {
 
-tracked_objects::NowFunction* g_time_function = NULL;
+tracked_objects::NowFunction* g_time_function = nullptr;
 tracked_objects::TimeSourceType g_time_source_type =
     tracked_objects::TIME_SOURCE_TYPE_WALL_TIME;
 

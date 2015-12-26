@@ -6,6 +6,7 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_GLIB_H_
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"

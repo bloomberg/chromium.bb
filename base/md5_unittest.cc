@@ -5,7 +5,6 @@
 #include <string.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/md5.h"
 #include "testing/gtest/include/gtest/gtest.h"

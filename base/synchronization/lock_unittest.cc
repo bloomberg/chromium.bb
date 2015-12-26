@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -8,11 +8,14 @@
 #include <CoreServices/CoreServices.h>
 #include <mach/mach_host.h>
 #include <mach/mach_init.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_mach_port.h"
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 
 namespace base {

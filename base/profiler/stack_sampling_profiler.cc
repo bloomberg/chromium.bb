@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/profiler/native_stack_sampler.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"

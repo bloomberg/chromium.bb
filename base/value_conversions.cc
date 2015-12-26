@@ -4,9 +4,10 @@
 
 #include "base/value_conversions.h"
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -38,7 +39,7 @@ StringValue* CreateTimeDeltaValue(const TimeDelta& time) {
 
 bool GetValueAsTimeDelta(const Value& value, TimeDelta* time) {
   std::string str;
-  int64 int_value;
+  int64_t int_value;
   if (!value.GetAsString(&str) || !base::StringToInt64(str, &int_value))
     return false;
   if (time)

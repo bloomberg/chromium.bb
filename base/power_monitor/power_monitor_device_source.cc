@@ -5,6 +5,7 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 

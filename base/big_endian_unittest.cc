@@ -4,6 +4,8 @@
 
 #include "base/big_endian.h"
 
+#include <stdint.h>
+
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,10 +15,10 @@ TEST(BigEndianReaderTest, ReadsValues) {
   char data[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF,
                   0x1A, 0x2B, 0x3C, 0x4D, 0x5E };
   char buf[2];
-  uint8 u8;
-  uint16 u16;
-  uint32 u32;
-  uint64 u64;
+  uint8_t u8;
+  uint16_t u16;
+  uint32_t u32;
+  uint64_t u64;
   base::StringPiece piece;
   BigEndianReader reader(data, sizeof(data));
 
@@ -43,10 +45,10 @@ TEST(BigEndianReaderTest, ReadsValues) {
 TEST(BigEndianReaderTest, RespectsLength) {
   char data[8];
   char buf[2];
-  uint8 u8;
-  uint16 u16;
-  uint32 u32;
-  uint64 u64;
+  uint8_t u8;
+  uint16_t u16;
+  uint32_t u32;
+  uint64_t u64;
   base::StringPiece piece;
   BigEndianReader reader(data, sizeof(data));
   // 8 left
@@ -88,10 +90,10 @@ TEST(BigEndianWriterTest, WritesValues) {
 TEST(BigEndianWriterTest, RespectsLength) {
   char data[8];
   char buf[2];
-  uint8 u8 = 0;
-  uint16 u16 = 0;
-  uint32 u32 = 0;
-  uint64 u64 = 0;
+  uint8_t u8 = 0;
+  uint16_t u16 = 0;
+  uint32_t u32 = 0;
+  uint64_t u64 = 0;
   BigEndianWriter writer(data, sizeof(data));
   // 8 left
   EXPECT_FALSE(writer.Skip(9));

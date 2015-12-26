@@ -117,7 +117,7 @@ _START_GOOGLE_NAMESPACE_
 // and return the size of the output written. On error, the callback
 // function should return -1.
 typedef int (*SymbolizeCallback)(int fd, void *pc, char *out, size_t out_size,
-                                 uint64 relocation);
+                                 uint64_t relocation);
 void InstallSymbolizeCallback(SymbolizeCallback callback);
 
 // Installs a callback function, which will be called instead of

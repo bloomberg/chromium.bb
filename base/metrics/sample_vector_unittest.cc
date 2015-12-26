@@ -4,6 +4,9 @@
 
 #include "base/metrics/sample_vector.h"
 
+#include <limits.h>
+#include <stddef.h>
+
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"

@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread.h"

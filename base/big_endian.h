@@ -5,8 +5,10 @@
 #ifndef BASE_BIG_ENDIAN_H_
 #define BASE_BIG_ENDIAN_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 
 namespace base {
@@ -21,8 +23,8 @@ inline void ReadBigEndian(const char buf[], T* out) {
   *out = buf[0];
   for (size_t i = 1; i < sizeof(T); ++i) {
     *out <<= 8;
-    // Must cast to uint8 to avoid clobbering by sign extension.
-    *out |= static_cast<uint8>(buf[i]);
+    // Must cast to uint8_t to avoid clobbering by sign extension.
+    *out |= static_cast<uint8_t>(buf[i]);
   }
 }
 
@@ -37,13 +39,13 @@ inline void WriteBigEndian(char buf[], T val) {
 }
 
 // Specializations to make clang happy about the (dead code) shifts above.
-template<>
-inline void ReadBigEndian<uint8>(const char buf[], uint8* out) {
+template <>
+inline void ReadBigEndian<uint8_t>(const char buf[], uint8_t* out) {
   *out = buf[0];
 }
 
-template<>
-inline void WriteBigEndian<uint8>(char buf[], uint8 val) {
+template <>
+inline void WriteBigEndian<uint8_t>(char buf[], uint8_t val) {
   buf[0] = static_cast<char>(val);
 }
 
@@ -60,10 +62,10 @@ class BASE_EXPORT BigEndianReader {
   bool ReadBytes(void* out, size_t len);
   // Creates a StringPiece in |out| that points to the underlying buffer.
   bool ReadPiece(base::StringPiece* out, size_t len);
-  bool ReadU8(uint8* value);
-  bool ReadU16(uint16* value);
-  bool ReadU32(uint32* value);
-  bool ReadU64(uint64* value);
+  bool ReadU8(uint8_t* value);
+  bool ReadU16(uint16_t* value);
+  bool ReadU32(uint32_t* value);
+  bool ReadU64(uint64_t* value);
 
  private:
   // Hidden to promote type safety.
@@ -85,10 +87,10 @@ class BASE_EXPORT BigEndianWriter {
 
   bool Skip(size_t len);
   bool WriteBytes(const void* buf, size_t len);
-  bool WriteU8(uint8 value);
-  bool WriteU16(uint16 value);
-  bool WriteU32(uint32 value);
-  bool WriteU64(uint64 value);
+  bool WriteU8(uint8_t value);
+  bool WriteU16(uint16_t value);
+  bool WriteU32(uint32_t value);
+  bool WriteU64(uint64_t value);
 
  private:
   // Hidden to promote type safety.

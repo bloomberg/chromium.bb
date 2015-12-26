@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -19,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 
 namespace base {
 

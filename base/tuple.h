@@ -28,7 +28,10 @@
 #ifndef BASE_TUPLE_H_
 #define BASE_TUPLE_H_
 
+#include <stddef.h>
+
 #include "base/bind_helpers.h"
+#include "build/build_config.h"
 
 namespace base {
 

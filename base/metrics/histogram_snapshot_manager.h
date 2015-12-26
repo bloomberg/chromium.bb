@@ -5,10 +5,12 @@
 #ifndef BASE_METRICS_HISTOGRAM_SNAPSHOT_MANAGER_H_
 #define BASE_METRICS_HISTOGRAM_SNAPSHOT_MANAGER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 
 namespace base {

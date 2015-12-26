@@ -17,6 +17,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/third_party/libevent/event.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

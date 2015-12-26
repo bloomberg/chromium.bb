@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(COMPILER_MSVC) && defined(ARCH_CPU_32_BITS)
-#include <mmintrin.h>
-#endif
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
@@ -14,7 +12,12 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/template_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(COMPILER_MSVC) && defined(ARCH_CPU_32_BITS)
+#include <mmintrin.h>
+#endif
 
 using std::numeric_limits;
 using base::CheckedNumeric;

@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/third_party/valgrind/memcheck.h"
 #include "base/tracking_info.h"
+#include "build/build_config.h"
 
 using base::TimeDelta;
 
@@ -131,11 +132,11 @@ DeathData::~DeathData() {
 // We use a macro rather than a template to force this to inline.
 // Related code for calculating max is discussed on the web.
 #define CONDITIONAL_ASSIGN(assign_it, target, source) \
-    ((target) ^= ((target) ^ (source)) & -static_cast<int32>(assign_it))
+  ((target) ^= ((target) ^ (source)) & -static_cast<int32_t>(assign_it))
 
-void DeathData::RecordDeath(const int32 queue_duration,
-                            const int32 run_duration,
-                            const uint32 random_number) {
+void DeathData::RecordDeath(const int32_t queue_duration,
+                            const int32_t run_duration,
+                            const uint32_t random_number) {
   // We'll just clamp at INT_MAX, but we should note this in the UI as such.
   if (count_ < INT_MAX)
     ++count_;
@@ -215,20 +216,19 @@ DeathDataSnapshot::DeathDataSnapshot()
 }
 
 DeathDataSnapshot::DeathDataSnapshot(int count,
-                                     int32 run_duration_sum,
-                                     int32 run_duration_max,
-                                     int32 run_duration_sample,
-                                     int32 queue_duration_sum,
-                                     int32 queue_duration_max,
-                                     int32 queue_duration_sample)
+                                     int32_t run_duration_sum,
+                                     int32_t run_duration_max,
+                                     int32_t run_duration_sample,
+                                     int32_t queue_duration_sum,
+                                     int32_t queue_duration_max,
+                                     int32_t queue_duration_sample)
     : count(count),
       run_duration_sum(run_duration_sum),
       run_duration_max(run_duration_max),
       run_duration_sample(run_duration_sample),
       queue_duration_sum(queue_duration_sum),
       queue_duration_max(queue_duration_max),
-      queue_duration_sample(queue_duration_sample) {
-}
+      queue_duration_sample(queue_duration_sample) {}
 
 DeathDataSnapshot::~DeathDataSnapshot() {
 }
@@ -342,7 +342,7 @@ void ThreadData::PushToHeadOfList() {
   (void)VALGRIND_MAKE_MEM_DEFINED_IF_ADDRESSABLE(&random_number_,
                                                  sizeof(random_number_));
   MSAN_UNPOISON(&random_number_, sizeof(random_number_));
-  random_number_ += static_cast<uint32>(this - static_cast<ThreadData*>(0));
+  random_number_ += static_cast<uint32_t>(this - static_cast<ThreadData*>(0));
   random_number_ ^= (Now() - TrackedTime()).InMilliseconds();
 
   DCHECK(!next_);
@@ -499,15 +499,16 @@ Births* ThreadData::TallyABirth(const Location& location) {
 }
 
 void ThreadData::TallyADeath(const Births& births,
-                             int32 queue_duration,
+                             int32_t queue_duration,
                              const TaskStopwatch& stopwatch) {
-  int32 run_duration = stopwatch.RunDurationMs();
+  int32_t run_duration = stopwatch.RunDurationMs();
 
   // Stir in some randomness, plus add constant in case durations are zero.
-  const uint32 kSomePrimeNumber = 2147483647;
+  const uint32_t kSomePrimeNumber = 2147483647;
   random_number_ += queue_duration + run_duration + kSomePrimeNumber;
   // An address is going to have some randomness to it as well ;-).
-  random_number_ ^= static_cast<uint32>(&births - reinterpret_cast<Births*>(0));
+  random_number_ ^=
+      static_cast<uint32_t>(&births - reinterpret_cast<Births*>(0));
 
   // We don't have queue durations without OS timer.  OS timer is automatically
   // used for task-post-timing, so the use of an alternate timer implies all
@@ -560,7 +561,7 @@ void ThreadData::TallyRunOnNamedThreadIfTracking(
   // efficient by not calling for a genuine time value.  For simplicity, we'll
   // use a default zero duration when we can't calculate a true value.
   TrackedTime start_of_run = stopwatch.StartTime();
-  int32 queue_duration = 0;
+  int32_t queue_duration = 0;
   if (!start_of_run.is_null()) {
     queue_duration = (start_of_run - completed_task.EffectiveTimePosted())
         .InMilliseconds();
@@ -593,7 +594,7 @@ void ThreadData::TallyRunOnWorkerThreadIfTracking(
     return;
 
   TrackedTime start_of_run = stopwatch.StartTime();
-  int32 queue_duration = 0;
+  int32_t queue_duration = 0;
   if (!start_of_run.is_null()) {
     queue_duration = (start_of_run - time_posted).InMilliseconds();
   }
@@ -614,7 +615,7 @@ void ThreadData::TallyRunInAScopedRegionIfTracking(
   if (!current_thread_data)
     return;
 
-  int32 queue_duration = 0;
+  int32_t queue_duration = 0;
   current_thread_data->TallyADeath(*births, queue_duration, stopwatch);
 }
 
@@ -925,7 +926,7 @@ TrackedTime TaskStopwatch::StartTime() const {
   return start_time_;
 }
 
-int32 TaskStopwatch::RunDurationMs() const {
+int32_t TaskStopwatch::RunDurationMs() const {
 #if DCHECK_IS_ON()
   DCHECK(state_ == STOPPED);
 #endif
@@ -947,12 +948,12 @@ ThreadData* TaskStopwatch::GetThreadData() const {
 DeathDataPhaseSnapshot::DeathDataPhaseSnapshot(
     int profiling_phase,
     int count,
-    int32 run_duration_sum,
-    int32 run_duration_max,
-    int32 run_duration_sample,
-    int32 queue_duration_sum,
-    int32 queue_duration_max,
-    int32 queue_duration_sample,
+    int32_t run_duration_sum,
+    int32_t run_duration_max,
+    int32_t run_duration_sample,
+    int32_t queue_duration_sum,
+    int32_t queue_duration_max,
+    int32_t queue_duration_sample,
     const DeathDataPhaseSnapshot* prev)
     : profiling_phase(profiling_phase),
       death_data(count,
@@ -962,8 +963,7 @@ DeathDataPhaseSnapshot::DeathDataPhaseSnapshot(
                  queue_duration_sum,
                  queue_duration_max,
                  queue_duration_sample),
-      prev(prev) {
-}
+      prev(prev) {}
 
 //------------------------------------------------------------------------------
 // TaskSnapshot

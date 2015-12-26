@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;

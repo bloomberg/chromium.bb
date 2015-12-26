@@ -4,6 +4,8 @@
 
 #include "base/id_map.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -28,12 +30,12 @@ TEST(IDMapTest, Basic) {
   TestObject obj1;
   TestObject obj2;
 
-  int32 id1 = map.Add(&obj1);
+  int32_t id1 = map.Add(&obj1);
   EXPECT_FALSE(map.IsEmpty());
   EXPECT_EQ(1U, map.size());
   EXPECT_EQ(&obj1, map.Lookup(id1));
 
-  int32 id2 = map.Add(&obj2);
+  int32_t id2 = map.Add(&obj2);
   EXPECT_FALSE(map.IsEmpty());
   EXPECT_EQ(2U, map.size());
 
@@ -102,7 +104,7 @@ TEST(IDMapTest, IteratorRemainsValidWhenRemovingOtherElements) {
     map.Add(&obj[i]);
 
   // IDMap uses a hash_map, which has no predictable iteration order.
-  int32 ids_in_iteration_order[kCount];
+  int32_t ids_in_iteration_order[kCount];
   const TestObject* objs_in_iteration_order[kCount];
   int counter = 0;
   for (IDMap<TestObject>::const_iterator iter(&map);
@@ -212,7 +214,7 @@ TEST(IDMapTest, IteratorRemainsValidWhenClearing) {
     map.Add(&obj[i]);
 
   // IDMap uses a hash_map, which has no predictable iteration order.
-  int32 ids_in_iteration_order[kCount];
+  int32_t ids_in_iteration_order[kCount];
   const TestObject* objs_in_iteration_order[kCount];
   int counter = 0;
   for (IDMap<TestObject>::const_iterator iter(&map);

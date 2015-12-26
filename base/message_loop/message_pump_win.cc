@@ -4,8 +4,10 @@
 
 #include "base/message_loop/message_pump_win.h"
 
-#include <limits>
 #include <math.h>
+#include <stdint.h>
+
+#include <limits>
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"

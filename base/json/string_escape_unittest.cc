@@ -4,6 +4,9 @@
 
 #include "base/json/string_escape.h"
 
+#include <stddef.h>
+
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

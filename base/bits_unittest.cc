@@ -6,6 +6,8 @@
 
 #include "base/bits.h"
 
+#include <stddef.h>
+
 #include <limits>
 
 #include "testing/gtest/include/gtest/gtest.h"

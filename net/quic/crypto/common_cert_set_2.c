@@ -6,6 +6,8 @@
 /* This file contains common certificates. It's designed to be #included in
  * another file, in a namespace. */
 
+#include <stdint.h>
+
 #include "net/quic/crypto/common_cert_set_2a.inc"
 #include "net/quic/crypto/common_cert_set_2b.inc"
 

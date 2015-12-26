@@ -4,6 +4,7 @@
 
 #include "media/cast/test/utility/input_builder.h"
 
+#include <limits.h>
 #include <stdlib.h>
 #include <cstdio>
 

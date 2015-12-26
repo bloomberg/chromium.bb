@@ -5,14 +5,16 @@
 #include "base/ios/ios_util.h"
 
 #import <Foundation/Foundation.h>
+#include <stddef.h>
 
+#include "base/macros.h"
 #include "base/sys_info.h"
 
 namespace {
 // Return a 3 elements array containing the major, minor and bug fix version of
 // the OS.
-const int32* OSVersionAsArray() {
-  int32* digits = new int32[3];
+const int32_t* OSVersionAsArray() {
+  int32_t* digits = new int32_t[3];
   base::SysInfo::OperatingSystemVersionNumbers(
       &digits[0], &digits[1], &digits[2]);
   return digits;
@@ -31,9 +33,9 @@ bool IsRunningOnIOS9OrLater() {
   return IsRunningOnOrLater(9, 0, 0);
 }
 
-bool IsRunningOnOrLater(int32 major, int32 minor, int32 bug_fix) {
-  static const int32* current_version = OSVersionAsArray();
-  int32 version[] = { major, minor, bug_fix };
+bool IsRunningOnOrLater(int32_t major, int32_t minor, int32_t bug_fix) {
+  static const int32_t* current_version = OSVersionAsArray();
+  int32_t version[] = {major, minor, bug_fix};
   for (size_t i = 0; i < arraysize(version); i++) {
     if (current_version[i] != version[i])
       return current_version[i] > version[i];
