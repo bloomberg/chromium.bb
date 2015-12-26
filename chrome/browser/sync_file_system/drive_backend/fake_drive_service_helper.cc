@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
@@ -35,7 +37,7 @@ void UploadResultCallback(DriveApiErrorCode* error_out,
   ASSERT_TRUE(error_out);
   ASSERT_TRUE(entry_out);
   *error_out = error;
-  *entry_out = entry.Pass();
+  *entry_out = std::move(entry);
 }
 
 void DownloadResultCallback(DriveApiErrorCode* error_out,
@@ -239,7 +241,7 @@ DriveApiErrorCode FakeDriveServiceHelper::ListFilesInFolder(
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
-  return CompleteListing(list.Pass(), entries);
+  return CompleteListing(std::move(list), entries);
 }
 
 DriveApiErrorCode FakeDriveServiceHelper::SearchByTitle(
@@ -255,7 +257,7 @@ DriveApiErrorCode FakeDriveServiceHelper::SearchByTitle(
   if (error != google_apis::HTTP_SUCCESS)
     return error;
 
-  return CompleteListing(list.Pass(), entries);
+  return CompleteListing(std::move(list), entries);
 }
 
 DriveApiErrorCode FakeDriveServiceHelper::GetFileResource(

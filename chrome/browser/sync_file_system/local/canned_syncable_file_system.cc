@@ -5,9 +5,9 @@
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -258,14 +258,12 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
   additional_backends.push_back(SyncFileSystemBackend::CreateForTesting());
 
   file_system_context_ = new FileSystemContext(
-      io_task_runner_.get(),
-      file_task_runner_.get(),
+      io_task_runner_.get(), file_task_runner_.get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       storage_policy.get(),
       quota_manager_.get() ? quota_manager_->proxy() : nullptr,
-      additional_backends.Pass(),
-      std::vector<storage::URLRequestAutoMountHandler>(),
-      data_dir_.path(),
+      std::move(additional_backends),
+      std::vector<storage::URLRequestAutoMountHandler>(), data_dir_.path(),
       options);
 
   is_filesystem_set_up_ = true;
@@ -692,10 +690,9 @@ void CannedSyncableFileSystem::DoWrite(
   EXPECT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
   EXPECT_TRUE(is_filesystem_opened_);
   WriteHelper* helper = new WriteHelper;
-  operation_runner()->Write(url_request_context, url,
-                            blob_data_handle.Pass(), 0,
-                            base::Bind(&WriteHelper::DidWrite,
-                                       base::Owned(helper), callback));
+  operation_runner()->Write(
+      url_request_context, url, std::move(blob_data_handle), 0,
+      base::Bind(&WriteHelper::DidWrite, base::Owned(helper), callback));
 }
 
 void CannedSyncableFileSystem::DoWriteString(

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/sync_process_runner.h"
 
+#include <utility>
+
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "chrome/browser/sync_file_system/logger.h"
@@ -56,16 +58,15 @@ bool WasSuccessfulSync(SyncStatusCode status) {
 
 }  // namespace
 
-SyncProcessRunner::SyncProcessRunner(
-    const std::string& name,
-    Client* client,
-    scoped_ptr<TimerHelper> timer_helper,
-    size_t max_parallel_task)
+SyncProcessRunner::SyncProcessRunner(const std::string& name,
+                                     Client* client,
+                                     scoped_ptr<TimerHelper> timer_helper,
+                                     size_t max_parallel_task)
     : name_(name),
       client_(client),
       max_parallel_task_(max_parallel_task),
       running_tasks_(0),
-      timer_helper_(timer_helper.Pass()),
+      timer_helper_(std::move(timer_helper)),
       service_state_(SYNC_SERVICE_RUNNING),
       pending_changes_(0),
       factory_(this) {

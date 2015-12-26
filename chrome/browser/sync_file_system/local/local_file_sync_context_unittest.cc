@@ -5,7 +5,7 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -134,7 +134,7 @@ class LocalFileSyncContextTest : public testing::Test {
     *metadata_out = sync_file_info.metadata;
     *changes_out = sync_file_info.changes;
     if (snapshot_out)
-      *snapshot_out = snapshot.Pass();
+      *snapshot_out = std::move(snapshot);
     base::MessageLoop::current()->QuitWhenIdle();
   }
 

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -57,12 +58,10 @@ class SyncEngineInitializerTest : public testing::Test {
     fake_drive_service_ = fake_drive_service.get();
 
     sync_context_.reset(new SyncEngineContext(
-        fake_drive_service.Pass(),
-        scoped_ptr<drive::DriveUploaderInterface>(),
-        nullptr /* task_logger */,
+        std::move(fake_drive_service),
+        scoped_ptr<drive::DriveUploaderInterface>(), nullptr /* task_logger */,
         base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
-        nullptr /* worker_pool */));
+        base::ThreadTaskRunnerHandle::Get(), nullptr /* worker_pool */));
 
     sync_task_manager_.reset(new SyncTaskManager(
         base::WeakPtr<SyncTaskManager::Client>(),
@@ -146,7 +145,7 @@ class SyncEngineInitializerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(google_apis::HTTP_CREATED, error);
-    return entry.Pass();
+    return entry;
   }
 
   scoped_ptr<google_apis::FileResource> CreateRemoteSyncRoot() {
@@ -163,7 +162,7 @@ class SyncEngineInitializerTest : public testing::Test {
       EXPECT_EQ(google_apis::HTTP_NO_CONTENT, error);
     }
 
-    return sync_root.Pass();
+    return sync_root;
   }
 
   std::string GetSyncRootFolderID() {

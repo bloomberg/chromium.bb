@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -70,12 +71,10 @@ class RemoteToLocalSyncerTest : public testing::Test {
                                    kSyncRootFolderTitle));
     remote_change_processor_.reset(new FakeRemoteChangeProcessor);
 
-    context_.reset(new SyncEngineContext(fake_drive_service.Pass(),
-                                         drive_uploader.Pass(),
-                                         nullptr /* task_logger */,
-                                         base::ThreadTaskRunnerHandle::Get(),
-                                         base::ThreadTaskRunnerHandle::Get(),
-                                         nullptr /* worker_pool*/));
+    context_.reset(new SyncEngineContext(
+        std::move(fake_drive_service), std::move(drive_uploader),
+        nullptr /* task_logger */, base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr /* worker_pool*/));
     context_->SetRemoteChangeProcessor(remote_change_processor_.get());
 
     RegisterSyncableFileSystem();

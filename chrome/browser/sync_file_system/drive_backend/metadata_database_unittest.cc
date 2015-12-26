@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -272,7 +273,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     wrapper->Put(kDatabaseVersionKey, base::Int64ToString(3));
     SetUpServiceMetadata(wrapper.get());
 
-    return wrapper.Pass();
+    return wrapper;
   }
 
   void SetUpServiceMetadata(LevelDBWrapper* db) {
@@ -405,7 +406,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     file_resource->set_modified_date(base::Time::FromInternalValue(
         file.details().modification_time()));
 
-    return file_resource.Pass();
+    return file_resource;
   }
 
   scoped_ptr<google_apis::ChangeResource> CreateChangeResourceFromMetadata(
@@ -416,10 +417,10 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     change->set_file_id(file.file_id());
     change->set_deleted(file.details().missing());
     if (change->is_deleted())
-      return change.Pass();
+      return change;
 
     change->set_file(CreateFileResourceFromMetadata(file));
-    return change.Pass();
+    return change;
   }
 
   void ApplyRenameChangeToMetadata(const std::string& new_title,
@@ -516,12 +517,11 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
   void VerifyReloadConsistency() {
     scoped_ptr<MetadataDatabase> metadata_database_2;
-    ASSERT_EQ(SYNC_STATUS_OK,
-              MetadataDatabase::CreateForTesting(
-                  metadata_database_->db_.Pass(),
-                  metadata_database_->enable_on_disk_index_,
-                  &metadata_database_2));
-    metadata_database_->db_ = metadata_database_2->db_.Pass();
+    ASSERT_EQ(SYNC_STATUS_OK, MetadataDatabase::CreateForTesting(
+                                  std::move(metadata_database_->db_),
+                                  metadata_database_->enable_on_disk_index_,
+                                  &metadata_database_2));
+    metadata_database_->db_ = std::move(metadata_database_2->db_);
 
     MetadataDatabaseIndexInterface* index1 = metadata_database_->index_.get();
     MetadataDatabaseIndexInterface* index2 = metadata_database_2->index_.get();
@@ -574,8 +574,8 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
   SyncStatusCode UpdateByChangeList(
       ScopedVector<google_apis::ChangeResource> changes) {
-    return metadata_database_->UpdateByChangeList(
-        current_change_id_, changes.Pass());
+    return metadata_database_->UpdateByChangeList(current_change_id_,
+                                                  std::move(changes));
   }
 
   SyncStatusCode PopulateFolder(const std::string& folder_id,
@@ -913,7 +913,7 @@ TEST_P(MetadataDatabaseTest, UpdateByChangeListTest) {
       CreateChangeResourceFromMetadata(noop_file.metadata), &changes);
   PushToChangeList(
       CreateChangeResourceFromMetadata(new_file.metadata), &changes);
-  EXPECT_EQ(SYNC_STATUS_OK, UpdateByChangeList(changes.Pass()));
+  EXPECT_EQ(SYNC_STATUS_OK, UpdateByChangeList(std::move(changes)));
 
   renamed_file.tracker.set_dirty(true);
   reorganized_file.tracker.set_dirty(true);

@@ -68,7 +68,7 @@ scoped_ptr<FileMetadata> CreateFolderMetadata(const std::string& file_id,
   metadata->set_file_id(file_id);
   *metadata->mutable_details() = details;
 
-  return metadata.Pass();
+  return metadata;
 }
 
 scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
@@ -84,7 +84,7 @@ scoped_ptr<FileMetadata> CreateFileMetadata(const std::string& file_id,
   metadata->set_file_id(file_id);
   *metadata->mutable_details() = details;
 
-  return metadata.Pass();
+  return metadata;
 }
 
 scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
@@ -103,7 +103,7 @@ scoped_ptr<FileTracker> CreateTracker(const FileMetadata& metadata,
   tracker->set_dirty(false);
   tracker->set_active(true);
   tracker->set_needs_folder_listing(false);
-  return tracker.Pass();
+  return tracker;
 }
 
 scoped_ptr<FileTracker> CreatePlaceholderTracker(
@@ -121,7 +121,7 @@ scoped_ptr<FileTracker> CreatePlaceholderTracker(
   tracker->set_dirty(true);
   tracker->set_active(false);
   tracker->set_needs_folder_listing(false);
-  return tracker.Pass();
+  return tracker;
 }
 
 FileResourceKind GetFileResourceKind(

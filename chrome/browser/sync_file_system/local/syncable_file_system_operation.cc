@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/local/syncable_file_system_operation.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
@@ -90,7 +92,7 @@ void SyncableFileSystemOperation::CreateFile(
                  base::Unretained(impl_.get()),
                  url, exclusive,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
-  operation_runner_->PostOperationTask(task.Pass());
+  operation_runner_->PostOperationTask(std::move(task));
 }
 
 void SyncableFileSystemOperation::CreateDirectory(
@@ -112,7 +114,7 @@ void SyncableFileSystemOperation::CreateDirectory(
                  base::Unretained(impl_.get()),
                  url, exclusive, recursive,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
-  operation_runner_->PostOperationTask(task.Pass());
+  operation_runner_->PostOperationTask(std::move(task));
 }
 
 void SyncableFileSystemOperation::Copy(
@@ -135,7 +137,7 @@ void SyncableFileSystemOperation::Copy(
       base::Bind(&FileSystemOperation::Copy, base::Unretained(impl_.get()),
                  src_url, dest_url, option, error_behavior, progress_callback,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
-  operation_runner_->PostOperationTask(task.Pass());
+  operation_runner_->PostOperationTask(std::move(task));
 }
 
 void SyncableFileSystemOperation::Move(
@@ -158,7 +160,7 @@ void SyncableFileSystemOperation::Move(
                  base::Unretained(impl_.get()),
                  src_url, dest_url, option,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
-  operation_runner_->PostOperationTask(task.Pass());
+  operation_runner_->PostOperationTask(std::move(task));
 }
 
 void SyncableFileSystemOperation::DirectoryExists(
@@ -210,7 +212,7 @@ void SyncableFileSystemOperation::Remove(
                  base::Unretained(impl_.get()),
                  url, recursive,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
-  operation_runner_->PostOperationTask(task.Pass());
+  operation_runner_->PostOperationTask(std::move(task));
 }
 
 void SyncableFileSystemOperation::Write(
@@ -235,7 +237,7 @@ void SyncableFileSystemOperation::Write(
                  base::Passed(&blob_request),
                  base::Bind(&self::DidWrite, weak_factory_.GetWeakPtr(),
                             callback))));
-  operation_runner_->PostOperationTask(task.Pass());
+  operation_runner_->PostOperationTask(std::move(task));
 }
 
 void SyncableFileSystemOperation::Truncate(const FileSystemURL& url,
@@ -255,7 +257,7 @@ void SyncableFileSystemOperation::Truncate(const FileSystemURL& url,
                  base::Unretained(impl_.get()),
                  url, length,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
-  operation_runner_->PostOperationTask(task.Pass());
+  operation_runner_->PostOperationTask(std::move(task));
 }
 
 void SyncableFileSystemOperation::TouchFile(
@@ -305,7 +307,7 @@ void SyncableFileSystemOperation::CopyInForeignFile(
                  base::Unretained(impl_.get()),
                  src_local_disk_path, dest_url,
                  base::Bind(&self::DidFinish, weak_factory_.GetWeakPtr()))));
-  operation_runner_->PostOperationTask(task.Pass());
+  operation_runner_->PostOperationTask(std::move(task));
 }
 
 void SyncableFileSystemOperation::RemoveFile(
@@ -363,7 +365,7 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
     return;
   }
   impl_.reset(storage::FileSystemOperation::Create(
-      url_, file_system_context, operation_context.Pass()));
+      url_, file_system_context, std::move(operation_context)));
   operation_runner_ = backend->sync_context()->operation_runner();
 }
 

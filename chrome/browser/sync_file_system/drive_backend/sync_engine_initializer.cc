@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -77,7 +78,7 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   if (sync_context_->GetMetadataDatabase()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Already initialized.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
+    SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_OK);
     return;
   }
 
@@ -88,25 +89,25 @@ void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to initialize MetadataDatabase.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
+    SyncTaskManager::NotifyTaskDone(std::move(token), status);
     return;
   }
 
   DCHECK(metadata_database);
-  metadata_database_ = metadata_database.Pass();
+  metadata_database_ = std::move(metadata_database);
   if (metadata_database_->HasSyncRoot() &&
       !metadata_database_->NeedsSyncRootRevalidation()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Found local cache of sync-root.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
+    SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_OK);
     return;
   }
 
-  GetAboutResource(token.Pass());
+  GetAboutResource(std::move(token));
 }
 
 scoped_ptr<MetadataDatabase> SyncEngineInitializer::PassMetadataDatabase() {
-  return metadata_database_.Pass();
+  return std::move(metadata_database_);
 }
 
 void SyncEngineInitializer::GetAboutResource(
@@ -127,7 +128,7 @@ void SyncEngineInitializer::DidGetAboutResource(
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to get AboutResource.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
+    SyncTaskManager::NotifyTaskDone(std::move(token), status);
     return;
   }
 
@@ -136,14 +137,14 @@ void SyncEngineInitializer::DidGetAboutResource(
   largest_change_id_ = about_resource->largest_change_id();
 
   DCHECK(!root_folder_id_.empty());
-  FindSyncRoot(token.Pass());
+  FindSyncRoot(std::move(token));
 }
 
 void SyncEngineInitializer::FindSyncRoot(scoped_ptr<SyncTaskToken> token) {
   if (find_sync_root_retry_count_++ >= kMaxRetry) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Reached max retry count.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -166,7 +167,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to find sync root.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
+    SyncTaskManager::NotifyTaskDone(std::move(token), status);
     return;
   }
 
@@ -174,7 +175,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
     NOTREACHED();
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Got invalid resource list.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -214,16 +215,16 @@ void SyncEngineInitializer::DidFindSyncRoot(
   }
 
   if (!sync_root_folder_) {
-    CreateSyncRoot(token.Pass());
+    CreateSyncRoot(std::move(token));
     return;
   }
 
   if (!HasNoParents(*sync_root_folder_)) {
-    DetachSyncRoot(token.Pass());
+    DetachSyncRoot(std::move(token));
     return;
   }
 
-  ListAppRootFolders(token.Pass());
+  ListAppRootFolders(std::move(token));
 }
 
 void SyncEngineInitializer::CreateSyncRoot(scoped_ptr<SyncTaskToken> token) {
@@ -248,11 +249,11 @@ void SyncEngineInitializer::DidCreateSyncRoot(
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to create sync root.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
+    SyncTaskManager::NotifyTaskDone(std::move(token), status);
     return;
   }
 
-  FindSyncRoot(token.Pass());
+  FindSyncRoot(std::move(token));
 }
 
 void SyncEngineInitializer::DetachSyncRoot(scoped_ptr<SyncTaskToken> token) {
@@ -276,11 +277,11 @@ void SyncEngineInitializer::DidDetachSyncRoot(
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to detach sync root.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
+    SyncTaskManager::NotifyTaskDone(std::move(token), status);
     return;
   }
 
-  ListAppRootFolders(token.Pass());
+  ListAppRootFolders(std::move(token));
 }
 
 void SyncEngineInitializer::ListAppRootFolders(
@@ -305,7 +306,7 @@ void SyncEngineInitializer::DidListAppRootFolders(
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to get initial app-root folders.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
+    SyncTaskManager::NotifyTaskDone(std::move(token), status);
     return;
   }
 
@@ -313,7 +314,7 @@ void SyncEngineInitializer::DidListAppRootFolders(
     NOTREACHED();
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Got invalid initial app-root list.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -333,7 +334,7 @@ void SyncEngineInitializer::DidListAppRootFolders(
     return;
   }
 
-  PopulateDatabase(token.Pass());
+  PopulateDatabase(std::move(token));
 }
 
 void SyncEngineInitializer::PopulateDatabase(
@@ -345,13 +346,13 @@ void SyncEngineInitializer::PopulateDatabase(
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Failed to populate initial data"
               " to MetadataDatabase.");
-    SyncTaskManager::NotifyTaskDone(token.Pass(), status);
+    SyncTaskManager::NotifyTaskDone(std::move(token), status);
     return;
   }
 
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[Initialize] Completed successfully.");
-  SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
+  SyncTaskManager::NotifyTaskDone(std::move(token), SYNC_STATUS_OK);
 }
 
 }  // namespace drive_backend

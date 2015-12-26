@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
@@ -62,7 +63,7 @@ scoped_ptr<DatabaseContents> CreateTestDatabaseContents() {
   contents->file_metadata.push_back(file_metadata.release());
   contents->file_trackers.push_back(file_tracker.release());
   contents->file_trackers.push_back(placeholder_tracker.release());
-  return contents.Pass();
+  return contents;
 }
 
 }  // namespace
@@ -151,7 +152,7 @@ TEST_F(MetadataDatabaseIndexTest, UpdateTest) {
   scoped_ptr<FileTracker> new_tracker =
       test_util::CreateTracker(metadata, new_tracker_id, &app_root_tracker);
   new_tracker->set_active(false);
-  index()->StoreFileTracker(new_tracker.Pass());
+  index()->StoreFileTracker(std::move(new_tracker));
 
   EXPECT_EQ("file_id", index()->PickMultiTrackerFileID());
   EXPECT_EQ(ParentIDAndTitle(kAppRootTrackerID, std::string("file")),

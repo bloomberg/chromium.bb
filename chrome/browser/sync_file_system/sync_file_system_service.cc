@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
@@ -455,8 +455,8 @@ void SyncFileSystemService::Initialize(
   DCHECK(remote_service);
   DCHECK(profile_);
 
-  local_service_ = local_service.Pass();
-  remote_service_ = remote_service.Pass();
+  local_service_ = std::move(local_service);
+  remote_service_ = std::move(remote_service);
 
   scoped_ptr<LocalSyncRunner> local_syncer(
       new LocalSyncRunner(kLocalSyncName, this));

@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/register_app_task.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -104,7 +105,7 @@ void RegisterAppTask::DidCreateAppRootFolder(
     const SyncStatusCallback& callback,
     const std::string& folder_id,
     SyncStatusCode status) {
-  scoped_ptr<FolderCreator> deleter = folder_creator_.Pass();
+  scoped_ptr<FolderCreator> deleter = std::move(folder_creator_);
   if (status != SYNC_STATUS_OK) {
     callback.Run(status);
     return;
@@ -156,7 +157,7 @@ bool RegisterAppTask::FilterCandidates(const TrackerIDSet& trackers,
     if (oldest_tracker && CompareOnCTime(*oldest_tracker, *tracker))
       continue;
 
-    oldest_tracker = tracker.Pass();
+    oldest_tracker = std::move(tracker);
   }
 
   if (!oldest_tracker)

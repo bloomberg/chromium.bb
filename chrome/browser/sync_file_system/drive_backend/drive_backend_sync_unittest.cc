@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <stack>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -133,8 +133,9 @@ class DriveBackendSyncTest : public testing::Test,
                        nullptr,  // drive_service
                        in_memory_env_.get()));
     remote_sync_service_->AddServiceObserver(this);
-    remote_sync_service_->InitializeForTesting(
-        drive_service.Pass(), uploader.Pass(), nullptr /* sync_worker */);
+    remote_sync_service_->InitializeForTesting(std::move(drive_service),
+                                               std::move(uploader),
+                                               nullptr /* sync_worker */);
     remote_sync_service_->SetSyncEnabled(true);
 
     local_sync_service_->SetLocalChangeProcessor(remote_sync_service_.get());

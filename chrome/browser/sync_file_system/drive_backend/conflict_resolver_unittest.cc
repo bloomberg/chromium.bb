@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -69,12 +71,10 @@ class ConflictResolverTest : public testing::Test {
                                    kSyncRootFolderTitle));
     remote_change_processor_.reset(new FakeRemoteChangeProcessor);
 
-    context_.reset(new SyncEngineContext(fake_drive_service.Pass(),
-                                         drive_uploader.Pass(),
-                                         nullptr /* task_logger */,
-                                         base::ThreadTaskRunnerHandle::Get(),
-                                         base::ThreadTaskRunnerHandle::Get(),
-                                         nullptr /* worker_pool */));
+    context_.reset(new SyncEngineContext(
+        std::move(fake_drive_service), std::move(drive_uploader),
+        nullptr /* task_logger */, base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr /* worker_pool */));
     context_->SetRemoteChangeProcessor(remote_change_processor_.get());
 
     RegisterSyncableFileSystem();
@@ -248,7 +248,7 @@ class ConflictResolverTest : public testing::Test {
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
-    return entries.Pass();
+    return entries;
   }
 
   void VerifyConflictResolution(

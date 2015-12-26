@@ -5,8 +5,8 @@
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
@@ -67,12 +67,10 @@ class ListChangesTaskTest : public testing::Test {
         nullptr /* worker_pool */));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
 
-    context_.reset(new SyncEngineContext(fake_drive_service.Pass(),
-                                         drive_uploader.Pass(),
-                                         nullptr /* task_logger */,
-                                         base::ThreadTaskRunnerHandle::Get(),
-                                         base::ThreadTaskRunnerHandle::Get(),
-                                         nullptr /* worker_pool */));
+    context_.reset(new SyncEngineContext(
+        std::move(fake_drive_service), std::move(drive_uploader),
+        nullptr /* task_logger */, base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr /* worker_pool */));
 
     SetUpRemoteFolders();
 
@@ -89,10 +87,9 @@ class ListChangesTaskTest : public testing::Test {
  protected:
   SyncStatusCode RunTask(scoped_ptr<SyncTask> sync_task) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    sync_task_manager_->ScheduleSyncTask(
-        FROM_HERE, sync_task.Pass(),
-        SyncTaskManager::PRIORITY_MED,
-        CreateResultReceiver(&status));
+    sync_task_manager_->ScheduleSyncTask(FROM_HERE, std::move(sync_task),
+                                         SyncTaskManager::PRIORITY_MED,
+                                         CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }

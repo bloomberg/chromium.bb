@@ -5,8 +5,8 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_on_disk.h"
 
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
@@ -92,13 +92,13 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
     if (build_index) {
       DCHECK(index());
 
-      index()->StoreFileMetadata(sync_root_metadata.Pass());
-      index()->StoreFileTracker(sync_root_tracker.Pass());
-      index()->StoreFileMetadata(app_root_metadata.Pass());
-      index()->StoreFileTracker(app_root_tracker.Pass());
-      index()->StoreFileMetadata(file_metadata.Pass());
-      index()->StoreFileTracker(file_tracker.Pass());
-      index()->StoreFileTracker(placeholder_tracker.Pass());
+      index()->StoreFileMetadata(std::move(sync_root_metadata));
+      index()->StoreFileTracker(std::move(sync_root_tracker));
+      index()->StoreFileMetadata(std::move(app_root_metadata));
+      index()->StoreFileTracker(std::move(app_root_tracker));
+      index()->StoreFileMetadata(std::move(file_metadata));
+      index()->StoreFileTracker(std::move(file_tracker));
+      index()->StoreFileTracker(std::move(placeholder_tracker));
     } else {
       PutFileMetadataToDB(*sync_root_metadata, db);
       PutFileTrackerToDB(*sync_root_tracker, db);
@@ -164,8 +164,8 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
   scoped_ptr<FileTracker> tracker =
       test_util::CreateTracker(*metadata, tracker_id, &root_tracker);
 
-  index()->StoreFileMetadata(metadata.Pass());
-  index()->StoreFileTracker(tracker.Pass());
+  index()->StoreFileMetadata(std::move(metadata));
+  index()->StoreFileTracker(std::move(tracker));
 
   EXPECT_TRUE(index()->GetFileMetadata("test_file_id", nullptr));
   EXPECT_TRUE(index()->GetFileTracker(tracker_id, nullptr));
@@ -241,8 +241,8 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SyncRootInvalidation) {
                                nullptr);
 
   // Override SyncRoot with a new one.
-  index()->StoreFileMetadata(new_sync_root_metadata.Pass());
-  index()->StoreFileTracker(new_sync_root_tracker.Pass());
+  index()->StoreFileMetadata(std::move(new_sync_root_metadata));
+  index()->StoreFileTracker(std::move(new_sync_root_tracker));
   index()->SetSyncRootTrackerID(kNewSyncRootTrackerID);
 
   // Drop trees under the old SyncRoot.
@@ -335,7 +335,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   app_root_tracker->set_app_id("app_id_2");
   app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
 
-  index()->StoreFileTracker(app_root_tracker.Pass());
+  index()->StoreFileTracker(std::move(app_root_tracker));
   WriteToDB();
   EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
   EXPECT_EQ(kAppRootTrackerID2, index()->GetAppRootTracker("app_id_2"));
@@ -347,7 +347,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   app_root_tracker->set_app_id("app_id_3");
   app_root_tracker->set_active(false);
 
-  index()->StoreFileTracker(app_root_tracker.Pass());
+  index()->StoreFileTracker(std::move(app_root_tracker));
   WriteToDB();
   EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
   EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_2"));
@@ -359,7 +359,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, IndexAppRootIDByAppIDTest) {
   app_root_tracker->set_app_id("app_id_3");
   app_root_tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
 
-  index()->StoreFileTracker(app_root_tracker.Pass());
+  index()->StoreFileTracker(std::move(app_root_tracker));
   WriteToDB();
   EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
   EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id_2"));
@@ -390,7 +390,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
   scoped_ptr<FileTracker> file_tracker =
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
 
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
   WriteToDB();
   tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
   EXPECT_EQ(2U, tracker_ids.size());
@@ -404,7 +404,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
   file_tracker->set_active(false);
 
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
   WriteToDB();
   tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
   EXPECT_EQ(2U, tracker_ids.size());
@@ -416,7 +416,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByFileIDTest) {
   file_tracker =
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
 
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
   WriteToDB();
   tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
   EXPECT_EQ(2U, tracker_ids.size());
@@ -459,7 +459,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
   scoped_ptr<FileTracker> file_tracker =
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
 
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
   WriteToDB();
   tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
       kAppRootTrackerID, "file");
@@ -475,7 +475,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
   file_tracker->set_active(false);
 
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
   WriteToDB();
   tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
       kAppRootTrackerID, "file");
@@ -489,7 +489,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
   file_tracker =
       test_util::CreateTracker(metadata, tracker_id, &app_root_tracker);
 
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
   WriteToDB();
   tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
       kAppRootTrackerID, "file");
@@ -527,8 +527,8 @@ TEST_F(MetadataDatabaseIndexOnDiskTest,
     scoped_ptr<FileTracker> folder_tracker =
         test_util::CreateTracker(*folder_metadata, kFolderTrackerID,
                                  &app_root_tracker);
-    index()->StoreFileMetadata(folder_metadata.Pass());
-    index()->StoreFileTracker(folder_tracker.Pass());
+    index()->StoreFileMetadata(std::move(folder_metadata));
+    index()->StoreFileTracker(std::move(folder_tracker));
     WriteToDB();
   }
 
@@ -546,7 +546,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest,
   scoped_ptr<FileTracker> file_tracker =
       test_util::CreateTracker(*metadata, kNewFileTrackerID, &folder_tracker);
 
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
   WriteToDB();
   tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
       kFolderTrackerID, std::string());
@@ -560,7 +560,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest,
   file_tracker =
       test_util::CreateTracker(*metadata, kNewFileTrackerID, &folder_tracker);
 
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
   WriteToDB();
   tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
       kFolderTrackerID, std::string());
@@ -589,9 +589,9 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetDetailsTest) {
   file_tracker2->set_active(false);
 
   // Add 2 trackers related to one file metadata.
-  index()->StoreFileMetadata(file_metadata.Pass());
-  index()->StoreFileTracker(file_tracker.Pass());
-  index()->StoreFileTracker(file_tracker2.Pass());
+  index()->StoreFileMetadata(std::move(file_metadata));
+  index()->StoreFileTracker(std::move(file_tracker));
+  index()->StoreFileTracker(std::move(file_tracker2));
 
   TrackerIDSet idset = index()->GetFileTrackerIDsByFileID("file_id2");
   EXPECT_EQ(2U, idset.size());
@@ -601,7 +601,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetDetailsTest) {
   file_tracker.reset(new FileTracker);
   index()->GetFileTracker(kFileTrackerID2, file_tracker.get());
   file_tracker->set_active(true);
-  index()->StoreFileTracker(file_tracker.Pass());
+  index()->StoreFileTracker(std::move(file_tracker));
 
   idset = index()->GetFileTrackerIDsByFileID("file_id2");
   EXPECT_EQ(2U, idset.size());
@@ -630,7 +630,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
       test_util::CreatePlaceholderTracker("placeholder",
                                           tracker_id,
                                           app_root_tracker.get());
-  index()->StoreFileTracker(tracker.Pass());
+  index()->StoreFileTracker(std::move(tracker));
   WriteToDB();
   EXPECT_EQ(1U, index()->CountDirtyTracker());
   EXPECT_EQ(tracker_id, index()->PickDirtyTracker());
@@ -640,7 +640,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
                                                 tracker_id,
                                                 app_root_tracker.get());
   tracker->set_dirty(false);
-  index()->StoreFileTracker(tracker.Pass());
+  index()->StoreFileTracker(std::move(tracker));
   WriteToDB();
   EXPECT_EQ(0U, index()->CountDirtyTracker());
   EXPECT_EQ(kInvalidTrackerID, index()->PickDirtyTracker());
@@ -648,7 +648,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
   tracker = test_util::CreatePlaceholderTracker("placeholder",
                                                 tracker_id,
                                                 app_root_tracker.get());
-  index()->StoreFileTracker(tracker.Pass());
+  index()->StoreFileTracker(std::move(tracker));
   WriteToDB();
   EXPECT_EQ(1U, index()->CountDirtyTracker());
   EXPECT_EQ(tracker_id, index()->PickDirtyTracker());

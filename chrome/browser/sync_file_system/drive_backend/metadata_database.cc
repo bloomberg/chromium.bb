@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <stack>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -123,11 +124,11 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
 
   if (resource.labels().is_trashed()) {
     details->set_missing(true);
-    return file.Pass();
+    return file;
   }
 
   PopulateFileDetailsByFileResource(resource, details);
-  return file.Pass();
+  return file;
 }
 
 scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
@@ -140,11 +141,11 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
 
   if (change.is_deleted()) {
     details->set_missing(true);
-    return file.Pass();
+    return file;
   }
 
   PopulateFileDetailsByFileResource(*change.file(), details);
-  return file.Pass();
+  return file;
 }
 
 scoped_ptr<FileMetadata> CreateDeletedFileMetadata(int64_t change_id,
@@ -155,7 +156,7 @@ scoped_ptr<FileMetadata> CreateDeletedFileMetadata(int64_t change_id,
   FileDetails* details = file->mutable_details();
   details->set_change_id(change_id);
   details->set_missing(true);
-  return file.Pass();
+  return file;
 }
 
 scoped_ptr<FileTracker> CreateSyncRootTracker(
@@ -170,7 +171,7 @@ scoped_ptr<FileTracker> CreateSyncRootTracker(
   sync_root_tracker->set_active(true);
   sync_root_tracker->set_needs_folder_listing(false);
   *sync_root_tracker->mutable_synced_details() = sync_root_metadata.details();
-  return sync_root_tracker.Pass();
+  return sync_root_tracker;
 }
 
 scoped_ptr<FileTracker> CreateInitialAppRootTracker(
@@ -186,7 +187,7 @@ scoped_ptr<FileTracker> CreateInitialAppRootTracker(
   app_root_tracker->set_active(false);
   app_root_tracker->set_needs_folder_listing(false);
   *app_root_tracker->mutable_synced_details() = app_root_metadata.details();
-  return app_root_tracker.Pass();
+  return app_root_tracker;
 }
 
 scoped_ptr<FileTracker> CloneFileTracker(const FileTracker* obj) {
@@ -290,7 +291,7 @@ void MarkTrackerSetDirty(const TrackerIDSet& trackers,
     if (tracker->dirty())
       continue;
     tracker->set_dirty(true);
-    index->StoreFileTracker(tracker.Pass());
+    index->StoreFileTracker(std::move(tracker));
   }
 }
 
@@ -322,7 +323,7 @@ void MarkTrackersDirtyRecursively(int64_t root_tracker_id,
     index->GetFileTracker(tracker_id, tracker.get());
     tracker->set_dirty(true);
 
-    index->StoreFileTracker(tracker.Pass());
+    index->StoreFileTracker(std::move(tracker));
   }
 }
 
@@ -470,7 +471,7 @@ void ActivateFileTracker(int64_t tracker_id,
     tracker->set_needs_folder_listing(false);
   }
 
-  index->StoreFileTracker(tracker.Pass());
+  index->StoreFileTracker(std::move(tracker));
 }
 
 void DeactivateFileTracker(int64_t tracker_id,
@@ -490,7 +491,7 @@ void DeactivateFileTracker(int64_t tracker_id,
 
   tracker->set_dirty(dirtying_options & MARK_ITSELF_DIRTY);
   tracker->set_active(false);
-  index->StoreFileTracker(tracker.Pass());
+  index->StoreFileTracker(std::move(tracker));
 }
 
 void RemoveFileTracker(int64_t tracker_id,
@@ -561,7 +562,7 @@ scoped_ptr<MetadataDatabase> MetadataDatabase::CreateInternal(
     metadata_database.reset();
 
   *status_out = status;
-  return metadata_database.Pass();
+  return metadata_database;
 }
 
 // static
@@ -573,10 +574,10 @@ SyncStatusCode MetadataDatabase::CreateForTesting(
       new MetadataDatabase(base::FilePath(),
                            enable_on_disk_index,
                            nullptr));
-  metadata_database->db_ = db.Pass();
+  metadata_database->db_ = std::move(db);
   SyncStatusCode status = metadata_database->Initialize();
   if (status == SYNC_STATUS_OK)
-    *metadata_database_out = metadata_database.Pass();
+    *metadata_database_out = std::move(metadata_database);
   return status;
 }
 
@@ -688,7 +689,7 @@ SyncStatusCode MetadataDatabase::RegisterApp(const std::string& app_id,
   tracker->set_needs_folder_listing(true);
   tracker->set_dirty(true);
 
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(std::move(tracker));
   return WriteToDatabase();
 }
 
@@ -710,7 +711,7 @@ SyncStatusCode MetadataDatabase::DisableApp(const std::string& app_id) {
   // other conflicting trackers won't become active.
   tracker->set_tracker_kind(TRACKER_KIND_DISABLED_APP_ROOT);
 
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(std::move(tracker));
   return WriteToDatabase();
 }
 
@@ -729,7 +730,7 @@ SyncStatusCode MetadataDatabase::EnableApp(const std::string& app_id) {
   DCHECK(tracker->active());
 
   tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(std::move(tracker));
 
   MarkTrackersDirtyRecursively(tracker_id, index_.get());
   return WriteToDatabase();
@@ -750,7 +751,7 @@ SyncStatusCode MetadataDatabase::UnregisterApp(const std::string& app_id) {
   tracker->set_active(false);
   tracker->set_dirty(true);
 
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(std::move(tracker));
   return WriteToDatabase();
 }
 
@@ -900,7 +901,7 @@ SyncStatusCode MetadataDatabase::UpdateByChangeList(
 
     scoped_ptr<FileMetadata> metadata(
         CreateFileMetadataFromChangeResource(change));
-    UpdateByFileMetadata(FROM_HERE, metadata.Pass(),
+    UpdateByFileMetadata(FROM_HERE, std::move(metadata),
                          UPDATE_TRACKER_FOR_UNSYNCED_FILE);
   }
 
@@ -914,7 +915,7 @@ SyncStatusCode MetadataDatabase::UpdateByFileResource(
   scoped_ptr<FileMetadata> metadata(
       CreateFileMetadataFromFileResource(
           GetLargestKnownChangeID(), resource));
-  UpdateByFileMetadata(FROM_HERE, metadata.Pass(),
+  UpdateByFileMetadata(FROM_HERE, std::move(metadata),
                        UPDATE_TRACKER_FOR_UNSYNCED_FILE);
   return WriteToDatabase();
 }
@@ -925,7 +926,7 @@ SyncStatusCode MetadataDatabase::UpdateByFileResourceList(
     scoped_ptr<FileMetadata> metadata(
         CreateFileMetadataFromFileResource(
             GetLargestKnownChangeID(), *resources[i]));
-    UpdateByFileMetadata(FROM_HERE, metadata.Pass(),
+    UpdateByFileMetadata(FROM_HERE, std::move(metadata),
                          UPDATE_TRACKER_FOR_UNSYNCED_FILE);
   }
   return WriteToDatabase();
@@ -935,7 +936,7 @@ SyncStatusCode MetadataDatabase::UpdateByDeletedRemoteFile(
     const std::string& file_id) {
   scoped_ptr<FileMetadata> metadata(
       CreateDeletedFileMetadata(GetLargestKnownChangeID(), file_id));
-  UpdateByFileMetadata(FROM_HERE, metadata.Pass(),
+  UpdateByFileMetadata(FROM_HERE, std::move(metadata),
                        UPDATE_TRACKER_FOR_UNSYNCED_FILE);
   return WriteToDatabase();
 }
@@ -946,7 +947,7 @@ SyncStatusCode MetadataDatabase::UpdateByDeletedRemoteFileList(
        itr != file_ids.end(); ++itr) {
     scoped_ptr<FileMetadata> metadata(
         CreateDeletedFileMetadata(GetLargestKnownChangeID(), *itr));
-    UpdateByFileMetadata(FROM_HERE, metadata.Pass(),
+    UpdateByFileMetadata(FROM_HERE, std::move(metadata),
                          UPDATE_TRACKER_FOR_UNSYNCED_FILE);
   }
   return WriteToDatabase();
@@ -1025,7 +1026,7 @@ SyncStatusCode MetadataDatabase::PopulateFolderByChildList(
   folder_tracker->set_needs_folder_listing(false);
   if (folder_tracker->dirty() && !ShouldKeepDirty(*folder_tracker))
     folder_tracker->set_dirty(false);
-  index_->StoreFileTracker(folder_tracker.Pass());
+  index_->StoreFileTracker(std::move(folder_tracker));
 
   return WriteToDatabase();
 }
@@ -1118,7 +1119,7 @@ SyncStatusCode MetadataDatabase::UpdateTracker(
   } else if (tracker.dirty() && !ShouldKeepDirty(tracker)) {
     updated_tracker->set_dirty(false);
   }
-  index_->StoreFileTracker(updated_tracker.Pass());
+  index_->StoreFileTracker(std::move(updated_tracker));
   if (should_promote)
     index_->PromoteDemotedDirtyTracker(tracker_id);
 
@@ -1166,7 +1167,7 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
                                  tracker_to_be_deactivated.get())) {
         const std::string file_id = tracker_to_be_deactivated->file_id();
         tracker_to_be_deactivated->set_active(false);
-        index_->StoreFileTracker(tracker_to_be_deactivated.Pass());
+        index_->StoreFileTracker(std::move(tracker_to_be_deactivated));
 
         MarkTrackersDirtyByFileID(file_id, index_.get());
       } else {
@@ -1184,7 +1185,7 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
   }
   tracker_to_be_activated->set_dirty(false);
 
-  index_->StoreFileTracker(tracker_to_be_activated.Pass());
+  index_->StoreFileTracker(std::move(tracker_to_be_activated));
 
   *status_out = WriteToDatabase();
   return ACTIVATION_PENDING;
@@ -1302,7 +1303,7 @@ SyncStatusCode MetadataDatabase::SweepDirtyTrackers(
         !CanClearDirty(*tracker))
       continue;
     tracker->set_dirty(false);
-    index_->StoreFileTracker(tracker.Pass());
+    index_->StoreFileTracker(std::move(tracker));
   }
 
   return WriteToDatabase();
@@ -1399,7 +1400,7 @@ void MetadataDatabase::CreateTrackerInternal(const FileTracker& parent_tracker,
       tracker->mutable_synced_details()->clear_md5();
     }
   }
-  index_->StoreFileTracker(tracker.Pass());
+  index_->StoreFileTracker(std::move(tracker));
 }
 
 void MetadataDatabase::MaybeAddTrackersForNewFile(
@@ -1571,7 +1572,7 @@ void MetadataDatabase::UpdateByFileMetadata(
 
   TrackerIDSet trackers = index_->GetFileTrackerIDsByFileID(file_id);
   if (!trackers.empty()) {
-    index_->StoreFileMetadata(metadata.Pass());
+    index_->StoreFileMetadata(std::move(metadata));
 
     if (option != UPDATE_TRACKER_FOR_SYNCED_FILE)
       MarkTrackerSetDirty(trackers, index_.get());
@@ -1589,7 +1590,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
 
   FileTracker app_root_tracker;
   if (!FindAppRootTracker(app_id, &app_root_tracker))
-    return files.Pass();
+    return files;
 
   std::vector<int64_t> stack;
   AppendContents(
@@ -1627,14 +1628,14 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
     files->Append(file);
   }
 
-  return files.Pass();
+  return files;
 }
 
 scoped_ptr<base::ListValue> MetadataDatabase::DumpDatabase() {
   scoped_ptr<base::ListValue> list(new base::ListValue);
   list->Append(DumpTrackers().release());
   list->Append(DumpMetadata().release());
-  return list.Pass();
+  return list;
 }
 
 bool MetadataDatabase::HasNewerFileMetadata(const std::string& file_id,
@@ -1706,7 +1707,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
     }
     trackers->Append(dict);
   }
-  return trackers.Pass();
+  return trackers;
 }
 
 scoped_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
@@ -1755,7 +1756,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
     }
     files->Append(dict);
   }
-  return files.Pass();
+  return files;
 }
 
 void MetadataDatabase::AttachSyncRoot(
@@ -1767,8 +1768,8 @@ void MetadataDatabase::AttachSyncRoot(
       CreateSyncRootTracker(IncrementTrackerID(), *sync_root_metadata);
 
   index_->SetSyncRootTrackerID(sync_root_tracker->tracker_id());
-  index_->StoreFileMetadata(sync_root_metadata.Pass());
-  index_->StoreFileTracker(sync_root_tracker.Pass());
+  index_->StoreFileMetadata(std::move(sync_root_metadata));
+  index_->StoreFileTracker(std::move(sync_root_tracker));
 }
 
 void MetadataDatabase::AttachInitialAppRoot(
@@ -1781,8 +1782,8 @@ void MetadataDatabase::AttachInitialAppRoot(
                                   GetSyncRootTrackerID(),
                                   *app_root_metadata);
 
-  index_->StoreFileMetadata(app_root_metadata.Pass());
-  index_->StoreFileTracker(app_root_tracker.Pass());
+  index_->StoreFileMetadata(std::move(app_root_metadata));
+  index_->StoreFileTracker(std::move(app_root_tracker));
 }
 
 bool MetadataDatabase::CanClearDirty(const FileTracker& tracker) {

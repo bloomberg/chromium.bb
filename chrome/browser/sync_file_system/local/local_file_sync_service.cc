@@ -117,7 +117,7 @@ scoped_ptr<LocalFileSyncService> LocalFileSyncService::CreateForTesting(
   scoped_ptr<LocalFileSyncService> sync_service(
       new LocalFileSyncService(profile, env));
   sync_service->sync_context_->set_mock_notify_changes_duration_in_sec(0);
-  return sync_service.Pass();
+  return sync_service;
 }
 
 LocalFileSyncService::~LocalFileSyncService() {

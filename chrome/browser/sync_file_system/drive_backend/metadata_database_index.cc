@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index.h"
 
 #include <tuple>
+#include <utility>
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -175,7 +176,7 @@ void RemoveUnreachableItemsFromDB(DatabaseContents* contents,
       PutFileTrackerDeletionToDB(tracker->tracker_id(), db);
     }
   }
-  contents->file_trackers = reachable_trackers.Pass();
+  contents->file_trackers = std::move(reachable_trackers);
 
   // List all |file_id| referred by a tracker.
   base::hash_set<std::string> referred_file_ids;
@@ -193,7 +194,7 @@ void RemoveUnreachableItemsFromDB(DatabaseContents* contents,
       PutFileMetadataDeletionToDB(metadata->file_id(), db);
     }
   }
-  contents->file_metadata = referred_file_metadata.Pass();
+  contents->file_metadata = std::move(referred_file_metadata);
 }
 
 }  // namespace
@@ -215,8 +216,8 @@ MetadataDatabaseIndex::Create(LevelDBWrapper* db) {
                                db);
 
   scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
-  index->Initialize(service_metadata.Pass(), &contents);
-  return index.Pass();
+  index->Initialize(std::move(service_metadata), &contents);
+  return index;
 }
 
 // static
@@ -225,13 +226,13 @@ MetadataDatabaseIndex::CreateForTesting(DatabaseContents* contents,
                                         LevelDBWrapper* db) {
   scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex(db));
   index->Initialize(make_scoped_ptr(new ServiceMetadata), contents);
-  return index.Pass();
+  return index;
 }
 
 void MetadataDatabaseIndex::Initialize(
     scoped_ptr<ServiceMetadata> service_metadata,
     DatabaseContents* contents) {
-  service_metadata_ = service_metadata.Pass();
+  service_metadata_ = std::move(service_metadata);
 
   for (size_t i = 0; i < contents->file_metadata.size(); ++i)
     StoreFileMetadata(make_scoped_ptr(contents->file_metadata[i]));
@@ -285,7 +286,7 @@ void MetadataDatabaseIndex::StoreFileMetadata(
   }
 
   std::string file_id = metadata->file_id();
-  metadata_by_id_.set(file_id, metadata.Pass());
+  metadata_by_id_.set(file_id, std::move(metadata));
 }
 
 void MetadataDatabaseIndex::StoreFileTracker(
@@ -317,7 +318,7 @@ void MetadataDatabaseIndex::StoreFileTracker(
     UpdateInDirtyTrackerIndexes(*old_tracker, *tracker);
   }
 
-  tracker_by_id_.set(tracker_id, tracker.Pass());
+  tracker_by_id_.set(tracker_id, std::move(tracker));
 }
 
 void MetadataDatabaseIndex::RemoveFileMetadata(const std::string& file_id) {

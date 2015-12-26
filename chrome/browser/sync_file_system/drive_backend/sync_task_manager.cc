@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -112,7 +114,7 @@ void SyncTaskManager::ScheduleSyncTask(
         priority);
     return;
   }
-  RunTask(token.Pass(), task.Pass());
+  RunTask(std::move(token), std::move(task));
 }
 
 bool SyncTaskManager::ScheduleTaskIfIdle(
@@ -136,7 +138,7 @@ bool SyncTaskManager::ScheduleSyncTaskIfIdle(
   scoped_ptr<SyncTaskToken> token(GetToken(from_here, callback));
   if (!token)
     return false;
-  RunTask(token.Pass(), task.Pass());
+  RunTask(std::move(token), std::move(task));
   return true;
 }
 
@@ -155,7 +157,7 @@ void SyncTaskManager::NotifyTaskDone(scoped_ptr<SyncTaskToken> token,
   }
 
   if (manager)
-    manager->NotifyTaskDoneBody(token.Pass(), status);
+    manager->NotifyTaskDoneBody(std::move(token), status);
 }
 
 // static
@@ -168,7 +170,7 @@ void SyncTaskManager::UpdateTaskBlocker(
   SyncTaskManager* manager = current_task_token->manager();
   if (current_task_token->token_id() == SyncTaskToken::kTestingTaskTokenID) {
     DCHECK(!manager);
-    continuation.Run(current_task_token.Pass());
+    continuation.Run(std::move(current_task_token));
     return;
   }
 
@@ -179,15 +181,13 @@ void SyncTaskManager::UpdateTaskBlocker(
   scoped_ptr<SyncTaskToken> background_task_token;
   scoped_ptr<TaskLogger::TaskLog> task_log = current_task_token->PassTaskLog();
   if (current_task_token->token_id() == SyncTaskToken::kForegroundTaskTokenID)
-    foreground_task_token = current_task_token.Pass();
+    foreground_task_token = std::move(current_task_token);
   else
-    background_task_token = current_task_token.Pass();
+    background_task_token = std::move(current_task_token);
 
-  manager->UpdateTaskBlockerBody(foreground_task_token.Pass(),
-                                 background_task_token.Pass(),
-                                 task_log.Pass(),
-                                 task_blocker.Pass(),
-                                 continuation);
+  manager->UpdateTaskBlockerBody(
+      std::move(foreground_task_token), std::move(background_task_token),
+      std::move(task_log), std::move(task_blocker), continuation);
 }
 
 bool SyncTaskManager::IsRunningTask(int64_t token_id) const {
@@ -236,14 +236,14 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
   SyncStatusCallback callback = token->callback();
   token->clear_callback();
   if (token->token_id() == SyncTaskToken::kForegroundTaskTokenID) {
-    token_ = token.Pass();
-    task = running_foreground_task_.Pass();
+    token_ = std::move(token);
+    task = std::move(running_foreground_task_);
   } else {
     task = running_background_tasks_.take_and_erase(token->token_id());
   }
 
   // Acquire the token to prevent a new task to jump into the queue.
-  token = token_.Pass();
+  token = std::move(token_);
 
   bool task_used_network = false;
   if (task)
@@ -275,8 +275,8 @@ void SyncTaskManager::UpdateTaskBlockerBody(
   if (!maximum_background_task_) {
     DCHECK(foreground_task_token);
     DCHECK(!background_task_token);
-    foreground_task_token->SetTaskLog(task_log.Pass());
-    continuation.Run(foreground_task_token.Pass());
+    foreground_task_token->SetTaskLog(std::move(task_log));
+    continuation.Run(std::move(foreground_task_token));
     return;
   }
 
@@ -332,26 +332,24 @@ void SyncTaskManager::UpdateTaskBlockerBody(
   }
 
   if (background_task_token) {
-    background_task_token->set_task_blocker(task_blocker.Pass());
+    background_task_token->set_task_blocker(std::move(task_blocker));
   } else {
     tracked_objects::Location from_here = foreground_task_token->location();
     SyncStatusCallback callback = foreground_task_token->callback();
     foreground_task_token->clear_callback();
 
-    background_task_token =
-        SyncTaskToken::CreateForBackgroundTask(weak_ptr_factory_.GetWeakPtr(),
-                                               task_runner_.get(),
-                                               task_token_seq_++,
-                                               task_blocker.Pass());
+    background_task_token = SyncTaskToken::CreateForBackgroundTask(
+        weak_ptr_factory_.GetWeakPtr(), task_runner_.get(), task_token_seq_++,
+        std::move(task_blocker));
     background_task_token->UpdateTask(from_here, callback);
     running_background_tasks_.set(background_task_token->token_id(),
-                                  running_foreground_task_.Pass());
+                                  std::move(running_foreground_task_));
   }
 
-  token_ = foreground_task_token.Pass();
+  token_ = std::move(foreground_task_token);
   MaybeStartNextForegroundTask(nullptr);
-  background_task_token->SetTaskLog(task_log.Pass());
-  continuation.Run(background_task_token.Pass());
+  background_task_token->SetTaskLog(std::move(task_log));
+  continuation.Run(std::move(background_task_token));
 }
 
 scoped_ptr<SyncTaskToken> SyncTaskManager::GetToken(
@@ -362,7 +360,7 @@ scoped_ptr<SyncTaskToken> SyncTaskManager::GetToken(
   if (!token_)
     return nullptr;
   token_->UpdateTask(from_here, callback);
-  return token_.Pass();
+  return std::move(token_);
 }
 
 void SyncTaskManager::PushPendingTask(
@@ -377,8 +375,8 @@ void SyncTaskManager::RunTask(scoped_ptr<SyncTaskToken> token,
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!running_foreground_task_);
 
-  running_foreground_task_ = task.Pass();
-  running_foreground_task_->RunPreflight(token.Pass());
+  running_foreground_task_ = std::move(task);
+  running_foreground_task_->RunPreflight(std::move(token));
 }
 
 void SyncTaskManager::MaybeStartNextForegroundTask(
@@ -387,7 +385,7 @@ void SyncTaskManager::MaybeStartNextForegroundTask(
 
   if (token) {
     DCHECK(!token_);
-    token_ = token.Pass();
+    token_ = std::move(token);
   }
 
   if (!pending_backgrounding_task_.is_null()) {

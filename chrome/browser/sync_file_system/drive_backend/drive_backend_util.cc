@@ -171,7 +171,7 @@ scoped_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db) {
     service_metadata->set_next_tracker_id(1);
   }
 
-  return service_metadata.Pass();
+  return service_metadata;
 }
 
 }  // namespace drive_backend

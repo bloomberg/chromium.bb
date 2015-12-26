@@ -28,7 +28,7 @@ scoped_ptr<AbortHelper> AbortHelper::TakeOwnership(
   scoped_ptr<AbortHelper> result =
       abort_helper->tracker_->PassAbortHelper(abort_helper.get());
   abort_helper->weak_ptr_factory_.InvalidateWeakPtrs();
-  return result.Pass();
+  return result;
 }
 
 }  // namespace internal

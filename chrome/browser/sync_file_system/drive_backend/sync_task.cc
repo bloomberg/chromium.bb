@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
@@ -17,7 +19,7 @@ namespace {
 void CallRunExclusive(const base::WeakPtr<ExclusiveTask>& task,
                       scoped_ptr<SyncTaskToken> token) {
   if (task)
-    task->RunExclusive(SyncTaskToken::WrapToCallback(token.Pass()));
+    task->RunExclusive(SyncTaskToken::WrapToCallback(std::move(token)));
 }
 
 }  // namespace
@@ -30,7 +32,7 @@ void ExclusiveTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   task_blocker->exclusive = true;
 
   SyncTaskManager::UpdateTaskBlocker(
-      token.Pass(), task_blocker.Pass(),
+      std::move(token), std::move(task_blocker),
       base::Bind(&CallRunExclusive, weak_ptr_factory_.GetWeakPtr()));
 }
 

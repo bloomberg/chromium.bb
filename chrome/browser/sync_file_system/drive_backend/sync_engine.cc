@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -214,7 +215,7 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
                      nullptr /* env_override */));
 
   sync_engine->Initialize();
-  return sync_engine.Pass();
+  return sync_engine;
 }
 
 void SyncEngine::AppendDependsOnFactories(
@@ -267,7 +268,8 @@ void SyncEngine::Initialize() {
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner_.get()));
 
-  InitializeInternal(drive_service.Pass(), drive_uploader.Pass(), nullptr);
+  InitializeInternal(std::move(drive_service), std::move(drive_uploader),
+                     nullptr);
 }
 
 void SyncEngine::InitializeForTesting(
@@ -275,15 +277,15 @@ void SyncEngine::InitializeForTesting(
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
     scoped_ptr<SyncWorkerInterface> sync_worker) {
   Reset();
-  InitializeInternal(drive_service.Pass(), drive_uploader.Pass(),
-                     sync_worker.Pass());
+  InitializeInternal(std::move(drive_service), std::move(drive_uploader),
+                     std::move(sync_worker));
 }
 
 void SyncEngine::InitializeInternal(
     scoped_ptr<drive::DriveServiceInterface> drive_service,
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
     scoped_ptr<SyncWorkerInterface> sync_worker) {
-  drive_service_ = drive_service.Pass();
+  drive_service_ = std::move(drive_service);
   drive_service_wrapper_.reset(new DriveServiceWrapper(drive_service_.get()));
 
   std::string account_id;
@@ -291,7 +293,7 @@ void SyncEngine::InitializeInternal(
     account_id = signin_manager_->GetAuthenticatedAccountId();
   drive_service_->Initialize(account_id);
 
-  drive_uploader_ = drive_uploader.Pass();
+  drive_uploader_ = std::move(drive_uploader);
   drive_uploader_wrapper_.reset(
       new DriveUploaderWrapper(drive_uploader_.get()));
 
@@ -305,13 +307,10 @@ void SyncEngine::InitializeInternal(
       new DriveUploaderOnWorker(drive_uploader_wrapper_->AsWeakPtr(),
                                 ui_task_runner_.get(),
                                 worker_task_runner_.get()));
-  scoped_ptr<SyncEngineContext> sync_engine_context(
-      new SyncEngineContext(drive_service_on_worker.Pass(),
-                            drive_uploader_on_worker.Pass(),
-                            task_logger_,
-                            ui_task_runner_.get(),
-                            worker_task_runner_.get(),
-                            worker_pool_.get()));
+  scoped_ptr<SyncEngineContext> sync_engine_context(new SyncEngineContext(
+      std::move(drive_service_on_worker), std::move(drive_uploader_on_worker),
+      task_logger_, ui_task_runner_.get(), worker_task_runner_.get(),
+      worker_pool_.get()));
 
   worker_observer_.reset(new WorkerObserver(ui_task_runner_.get(),
                                             weak_ptr_factory_.GetWeakPtr()));
@@ -327,7 +326,7 @@ void SyncEngine::InitializeInternal(
         env_override_));
   }
 
-  sync_worker_ = sync_worker.Pass();
+  sync_worker_ = std::move(sync_worker);
   sync_worker_->AddObserver(worker_observer_.get());
 
   worker_task_runner_->PostTask(
@@ -742,7 +741,7 @@ SyncEngine::SyncEngine(
       signin_manager_(signin_manager),
       token_service_(token_service),
       request_context_(request_context),
-      drive_service_factory_(drive_service_factory.Pass()),
+      drive_service_factory_(std::move(drive_service_factory)),
       remote_change_processor_(nullptr),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       has_refresh_token_(false),

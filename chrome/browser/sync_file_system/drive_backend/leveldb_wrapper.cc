@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -144,7 +145,7 @@ void LevelDBWrapper::Iterator::AdvanceIterators() {
 // LevelDBWrapper class
 // ---------------------------------------------------------------------------
 LevelDBWrapper::LevelDBWrapper(scoped_ptr<leveldb::DB> db)
-    : db_(db.Pass()), num_puts_(0), num_deletes_(0) {
+    : db_(std::move(db)), num_puts_(0), num_deletes_(0) {
   DCHECK(db_);
 }
 

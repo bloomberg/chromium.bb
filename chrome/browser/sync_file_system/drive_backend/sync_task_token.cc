@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -46,12 +48,9 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForBackgroundTask(
     base::SequencedTaskRunner* task_runner,
     int64_t token_id,
     scoped_ptr<TaskBlocker> task_blocker) {
-  return make_scoped_ptr(new SyncTaskToken(
-      manager,
-      task_runner,
-      token_id,
-      task_blocker.Pass(),
-      SyncStatusCallback()));
+  return make_scoped_ptr(new SyncTaskToken(manager, task_runner, token_id,
+                                           std::move(task_blocker),
+                                           SyncStatusCallback()));
 }
 
 void SyncTaskToken::UpdateTask(const tracked_objects::Location& location,
@@ -78,10 +77,8 @@ SyncTaskToken::~SyncTaskToken() {
 
     // Reinitializes the token.
     SyncTaskManager::NotifyTaskDone(
-        make_scoped_ptr(new SyncTaskToken(manager_,
-                                          task_runner_.get(),
-                                          token_id_,
-                                          task_blocker_.Pass(),
+        make_scoped_ptr(new SyncTaskToken(manager_, task_runner_.get(),
+                                          token_id_, std::move(task_blocker_),
                                           SyncStatusCallback())),
         SYNC_STATUS_OK);
   }
@@ -95,7 +92,7 @@ SyncStatusCallback SyncTaskToken::WrapToCallback(
 
 void SyncTaskToken::set_task_blocker(
     scoped_ptr<TaskBlocker> task_blocker) {
-  task_blocker_ = task_blocker.Pass();
+  task_blocker_ = std::move(task_blocker);
 }
 
 const TaskBlocker* SyncTaskToken::task_blocker() const {
@@ -134,11 +131,11 @@ void SyncTaskToken::RecordLog(const std::string& message) {
 }
 
 void SyncTaskToken::SetTaskLog(scoped_ptr<TaskLogger::TaskLog> task_log) {
-  task_log_ = task_log.Pass();
+  task_log_ = std::move(task_log);
 }
 
 scoped_ptr<TaskLogger::TaskLog> SyncTaskToken::PassTaskLog() {
-  return task_log_.Pass();
+  return std::move(task_log_);
 }
 
 SyncTaskToken::SyncTaskToken(
@@ -151,7 +148,7 @@ SyncTaskToken::SyncTaskToken(
       task_runner_(task_runner),
       token_id_(token_id),
       callback_(callback),
-      task_blocker_(task_blocker.Pass()) {}
+      task_blocker_(std::move(task_blocker)) {}
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

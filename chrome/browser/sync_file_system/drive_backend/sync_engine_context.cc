@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -24,8 +26,8 @@ SyncEngineContext::SyncEngineContext(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
     const scoped_refptr<base::SequencedWorkerPool>& worker_pool)
-    : drive_service_(drive_service.Pass()),
-      drive_uploader_(drive_uploader.Pass()),
+    : drive_service_(std::move(drive_service)),
+      drive_uploader_(std::move(drive_uploader)),
       task_logger_(task_logger ? task_logger->AsWeakPtr()
                                : base::WeakPtr<TaskLogger>()),
       remote_change_processor_(nullptr),
@@ -61,7 +63,7 @@ MetadataDatabase* SyncEngineContext::GetMetadataDatabase() {
 
 scoped_ptr<MetadataDatabase> SyncEngineContext::PassMetadataDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  return metadata_database_.Pass();
+  return std::move(metadata_database_);
 }
 
 RemoteChangeProcessor* SyncEngineContext::GetRemoteChangeProcessor() {
@@ -88,7 +90,7 @@ void SyncEngineContext::SetMetadataDatabase(
     scoped_ptr<MetadataDatabase> metadata_database) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (metadata_database)
-    metadata_database_ = metadata_database.Pass();
+    metadata_database_ = std::move(metadata_database);
 }
 
 void SyncEngineContext::SetRemoteChangeProcessor(

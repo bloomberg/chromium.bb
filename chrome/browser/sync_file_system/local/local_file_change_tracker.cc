@@ -5,8 +5,8 @@
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 
 #include <stddef.h>
-
 #include <queue>
+#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -302,7 +302,7 @@ void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
 
   // Fail to apply batch to database wouldn't have critical effect, they'll be
   // just marked deleted on next relaunch.
-  tracker_db_->WriteBatch(batch.Pass());
+  tracker_db_->WriteBatch(std::move(batch));
   UpdateNumChanges();
 }
 

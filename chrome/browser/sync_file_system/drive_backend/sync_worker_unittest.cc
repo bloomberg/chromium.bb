@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/sync_worker.h"
 
+#include <utility>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -110,20 +112,18 @@ class SyncWorkerTest : public testing::Test,
     scoped_ptr<drive::DriveServiceInterface>
         fake_drive_service(new drive::FakeDriveService);
 
-    scoped_ptr<SyncEngineContext>
-        sync_engine_context(new SyncEngineContext(
-            fake_drive_service.Pass(),
-            nullptr /* drive_uploader */,
-            nullptr /* task_logger */,
-            base::ThreadTaskRunnerHandle::Get() /* ui_task_runner */,
-            base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */,
-            nullptr /* worker_pool */));
+    scoped_ptr<SyncEngineContext> sync_engine_context(new SyncEngineContext(
+        std::move(fake_drive_service), nullptr /* drive_uploader */,
+        nullptr /* task_logger */,
+        base::ThreadTaskRunnerHandle::Get() /* ui_task_runner */,
+        base::ThreadTaskRunnerHandle::Get() /* worker_task_runner */,
+        nullptr /* worker_pool */));
 
     sync_worker_.reset(new SyncWorker(
         profile_dir_.path(),
         extension_service_->AsWeakPtr(),
         in_memory_env_.get()));
-    sync_worker_->Initialize(sync_engine_context.Pass());
+    sync_worker_->Initialize(std::move(sync_engine_context));
 
     sync_worker_->SetSyncEnabled(true);
     base::RunLoop().RunUntilIdle();

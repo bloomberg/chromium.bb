@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -61,7 +62,7 @@ class SyncEngineTest : public testing::Test,
         nullptr));  // in_memory_env
 
     sync_engine_->InitializeForTesting(
-        fake_drive_service.Pass(),
+        std::move(fake_drive_service),
         nullptr,  // drive_uploader
         scoped_ptr<SyncWorkerInterface>(new FakeSyncWorker));
     sync_engine_->SetSyncEnabled(true);

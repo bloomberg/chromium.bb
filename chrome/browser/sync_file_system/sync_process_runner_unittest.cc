@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <queue>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -85,10 +85,10 @@ class FakeSyncProcessRunner : public SyncProcessRunner {
                         scoped_ptr<TimerHelper> timer_helper,
                         size_t max_parallel_task)
       : SyncProcessRunner("FakeSyncProcess",
-                          client, timer_helper.Pass(),
+                          client,
+                          std::move(timer_helper),
                           max_parallel_task),
-        max_parallel_task_(max_parallel_task) {
-  }
+        max_parallel_task_(max_parallel_task) {}
 
   void StartSync(const SyncStatusCallback& callback) override {
     EXPECT_LT(running_tasks_.size(), max_parallel_task_);

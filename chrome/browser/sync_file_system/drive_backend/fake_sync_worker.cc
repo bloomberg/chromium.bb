@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/fake_sync_worker.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
@@ -25,7 +27,7 @@ void FakeSyncWorker::Initialize(
     scoped_ptr<SyncEngineContext> sync_engine_context) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  sync_engine_context_ = sync_engine_context.Pass();
+  sync_engine_context_ = std::move(sync_engine_context);
   status_map_.clear();
   // TODO(peria): Set |status_map_| as a fake metadata database.
 }
@@ -105,7 +107,7 @@ void FakeSyncWorker::GetOriginStatusMap(
       break;
     }
   }
-  callback.Run(status_map.Pass());
+  callback.Run(std::move(status_map));
 }
 
 scoped_ptr<base::ListValue> FakeSyncWorker::DumpFiles(const GURL& origin) {

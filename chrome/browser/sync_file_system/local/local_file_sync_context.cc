@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -739,7 +741,7 @@ void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
   SyncFileSystemBackend* backend =
       SyncFileSystemBackend::GetBackend(file_system_context);
   DCHECK(backend);
-  backend->SetLocalFileChangeTracker(tracker_ptr->Pass());
+  backend->SetLocalFileChangeTracker(std::move(*tracker_ptr));
 
   origins_with_pending_changes_.insert(origins_with_changes->begin(),
                                        origins_with_changes->end());
@@ -799,7 +801,7 @@ LocalFileSyncContext::GetNextURLsForSyncOnFileThread(
        iter != urls->end(); ++iter)
     backend->change_tracker()->DemoteChangesForURL(*iter);
 
-  return urls.Pass();
+  return urls;
 }
 
 void LocalFileSyncContext::TryPrepareForLocalSync(
@@ -841,15 +843,16 @@ void LocalFileSyncContext::DidTryPrepareForLocalSync(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   if (status != SYNC_STATUS_FILE_BUSY) {
     PromoteDemotedChangesForURLs(file_system_context,
-                                 remaining_urls.Pass());
-    callback.Run(status, sync_file_info, snapshot.Pass());
+                                 std::move(remaining_urls));
+    callback.Run(status, sync_file_info, std::move(snapshot));
     return;
   }
 
   PromoteDemotedChangesForURL(file_system_context, sync_file_info.url);
 
   // Recursively call TryPrepareForLocalSync with remaining_urls.
-  TryPrepareForLocalSync(file_system_context, callback, remaining_urls.Pass());
+  TryPrepareForLocalSync(file_system_context, callback,
+                         std::move(remaining_urls));
 }
 
 void LocalFileSyncContext::PromoteDemotedChangesForURL(

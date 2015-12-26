@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -168,12 +169,12 @@ storage::FileSystemOperation* SyncFileSystemBackend::CreateFileSystemOperation(
     return nullptr;
 
   if (url.type() == storage::kFileSystemTypeSyncableForInternalSync) {
-    return storage::FileSystemOperation::Create(
-        url, context, operation_context.Pass());
+    return storage::FileSystemOperation::Create(url, context,
+                                                std::move(operation_context));
   }
 
-  return new SyncableFileSystemOperation(
-      url, context, operation_context.Pass());
+  return new SyncableFileSystemOperation(url, context,
+                                         std::move(operation_context));
 }
 
 bool SyncFileSystemBackend::SupportsStreaming(
@@ -240,7 +241,7 @@ void SyncFileSystemBackend::SetLocalFileChangeTracker(
     scoped_ptr<LocalFileChangeTracker> tracker) {
   DCHECK(!change_tracker_);
   DCHECK(tracker);
-  change_tracker_ = tracker.Pass();
+  change_tracker_ = std::move(tracker);
 
   storage::SandboxFileSystemBackendDelegate* delegate = GetDelegate();
   delegate->AddFileUpdateObserver(storage::kFileSystemTypeSyncable,

@@ -267,7 +267,7 @@ MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
   scoped_ptr<MetadataDatabaseIndexOnDisk>
       index(new MetadataDatabaseIndexOnDisk(db));
 
-  return index.Pass();
+  return index;
 }
 
 MetadataDatabaseIndexOnDisk::~MetadataDatabaseIndexOnDisk() {}
