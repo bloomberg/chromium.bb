@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/permissions_updater.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
@@ -92,7 +94,7 @@ void PermissionsUpdater::AddPermissions(const Extension* extension,
   scoped_ptr<const PermissionSet> new_withheld =
       PermissionSet::CreateDifference(
           extension->permissions_data()->withheld_permissions(), permissions);
-  SetPermissions(extension, total.Pass(), new_withheld.Pass());
+  SetPermissions(extension, std::move(total), std::move(new_withheld));
 
   // Update the granted permissions so we don't auto-disable the extension.
   GrantActivePermissions(extension);
@@ -121,7 +123,7 @@ void PermissionsUpdater::RemovePermissions(const Extension* extension,
   scoped_ptr<const PermissionSet> withheld = PermissionSet::CreateUnion(
       *removed_withheld, extension->permissions_data()->withheld_permissions());
 
-  SetPermissions(extension, remaining.Pass(), withheld.Pass());
+  SetPermissions(extension, std::move(remaining), std::move(withheld));
 
   // We might not want to revoke the granted permissions because the extension,
   // not the user, removed the permissions. This allows the extension to add
@@ -146,7 +148,7 @@ void PermissionsUpdater::RemovePermissionsUnsafe(
   scoped_ptr<const PermissionSet> successfully_removed =
       PermissionSet::CreateDifference(active, *total);
 
-  SetPermissions(extension, total.Pass(), nullptr);
+  SetPermissions(extension, std::move(total), nullptr);
   NotifyPermissionsUpdated(REMOVED, extension, *successfully_removed);
 }
 
@@ -195,8 +197,8 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
                            &withheld_permissions,
                            (init_flag_ & INIT_FLAG_TRANSIENT) != 0);
 
-  SetPermissions(extension, granted_permissions.Pass(),
-                 withheld_permissions.Pass());
+  SetPermissions(extension, std::move(granted_permissions),
+                 std::move(withheld_permissions));
 }
 
 void PermissionsUpdater::SetPermissions(
@@ -206,10 +208,10 @@ void PermissionsUpdater::SetPermissions(
   DCHECK(active);
   const PermissionSet& active_weak = *active;
   if (withheld) {
-    extension->permissions_data()->SetPermissions(active.Pass(),
-                                                  withheld.Pass());
+    extension->permissions_data()->SetPermissions(std::move(active),
+                                                  std::move(withheld));
   } else {
-    extension->permissions_data()->SetActivePermissions(active.Pass());
+    extension->permissions_data()->SetActivePermissions(std::move(active));
   }
 
   if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {
@@ -231,9 +233,10 @@ void PermissionsUpdater::DispatchEvent(
   scoped_ptr<api::permissions::Permissions> permissions =
       PackPermissionSet(changed_permissions);
   value->Append(permissions->ToValue().release());
-  scoped_ptr<Event> event(new Event(histogram_value, event_name, value.Pass()));
+  scoped_ptr<Event> event(
+      new Event(histogram_value, event_name, std::move(value)));
   event->restrict_to_browser_context = browser_context_;
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void PermissionsUpdater::NotifyPermissionsUpdated(

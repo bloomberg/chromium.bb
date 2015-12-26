@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -169,7 +169,7 @@ CreateApiBookmarkNodeData(Profile* profile, const BookmarkNodeData& data) {
     for (size_t i = 0; i < data.size(); ++i)
       node_data->elements.push_back(CreateApiNodeDataElement(data.elements[i]));
   }
-  return node_data.Pass();
+  return node_data;
 }
 
 }  // namespace
@@ -192,7 +192,7 @@ void BookmarkManagerPrivateEventRouter::DispatchEvent(
     scoped_ptr<base::ListValue> event_args) {
   EventRouter::Get(browser_context_)
       ->BroadcastEvent(make_scoped_ptr(
-          new Event(histogram_value, event_name, event_args.Pass())));
+          new Event(histogram_value, event_name, std::move(event_args))));
 }
 
 void BookmarkManagerPrivateEventRouter::BookmarkModelChanged() {}
@@ -310,8 +310,9 @@ void BookmarkManagerPrivateDragEventRouter::DispatchEvent(
   if (!event_router)
     return;
 
-  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
-  event_router->BroadcastEvent(event.Pass());
+  scoped_ptr<Event> event(
+      new Event(histogram_value, event_name, std::move(args)));
+  event_router->BroadcastEvent(std::move(event));
 }
 
 void BookmarkManagerPrivateDragEventRouter::OnDragEnter(

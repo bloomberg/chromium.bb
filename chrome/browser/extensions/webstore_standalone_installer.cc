@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -184,7 +186,7 @@ WebstoreStandaloneInstaller::CreateApproval() const {
   approval->skip_post_install_ui = !ShouldShowPostInstallUI();
   approval->use_app_installed_bubble = ShouldShowAppInstalledBubble();
   approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
-  return approval.Pass();
+  return approval;
 }
 
 void WebstoreStandaloneInstaller::InstallUIProceed() {
@@ -220,13 +222,9 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
     }
   }
 
-  scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile_,
-      this,
-      GetWebContents(),
-      id_,
-      approval.Pass(),
-      install_source_);
+  scoped_refptr<WebstoreInstaller> installer =
+      new WebstoreInstaller(profile_, this, GetWebContents(), id_,
+                            std::move(approval), install_source_);
   installer->Start();
 }
 
@@ -313,7 +311,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
   }
 
   // Assume ownership of webstore_data.
-  webstore_data_ = webstore_data.Pass();
+  webstore_data_ = std::move(webstore_data);
 
   scoped_refptr<WebstoreInstallHelper> helper =
       new WebstoreInstallHelper(this,
@@ -406,7 +404,7 @@ void WebstoreStandaloneInstaller::ShowInstallUI() {
 
   install_ui_ = CreateInstallUI();
   install_ui_->ShowDialog(
-      this, localized_extension.get(), &icon_, install_prompt_.Pass(),
+      this, localized_extension.get(), &icon_, std::move(install_prompt_),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 

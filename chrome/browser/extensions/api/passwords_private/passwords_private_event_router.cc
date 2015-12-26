@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -86,7 +87,7 @@ void PasswordsPrivateEventRouter::SendSavedPasswordListToListeners() {
       new Event(events::PASSWORDS_PRIVATE_ON_SAVED_PASSWORDS_LIST_CHANGED,
                 api::passwords_private::OnSavedPasswordsListChanged::kEventName,
                 cached_saved_password_parameters_->CreateDeepCopy()));
-  event_router_->BroadcastEvent(extension_event.Pass());
+  event_router_->BroadcastEvent(std::move(extension_event));
 }
 
 void PasswordsPrivateEventRouter::OnPasswordExceptionsListChanged(
@@ -106,7 +107,7 @@ void PasswordsPrivateEventRouter::SendPasswordExceptionListToListeners() {
       events::PASSWORDS_PRIVATE_ON_PASSWORD_EXCEPTIONS_LIST_CHANGED,
       api::passwords_private::OnPasswordExceptionsListChanged::kEventName,
       cached_password_exception_parameters_->CreateDeepCopy()));
-  event_router_->BroadcastEvent(extension_event.Pass());
+  event_router_->BroadcastEvent(std::move(extension_event));
 }
 
 void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
@@ -124,8 +125,8 @@ void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
   scoped_ptr<Event> extension_event(new Event(
       events::PASSWORDS_PRIVATE_ON_PLAINTEXT_PASSWORD_RETRIEVED,
       api::passwords_private::OnPlaintextPasswordRetrieved::kEventName,
-      event_value.Pass()));
-  event_router_->BroadcastEvent(extension_event.Pass());
+      std::move(event_value)));
+  event_router_->BroadcastEvent(std::move(extension_event));
 }
 
 void PasswordsPrivateEventRouter::StartOrStopListeningForChanges() {

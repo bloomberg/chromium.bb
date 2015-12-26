@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -191,7 +192,7 @@ scoped_ptr<InstallSignature> InstallSignature::FromValue(
   if (!value.GetInteger(kSignatureFormatVersionKey, &format_version) ||
       format_version != kSignatureFormatVersion) {
     result.reset();
-    return result.Pass();
+    return result;
   }
 
   std::string salt_base64;
@@ -202,7 +203,7 @@ scoped_ptr<InstallSignature> InstallSignature::FromValue(
       !base::Base64Decode(salt_base64, &result->salt) ||
       !base::Base64Decode(signature_base64, &result->signature)) {
     result.reset();
-    return result.Pass();
+    return result;
   }
 
   // Note: earlier versions of the code did not write out a timestamp value
@@ -213,7 +214,7 @@ scoped_ptr<InstallSignature> InstallSignature::FromValue(
     if (!value.GetString(kTimestampKey, &timestamp) ||
         !base::StringToInt64(timestamp, &timestamp_value)) {
       result.reset();
-      return result.Pass();
+      return result;
     }
     result->timestamp = base::Time::FromInternalValue(timestamp_value);
   }
@@ -221,10 +222,10 @@ scoped_ptr<InstallSignature> InstallSignature::FromValue(
   if (!GetExtensionIdSet(value, kIdsKey, &result->ids) ||
       !GetExtensionIdSet(value, kInvalidIdsKey, &result->invalid_ids)) {
     result.reset();
-    return result.Pass();
+    return result;
   }
 
-  return result.Pass();
+  return result;
 }
 
 
@@ -507,7 +508,7 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
   }
 
   if (!callback_.is_null())
-    callback_.Run(result.Pass());
+    callback_.Run(std::move(result));
 }
 
 

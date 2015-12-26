@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
+#include "chrome/browser/extensions/api/mdns/mdns_api.h"
 
+#include <stddef.h>
+#include <utility>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -43,7 +44,8 @@ void AddEventListener(
   filter->SetString(kEventFilterServiceTypeKey, service_type);
   listener_list->push_back(make_linked_ptr(
       EventListener::ForExtension(kEventFilterServiceTypeKey, extension_id,
-                                  nullptr, filter.Pass()).release()));
+                                  nullptr, std::move(filter))
+          .release()));
 }
 
 class NullDelegate : public EventListenerMap::Delegate {

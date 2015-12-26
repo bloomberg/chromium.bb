@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
@@ -67,17 +68,17 @@ class MessageSender : public content::NotificationObserver {
     event->SetString("data", data);
     scoped_ptr<base::ListValue> arguments(new base::ListValue());
     arguments->Append(event);
-    return arguments.Pass();
+    return arguments;
   }
 
   static scoped_ptr<Event> BuildEvent(scoped_ptr<base::ListValue> event_args,
                                       Profile* profile,
                                       GURL event_url) {
     scoped_ptr<Event> event(new Event(events::TEST_ON_MESSAGE, "test.onMessage",
-                                      event_args.Pass()));
+                                      std::move(event_args)));
     event->restrict_to_browser_context = profile;
     event->event_url = event_url;
-    return event.Pass();
+    return event;
   }
 
   void Observe(int type,

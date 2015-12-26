@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -586,7 +586,7 @@ void ActivityLog::OnApiEventDispatched(const std::string& extension_id,
                                             base::Time::Now(),
                                             Action::ACTION_API_EVENT,
                                             event_name);
-  action->set_args(event_args.Pass());
+  action->set_args(std::move(event_args));
   LogAction(action);
 }
 
@@ -598,7 +598,7 @@ void ActivityLog::OnApiFunctionCalled(const std::string& extension_id,
                                             base::Time::Now(),
                                             Action::ACTION_API_CALL,
                                             api_name);
-  action->set_args(args.Pass());
+  action->set_args(std::move(args));
   LogAction(action);
 }
 

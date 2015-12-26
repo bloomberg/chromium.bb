@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate.h"
 
+#include <utility>
+
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -48,7 +50,7 @@ scoped_ptr<base::Value> SettingsPrivateDelegate::GetAllPrefs() {
       prefs->Append(pref.release());
   }
 
-  return prefs.Pass();
+  return std::move(prefs);
 }
 
 PrefsUtil::SetPrefResult SettingsPrivateDelegate::SetPref(
@@ -60,7 +62,7 @@ scoped_ptr<base::Value> SettingsPrivateDelegate::GetDefaultZoomPercent() {
   double zoom = content::ZoomLevelToZoomFactor(
       profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref()) * 100;
   scoped_ptr<base::Value> value(new base::FundamentalValue(zoom));
-  return value.Pass();
+  return value;
 }
 
 PrefsUtil::SetPrefResult SettingsPrivateDelegate::SetDefaultZoomPercent(

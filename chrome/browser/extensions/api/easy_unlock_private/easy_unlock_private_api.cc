@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/base64url.h"
@@ -753,7 +754,7 @@ void EasyUnlockPrivateGetRemoteDevicesFunction::ReturnDevicesForExperiment() {
 
   remote_devices_.reset(new base::ListValue());
   if (expected_devices_count_ == 0) {
-    SetResult(remote_devices_.Pass());
+    SetResult(std::move(remote_devices_));
     SendResponse(true);
     return;
   }
@@ -762,7 +763,7 @@ void EasyUnlockPrivateGetRemoteDevicesFunction::ReturnDevicesForExperiment() {
   // not try the classic Bluetooth protocol.
   for (const auto& unlock_key : unlock_keys) {
     if (unlock_key.bluetooth_address().empty()) {
-      SetResult(remote_devices_.Pass());
+      SetResult(std::move(remote_devices_));
       SendResponse(true);
       return;
     }
@@ -805,15 +806,15 @@ void EasyUnlockPrivateGetRemoteDevicesFunction::OnPSKDerivedForDevice(
   permit_license->SetString("id", b64_public_key);
   permit_license->SetString("type", "license");
   permit_license->SetString("data", b64_public_key);
-  device_dictionary->Set("permitRecord", permit_license.Pass());
+  device_dictionary->Set("permitRecord", std::move(permit_license));
 
-  remote_devices_->Append(device_dictionary.Pass());
+  remote_devices_->Append(std::move(device_dictionary));
 
   // If all PSKs are derived, then return from the API call.
   PA_LOG(INFO) << "Derived PSK for " << b64_public_key << ": "
                << remote_devices_->GetSize() << "/" << expected_devices_count_;
   if (remote_devices_->GetSize() == expected_devices_count_) {
-    SetResult(remote_devices_.Pass());
+    SetResult(std::move(remote_devices_));
     SendResponse(true);
   }
 }
@@ -959,7 +960,7 @@ void EasyUnlockPrivateGetConnectionInfoFunction::OnConnectionInfo(
   results->AppendInteger(connection_info.rssi);
   results->AppendInteger(connection_info.transmit_power);
   results->AppendInteger(connection_info.max_transmit_power);
-  SetResultList(results.Pass());
+  SetResultList(std::move(results));
   SendResponse(true);
 }
 
@@ -1074,7 +1075,7 @@ void EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound(
   bool persistent = false;
   int connection_id =
       GetConnectionManager(browser_context())
-          ->AddConnection(extension(), connection.Pass(), persistent);
+          ->AddConnection(extension(), std::move(connection), persistent);
   results_ = easy_unlock_private::FindSetupConnection::Results::Create(
       connection_id, device_address);
   SendResponse(true);

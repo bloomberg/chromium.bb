@@ -16,7 +16,7 @@ scoped_ptr<DisplayState> MockBrailleController::GetDisplayState() {
   state->available = available_;
   if (available_)
     state->text_cell_count.reset(new int(18));
-  return state.Pass();
+  return state;
 }
 
 void MockBrailleController::AddObserver(BrailleObserver* observer) {

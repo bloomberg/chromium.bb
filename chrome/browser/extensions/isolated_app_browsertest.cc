@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -98,7 +99,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
       http_response->AddCustomHeader("Set-Cookie", cookies_to_set[i]);
   }
 
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 class IsolatedAppTest : public ExtensionBrowserTest {

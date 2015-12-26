@@ -224,7 +224,7 @@ void GcdPrivateAPIImpl::RemoveSessionDelayed(int session_id) {
 scoped_ptr<base::ListValue> GcdPrivateAPIImpl::GetPrefetchedSSIDList() {
   scoped_ptr<base::ListValue> retval(new base::ListValue);
 
-  return retval.Pass();
+  return retval;
 }
 
 

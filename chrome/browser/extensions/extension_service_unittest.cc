@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_service.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -47,7 +49,6 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -325,7 +326,7 @@ class MockProviderVisitor
       NOTREACHED() << "Unable to deserialize json data";
       return -1;
     } else {
-      prefs_ = base::DictionaryValue::From(json_value.Pass());
+      prefs_ = base::DictionaryValue::From(std::move(json_value));
     }
 
     // Reset our counter.

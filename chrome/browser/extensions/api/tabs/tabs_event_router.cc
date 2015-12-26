@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -72,14 +73,14 @@ scoped_ptr<base::DictionaryValue> TabsEventRouter::TabEntry::UpdateLoadState() {
   scoped_ptr<base::DictionaryValue> changed_properties(
       new base::DictionaryValue());
   if (!complete_waiting_on_load_ || web_contents()->IsLoading()) {
-    return changed_properties.Pass();
+    return changed_properties;
   }
 
   // Send "complete" state change.
   complete_waiting_on_load_ = false;
   changed_properties->SetString(tabs_constants::kStatusKey,
                                 tabs_constants::kStatusValueComplete);
-  return changed_properties.Pass();
+  return changed_properties;
 }
 
 scoped_ptr<base::DictionaryValue> TabsEventRouter::TabEntry::DidNavigate() {
@@ -95,7 +96,7 @@ scoped_ptr<base::DictionaryValue> TabsEventRouter::TabEntry::DidNavigate() {
     changed_properties->SetString(tabs_constants::kUrlKey, url_.spec());
   }
 
-  return changed_properties.Pass();
+  return changed_properties;
 }
 
 scoped_ptr<base::DictionaryValue> TabsEventRouter::TabEntry::TitleChanged() {
@@ -103,7 +104,7 @@ scoped_ptr<base::DictionaryValue> TabsEventRouter::TabEntry::TitleChanged() {
       new base::DictionaryValue());
   changed_properties->SetString(tabs_constants::kTitleKey,
                                 web_contents()->GetTitle());
-  return changed_properties.Pass();
+  return changed_properties;
 }
 
 bool TabsEventRouter::TabEntry::SetAudible(bool new_val) {
@@ -207,13 +208,13 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
                                    bool active) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   scoped_ptr<base::ListValue> args(new base::ListValue);
-  scoped_ptr<Event> event(new Event(events::TABS_ON_CREATED,
-                                    tabs::OnCreated::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::TABS_ON_CREATED, tabs::OnCreated::kEventName, std::move(args)));
   event->restrict_to_browser_context = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
       base::Bind(&WillDispatchTabCreatedEvent, contents, active);
-  EventRouter::Get(profile)->BroadcastEvent(event.Pass());
+  EventRouter::Get(profile)->BroadcastEvent(std::move(event));
 
   RegisterForTabNotifications(contents);
 }
@@ -245,7 +246,7 @@ void TabsEventRouter::TabInsertedAt(WebContents* contents,
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_ATTACHED, tabs::OnAttached::kEventName,
-                args.Pass(), EventRouter::USER_GESTURE_UNKNOWN);
+                std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void TabsEventRouter::TabDetachedAt(WebContents* contents, int index) {
@@ -268,7 +269,7 @@ void TabsEventRouter::TabDetachedAt(WebContents* contents, int index) {
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_DETACHED, tabs::OnDetached::kEventName,
-                args.Pass(), EventRouter::USER_GESTURE_UNKNOWN);
+                std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void TabsEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
@@ -288,7 +289,7 @@ void TabsEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_REMOVED, tabs::OnRemoved::kEventName,
-                args.Pass(), EventRouter::USER_GESTURE_UNKNOWN);
+                std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 
   UnregisterForTabNotifications(contents);
 }
@@ -327,7 +328,7 @@ void TabsEventRouter::ActiveTabChanged(WebContents* old_contents,
   object_args->Set(tabs_constants::kTabIdKey,
                    new FundamentalValue(tab_id));
   DispatchEvent(profile, events::TABS_ON_ACTIVATED,
-                tabs::OnActivated::kEventName, args.Pass(), gesture);
+                tabs::OnActivated::kEventName, std::move(args), gesture);
 }
 
 void TabsEventRouter::TabSelectionChanged(
@@ -364,7 +365,7 @@ void TabsEventRouter::TabSelectionChanged(
                 scoped_ptr<base::ListValue>(args->DeepCopy()),
                 EventRouter::USER_GESTURE_UNKNOWN);
   DispatchEvent(profile, events::TABS_ON_HIGHLIGHTED,
-                tabs::OnHighlighted::kEventName, args.Pass(),
+                tabs::OnHighlighted::kEventName, std::move(args),
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 
@@ -387,7 +388,7 @@ void TabsEventRouter::TabMoved(WebContents* contents,
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   DispatchEvent(profile, events::TABS_ON_MOVED, tabs::OnMoved::kEventName,
-                args.Pass(), EventRouter::USER_GESTURE_UNKNOWN);
+                std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 }
 
 void TabsEventRouter::TabUpdated(
@@ -404,11 +405,12 @@ void TabsEventRouter::TabUpdated(
   if (entry->SetMuted(muted)) {
     changed_properties->Set(
         tabs_constants::kMutedInfoKey,
-        ExtensionTabUtil::CreateMutedInfo(entry->web_contents()).Pass());
+        ExtensionTabUtil::CreateMutedInfo(entry->web_contents()));
   }
 
   if (!changed_properties->empty()) {
-    DispatchTabUpdatedEvent(entry->web_contents(), changed_properties.Pass());
+    DispatchTabUpdatedEvent(entry->web_contents(),
+                            std::move(changed_properties));
   }
 }
 
@@ -422,7 +424,7 @@ void TabsEventRouter::FaviconUrlUpdated(WebContents* contents) {
     changed_properties->SetString(
         tabs_constants::kFaviconUrlKey,
         entry->GetFavicon().url.possibly_invalid_spec());
-    DispatchTabUpdatedEvent(contents, changed_properties.Pass());
+    DispatchTabUpdatedEvent(contents, std::move(changed_properties));
 }
 
 void TabsEventRouter::DispatchEvent(
@@ -435,10 +437,11 @@ void TabsEventRouter::DispatchEvent(
   if (!profile_->IsSameProfile(profile) || !event_router)
     return;
 
-  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(histogram_value, event_name, std::move(args)));
   event->restrict_to_browser_context = profile;
   event->user_gesture = user_gesture;
-  event_router->BroadcastEvent(event.Pass());
+  event_router->BroadcastEvent(std::move(event));
 }
 
 void TabsEventRouter::DispatchTabUpdatedEvent(
@@ -462,15 +465,16 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
   // WillDispatchTabUpdatedEvent.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
 
-  scoped_ptr<Event> event(new Event(
-      events::TABS_ON_UPDATED, tabs::OnUpdated::kEventName, args_base.Pass()));
+  scoped_ptr<Event> event(new Event(events::TABS_ON_UPDATED,
+                                    tabs::OnUpdated::kEventName,
+                                    std::move(args_base)));
   event->restrict_to_browser_context = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
       base::Bind(&WillDispatchTabUpdatedEvent,
                  contents,
                  changed_properties.get());
-  EventRouter::Get(profile)->BroadcastEvent(event.Pass());
+  EventRouter::Get(profile)->BroadcastEvent(std::move(event));
 }
 
 TabsEventRouter::TabEntry* TabsEventRouter::GetTabEntry(WebContents* contents) {
@@ -501,7 +505,7 @@ void TabsEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
 
   DispatchEvent(Profile::FromBrowserContext(new_contents->GetBrowserContext()),
                 events::TABS_ON_REPLACED, tabs::OnReplaced::kEventName,
-                args.Pass(), EventRouter::USER_GESTURE_UNKNOWN);
+                std::move(args), EventRouter::USER_GESTURE_UNKNOWN);
 
   UnregisterForTabNotifications(old_contents);
 
@@ -518,7 +522,7 @@ void TabsEventRouter::TabPinnedStateChanged(WebContents* contents, int index) {
         new base::DictionaryValue());
     changed_properties->SetBoolean(tabs_constants::kPinnedKey,
                                    tab_strip->IsTabPinned(tab_index));
-    DispatchTabUpdatedEvent(contents, changed_properties.Pass());
+    DispatchTabUpdatedEvent(contents, std::move(changed_properties));
   }
 }
 

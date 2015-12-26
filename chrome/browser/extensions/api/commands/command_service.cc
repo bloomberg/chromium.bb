@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -288,9 +289,8 @@ bool CommandService::AddKeybindingPref(
   scoped_ptr<base::DictionaryValue> suggested_key_prefs(
       new base::DictionaryValue);
   suggested_key_prefs->Set(command_name, command_keys.release());
-  MergeSuggestedKeyPrefs(extension_id,
-                         ExtensionPrefs::Get(profile_),
-                         suggested_key_prefs.Pass());
+  MergeSuggestedKeyPrefs(extension_id, ExtensionPrefs::Get(profile_),
+                         std::move(suggested_key_prefs));
 
   // Fetch the newly-updated command, and notify the observers.
   FOR_EACH_OBSERVER(
@@ -675,9 +675,8 @@ void CommandService::UpdateExtensionSuggestedCommandPrefs(
   }
 
   // Merge into current prefs, if present.
-  MergeSuggestedKeyPrefs(extension->id(),
-                         ExtensionPrefs::Get(profile_),
-                         suggested_key_prefs.Pass());
+  MergeSuggestedKeyPrefs(extension->id(), ExtensionPrefs::Get(profile_),
+                         std::move(suggested_key_prefs));
 }
 
 void CommandService::RemoveDefunctExtensionSuggestedCommandPrefs(

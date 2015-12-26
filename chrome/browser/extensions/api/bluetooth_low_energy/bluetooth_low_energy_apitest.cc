@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
@@ -1230,7 +1231,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ConnectInProgress) {
       << listener.message();
   listener.Reset();
 
-  connect_callback.Run(conn_ptr.Pass());
+  connect_callback.Run(std::move(conn_ptr));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   ASSERT_EQ("After 2nd call to disconnect.", listener.message())
       << listener.message();

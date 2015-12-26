@@ -345,7 +345,7 @@ scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension) {
       NULL);  // Don't set bool if exists.
   dict->SetString("icon", icon.spec());
 
-  return dict.Pass();
+  return dict;
 }
 
 const gfx::ImageSkia& GetDefaultAppIcon() {

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
+
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/image_writer_private/destroy_partitions_operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
-#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/write_from_file_operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/write_from_url_operation.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
@@ -161,24 +164,24 @@ void OperationManager::OnProgress(const ExtensionId& extension_id,
 
   scoped_ptr<base::ListValue> args(
       image_writer_api::OnWriteProgress::Create(info));
-  scoped_ptr<Event> event(
-      new Event(events::IMAGE_WRITER_PRIVATE_ON_WRITE_PROGRESS,
-                image_writer_api::OnWriteProgress::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::IMAGE_WRITER_PRIVATE_ON_WRITE_PROGRESS,
+      image_writer_api::OnWriteProgress::kEventName, std::move(args)));
 
   EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void OperationManager::OnComplete(const ExtensionId& extension_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<base::ListValue> args(image_writer_api::OnWriteComplete::Create());
-  scoped_ptr<Event> event(
-      new Event(events::IMAGE_WRITER_PRIVATE_ON_WRITE_COMPLETE,
-                image_writer_api::OnWriteComplete::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::IMAGE_WRITER_PRIVATE_ON_WRITE_COMPLETE,
+      image_writer_api::OnWriteComplete::kEventName, std::move(args)));
 
   EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 
   DeleteOperation(extension_id);
 }
@@ -199,10 +202,10 @@ void OperationManager::OnError(const ExtensionId& extension_id,
       image_writer_api::OnWriteError::Create(info, error_message));
   scoped_ptr<Event> event(new Event(events::IMAGE_WRITER_PRIVATE_ON_WRITE_ERROR,
                                     image_writer_api::OnWriteError::kEventName,
-                                    args.Pass()));
+                                    std::move(args)));
 
   EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 
   DeleteOperation(extension_id);
 }

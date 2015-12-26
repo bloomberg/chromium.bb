@@ -120,7 +120,7 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
     scoped_ptr<base::Value> result(
         RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
     result->GetAsList(sink_list);
-    return result.Pass();
+    return result;
   }
 
   // Synchronously (from the calling thread's point of view) runs the

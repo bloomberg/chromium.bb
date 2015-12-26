@@ -240,7 +240,7 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
     result->other.reset(other_field.release());
   }
 
-  return result.Pass();
+  return result;
 }
 
 std::string Action::PrintForDebug() const {

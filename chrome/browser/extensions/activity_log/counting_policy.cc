@@ -435,7 +435,7 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
 
   sql::Connection* db = GetDatabaseConnection();
   if (!db)
-    return actions.Pass();
+    return actions;
 
   // Build up the query based on which parameters were specified.
   std::string where_str = "";
@@ -523,7 +523,7 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     actions->push_back(action);
   }
 
-  return actions.Pass();
+  return actions;
 }
 
 void CountingPolicy::DoRemoveActions(const std::vector<int64_t>& action_ids) {

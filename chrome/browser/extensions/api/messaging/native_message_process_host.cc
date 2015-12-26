@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -48,7 +49,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
     : client_(NULL),
       source_extension_id_(source_extension_id),
       native_host_name_(native_host_name),
-      launcher_(launcher.Pass()),
+      launcher_(std::move(launcher)),
       closed_(false),
 #if defined(OS_POSIX)
       read_file_(-1),
@@ -74,7 +75,7 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
         FROM_HERE,
         base::Bind(&base::EnsureProcessTerminated, Passed(&process_)));
 #else
-    base::EnsureProcessTerminated(process_.Pass());
+    base::EnsureProcessTerminated(std::move(process_));
 #endif
   }
 }
@@ -99,12 +100,10 @@ scoped_ptr<NativeMessageHost> NativeMessageProcessHost::CreateWithLauncher(
     scoped_ptr<NativeProcessLauncher> launcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  scoped_ptr<NativeMessageHost> process(
-      new NativeMessageProcessHost(source_extension_id,
-                                   native_host_name,
-                                   launcher.Pass()));
+  scoped_ptr<NativeMessageHost> process(new NativeMessageProcessHost(
+      source_extension_id, native_host_name, std::move(launcher)));
 
-  return process.Pass();
+  return process;
 }
 
 void NativeMessageProcessHost::LaunchHostProcess() {
@@ -140,7 +139,7 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
       break;
   }
 
-  process_ = process.Pass();
+  process_ = std::move(process);
 #if defined(OS_POSIX)
   // This object is not the owner of the file so it should not keep an fd.
   read_file_ = read_file.GetPlatformFile();
@@ -151,8 +150,8 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
           GetTaskRunnerWithShutdownBehavior(
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
-  read_stream_.reset(new net::FileStream(read_file.Pass(), task_runner));
-  write_stream_.reset(new net::FileStream(write_file.Pass(), task_runner));
+  read_stream_.reset(new net::FileStream(std::move(read_file), task_runner));
+  write_stream_.reset(new net::FileStream(std::move(write_file), task_runner));
 
   WaitRead();
   DoWrite();

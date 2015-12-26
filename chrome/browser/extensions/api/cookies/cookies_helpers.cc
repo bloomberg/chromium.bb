@@ -89,7 +89,7 @@ scoped_ptr<Cookie> CreateCookie(
   }
   cookie->store_id = store_id;
 
-  return cookie.Pass();
+  return cookie;
 }
 
 scoped_ptr<CookieStore> CreateCookieStore(Profile* profile,

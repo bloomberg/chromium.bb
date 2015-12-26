@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -42,7 +43,7 @@ class FakeDriveServiceFactory
     scoped_ptr<drive::FakeDriveService> drive_service(
         new drive::FakeDriveService);
     drive_service->AddChangeObserver(change_observer_);
-    return drive_service.Pass();
+    return std::move(drive_service);
   }
 
  private:
@@ -102,18 +103,15 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
 
     remote_service_ = new drive_backend::SyncEngine(
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
-        MakeSequencedTaskRunner(),
-        MakeSequencedTaskRunner(),
-        content::BrowserThread::GetBlockingPool(),
-        base_dir_.path(),
+        MakeSequencedTaskRunner(), MakeSequencedTaskRunner(),
+        content::BrowserThread::GetBlockingPool(), base_dir_.path(),
         NULL,  // task_logger
         NULL,  // notification_manager
         extension_service,
         fake_signin_manager_.get(),  // signin_manager
-        NULL,  // token_service
-        NULL,  // request_context
-        drive_service_factory.Pass(),
-        in_memory_env_.get());
+        NULL,                        // token_service
+        NULL,                        // request_context
+        std::move(drive_service_factory), in_memory_env_.get());
     remote_service_->SetSyncEnabled(true);
     factory->set_mock_remote_file_service(
         scoped_ptr<RemoteFileSyncService>(remote_service_));

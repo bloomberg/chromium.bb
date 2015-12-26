@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -235,7 +236,7 @@ void InstallVerifier::Init() {
       LogInitResultHistogram(INIT_INVALID_SIGNATURE);
       DVLOG(1) << "Init - ignoring invalid signature";
     } else {
-      signature_ = signature_from_prefs.Pass();
+      signature_ = std::move(signature_from_prefs);
       LogInitResultHistogram(INIT_VALID_SIGNATURE);
       UMA_HISTOGRAM_COUNTS_100("ExtensionInstallVerifier.InitSignatureCount",
                                signature_->ids.size());
@@ -636,7 +637,7 @@ void InstallVerifier::SignatureCallback(
     // TODO(asargent) - if this was something like a network error, we need to
     // do retries with exponential back off.
   } else {
-    signature_ = signature.Pass();
+    signature_ = std::move(signature);
     SaveToPrefs();
 
     if (!provisional_.empty()) {

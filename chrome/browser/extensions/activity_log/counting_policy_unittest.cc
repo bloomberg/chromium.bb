@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/activity_log/counting_policy.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
@@ -19,7 +22,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
@@ -151,7 +153,7 @@ class CountingPolicyTest : public testing::Test {
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker,
       const base::Closure& done,
       scoped_ptr<Action::ActionVector> results) {
-    checker.Run(results.Pass());
+    checker.Run(std::move(results));
     done.Run();
   }
 
@@ -549,7 +551,7 @@ TEST_F(CountingPolicyTest, Construct) {
                                             base::Time::Now(),
                                             Action::ACTION_API_CALL,
                                             "tabs.testMethod");
-  action->set_args(args.Pass());
+  action->set_args(std::move(args));
   policy->ProcessAction(action);
   policy->Close();
 }
@@ -573,7 +575,7 @@ TEST_F(CountingPolicyTest, LogWithStrippedArguments) {
                                             base::Time::Now(),
                                             Action::ACTION_API_CALL,
                                             "extension.connect");
-  action->set_args(args.Pass());
+  action->set_args(std::move(args));
 
   policy->ProcessAction(action);
   CheckReadData(policy,

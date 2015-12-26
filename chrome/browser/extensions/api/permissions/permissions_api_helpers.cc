@@ -60,7 +60,7 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet& set) {
   for (const URLPattern& pattern : set.explicit_hosts())
     permissions->origins->push_back(pattern.GetAsString());
 
-  return permissions.Pass();
+  return permissions;
 }
 
 scoped_ptr<const PermissionSet> UnpackPermissionSet(

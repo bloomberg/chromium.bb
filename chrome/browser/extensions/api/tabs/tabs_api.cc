@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -1823,7 +1823,7 @@ bool ExecuteCodeInTabFunction::Init() {
   }
 
   execute_tab_id_ = tab_id;
-  details_ = details.Pass();
+  details_ = std::move(details);
   set_host_id(HostID(HostID::EXTENSIONS, extension()->id()));
   return true;
 }

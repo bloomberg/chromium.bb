@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/data_reduction_proxy/data_reduction_proxy_api.h"
 
+#include <utility>
 #include <vector>
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -52,15 +53,15 @@ void DataReductionProxyGetDataUsageFunction::ReplyWithDataUsage(
         usage->SetString("hostname", site_usage.hostname());
         usage->SetDouble("data_used", site_usage.data_used());
         usage->SetDouble("original_size", site_usage.original_size());
-        site_usage_list->Append(usage.Pass());
+        site_usage_list->Append(std::move(usage));
       }
-      connection_usage_list->Append(site_usage_list.Pass());
+      connection_usage_list->Append(std::move(site_usage_list));
     }
-    data_usage_buckets->Append(connection_usage_list.Pass());
+    data_usage_buckets->Append(std::move(connection_usage_list));
   }
 
   base::DictionaryValue* result = new base::DictionaryValue();
-  result->Set("data_usage_buckets", data_usage_buckets.Pass());
+  result->Set("data_usage_buckets", std::move(data_usage_buckets));
   Respond(OneArgument(result));
 }
 

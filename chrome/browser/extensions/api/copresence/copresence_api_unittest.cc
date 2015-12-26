@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/copresence/copresence_api.h"
+
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "components/copresence/proto/data.pb.h"
@@ -120,8 +123,8 @@ class CopresenceApiUnittest : public ExtensionApiUnittest {
     function->set_extension(extension());
     function->set_browser_context(profile());
     function->set_has_callback(true);
-    test_utils::RunFunction(
-        function.get(), args_list.Pass(), browser(), test_utils::NONE);
+    test_utils::RunFunction(function.get(), std::move(args_list), browser(),
+                            test_utils::NONE);
     return function->GetResultList();
   }
 
@@ -157,10 +160,10 @@ TEST_F(CopresenceApiUnittest, Publish) {
   publish->strategies->only_broadcast.reset(new bool(true));  // Default
 
   scoped_ptr<Operation> operation(new Operation);
-  operation->publish = publish.Pass();
+  operation->publish = std::move(publish);
 
   clear_app_id();
-  EXPECT_TRUE(ExecuteOperation(operation.Pass()));
+  EXPECT_TRUE(ExecuteOperation(std::move(operation)));
   EXPECT_EQ(extension()->id(), app_id_sent());
 
   PublishedMessage message;
@@ -184,10 +187,10 @@ TEST_F(CopresenceApiUnittest, Subscribe) {
   subscribe->strategies->audible.reset(new bool(true));  // Not default
 
   scoped_ptr<Operation> operation(new Operation);
-  operation->subscribe = subscribe.Pass();
+  operation->subscribe = std::move(subscribe);
 
   clear_app_id();
-  EXPECT_TRUE(ExecuteOperation(operation.Pass()));
+  EXPECT_TRUE(ExecuteOperation(std::move(operation)));
   EXPECT_EQ(extension()->id(), app_id_sent());
 
   Subscription subscription;
@@ -281,7 +284,7 @@ TEST_F(CopresenceApiUnittest, BadId) {
   unsubscribe_operation->unsubscribe.reset(new UnsubscribeOperation);
   unsubscribe_operation->unsubscribe->unsubscribe_id = "invalid id";
 
-  EXPECT_FALSE(ExecuteOperation(unsubscribe_operation.Pass()));
+  EXPECT_FALSE(ExecuteOperation(std::move(unsubscribe_operation)));
 }
 
 TEST_F(CopresenceApiUnittest, MultipleOperations) {
@@ -289,7 +292,7 @@ TEST_F(CopresenceApiUnittest, MultipleOperations) {
   multi_operation->publish.reset(CreatePublish("pub"));
   multi_operation->subscribe.reset(CreateSubscribe("sub"));
 
-  EXPECT_FALSE(ExecuteOperation(multi_operation.Pass()));
+  EXPECT_FALSE(ExecuteOperation(std::move(multi_operation)));
 }
 
 }  // namespace extensions

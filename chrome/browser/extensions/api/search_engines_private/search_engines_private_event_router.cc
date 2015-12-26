@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/search_engines_private/search_engines_private_event_router.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -99,10 +100,11 @@ void SearchEnginesPrivateEventRouter::OnTemplateURLServiceChanged() {
 
   scoped_ptr<base::ListValue> args(
       search_engines_private::OnSearchEnginesChanged::Create(engines));
-  scoped_ptr<Event> extension_event(new Event(
-      events::SEARCH_ENGINES_PRIVATE_ON_SEARCH_ENGINES_CHANGED,
-      search_engines_private::OnSearchEnginesChanged::kEventName, args.Pass()));
-  EventRouter::Get(context_)->BroadcastEvent(extension_event.Pass());
+  scoped_ptr<Event> extension_event(
+      new Event(events::SEARCH_ENGINES_PRIVATE_ON_SEARCH_ENGINES_CHANGED,
+                search_engines_private::OnSearchEnginesChanged::kEventName,
+                std::move(args)));
+  EventRouter::Get(context_)->BroadcastEvent(std::move(extension_event));
 }
 
 void SearchEnginesPrivateEventRouter::

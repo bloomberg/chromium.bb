@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
@@ -29,7 +31,7 @@ class IsSameServiceName {
 
 DnsSdRegistry::ServiceTypeData::ServiceTypeData(
     scoped_ptr<DnsSdDeviceLister> lister)
-    : ref_count(1), lister_(lister.Pass()) {}
+    : ref_count(1), lister_(std::move(lister)) {}
 
 DnsSdRegistry::ServiceTypeData::~ServiceTypeData() {}
 
@@ -157,7 +159,7 @@ void DnsSdRegistry::RegisterDnsSdListener(const std::string& service_type) {
       this, service_type, service_discovery_client_.get()));
   dns_sd_device_lister->Discover(false);
   linked_ptr<ServiceTypeData> service_type_data(
-      new ServiceTypeData(dns_sd_device_lister.Pass()));
+      new ServiceTypeData(std::move(dns_sd_device_lister)));
   service_data_map_[service_type] = service_type_data;
   DispatchApiEvent(service_type);
 }

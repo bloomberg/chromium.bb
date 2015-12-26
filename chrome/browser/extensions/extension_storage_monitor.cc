@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_storage_monitor.h"
 
 #include <map>
+#include <utility>
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -447,7 +448,8 @@ void ExtensionStorageMonitor::OnImageLoaded(const std::string& extension_id,
           base::Bind(&ExtensionStorageMonitor::OnNotificationButtonClick,
                      weak_ptr_factory_.GetWeakPtr(), extension_id))));
   notification->SetSystemPriority();
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
 
   notified_extension_ids_.insert(extension_id);
 }

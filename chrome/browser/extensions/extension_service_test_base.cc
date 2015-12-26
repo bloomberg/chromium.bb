@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_service_test_base.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -57,7 +59,7 @@ scoped_ptr<TestingProfile> BuildTestingProfile(
     scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
     chrome::RegisterUserProfilePrefs(registry.get());
-    profile_builder.SetPrefService(prefs.Pass());
+    profile_builder.SetPrefService(std::move(prefs));
   }
 
   if (params.profile_is_supervised)

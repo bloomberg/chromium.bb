@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -92,11 +94,11 @@ void FeedbackPrivateAPI::RequestFeedback(
 
     scoped_ptr<Event> event(new Event(
         events::FEEDBACK_PRIVATE_ON_FEEDBACK_REQUESTED,
-        feedback_private::OnFeedbackRequested::kEventName, args.Pass()));
+        feedback_private::OnFeedbackRequested::kEventName, std::move(args)));
     event->restrict_to_browser_context = browser_context_;
 
     EventRouter::Get(browser_context_)
-        ->DispatchEventToExtension(kFeedbackExtensionId, event.Pass());
+        ->DispatchEventToExtension(kFeedbackExtensionId, std::move(event));
   }
 }
 
@@ -216,7 +218,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
          it != sys_info->end(); ++it)
       (*sys_logs.get())[it->get()->key] = it->get()->value;
   }
-  feedback_data->SetAndCompressSystemInfo(sys_logs.Pass());
+  feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
 
   FeedbackService* service =
       FeedbackPrivateAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
@@ -226,7 +228,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
     scoped_ptr<std::string> histograms(new std::string);
     *histograms = base::StatisticsRecorder::ToJSON(std::string());
     if (!histograms->empty())
-      feedback_data->SetAndCompressHistograms(histograms.Pass());
+      feedback_data->SetAndCompressHistograms(std::move(histograms));
   }
 
   service->SendFeedback(

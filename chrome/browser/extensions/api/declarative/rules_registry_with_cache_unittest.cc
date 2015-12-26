@@ -255,14 +255,14 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
 
   scoped_ptr<base::ListValue> value(new base::ListValue);
   value->AppendBoolean(true);
-  cache_delegate->WriteToStorage(extension1_->id(), value.Pass());
+  cache_delegate->WriteToStorage(extension1_->id(), std::move(value));
   EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(write_count + 1, store->write_count());
   write_count = store->write_count();
 
   value.reset(new base::ListValue);
-  cache_delegate->WriteToStorage(extension1_->id(), value.Pass());
+  cache_delegate->WriteToStorage(extension1_->id(), std::move(value));
   EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
   base::RunLoop().RunUntilIdle();
   // No rules currently, but previously there were, so we expect a write.
@@ -270,7 +270,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   write_count = store->write_count();
 
   value.reset(new base::ListValue);
-  cache_delegate->WriteToStorage(extension1_->id(), value.Pass());
+  cache_delegate->WriteToStorage(extension1_->id(), std::move(value));
   EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(write_count, store->write_count());

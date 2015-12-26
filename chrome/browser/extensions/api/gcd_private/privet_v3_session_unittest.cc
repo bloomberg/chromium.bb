@@ -90,7 +90,7 @@ class PrivetV3SessionTest : public testing::Test {
         new net::HttpResponseHeaders("");
     headers->AddHeader("Content-Type: application/json");
     fetcher->set_response_headers(headers);
-    return fetcher.Pass();
+    return fetcher;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_action_storage_manager.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -184,7 +185,7 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
       std::string size_string = base::IntToString(size);
       icon_value->SetString(size_string, BitmapToString(rep.sk_bitmap()));
     }
-    dict->Set(kIconStorageKey, icon_value.Pass());
+    dict->Set(kIconStorageKey, std::move(icon_value));
   }
   return dict;
 }
@@ -246,8 +247,7 @@ void ExtensionActionStorageManager::WriteToStorage(
     scoped_ptr<base::DictionaryValue> defaults =
         DefaultsToValue(extension_action);
     store->SetExtensionValue(extension_action->extension_id(),
-                             kBrowserActionStorageKey,
-                             defaults.Pass());
+                             kBrowserActionStorageKey, std::move(defaults));
   }
 }
 

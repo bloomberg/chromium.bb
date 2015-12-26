@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_migrator.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -32,7 +34,7 @@ void ExtensionMigrator::StartLoading() {
         ExternalProviderImpl::kExternalUpdateUrl,
         extension_urls::GetWebstoreUpdateUrl().spec());
 
-    prefs_->SetWithoutPathExpansion(new_id_, entry.Pass());
+    prefs_->SetWithoutPathExpansion(new_id_, std::move(entry));
   }
 
   LoadFinished();

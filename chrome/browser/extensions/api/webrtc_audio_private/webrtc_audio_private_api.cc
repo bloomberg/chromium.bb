@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
@@ -93,8 +95,8 @@ void WebrtcAudioPrivateEventService::SignalEvent() {
         extension->permissions_data()->HasAPIPermission("webrtcAudioPrivate")) {
       scoped_ptr<Event> event(
           new Event(events::WEBRTC_AUDIO_PRIVATE_ON_SINKS_CHANGED, kEventName,
-                    make_scoped_ptr(new base::ListValue()).Pass()));
-      router->DispatchEventToExtension(extension_id, event.Pass());
+                    make_scoped_ptr(new base::ListValue())));
+      router->DispatchEventToExtension(extension_id, std::move(event));
     }
   }
 }

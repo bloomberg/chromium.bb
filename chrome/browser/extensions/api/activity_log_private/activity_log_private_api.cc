@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
@@ -92,9 +93,9 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
   value->Append(activity_arg->ToValue().release());
   scoped_ptr<Event> event(new Event(
       events::ACTIVITY_LOG_PRIVATE_ON_EXTENSION_ACTIVITY,
-      activity_log_private::OnExtensionActivity::kEventName, value.Pass()));
+      activity_log_private::OnExtensionActivity::kEventName, std::move(value)));
   event->restrict_to_browser_context = browser_context_;
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
 bool ActivityLogPrivateGetExtensionActivitiesFunction::RunAsync() {

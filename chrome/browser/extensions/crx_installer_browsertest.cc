@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
@@ -235,12 +236,10 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     scoped_ptr<base::DictionaryValue> parsed_manifest(
         file_util::LoadManifest(ext_path, &error));
     if (!parsed_manifest.get() || !error.empty())
-      return result.Pass();
+      return result;
 
     return WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-        browser()->profile(),
-        id,
-        parsed_manifest.Pass(),
+        browser()->profile(), id, std::move(parsed_manifest),
         strict_manifest_checks);
   }
 
@@ -250,7 +249,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
     scoped_refptr<CrxInstaller> installer(
-        CrxInstaller::Create(service, prompt.Pass(), approval));
+        CrxInstaller::Create(service, std::move(prompt), approval));
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
     installer->InstallCrx(crx_path);

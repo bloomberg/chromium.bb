@@ -270,7 +270,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
     manifest->SetString("options_page", "options_page.html");
     scoped_refptr<const Extension> extension =
         ExtensionBuilder()
-            .SetManifest(manifest.Pass())
+            .SetManifest(std::move(manifest))
             .SetID(crx_file::id_util::GenerateId("component_opts"))
             .SetLocation(Manifest::COMPONENT)
             .Build();

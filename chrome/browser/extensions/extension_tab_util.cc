@@ -401,7 +401,7 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetBoolean(keys::kPinnedKey,
                      tab_strip && tab_strip->IsTabPinned(tab_index));
   result->SetBoolean(keys::kAudibleKey, contents->WasRecentlyAudible());
-  result->Set(keys::kMutedInfoKey, CreateMutedInfo(contents).Pass());
+  result->Set(keys::kMutedInfoKey, CreateMutedInfo(contents));
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
   result->SetInteger(keys::kWidthKey,

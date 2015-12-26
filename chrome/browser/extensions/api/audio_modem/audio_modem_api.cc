@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "chrome/browser/extensions/api/audio_modem/audio_modem_api.h"
 
+#include <stdint.h>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -17,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
-#include "chrome/browser/extensions/api/audio_modem/audio_modem_api.h"
 #include "chrome/common/extensions/api/audio_modem.h"
 #include "extensions/browser/event_router.h"
 
@@ -111,8 +112,8 @@ AudioModemAPI::AudioModemAPI(
     scoped_ptr<audio_modem::WhispernetClient> whispernet_client,
     scoped_ptr<audio_modem::Modem> modem)
     : browser_context_(context),
-      whispernet_client_(whispernet_client.Pass()),
-      modem_(modem.Pass()),
+      whispernet_client_(std::move(whispernet_client)),
+      modem_(std::move(modem)),
       init_failed_(false) {
   // We own these objects, so these callbacks will not outlive us.
   whispernet_client_->Initialize(

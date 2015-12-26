@@ -43,10 +43,11 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
   }
   scoped_ptr<base::DictionaryValue> manifest = builder.Build();
 
-  return ExtensionBuilder().SetManifest(manifest.Pass())
-                           .AddFlags(Extension::FROM_WEBSTORE)
-                           .SetID(id)
-                           .Build();
+  return ExtensionBuilder()
+      .SetManifest(std::move(manifest))
+      .AddFlags(Extension::FROM_WEBSTORE)
+      .SetID(id)
+      .Build();
 }
 
 }  // namespace
@@ -135,7 +136,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
           .Build();
   scoped_refptr<Extension> shared_module =
       ExtensionBuilder()
-          .SetManifest(manifest.Pass())
+          .SetManifest(std::move(manifest))
           .AddFlags(Extension::FROM_WEBSTORE)
           .SetID(crx_file::id_util::GenerateId("shared_module"))
           .Build();
@@ -176,7 +177,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
           .Build();
   scoped_refptr<Extension> shared_module_1 =
       ExtensionBuilder()
-          .SetManifest(manifest_1.Pass())
+          .SetManifest(std::move(manifest_1))
           .AddFlags(Extension::FROM_WEBSTORE)
           .SetID(crx_file::id_util::GenerateId("shared_module_1"))
           .Build();
@@ -193,7 +194,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
           .Build();
   scoped_refptr<Extension> shared_module_2 =
       ExtensionBuilder()
-          .SetManifest(manifest_2.Pass())
+          .SetManifest(std::move(manifest_2))
           .AddFlags(Extension::FROM_WEBSTORE)
           .SetID(crx_file::id_util::GenerateId("shared_module_2"))
           .Build();
@@ -257,7 +258,7 @@ TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
           .Build();
   scoped_refptr<Extension> shared_module =
       ExtensionBuilder()
-          .SetManifest(manifest.Pass())
+          .SetManifest(std::move(manifest))
           .AddFlags(Extension::FROM_WEBSTORE)
           .SetID(crx_file::id_util::GenerateId("shared_module"))
           .Build();

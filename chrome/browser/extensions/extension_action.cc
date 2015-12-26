@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -289,7 +290,7 @@ bool ExtensionAction::HasIcon(int tab_id) const {
 
 void ExtensionAction::SetDefaultIconForTest(
     scoped_ptr<ExtensionIconSet> default_icon) {
-  default_icon_ = default_icon.Pass();
+  default_icon_ = std::move(default_icon);
 }
 
 void ExtensionAction::Populate(const extensions::Extension& extension,

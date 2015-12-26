@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/history/history_api.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -71,7 +73,7 @@ scoped_ptr<HistoryItem> GetHistoryItem(const history::URLRow& row) {
   history_item->typed_count.reset(new int(row.typed_count()));
   history_item->visit_count.reset(new int(row.visit_count()));
 
-  return history_item.Pass();
+  return history_item;
 }
 
 scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
@@ -124,7 +126,7 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
 
   visit_item->transition = transition;
 
-  return visit_item.Pass();
+  return visit_item;
 }
 
 }  // namespace
@@ -147,7 +149,7 @@ void HistoryEventRouter::OnURLVisited(history::HistoryService* history_service,
   scoped_ptr<HistoryItem> history_item = GetHistoryItem(row);
   scoped_ptr<base::ListValue> args = OnVisited::Create(*history_item);
   DispatchEvent(profile_, events::HISTORY_ON_VISITED,
-                api::history::OnVisited::kEventName, args.Pass());
+                api::history::OnVisited::kEventName, std::move(args));
 }
 
 void HistoryEventRouter::OnURLsDeleted(history::HistoryService* history_service,
@@ -165,7 +167,7 @@ void HistoryEventRouter::OnURLsDeleted(history::HistoryService* history_service,
 
   scoped_ptr<base::ListValue> args = OnVisitRemoved::Create(removed);
   DispatchEvent(profile_, events::HISTORY_ON_VISIT_REMOVED,
-                api::history::OnVisitRemoved::kEventName, args.Pass());
+                api::history::OnVisitRemoved::kEventName, std::move(args));
 }
 
 void HistoryEventRouter::DispatchEvent(Profile* profile,
@@ -174,9 +176,9 @@ void HistoryEventRouter::DispatchEvent(Profile* profile,
                                        scoped_ptr<base::ListValue> event_args) {
   if (profile && EventRouter::Get(profile)) {
     scoped_ptr<Event> event(
-        new Event(histogram_value, event_name, event_args.Pass()));
+        new Event(histogram_value, event_name, std::move(event_args)));
     event->restrict_to_browser_context = profile;
-    EventRouter::Get(profile)->BroadcastEvent(event.Pass());
+    EventRouter::Get(profile)->BroadcastEvent(std::move(event));
   }
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/external_pref_loader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -86,7 +88,7 @@ scoped_ptr<base::DictionaryValue> ExtractExtensionPrefs(
   }
 
   scoped_ptr<base::DictionaryValue> ext_dictionary =
-      base::DictionaryValue::From(extensions.Pass());
+      base::DictionaryValue::From(std::move(extensions));
   if (ext_dictionary) {
     return ext_dictionary;
   }

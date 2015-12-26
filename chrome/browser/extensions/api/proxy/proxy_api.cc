@@ -6,6 +6,8 @@
 
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
 
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,13 +47,13 @@ void ProxyEventRouter::OnProxyError(
   args->Append(dict);
 
   if (profile) {
-    event_router->DispatchEventToRenderers(events::PROXY_ON_PROXY_ERROR,
-                                           keys::kProxyEventOnProxyError,
-                                           args.Pass(), profile, true, GURL());
+    event_router->DispatchEventToRenderers(
+        events::PROXY_ON_PROXY_ERROR, keys::kProxyEventOnProxyError,
+        std::move(args), profile, true, GURL());
   } else {
     event_router->BroadcastEventToRenderers(events::PROXY_ON_PROXY_ERROR,
                                             keys::kProxyEventOnProxyError,
-                                            args.Pass(), GURL());
+                                            std::move(args), GURL());
   }
 }
 
@@ -77,13 +79,13 @@ void ProxyEventRouter::OnPACScriptError(
   args->Append(dict);
 
   if (profile) {
-    event_router->DispatchEventToRenderers(events::PROXY_ON_PROXY_ERROR,
-                                           keys::kProxyEventOnProxyError,
-                                           args.Pass(), profile, true, GURL());
+    event_router->DispatchEventToRenderers(
+        events::PROXY_ON_PROXY_ERROR, keys::kProxyEventOnProxyError,
+        std::move(args), profile, true, GURL());
   } else {
     event_router->BroadcastEventToRenderers(events::PROXY_ON_PROXY_ERROR,
                                             keys::kProxyEventOnProxyError,
-                                            args.Pass(), GURL());
+                                            std::move(args), GURL());
   }
 }
 

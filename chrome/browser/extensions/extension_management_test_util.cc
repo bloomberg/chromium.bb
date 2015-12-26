@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_management_test_util.h"
 
 #include <string>
+#include <utility>
 
 #include "components/crx_file/id_util.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
@@ -216,7 +217,7 @@ void ExtensionManagementPrefUpdaterBase::SetPref(base::DictionaryValue* pref) {
 
 scoped_ptr<base::DictionaryValue>
 ExtensionManagementPrefUpdaterBase::TakePref() {
-  return pref_.Pass();
+  return std::move(pref_);
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearList(const std::string& path) {
@@ -265,7 +266,7 @@ ExtensionManagementPolicyUpdater::~ExtensionManagementPolicyUpdater() {
       .Set(policy::key::kExtensionSettings, policy::POLICY_LEVEL_MANDATORY,
            policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
            TakePref().release(), nullptr);
-  provider_->UpdatePolicy(policies_.Pass());
+  provider_->UpdatePolicy(std::move(policies_));
 }
 
 }  // namespace extensions

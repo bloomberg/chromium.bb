@@ -6,6 +6,7 @@
 
 #include <bitset>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -119,7 +120,7 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
     ExtensionService* service,
     scoped_ptr<ExtensionInstallPrompt> install_ui,
     const Extension* extension)
-    : install_ui_(install_ui.Pass()),
+    : install_ui_(std::move(install_ui)),
       service_(service),
       extension_(extension) {
   AddRef();  // Balanced in Proceed or Abort.
@@ -511,7 +512,8 @@ void ShowExtensionDisabledDialog(ExtensionService* service,
   scoped_ptr<ExtensionInstallPrompt> install_ui(
       new ExtensionInstallPrompt(web_contents));
   // This object manages its own lifetime.
-  new ExtensionDisabledDialogDelegate(service, install_ui.Pass(), extension);
+  new ExtensionDisabledDialogDelegate(service, std::move(install_ui),
+                                      extension);
 }
 
 }  // namespace extensions

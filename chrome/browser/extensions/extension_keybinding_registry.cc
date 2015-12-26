@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -120,12 +122,12 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::StringValue(command));
 
-  scoped_ptr<Event> event(
-      new Event(events::COMMANDS_ON_COMMAND, kOnCommandEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::COMMANDS_ON_COMMAND,
+                                    kOnCommandEventName, std::move(args)));
   event->restrict_to_browser_context = browser_context_;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 bool ExtensionKeybindingRegistry::IsAcceleratorRegistered(

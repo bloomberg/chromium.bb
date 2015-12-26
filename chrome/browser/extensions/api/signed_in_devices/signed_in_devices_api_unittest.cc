@@ -60,7 +60,7 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
       list.push_back(CloneDeviceInfo(*iter));
     }
 
-    return list.Pass();
+    return list;
   }
 
   void AddObserver(Observer* observer) override { NOTREACHED(); }

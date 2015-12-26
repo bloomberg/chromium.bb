@@ -191,11 +191,12 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
           .Build();
   scoped_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder().SetManifest(manifest.Pass())
-                        .SetLocation(Manifest::UNPACKED)
-                        .SetPath(data_dir())
-                        .SetID(id)
-                        .Build();
+      ExtensionBuilder()
+          .SetManifest(std::move(manifest))
+          .SetLocation(Manifest::UNPACKED)
+          .SetPath(data_dir())
+          .SetID(id)
+          .Build();
   service()->AddExtension(extension.get());
   ErrorConsole* error_console = ErrorConsole::Get(profile());
   error_console->ReportError(
@@ -271,10 +272,11 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   manifest_copy->SetString("update_url",
                            "https://clients2.google.com/service/update2/crx");
   id = crx_file::id_util::GenerateId("beta");
-  extension = ExtensionBuilder().SetManifest(manifest_copy.Pass())
-                                .SetLocation(Manifest::EXTERNAL_PREF)
-                                .SetID(id)
-                                .Build();
+  extension = ExtensionBuilder()
+                  .SetManifest(std::move(manifest_copy))
+                  .SetLocation(Manifest::EXTERNAL_PREF)
+                  .SetID(id)
+                  .Build();
   service()->AddExtension(extension.get());
   info = GenerateExtensionInfo(extension->id());
   EXPECT_EQ(developer::LOCATION_THIRD_PARTY, info->location);

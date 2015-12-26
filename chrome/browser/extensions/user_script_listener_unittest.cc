@@ -175,7 +175,7 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
     if (!defer)
       request->Start();
 
-    return request.Pass();
+    return request;
   }
 
   void LoadTestExtension() {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/storage/setting_sync_data.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "sync/api/sync_data.h"
@@ -30,14 +32,13 @@ SettingSyncData::SettingSyncData(syncer::SyncChange::SyncChangeType change_type,
     : change_type_(change_type),
       extension_id_(extension_id),
       key_(key),
-      value_(value.Pass()) {
-}
+      value_(std::move(value)) {}
 
 SettingSyncData::~SettingSyncData() {}
 
 scoped_ptr<base::Value> SettingSyncData::PassValue() {
   DCHECK(value_) << "value has already been Pass()ed";
-  return value_.Pass();
+  return std::move(value_);
 }
 
 void SettingSyncData::ExtractSyncData(const syncer::SyncData& sync_data) {

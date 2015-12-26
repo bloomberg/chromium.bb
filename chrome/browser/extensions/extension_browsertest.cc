@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -496,7 +496,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
          browser->tab_strip_model()->GetActiveWebContents()));
     }
     scoped_refptr<extensions::CrxInstaller> installer(
-        extensions::CrxInstaller::Create(service, install_ui.Pass()));
+        extensions::CrxInstaller::Create(service, std::move(install_ui)));
     installer->set_expected_id(id);
     installer->set_creation_flags(creation_flags);
     installer->set_install_source(install_source);

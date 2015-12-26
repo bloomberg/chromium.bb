@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -264,8 +265,8 @@ void BookmarkEventRouter::DispatchEvent(
     scoped_ptr<base::ListValue> event_args) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
-    event_router->BroadcastEvent(make_scoped_ptr(
-        new extensions::Event(histogram_value, event_name, event_args.Pass())));
+    event_router->BroadcastEvent(make_scoped_ptr(new extensions::Event(
+        histogram_value, event_name, std::move(event_args))));
   }
 }
 

@@ -256,7 +256,7 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetCrosSettingsPref(
   pref_object->value.reset(value->DeepCopy());
 #endif
 
-  return pref_object.Pass();
+  return pref_object;
 }
 
 scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
@@ -302,7 +302,7 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicySource::POLICY_SOURCE_USER_POLICY;
     pref_object->policy_enforcement =
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
-    return pref_object.Pass();
+    return pref_object;
   }
   if (pref && pref->IsRecommended()) {
     pref_object->policy_source =
@@ -311,7 +311,7 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_RECOMMENDED;
     pref_object->recommended_value.reset(
         pref->GetRecommendedValue()->DeepCopy());
-    return pref_object.Pass();
+    return pref_object;
   }
 
 #if defined(OS_CHROMEOS)
@@ -343,16 +343,16 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
           settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
       pref_object->extension_id.reset(new std::string(extension_id));
       pref_object->policy_source_name.reset(new std::string(extension->name()));
-      return pref_object.Pass();
+      return pref_object;
     }
   }
   if (pref && (!pref->IsUserModifiable() || IsPrefSupervisorControlled(name))) {
     // TODO(stevenjb): Investigate whether either of these should be badged.
     pref_object->read_only.reset(new bool(true));
-    return pref_object.Pass();
+    return pref_object;
   }
 
-  return pref_object.Pass();
+  return pref_object;
 }
 
 PrefsUtil::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,

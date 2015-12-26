@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/strings/string_split.h"
@@ -57,7 +58,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
   http_response->AddCustomHeader("Location", redirect_target);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
@@ -79,7 +80,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(header_value);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
@@ -100,7 +101,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
            cookie_value, "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
     http_response->AddCustomHeader("Set-Cookie", cookie);
 
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
@@ -131,7 +132,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
       new net::test_server::BasicHttpResponse);
   http_response->set_code(net::HTTP_OK);
   http_response->AddCustomHeader(header_name, header_value);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 };  // namespace

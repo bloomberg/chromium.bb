@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -307,11 +308,11 @@ void ExtensionActionAPI::DispatchEventToExtension(
     return;
 
   scoped_ptr<Event> event(
-      new Event(histogram_value, event_name, event_args.Pass()));
+      new Event(histogram_value, event_name, std::move(event_args)));
   event->restrict_to_browser_context = context;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
-      ->DispatchEventToExtension(extension_id, event.Pass());
+      ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void ExtensionActionAPI::ExtensionActionExecuted(
@@ -342,7 +343,7 @@ void ExtensionActionAPI::ExtensionActionExecuted(
 
     DispatchEventToExtension(web_contents->GetBrowserContext(),
                              extension_action.extension_id(), histogram_value,
-                             event_name, args.Pass());
+                             event_name, std::move(args));
   }
 }
 

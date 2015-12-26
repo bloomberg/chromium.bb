@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
@@ -71,7 +73,7 @@ void WebstoreDataFetcher::OnJsonParseFailure(
 void WebstoreDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   CHECK_EQ(webstore_data_url_fetcher_.get(), source);
 
-  scoped_ptr<net::URLFetcher> fetcher(webstore_data_url_fetcher_.Pass());
+  scoped_ptr<net::URLFetcher> fetcher(std::move(webstore_data_url_fetcher_));
 
   if (!fetcher->GetStatus().is_success() ||
       fetcher->GetResponseCode() != 200) {

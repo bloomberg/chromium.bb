@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/prefs/pref_value_map.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
@@ -37,7 +39,7 @@ void NativeMessagingHostListPolicyHandler::ApplyPolicySettings(
   scoped_ptr<base::ListValue> list;
   policy::PolicyErrorMap errors;
   if (CheckAndGetList(policies, &errors, &list) && list)
-    prefs->SetValue(pref_path(), list.Pass());
+    prefs->SetValue(pref_path(), std::move(list));
 }
 
 const char* NativeMessagingHostListPolicyHandler::pref_path() const {
@@ -84,7 +86,7 @@ bool NativeMessagingHostListPolicyHandler::CheckAndGetList(
   }
 
   if (names)
-    *names = filtered_list.Pass();
+    *names = std::move(filtered_list);
 
   return true;
 }

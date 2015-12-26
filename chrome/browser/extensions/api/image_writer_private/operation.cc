@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 
+#include <utility>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -310,16 +312,10 @@ void Operation::GetMD5SumOfFile(
     }
   }
 
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&Operation::MD5Chunk,
-                                     this,
-                                     Passed(file.Pass()),
-                                     0,
-                                     file_size,
-                                     progress_offset,
-                                     progress_scale,
-                                     callback));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&Operation::MD5Chunk, this, Passed(std::move(file)), 0,
+                 file_size, progress_offset, progress_scale, callback));
 }
 
 void Operation::MD5Chunk(
@@ -354,16 +350,11 @@ void Operation::MD5Chunk(
           progress_offset;
       SetProgress(percent_curr);
 
-      BrowserThread::PostTask(BrowserThread::FILE,
-                              FROM_HERE,
-                              base::Bind(&Operation::MD5Chunk,
-                                         this,
-                                         Passed(file.Pass()),
-                                         bytes_processed + len,
-                                         bytes_total,
-                                         progress_offset,
-                                         progress_scale,
-                                         callback));
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&Operation::MD5Chunk, this, Passed(std::move(file)),
+                     bytes_processed + len, bytes_total, progress_offset,
+                     progress_scale, callback));
       // Skip closing the file.
       return;
     } else {

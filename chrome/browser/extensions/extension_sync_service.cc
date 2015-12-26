@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_sync_service.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
@@ -190,7 +192,7 @@ syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
       << "Got " << type << " ModelType";
 
   SyncBundle* bundle = GetSyncBundle(type);
-  bundle->StartSyncing(sync_processor.Pass());
+  bundle->StartSyncing(std::move(sync_processor));
 
   // Apply the initial sync data, filtering out any items where we have more
   // recent local changes. Also tell the SyncBundle the extension IDs.

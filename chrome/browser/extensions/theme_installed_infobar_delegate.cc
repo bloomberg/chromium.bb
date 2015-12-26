@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -70,7 +70,7 @@ void ThemeInstalledInfoBarDelegate::Create(
       // and keep the first install info bar, so that they can easily undo to
       // get back the previous theme.
       if (theme_infobar->theme_id_ != new_theme->id()) {
-        infobar_service->ReplaceInfoBar(old_infobar, new_infobar.Pass());
+        infobar_service->ReplaceInfoBar(old_infobar, std::move(new_infobar));
         theme_service->OnInfobarDisplayed();
       }
       return;
@@ -78,7 +78,7 @@ void ThemeInstalledInfoBarDelegate::Create(
   }
 
   // No previous theme infobar, so add this.
-  infobar_service->AddInfoBar(new_infobar.Pass());
+  infobar_service->AddInfoBar(std::move(new_infobar));
   theme_service->OnInfobarDisplayed();
 }
 

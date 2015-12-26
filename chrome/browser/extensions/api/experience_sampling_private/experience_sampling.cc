@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -83,12 +85,13 @@ void ExperienceSamplingEvent::CreateUserDecisionEvent(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(ui_element_.ToValue().release());
   args->Append(decision.ToValue().release());
-  scoped_ptr<Event> event(new Event(
-      events::EXPERIENCE_SAMPLING_PRIVATE_ON_DECISION,
-      api::experience_sampling_private::OnDecision::kEventName, args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::EXPERIENCE_SAMPLING_PRIVATE_ON_DECISION,
+                api::experience_sampling_private::OnDecision::kEventName,
+                std::move(args)));
   EventRouter* router = EventRouter::Get(browser_context_);
   if (router)
-    router->BroadcastEvent(event.Pass());
+    router->BroadcastEvent(std::move(event));
 }
 
 void ExperienceSamplingEvent::CreateOnDisplayedEvent() {
@@ -98,12 +101,13 @@ void ExperienceSamplingEvent::CreateOnDisplayedEvent() {
     return;
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(ui_element_.ToValue().release());
-  scoped_ptr<Event> event(new Event(
-      events::EXPERIENCE_SAMPLING_PRIVATE_ON_DISPLAYED,
-      api::experience_sampling_private::OnDisplayed::kEventName, args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::EXPERIENCE_SAMPLING_PRIVATE_ON_DISPLAYED,
+                api::experience_sampling_private::OnDisplayed::kEventName,
+                std::move(args)));
   EventRouter* router = EventRouter::Get(browser_context_);
   if (router)
-    router->BroadcastEvent(event.Pass());
+    router->BroadcastEvent(std::move(event));
 }
 
 }  // namespace extensions

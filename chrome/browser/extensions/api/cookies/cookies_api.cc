@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -178,7 +179,7 @@ void CookiesEventRouter::CookieChanged(
   GURL cookie_domain =
       cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);
   DispatchEvent(profile, events::COOKIES_ON_CHANGED,
-                cookies::OnChanged::kEventName, args.Pass(), cookie_domain);
+                cookies::OnChanged::kEventName, std::move(args), cookie_domain);
 }
 
 void CookiesEventRouter::DispatchEvent(content::BrowserContext* context,
@@ -190,10 +191,10 @@ void CookiesEventRouter::DispatchEvent(content::BrowserContext* context,
   if (!router)
     return;
   scoped_ptr<Event> event(
-      new Event(histogram_value, event_name, event_args.Pass()));
+      new Event(histogram_value, event_name, std::move(event_args)));
   event->restrict_to_browser_context = context;
   event->event_url = cookie_domain;
-  router->BroadcastEvent(event.Pass());
+  router->BroadcastEvent(std::move(event));
 }
 
 CookiesGetFunction::CookiesGetFunction() {

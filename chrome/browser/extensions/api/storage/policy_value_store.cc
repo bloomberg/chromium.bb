@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_map.h"
@@ -31,7 +33,7 @@ PolicyValueStore::PolicyValueStore(
     scoped_ptr<ValueStore> delegate)
     : extension_id_(extension_id),
       observers_(observers),
-      delegate_(delegate.Pass()) {}
+      delegate_(std::move(delegate)) {}
 
 PolicyValueStore::~PolicyValueStore() {}
 

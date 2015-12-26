@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting_api.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
@@ -158,8 +160,8 @@ void ChromeDirectSettingAPI::OnPrefChanged(
         events::HistogramValue histogram_value =
             events::TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE;
         scoped_ptr<Event> event(
-            new Event(histogram_value, event_name, args_copy.Pass()));
-        router->DispatchEventToExtension(extension_id, event.Pass());
+            new Event(histogram_value, event_name, std::move(args_copy)));
+        router->DispatchEventToExtension(extension_id, std::move(event));
       }
     }
   }

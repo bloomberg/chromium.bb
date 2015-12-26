@@ -232,7 +232,7 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::GetSpellcheckWords() const {
   const std::set<std::string>& words = dictionary->GetWords();
   for (const std::string& word : words)
     word_list->AppendString(word);
-  return word_list.Pass();
+  return word_list;
 }
 
 LanguageSettingsPrivateAddSpellcheckWordFunction::

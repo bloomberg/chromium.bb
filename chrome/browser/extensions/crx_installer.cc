@@ -6,6 +6,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -96,7 +97,7 @@ scoped_refptr<CrxInstaller> CrxInstaller::CreateSilent(
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
     scoped_ptr<ExtensionInstallPrompt> client) {
-  return new CrxInstaller(frontend->AsWeakPtr(), client.Pass(), NULL);
+  return new CrxInstaller(frontend->AsWeakPtr(), std::move(client), NULL);
 }
 
 // static
@@ -104,7 +105,7 @@ scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* service,
     scoped_ptr<ExtensionInstallPrompt> client,
     const WebstoreInstaller::Approval* approval) {
-  return new CrxInstaller(service->AsWeakPtr(), client.Pass(), approval);
+  return new CrxInstaller(service->AsWeakPtr(), std::move(client), approval);
 }
 
 CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,

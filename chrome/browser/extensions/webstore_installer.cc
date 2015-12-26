@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <limits>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -252,7 +252,7 @@ scoped_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateWithInstallPrompt(Profile* profile) {
   scoped_ptr<Approval> result(new Approval());
   result->profile = profile;
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<WebstoreInstaller::Approval>
@@ -262,7 +262,7 @@ WebstoreInstaller::Approval::CreateForSharedModule(Profile* profile) {
   result->skip_install_dialog = true;
   result->skip_post_install_ui = true;
   result->manifest_check_level = MANIFEST_CHECK_LEVEL_NONE;
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<WebstoreInstaller::Approval>
@@ -281,7 +281,7 @@ WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
   result->skip_install_dialog = true;
   result->manifest_check_level = strict_manifest_check ?
     MANIFEST_CHECK_LEVEL_STRICT : MANIFEST_CHECK_LEVEL_LOOSE;
-  return result.Pass();
+  return result;
 }
 
 WebstoreInstaller::Approval::~Approval() {}
@@ -680,7 +680,7 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted,
                                   this,
                                   extension_id));
-  download_manager->DownloadUrl(params.Pass());
+  download_manager->DownloadUrl(std::move(params));
 }
 
 void WebstoreInstaller::UpdateDownloadProgress() {

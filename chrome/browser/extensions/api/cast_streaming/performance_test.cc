@@ -594,17 +594,13 @@ class CastV2PerformanceTest
       net::IPEndPoint proxy_end_point = GetFreeLocalPort();
       if (HasFlag(kProxyWifi)) {
         udp_proxy = media::cast::test::UDPProxy::Create(
-            proxy_end_point,
-            receiver_end_point,
-            media::cast::test::WifiNetwork().Pass(),
-            media::cast::test::WifiNetwork().Pass(),
+            proxy_end_point, receiver_end_point,
+            media::cast::test::WifiNetwork(), media::cast::test::WifiNetwork(),
             NULL);
       } else if (HasFlag(kProxyBad)) {
         udp_proxy = media::cast::test::UDPProxy::Create(
-            proxy_end_point,
-            receiver_end_point,
-            media::cast::test::BadNetwork().Pass(),
-            media::cast::test::BadNetwork().Pass(),
+            proxy_end_point, receiver_end_point,
+            media::cast::test::BadNetwork(), media::cast::test::BadNetwork(),
             NULL);
       }
       receiver_end_point = proxy_end_point;

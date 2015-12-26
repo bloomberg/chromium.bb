@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -43,7 +45,7 @@ NativeMessagePort::Core::Core(
     scoped_ptr<NativeMessageHost> host,
     base::WeakPtr<NativeMessagePort> port,
     scoped_refptr<base::SingleThreadTaskRunner> message_service_task_runner)
-    : host_(host.Pass()),
+    : host_(std::move(host)),
       port_(port),
       message_service_task_runner_(message_service_task_runner),
       host_task_runner_(host_->task_runner()) {
@@ -90,7 +92,7 @@ NativeMessagePort::NativeMessagePort(
       host_task_runner_(native_message_host->task_runner()),
       port_id_(port_id),
       weak_factory_(this) {
-  core_.reset(new Core(native_message_host.Pass(),
+  core_.reset(new Core(std::move(native_message_host),
                        weak_factory_.GetWeakPtr(),
                        base::ThreadTaskRunnerHandle::Get()));
 }

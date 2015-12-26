@@ -19,7 +19,7 @@ scoped_ptr<base::ListValue> CharacteristicPropertiesToValue(
        iter != properties.end();
        ++iter)
     property_list->Append(new base::StringValue(ToString(*iter)));
-  return property_list.Pass();
+  return property_list;
 }
 
 }  // namespace
@@ -33,7 +33,7 @@ scoped_ptr<base::DictionaryValue> CharacteristicToValue(Characteristic* from) {
   scoped_ptr<base::DictionaryValue> to = from->ToValue();
   to->SetWithoutPathExpansion(
       "properties", CharacteristicPropertiesToValue(properties).release());
-  return to.Pass();
+  return to;
 }
 
 scoped_ptr<base::DictionaryValue> DescriptorToValue(Descriptor* from) {
@@ -48,7 +48,7 @@ scoped_ptr<base::DictionaryValue> DescriptorToValue(Descriptor* from) {
   DCHECK(chrc_value);
   chrc_value->SetWithoutPathExpansion(
       "properties", CharacteristicPropertiesToValue(properties).release());
-  return to.Pass();
+  return to;
 }
 
 }  // namespace bluetooth_low_energy

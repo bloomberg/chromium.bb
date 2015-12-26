@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -88,9 +90,9 @@ void WebAuthFlow::Start() {
   else
     args->AppendString("silent");
 
-  scoped_ptr<Event> event(
-      new Event(events::IDENTITY_PRIVATE_ON_WEB_FLOW_REQUEST,
-                identity_private::OnWebFlowRequest::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::IDENTITY_PRIVATE_ON_WEB_FLOW_REQUEST,
+      identity_private::OnWebFlowRequest::kEventName, std::move(args)));
   event->restrict_to_browser_context = profile_;
   ExtensionSystem* system = ExtensionSystem::Get(profile_);
 
@@ -103,7 +105,7 @@ void WebAuthFlow::Start() {
   }
 
   EventRouter::Get(profile_)->DispatchEventWithLazyListener(
-      extension_misc::kIdentityApiUiAppId, event.Pass());
+      extension_misc::kIdentityApiUiAppId, std::move(event));
 }
 
 void WebAuthFlow::DetachDelegateAndDelete() {

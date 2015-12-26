@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/resources_private/resources_private_api.h"
 
 #include <string>
+#include <utility>
 
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -79,7 +80,7 @@ ExtensionFunction::ResponseAction ResourcesPrivateGetStringsFunction::Run() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
-  return RespondNow(OneArgument(dict.Pass()));
+  return RespondNow(OneArgument(std::move(dict)));
 }
 
 }  // namespace extensions

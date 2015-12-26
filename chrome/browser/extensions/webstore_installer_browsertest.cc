@@ -41,8 +41,12 @@ class TestWebstoreInstaller : public WebstoreInstaller {
                         const std::string& id,
                         scoped_ptr<Approval> approval,
                         InstallSource source)
-      : WebstoreInstaller(
-          profile, delegate, web_contents, id, approval.Pass(), source) {}
+      : WebstoreInstaller(profile,
+                          delegate,
+                          web_contents,
+                          id,
+                          std::move(approval),
+                          source) {}
 
   void SetDeletedClosure(const base::Closure& cb) { deleted_closure_ = cb; }
 
@@ -129,22 +133,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, WebstoreInstall) {
   // Create an approval.
   scoped_ptr<WebstoreInstaller::Approval> approval =
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          browser()->profile(),
-          kTestExtensionId,
-          manifest.Pass(),
-          false);
+          browser()->profile(), kTestExtensionId, std::move(manifest), false);
 
   // Create and run a WebstoreInstaller.
   base::RunLoop run_loop;
   SetDoneClosure(run_loop.QuitClosure());
-  TestWebstoreInstaller* installer =
-      new TestWebstoreInstaller(
-          browser()->profile(),
-          this,
-          active_web_contents,
-          kTestExtensionId,
-          approval.Pass(),
-          WebstoreInstaller::INSTALL_SOURCE_OTHER);
+  TestWebstoreInstaller* installer = new TestWebstoreInstaller(
+      browser()->profile(), this, active_web_contents, kTestExtensionId,
+      std::move(approval), WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
   run_loop.Run();
 
@@ -178,22 +174,18 @@ IN_PROC_BROWSER_TEST_F(WebstoreInstallerBrowserTest, SimultaneousInstall) {
   // Create and run a WebstoreInstaller.
   base::RunLoop run_loop;
   SetDoneClosure(run_loop.QuitClosure());
-  scoped_refptr<TestWebstoreInstaller> installer =
-      new TestWebstoreInstaller(
-          browser()->profile(),
-          this,
-          active_web_contents,
-          kTestExtensionId,
-          approval.Pass(),
-          WebstoreInstaller::INSTALL_SOURCE_OTHER);
+  scoped_refptr<TestWebstoreInstaller> installer = new TestWebstoreInstaller(
+      browser()->profile(), this, active_web_contents, kTestExtensionId,
+      std::move(approval), WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
 
   // Simulate another mechanism installing the same extension.
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder().SetLocation(Manifest::INTERNAL)
-                      .SetID(kTestExtensionId)
-                      .SetManifest(manifest.Pass())
-                      .Build();
+      ExtensionBuilder()
+          .SetLocation(Manifest::INTERNAL)
+          .SetID(kTestExtensionId)
+          .SetManifest(std::move(manifest))
+          .Build();
   extension_service()->OnExtensionInstalled(extension.get(),
                                             syncer::StringOrdinal(),
                                             0);

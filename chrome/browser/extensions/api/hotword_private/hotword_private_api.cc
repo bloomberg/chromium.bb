@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 
 #include <string>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
@@ -142,8 +143,9 @@ void HotwordPrivateEventService::SignalEvent(
   if (!router || !router->HasEventListener(event_name))
     return;
 
-  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
-  router->BroadcastEvent(event.Pass());
+  scoped_ptr<Event> event(
+      new Event(histogram_value, event_name, std::move(args)));
+  router->BroadcastEvent(std::move(event));
 }
 
 bool HotwordPrivateSetEnabledFunction::RunSync() {

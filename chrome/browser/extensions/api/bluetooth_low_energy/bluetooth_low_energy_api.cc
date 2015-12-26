@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -935,21 +935,20 @@ bool BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
                     ADVERTISEMENT_TYPE_PERIPHERAL));
 
   advertisement_data->set_service_uuids(
-      params->advertisement.service_uuids.Pass());
+      std::move(params->advertisement.service_uuids));
   advertisement_data->set_solicit_uuids(
-      params->advertisement.solicit_uuids.Pass());
+      std::move(params->advertisement.solicit_uuids));
   if (params->advertisement.manufacturer_data) {
     advertisement_data->set_manufacturer_data(
-        CreateManufacturerData(params->advertisement.manufacturer_data.get())
-            .Pass());
+        CreateManufacturerData(params->advertisement.manufacturer_data.get()));
   }
   if (params->advertisement.service_data) {
     advertisement_data->set_service_data(
-        CreateServiceData(params->advertisement.service_data.get()).Pass());
+        CreateServiceData(params->advertisement.service_data.get()));
   }
 
   event_router->adapter()->RegisterAdvertisement(
-      advertisement_data.Pass(),
+      std::move(advertisement_data),
       base::Bind(
           &BluetoothLowEnergyRegisterAdvertisementFunction::SuccessCallback,
           this),

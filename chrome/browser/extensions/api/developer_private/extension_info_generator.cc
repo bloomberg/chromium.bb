@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -546,12 +548,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
     // used by the url is 48x48).
     gfx::Size max_size(128, 128);
     image_loader_->LoadImageAsync(
-        &extension,
-        icon,
-        max_size,
+        &extension, icon, max_size,
         base::Bind(&ExtensionInfoGenerator::OnImageLoaded,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(info.Pass())));
+                   weak_factory_.GetWeakPtr(), base::Passed(std::move(info))));
   }
 }
 

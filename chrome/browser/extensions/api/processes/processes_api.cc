@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/json/json_writer.h"
@@ -315,7 +316,8 @@ void ProcessesEventRouter::OnItemsAdded(int start, int length) {
 
   args->Append(process);
 
-  DispatchEvent(events::PROCESSES_ON_CREATED, keys::kOnCreated, args.Pass());
+  DispatchEvent(events::PROCESSES_ON_CREATED, keys::kOnCreated,
+                std::move(args));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -363,7 +365,8 @@ void ProcessesEventRouter::OnItemsChanged(int start, int length) {
 
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(processes);
-    DispatchEvent(events::PROCESSES_ON_UPDATED, keys::kOnUpdated, args.Pass());
+    DispatchEvent(events::PROCESSES_ON_UPDATED, keys::kOnUpdated,
+                  std::move(args));
   }
 
   if (updated_memory) {
@@ -383,7 +386,7 @@ void ProcessesEventRouter::OnItemsChanged(int start, int length) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(processes);
     DispatchEvent(events::PROCESSES_ON_UPDATED_WITH_MEMORY,
-                  keys::kOnUpdatedWithMemory, args.Pass());
+                  keys::kOnUpdatedWithMemory, std::move(args));
   }
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
@@ -412,7 +415,7 @@ void ProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
   // Third arg: The exit code for the process.
   args->Append(new base::FundamentalValue(0));
 
-  DispatchEvent(events::PROCESSES_ON_EXITED, keys::kOnExited, args.Pass());
+  DispatchEvent(events::PROCESSES_ON_EXITED, keys::kOnExited, std::move(args));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -442,7 +445,7 @@ void ProcessesEventRouter::ProcessHangEvent(content::RenderWidgetHost* widget) {
   args->Append(process);
 
   DispatchEvent(events::PROCESSES_ON_UNRESPONSIVE, keys::kOnUnresponsive,
-                args.Pass());
+                std::move(args));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -462,7 +465,7 @@ void ProcessesEventRouter::ProcessClosedEvent(
   // Third arg: The exit code for the process.
   args->Append(new base::FundamentalValue(details->exit_code));
 
-  DispatchEvent(events::PROCESSES_ON_EXITED, keys::kOnExited, args.Pass());
+  DispatchEvent(events::PROCESSES_ON_EXITED, keys::kOnExited, std::move(args));
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -473,8 +476,8 @@ void ProcessesEventRouter::DispatchEvent(
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     scoped_ptr<Event> event(
-        new Event(histogram_value, event_name, event_args.Pass()));
-    event_router->BroadcastEvent(event.Pass());
+        new Event(histogram_value, event_name, std::move(event_args)));
+    event_router->BroadcastEvent(std::move(event));
   }
 }
 

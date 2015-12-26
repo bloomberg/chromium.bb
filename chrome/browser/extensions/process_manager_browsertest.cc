@@ -5,6 +5,7 @@
 #include "extensions/browser/process_manager.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -133,7 +134,7 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
 
     const Extension* extension = LoadExtension(dir->unpacked_path());
     EXPECT_TRUE(extension);
-    temp_dirs_.push_back(dir.Pass());
+    temp_dirs_.push_back(std::move(dir));
     return extension;
   }
 

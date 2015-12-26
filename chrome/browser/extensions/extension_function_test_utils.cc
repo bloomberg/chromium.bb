@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
@@ -165,7 +166,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
   scoped_ptr<base::ListValue> parsed_args(ParseList(args));
   EXPECT_TRUE(parsed_args.get())
       << "Could not parse extension function arguments: " << args;
-  return RunFunction(function, parsed_args.Pass(), browser, flags);
+  return RunFunction(function, std::move(parsed_args), browser, flags);
 }
 
 bool RunFunction(UIThreadExtensionFunction* function,
@@ -179,10 +180,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
   // TODO(yoz): The cast is a hack; these flags should be defined in
   // only one place.  See crbug.com/394840.
   return extensions::api_test_utils::RunFunction(
-      function,
-      args.Pass(),
-      browser->profile(),
-      dispatcher.Pass(),
+      function, std::move(args), browser->profile(), std::move(dispatcher),
       static_cast<extensions::api_test_utils::RunFunctionFlags>(flags));
 }
 

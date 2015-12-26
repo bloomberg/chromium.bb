@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -73,7 +75,7 @@ void FeedbackService::AttachedFileCallback(scoped_ptr<std::string> data,
                                            int64_t /* total_blob_length */) {
   feedback_data_->set_attached_file_uuid(std::string());
   if (data)
-    feedback_data_->AttachAndCompressFileData(data.Pass());
+    feedback_data_->AttachAndCompressFileData(std::move(data));
 
   CompleteSendFeedback();
 }
@@ -82,7 +84,7 @@ void FeedbackService::ScreenshotCallback(scoped_ptr<std::string> data,
                                          int64_t /* total_blob_length */) {
   feedback_data_->set_screenshot_uuid(std::string());
   if (data)
-    feedback_data_->set_image(data.Pass());
+    feedback_data_->set_image(std::move(data));
 
   CompleteSendFeedback();
 }

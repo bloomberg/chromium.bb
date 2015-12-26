@@ -532,7 +532,7 @@ void DialServiceImpl::BindAndAddSocket(const IPAddressNumber& bind_ip_address) {
   scoped_ptr<DialServiceImpl::DialSocket> dial_socket(CreateDialSocket());
   if (dial_socket->CreateAndBindSocket(bind_ip_address, net_log_,
                                        net_log_source_))
-    dial_sockets_.push_back(dial_socket.Pass());
+    dial_sockets_.push_back(std::move(dial_socket));
 }
 
 scoped_ptr<DialServiceImpl::DialSocket> DialServiceImpl::CreateDialSocket() {
@@ -541,7 +541,7 @@ scoped_ptr<DialServiceImpl::DialSocket> DialServiceImpl::CreateDialSocket() {
           base::Bind(&DialServiceImpl::NotifyOnDiscoveryRequest, AsWeakPtr()),
           base::Bind(&DialServiceImpl::NotifyOnDeviceDiscovered, AsWeakPtr()),
           base::Bind(&DialServiceImpl::NotifyOnError, AsWeakPtr())));
-  return dial_socket.Pass();
+  return dial_socket;
 }
 
 void DialServiceImpl::SendOneRequest() {

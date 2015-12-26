@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
 
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
@@ -87,9 +89,9 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = HandleResult(delegate_->Set(options, key, value));
   if (!result->status().ok())
-    return result.Pass();
+    return result;
   SyncResultIfEnabled(result);
-  return result.Pass();
+  return result;
 }
 
 ValueStore::WriteResult SyncableSettingsStorage::Set(
@@ -97,9 +99,9 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = HandleResult(delegate_->Set(options, values));
   if (!result->status().ok())
-    return result.Pass();
+    return result;
   SyncResultIfEnabled(result);
-  return result.Pass();
+  return result;
 }
 
 ValueStore::WriteResult SyncableSettingsStorage::Remove(
@@ -107,9 +109,9 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = HandleResult(delegate_->Remove(key));
   if (!result->status().ok())
-    return result.Pass();
+    return result;
   SyncResultIfEnabled(result);
-  return result.Pass();
+  return result;
 }
 
 ValueStore::WriteResult SyncableSettingsStorage::Remove(
@@ -117,18 +119,18 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = HandleResult(delegate_->Remove(keys));
   if (!result->status().ok())
-    return result.Pass();
+    return result;
   SyncResultIfEnabled(result);
-  return result.Pass();
+  return result;
 }
 
 ValueStore::WriteResult SyncableSettingsStorage::Clear() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = HandleResult(delegate_->Clear());
   if (!result->status().ok())
-    return result.Pass();
+    return result;
   SyncResultIfEnabled(result);
-  return result.Pass();
+  return result;
 }
 
 void SyncableSettingsStorage::SyncResultIfEnabled(
@@ -157,7 +159,7 @@ syncer::SyncError SyncableSettingsStorage::StartSyncing(
   DCHECK(sync_state);
   DCHECK(!sync_processor_.get());
 
-  sync_processor_ = sync_processor.Pass();
+  sync_processor_ = std::move(sync_processor);
   sync_processor_->Init(*sync_state);
 
   ReadResult maybe_settings = delegate_->Get();
@@ -171,9 +173,10 @@ syncer::SyncError SyncableSettingsStorage::StartSyncing(
 
   scoped_ptr<base::DictionaryValue> current_settings =
       maybe_settings->PassSettings();
-  return sync_state->empty() ? SendLocalSettingsToSync(current_settings.Pass())
-                             : OverwriteLocalSettingsWithSync(
-                                   sync_state.Pass(), current_settings.Pass());
+  return sync_state->empty()
+             ? SendLocalSettingsToSync(std::move(current_settings))
+             : OverwriteLocalSettingsWithSync(std::move(sync_state),
+                                              std::move(current_settings));
 }
 
 syncer::SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
@@ -216,9 +219,9 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
         // Sync and local values are the same, no changes to send.
       } else {
         // Sync value is different, update local setting with new value.
-        changes->push_back(
-            new SettingSyncData(syncer::SyncChange::ACTION_UPDATE,
-                                extension_id_, it.key(), sync_value.Pass()));
+        changes->push_back(new SettingSyncData(
+            syncer::SyncChange::ACTION_UPDATE, extension_id_, it.key(),
+            std::move(sync_value)));
       }
     } else {
       // Not synced, delete local setting.
@@ -235,13 +238,13 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
     std::string key = base::DictionaryValue::Iterator(*sync_state).key();
     scoped_ptr<base::Value> value;
     CHECK(sync_state->RemoveWithoutPathExpansion(key, &value));
-    changes->push_back(new SettingSyncData(syncer::SyncChange::ACTION_ADD,
-                                           extension_id_, key, value.Pass()));
+    changes->push_back(new SettingSyncData(
+        syncer::SyncChange::ACTION_ADD, extension_id_, key, std::move(value)));
   }
 
   if (changes->empty())
     return syncer::SyncError();
-  return ProcessSyncChanges(changes.Pass());
+  return ProcessSyncChanges(std::move(changes));
 }
 
 void SyncableSettingsStorage::StopSyncing() {

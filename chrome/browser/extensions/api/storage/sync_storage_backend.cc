@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/storage/sync_storage_backend.h"
 
+#include <utility>
+
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_processor.h"
@@ -82,7 +84,7 @@ SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
 
   if (sync_processor_.get()) {
     syncer::SyncError error = syncable_storage->StartSyncing(
-        sync_data.Pass(), CreateSettingsSyncProcessor(extension_id).Pass());
+        std::move(sync_data), CreateSettingsSyncProcessor(extension_id));
     if (error.IsSet())
       syncable_storage->StopSyncing();
   }
@@ -172,8 +174,8 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
 
-  sync_processor_ = sync_processor.Pass();
-  sync_error_factory_ = sync_error_factory.Pass();
+  sync_processor_ = std::move(sync_processor);
+  sync_error_factory_ = std::move(sync_error_factory);
 
   // Group the initial sync data by extension id.
   // The raw pointers are safe because ownership of each item is passed to
@@ -201,14 +203,12 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
     auto group = grouped_sync_data.find(extension_id);
     syncer::SyncError error;
     if (group != grouped_sync_data.end()) {
-      error = storage->StartSyncing(
-          make_scoped_ptr(group->second),
-          CreateSettingsSyncProcessor(extension_id).Pass());
+      error = storage->StartSyncing(make_scoped_ptr(group->second),
+                                    CreateSettingsSyncProcessor(extension_id));
       grouped_sync_data.erase(group);
     } else {
-      error = storage->StartSyncing(
-          EmptyDictionaryValue(),
-          CreateSettingsSyncProcessor(extension_id).Pass());
+      error = storage->StartSyncing(EmptyDictionaryValue(),
+                                    CreateSettingsSyncProcessor(extension_id));
     }
 
     if (error.IsSet())
@@ -241,7 +241,7 @@ syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
     SettingSyncDataList*& group = grouped_sync_data[data->extension_id()];
     if (!group)
       group = new SettingSyncDataList();
-    group->push_back(data.Pass());
+    group->push_back(std::move(data));
   }
 
   // Create any storage areas that don't exist yet but have sync data.

@@ -135,7 +135,7 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
 
   sql::Connection* db = GetDatabaseConnection();
   if (!db) {
-    return actions.Pass();
+    return actions;
   }
 
   // Build up the query based on which parameters were specified.
@@ -220,7 +220,7 @@ scoped_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
     actions->push_back(action);
   }
 
-  return actions.Pass();
+  return actions;
 }
 
 void FullStreamUIPolicy::DoRemoveActions(

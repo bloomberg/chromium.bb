@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/tabs/app_window_controller.h"
+
+#include <utility>
+
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/app_base_window.h"
-#include "chrome/browser/extensions/api/tabs/app_window_controller.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
@@ -22,7 +25,7 @@ AppWindowController::AppWindowController(AppWindow* app_window,
                                          Profile* profile)
     : WindowController(base_window.get(), profile),
       app_window_(app_window),
-      base_window_(base_window.Pass()) {
+      base_window_(std::move(base_window)) {
   WindowControllerList::GetInstance()->AddExtensionWindow(this);
 }
 

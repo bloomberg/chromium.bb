@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -63,7 +64,7 @@ BrowserContextKeyedAPIFactory<MDnsAPI>* MDnsAPI::GetFactoryInstance() {
 
 void MDnsAPI::SetDnsSdRegistryForTesting(
     scoped_ptr<DnsSdRegistry> dns_sd_registry) {
-  dns_sd_registry_ = dns_sd_registry.Pass();
+  dns_sd_registry_ = std::move(dns_sd_registry);
   if (dns_sd_registry_.get())
     dns_sd_registry_.get()->AddObserver(this);
 }
@@ -174,7 +175,7 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   scoped_ptr<base::ListValue> results = mdns::OnServiceList::Create(args);
   scoped_ptr<Event> event(new Event(events::MDNS_ON_SERVICE_LIST,
                                     mdns::OnServiceList::kEventName,
-                                    results.Pass()));
+                                    std::move(results)));
   event->restrict_to_browser_context = browser_context_;
   event->filter_info.SetServiceType(service_type);
 
@@ -182,7 +183,8 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   // events, modify API to have this event require filters.
   // TODO(reddaly): If event isn't on whitelist, ensure it does not get
   // broadcast to extensions.
-  extensions::EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  extensions::EventRouter::Get(browser_context_)
+      ->BroadcastEvent(std::move(event));
 }
 
 const extensions::EventListenerMap::ListenerList& MDnsAPI::GetEventListeners() {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
@@ -37,7 +39,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequest(
     http_response->AddCustomHeader("Location", "/test_throttle");
     if (set_cache_header_redirect_page)
       http_response->AddCustomHeader("Cache-Control", "max-age=3600");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   if (base::StartsWith(request.relative_url, "/test_throttle",
@@ -49,7 +51,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequest(
     http_response->set_content_type("text/plain");
     if (set_cache_header_test_throttle_page)
       http_response->AddCustomHeader("Cache-Control", "max-age=3600");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // Unhandled requests result in the Embedded test server sending a 404.
@@ -99,7 +101,7 @@ class ExtensionRequestLimitingThrottleBrowserTest
           // Don't use initial delay unless the last request was an error.
           false,
       });
-      manager->SetBackoffPolicyForTests(policy.Pass());
+      manager->SetBackoffPolicyForTests(std::move(policy));
     }
     // Requests to 127.0.0.1 bypass throttling, so set up a host resolver rule
     // to use a fake domain.

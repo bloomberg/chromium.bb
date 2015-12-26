@@ -34,7 +34,7 @@ scoped_ptr<extensions::MenuItem::Id> GetParentId(
     parent_id->string_uid = *property.parent_id->as_string;
   else
     NOTREACHED();
-  return parent_id.Pass();
+  return parent_id;
 }
 
 }  // namespace

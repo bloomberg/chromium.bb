@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -136,8 +138,9 @@ void ScreenlockPrivateEventRouter::DispatchEvent(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   if (arg)
     args->Append(arg);
-  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  scoped_ptr<Event> event(
+      new Event(histogram_value, event_name, std::move(args)));
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
 static base::LazyInstance<
@@ -167,8 +170,8 @@ bool ScreenlockPrivateEventRouter::OnAuthAttempted(
 
   scoped_ptr<Event> event(
       new Event(events::SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED,
-                screenlock::OnAuthAttempted::kEventName, args.Pass()));
-  router->BroadcastEvent(event.Pass());
+                screenlock::OnAuthAttempted::kEventName, std::move(args)));
+  router->BroadcastEvent(std::move(event));
   return true;
 }
 

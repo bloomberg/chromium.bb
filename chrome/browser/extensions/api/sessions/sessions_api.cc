@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/i18n/rtl.h"
@@ -108,7 +108,7 @@ scoped_ptr<tabs::Tab> CreateTabModelHelper(
   // foreground).
   tab_struct->active = index == selected_index;
   ExtensionTabUtil::ScrubTabForExtension(extension, tab_struct.get());
-  return tab_struct.Pass();
+  return tab_struct;
 }
 
 scoped_ptr<windows::Window> CreateWindowModelHelper(
@@ -117,14 +117,14 @@ scoped_ptr<windows::Window> CreateWindowModelHelper(
     const windows::WindowType& type,
     const windows::WindowState& state) {
   scoped_ptr<windows::Window> window_struct(new windows::Window);
-  window_struct->tabs = tabs.Pass();
+  window_struct->tabs = std::move(tabs);
   window_struct->session_id.reset(new std::string(session_id));
   window_struct->incognito = false;
   window_struct->always_on_top = false;
   window_struct->focused = false;
   window_struct->type = type;
   window_struct->state = state;
-  return window_struct.Pass();
+  return window_struct;
 }
 
 scoped_ptr<api::sessions::Session> CreateSessionModelHelper(
@@ -134,12 +134,12 @@ scoped_ptr<api::sessions::Session> CreateSessionModelHelper(
   scoped_ptr<api::sessions::Session> session_struct(new api::sessions::Session);
   session_struct->last_modified = last_modified;
   if (tab)
-    session_struct->tab = tab.Pass();
+    session_struct->tab = std::move(tab);
   else if (window)
-    session_struct->window = window.Pass();
+    session_struct->window = std::move(window);
   else
     NOTREACHED();
-  return session_struct.Pass();
+  return session_struct;
 }
 
 bool is_tab_entry(const sessions::TabRestoreService::Entry* entry) {
@@ -177,7 +177,7 @@ SessionsGetRecentlyClosedFunction::CreateWindowModel(
                        window.selected_tab_index).release()));
   }
 
-  return CreateWindowModelHelper(tabs.Pass(), base::IntToString(session_id),
+  return CreateWindowModelHelper(std::move(tabs), base::IntToString(session_id),
                                  windows::WINDOW_TYPE_NORMAL,
                                  windows::WINDOW_STATE_NORMAL);
 }
@@ -201,9 +201,8 @@ SessionsGetRecentlyClosedFunction::CreateSessionModel(
     default:
       NOTREACHED();
   }
-  return CreateSessionModelHelper(entry->timestamp.ToTimeT(),
-                                  tab.Pass(),
-                                  window.Pass());
+  return CreateSessionModelHelper(entry->timestamp.ToTimeT(), std::move(tab),
+                                  std::move(window));
 }
 
 bool SessionsGetRecentlyClosedFunction::RunSync() {
@@ -327,7 +326,7 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
   }
 
   scoped_ptr<windows::Window> window_struct(
-      CreateWindowModelHelper(tabs.Pass(), session_id, type, state));
+      CreateWindowModelHelper(std::move(tabs), session_id, type, state));
   // TODO(dwankri): Dig deeper to resolve bounds not being optional, so closed
   // windows in GetRecentlyClosed can have set values in Window helper.
   window_struct->left.reset(new int(window.bounds.x()));
@@ -335,7 +334,7 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
   window_struct->width.reset(new int(window.bounds.width()));
   window_struct->height.reset(new int(window.bounds.height()));
 
-  return window_struct.Pass();
+  return window_struct;
 }
 
 scoped_ptr<api::sessions::Session>
@@ -346,9 +345,9 @@ SessionsGetDevicesFunction::CreateSessionModel(
   // There is a chance that after pruning uninteresting tabs the window will be
   // empty.
   return !window_model ? scoped_ptr<api::sessions::Session>()
-      : CreateSessionModelHelper(window.timestamp.ToTimeT(),
-                                 scoped_ptr<tabs::Tab>(),
-                                 window_model.Pass());
+                       : CreateSessionModelHelper(window.timestamp.ToTimeT(),
+                                                  scoped_ptr<tabs::Tab>(),
+                                                  std::move(window_model));
 }
 
 scoped_ptr<api::sessions::Device> SessionsGetDevicesFunction::CreateDeviceModel(
@@ -374,7 +373,7 @@ scoped_ptr<api::sessions::Device> SessionsGetDevicesFunction::CreateDeviceModel(
       device_struct->sessions.push_back(make_linked_ptr(
           session_model.release()));
   }
-  return device_struct.Pass();
+  return device_struct;
 }
 
 bool SessionsGetDevicesFunction::RunSync() {
@@ -423,10 +422,9 @@ void SessionsRestoreFunction::SetResultRestoredTab(
   scoped_ptr<base::DictionaryValue> tab_value(
       ExtensionTabUtil::CreateTabValue(contents, extension()));
   scoped_ptr<tabs::Tab> tab(tabs::Tab::FromValue(*tab_value));
-  scoped_ptr<api::sessions::Session> restored_session(CreateSessionModelHelper(
-      base::Time::Now().ToTimeT(),
-      tab.Pass(),
-      scoped_ptr<windows::Window>()));
+  scoped_ptr<api::sessions::Session> restored_session(
+      CreateSessionModelHelper(base::Time::Now().ToTimeT(), std::move(tab),
+                               scoped_ptr<windows::Window>()));
   results_ = Restore::Results::Create(*restored_session);
 }
 
@@ -441,9 +439,7 @@ bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
   scoped_ptr<windows::Window> window(windows::Window::FromValue(
       *window_value));
   results_ = Restore::Results::Create(*CreateSessionModelHelper(
-      base::Time::Now().ToTimeT(),
-      scoped_ptr<tabs::Tab>(),
-      window.Pass()));
+      base::Time::Now().ToTimeT(), scoped_ptr<tabs::Tab>(), std::move(window)));
   return true;
 }
 
@@ -632,7 +628,7 @@ void SessionsEventRouter::TabRestoreServiceChanged(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   EventRouter::Get(profile_)->BroadcastEvent(make_scoped_ptr(
       new Event(events::SESSIONS_ON_CHANGED,
-                api::sessions::OnChanged::kEventName, args.Pass())));
+                api::sessions::OnChanged::kEventName, std::move(args))));
 }
 
 void SessionsEventRouter::TabRestoreServiceDestroyed(

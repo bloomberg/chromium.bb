@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/developer_private/show_permissions_dialog_helper.h"
 
+#include <utility>
+
 #include "apps/app_load_service.h"
 #include "apps/saved_files_service.h"
 #include "base/metrics/histogram.h"
@@ -81,7 +83,7 @@ void ShowPermissionsDialogHelper::ShowPermissionsDialog(
           ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT));
   prompt->set_retained_files(retained_file_paths);
   prompt->set_retained_device_messages(retained_device_messages);
-  prompt_->ShowDialog(this, extension, nullptr, prompt.Pass(),
+  prompt_->ShowDialog(this, extension, nullptr, std::move(prompt),
                       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
 

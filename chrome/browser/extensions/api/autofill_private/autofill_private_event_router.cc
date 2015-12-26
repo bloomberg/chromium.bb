@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/autofill_private/autofill_private_event_router.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -83,20 +84,22 @@ void AutofillPrivateEventRouter::OnPersonalDataChanged() {
   scoped_ptr<base::ListValue> args(
       api::autofill_private::OnAddressListChanged::Create(*addressList)
       .release());
-  scoped_ptr<Event> extension_event(new Event(
-      events::AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED,
-      api::autofill_private::OnAddressListChanged::kEventName, args.Pass()));
-  event_router_->BroadcastEvent(extension_event.Pass());
+  scoped_ptr<Event> extension_event(
+      new Event(events::AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED,
+                api::autofill_private::OnAddressListChanged::kEventName,
+                std::move(args)));
+  event_router_->BroadcastEvent(std::move(extension_event));
 
   scoped_ptr<CreditCardEntryList> creditCardList =
       extensions::autofill_util::GenerateCreditCardList(*personal_data_);
   args.reset(
       api::autofill_private::OnCreditCardListChanged::Create(*creditCardList)
       .release());
-  extension_event.reset(new Event(
-      events::AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED,
-      api::autofill_private::OnCreditCardListChanged::kEventName, args.Pass()));
-  event_router_->BroadcastEvent(extension_event.Pass());
+  extension_event.reset(
+      new Event(events::AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED,
+                api::autofill_private::OnCreditCardListChanged::kEventName,
+                std::move(args)));
+  event_router_->BroadcastEvent(std::move(extension_event));
 }
 
 void AutofillPrivateEventRouter::StartOrStopListeningForChanges() {

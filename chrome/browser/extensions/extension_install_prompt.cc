@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_install_prompt.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -656,7 +658,7 @@ void ExtensionInstallPrompt::ShowDialog(
     const SkBitmap* icon,
     scoped_ptr<Prompt> prompt,
     const ShowDialogCallback& show_dialog_callback) {
-  ShowDialog(delegate, extension, icon, prompt.Pass(), nullptr,
+  ShowDialog(delegate, extension, icon, std::move(prompt), nullptr,
              show_dialog_callback);
 }
 
@@ -673,8 +675,8 @@ void ExtensionInstallPrompt::ShowDialog(
   delegate_ = delegate;
   if (icon && !icon->empty())
     SetIcon(icon);
-  prompt_ = prompt.Pass();
-  custom_permissions_ = custom_permissions.Pass();
+  prompt_ = std::move(prompt);
+  custom_permissions_ = std::move(custom_permissions);
   show_dialog_callback_ = show_dialog_callback;
 
   // We special-case themes to not show any confirm UI. Instead they are
@@ -843,7 +845,8 @@ void ExtensionInstallPrompt::ShowConfirmation() {
 
   if (show_dialog_callback_.is_null())
     GetDefaultShowDialogCallback().Run(show_params_.get(), delegate_,
-                                       prompt_.Pass());
+                                       std::move(prompt_));
   else
-    show_dialog_callback_.Run(show_params_.get(), delegate_, prompt_.Pass());
+    show_dialog_callback_.Run(show_params_.get(), delegate_,
+                              std::move(prompt_));
 }

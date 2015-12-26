@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/policy_handlers.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/prefs/pref_value_map.h"
@@ -45,7 +46,7 @@ void ExtensionListPolicyHandler::ApplyPolicySettings(
   scoped_ptr<base::ListValue> list;
   policy::PolicyErrorMap errors;
   if (CheckAndGetList(policies, &errors, &list) && list)
-    prefs->SetValue(pref_path(), list.Pass());
+    prefs->SetValue(pref_path(), std::move(list));
 }
 
 const char* ExtensionListPolicyHandler::pref_path() const {
@@ -94,7 +95,7 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
   }
 
   if (extension_ids)
-    *extension_ids = filtered_list.Pass();
+    *extension_ids = std::move(filtered_list);
 
   return true;
 }
@@ -124,7 +125,7 @@ void ExtensionInstallForcelistPolicyHandler::ApplyPolicySettings(
   if (CheckAndGetValue(policies, NULL, &value) &&
       value &&
       ParseList(value, dict.get(), NULL)) {
-    prefs->SetValue(pref_names::kInstallForceList, dict.Pass());
+    prefs->SetValue(pref_names::kInstallForceList, std::move(dict));
   }
 }
 
@@ -322,7 +323,7 @@ void ExtensionSettingsPolicyHandler::ApplyPolicySettings(
   scoped_ptr<base::Value> policy_value;
   if (!CheckAndGetValue(policies, NULL, &policy_value) || !policy_value)
     return;
-  prefs->SetValue(pref_names::kExtensionManagement, policy_value.Pass());
+  prefs->SetValue(pref_names::kExtensionManagement, std::move(policy_value));
 }
 
 }  // namespace extensions

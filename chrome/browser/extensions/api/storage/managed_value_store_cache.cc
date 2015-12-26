@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -131,7 +133,7 @@ void ManagedValueStoreCache::ExtensionTracker::OnExtensionWillBeInstalled(
     return;
   scoped_ptr<ExtensionSet> added(new ExtensionSet);
   added->Insert(extension);
-  LoadSchemas(added.Pass());
+  LoadSchemas(std::move(added));
 }
 
 void ManagedValueStoreCache::ExtensionTracker::OnExtensionUninstalled(

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/external_install_error.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -336,7 +337,7 @@ void ExternalInstallError::ShowDialog(Browser* browser) {
   install_ui_show_params_.reset(
       new ExtensionInstallPromptShowParams(web_contents));
   ExtensionInstallPrompt::GetDefaultShowDialogCallback().Run(
-      install_ui_show_params_.get(), this, prompt_.Pass());
+      install_ui_show_params_.get(), this, std::move(prompt_));
 }
 
 const Extension* ExternalInstallError::GetExtension() const {
@@ -385,7 +386,7 @@ void ExternalInstallError::OnFetchComplete() {
 
   install_ui_->ShowDialog(this, GetExtension(),
                           nullptr,  // Force a fetch of the icon.
-                          prompt_.Pass(),
+                          std::move(prompt_),
                           base::Bind(&ExternalInstallError::OnDialogReady,
                                      weak_factory_.GetWeakPtr()));
 }
@@ -395,7 +396,7 @@ void ExternalInstallError::OnDialogReady(
     ExtensionInstallPrompt::Delegate* prompt_delegate,
     scoped_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   DCHECK_EQ(this, prompt_delegate);
-  prompt_ = prompt.Pass();
+  prompt_ = std::move(prompt);
 
   if (alert_type_ == BUBBLE_ALERT) {
     global_error_.reset(new ExternalInstallBubbleAlert(this, prompt_.get()));

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/system_private/system_private_api.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
@@ -57,8 +59,8 @@ void DispatchEvent(extensions::events::HistogramValue histogram_value,
     list_args->Append(argument);
   }
   g_browser_process->extension_event_router_forwarder()
-      ->BroadcastEventToRenderers(histogram_value, event_name, list_args.Pass(),
-                                  GURL());
+      ->BroadcastEventToRenderers(histogram_value, event_name,
+                                  std::move(list_args), GURL());
 }
 
 }  // namespace

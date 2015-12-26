@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/permissions_updater.h"
+
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/ref_counted.h"
@@ -12,7 +16,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -47,7 +50,7 @@ scoped_refptr<const Extension> CreateExtensionWithOptionalPermissions(
               .Set("description", "foo")
               .Set("manifest_version", 2)
               .Set("version", "0.1.2.3")
-              .Set("permissions", permissions.Pass())
+              .Set("permissions", std::move(permissions))
               .Set("optional_permissions", std::move(optional_permissions))))
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();

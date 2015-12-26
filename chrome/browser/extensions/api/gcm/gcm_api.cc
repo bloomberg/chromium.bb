@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -219,15 +219,17 @@ void GcmJsEventRouter::OnMessage(const std::string& app_id,
 
   scoped_ptr<Event> event(
       new Event(events::GCM_ON_MESSAGE, api::gcm::OnMessage::kEventName,
-                api::gcm::OnMessage::Create(message_arg).Pass(), profile_));
-  EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
+                api::gcm::OnMessage::Create(message_arg), profile_));
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(app_id, std::move(event));
 }
 
 void GcmJsEventRouter::OnMessagesDeleted(const std::string& app_id) {
   scoped_ptr<Event> event(new Event(
       events::GCM_ON_MESSAGES_DELETED, api::gcm::OnMessagesDeleted::kEventName,
-      api::gcm::OnMessagesDeleted::Create().Pass(), profile_));
-  EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
+      api::gcm::OnMessagesDeleted::Create(), profile_));
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(app_id, std::move(event));
 }
 
 void GcmJsEventRouter::OnSendError(
@@ -240,8 +242,9 @@ void GcmJsEventRouter::OnSendError(
 
   scoped_ptr<Event> event(
       new Event(events::GCM_ON_SEND_ERROR, api::gcm::OnSendError::kEventName,
-                api::gcm::OnSendError::Create(error).Pass(), profile_));
-  EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
+                api::gcm::OnSendError::Create(error), profile_));
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(app_id, std::move(event));
 }
 
 }  // namespace extensions

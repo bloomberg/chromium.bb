@@ -114,7 +114,7 @@ WebstoreInlineInstaller::CreateInstallPrompt() const {
                           show_user_count(),
                           average_rating(),
                           rating_count());
-  return prompt.Pass();
+  return prompt;
 }
 
 bool WebstoreInlineInstaller::ShouldShowPostInstallUI() const {

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
 
 #include <string>
+#include <utility>
 
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -39,7 +40,7 @@ ChromeExtensionDownloaderFactory::CreateForRequestContext(
   downloader->set_ping_enabled_domain("google.com");
   downloader->set_enable_extra_update_metrics(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
-  return downloader.Pass();
+  return downloader;
 }
 
 scoped_ptr<ExtensionDownloader>
@@ -52,6 +53,6 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
       LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
   scoped_ptr<ExtensionDownloader> downloader =
       CreateForRequestContext(profile->GetRequestContext(), delegate);
-  downloader->SetWebstoreIdentityProvider(identity_provider.Pass());
-  return downloader.Pass();
+  downloader->SetWebstoreIdentityProvider(std::move(identity_provider));
+  return downloader;
 }

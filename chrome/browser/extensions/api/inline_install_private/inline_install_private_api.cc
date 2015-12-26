@@ -61,7 +61,7 @@ scoped_ptr<ExtensionInstallPrompt::Prompt> Installer::CreateInstallPrompt()
                           show_user_count(),
                           average_rating(),
                           rating_count());
-  return prompt.Pass();
+  return prompt;
 }
 
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,7 +31,7 @@ scoped_ptr<KeyedService> BuildFakeGCMProfileService(
   scoped_ptr<gcm::FakeGCMProfileService> service(
       new gcm::FakeGCMProfileService(Profile::FromBrowserContext(context)));
   service->SetDriverForTesting(new instance_id::FakeGCMDriverForInstanceID());
-  return service.Pass();
+  return std::move(service);
 }
 
 }  // namespace

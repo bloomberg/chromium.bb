@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/external_provider_impl.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -129,7 +131,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
           extension_misc::kInAppPaymentsSupportAppId,
           test_server_->GetURL(kAppPath).spec().c_str()));
       response->set_content_type("text/xml");
-      return response.Pass();
+      return std::move(response);
     }
     if (url.path() == kAppPath) {
       base::FilePath test_data_dir;
@@ -141,7 +143,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
       scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
       response->set_code(net::HTTP_OK);
       response->set_content(contents);
-      return response.Pass();
+      return std::move(response);
     }
 
     return nullptr;

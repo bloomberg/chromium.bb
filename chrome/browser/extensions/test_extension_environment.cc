@@ -140,7 +140,7 @@ const Extension* TestExtensionEnvironment::MakeExtension(
   scoped_ptr<base::DictionaryValue> manifest =
       MakeExtensionManifest(manifest_extra);
   scoped_refptr<Extension> result =
-      ExtensionBuilder().SetManifest(manifest.Pass()).Build();
+      ExtensionBuilder().SetManifest(std::move(manifest)).Build();
   GetExtensionService()->AddExtension(result.get());
   return result.get();
 }
@@ -151,7 +151,7 @@ const Extension* TestExtensionEnvironment::MakeExtension(
   scoped_ptr<base::DictionaryValue> manifest =
       MakeExtensionManifest(manifest_extra);
   scoped_refptr<Extension> result =
-      ExtensionBuilder().SetManifest(manifest.Pass()).SetID(id).Build();
+      ExtensionBuilder().SetManifest(std::move(manifest)).SetID(id).Build();
   GetExtensionService()->AddExtension(result.get());
   return result.get();
 }
@@ -174,7 +174,7 @@ scoped_ptr<content::WebContents> TestExtensionEnvironment::MakeTab() const {
       content::WebContentsTester::CreateTestWebContents(profile(), NULL));
   // Create a tab id.
   SessionTabHelper::CreateForWebContents(contents.get());
-  return contents.Pass();
+  return contents;
 }
 
 void TestExtensionEnvironment::DeleteProfile() {

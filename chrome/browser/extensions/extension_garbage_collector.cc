@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_garbage_collector.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -236,8 +237,7 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
       ExtensionSystem::Get(context_)->extension_service();
   service->OnGarbageCollectIsolatedStorageStart();
   content::BrowserContext::GarbageCollectStoragePartitions(
-      context_,
-      active_paths.Pass(),
+      context_, std::move(active_paths),
       base::Bind(&ExtensionService::OnGarbageCollectIsolatedStorageFinished,
                  service->AsWeakPtr()));
 }

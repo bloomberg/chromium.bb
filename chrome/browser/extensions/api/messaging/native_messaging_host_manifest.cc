@@ -64,7 +64,7 @@ scoped_ptr<NativeMessagingHostManifest> NativeMessagingHostManifest::Load(
     return scoped_ptr<NativeMessagingHostManifest>();
   }
 
-  return result.Pass();
+  return result;
 }
 
 NativeMessagingHostManifest::NativeMessagingHostManifest() {

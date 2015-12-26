@@ -65,7 +65,7 @@ scoped_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
   EXPECT_EQ("", error);
   EXPECT_FALSE(bad_message);
   CHECK(action_set);
-  return action_set.Pass();
+  return action_set;
 }
 
 }  // namespace

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/test_extension_prefs.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -120,7 +122,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   factory.SetUserPrefsFile(preferences_file_, task_runner_.get());
   factory.set_extension_prefs(
       new ExtensionPrefStore(extension_pref_value_map_.get(), false));
-  pref_service_ = factory.CreateSyncable(pref_registry_.get()).Pass();
+  pref_service_ = factory.CreateSyncable(pref_registry_.get());
   scoped_ptr<ExtensionPrefs> prefs(ExtensionPrefs::Create(
       &profile_,
       pref_service_.get(),
@@ -132,7 +134,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
       // stamp and we can reliably assert the installation order in the tests.
       scoped_ptr<ExtensionPrefs::TimeProvider>(new IncrementalTimeProvider())));
   ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(&profile_,
-                                                              prefs.Pass());
+                                                              std::move(prefs));
   // Hack: After recreating ExtensionPrefs, the AppSorting also needs to be
   // recreated. (ExtensionPrefs is never recreated in non-test code.)
   static_cast<TestExtensionSystem*>(ExtensionSystem::Get(&profile_))

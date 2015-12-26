@@ -145,7 +145,7 @@ scoped_ptr<ExtensionAction> ExtensionActionManager::GetBestFitAction(
   // Populate any missing values from |extension|'s manifest.
   scoped_ptr<ExtensionAction> new_action(new ExtensionAction(
       extension, type, info ? *info : ActionInfo()));
-  return new_action.Pass();
+  return new_action;
 }
 
 ExtensionAction* ExtensionActionManager::GetSystemIndicator(

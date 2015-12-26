@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/values.h"
@@ -327,10 +329,10 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   args->Append(info.ToValue().release());
   scoped_ptr<Event> event(new Event(events::TAB_CAPTURE_ON_STATUS_CHANGED,
                                     tab_capture::OnStatusChanged::kEventName,
-                                    args.Pass()));
+                                    std::move(args)));
   event->restrict_to_browser_context = browser_context_;
 
-  router->DispatchEventToExtension(request->extension_id(), event.Pass());
+  router->DispatchEventToExtension(request->extension_id(), std::move(event));
 }
 
 TabCaptureRegistry::LiveRequest* TabCaptureRegistry::FindRequest(

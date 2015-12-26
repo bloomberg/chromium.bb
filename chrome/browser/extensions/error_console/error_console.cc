@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/error_console/error_console.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -144,7 +145,7 @@ void ErrorConsole::ReportError(scoped_ptr<ExtensionError> error) {
   if (!(mask & (1 << error->type())))
     return;
 
-  const ExtensionError* weak_error = errors_.AddError(error.Pass());
+  const ExtensionError* weak_error = errors_.AddError(std::move(error));
   FOR_EACH_OBSERVER(Observer, observers_, OnErrorAdded(weak_error));
 }
 

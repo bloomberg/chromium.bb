@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -56,9 +57,7 @@ class CryptoTokenPrivateApiTest : public extensions::ExtensionApiUnittest {
     args->AppendString(appId);
 
     extension_function_test_utils::RunFunction(
-        function.get(),
-        args.Pass(),
-        browser(),
+        function.get(), std::move(args), browser(),
         extension_function_test_utils::NONE);
 
     bool result;

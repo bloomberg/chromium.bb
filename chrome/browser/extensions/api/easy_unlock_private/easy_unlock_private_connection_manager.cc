@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
@@ -56,7 +58,7 @@ int EasyUnlockPrivateConnectionManager::AddConnection(
   connection->AddObserver(this);
   extensions_.insert(extension->id());
   EasyUnlockPrivateConnection* api_connection = new EasyUnlockPrivateConnection(
-      persistent, extension->id(), connection.Pass());
+      persistent, extension->id(), std::move(connection));
   int connection_id = GetResourceManager()->Add(api_connection);
   return connection_id;
 }
@@ -113,7 +115,8 @@ void EasyUnlockPrivateConnectionManager::OnConnectionStatusChanged(
       api::easy_unlock_private::OnConnectionStatusChanged::Create(
           0, ToApiConnectionStatus(old_status),
           ToApiConnectionStatus(new_status));
-  DispatchConnectionEvent(event_name, histogram_value, connection, args.Pass());
+  DispatchConnectionEvent(event_name, histogram_value, connection,
+                          std::move(args));
 }
 
 void EasyUnlockPrivateConnectionManager::OnMessageReceived(
@@ -126,7 +129,7 @@ void EasyUnlockPrivateConnectionManager::OnMessageReceived(
   scoped_ptr<base::ListValue> args =
       api::easy_unlock_private::OnDataReceived::Create(0, data);
   DispatchConnectionEvent(event_name, histogram_value, &connection,
-                          args.Pass());
+                          std::move(args));
 }
 
 void EasyUnlockPrivateConnectionManager::OnSendCompleted(
@@ -141,7 +144,7 @@ void EasyUnlockPrivateConnectionManager::OnSendCompleted(
   scoped_ptr<base::ListValue> args =
       api::easy_unlock_private::OnSendCompleted::Create(0, data, success);
   DispatchConnectionEvent(event_name, histogram_value, &connection,
-                          args.Pass());
+                          std::move(args));
 }
 
 void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
@@ -161,9 +164,9 @@ void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
     args_copy->Set(connection_index,
                    make_scoped_ptr(new base::FundamentalValue(connection_id)));
     scoped_ptr<Event> event(
-        new Event(histogram_value, event_name, args_copy.Pass()));
+        new Event(histogram_value, event_name, std::move(args_copy)));
     EventRouter::Get(browser_context_)
-        ->DispatchEventToExtension(extension_id, event.Pass());
+        ->DispatchEventToExtension(extension_id, std::move(event));
   }
 }
 

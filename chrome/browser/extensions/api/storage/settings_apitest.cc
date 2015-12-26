@@ -139,7 +139,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
         policy::POLICY_DOMAIN_EXTENSIONS, kManagedStorageExtensionId));
     policy_map.LoadFrom(&policies, policy::POLICY_LEVEL_MANDATORY,
                         policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD);
-    policy_provider_.UpdatePolicy(bundle.Pass());
+    policy_provider_.UpdatePolicy(std::move(bundle));
   }
 #endif
 

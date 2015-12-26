@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -291,7 +293,7 @@ void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
     const std::string& event_name,
     scoped_ptr<base::ListValue> args) {
   g_browser_process->extension_event_router_forwarder()
-      ->BroadcastEventToRenderers(histogram_value, event_name, args.Pass(),
+      ->BroadcastEventToRenderers(histogram_value, event_name, std::move(args),
                                   GURL());
 }
 
@@ -337,7 +339,7 @@ ChromeExtensionsBrowserClient::GetExtensionWebContentsObserver(
 void ChromeExtensionsBrowserClient::ReportError(
     content::BrowserContext* context,
     scoped_ptr<ExtensionError> error) {
-  ErrorConsole::Get(context)->ReportError(error.Pass());
+  ErrorConsole::Get(context)->ReportError(std::move(error));
 }
 
 void ChromeExtensionsBrowserClient::CleanUpWebView(

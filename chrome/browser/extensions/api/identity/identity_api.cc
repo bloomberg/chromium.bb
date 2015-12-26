@@ -248,9 +248,9 @@ void IdentityAPI::OnAccountSignInChanged(const gaia::AccountIds& ids,
       api::identity::OnSignInChanged::Create(account_info, is_signed_in);
   scoped_ptr<Event> event(new Event(events::IDENTITY_ON_SIGN_IN_CHANGED,
                                     api::identity::OnSignInChanged::kEventName,
-                                    args.Pass(), browser_context_));
+                                    std::move(args), browser_context_));
 
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
 void IdentityAPI::AddShutdownObserver(ShutdownObserver* observer) {

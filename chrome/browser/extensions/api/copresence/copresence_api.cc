@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/copresence/copresence_api.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/prefs/pref_service.h"
@@ -92,7 +94,7 @@ void CopresenceService::set_auth_token(const std::string& app_id,
 
 void CopresenceService::set_manager_for_testing(
     scoped_ptr<copresence::CopresenceManager> manager) {
-  manager_ = manager.Pass();
+  manager_ = std::move(manager);
 }
 
 void CopresenceService::ResetState() {
@@ -152,7 +154,7 @@ void CopresenceService::HandleMessages(
       OnMessagesReceived::Create(subscription_id, api_messages),
       browser_context_));
   EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(app_id, event.Pass());
+      ->DispatchEventToExtension(app_id, std::move(event));
   DVLOG(2) << "Passed " << api_messages.size() << " messages to app \""
            << app_id << "\" for subscription \"" << subscription_id << "\"";
 }
@@ -164,7 +166,7 @@ void CopresenceService::HandleStatusUpdate(
       events::COPRESENCE_ON_STATUS_UPDATED, OnStatusUpdated::kEventName,
       OnStatusUpdated::Create(api::copresence::STATUS_AUDIOFAILED),
       browser_context_));
-  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
   DVLOG(2) << "Sent Audio Failed status update.";
 }
 

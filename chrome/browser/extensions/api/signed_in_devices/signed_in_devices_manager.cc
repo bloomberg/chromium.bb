@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -77,14 +78,15 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
 
   scoped_ptr<base::ListValue> result =
       api::signed_in_devices::OnDeviceInfoChange::Create(args);
-  scoped_ptr<Event> event(new Event(
-      events::SIGNED_IN_DEVICES_ON_DEVICE_INFO_CHANGE,
-      api::signed_in_devices::OnDeviceInfoChange::kEventName, result.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::SIGNED_IN_DEVICES_ON_DEVICE_INFO_CHANGE,
+                api::signed_in_devices::OnDeviceInfoChange::kEventName,
+                std::move(result)));
 
   event->restrict_to_browser_context = profile_;
 
-  EventRouter::Get(profile_)->DispatchEventToExtension(
-      extension_id_, event.Pass());
+  EventRouter::Get(profile_)
+      ->DispatchEventToExtension(extension_id_, std::move(event));
 }
 
 static base::LazyInstance<

@@ -74,7 +74,7 @@ ScopedVector<DeviceInfo> GetAllSignedInDevices(
   extension_prefs->UpdateExtensionPref(extension_id,
                                        kPrefStringForIdMapping,
                                        editable_mapping_dictionary.release());
-  return devices.Pass();
+  return devices;
 }
 
 ScopedVector<DeviceInfo> GetAllSignedInDevices(
@@ -87,7 +87,7 @@ ScopedVector<DeviceInfo> GetAllSignedInDevices(
   DCHECK(device_tracker);
   if (!device_tracker->IsSyncing()) {
     // Devices are not sync'ing.
-    return ScopedVector<DeviceInfo>().Pass();
+    return ScopedVector<DeviceInfo>();
   }
 
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile);
@@ -108,7 +108,7 @@ scoped_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
   scoped_ptr<DeviceInfo> device = GetDeviceInfoForClientId(guid,
                                                            extension_id,
                                                            profile);
-  return device.Pass();
+  return device;
 }
 
 bool SignedInDevicesGetFunction::RunSync() {

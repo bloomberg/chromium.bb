@@ -125,7 +125,7 @@ class TLSSocketTest : public ::testing::Test {
     // it to expect invocations from TLSSocket to |ssl_socket_|.
     scoped_ptr<MockSSLClientSocket> ssl_sock(new MockSSLClientSocket);
     ssl_socket_ = ssl_sock.get();
-    socket_.reset(new TLSSocket(ssl_sock.Pass(), "test_extension_id"));
+    socket_.reset(new TLSSocket(std::move(ssl_sock), "test_extension_id"));
     EXPECT_CALL(*ssl_socket_, Disconnect()).Times(1);
   };
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
@@ -80,7 +82,8 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
 
   BroadcastOrDispatchEvent(
       app_origin, events::SYNC_FILE_SYSTEM_ON_SERVICE_STATUS_CHANGED,
-      api::sync_file_system::OnServiceStatusChanged::kEventName, params.Pass());
+      api::sync_file_system::OnServiceStatusChanged::kEventName,
+      std::move(params));
 }
 
 void ExtensionSyncEventObserver::OnFileSynced(
@@ -110,7 +113,8 @@ void ExtensionSyncEventObserver::OnFileSynced(
 
   BroadcastOrDispatchEvent(
       url.origin(), events::SYNC_FILE_SYSTEM_ON_FILE_STATUS_CHANGED,
-      api::sync_file_system::OnFileStatusChanged::kEventName, params.Pass());
+      api::sync_file_system::OnFileStatusChanged::kEventName,
+      std::move(params));
 }
 
 void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
@@ -125,12 +129,12 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
   DCHECK(event_router);
 
   scoped_ptr<Event> event(
-      new Event(histogram_value, event_name, values.Pass()));
+      new Event(histogram_value, event_name, std::move(values)));
   event->restrict_to_browser_context = browser_context_;
 
   // No app_origin, broadcast to all listening extensions for this event name.
   if (broadcast_mode) {
-    event_router->BroadcastEvent(event.Pass());
+    event_router->BroadcastEvent(std::move(event));
     return;
   }
 
@@ -138,7 +142,7 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
   const std::string extension_id = GetExtensionId(app_origin);
   if (extension_id.empty())
     return;
-  event_router->DispatchEventToExtension(extension_id, event.Pass());
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 template <>

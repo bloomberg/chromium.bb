@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -85,9 +86,9 @@ LanguageSettingsPrivateDelegate::GetHunspellDictionaryStatuses() {
       if (dictionary->IsDownloadFailure())
         status->download_failed.reset(new bool(true));
     }
-    statuses.push_back(status.Pass());
+    statuses.push_back(std::move(status));
   }
-  return statuses.Pass();
+  return statuses;
 }
 
 void LanguageSettingsPrivateDelegate::Shutdown() {
@@ -164,8 +165,8 @@ void LanguageSettingsPrivateDelegate::OnCustomDictionaryChanged(
   scoped_ptr<Event> extension_event(new Event(
       events::LANGUAGE_SETTINGS_PRIVATE_ON_CUSTOM_DICTIONARY_CHANGED,
       language_settings_private::OnCustomDictionaryChanged::kEventName,
-      args.Pass()));
-  EventRouter::Get(context_)->BroadcastEvent(extension_event.Pass());
+      std::move(args)));
+  EventRouter::Get(context_)->BroadcastEvent(std::move(extension_event));
 }
 
 void LanguageSettingsPrivateDelegate::RefreshDictionaries(
@@ -249,8 +250,8 @@ void LanguageSettingsPrivateDelegate::BroadcastDictionariesChangedEvent() {
   scoped_ptr<extensions::Event> extension_event(new extensions::Event(
       events::LANGUAGE_SETTINGS_PRIVATE_ON_SPELLCHECK_DICTIONARIES_CHANGED,
       language_settings_private::OnSpellcheckDictionariesChanged::kEventName,
-      args.Pass()));
-  EventRouter::Get(context_)->BroadcastEvent(extension_event.Pass());
+      std::move(args)));
+  EventRouter::Get(context_)->BroadcastEvent(std::move(extension_event));
 }
 
 void LanguageSettingsPrivateDelegate::RemoveDictionaryObservers() {

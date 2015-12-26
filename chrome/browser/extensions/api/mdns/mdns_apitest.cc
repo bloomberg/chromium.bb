@@ -58,7 +58,7 @@ class MDnsAPITest : public ExtensionApiTest {
         .Times(1);
     // Transfers ownership of the registry instance.
     api->SetDnsSdRegistryForTesting(
-        make_scoped_ptr<DnsSdRegistry>(dns_sd_registry_).Pass());
+        make_scoped_ptr<DnsSdRegistry>(dns_sd_registry_));
   }
 
  protected:

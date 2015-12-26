@@ -72,14 +72,14 @@ BinaryValue* CreateToken(const std::string& token) {
 scoped_ptr<ListValue> CreateList(Value* single_elt) {
   scoped_ptr<ListValue> list(new ListValue);
   list->Append(single_elt);
-  return list.Pass();
+  return list;
 }
 
 scoped_ptr<ListValue> CreateList(Value* elt1, Value* elt2) {
   scoped_ptr<ListValue> list(new ListValue);
   list->Append(elt1);
   list->Append(elt2);
-  return list.Pass();
+  return list;
 }
 
 DictionaryValue* CreateReceivedToken(const std::string& token,
@@ -116,7 +116,7 @@ class StubEventRouter : public EventRouter {
 
   void DispatchEventToExtension(const std::string& extension_id,
                                 scoped_ptr<Event> event) override {
-    event_callback_.Run(extension_id, event.Pass());
+    event_callback_.Run(extension_id, std::move(event));
   }
 
   void SetEventCallBack(EventCallback event_callback) {
@@ -152,8 +152,8 @@ class AudioModemApiUnittest : public ExtensionApiUnittest {
     function->set_extension(extension);
     function->set_browser_context(profile());
     function->set_has_callback(true);
-    ext_test_utils::RunFunction(
-        function.get(), args.Pass(), browser(), ext_test_utils::NONE);
+    ext_test_utils::RunFunction(function.get(), std::move(args), browser(),
+                                ext_test_utils::NONE);
 
     std::string result_status;
     CHECK(function->GetResultList()->GetString(0, &result_status));
@@ -162,7 +162,7 @@ class AudioModemApiUnittest : public ExtensionApiUnittest {
 
   template<typename Function>
   const std::string RunFunction(scoped_ptr<ListValue> args) {
-    return RunFunction<Function>(args.Pass(), GetExtension(std::string()));
+    return RunFunction<Function>(std::move(args), GetExtension(std::string()));
   }
 
   StubModem* GetModem() const {

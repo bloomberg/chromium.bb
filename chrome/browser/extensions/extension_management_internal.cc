@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_management_internal.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -142,7 +144,7 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
     if (!version->IsValid())
       LOG(WARNING) << kMalformedPreferenceWarning;
     else
-      minimum_version_required = version.Pass();
+      minimum_version_required = std::move(version);
   }
 
   return true;

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/settings_overrides/settings_overrides_api.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
@@ -276,7 +277,8 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   TemplateURLData data = ConvertSearchProvider(
       profile_->GetPrefs(), *settings->search_engine, install_parameter);
   data.show_in_default_list = info->wants_to_be_default_engine;
-  url_service_->AddExtensionControlledTURL(new TemplateURL(data), info.Pass());
+  url_service_->AddExtensionControlledTURL(new TemplateURL(data),
+                                           std::move(info));
 }
 
 template <>

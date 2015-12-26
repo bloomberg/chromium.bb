@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -314,10 +315,8 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
   // entry is only valid for some number of minutes.
   scoped_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          chrome_details_.GetProfile(),
-          details().id,
-          parsed_manifest_.Pass(),
-          false));
+          chrome_details_.GetProfile(), details().id,
+          std::move(parsed_manifest_), false));
   approval->use_app_installed_bubble = details().app_install_bubble;
   approval->enable_launcher = details().enable_launcher;
   // If we are enabling the launcher, we should not show the app list in order
@@ -327,7 +326,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
   approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
   if (details().authuser)
     approval->authuser = *details().authuser;
-  g_pending_approvals.Get().PushApproval(approval.Pass());
+  g_pending_approvals.Get().PushApproval(std::move(approval));
 
   DCHECK(scoped_active_install_.get());
   scoped_active_install_->CancelDeregister();
@@ -402,9 +401,8 @@ WebstorePrivateCompleteInstallFunction::Run() {
   if (!crx_file::id_util::IdIsValid(params->expected_id))
     return RespondNow(Error(kInvalidIdError));
 
-  approval_ =
-      g_pending_approvals.Get().PopApproval(chrome_details_.GetProfile(),
-                                            params->expected_id).Pass();
+  approval_ = g_pending_approvals.Get().PopApproval(
+      chrome_details_.GetProfile(), params->expected_id);
   if (!approval_) {
     return RespondNow(Error(kNoPreviousBeginInstallWithManifestError,
                             params->expected_id));
@@ -436,12 +434,9 @@ WebstorePrivateCompleteInstallFunction::Run() {
   // The extension will install through the normal extension install flow, but
   // the whitelist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      chrome_details_.GetProfile(),
-      this,
-      chrome_details_.GetAssociatedWebContents(),
-      params->expected_id,
-      approval_.Pass(),
-      WebstoreInstaller::INSTALL_SOURCE_OTHER);
+      chrome_details_.GetProfile(), this,
+      chrome_details_.GetAssociatedWebContents(), params->expected_id,
+      std::move(approval_), WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
 
   return RespondLater();

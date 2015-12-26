@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/blob_reader.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
@@ -63,7 +64,7 @@ void BlobReader::OnURLFetchComplete(const net::URLFetcher* source) {
   int64_t first = 0, last = 0, length = 0;
   source->GetResponseAsString(response.get());
   source->GetResponseHeaders()->GetContentRange(&first, &last, &length);
-  callback_.Run(response.Pass(), length);
+  callback_.Run(std::move(response), length);
 
   delete this;
 }

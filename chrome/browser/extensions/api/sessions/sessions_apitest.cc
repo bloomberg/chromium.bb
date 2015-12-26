@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/sessions/sessions_api.h"
-
 #include <stddef.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -12,6 +11,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -148,7 +148,7 @@ scoped_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
           make_scoped_ptr(new browser_sync::ChromeSyncClient(profile)),
           profile));
   static_cast<browser_sync::ChromeSyncClient*>(sync_service->GetSyncClient())
-      ->SetSyncApiComponentFactoryForTesting(factory.Pass());
+      ->SetSyncApiComponentFactoryForTesting(std::move(factory));
   return make_scoped_ptr(sync_service);
 }
 

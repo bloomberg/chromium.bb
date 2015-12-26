@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -53,9 +54,7 @@ namespace extensions {
 class FakeLauncher : public NativeProcessLauncher {
  public:
   FakeLauncher(base::File read_file, base::File write_file)
-      : read_file_(read_file.Pass()),
-        write_file_(write_file.Pass()) {
-  }
+      : read_file_(std::move(read_file)), write_file_(std::move(write_file)) {}
 
   static scoped_ptr<NativeProcessLauncher> Create(base::FilePath read_file,
                                                   base::FilePath write_file) {
@@ -79,15 +78,14 @@ class FakeLauncher : public NativeProcessLauncher {
 #endif
 
     return scoped_ptr<NativeProcessLauncher>(new FakeLauncher(
-        read_pipe.Pass(),
-        base::File(write_file, write_flags)));
+        std::move(read_pipe), base::File(write_file, write_flags)));
   }
 
   void Launch(const GURL& origin,
               const std::string& native_host_name,
               const LaunchedCallback& callback) const override {
-    callback.Run(NativeProcessLauncher::RESULT_SUCCESS,
-                 base::Process(), read_file_.Pass(), write_file_.Pass());
+    callback.Run(NativeProcessLauncher::RESULT_SUCCESS, base::Process(),
+                 std::move(read_file_), std::move(write_file_));
   }
 
  private:
@@ -121,7 +119,7 @@ class NativeMessagingTest : public ::testing::Test,
     scoped_ptr<base::DictionaryValue> dict_value =
         base::DictionaryValue::From(base::JSONReader::Read(message));
     if (dict_value) {
-      last_message_parsed_ = dict_value.Pass();
+      last_message_parsed_ = std::move(dict_value);
     } else {
       LOG(ERROR) << "Failed to parse " << message;
       last_message_parsed_.reset();
@@ -176,11 +174,10 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   ASSERT_FALSE(temp_input_file.empty());
 
   scoped_ptr<NativeProcessLauncher> launcher =
-      FakeLauncher::Create(temp_input_file, temp_output_file).Pass();
+      FakeLauncher::Create(temp_input_file, temp_output_file);
   native_message_host_ = NativeMessageProcessHost::CreateWithLauncher(
-      ScopedTestNativeMessagingHost::kExtensionId,
-      "empty_app.py",
-      launcher.Pass());
+      ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",
+      std::move(launcher));
   native_message_host_->Start(this);
   ASSERT_TRUE(native_message_host_.get());
   run_loop_.reset(new base::RunLoop());
@@ -225,12 +222,10 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
 #endif  // !defined(OS_WIN)
 
   scoped_ptr<NativeProcessLauncher> launcher =
-      FakeLauncher::CreateWithPipeInput(read_file.Pass(),
-                                        temp_output_file).Pass();
+      FakeLauncher::CreateWithPipeInput(std::move(read_file), temp_output_file);
   native_message_host_ = NativeMessageProcessHost::CreateWithLauncher(
-      ScopedTestNativeMessagingHost::kExtensionId,
-      "empty_app.py",
-      launcher.Pass());
+      ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",
+      std::move(launcher));
   native_message_host_->Start(this);
   ASSERT_TRUE(native_message_host_.get());
   base::RunLoop().RunUntilIdle();

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -53,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundAppBrowserTest, ReloadBackgroundApp) {
           *base::CommandLine::ForCurrentProcess(),
           &(g_browser_process->profile_manager()->GetProfileInfoCache())));
   g_browser_process->set_background_mode_manager_for_test(
-      test_background_mode_manager.Pass());
+      std::move(test_background_mode_manager));
   TestBackgroundModeManager* manager =
       reinterpret_cast<TestBackgroundModeManager*>(
           g_browser_process->background_mode_manager());

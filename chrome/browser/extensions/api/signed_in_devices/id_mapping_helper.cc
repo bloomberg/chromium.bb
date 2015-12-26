@@ -98,7 +98,7 @@ scoped_ptr<DeviceInfo> GetDeviceInfoForClientId(
     if ((*it)->guid() == client_id) {
       scoped_ptr<DeviceInfo> device(*it);
       devices.weak_erase(it);
-      return device.Pass();
+      return device;
     }
   }
   return scoped_ptr<DeviceInfo>();

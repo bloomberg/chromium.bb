@@ -117,7 +117,7 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
       extension.get(), nullptr,
       make_scoped_ptr(new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::PERMISSIONS_PROMPT)),
-      permission_set.Pass(),
+      std::move(permission_set),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
                  1u,    // |regular_permissions_count|.
                  0u));  // |withheld_permissions_count|.
@@ -184,7 +184,7 @@ TEST_F(ExtensionInstallPromptUnitTest,
   sub_prompt->set_delegated_username("Username");
   prompt.ShowDialog(
       nullptr,  // no delegate
-      extension.get(), nullptr, sub_prompt.Pass(),
+      extension.get(), nullptr, std::move(sub_prompt),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
                  2u,    // |regular_permissions_count|.
                  0u));  // |withheld_permissions_count|.

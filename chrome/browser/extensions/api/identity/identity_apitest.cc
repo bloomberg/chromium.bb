@@ -4,6 +4,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -306,7 +307,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   void set_login_ui_result(bool result) { login_ui_result_ = result; }
 
   void set_mint_token_flow(scoped_ptr<OAuth2MintTokenFlow> flow) {
-    flow_ = flow.Pass();
+    flow_ = std::move(flow);
   }
 
   void set_mint_token_result(TestOAuth2MintTokenFlow::ResultType result_type) {
@@ -559,10 +560,9 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     will_create_browser_context_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                  base::Bind(&IdentityTestWithSignin::
-                                 OnWillCreateBrowserContextServices,
-                             base::Unretained(this)))
-            .Pass();
+                base::Bind(
+                    &IdentityTestWithSignin::OnWillCreateBrowserContextServices,
+                    base::Unretained(this)));
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {

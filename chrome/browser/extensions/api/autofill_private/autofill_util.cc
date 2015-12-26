@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/autofill_private/autofill_util.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
@@ -44,12 +45,12 @@ scoped_ptr<std::vector<std::string>> GetValueList(
   // |Get[Raw]MultiInfo()| always returns at least one, potentially empty, item.
   // If this is the case, there is no info to return, so return an empty vector.
   if (values.size() == 1 && values.front().empty())
-    return list.Pass();
+    return list;
 
   for (const base::string16& value16 : values)
     list->push_back(base::UTF16ToUTF8(value16));
 
-  return list.Pass();
+  return list;
 }
 
 // Gets the string corresponding to |type| from |profile|.
@@ -105,9 +106,9 @@ scoped_ptr<autofill_private::AddressEntry> ProfileToAddressEntry(
       label.substr(label_pieces[0].size()))));
   metadata->is_local.reset(new bool(
       profile.record_type() == autofill::AutofillProfile::LOCAL_PROFILE));
-  address->metadata = metadata.Pass();
+  address->metadata = std::move(metadata);
 
-  return address.Pass();
+  return address;
 }
 
 scoped_ptr<autofill_private::CreditCardEntry> CreditCardToCreditCardEntry(
@@ -138,9 +139,9 @@ scoped_ptr<autofill_private::CreditCardEntry> CreditCardToCreditCardEntry(
       credit_card.record_type() == autofill::CreditCard::LOCAL_CARD));
   metadata->is_cached.reset(new bool(
       credit_card.record_type() == autofill::CreditCard::FULL_SERVER_CARD));
-  card->metadata = metadata.Pass();
+  card->metadata = std::move(metadata);
 
-  return card.Pass();
+  return card;
 }
 
 }  // namespace
@@ -167,7 +168,7 @@ scoped_ptr<AddressEntryList> GenerateAddressList(
     list->push_back(linked_ptr<autofill_private::AddressEntry>(entry));
   }
 
-  return list.Pass();
+  return list;
 }
 
 scoped_ptr<CreditCardEntryList> GenerateCreditCardList(
@@ -182,7 +183,7 @@ scoped_ptr<CreditCardEntryList> GenerateCreditCardList(
     list->push_back(linked_ptr<autofill_private::CreditCardEntry>(entry));
   }
 
-  return list.Pass();
+  return list;
 }
 
 }  // namespace autofill_util
