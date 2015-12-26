@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/util/proto_value_ptr.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,7 +72,7 @@ class TestValue {
     ASSERT_TRUE(src->is_initialized());
     ASSERT_FALSE(src->is_default());
     // Not exactly swap, but good enough for the test.
-    value_ = src->value_.Pass();
+    value_ = std::move(src->value_);
   }
 
   void ParseFromArray(const void* blob, int length) {

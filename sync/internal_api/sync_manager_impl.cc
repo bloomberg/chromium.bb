@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -263,7 +263,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
       args->internal_components_factory->BuildDirectoryBackingStore(
           InternalComponentsFactory::STORAGE_ON_DISK,
-          args->credentials.account_id, absolute_db_path).Pass();
+          args->credentials.account_id, absolute_db_path);
 
   DCHECK(backing_store.get());
   share_.directory.reset(
@@ -327,18 +327,12 @@ void SyncManagerImpl::Init(InitArgs* args) {
   std::vector<SyncEngineEventListener*> listeners;
   listeners.push_back(&allstatus_);
   listeners.push_back(this);
-  session_context_ =
-      args->internal_components_factory->BuildContext(
-                                             connection_manager_.get(),
-                                             directory(),
-                                             args->extensions_activity,
-                                             listeners,
-                                             &debug_info_event_listener_,
-                                             model_type_registry_.get(),
-                                             args->invalidator_client_id)
-          .Pass();
+  session_context_ = args->internal_components_factory->BuildContext(
+      connection_manager_.get(), directory(), args->extensions_activity,
+      listeners, &debug_info_event_listener_, model_type_registry_.get(),
+      args->invalidator_client_id);
   scheduler_ = args->internal_components_factory->BuildScheduler(
-      name_, session_context_.get(), args->cancelation_signal).Pass();
+      name_, session_context_.get(), args->cancelation_signal);
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
 
@@ -917,10 +911,8 @@ void SyncManagerImpl::OnIncomingInvalidation(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   allstatus_.IncrementNotificationsReceived();
-  scheduler_->ScheduleInvalidationNudge(
-      type,
-      invalidation.Pass(),
-      FROM_HERE);
+  scheduler_->ScheduleInvalidationNudge(type, std::move(invalidation),
+                                        FROM_HERE);
 }
 
 void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {

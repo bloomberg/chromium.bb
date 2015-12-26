@@ -39,7 +39,7 @@ scoped_ptr<base::DictionaryValue> UpdateCounters::ToValue() const {
   value->SetInteger("numServerOverwrites", num_server_overwrites);
   value->SetInteger("numLocalOverwrites", num_local_overwrites);
 
-  return value.Pass();
+  return value;
 }
 
 std::string UpdateCounters::ToString() const {

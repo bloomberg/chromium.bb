@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
-
 #include <cstddef>
 #include <cstdio>
 #include <string>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -241,7 +241,7 @@ class InvalidatorShim : public InvalidationHandler {
              ++inv_it) {
           scoped_ptr<syncer::InvalidationInterface> inv_adapter(
               new InvalidationAdapter(*inv_it));
-          sync_manager_->OnIncomingInvalidation(type, inv_adapter.Pass());
+          sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
         }
       }
     }
@@ -428,7 +428,7 @@ int SyncClientMain(int argc, char* argv[]) {
   args.database_location = database_dir.path();
   args.event_handler = WeakHandle<JsEventHandler>(js_event_handler.AsWeakPtr());
   args.service_url = GURL(kSyncServiceURL);
-  args.post_factory = post_factory.Pass();
+  args.post_factory = std::move(post_factory);
   args.workers = workers;
   args.extensions_activity = extensions_activity;
   args.change_delegate = &change_delegate;

@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -87,7 +87,7 @@ class TestExtraChangeRecordData : public ExtraPasswordChangeRecordData {
   }
 
   void set_dictionary_value(scoped_ptr<base::DictionaryValue> dict) {
-    dict_ = dict.Pass();
+    dict_ = std::move(dict);
   }
 
   void set_expected_to_value_calls(size_t expectation) {
@@ -151,7 +151,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     extra_value->SetString("foo", "bar");
     scoped_ptr<TestExtraChangeRecordData> extra(
         new TestExtraChangeRecordData());
-    extra->set_dictionary_value(extra_value.Pass());
+    extra->set_dictionary_value(std::move(extra_value));
     extra->set_expected_to_value_calls(2U);
 
     record.extra.reset(extra.release());

@@ -20,7 +20,7 @@ scoped_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
         it->second, false /* put_in_quotes */, &printable_payload);
     value->SetString(ModelTypeToString(it->first), printable_payload);
   }
-  return value.Pass();
+  return value;
 }
 
 }  // namespace syncer

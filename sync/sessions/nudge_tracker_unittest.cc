@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
@@ -841,7 +841,7 @@ class NudgeTrackerAckTrackingTest : public NudgeTrackerTest {
     int id = inv->GetTrackingId();
 
     // Send it to the NudgeTracker.
-    nudge_tracker_.RecordRemoteInvalidation(type, inv.Pass());
+    nudge_tracker_.RecordRemoteInvalidation(type, std::move(inv));
 
     // Return its ID to the test framework for use in assertions.
     return id;
@@ -854,7 +854,7 @@ class NudgeTrackerAckTrackingTest : public NudgeTrackerTest {
     int id = inv->GetTrackingId();
 
     // Send it to the NudgeTracker.
-    nudge_tracker_.RecordRemoteInvalidation(type, inv.Pass());
+    nudge_tracker_.RecordRemoteInvalidation(type, std::move(inv));
 
     // Return its ID to the test framework for use in assertions.
     return id;

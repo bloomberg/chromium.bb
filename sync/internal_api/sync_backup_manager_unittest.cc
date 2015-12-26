@@ -66,7 +66,7 @@ class SyncBackupManagerTest : public syncer::SyncManager::Observer,
     args.database_location = temp_dir_.path();
     args.event_handler = MakeWeakHandle(base::WeakPtr<JsEventHandler>());
     args.service_url = GURL("https://example.com/");
-    args.post_factory = scoped_ptr<HttpPostProviderFactory>().Pass();
+    args.post_factory = scoped_ptr<HttpPostProviderFactory>();
     args.internal_components_factory.reset(new TestInternalComponentsFactory(
         InternalComponentsFactory::Switches(), storage_option,
         &storage_used_));

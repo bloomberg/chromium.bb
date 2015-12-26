@@ -175,7 +175,7 @@ scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
     return scoped_ptr<EntryKernel>();
   }
 
-  return kernel.Pass();
+  return kernel;
 }
 
 namespace {

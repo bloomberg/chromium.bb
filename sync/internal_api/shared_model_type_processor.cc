@@ -47,7 +47,7 @@ ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {}
 void ModelTypeProcessorProxy::OnConnect(scoped_ptr<CommitQueue> worker) {
   processor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ModelTypeProcessor::OnConnect, processor_,
-                            base::Passed(worker.Pass())));
+                            base::Passed(std::move(worker))));
 }
 
 void ModelTypeProcessorProxy::OnCommitCompleted(
@@ -100,7 +100,7 @@ void SharedModelTypeProcessor::Start(StartCallback callback) {
       new ModelTypeProcessorProxy(weak_ptr_factory_for_sync_.GetWeakPtr(),
                                   base::ThreadTaskRunnerHandle::Get()));
 
-  callback.Run(syncer::SyncError(), activation_context.Pass());
+  callback.Run(syncer::SyncError(), std::move(activation_context));
 }
 
 bool SharedModelTypeProcessor::IsEnabled() const {
@@ -143,7 +143,7 @@ void SharedModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> worker) {
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
 
   is_connected_ = true;
-  worker_ = worker.Pass();
+  worker_ = std::move(worker);
 
   FlushPendingCommitRequests();
 }
@@ -184,7 +184,7 @@ void SharedModelTypeProcessor::Put(const std::string& client_tag,
     entity = it->second.get();
   }
 
-  entity->MakeLocalChange(entity_data.Pass(), now);
+  entity->MakeLocalChange(std::move(entity_data), now);
   FlushPendingCommitRequests();
 }
 

@@ -40,8 +40,8 @@ ModelTypeWorker::ModelTypeWorker(
     scoped_ptr<ModelTypeProcessor> model_type_processor)
     : type_(type),
       data_type_state_(initial_state),
-      model_type_processor_(model_type_processor.Pass()),
-      cryptographer_(cryptographer.Pass()),
+      model_type_processor_(std::move(model_type_processor)),
+      cryptographer_(std::move(cryptographer)),
       nudge_handler_(nudge_handler),
       weak_ptr_factory_(this) {
   // Request an initial sync if it hasn't been completed yet.
@@ -80,7 +80,7 @@ bool ModelTypeWorker::IsEncryptionRequired() const {
 void ModelTypeWorker::UpdateCryptographer(
     scoped_ptr<Cryptographer> cryptographer) {
   DCHECK(cryptographer);
-  cryptographer_ = cryptographer.Pass();
+  cryptographer_ = std::move(cryptographer);
 
   // Update our state and that of the proxy.
   OnCryptographerUpdated();

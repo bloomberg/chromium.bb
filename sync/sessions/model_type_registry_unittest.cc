@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sync/sessions/model_type_registry.h"
+
+#include <utility>
 #include <vector>
 
 #include "base/deferred_sequenced_task_runner.h"
@@ -10,7 +13,6 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/shared_model_type_processor.h"
 #include "sync/internal_api/public/test/fake_model_type_service.h"
-#include "sync/sessions/model_type_registry.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
@@ -42,8 +44,8 @@ class ModelTypeRegistryTest : public ::testing::Test,
         make_scoped_ptr(new syncer_v2::ActivationContext);
     context->data_type_state = data_type_state;
     context->saved_pending_updates = saved_pending_updates;
-    context->type_processor = type_processor.Pass();
-    return context.Pass();
+    context->type_processor = std::move(type_processor);
+    return context;
   }
 
  protected:
@@ -173,7 +175,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
   registry()->ConnectSyncTypeToWorker(
       syncer::THEMES, MakeActivationContext(MakeInitialDataTypeState(THEMES),
                                             syncer_v2::UpdateResponseDataList(),
-                                            themes_sync_processor.Pass()));
+                                            std::move(themes_sync_processor)));
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
       ModelTypeSet(syncer::THEMES)));
 
@@ -181,7 +183,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
       syncer::SESSIONS,
       MakeActivationContext(MakeInitialDataTypeState(SESSIONS),
                             syncer_v2::UpdateResponseDataList(),
-                            sessions_sync_processor.Pass()));
+                            std::move(sessions_sync_processor)));
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
       ModelTypeSet(syncer::THEMES, syncer::SESSIONS)));
 
@@ -211,7 +213,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   registry()->ConnectSyncTypeToWorker(
       syncer::THEMES, MakeActivationContext(MakeInitialDataTypeState(THEMES),
                                             syncer_v2::UpdateResponseDataList(),
-                                            themes_sync_processor.Pass()));
+                                            std::move(themes_sync_processor)));
   current_types.Put(syncer::THEMES);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 
@@ -225,7 +227,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
       syncer::SESSIONS,
       MakeActivationContext(MakeInitialDataTypeState(SESSIONS),
                             syncer_v2::UpdateResponseDataList(),
-                            sessions_sync_processor.Pass()));
+                            std::move(sessions_sync_processor)));
   current_types.Put(syncer::SESSIONS);
   EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
 

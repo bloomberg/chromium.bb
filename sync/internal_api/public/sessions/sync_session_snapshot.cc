@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
@@ -100,7 +101,7 @@ scoped_ptr<base::DictionaryValue> SyncSessionSnapshot::ToValue() const {
     const std::string model_type = ModelTypeToString(static_cast<ModelType>(i));
     counter_entries->Set(model_type, type_entries.release());
   }
-  value->Set("counter_entries", counter_entries.Pass());
+  value->Set("counter_entries", std::move(counter_entries));
   return value;
 }
 

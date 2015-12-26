@@ -218,7 +218,7 @@ syncer_v2::SyncContextProxy* SyncRollbackManagerBase::GetSyncContextProxy() {
 
 ScopedVector<syncer::ProtocolEvent>
 SyncRollbackManagerBase::GetBufferedProtocolEvents() {
-  return ScopedVector<syncer::ProtocolEvent>().Pass();
+  return ScopedVector<syncer::ProtocolEvent>();
 }
 
 scoped_ptr<base::ListValue> SyncRollbackManagerBase::GetAllNodesForType(
@@ -227,7 +227,7 @@ scoped_ptr<base::ListValue> SyncRollbackManagerBase::GetAllNodesForType(
   scoped_ptr<base::ListValue> nodes(
       trans.GetDirectory()->GetNodeDetailsForType(trans.GetWrappedTrans(),
                                                   type));
-  return nodes.Pass();
+  return nodes;
 }
 
 bool SyncRollbackManagerBase::InitBackupDB(
@@ -237,8 +237,8 @@ bool SyncRollbackManagerBase::InitBackupDB(
   base::FilePath backup_db_path = sync_folder.Append(
       syncable::Directory::kSyncDatabaseFilename);
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
-      internal_components_factory->BuildDirectoryBackingStore(
-          storage, "backup", backup_db_path).Pass();
+      internal_components_factory->BuildDirectoryBackingStore(storage, "backup",
+                                                              backup_db_path);
 
   DCHECK(backing_store.get());
   share_.directory.reset(

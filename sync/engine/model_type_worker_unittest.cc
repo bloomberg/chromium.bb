@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
@@ -19,7 +20,6 @@
 #include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/single_type_mock_server.h"
 #include "sync/test/fake_encryptor.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const syncer::ModelType kModelType = syncer::PREFERENCES;
@@ -283,8 +283,8 @@ void ModelTypeWorkerTest::InitializeWithState(
   }
 
   worker_.reset(new ModelTypeWorker(kModelType, state, initial_pending_updates,
-                                    cryptographer_copy.Pass(),
-                                    &mock_nudge_handler_, proxy.Pass()));
+                                    std::move(cryptographer_copy),
+                                    &mock_nudge_handler_, std::move(proxy)));
 }
 
 void ModelTypeWorkerTest::NewForeignEncryptionKey() {

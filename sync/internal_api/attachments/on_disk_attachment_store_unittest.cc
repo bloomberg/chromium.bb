@@ -5,8 +5,8 @@
 #include "sync/internal_api/public/attachments/on_disk_attachment_store.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -99,7 +99,7 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
       const AttachmentStore::Result& source_result,
       scoped_ptr<AttachmentMetadataList> source_metadata) {
     CopyResult(destination_result, source_result);
-    *destination_metadata = source_metadata.Pass();
+    *destination_metadata = std::move(source_metadata);
   }
 
   scoped_ptr<leveldb::DB> OpenLevelDB() {

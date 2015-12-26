@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/attachment_service_proxy_for_test.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/internal_api/public/attachments/attachment_service_impl.h"
@@ -12,10 +14,10 @@ namespace syncer {
 
 AttachmentServiceProxyForTest::OwningCore::OwningCore(
     scoped_ptr<AttachmentService> wrapped,
-    scoped_ptr<base::WeakPtrFactory<AttachmentService> > weak_ptr_factory)
+    scoped_ptr<base::WeakPtrFactory<AttachmentService>> weak_ptr_factory)
     : Core(weak_ptr_factory->GetWeakPtr()),
-      wrapped_(wrapped.Pass()),
-      weak_ptr_factory_(weak_ptr_factory.Pass()) {
+      wrapped_(std::move(wrapped)),
+      weak_ptr_factory_(std::move(weak_ptr_factory)) {
   DCHECK(wrapped_);
 }
 
@@ -36,7 +38,7 @@ AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
       new base::WeakPtrFactory<AttachmentService>(wrapped.get()));
 
   scoped_refptr<Core> core_for_test(
-      new OwningCore(wrapped.Pass(), weak_ptr_factory.Pass()));
+      new OwningCore(std::move(wrapped), std::move(weak_ptr_factory)));
 
   scoped_refptr<base::SequencedTaskRunner> runner;
   if (base::ThreadTaskRunnerHandle::IsSet()) {

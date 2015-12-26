@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/attachment_store_frontend.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
@@ -24,7 +26,7 @@ void NoOp(scoped_ptr<AttachmentStoreBackend> backend) {
 AttachmentStoreFrontend::AttachmentStoreFrontend(
     scoped_ptr<AttachmentStoreBackend> backend,
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner)
-    : backend_(backend.Pass()), backend_task_runner_(backend_task_runner) {
+    : backend_(std::move(backend)), backend_task_runner_(backend_task_runner) {
   DCHECK(backend_);
   DCHECK(backend_task_runner_.get());
 }

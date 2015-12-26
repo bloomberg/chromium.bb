@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -397,7 +398,7 @@ scoped_ptr<HttpResponse> RequestHandler::HandleRequest(
   scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
   response->set_code(GetStatusCode());
   response->set_content_type("text/plain");
-  return response.Pass();
+  return std::move(response);
 }
 
 void RequestHandler::SetStatusCode(const net::HttpStatusCode& status_code) {

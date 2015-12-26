@@ -5,7 +5,7 @@
 #ifndef SYNC_INTERNAL_API_ATTACHMENTS_ATTACHMENT_STORE_TEST_TEMPLATE_H_
 #define SYNC_INTERNAL_API_ATTACHMENTS_ATTACHMENT_STORE_TEST_TEMPLATE_H_
 
-#include "sync/api/attachments/attachment_store.h"
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
+#include "sync/api/attachments/attachment_store.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -114,8 +115,9 @@ class AttachmentStoreTest : public testing::Test {
       scoped_ptr<AttachmentMap> source_attachments,
       scoped_ptr<AttachmentIdList> source_failed_attachment_ids) {
     CopyResult(destination_result, source_result);
-    *destination_attachments = source_attachments.Pass();
-    *destination_failed_attachment_ids = source_failed_attachment_ids.Pass();
+    *destination_attachments = std::move(source_attachments);
+    *destination_failed_attachment_ids =
+        std::move(source_failed_attachment_ids);
   }
 
   void CopyResultMetadata(
@@ -124,7 +126,7 @@ class AttachmentStoreTest : public testing::Test {
       const AttachmentStore::Result& source_result,
       scoped_ptr<AttachmentMetadataList> source_metadata) {
     CopyResult(destination_result, source_result);
-    *destination_metadata = source_metadata.Pass();
+    *destination_metadata = std::move(source_metadata);
   }
 };
 

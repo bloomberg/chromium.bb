@@ -5,8 +5,8 @@
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -329,7 +329,7 @@ void AttachmentUploaderImpl::UploadAttachment(const Attachment& attachment,
       url, url_request_context_getter_, attachment, callback, account_id_,
       scopes_, token_service_provider_.get(), raw_store_birthday_,
       weak_ptr_factory_.GetWeakPtr(), model_type_));
-  state_map_.add(unique_id, upload_state.Pass());
+  state_map_.add(unique_id, std::move(upload_state));
 }
 
 // Static.

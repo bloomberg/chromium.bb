@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/attachments/attachment_service_impl.h"
 
 #include <iterator>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -117,9 +118,9 @@ AttachmentServiceImpl::AttachmentServiceImpl(
     Delegate* delegate,
     const base::TimeDelta& initial_backoff_delay,
     const base::TimeDelta& max_backoff_delay)
-    : attachment_store_(attachment_store.Pass()),
-      attachment_uploader_(attachment_uploader.Pass()),
-      attachment_downloader_(attachment_downloader.Pass()),
+    : attachment_store_(std::move(attachment_store)),
+      attachment_uploader_(std::move(attachment_uploader)),
+      attachment_downloader_(std::move(attachment_downloader)),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
@@ -154,9 +155,9 @@ scoped_ptr<syncer::AttachmentService> AttachmentServiceImpl::CreateForTest() {
   scoped_ptr<syncer::AttachmentService> attachment_service(
       new syncer::AttachmentServiceImpl(
           attachment_store->CreateAttachmentStoreForSync(),
-          attachment_uploader.Pass(), attachment_downloader.Pass(), NULL,
-          base::TimeDelta(), base::TimeDelta()));
-  return attachment_service.Pass();
+          std::move(attachment_uploader), std::move(attachment_downloader),
+          NULL, base::TimeDelta(), base::TimeDelta()));
+  return attachment_service;
 }
 
 void AttachmentServiceImpl::GetOrDownloadAttachments(
@@ -327,7 +328,7 @@ void AttachmentServiceImpl::ReadDoneNowUpload(
 }
 
 void AttachmentServiceImpl::SetTimerForTest(scoped_ptr<base::Timer> timer) {
-  upload_task_queue_->SetTimerForTest(timer.Pass());
+  upload_task_queue_->SetTimerForTest(std::move(timer));
 }
 
 }  // namespace syncer

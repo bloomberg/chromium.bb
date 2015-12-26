@@ -4,6 +4,7 @@
 
 #include "sync/internal_api/sync_context_proxy_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -54,7 +55,7 @@ class SyncContextProxyImplTest : public ::testing::Test, FakeModelTypeService {
 
   void StartDone(syncer::SyncError error,
                  scoped_ptr<ActivationContext> context) {
-    context_proxy_->ConnectTypeToSync(syncer::THEMES, context.Pass());
+    context_proxy_->ConnectTypeToSync(syncer::THEMES, std::move(context));
   }
 
   scoped_ptr<SharedModelTypeProcessor> CreateModelTypeProcessor() {

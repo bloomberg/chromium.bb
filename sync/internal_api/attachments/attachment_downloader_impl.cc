@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/attachments/attachment_downloader_impl.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -90,7 +91,7 @@ void AttachmentDownloaderImpl::DownloadAttachment(
     // DownloadState and request access token for it.
     scoped_ptr<DownloadState> new_download_state(
         new DownloadState(attachment_id, url));
-    iter = state_map_.add(url, new_download_state.Pass()).first;
+    iter = state_map_.add(url, std::move(new_download_state)).first;
     RequestAccessToken(iter->second);
   }
   DownloadState* download_state = iter->second;
@@ -113,7 +114,7 @@ void AttachmentDownloaderImpl::OnGetTokenSuccess(
     DownloadState* download_state = *iter;
     download_state->access_token = access_token;
     download_state->url_fetcher =
-        CreateFetcher(download_state->attachment_url, access_token).Pass();
+        CreateFetcher(download_state->attachment_url, access_token);
     download_state->start_time = base::TimeTicks::Now();
     download_state->url_fetcher->Start();
   }
@@ -213,7 +214,7 @@ scoped_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
   AttachmentUploaderImpl::ConfigureURLFetcherCommon(
       url_fetcher.get(), access_token, raw_store_birthday_, model_type_,
       url_request_context_getter_.get());
-  return url_fetcher.Pass();
+  return url_fetcher;
 }
 
 void AttachmentDownloaderImpl::RequestAccessToken(

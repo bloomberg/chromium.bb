@@ -36,7 +36,7 @@ scoped_ptr<base::ListValue> DirectoryTypeDebugInfoEmitter::GetAllNodes() {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
   scoped_ptr<base::ListValue> nodes(
       directory_->GetNodeDetailsForType(&trans, type_));
-  return nodes.Pass();
+  return nodes;
 }
 
 const CommitCounters& DirectoryTypeDebugInfoEmitter::GetCommitCounters() const {

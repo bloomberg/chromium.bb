@@ -19,7 +19,7 @@ scoped_ptr<base::DictionaryValue> StatusCounters::ToValue() const {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("numEntries", num_entries);
   value->SetInteger("numEntriesAndTombstones", num_entries_and_tombstones);
-  return value.Pass();
+  return value;
 }
 
 std::string StatusCounters::ToString() const {

@@ -5,6 +5,7 @@
 #include "sync/syncable/entry_kernel.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
@@ -111,7 +112,7 @@ void SetEncryptableProtoValues(
     } else {
       value = EntitySpecificsToValue(kernel.ref(field));
     }
-    dictionary_value->Set(key, value.Pass());
+    dictionary_value->Set(key, std::move(value));
   }
 }
 

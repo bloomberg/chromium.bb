@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/model_type_entity.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -12,7 +13,6 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer_v2 {
@@ -54,7 +54,7 @@ class ModelTypeEntityTest : public ::testing::Test {
       const sync_pb::EntitySpecifics& specifics) {
     scoped_ptr<ModelTypeEntity> entity(NewLocalItem(tag));
     MakeLocalChange(entity.get(), specifics);
-    return entity.Pass();
+    return entity;
   }
 
   void MakeLocalChange(ModelTypeEntity* entity,
@@ -62,7 +62,7 @@ class ModelTypeEntityTest : public ::testing::Test {
     scoped_ptr<EntityData> entity_data = make_scoped_ptr(new EntityData());
     entity_data->specifics = specifics;
     entity_data->non_unique_name = "foo";
-    entity->MakeLocalChange(entity_data.Pass(), kMtime);
+    entity->MakeLocalChange(std::move(entity_data), kMtime);
   }
 
   scoped_ptr<ModelTypeEntity> NewServerItem() {
@@ -75,7 +75,7 @@ class ModelTypeEntityTest : public ::testing::Test {
       const sync_pb::EntitySpecifics& specifics) {
     scoped_ptr<ModelTypeEntity> entity(NewServerItem());
     ApplyUpdateFromServer(entity.get(), version, specifics);
-    return entity.Pass();
+    return entity;
   }
 
   void ApplyUpdateFromServer(ModelTypeEntity* entity,

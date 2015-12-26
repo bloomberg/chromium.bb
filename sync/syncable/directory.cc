@@ -1160,7 +1160,7 @@ scoped_ptr<base::ListValue> Directory::GetNodeDetailsForType(
     nodes->Append(node.release());
   }
 
-  return nodes.Pass();
+  return nodes;
 }
 
 bool Directory::CheckInvariantsOnTransactionClose(

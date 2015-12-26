@@ -5,8 +5,8 @@
 #include "sync/util/cryptographer.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -171,7 +171,7 @@ bool Cryptographer::AddKey(const KeyParams& params) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
-  return AddKeyImpl(nigori.Pass(), true);
+  return AddKeyImpl(std::move(nigori), true);
 }
 
 bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
@@ -184,7 +184,7 @@ bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
-  return AddKeyImpl(nigori.Pass(), false);
+  return AddKeyImpl(std::move(nigori), false);
 }
 
 bool Cryptographer::AddKeyFromBootstrapToken(
@@ -377,7 +377,7 @@ bool Cryptographer::ImportNigoriKey(const std::string& serialized_nigori_key) {
     return false;
   }
 
-  if (!AddKeyImpl(nigori.Pass(), true))
+  if (!AddKeyImpl(std::move(nigori), true))
     return false;
   return true;
 }

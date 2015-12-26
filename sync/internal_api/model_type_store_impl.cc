@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/model_type_store_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -50,7 +52,7 @@ leveldb::WriteBatch* ModelTypeStoreImpl::GetLeveldbWriteBatch(
 ModelTypeStoreImpl::ModelTypeStoreImpl(
     scoped_ptr<ModelTypeStoreBackend> backend,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
-    : backend_(backend.Pass()),
+    : backend_(std::move(backend)),
       backend_task_runner_(backend_task_runner),
       weak_ptr_factory_(this) {
   DCHECK(backend_);
@@ -73,7 +75,7 @@ void ModelTypeStoreImpl::CreateStore(
   scoped_ptr<ModelTypeStoreBackend> backend(new ModelTypeStoreBackend());
 
   scoped_ptr<ModelTypeStoreImpl> store(
-      new ModelTypeStoreImpl(backend.Pass(), blocking_task_runner));
+      new ModelTypeStoreImpl(std::move(backend), blocking_task_runner));
 
   auto task =
       base::Bind(&ModelTypeStoreBackend::Init,
@@ -97,13 +99,13 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(
   leveldb::Env* env_ptr = env.get();
 
   scoped_ptr<ModelTypeStoreBackend> backend(new ModelTypeStoreBackend());
-  backend->TakeEnvOwnership(env.Pass());
+  backend->TakeEnvOwnership(std::move(env));
 
   // In-memory store backend works on the same thread as test.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   scoped_ptr<ModelTypeStoreImpl> store(
-      new ModelTypeStoreImpl(backend.Pass(), task_runner));
+      new ModelTypeStoreImpl(std::move(backend), task_runner));
 
   std::string path;
   env_ptr->GetTestDirectory(&path);
@@ -126,7 +128,7 @@ void ModelTypeStoreImpl::BackendInitDone(const InitCallback& callback,
   if (result != Result::SUCCESS) {
     store.reset();
   }
-  callback.Run(result, store.Pass());
+  callback.Run(result, std::move(store));
 }
 
 // Note on pattern for communicating with backend:
@@ -163,7 +165,7 @@ void ModelTypeStoreImpl::ReadDataDone(const ReadDataCallback& callback,
                                       scoped_ptr<IdList> missing_id_list,
                                       Result result) {
   DCHECK(CalledOnValidThread());
-  callback.Run(result, record_list.Pass(), missing_id_list.Pass());
+  callback.Run(result, std::move(record_list), std::move(missing_id_list));
 }
 
 void ModelTypeStoreImpl::ReadAllData(const ReadAllDataCallback& callback) {
@@ -184,7 +186,7 @@ void ModelTypeStoreImpl::ReadAllDataDone(const ReadAllDataCallback& callback,
                                          scoped_ptr<RecordList> record_list,
                                          Result result) {
   DCHECK(CalledOnValidThread());
-  callback.Run(result, record_list.Pass());
+  callback.Run(result, std::move(record_list));
 }
 
 void ModelTypeStoreImpl::ReadAllMetadata(const ReadMetadataCallback& callback) {
@@ -212,7 +214,7 @@ void ModelTypeStoreImpl::ReadMetadataRecordsDone(
     Result result) {
   DCHECK(CalledOnValidThread());
   if (result != Result::SUCCESS) {
-    callback.Run(result, metadata_records.Pass(), std::string());
+    callback.Run(result, std::move(metadata_records), std::string());
     return;
   }
 
@@ -241,7 +243,7 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
     Result result) {
   DCHECK(CalledOnValidThread());
   if (result != Result::SUCCESS) {
-    callback.Run(result, metadata_records.Pass(), std::string());
+    callback.Run(result, std::move(metadata_records), std::string());
     return;
   }
 
@@ -250,12 +252,12 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
     // string in this case.
     DCHECK((*missing_id_list)[0] == kGlobalMetadataKey);
     DCHECK(global_metadata_records->empty());
-    callback.Run(Result::SUCCESS, metadata_records.Pass(), std::string());
+    callback.Run(Result::SUCCESS, std::move(metadata_records), std::string());
     return;
   }
   DCHECK(!global_metadata_records->empty());
   DCHECK((*global_metadata_records)[0].id == kGlobalMetadataKey);
-  callback.Run(Result::SUCCESS, metadata_records.Pass(),
+  callback.Run(Result::SUCCESS, std::move(metadata_records),
                (*global_metadata_records)[0].value);
 }
 

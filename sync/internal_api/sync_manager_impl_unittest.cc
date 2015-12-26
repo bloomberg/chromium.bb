@@ -6,10 +6,12 @@
 // functionality is provided by the Syncable layer, which has its own
 // unit tests. We'll test SyncApi specific things in this harness.
 
-#include <stdint.h>
+#include "sync/internal_api/sync_manager_impl.h"
 
+#include <stdint.h>
 #include <cstddef>
 #include <map>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -42,7 +44,6 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/internal_api/sync_encryption_handler_impl.h"
-#include "sync/internal_api/sync_manager_impl.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/js/js_backend.h"
 #include "sync/js/js_event_handler.h"
@@ -2549,7 +2550,7 @@ class ComponentsFactory : public TestInternalComponentsFactory {
       sessions::SyncSessionContext* context,
       CancelationSignal* stop_handle) override {
     *session_context_ = context;
-    return scheduler_to_use_.Pass();
+    return std::move(scheduler_to_use_);
   }
 
  private:

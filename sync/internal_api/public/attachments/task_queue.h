@@ -6,9 +6,9 @@
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_TASK_QUEUE_H_
 
 #include <stddef.h>
-
 #include <deque>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -235,7 +235,7 @@ template <typename T>
 void TaskQueue<T>::SetTimerForTest(scoped_ptr<base::Timer> timer) {
   DCHECK(CalledOnValidThread());
   DCHECK(timer.get());
-  backoff_timer_ = timer.Pass();
+  backoff_timer_ = std::move(timer);
 }
 
 template <typename T>

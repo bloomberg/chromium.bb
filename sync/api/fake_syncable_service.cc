@@ -4,6 +4,8 @@
 
 #include "sync/api/fake_syncable_service.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "sync/api/sync_error_factory.h"
 
@@ -27,7 +29,7 @@ void FakeSyncableService::set_process_sync_changes_error(
 
 void FakeSyncableService::set_attachment_store(
     scoped_ptr<AttachmentStore> attachment_store) {
-  attachment_store_ = attachment_store.Pass();
+  attachment_store_ = std::move(attachment_store);
 }
 
 const AttachmentService* FakeSyncableService::attachment_service() const {
@@ -45,7 +47,7 @@ SyncMergeResult FakeSyncableService::MergeDataAndStartSyncing(
     scoped_ptr<SyncChangeProcessor> sync_processor,
     scoped_ptr<SyncErrorFactory> sync_error_factory) {
   SyncMergeResult merge_result(type);
-  sync_processor_ = sync_processor.Pass();
+  sync_processor_ = std::move(sync_processor);
   type_ = type;
   if (!merge_data_and_start_syncing_error_.IsSet()) {
     syncing_ = true;
@@ -78,7 +80,7 @@ FakeSyncableService::GetAttachmentStoreForSync() {
 
 void FakeSyncableService::SetAttachmentService(
     scoped_ptr<AttachmentService> attachment_service) {
-  attachment_service_ = attachment_service.Pass();
+  attachment_service_ = std::move(attachment_service);
 }
 
 }  // namespace syncer

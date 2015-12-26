@@ -191,7 +191,7 @@ bool FakeServer::CreatePermanentBookmarkFolder(const std::string& server_tag,
   if (!entity)
     return false;
 
-  SaveEntity(entity.Pass());
+  SaveEntity(std::move(entity));
   return true;
 }
 
@@ -210,7 +210,7 @@ bool FakeServer::CreateDefaultPermanentItems() {
     if (!top_level_entity) {
       return false;
     }
-    SaveEntity(top_level_entity.Pass());
+    SaveEntity(std::move(top_level_entity));
 
     if (model_type == syncer::BOOKMARKS) {
       if (!CreatePermanentBookmarkFolder(kBookmarkBarFolderServerTag,
@@ -408,7 +408,7 @@ string FakeServer::CommitEntity(
   }
 
   const std::string id = entity->GetId();
-  SaveEntity(entity.Pass());
+  SaveEntity(std::move(entity));
   BuildEntryResponseForSuccessfulCommit(id, entry_response);
   return id;
 }
@@ -531,7 +531,7 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
     list_value->Append(new base::StringValue(entity.GetName()));
   }
 
-  return dictionary.Pass();
+  return dictionary;
 }
 
 std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
@@ -552,7 +552,7 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
 
 void FakeServer::InjectEntity(scoped_ptr<FakeServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SaveEntity(entity.Pass());
+  SaveEntity(std::move(entity));
 }
 
 bool FakeServer::ModifyEntitySpecifics(

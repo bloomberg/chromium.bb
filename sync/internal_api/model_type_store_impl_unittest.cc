@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/model_type_store_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -26,7 +28,7 @@ class ModelTypeStoreImplTest : public testing::Test {
   void OnInitDone(ModelTypeStore::Result result,
                   scoped_ptr<ModelTypeStore> store) {
     ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
-    store_ = store.Pass();
+    store_ = std::move(store);
   }
 
   void PumpLoop() {
@@ -48,7 +50,7 @@ class ModelTypeStoreImplTest : public testing::Test {
     store()->WriteData(write_batch.get(), "id2", "data2");
     store()->WriteGlobalMetadata(write_batch.get(), "global_metadata");
     ModelTypeStore::Result result;
-    store()->CommitWriteBatch(write_batch.Pass(),
+    store()->CommitWriteBatch(std::move(write_batch),
                               base::Bind(&CaptureResult, &result));
     PumpLoop();
     ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
@@ -68,7 +70,7 @@ class ModelTypeStoreImplTest : public testing::Test {
       ModelTypeStore::Result result,
       scoped_ptr<ModelTypeStore::RecordList> records) {
     *dst_result = result;
-    *dst_records = records.Pass();
+    *dst_records = std::move(records);
   }
 
   static void CaptureResutRecordsAndString(
@@ -79,7 +81,7 @@ class ModelTypeStoreImplTest : public testing::Test {
       scoped_ptr<ModelTypeStore::RecordList> records,
       const std::string& value) {
     *dst_result = result;
-    *dst_records = records.Pass();
+    *dst_records = std::move(records);
     *dst_value = value;
   }
 
@@ -91,8 +93,8 @@ class ModelTypeStoreImplTest : public testing::Test {
       scoped_ptr<ModelTypeStore::RecordList> records,
       scoped_ptr<ModelTypeStore::IdList> missing_id_list) {
     *dst_result = result;
-    *dst_records = records.Pass();
-    *dst_id_list = missing_id_list.Pass();
+    *dst_records = std::move(records);
+    *dst_id_list = std::move(missing_id_list);
   }
 
  private:
@@ -168,7 +170,7 @@ TEST_F(ModelTypeStoreImplTest, MissingGlobalMetadata) {
   scoped_ptr<ModelTypeStore::WriteBatch> write_batch =
       store()->CreateWriteBatch();
   store()->DeleteGlobalMetadata(write_batch.get());
-  store()->CommitWriteBatch(write_batch.Pass(),
+  store()->CommitWriteBatch(std::move(write_batch),
                             base::Bind(&CaptureResult, &result));
   PumpLoop();
   ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);

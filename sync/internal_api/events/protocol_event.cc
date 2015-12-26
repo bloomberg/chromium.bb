@@ -19,7 +19,7 @@ scoped_ptr<base::DictionaryValue> ProtocolEvent::ToValue(
   dict->SetString("details", event.GetDetails());
   dict->Set("proto", event.GetProtoMessage().release());
 
-  return dict.Pass();
+  return dict;
 }
 
 }  // namespace syncer

@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/model_type_store_backend.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -28,7 +30,7 @@ class ModelTypeStoreBackendTest : public testing::Test {
     path += "/test_db";
     ModelTypeStore::Result result = backend->Init(path, in_memory_env_.get());
     EXPECT_EQ(ModelTypeStore::Result::SUCCESS, result);
-    return backend.Pass();
+    return backend;
   }
 
  protected:
@@ -44,7 +46,7 @@ TEST_F(ModelTypeStoreBackendTest, WriteThenRead) {
   scoped_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
   write_batch->Put("prefix:id1", "data1");
   ModelTypeStore::Result result =
-      backend->WriteModifications(write_batch.Pass());
+      backend->WriteModifications(std::move(write_batch));
   ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
 
   // Read all records with prefix.
@@ -73,7 +75,7 @@ TEST_F(ModelTypeStoreBackendTest, ReadAllRecordsWithPrefix) {
   write_batch->Put("prefix1:id1", "data1");
   write_batch->Put("prefix2:id2", "data2");
   ModelTypeStore::Result result =
-      backend->WriteModifications(write_batch.Pass());
+      backend->WriteModifications(std::move(write_batch));
   ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
 
   ModelTypeStore::RecordList record_list;
@@ -94,7 +96,7 @@ TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
   write_batch->Put("prefix:id1", "data1");
   write_batch->Put("prefix:id2", "data2");
   ModelTypeStore::Result result =
-      backend->WriteModifications(write_batch.Pass());
+      backend->WriteModifications(std::move(write_batch));
   ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
 
   ModelTypeStore::IdList id_list;
@@ -111,7 +113,7 @@ TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
   // Delete one record.
   write_batch.reset(new leveldb::WriteBatch());
   write_batch->Delete("prefix:id2");
-  result = backend->WriteModifications(write_batch.Pass());
+  result = backend->WriteModifications(std::move(write_batch));
   ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
 
   // Ensure deleted record id is returned in missing_id_list.

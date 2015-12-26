@@ -4,6 +4,8 @@
 
 #include "sync/api/attachments/attachment_store.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -59,7 +61,7 @@ scoped_ptr<AttachmentStoreForSync>
 AttachmentStore::CreateAttachmentStoreForSync() const {
   scoped_ptr<AttachmentStoreForSync> attachment_store_for_sync(
       new AttachmentStoreForSync(frontend_, component_, SYNC));
-  return attachment_store_for_sync.Pass();
+  return attachment_store_for_sync;
 }
 
 scoped_ptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
@@ -76,10 +78,10 @@ scoped_ptr<AttachmentStore> AttachmentStore::CreateInMemoryStore() {
   scoped_ptr<AttachmentStoreBackend> backend(
       new InMemoryAttachmentStore(runner));
   scoped_refptr<AttachmentStoreFrontend> frontend(
-      new AttachmentStoreFrontend(backend.Pass(), runner));
+      new AttachmentStoreFrontend(std::move(backend), runner));
   scoped_ptr<AttachmentStore> attachment_store(
       new AttachmentStore(frontend, MODEL_TYPE));
-  return attachment_store.Pass();
+  return attachment_store;
 }
 
 scoped_ptr<AttachmentStore> AttachmentStore::CreateOnDiskStore(
@@ -90,12 +92,12 @@ scoped_ptr<AttachmentStore> AttachmentStore::CreateOnDiskStore(
       new OnDiskAttachmentStore(base::ThreadTaskRunnerHandle::Get(), path));
 
   scoped_refptr<AttachmentStoreFrontend> frontend =
-      new AttachmentStoreFrontend(backend.Pass(), backend_task_runner);
+      new AttachmentStoreFrontend(std::move(backend), backend_task_runner);
   scoped_ptr<AttachmentStore> attachment_store(
       new AttachmentStore(frontend, MODEL_TYPE));
   frontend->Init(callback);
 
-  return attachment_store.Pass();
+  return attachment_store;
 }
 
 scoped_ptr<AttachmentStore> AttachmentStore::CreateMockStoreForTest(
@@ -103,10 +105,10 @@ scoped_ptr<AttachmentStore> AttachmentStore::CreateMockStoreForTest(
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       base::ThreadTaskRunnerHandle::Get();
   scoped_refptr<AttachmentStoreFrontend> attachment_store_frontend(
-      new AttachmentStoreFrontend(backend.Pass(), runner));
+      new AttachmentStoreFrontend(std::move(backend), runner));
   scoped_ptr<AttachmentStore> attachment_store(
       new AttachmentStore(attachment_store_frontend, MODEL_TYPE));
-  return attachment_store.Pass();
+  return attachment_store;
 }
 
 AttachmentStoreForSync::AttachmentStoreForSync(

@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/attachments/attachment_store_frontend.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -125,7 +127,7 @@ class AttachmentStoreFrontendTest : public testing::Test {
         base::Bind(&AttachmentStoreFrontendTest::DtorCalled,
                    base::Unretained(this))));
     attachment_store_frontend_ = new AttachmentStoreFrontend(
-        backend.Pass(), base::ThreadTaskRunnerHandle::Get());
+        std::move(backend), base::ThreadTaskRunnerHandle::Get());
   }
 
   static void DoneWithResult(const AttachmentStore::Result& result) {

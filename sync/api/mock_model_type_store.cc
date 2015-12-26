@@ -4,6 +4,8 @@
 
 #include "sync/api/mock_model_type_store.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -57,7 +59,7 @@ MockModelTypeStore::CreateWriteBatch() {
 void MockModelTypeStore::CommitWriteBatch(scoped_ptr<WriteBatch> write_batch,
                                           const CallbackWithResult& callback) {
   if (!commit_write_batch_handler_.is_null()) {
-    commit_write_batch_handler_.Run(write_batch.Pass(), callback);
+    commit_write_batch_handler_.Run(std::move(write_batch), callback);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, Result::SUCCESS));

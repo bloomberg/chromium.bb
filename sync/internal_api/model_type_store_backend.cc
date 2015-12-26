@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/model_type_store_backend.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
@@ -32,7 +34,7 @@ scoped_ptr<leveldb::Env> ModelTypeStoreBackend::CreateInMemoryEnv() {
 }
 
 void ModelTypeStoreBackend::TakeEnvOwnership(scoped_ptr<leveldb::Env> env) {
-  env_ = env.Pass();
+  env_ = std::move(env);
 }
 
 ModelTypeStore::Result ModelTypeStoreBackend::Init(const std::string& path,

@@ -23,7 +23,7 @@ scoped_ptr<base::DictionaryValue> CommitCounters::ToValue() const {
   value->SetInteger("numCommitsSuccess", num_commits_success);
   value->SetInteger("numCommitsConflict", num_commits_conflict);
   value->SetInteger("numCommitsError", num_commits_error);
-  return value.Pass();
+  return value;
 }
 
 std::string CommitCounters::ToString() const {

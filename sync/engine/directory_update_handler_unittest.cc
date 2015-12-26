@@ -117,7 +117,7 @@ DirectoryUpdateHandlerProcessUpdateTest::CreateUpdate(
   e->set_name(id);
   e->set_version(kDefaultVersion);
   AddDefaultFieldValue(type, e->mutable_specifics());
-  return e.Pass();
+  return e;
 }
 
 void DirectoryUpdateHandlerProcessUpdateTest::UpdateSyncEntities(

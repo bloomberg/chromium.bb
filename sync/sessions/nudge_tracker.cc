@@ -162,7 +162,7 @@ base::TimeDelta NudgeTracker::RecordRemoteInvalidation(
   // Forward the invalidations to the proper recipient.
   TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
   DCHECK(tracker_it != type_trackers_.end());
-  tracker_it->second->RecordRemoteInvalidation(invalidation.Pass());
+  tracker_it->second->RecordRemoteInvalidation(std::move(invalidation));
   return remote_invalidation_nudge_delay_;
 }
 
