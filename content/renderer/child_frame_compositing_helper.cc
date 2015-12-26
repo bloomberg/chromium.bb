@@ -4,6 +4,8 @@
 
 #include "content/renderer/child_frame_compositing_helper.h"
 
+#include <utility>
+
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
@@ -226,7 +228,7 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
   }
   if (!frame_provider_.get() || frame_provider_->frame_size() != frame_size) {
     frame_provider_ = new cc::DelegatedFrameProvider(
-        resource_collection_.get(), frame->delegated_frame_data.Pass());
+        resource_collection_.get(), std::move(frame->delegated_frame_data));
     scoped_refptr<cc::DelegatedRendererLayer> delegated_layer =
         cc::DelegatedRendererLayer::Create(
             cc_blink::WebLayerImpl::LayerSettings(), frame_provider_.get());
@@ -235,7 +237,7 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     blink::WebLayer* layer = new cc_blink::WebLayerImpl(delegated_layer);
     UpdateWebLayer(layer);
   } else {
-    frame_provider_->SetFrameData(frame->delegated_frame_data.Pass());
+    frame_provider_->SetFrameData(std::move(frame->delegated_frame_data));
   }
 
   CheckSizeAndAdjustLayerProperties(

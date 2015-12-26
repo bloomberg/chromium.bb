@@ -4,6 +4,8 @@
 
 #include "content/renderer/image_downloader/image_downloader_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -116,7 +118,7 @@ namespace content {
 ImageDownloaderImpl::ImageDownloaderImpl(
     RenderFrame* render_frame,
     mojo::InterfaceRequest<image_downloader::ImageDownloader> request)
-    : RenderFrameObserver(render_frame), binding_(this, request.Pass()) {
+    : RenderFrameObserver(render_frame), binding_(this, std::move(request)) {
   DCHECK(render_frame);
 }
 
@@ -130,7 +132,7 @@ void ImageDownloaderImpl::CreateMojoService(
   DVLOG(1) << "ImageDownloaderImpl::CreateService";
   DCHECK(render_frame);
 
-  new ImageDownloaderImpl(render_frame, request.Pass());
+  new ImageDownloaderImpl(render_frame, std::move(request));
 }
 
 // ImageDownloader methods:
@@ -218,7 +220,7 @@ void ImageDownloaderImpl::ReplyDownloadResult(
   result->original_image_sizes =
       mojo::Array<mojo::SizePtr>::From(result_original_image_sizes);
 
-  callback.Run(result.Pass());
+  callback.Run(std::move(result));
 }
 
 }  // namespace content

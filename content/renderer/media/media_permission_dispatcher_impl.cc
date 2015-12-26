@@ -86,7 +86,7 @@ scoped_ptr<media::MediaPermission> MediaPermissionDispatcherImpl::CreateProxy(
   scoped_ptr<media::MediaPermission> media_permission_proxy(
       new MediaPermissionDispatcherProxy(task_runner_, caller_task_runner,
                                          weak_ptr_factory_.GetWeakPtr()));
-  return media_permission_proxy.Pass();
+  return media_permission_proxy;
 }
 
 void MediaPermissionDispatcherImpl::OnPermissionStatus(

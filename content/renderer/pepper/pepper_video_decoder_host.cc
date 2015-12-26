@@ -191,7 +191,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
 
   content::RenderThread* render_thread = content::RenderThread::Get();
   scoped_ptr<base::SharedMemory> shm(
-      render_thread->HostAllocateSharedMemoryBuffer(shm_size).Pass());
+      render_thread->HostAllocateSharedMemoryBuffer(shm_size));
   if (!shm || !shm->Map(shm_size))
     return PP_ERROR_FAILED;
 

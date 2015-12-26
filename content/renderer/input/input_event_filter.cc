@@ -4,6 +4,8 @@
 
 #include "content/renderer/input/input_event_filter.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -178,7 +180,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
 
   InputEventAck ack(event->type, ack_state, latency_info,
-                    overscroll_params.Pass(),
+                    std::move(overscroll_params),
                     WebInputEventTraits::GetUniqueTouchEventId(*event));
   SendMessage(scoped_ptr<IPC::Message>(
       new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));

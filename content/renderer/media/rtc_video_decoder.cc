@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/rtc_video_decoder.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -96,7 +98,7 @@ scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
       break;
     default:
       DVLOG(2) << "Video codec not supported:" << type;
-      return decoder.Pass();
+      return decoder;
   }
 
   base::WaitableEvent waiter(true, false);
@@ -113,7 +115,7 @@ scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     decoder->state_ = INITIALIZED;
   else
     factories->GetTaskRunner()->DeleteSoon(FROM_HERE, decoder.release());
-  return decoder.Pass();
+  return decoder;
 }
 
 // static
@@ -239,7 +241,7 @@ int32_t RTCVideoDecoder::Decode(
     return WEBRTC_VIDEO_CODEC_OK;
   }
 
-  SaveToDecodeBuffers_Locked(inputImage, shm_buffer.Pass(), buffer_data);
+  SaveToDecodeBuffers_Locked(inputImage, std::move(shm_buffer), buffer_data);
   factories_->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&RTCVideoDecoder::RequestBufferDecode,
@@ -499,7 +501,7 @@ void RTCVideoDecoder::RequestBufferDecode() {
       // Drop the buffers before Reset or Release is called.
       if (!IsBufferAfterReset(buffer_data.bitstream_buffer_id,
                               reset_bitstream_buffer_id_)) {
-        PutSHM_Locked(shm_buffer.Pass());
+        PutSHM_Locked(std::move(shm_buffer));
         continue;
       }
     }
@@ -597,7 +599,7 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
         GetSHM_Locked(input_image._length);
     if (!shm_buffer)
       return;
-    SaveToDecodeBuffers_Locked(input_image, shm_buffer.Pass(), buffer_data);
+    SaveToDecodeBuffers_Locked(input_image, std::move(shm_buffer), buffer_data);
     delete[] input_image._buffer;
     pending_buffers_.pop_front();
   }
@@ -759,7 +761,7 @@ void RTCVideoDecoder::CreateSHM(size_t count, size_t size) {
     }
 
     base::AutoLock auto_lock(lock_);
-    PutSHM_Locked(shm.Pass());
+    PutSHM_Locked(std::move(shm));
     ++num_shm_buffers_;
   }
 

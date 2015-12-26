@@ -169,7 +169,7 @@ UserMediaClientImpl::UserMediaClientImpl(
     scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher)
     : RenderFrameObserver(render_frame),
       dependency_factory_(dependency_factory),
-      media_stream_dispatcher_(media_stream_dispatcher.Pass()),
+      media_stream_dispatcher_(std::move(media_stream_dispatcher)),
       weak_factory_(this) {
   DCHECK(dependency_factory_);
   DCHECK(media_stream_dispatcher_.get());

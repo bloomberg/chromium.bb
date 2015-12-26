@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
@@ -98,7 +99,7 @@ class SwapQueue : public FrameSwapMessageSubQueue {
                     bool* is_first) override {
     if (is_first)
       *is_first = Empty();
-    queue_.push_back(msg.Pass());
+    queue_.push_back(std::move(msg));
   }
 
   void DrainMessages(int source_frame_number,
@@ -148,7 +149,8 @@ void FrameSwapMessageQueue::QueueMessageForFrame(MessageDeliveryPolicy policy,
                                                  scoped_ptr<IPC::Message> msg,
                                                  bool* is_first) {
   base::AutoLock lock(lock_);
-  GetSubQueue(policy)->QueueMessage(source_frame_number, msg.Pass(), is_first);
+  GetSubQueue(policy)
+      ->QueueMessage(source_frame_number, std::move(msg), is_first);
 }
 
 void FrameSwapMessageQueue::DidActivate(int source_frame_number) {

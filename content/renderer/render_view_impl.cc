@@ -1570,7 +1570,7 @@ void RenderViewImpl::OnForceRedraw(int id) {
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   if (RenderWidgetCompositor* rwc = compositor()) {
     latency_info_swap_promise_monitor =
-        rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
+        rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info);
   }
   ScheduleCompositeWithForcedRedraw();
 }

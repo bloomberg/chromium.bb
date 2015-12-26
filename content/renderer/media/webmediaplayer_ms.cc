@@ -5,9 +5,9 @@
 #include "content/renderer/media/webmediaplayer_ms.h"
 
 #include <stddef.h>
-
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -61,7 +61,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       render_frame_suspended_(false),
       received_first_frame_(false),
       media_log_(media_log),
-      renderer_factory_(factory.Pass()),
+      renderer_factory_(std::move(factory)),
       media_task_runner_(media_task_runner),
       worker_task_runner_(worker_task_runner),
       gpu_factories_(gpu_factories),

@@ -5,6 +5,7 @@
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -141,7 +142,7 @@ RemoteVideoSourceDelegate::DoRenderFrameOnIOThread(
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
     scoped_ptr<TrackObserver> observer)
-    : observer_(observer.Pass()) {
+    : observer_(std::move(observer)) {
   // The callback will be automatically cleared when 'observer_' goes out of
   // scope and no further callbacks will occur.
   observer_->SetCallback(base::Bind(&MediaStreamRemoteVideoSource::OnChanged,

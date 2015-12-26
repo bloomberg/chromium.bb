@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -232,7 +234,7 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
       return nullptr;
     scoped_ptr<PepperCameraDeviceHost> host(
         new PepperCameraDeviceHost(host_, instance, resource));
-    return host->Init() ? host.Pass() : nullptr;
+    return host->Init() ? std::move(host) : nullptr;
   }
 
   return scoped_ptr<ResourceHost>();

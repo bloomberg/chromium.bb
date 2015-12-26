@@ -4,6 +4,8 @@
 
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 
+#include <utility>
+
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/service_registry.h"
 #include "third_party/mojo/src/mojo/edk/js/handle.h"
@@ -40,7 +42,7 @@ mojo::Handle ServiceRegistryJsWrapper::ConnectToService(
   mojo::MessagePipe pipe;
   if (service_registry_)
     service_registry_->ConnectToRemoteService(service_name,
-                                              pipe.handle0.Pass());
+                                              std::move(pipe.handle0));
   return pipe.handle1.release();
 }
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/allocator/allocator_extension.h"
@@ -348,7 +349,7 @@ class RenderFrameSetupImpl : public RenderFrameSetup {
  public:
   explicit RenderFrameSetupImpl(
       mojo::InterfaceRequest<RenderFrameSetup> request)
-      : routing_id_highmark_(-1), binding_(this, request.Pass()) {}
+      : routing_id_highmark_(-1), binding_(this, std::move(request)) {}
 
   void ExchangeServiceProviders(
       int32_t frame_routing_id,
@@ -366,11 +367,12 @@ class RenderFrameSetupImpl : public RenderFrameSetup {
     // triggers creation of the RenderFrame we want.
     if (!frame) {
       RenderThreadImpl::current()->RegisterPendingRenderFrameConnect(
-          frame_routing_id, services.Pass(), exposed_services.Pass());
+          frame_routing_id, std::move(services), std::move(exposed_services));
       return;
     }
 
-    frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
+    frame->BindServiceRegistry(std::move(services),
+                               std::move(exposed_services));
   }
 
  private:
@@ -379,7 +381,7 @@ class RenderFrameSetupImpl : public RenderFrameSetup {
 };
 
 void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
-  new RenderFrameSetupImpl(request.Pass());
+  new RenderFrameSetupImpl(std::move(request));
 }
 
 blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
@@ -402,15 +404,15 @@ void SetupEmbeddedWorkerOnWorkerThread(
   // nothing and let mojo close the connection.
   if (!client)
     return;
-  client->BindServiceRegistry(services.Pass(),
-                              mojo::MakeProxy(exposed_services.Pass()));
+  client->BindServiceRegistry(std::move(services),
+                              mojo::MakeProxy(std::move(exposed_services)));
 }
 
 class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
  public:
   explicit EmbeddedWorkerSetupImpl(
       mojo::InterfaceRequest<EmbeddedWorkerSetup> request)
-      : binding_(this, request.Pass()) {}
+      : binding_(this, std::move(request)) {}
 
   void ExchangeServiceProviders(
       int32_t thread_id,
@@ -428,7 +430,7 @@ class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
 
 void CreateEmbeddedWorkerSetup(
     mojo::InterfaceRequest<EmbeddedWorkerSetup> request) {
-  new EmbeddedWorkerSetupImpl(request.Pass());
+  new EmbeddedWorkerSetupImpl(std::move(request));
 }
 
 void StringToUintVector(const std::string& str, std::vector<unsigned>* vector) {
@@ -568,15 +570,15 @@ RenderThreadImpl* RenderThreadImpl::Create(
     const InProcessChildThreadParams& params) {
   scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
       scheduler::RendererScheduler::Create();
-  return new RenderThreadImpl(params, renderer_scheduler.Pass());
+  return new RenderThreadImpl(params, std::move(renderer_scheduler));
 }
 
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
     scoped_ptr<base::MessageLoop> main_message_loop,
     scoped_ptr<scheduler::RendererScheduler> renderer_scheduler) {
-  return new RenderThreadImpl(main_message_loop.Pass(),
-                              renderer_scheduler.Pass());
+  return new RenderThreadImpl(std::move(main_message_loop),
+                              std::move(renderer_scheduler));
 }
 
 RenderThreadImpl* RenderThreadImpl::current() {
@@ -590,7 +592,7 @@ RenderThreadImpl::RenderThreadImpl(
                           .InBrowserProcess(params)
                           .UseMojoChannel(ShouldUseMojoChannel())
                           .Build()),
-      renderer_scheduler_(scheduler.Pass()),
+      renderer_scheduler_(std::move(scheduler)),
       raster_worker_pool_(new RasterWorkerPool()) {
   Init();
 }
@@ -603,8 +605,8 @@ RenderThreadImpl::RenderThreadImpl(
     : ChildThreadImpl(Options::Builder()
                           .UseMojoChannel(ShouldUseMojoChannel())
                           .Build()),
-      renderer_scheduler_(scheduler.Pass()),
-      main_message_loop_(main_message_loop.Pass()),
+      renderer_scheduler_(std::move(scheduler)),
+      main_message_loop_(std::move(main_message_loop)),
       raster_worker_pool_(new RasterWorkerPool()) {
   Init();
 }
@@ -1049,13 +1051,13 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
 
   scoped_refptr<PendingRenderFrameConnect> connection(it->second);
   mojo::InterfaceRequest<mojo::ServiceProvider> services(
-      connection->services().Pass());
+      std::move(connection->services()));
   mojo::ServiceProviderPtr exposed_services(
-      connection->exposed_services().Pass());
+      std::move(connection->exposed_services()));
   exposed_services.set_connection_error_handler(mojo::Closure());
   pending_render_frame_connects_.erase(it);
 
-  frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
+  frame->BindServiceRegistry(std::move(services), std::move(exposed_services));
 }
 
 void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
@@ -1087,7 +1089,7 @@ void RenderThreadImpl::RegisterPendingRenderFrameConnect(
       pending_render_frame_connects_.insert(std::make_pair(
           routing_id,
           make_scoped_refptr(new PendingRenderFrameConnect(
-              routing_id, services.Pass(), exposed_services.Pass()))));
+              routing_id, std::move(services), std::move(exposed_services)))));
   CHECK(result.second) << "Inserting a duplicate item.";
 }
 
@@ -2079,8 +2081,8 @@ RenderThreadImpl::PendingRenderFrameConnect::PendingRenderFrameConnect(
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services)
     : routing_id_(routing_id),
-      services_(services.Pass()),
-      exposed_services_(exposed_services.Pass()) {
+      services_(std::move(services)),
+      exposed_services_(std::move(exposed_services)) {
   // The RenderFrame may be deleted before the ExchangeServiceProviders message
   // is received. In that case, the RenderFrameHost should close the connection,
   // which is detected by setting an error handler on |exposed_services_|.

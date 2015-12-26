@@ -35,6 +35,8 @@
 #ifndef CONTENT_RENDERER_HISTORY_CONTROLLER_H_
 #define CONTENT_RENDERER_HISTORY_CONTROLLER_H_
 
+#include <utility>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -112,7 +114,7 @@ class CONTENT_EXPORT HistoryController {
   ~HistoryController();
 
   void set_provisional_entry(scoped_ptr<HistoryEntry> entry) {
-    provisional_entry_ = entry.Pass();
+    provisional_entry_ = std::move(entry);
   }
 
   void GoToEntry(blink::WebLocalFrame* main_frame,

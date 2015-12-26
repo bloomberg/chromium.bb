@@ -5,6 +5,7 @@
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -329,7 +330,7 @@ void StartEchoCancellationDump(AudioProcessing* audio_processing,
                                base::File aec_dump_file) {
   DCHECK(aec_dump_file.IsValid());
 
-  FILE* stream = base::FileToFILE(aec_dump_file.Pass(), "w");
+  FILE* stream = base::FileToFILE(std::move(aec_dump_file), "w");
   if (!stream) {
     LOG(ERROR) << "Failed to open AEC dump file";
     return;

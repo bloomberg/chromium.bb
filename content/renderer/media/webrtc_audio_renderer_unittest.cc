@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/webrtc_audio_renderer.h"
+
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/run_loop.h"
@@ -13,7 +16,6 @@
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc_audio_renderer.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/base/audio_bus.h"
@@ -67,7 +69,7 @@ class FakeAudioOutputDevice
       scoped_ptr<media::AudioOutputIPC> ipc,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const std::string& device_id)
-      : AudioOutputDevice(ipc.Pass(),
+      : AudioOutputDevice(std::move(ipc),
                           io_task_runner,
                           0,
                           std::string(),

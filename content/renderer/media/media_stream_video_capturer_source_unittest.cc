@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/media_stream_video_capturer_source.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -10,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
 #include "media/base/bind_to_current_loop.h"
@@ -76,7 +79,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     source_ = new MediaStreamVideoCapturerSource(
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                    base::Unretained(this)),
-        delegate.Pass());
+        std::move(delegate));
     source_->SetDeviceInfo(device_info);
 
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
@@ -331,7 +334,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   source_ = new MediaStreamVideoCapturerSource(
       base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                  base::Unretained(this)),
-      delegate.Pass());
+      std::move(delegate));
   webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeVideo,
                             base::UTF8ToUTF16("dummy_source_name"),

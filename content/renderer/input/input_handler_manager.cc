@@ -4,6 +4,8 @@
 
 #include "content/renderer/input/input_handler_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -96,7 +98,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
   scoped_ptr<InputHandlerWrapper> wrapper(new InputHandlerWrapper(
       this, routing_id, main_task_runner, input_handler, render_view_impl));
   client_->DidAddInputHandler(routing_id, wrapper->input_handler_proxy());
-  input_handlers_.add(routing_id, wrapper.Pass());
+  input_handlers_.add(routing_id, std::move(wrapper));
 }
 
 void InputHandlerManager::RemoveInputHandler(int routing_id) {

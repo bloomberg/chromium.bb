@@ -5,6 +5,8 @@
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 
+#include <utility>
+
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -50,13 +52,14 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
     return scoped_ptr<PepperCdmWrapper>();
 
   return scoped_ptr<PepperCdmWrapper>(
-      new PepperCdmWrapperImpl(helper_plugin.Pass(), plugin_instance));
+      new PepperCdmWrapperImpl(std::move(helper_plugin), plugin_instance));
 }
 
 PepperCdmWrapperImpl::PepperCdmWrapperImpl(
     ScopedHelperPlugin helper_plugin,
     const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance)
-    : helper_plugin_(helper_plugin.Pass()), plugin_instance_(plugin_instance) {
+    : helper_plugin_(std::move(helper_plugin)),
+      plugin_instance_(plugin_instance) {
   DCHECK(helper_plugin_);
   DCHECK(plugin_instance_.get());
   // Plugin must be a CDM.

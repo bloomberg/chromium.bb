@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
+
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -9,7 +13,6 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
-#include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/video_frame.h"
@@ -28,8 +31,7 @@ class MediaStreamRemoteVideoSourceUnderTest
  public:
   explicit MediaStreamRemoteVideoSourceUnderTest(
       scoped_ptr<TrackObserver> observer)
-      : MediaStreamRemoteVideoSource(observer.Pass()) {
-  }
+      : MediaStreamRemoteVideoSource(std::move(observer)) {}
   using MediaStreamRemoteVideoSource::RenderInterfaceForTest;
 };
 
@@ -42,10 +44,10 @@ class MediaStreamRemoteVideoSourceTest
         webrtc_video_track_(mock_factory_->CreateLocalVideoTrack(
             "test",
             static_cast<cricket::VideoCapturer*>(NULL))),
-        remote_source_(new MediaStreamRemoteVideoSourceUnderTest(
-            scoped_ptr<TrackObserver>(
+        remote_source_(
+            new MediaStreamRemoteVideoSourceUnderTest(scoped_ptr<TrackObserver>(
                 new TrackObserver(base::ThreadTaskRunnerHandle::Get(),
-                    webrtc_video_track_.get())).Pass())),
+                                  webrtc_video_track_.get())))),
         number_of_successful_constraints_applied_(0),
         number_of_failed_constraints_applied_(0) {
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),

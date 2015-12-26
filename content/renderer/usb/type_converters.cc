@@ -94,7 +94,7 @@ TypeConverter<device::usb::ControlTransferParamsPtr,
   params->request = parameters.request;
   params->value = parameters.value;
   params->index = parameters.index;
-  return params.Pass();
+  return params;
 }
 
 // static
@@ -239,7 +239,7 @@ TypeConverter<device::usb::DeviceFilterPtr, blink::WebUSBDeviceFilter>::Convert(
   filter->subclass_code = web_filter.subclassCode;
   filter->has_protocol_code = web_filter.hasProtocolCode;
   filter->protocol_code = web_filter.protocolCode;
-  return filter.Pass();
+  return filter;
 }
 
 // static
@@ -255,7 +255,7 @@ TypeConverter<device::usb::EnumerationOptionsPtr,
     options->filters[i] =
         device::usb::DeviceFilter::From(web_options.filters[i]);
   }
-  return options.Pass();
+  return options;
 }
 
 }  // namespace mojo

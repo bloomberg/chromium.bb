@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/render_thread_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -22,7 +25,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/test/mock_render_process.h"
 #include "content/test/render_thread_impl_browser_test_ipc_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -97,7 +99,7 @@ class RenderThreadImplForTest : public RenderThreadImpl {
   RenderThreadImplForTest(const InProcessChildThreadParams& params,
                           scoped_ptr<scheduler::RendererScheduler> scheduler,
                           scoped_refptr<TestTaskCounter> test_task_counter)
-      : RenderThreadImpl(params, scheduler.Pass()),
+      : RenderThreadImpl(params, std::move(scheduler)),
         test_task_counter_(test_task_counter) {}
 
   ~RenderThreadImplForTest() override {}
@@ -181,7 +183,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     thread_ = new RenderThreadImplForTest(
         InProcessChildThreadParams(test_helper_->GetChannelId(),
                                    test_helper_->GetIOTaskRunner()),
-        renderer_scheduler.Pass(), test_task_counter_);
+        std::move(renderer_scheduler), test_task_counter_);
     cmd->InitFromArgv(old_argv);
 
     thread_->EnsureWebKitInitialized();

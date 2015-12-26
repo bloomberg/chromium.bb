@@ -5,8 +5,8 @@
 #include "content/renderer/media/remote_media_stream_impl.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -156,7 +156,7 @@ class RemoteVideoTrackAdapter
                                   bool enabled) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     scoped_ptr<MediaStreamRemoteVideoSource> video_source(
-        new MediaStreamRemoteVideoSource(observer.Pass()));
+        new MediaStreamRemoteVideoSource(std::move(observer)));
     InitializeWebkitTrack(blink::WebMediaStreamSource::TypeVideo);
     webkit_track()->source().setExtraData(video_source.get());
     // Initial constraints must be provided to a MediaStreamVideoTrack. But
@@ -327,7 +327,7 @@ void RemoteMediaStreamImpl::Observer::OnChangedOnMainThread(
     scoped_ptr<RemoteVideoTrackAdapters> video_tracks) {
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (media_stream_)
-    media_stream_->OnChanged(audio_tracks.Pass(), video_tracks.Pass());
+    media_stream_->OnChanged(std::move(audio_tracks), std::move(video_tracks));
 }
 
 // Called on the signaling thread.

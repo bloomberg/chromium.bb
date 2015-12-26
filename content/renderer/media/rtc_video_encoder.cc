@@ -257,7 +257,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   if (IsBitrateTooHigh(bitrate))
     return;
 
-  video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator().Pass();
+  video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator();
   if (!video_encoder_) {
     LogAndNotifyError(FROM_HERE, "Error creating VideoEncodeAccelerator",
                       media::VideoEncodeAccelerator::kPlatformFailureError);

@@ -4,6 +4,8 @@
 
 #include "content/renderer/service_worker/service_worker_context_client.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -106,7 +108,7 @@ void SendPostMessageToClientOnMainThread(
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   sender->Send(new ServiceWorkerHostMsg_PostMessageToClient(
       routing_id, uuid, message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.Pass())));
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
 }
 
 void SendCrossOriginMessageToClientOnMainThread(
@@ -116,7 +118,7 @@ void SendCrossOriginMessageToClientOnMainThread(
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   sender->Send(new MessagePortHostMsg_PostMessage(
       message_port_id, MessagePortMessage(message),
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.Pass())));
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
 }
 
 blink::WebURLRequest::FetchRequestMode GetBlinkFetchRequestMode(
@@ -279,8 +281,9 @@ void ServiceWorkerContextClient::OnMessageReceived(
 void ServiceWorkerContextClient::BindServiceRegistry(
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services) {
-  context_->service_registry.Bind(services.Pass());
-  context_->service_registry.BindRemoteServiceProvider(exposed_services.Pass());
+  context_->service_registry.Bind(std::move(services));
+  context_->service_registry.BindRemoteServiceProvider(
+      std::move(exposed_services));
 }
 
 blink::WebURL ServiceWorkerContextClient::scope() const {
@@ -562,8 +565,8 @@ ServiceWorkerContextClient::createServiceWorkerNetworkProvider(
   // and ownership is transferred to the DataSource.
   DataSourceExtraData* extra_data = new DataSourceExtraData();
   data_source->setExtraData(extra_data);
-  ServiceWorkerNetworkProvider::AttachToDocumentState(
-      extra_data, provider.Pass());
+  ServiceWorkerNetworkProvider::AttachToDocumentState(extra_data,
+                                                      std::move(provider));
 
   // Blink is responsible for deleting the returned object.
   return new WebServiceWorkerNetworkProviderImpl();

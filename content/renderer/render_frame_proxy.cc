@@ -5,8 +5,8 @@
 #include "content/renderer/render_frame_proxy.h"
 
 #include <stdint.h>
-
 #include <map>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -279,8 +279,7 @@ void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
         ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
   }
   compositing_helper_->OnCompositorFrameSwapped(
-      frame.Pass(),
-      base::get<0>(param).producing_route_id,
+      std::move(frame), base::get<0>(param).producing_route_id,
       base::get<0>(param).output_surface_id,
       base::get<0>(param).producing_host_id,
       base::get<0>(param).shared_memory_handle);

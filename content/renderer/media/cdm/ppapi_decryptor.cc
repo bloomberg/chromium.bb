@@ -5,6 +5,7 @@
 #include "content/renderer/media/cdm/ppapi_decryptor.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -56,7 +57,7 @@ void PpapiDecryptor::Create(
   }
 
   scoped_refptr<PpapiDecryptor> ppapi_decryptor(
-      new PpapiDecryptor(pepper_cdm_wrapper.Pass(), session_message_cb,
+      new PpapiDecryptor(std::move(pepper_cdm_wrapper), session_message_cb,
                          session_closed_cb, legacy_session_error_cb,
                          session_keys_change_cb, session_expiration_update_cb));
 
@@ -65,7 +66,7 @@ void PpapiDecryptor::Create(
       new media::CdmInitializedPromise(cdm_created_cb, ppapi_decryptor));
 
   ppapi_decryptor->InitializeCdm(key_system, allow_distinctive_identifier,
-                                 allow_persistent_state, promise.Pass());
+                                 allow_persistent_state, std::move(promise));
 }
 
 PpapiDecryptor::PpapiDecryptor(
@@ -75,7 +76,7 @@ PpapiDecryptor::PpapiDecryptor(
     const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb)
-    : pepper_cdm_wrapper_(pepper_cdm_wrapper.Pass()),
+    : pepper_cdm_wrapper_(std::move(pepper_cdm_wrapper)),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       legacy_session_error_cb_(legacy_session_error_cb),
@@ -109,7 +110,7 @@ void PpapiDecryptor::InitializeCdm(
       base::Bind(&PpapiDecryptor::OnSessionKeysChange, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionExpirationUpdate, weak_this),
       base::Bind(&PpapiDecryptor::OnFatalPluginError, weak_this),
-      promise.Pass());
+      std::move(promise));
 }
 
 void PpapiDecryptor::SetServerCertificate(
@@ -123,7 +124,7 @@ void PpapiDecryptor::SetServerCertificate(
     return;
   }
 
-  CdmDelegate()->SetServerCertificate(certificate, promise.Pass());
+  CdmDelegate()->SetServerCertificate(certificate, std::move(promise));
 }
 
 void PpapiDecryptor::CreateSessionAndGenerateRequest(
@@ -140,7 +141,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
   }
 
   CdmDelegate()->CreateSessionAndGenerateRequest(session_type, init_data_type,
-                                                 init_data, promise.Pass());
+                                                 init_data, std::move(promise));
 }
 
 void PpapiDecryptor::LoadSession(
@@ -154,7 +155,7 @@ void PpapiDecryptor::LoadSession(
     promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
     return;
   }
-  CdmDelegate()->LoadSession(session_type, session_id, promise.Pass());
+  CdmDelegate()->LoadSession(session_type, session_id, std::move(promise));
 }
 
 void PpapiDecryptor::UpdateSession(
@@ -168,7 +169,7 @@ void PpapiDecryptor::UpdateSession(
     promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
     return;
   }
-  CdmDelegate()->UpdateSession(session_id, response, promise.Pass());
+  CdmDelegate()->UpdateSession(session_id, response, std::move(promise));
 }
 
 void PpapiDecryptor::CloseSession(const std::string& session_id,
@@ -181,7 +182,7 @@ void PpapiDecryptor::CloseSession(const std::string& session_id,
     return;
   }
 
-  CdmDelegate()->CloseSession(session_id, promise.Pass());
+  CdmDelegate()->CloseSession(session_id, std::move(promise));
 }
 
 void PpapiDecryptor::RemoveSession(
@@ -195,7 +196,7 @@ void PpapiDecryptor::RemoveSession(
     return;
   }
 
-  CdmDelegate()->RemoveSession(session_id, promise.Pass());
+  CdmDelegate()->RemoveSession(session_id, std::move(promise));
 }
 
 media::CdmContext* PpapiDecryptor::GetCdmContext() {
@@ -413,7 +414,7 @@ void PpapiDecryptor::OnSessionKeysChange(const std::string& session_id,
     AttemptToResumePlayback();
 
   session_keys_change_cb_.Run(session_id, has_additional_usable_key,
-                              keys_info.Pass());
+                              std::move(keys_info));
 }
 
 void PpapiDecryptor::OnSessionExpirationUpdate(

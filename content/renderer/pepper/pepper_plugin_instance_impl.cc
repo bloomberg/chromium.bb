@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -309,7 +311,7 @@ scoped_ptr<const char* []> StringVectorToArgArray(
   scoped_ptr<const char * []> array(new const char* [vector.size()]);
   for (size_t i = 0; i < vector.size(); ++i)
     array[i] = vector[i].c_str();
-  return array.Pass();
+  return array;
 }
 
 // Returns true if this is a "system reserved" key which should not be sent to
@@ -809,7 +811,7 @@ bool PepperPluginInstanceImpl::Initialize(
     return false;
 
   if (throttler) {
-    throttler_ = throttler.Pass();
+    throttler_ = std::move(throttler);
     throttler_->AddObserver(this);
   }
 

@@ -5,6 +5,7 @@
 #include "content/renderer/media/speech_recognition_audio_sink.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
@@ -23,7 +24,7 @@ SpeechRecognitionAudioSink::SpeechRecognitionAudioSink(
     const OnStoppedCB& on_stopped_cb)
     : track_(track),
       shared_memory_(memory, false),
-      socket_(socket.Pass()),
+      socket_(std::move(socket)),
       output_params_(params),
       track_stopped_(false),
       buffer_index_(0),

@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -70,7 +72,7 @@ void WebRtcLocalAudioRenderer::OnData(const media::AudioBus& audio_bus,
   scoped_ptr<media::AudioBus> audio_data(
       media::AudioBus::Create(audio_bus.channels(), audio_bus.frames()));
   audio_bus.CopyTo(audio_data.get());
-  audio_shifter_->Push(audio_data.Pass(), estimated_capture_time);
+  audio_shifter_->Push(std::move(audio_data), estimated_capture_time);
   const base::TimeTicks now = base::TimeTicks::Now();
   total_render_time_ += now - last_render_time_;
   last_render_time_ = now;

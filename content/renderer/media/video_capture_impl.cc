@@ -12,6 +12,7 @@
 #include "content/renderer/media/video_capture_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -31,7 +32,7 @@ class VideoCaptureImpl::ClientBuffer
     : public base::RefCountedThreadSafe<ClientBuffer> {
  public:
   ClientBuffer(scoped_ptr<base::SharedMemory> buffer, size_t buffer_size)
-      : buffer_(buffer.Pass()), buffer_size_(buffer_size) {}
+      : buffer_(std::move(buffer)), buffer_size_(buffer_size) {}
 
   base::SharedMemory* buffer() const { return buffer_.get(); }
   size_t buffer_size() const { return buffer_size_; }
@@ -251,8 +252,9 @@ void VideoCaptureImpl::OnBufferCreated(base::SharedMemoryHandle handle,
     return;
   }
   const bool inserted =
-      client_buffers_.insert(std::make_pair(buffer_id, new ClientBuffer(
-                                                           shm.Pass(), length)))
+      client_buffers_.insert(std::make_pair(
+                                 buffer_id,
+                                 new ClientBuffer(std::move(shm), length)))
           .second;
   DCHECK(inserted);
 }

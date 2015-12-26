@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -122,7 +123,7 @@ void RtcDataChannelHandler::Observer::OnMessageImpl(
     scoped_ptr<webrtc::DataBuffer> buffer) {
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (handler_)
-    handler_->OnMessage(buffer.Pass());
+    handler_->OnMessage(std::move(buffer));
 }
 
 RtcDataChannelHandler::RtcDataChannelHandler(

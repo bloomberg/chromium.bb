@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc_audio_renderer.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -652,7 +654,7 @@ void WebRtcAudioRenderer::PrepareSink() {
     sink_params_ = new_sink_params;
     fifo_delay_milliseconds_ = new_fifo_delay_milliseconds;
     if (new_audio_fifo.get())
-      audio_fifo_ = new_audio_fifo.Pass();
+      audio_fifo_ = std::move(new_audio_fifo);
   }
 
   sink_->Initialize(new_sink_params, this);

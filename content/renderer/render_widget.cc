@@ -4,6 +4,8 @@
 
 #include "content/renderer/render_widget.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -469,8 +471,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
   if (RenderThreadImpl::current()) {
     render_widget_scheduling_state_ = RenderThreadImpl::current()
                                           ->GetRendererScheduler()
-                                          ->NewRenderWidgetSchedulingState()
-                                          .Pass();
+                                          ->NewRenderWidgetSchedulingState();
     render_widget_scheduling_state_->SetHidden(is_hidden_);
   }
 }
@@ -1000,7 +1001,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 
     return make_scoped_ptr(new CompositorOutputSurface(
         routing_id(), output_surface_id, nullptr, nullptr,
-        software_device.Pass(), frame_swap_message_queue_, true));
+        std::move(software_device), frame_swap_message_queue_, true));
   }
 
   return make_scoped_ptr(new MailboxOutputSurface(
@@ -1338,7 +1339,7 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
                        compositor_->GetSourceFrameNumber());
 
   if (swap_promise) {
-    compositor_->QueueSwapPromise(swap_promise.Pass());
+    compositor_->QueueSwapPromise(std::move(swap_promise));
     // Request a commit. This might either A) request a commit ahead of time
     // or B) request a commit which is not needed because there are not
     // pending updates. If B) then the commit will be skipped and the swap
@@ -1425,7 +1426,7 @@ void RenderWidget::QueueSyntheticGesture(
   pending_synthetic_gesture_callbacks_.push(callback);
 
   SyntheticGesturePacket gesture_packet;
-  gesture_packet.set_gesture_params(gesture_params.Pass());
+  gesture_packet.set_gesture_params(std::move(gesture_params));
 
   Send(new InputHostMsg_QueueSyntheticGesture(routing_id_, gesture_packet));
 }
@@ -2136,7 +2137,7 @@ RenderWidget::CreateGraphicsContext3D(bool compositor) {
       new WebGraphicsContext3DCommandBufferImpl(
           0, GetURLForGraphicsContext3D(), gpu_channel_host.get(), attributes,
           lose_context_when_out_of_memory, limits, NULL));
-  return context.Pass();
+  return context;
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {

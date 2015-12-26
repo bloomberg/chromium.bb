@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -558,7 +558,7 @@ PluginModule::~PluginModule() {
 
 void PluginModule::SetRendererPpapiHost(
     scoped_ptr<RendererPpapiHostImpl> host) {
-  renderer_ppapi_host_ = host.Pass();
+  renderer_ppapi_host_ = std::move(host);
 }
 
 bool PluginModule::InitAsInternalPlugin(

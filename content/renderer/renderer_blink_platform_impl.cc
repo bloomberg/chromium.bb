@@ -4,6 +4,8 @@
 
 #include "content/renderer/renderer_blink_platform_impl.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -301,7 +303,7 @@ blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
             ? loading_task_runner_ : base::ThreadTaskRunnerHandle::Get()));
   return new content::WebURLLoaderImpl(
       child_thread ? child_thread->resource_dispatcher() : NULL,
-      task_runner.Pass());
+      std::move(task_runner));
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {

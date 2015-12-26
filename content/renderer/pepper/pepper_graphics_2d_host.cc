@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -553,7 +554,7 @@ void PepperGraphics2DHost::ReleaseCallback(scoped_ptr<cc::SharedBitmap> bitmap,
   // Only keep around a cached bitmap if the plugin is currently drawing (has
   // need_flush_ack_ set).
   if (need_flush_ack_ && bound_instance_)
-    cached_bitmap_ = bitmap.Pass();
+    cached_bitmap_ = std::move(bitmap);
   cached_bitmap_size_ = bitmap_size;
 }
 
@@ -567,7 +568,7 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
   scoped_ptr<cc::SharedBitmap> shared_bitmap;
   if (cached_bitmap_) {
     if (cached_bitmap_size_ == pixel_image_size)
-      shared_bitmap = cached_bitmap_.Pass();
+      shared_bitmap = std::move(cached_bitmap_);
     else
       cached_bitmap_.reset();
   }

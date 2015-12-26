@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/canvas_capture_handler.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -102,7 +104,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(const blink::WebSize& size,
   scoped_ptr<media::VideoCapturerSource> video_source(
       new CanvasCaptureHandler::VideoCapturerSource(
           weak_ptr_factory_.GetWeakPtr(), frame_rate));
-  AddVideoCapturerSourceToVideoTrack(video_source.Pass(), track);
+  AddVideoCapturerSourceToVideoTrack(std::move(video_source), track);
 }
 
 CanvasCaptureHandler::~CanvasCaptureHandler() {
@@ -192,7 +194,7 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   blink::WebMediaStreamSource webkit_source;
   scoped_ptr<MediaStreamVideoSource> media_stream_source(
       new MediaStreamVideoCapturerSource(
-          MediaStreamSource::SourceStoppedCallback(), source.Pass()));
+          MediaStreamSource::SourceStoppedCallback(), std::move(source)));
   webkit_source.initialize(track_id, blink::WebMediaStreamSource::TypeVideo,
                            track_id, false, true);
   webkit_source.setExtraData(media_stream_source.get());

@@ -7,6 +7,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -699,7 +700,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
     scoped_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
         new media::FFmpegVideoDecoder());
     ffmpeg_video_decoder->set_decode_nalus(true);
-    decoder_ = ffmpeg_video_decoder.Pass();
+    decoder_ = std::move(ffmpeg_video_decoder);
   }
 #elif defined(MEDIA_DISABLE_LIBVPX)
   OnInitDone(false);

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+
+#include <utility>
+
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,30 +21,26 @@ class FrameSwapMessageQueueTest : public testing::Test {
 
  protected:
   void QueueNextSwapMessage(scoped_ptr<IPC::Message> msg) {
-    queue_->QueueMessageForFrame(
-        MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 0, msg.Pass(), NULL);
+    queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 0,
+                                 std::move(msg), NULL);
   }
 
   void QueueNextSwapMessage(scoped_ptr<IPC::Message> msg, bool* first) {
-    queue_->QueueMessageForFrame(
-        MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 0, msg.Pass(), first);
+    queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 0,
+                                 std::move(msg), first);
   }
 
   void QueueVisualStateMessage(int source_frame_number,
                                scoped_ptr<IPC::Message> msg) {
     queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE,
-                                 source_frame_number,
-                                 msg.Pass(),
-                                 NULL);
+                                 source_frame_number, std::move(msg), NULL);
   }
 
   void QueueVisualStateMessage(int source_frame_number,
                                scoped_ptr<IPC::Message> msg,
                                bool* first) {
     queue_->QueueMessageForFrame(MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE,
-                                 source_frame_number,
-                                 msg.Pass(),
-                                 first);
+                                 source_frame_number, std::move(msg), first);
   }
 
   void DrainMessages(int source_frame_number,
@@ -64,7 +63,7 @@ class FrameSwapMessageQueueTest : public testing::Test {
   }
 
   scoped_ptr<IPC::Message> CloneMessage(const IPC::Message& other) {
-    return make_scoped_ptr(new IPC::Message(other)).Pass();
+    return make_scoped_ptr(new IPC::Message(other));
   }
 
   void TestDidNotSwap(cc::SwapPromise::DidNotSwapReason reason);

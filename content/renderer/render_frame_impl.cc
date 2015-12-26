@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -476,7 +477,7 @@ WebURLRequest CreateURLRequestForNavigation(
   }
 
   RequestExtraData* extra_data = new RequestExtraData();
-  extra_data->set_stream_override(stream_override.Pass());
+  extra_data->set_stream_override(std::move(stream_override));
   request.setExtraData(extra_data);
 
   // Set the ui timestamp for this navigation. Currently the timestamp here is
@@ -1321,8 +1322,8 @@ void RenderFrameImpl::NavigateToSwappedOutURL() {
 void RenderFrameImpl::BindServiceRegistry(
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services) {
-  service_registry_.Bind(services.Pass());
-  service_registry_.BindRemoteServiceProvider(exposed_services.Pass());
+  service_registry_.Bind(std::move(services));
+  service_registry_.BindRemoteServiceProvider(std::move(exposed_services));
 }
 
 ManifestManager* RenderFrameImpl::manifest_manager() {
@@ -1331,7 +1332,7 @@ ManifestManager* RenderFrameImpl::manifest_manager() {
 
 void RenderFrameImpl::SetPendingNavigationParams(
     scoped_ptr<NavigationParams> navigation_params) {
-  pending_navigation_params_ = navigation_params.Pass();
+  pending_navigation_params_ = std::move(navigation_params);
 }
 
 void RenderFrameImpl::OnBeforeUnload() {
@@ -1733,7 +1734,7 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::completed(
       for (const auto& value : result) {
         scoped_ptr<base::Value> result_value(
             converter.FromV8Value(value, context));
-        list.Append(result_value ? result_value.Pass()
+        list.Append(result_value ? std::move(result_value)
                                  : base::Value::CreateNullValue());
       }
     } else {
@@ -1761,7 +1762,7 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
       converter.SetRegExpAllowed(true);
       scoped_ptr<base::Value> result_value(
           converter.FromV8Value(result, context));
-      list.Set(0, result_value ? result_value.Pass()
+      list.Set(0, result_value ? std::move(result_value)
                                : base::Value::CreateNullValue());
     } else {
       list.Set(0, base::Value::CreateNullValue());
@@ -2336,7 +2337,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
   return new media::WebMediaPlayerImpl(
       frame, client, encrypted_client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
-      media_renderer_factory.Pass(), GetCdmFactory(), url_index_, params);
+      std::move(media_renderer_factory), GetCdmFactory(), url_index_, params);
 }
 
 blink::WebMediaSession* RenderFrameImpl::createMediaSession() {
@@ -3639,7 +3640,7 @@ void RenderFrameImpl::willSendRequest(
   extra_data->set_transferred_request_request_id(
       navigation_state->start_params().transferred_request_request_id);
   extra_data->set_service_worker_provider_id(provider_id);
-  extra_data->set_stream_override(stream_override.Pass());
+  extra_data->set_stream_override(std::move(stream_override));
   if (request.loFiState() != WebURLRequest::LoFiUnspecified)
     extra_data->set_lofi_state(static_cast<LoFiState>(request.loFiState()));
   else if (is_main_frame_ && !navigation_state->request_committed())
@@ -4485,7 +4486,7 @@ void RenderFrameImpl::OnCommitNavigation(
   stream_override->response = response;
 
   NavigateInternal(common_params, StartNavigationParams(), request_params,
-                   stream_override.Pass());
+                   std::move(stream_override));
 }
 
 void RenderFrameImpl::OnFailedNavigation(
@@ -4927,8 +4928,9 @@ void RenderFrameImpl::NavigateInternal(
   blink::WebFrameLoadType load_type = blink::WebFrameLoadType::Standard;
   bool should_load_request = false;
   WebHistoryItem item_for_history_navigation;
-  WebURLRequest request = CreateURLRequestForNavigation(
-      common_params, stream_params.Pass(), frame_->isViewSourceModeEnabled());
+  WebURLRequest request =
+      CreateURLRequestForNavigation(common_params, std::move(stream_params),
+                                    frame_->isViewSourceModeEnabled());
 #if defined(OS_ANDROID)
   request.setHasUserGesture(start_params.has_user_gesture);
 #endif
@@ -4980,14 +4982,15 @@ void RenderFrameImpl::NavigateInternal(
           // process.
           DCHECK(!frame_->parent());
           render_view_->history_controller()->GoToEntry(
-              frame_, entry.Pass(), navigation_params.Pass(), cache_policy);
+              frame_, std::move(entry), std::move(navigation_params),
+              cache_policy);
         } else {
           // In --site-per-process, the browser process sends a single
           // WebHistoryItem destined for this frame.
           // TODO(creis): Change PageState to FrameState.  In the meantime, we
           // store the relevant frame's WebHistoryItem in the root of the
           // PageState.
-          SetPendingNavigationParams(navigation_params.Pass());
+          SetPendingNavigationParams(std::move(navigation_params));
           blink::WebHistoryItem history_item = entry->root();
           blink::WebHistoryLoadType load_type =
               request_params.is_same_document_history_load
@@ -5141,9 +5144,8 @@ void RenderFrameImpl::InitializeUserMediaClient() {
 #if defined(ENABLE_WEBRTC)
   DCHECK(!web_user_media_client_);
   web_user_media_client_ = new UserMediaClientImpl(
-      this,
-      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
-      make_scoped_ptr(new MediaStreamDispatcher(this)).Pass());
+      this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
+      make_scoped_ptr(new MediaStreamDispatcher(this)));
 #endif
 }
 
@@ -5180,7 +5182,7 @@ RenderFrameImpl::CreateRendererFactory() {
   scoped_ptr<MediaStreamRendererFactory> factory =
       GetContentClient()->renderer()->CreateMediaStreamRendererFactory();
   if (factory.get())
-    return factory.Pass();
+    return factory;
 #if defined(ENABLE_WEBRTC)
   return scoped_ptr<MediaStreamRendererFactory>(
       new MediaStreamRendererFactoryImpl());
@@ -5530,7 +5532,7 @@ scoped_ptr<media::MediaPermission> RenderFrameImpl::CreateMediaPermissionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner) {
   MediaPermissionDispatcherImpl* media_permission =
       static_cast<MediaPermissionDispatcherImpl*>(GetMediaPermission());
-  return media_permission->CreateProxy(caller_task_runner).Pass();
+  return media_permission->CreateProxy(caller_task_runner);
 }
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
@@ -5616,11 +5618,11 @@ mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
   mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
   mojo::Array<mojo::String> all_interfaces;
   all_interfaces.push_back("*");
-  filter->filter.insert("*", all_interfaces.Pass());
-  mojo_shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
-                                    nullptr, filter.Pass(),
-                                    base::Bind(&OnGotContentHandlerID));
-  return service_provider.Pass();
+  filter->filter.insert("*", std::move(all_interfaces));
+  mojo_shell_->ConnectToApplication(
+      std::move(request), GetProxy(&service_provider), nullptr,
+      std::move(filter), base::Bind(&OnGotContentHandlerID));
+  return service_provider;
 }
 
 media::RendererWebMediaPlayerDelegate*

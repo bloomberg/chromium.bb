@@ -74,7 +74,7 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
     initial_size_params->new_size = initial_size_;
     initial_size_params->physical_backing_size = initial_size_;
     initial_size_params->needs_resize_ack = true;
-    return initial_size_params.Pass();
+    return initial_size_params;
   }
 
   gfx::Size initial_size_;

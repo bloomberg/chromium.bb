@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -418,7 +419,7 @@ void MediaStreamAudioProcessor::OnAecDumpFile(
   DCHECK(file.IsValid());
 
   if (audio_processing_)
-    StartEchoCancellationDump(audio_processing_.get(), file.Pass());
+    StartEchoCancellationDump(audio_processing_.get(), std::move(file));
   else
     file.Close();
 }

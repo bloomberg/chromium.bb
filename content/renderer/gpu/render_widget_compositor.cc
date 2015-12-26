@@ -5,9 +5,9 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 
 #include <stddef.h>
-
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/location.h"
@@ -495,7 +495,7 @@ void RenderWidgetCompositor::Initialize() {
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
   params.main_task_runner = main_thread_compositor_task_runner;
-  params.external_begin_frame_source = external_begin_frame_source.Pass();
+  params.external_begin_frame_source = std::move(external_begin_frame_source);
   if (compositor_thread_task_runner.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
         compositor_thread_task_runner, &params);
@@ -550,7 +550,7 @@ RenderWidgetCompositor::CreateLatencyInfoSwapPromiseMonitor(
 
 void RenderWidgetCompositor::QueueSwapPromise(
     scoped_ptr<cc::SwapPromise> swap_promise) {
-  layer_tree_host_->QueueSwapPromise(swap_promise.Pass());
+  layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
 }
 
 int RenderWidgetCompositor::GetSourceFrameNumber() const {
@@ -577,13 +577,14 @@ int RenderWidgetCompositor::ScheduleMicroBenchmark(
     const std::string& name,
     scoped_ptr<base::Value> value,
     const base::Callback<void(scoped_ptr<base::Value>)>& callback) {
-  return layer_tree_host_->ScheduleMicroBenchmark(name, value.Pass(), callback);
+  return layer_tree_host_->ScheduleMicroBenchmark(name, std::move(value),
+                                                  callback);
 }
 
 bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
     int id,
     scoped_ptr<base::Value> value) {
-  return layer_tree_host_->SendMessageToMicroBenchmark(id, value.Pass());
+  return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
 }
 
 void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
@@ -876,7 +877,8 @@ void RenderWidgetCompositor::UpdateLayerTreeHost() {
     // For WebViewImpl, this will always have a root layer.  For other widgets,
     // the widget may be closed before servicing this request, so ignore it.
     if (cc::Layer* root_layer = layer_tree_host_->root_layer()) {
-      root_layer->RequestCopyOfOutput(temporary_copy_output_request_.Pass());
+      root_layer->RequestCopyOfOutput(
+          std::move(temporary_copy_output_request_));
     } else {
       temporary_copy_output_request_->SendEmptyResult();
       temporary_copy_output_request_ = nullptr;
@@ -916,7 +918,7 @@ void RenderWidgetCompositor::RequestNewOutputSurface() {
 
   DCHECK_EQ(surface->capabilities().max_frames_pending, 1);
 
-  layer_tree_host_->SetOutputSurface(surface.Pass());
+  layer_tree_host_->SetOutputSurface(std::move(surface));
 }
 
 void RenderWidgetCompositor::DidInitializeOutputSurface() {
@@ -1034,7 +1036,7 @@ void RenderWidgetCompositor::OnHandleCompositorProto(
     return;
   }
 
-  remote_proto_channel_receiver_->OnProtoReceived(deserialized.Pass());
+  remote_proto_channel_receiver_->OnProtoReceived(std::move(deserialized));
 }
 
 cc::ManagedMemoryPolicy RenderWidgetCompositor::GetGpuMemoryPolicy(

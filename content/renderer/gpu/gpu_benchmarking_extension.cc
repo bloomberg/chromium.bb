@@ -5,8 +5,8 @@
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
@@ -361,7 +361,7 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
   context.render_view_impl()->QueueSyntheticGesture(
-      gesture_params.Pass(),
+      std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
   return true;
@@ -403,7 +403,7 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
   context.render_view_impl()->QueueSyntheticGesture(
-      gesture_params.Pass(),
+      std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
   return true;
@@ -696,7 +696,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
   context.render_view_impl()->QueueSyntheticGesture(
-      gesture_params.Pass(),
+      std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
   return true;
@@ -744,7 +744,7 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
   context.render_view_impl()->QueueSyntheticGesture(
-      gesture_params.Pass(),
+      std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
   return true;
@@ -810,7 +810,7 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
   // progress, we will leak the callback and context. This needs to be fixed,
   // somehow.
   context.render_view_impl()->QueueSyntheticGesture(
-      gesture_params.Pass(),
+      std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
   return true;
@@ -846,8 +846,7 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
       make_scoped_ptr(converter->FromV8Value(arguments, v8_context));
 
   return context.compositor()->ScheduleMicroBenchmark(
-      name,
-      value.Pass(),
+      name, std::move(value),
       base::Bind(&OnMicroBenchmarkCompleted, callback_and_context));
 }
 
@@ -865,7 +864,8 @@ bool GpuBenchmarking::SendMessageToMicroBenchmark(
   scoped_ptr<base::Value> value =
       make_scoped_ptr(converter->FromV8Value(message, v8_context));
 
-  return context.compositor()->SendMessageToMicroBenchmark(id, value.Pass());
+  return context.compositor()->SendMessageToMicroBenchmark(id,
+                                                           std::move(value));
 }
 
 bool GpuBenchmarking::HasGpuProcess() {

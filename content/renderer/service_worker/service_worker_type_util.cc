@@ -39,7 +39,7 @@ class HeaderVisitor : public blink::WebHTTPHeaderVisitor {
 };
 
 scoped_ptr<HeaderVisitor> MakeHeaderVisitor(ServiceWorkerHeaderMap* headers) {
-  return scoped_ptr<HeaderVisitor>(new HeaderVisitor(headers)).Pass();
+  return scoped_ptr<HeaderVisitor>(new HeaderVisitor(headers));
 }
 
 }  // namespace

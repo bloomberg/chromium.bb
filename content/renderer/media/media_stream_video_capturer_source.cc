@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -385,7 +387,7 @@ void LocalVideoCapturerSource::OnDeviceSupportedFormatsEnumerated(
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
     scoped_ptr<media::VideoCapturerSource> source)
-    : source_(source.Pass()) {
+    : source_(std::move(source)) {
   SetStopCallback(stop_callback);
 }
 

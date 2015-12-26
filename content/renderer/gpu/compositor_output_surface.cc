@@ -4,6 +4,8 @@
 
 #include "content/renderer/gpu/compositor_output_surface.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -36,7 +38,7 @@ CompositorOutputSurface::CompositorOutputSurface(
     bool use_swap_compositor_frame_message)
     : OutputSurface(context_provider,
                     worker_context_provider,
-                    software_device.Pass()),
+                    std::move(software_device)),
       output_surface_id_(output_surface_id),
       use_swap_compositor_frame_message_(use_swap_compositor_frame_message),
       output_surface_filter_(RenderThreadImpl::current()
@@ -102,7 +104,7 @@ void CompositorOutputSurface::ShortcutSwapAck(
 
   OnSwapAck(output_surface_id, *layout_test_previous_frame_ack_);
 
-  layout_test_previous_frame_ack_->gl_frame_data = gl_frame_data.Pass();
+  layout_test_previous_frame_ack_->gl_frame_data = std::move(gl_frame_data);
 }
 
 void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {

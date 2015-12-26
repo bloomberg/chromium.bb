@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
@@ -366,7 +367,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (WebInputEventTraits::WillReceiveAckFromRenderer(input_event) && !no_ack) {
     scoped_ptr<InputEventAck> response(new InputEventAck(
         input_event.type, ack_result, swap_latency_info,
-        event_overscroll.Pass(),
+        std::move(event_overscroll),
         WebInputEventTraits::GetUniqueTouchEventId(input_event)));
     if (rate_limiting_wanted && frame_pending && !widget_->is_hidden()) {
       // We want to rate limit the input events in this case, so we'll wait for

@@ -117,7 +117,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
         kTestAudioChannels,
         kTestAudioSampleRate * kTestAudioBufferDurationMS / 1000));
     audio_source_.OnMoreData(bus.get(), 0, 0);
-    return bus.Pass();
+    return bus;
   }
 
   // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks

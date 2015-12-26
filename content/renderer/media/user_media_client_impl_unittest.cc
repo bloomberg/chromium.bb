@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media/user_media_client_impl.h"
+
 #include <stddef.h>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -12,7 +15,6 @@
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
-#include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
@@ -50,14 +52,14 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   UserMediaClientImplUnderTest(
       PeerConnectionDependencyFactory* dependency_factory,
       scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher)
-      : UserMediaClientImpl(
-            NULL, dependency_factory, media_stream_dispatcher.Pass()),
+      : UserMediaClientImpl(NULL,
+                            dependency_factory,
+                            std::move(media_stream_dispatcher)),
         state_(REQUEST_NOT_STARTED),
         result_(NUM_MEDIA_REQUEST_RESULTS),
         result_name_(""),
         factory_(dependency_factory),
-        video_source_(NULL) {
-  }
+        video_source_(NULL) {}
 
   void RequestUserMedia() {
     blink::WebUserMediaRequest user_media_request;
@@ -161,7 +163,7 @@ class UserMediaClientImplTest : public ::testing::Test {
     ms_dispatcher_ = new MockMediaStreamDispatcher();
     used_media_impl_.reset(new UserMediaClientImplUnderTest(
         dependency_factory_.get(),
-        scoped_ptr<MediaStreamDispatcher>(ms_dispatcher_).Pass()));
+        scoped_ptr<MediaStreamDispatcher>(ms_dispatcher_)));
   }
 
   void TearDown() override {

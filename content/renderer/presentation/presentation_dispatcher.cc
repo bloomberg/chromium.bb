@@ -5,6 +5,7 @@
 #include "content/renderer/presentation/presentation_dispatcher.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -179,7 +180,7 @@ void PresentationDispatcher::DoSendMessage(SendMessageRequest* request) {
   ConnectToPresentationServiceIfNeeded();
 
   presentation_service_->SendSessionMessage(
-      request->session_info.Pass(), request->message.Pass(),
+      std::move(request->session_info), std::move(request->message),
       base::Bind(&PresentationDispatcher::HandleSendMessageRequests,
                  base::Unretained(this)));
 }
@@ -348,7 +349,7 @@ void PresentationDispatcher::OnDefaultSessionStarted(
   if (!session_info.is_null()) {
     presentation_service_->ListenForSessionMessages(session_info.Clone());
     controller_->didStartDefaultSession(
-        new PresentationConnectionClient(session_info.Pass()));
+        new PresentationConnectionClient(std::move(session_info)));
   }
 }
 
@@ -368,7 +369,7 @@ void PresentationDispatcher::OnSessionCreated(
   DCHECK(!session_info.is_null());
   presentation_service_->ListenForSessionMessages(session_info.Clone());
   callback->onSuccess(blink::adoptWebPtr(
-      new PresentationConnectionClient(session_info.Pass())));
+      new PresentationConnectionClient(std::move(session_info))));
 }
 
 void PresentationDispatcher::OnConnectionStateChanged(
@@ -379,7 +380,7 @@ void PresentationDispatcher::OnConnectionStateChanged(
 
   DCHECK(!connection.is_null());
   controller_->didChangeSessionState(
-      new PresentationConnectionClient(connection.Pass()),
+      new PresentationConnectionClient(std::move(connection)),
       GetWebPresentationConnectionStateFromMojo(state));
 }
 
@@ -427,7 +428,7 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
       mojo::GetProxy(&presentation_service_));
   presentation::PresentationServiceClientPtr client_ptr;
   binding_.Bind(GetProxy(&client_ptr));
-  presentation_service_->SetClient(client_ptr.Pass());
+  presentation_service_->SetClient(std::move(client_ptr));
 }
 
 void PresentationDispatcher::UpdateListeningState(AvailabilityStatus* status) {
@@ -451,7 +452,7 @@ void PresentationDispatcher::UpdateListeningState(AvailabilityStatus* status) {
 PresentationDispatcher::SendMessageRequest::SendMessageRequest(
     presentation::PresentationSessionInfoPtr session_info,
     presentation::SessionMessagePtr message)
-    : session_info(session_info.Pass()), message(message.Pass()) {}
+    : session_info(std::move(session_info)), message(std::move(message)) {}
 
 PresentationDispatcher::SendMessageRequest::~SendMessageRequest() {}
 
@@ -471,7 +472,8 @@ PresentationDispatcher::CreateSendTextMessageRequest(
   session_message->type =
       presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT;
   session_message->message = message.utf8();
-  return new SendMessageRequest(session_info.Pass(), session_message.Pass());
+  return new SendMessageRequest(std::move(session_info),
+                                std::move(session_message));
 }
 
 // static
@@ -492,7 +494,8 @@ PresentationDispatcher::CreateSendBinaryMessageRequest(
   session_message->type = type;
   std::vector<uint8_t> tmp_data_vector(data, data + length);
   session_message->data.Swap(&tmp_data_vector);
-  return new SendMessageRequest(session_info.Pass(), session_message.Pass());
+  return new SendMessageRequest(std::move(session_info),
+                                std::move(session_message));
 }
 
 PresentationDispatcher::AvailabilityStatus::AvailabilityStatus(

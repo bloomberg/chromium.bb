@@ -206,7 +206,7 @@ scoped_ptr<HistoryEntry> PageStateToHistoryEntry(const PageState& page_state) {
   scoped_ptr<HistoryEntry> entry(new HistoryEntry());
   RecursivelyGenerateHistoryItem(state.top, entry->root_history_node());
 
-  return entry.Pass();
+  return entry;
 }
 
 }  // namespace content

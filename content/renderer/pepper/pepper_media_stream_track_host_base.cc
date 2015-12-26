@@ -4,6 +4,8 @@
 
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "content/common/pepper_file_util.h"
@@ -51,15 +53,14 @@ bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
 
   content::RenderThread* render_thread = content::RenderThread::Get();
   scoped_ptr<base::SharedMemory> shm(
-      render_thread->HostAllocateSharedMemoryBuffer(size.ValueOrDie()).Pass());
+      render_thread->HostAllocateSharedMemoryBuffer(size.ValueOrDie()));
   if (!shm)
     return false;
 
   base::SharedMemoryHandle shm_handle = shm->handle();
   if (!buffer_manager_.SetBuffers(number_of_buffers,
                                   buffer_size_aligned.ValueOrDie(),
-                                  shm.Pass(),
-                                  true)) {
+                                  std::move(shm), true)) {
     return false;
   }
 

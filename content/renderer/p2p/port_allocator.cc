@@ -5,6 +5,7 @@
 #include "content/renderer/p2p/port_allocator.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -21,7 +22,7 @@ P2PPortAllocator::P2PPortAllocator(
     const GURL& origin,
     const scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : cricket::BasicPortAllocator(network_manager.get(), socket_factory),
-      network_manager_(network_manager.Pass()),
+      network_manager_(std::move(network_manager)),
       socket_dispatcher_(socket_dispatcher),
       config_(config),
       origin_(origin),

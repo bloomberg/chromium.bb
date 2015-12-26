@@ -6,6 +6,8 @@
 // Note that these tests rely on single-process mode, and hence may be
 // disabled in some configurations (check gyp files).
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -85,7 +87,7 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
       new net::FailingHttpTransactionFactory(cache->GetSession(), error));
   // Throw away old version; since this is a browser test, there is no
   // need to restore the old state.
-  cache->SetHttpNetworkTransactionFactoryForTesting(factory.Pass());
+  cache->SetHttpNetworkTransactionFactoryForTesting(std::move(factory));
 }
 
 void CallOnUIThreadValidatingReturn(const base::Closure& callback,
@@ -118,8 +120,8 @@ void ClearCache(net::URLRequestContextGetter* getter,
   *backend = NULL;
   disk_cache::Backend** backend_ptr = backend.get();
 
-  net::CompletionCallback backend_callback(
-      base::Bind(&BackendClearCache, base::Passed(backend.Pass()), callback));
+  net::CompletionCallback backend_callback(base::Bind(
+      &BackendClearCache, base::Passed(std::move(backend)), callback));
 
   // backend_ptr is valid until all copies of backend_callback go out
   // of scope.

@@ -5,7 +5,7 @@
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 
 #include <string.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/callback_helpers.h"
@@ -398,7 +398,7 @@ void ContentDecryptorDelegate::Initialize(
   session_expiration_update_cb_ = session_expiration_update_cb;
   fatal_plugin_error_cb_ = fatal_plugin_error_cb;
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   plugin_decryption_interface_->Initialize(
       pp_instance_, promise_id, StringVar::StringToPPVar(key_system_),
       PP_FromBool(allow_distinctive_identifier),
@@ -420,7 +420,7 @@ void ContentDecryptorDelegate::SetServerCertificate(
     return;
   }
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   PP_Var certificate_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           base::checked_cast<uint32_t>(certificate.size()), certificate.data());
@@ -433,7 +433,7 @@ void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     scoped_ptr<NewSessionCdmPromise> promise) {
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           base::checked_cast<uint32_t>(init_data.size()), init_data.data());
@@ -446,7 +446,7 @@ void ContentDecryptorDelegate::LoadSession(
     media::MediaKeys::SessionType session_type,
     const std::string& session_id,
     scoped_ptr<NewSessionCdmPromise> promise) {
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   plugin_decryption_interface_->LoadSession(
       pp_instance_, promise_id, MediaSessionTypeToPpSessionType(session_type),
       StringVar::StringToPPVar(session_id));
@@ -456,7 +456,7 @@ void ContentDecryptorDelegate::UpdateSession(
     const std::string& session_id,
     const std::vector<uint8_t>& response,
     scoped_ptr<SimpleCdmPromise> promise) {
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   PP_Var response_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           base::checked_cast<uint32_t>(response.size()), response.data());
@@ -474,7 +474,7 @@ void ContentDecryptorDelegate::CloseSession(
     return;
   }
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   plugin_decryption_interface_->CloseSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(session_id));
 }
@@ -488,7 +488,7 @@ void ContentDecryptorDelegate::RemoveSession(
     return;
   }
 
-  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   plugin_decryption_interface_->RemoveSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(session_id));
 }
@@ -819,7 +819,7 @@ void ContentDecryptorDelegate::OnSessionKeysChange(
 
   session_keys_change_cb_.Run(session_id_string->value(),
                               PP_ToBool(has_additional_usable_key),
-                              keys_info.Pass());
+                              std::move(keys_info));
 }
 
 void ContentDecryptorDelegate::OnSessionExpirationChange(

@@ -132,7 +132,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
                 first_params_.sample_rate()) /
             1000));
     first_source_.OnMoreData(bus.get(), 0, 0);
-    return bus.Pass();
+    return bus;
   }
   scoped_ptr<media::AudioBus> GetSecondSourceAudioBus() {
     scoped_ptr<media::AudioBus> bus(media::AudioBus::Create(
@@ -142,7 +142,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
                 second_params_.sample_rate()) /
             1000));
     second_source_.OnMoreData(bus.get(), 0, 0);
-    return bus.Pass();
+    return bus;
   }
 
   MOCK_METHOD3(DoOnEncodedAudio,

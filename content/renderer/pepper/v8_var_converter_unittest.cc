@@ -171,8 +171,7 @@ class V8VarConverterTest : public testing::Test {
       : isolate_(v8::Isolate::GetCurrent()) {
     PP_Instance dummy = 1234;
     converter_.reset(new V8VarConverter(
-        dummy,
-        scoped_ptr<ResourceConverter>(new MockResourceConverter).Pass()));
+        dummy, scoped_ptr<ResourceConverter>(new MockResourceConverter)));
   }
   ~V8VarConverterTest() override {}
 

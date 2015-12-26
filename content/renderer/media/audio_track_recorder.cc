@@ -5,6 +5,7 @@
 #include "content/renderer/media/audio_track_recorder.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -186,7 +187,7 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
 
     scoped_ptr<std::string> encoded_data(new std::string());
     if (EncodeFromFilledBuffer(encoded_data.get())) {
-      on_encoded_audio_cb_.Run(audio_params_, encoded_data.Pass(),
+      on_encoded_audio_cb_.Run(audio_params_, std::move(encoded_data),
                                buffer_capture_time);
     }
 

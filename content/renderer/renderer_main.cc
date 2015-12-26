@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -183,7 +184,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   feature_list->InitializeFromCommandLine(
       parsed_command_line.GetSwitchValueASCII(switches::kEnableFeatures),
       parsed_command_line.GetSwitchValueASCII(switches::kDisableFeatures));
-  base::FeatureList::SetInstance(feature_list.Pass());
+  base::FeatureList::SetInstance(std::move(feature_list));
 
   // PlatformInitialize uses FieldTrials, so this must happen later.
   platform.PlatformInitialize();
@@ -213,8 +214,8 @@ int RendererMain(const MainFunctionParams& parameters) {
       run_loop = platform.EnableSandbox();
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     RenderProcessImpl render_process;
-    RenderThreadImpl::Create(main_message_loop.Pass(),
-                             renderer_scheduler.Pass());
+    RenderThreadImpl::Create(std::move(main_message_loop),
+                             std::move(renderer_scheduler));
 #endif
     RenderThreadImpl::current()->Send(
         new StartupMetricHostMsg_RecordRendererMainEntryTime(

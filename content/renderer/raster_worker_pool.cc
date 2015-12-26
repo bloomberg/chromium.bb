@@ -106,7 +106,7 @@ void RasterWorkerPool::Start(
                       .c_str(),
             thread_options));
     thread->Start();
-    threads_.push_back(thread.Pass());
+    threads_.push_back(std::move(thread));
   }
 }
 

@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/media_recorder_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -211,7 +213,7 @@ void MediaRecorderHandler::OnEncodedVideo(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (!webm_muxer_)
     return;
-  webm_muxer_->OnEncodedVideo(video_frame, encoded_data.Pass(), timestamp,
+  webm_muxer_->OnEncodedVideo(video_frame, std::move(encoded_data), timestamp,
                               is_key_frame);
 }
 
@@ -220,7 +222,7 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
                                           base::TimeTicks timestamp) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (webm_muxer_)
-    webm_muxer_->OnEncodedAudio(params, encoded_data.Pass(), timestamp);
+    webm_muxer_->OnEncodedAudio(params, std::move(encoded_data), timestamp);
 }
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {

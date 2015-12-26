@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -255,7 +256,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
     scoped_ptr<base::SyncSocket> sending_socket(recognizer_->sending_socket());
     speech_audio_sink_.reset(new SpeechRecognitionAudioSink(
         blink_track, sink_params_, foreign_memory_handle,
-        sending_socket.Pass(),
+        std::move(sending_socket),
         base::Bind(&SpeechRecognitionAudioSinkTest::StoppedCallback,
                    base::Unretained(this))));
 

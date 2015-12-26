@@ -770,7 +770,7 @@ class RTCPeerConnectionHandler::Observer
   void OnAddStreamImpl(scoped_ptr<RemoteMediaStreamImpl> stream) {
     DCHECK(stream->webkit_stream().extraData()) << "Initialization not done";
     if (handler_)
-      handler_->OnAddStream(stream.Pass());
+      handler_->OnAddStream(std::move(stream));
   }
 
   void OnRemoveStreamImpl(const scoped_refptr<MediaStreamInterface>& stream) {
@@ -780,7 +780,7 @@ class RTCPeerConnectionHandler::Observer
 
   void OnDataChannelImpl(scoped_ptr<RtcDataChannelHandler> handler) {
     if (handler_)
-      handler_->OnDataChannel(handler.Pass());
+      handler_->OnDataChannel(std::move(handler));
   }
 
   void OnIceCandidateImpl(const std::string& sdp, const std::string& sdp_mid,

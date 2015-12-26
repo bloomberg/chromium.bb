@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/pepper/pepper_video_encoder_host.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
@@ -12,7 +16,6 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
-#include "content/renderer/pepper/pepper_video_encoder_host.h"
 #include "content/renderer/pepper/video_encoder_shim.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -174,7 +177,7 @@ bool PP_HardwareAccelerationCompatible(bool accelerated,
 
 PepperVideoEncoderHost::ShmBuffer::ShmBuffer(uint32_t id,
                                              scoped_ptr<base::SharedMemory> shm)
-    : id(id), shm(shm.Pass()), in_use(true) {
+    : id(id), shm(std::move(shm)), in_use(true) {
   DCHECK(this->shm);
 }
 
@@ -374,16 +377,15 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
 
   for (uint32_t i = 0; i < kDefaultNumberOfBitstreamBuffers; ++i) {
     scoped_ptr<base::SharedMemory> shm(
-        RenderThread::Get()
-            ->HostAllocateSharedMemoryBuffer(output_buffer_size)
-            .Pass());
+        RenderThread::Get()->HostAllocateSharedMemoryBuffer(
+            output_buffer_size));
 
     if (!shm || !shm->Map(output_buffer_size)) {
       shm_buffers_.clear();
       break;
     }
 
-    shm_buffers_.push_back(new ShmBuffer(i, shm.Pass()));
+    shm_buffers_.push_back(new ShmBuffer(i, std::move(shm)));
   }
 
   // Feed buffers to the encoder.
@@ -570,14 +572,10 @@ void PepperVideoEncoderHost::AllocateVideoFrames() {
   uint32_t total_size = size.ValueOrDie();
 
   scoped_ptr<base::SharedMemory> shm(
-      RenderThreadImpl::current()
-          ->HostAllocateSharedMemoryBuffer(total_size)
-          .Pass());
+      RenderThreadImpl::current()->HostAllocateSharedMemoryBuffer(total_size));
   if (!shm ||
-      !buffer_manager_.SetBuffers(frame_count_,
-                                  buffer_size_aligned,
-                                  shm.Pass(),
-                                  true)) {
+      !buffer_manager_.SetBuffers(frame_count_, buffer_size_aligned,
+                                  std::move(shm), true)) {
     SendGetFramesErrorReply(PP_ERROR_NOMEMORY);
     return;
   }
