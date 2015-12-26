@@ -322,12 +322,9 @@ update_opacity(struct ivi_layout_layer *ivilayer,
 	double layer_alpha = wl_fixed_to_double(ivilayer->prop.opacity);
 	double surf_alpha  = wl_fixed_to_double(ivisurf->prop.opacity);
 
-	if ((ivilayer->event_mask & IVI_NOTIFICATION_OPACITY) ||
-	    (ivisurf->event_mask  & IVI_NOTIFICATION_OPACITY)) {
-		tmpview = get_weston_view(ivisurf);
-		assert(tmpview != NULL);
-		tmpview->alpha = layer_alpha * surf_alpha;
-	}
+	tmpview = get_weston_view(ivisurf);
+	assert(tmpview != NULL);
+	tmpview->alpha = layer_alpha * surf_alpha;
 }
 
 static void
