@@ -28,12 +28,13 @@ crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ T
 crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
 crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
 
-# Times out on the Mac Debug Oilpan bot.
 crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Timeout ]
 
 crbug.com/344239 [ Release ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Slow ]
 
 crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
+
+crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Text Failure ]
 
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
 
