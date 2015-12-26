@@ -5,10 +5,12 @@
 #ifndef CONSTANTS_CRYPTOHOME_H_
 #define CONSTANTS_CRYPTOHOME_H_
 
+#include <stdint.h>
+
 namespace cryptohome {
 
 // Cleanup is trigerred if the amount of free disk space goes below this value.
-const int64 kMinFreeSpaceInBytes = 512 * 1LL << 20;
+const int64_t kMinFreeSpaceInBytes = 512 * 1LL << 20;
 
 }  // namespace cryptohome
 
