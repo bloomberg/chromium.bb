@@ -950,6 +950,8 @@ public:
         FormNameAccessForNonDescendantImageElement = 1093,
         FormControlsCollectionNameAccessForImageElement = 1094,
         V8SVGSVGElement_Viewport_AttributeGetter = 1095,
+        V8RegExpPrototypeStickyGetter = 1096,
+        V8RegExpPrototypeToString = 1097,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

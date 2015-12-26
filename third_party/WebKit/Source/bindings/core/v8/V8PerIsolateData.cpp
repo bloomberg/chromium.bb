@@ -78,6 +78,12 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
     case v8::Isolate::kStrongMode:
         blinkFeature = UseCounter::V8StrongMode;
         break;
+    case v8::Isolate::kRegExpPrototypeStickyGetter:
+        blinkFeature = UseCounter::V8RegExpPrototypeStickyGetter;
+        break;
+    case v8::Isolate::kRegExpPrototypeToString:
+        blinkFeature = UseCounter::V8RegExpPrototypeToString;
+        break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.
