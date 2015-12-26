@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/push_client_channel.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/invalidation/impl/notifier_reason_util.h"
@@ -22,7 +24,7 @@ const char kChannelName[] = "tango_raw";
 
 PushClientChannel::PushClientChannel(
     scoped_ptr<notifier::PushClient> push_client)
-    : push_client_(push_client.Pass()),
+    : push_client_(std::move(push_client)),
       scheduling_hash_(0),
       sent_messages_count_(0) {
   push_client_->AddObserver(this);
@@ -159,7 +161,7 @@ scoped_ptr<base::DictionaryValue> PushClientChannel::CollectDebugData() const {
   status->SetInteger("PushClientChannel.SentMessages", sent_messages_count_);
   status->SetInteger("PushClientChannel.ReceivedMessages",
                      SyncNetworkChannel::GetReceivedMessagesCount());
-  return status.Pass();
+  return status;
 }
 
 }  // namespace syncer

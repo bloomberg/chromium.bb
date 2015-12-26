@@ -4,6 +4,8 @@
 
 #include "components/metrics/daily_event.h"
 
+#include <utility>
+
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -58,7 +60,7 @@ void DailyEvent::RegisterPref(PrefRegistrySimple* registry,
 void DailyEvent::AddObserver(scoped_ptr<DailyEvent::Observer> observer) {
   DVLOG(2) << "DailyEvent observer added.";
   DCHECK(last_fired_.is_null());
-  observers_.push_back(observer.Pass());
+  observers_.push_back(std::move(observer));
 }
 
 void DailyEvent::CheckInterval() {

@@ -4,6 +4,8 @@
 
 #include "components/bookmarks/managed/managed_bookmarks_tracker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -61,7 +63,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
     BookmarkPermanentNodeList extra_nodes;
     extra_nodes.push_back(managed_node);
-    client_.SetExtraNodesToLoad(extra_nodes.Pass());
+    client_.SetExtraNodesToLoad(std::move(extra_nodes));
 
     model_.reset(new BookmarkModel(&client_));
     model_->AddObserver(&observer_);

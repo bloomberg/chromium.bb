@@ -4,6 +4,8 @@
 
 #include "components/content_settings/core/browser/website_settings_registry.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "components/content_settings/core/common/content_settings.h"
 
@@ -57,7 +59,7 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::Register(
     WebsiteSettingsInfo::LossyStatus lossy_status,
     WebsiteSettingsInfo::ScopingType scoping_type) {
   WebsiteSettingsInfo* info =
-      new WebsiteSettingsInfo(type, name, initial_default_value.Pass(),
+      new WebsiteSettingsInfo(type, name, std::move(initial_default_value),
                               sync_status, lossy_status, scoping_type);
   website_settings_info_[info->type()] = make_scoped_ptr(info);
   return info;

@@ -187,7 +187,7 @@ ContentSettingsPref* PrefProvider::GetPref(ContentSettingsType type) const {
 }
 
 void PrefProvider::SetClockForTesting(scoped_ptr<base::Clock> clock) {
-  clock_ = clock.Pass();
+  clock_ = std::move(clock);
 }
 
 void PrefProvider::Notify(

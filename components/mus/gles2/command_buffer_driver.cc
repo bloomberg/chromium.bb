@@ -5,6 +5,7 @@
 #include "components/mus/gles2/command_buffer_driver.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
@@ -61,8 +62,8 @@ bool CommandBufferDriver::Initialize(
         loss_observer,
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs) {
-  loss_observer_ = mojo::MakeProxy(loss_observer.Pass());
-  return DoInitialize(shared_state.Pass(), attribs.Pass());
+  loss_observer_ = mojo::MakeProxy(std::move(loss_observer));
+  return DoInitialize(std::move(shared_state), std::move(attribs));
 }
 
 bool CommandBufferDriver::MakeCurrent() {

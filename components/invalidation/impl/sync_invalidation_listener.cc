@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/sync_invalidation_listener.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -33,7 +34,7 @@ SyncInvalidationListener::Delegate::~Delegate() {}
 
 SyncInvalidationListener::SyncInvalidationListener(
     scoped_ptr<SyncNetworkChannel> network_channel)
-    : sync_network_channel_(network_channel.Pass()),
+    : sync_network_channel_(std::move(network_channel)),
       sync_system_resources_(sync_network_channel_.get(), this),
       delegate_(NULL),
       ticl_state_(DEFAULT_INVALIDATION_ERROR),
@@ -396,7 +397,7 @@ SyncInvalidationListener::CollectDebugData() const {
   }
   return_value->Set("SyncInvalidationListener.UnackedInvalidationsMap",
                     unacked_map.release());
-  return return_value.Pass();
+  return return_value;
 }
 
 void SyncInvalidationListener::StopForTest() {

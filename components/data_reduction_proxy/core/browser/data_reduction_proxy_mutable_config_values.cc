@@ -20,7 +20,7 @@ DataReductionProxyMutableConfigValues::CreateFromParams(
   config_values->allowed_ = params->allowed();
   config_values->fallback_allowed_ = params->fallback_allowed();
   config_values->secure_proxy_check_url_ = params->secure_proxy_check_url();
-  return config_values.Pass();
+  return config_values;
 }
 
 DataReductionProxyMutableConfigValues::DataReductionProxyMutableConfigValues()

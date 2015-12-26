@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -90,23 +91,23 @@ TEST_F(AXProviderTest, HelloWorld) {
   mus::mojom::WindowTreeClientPtr tree_client;
   connection->ConnectToService(&tree_client);
   mus::Window* embed_window = window_manager()->NewWindow();
-  embed_window->Embed(tree_client.Pass());
+  embed_window->Embed(std::move(tree_client));
 
   TestFrame frame;
   web_view::mojom::FramePtr frame_ptr;
   mojo::Binding<web_view::mojom::Frame> frame_binding(&frame);
-  frame_binding.Bind(GetProxy(&frame_ptr).Pass());
+  frame_binding.Bind(GetProxy(&frame_ptr));
 
   mojo::Array<web_view::mojom::FrameDataPtr> array(1u);
-  array[0] = web_view::mojom::FrameData::New().Pass();
+  array[0] = web_view::mojom::FrameData::New();
   array[0]->frame_id = embed_window->id();
   array[0]->parent_id = 0u;
 
   web_view::mojom::FrameClientPtr frame_client;
   connection->ConnectToService(&frame_client);
   frame_client->OnConnect(
-      frame_ptr.Pass(), 1u, embed_window->id(),
-      web_view::mojom::WINDOW_CONNECT_TYPE_USE_NEW, array.Pass(),
+      std::move(frame_ptr), 1u, embed_window->id(),
+      web_view::mojom::WINDOW_CONNECT_TYPE_USE_NEW, std::move(array),
       base::TimeTicks::Now().ToInternalValue(), base::Closure());
 
   // Connect to the AxProvider of the HTML document and get the AxTree.
@@ -114,9 +115,9 @@ TEST_F(AXProviderTest, HelloWorld) {
   connection->ConnectToService(&ax_provider);
   Array<AxNodePtr> ax_tree;
   ax_provider->GetTree([&ax_tree](Array<AxNodePtr> tree) {
-                         ax_tree = tree.Pass();
-                         EXPECT_TRUE(QuitRunLoop());
-                       });
+    ax_tree = std::move(tree);
+    EXPECT_TRUE(QuitRunLoop());
+  });
   ASSERT_TRUE(DoRunLoopWithTimeout());
 
   EXPECT_TRUE(AxTreeContainsText(ax_tree, "Hello "));

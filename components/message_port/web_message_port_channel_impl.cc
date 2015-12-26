@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -32,13 +33,14 @@ void WebMessagePortChannelImpl::CreatePair(
     return;
   }
 
-  *channel1 = new WebMessagePortChannelImpl(pipe1.Pass());;
-  *channel2 = new WebMessagePortChannelImpl(pipe2.Pass());
+  *channel1 = new WebMessagePortChannelImpl(std::move(pipe1));
+  ;
+  *channel2 = new WebMessagePortChannelImpl(std::move(pipe2));
 }
 
 WebMessagePortChannelImpl::WebMessagePortChannelImpl(
     mojo::ScopedMessagePipeHandle pipe)
-    : client_(nullptr), pipe_(pipe.Pass()) {
+    : client_(nullptr), pipe_(std::move(pipe)) {
   WaitForNextMessage();
 }
 
@@ -111,7 +113,7 @@ bool WebMessagePortChannelImpl::tryGetMessage(
   for (size_t i = 0; i < handles.size(); ++i) {
     mojo::MessagePipeHandle mph(handles[i]);
     mojo::ScopedMessagePipeHandle handle(mph);
-    ports[i] = new WebMessagePortChannelImpl(handle.Pass());
+    ports[i] = new WebMessagePortChannelImpl(std::move(handle));
   }
   channels = ports;
   return true;

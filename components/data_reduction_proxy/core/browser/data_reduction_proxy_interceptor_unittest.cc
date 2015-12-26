@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -126,7 +127,7 @@ class DataReductionProxyInterceptorTest : public testing::Test {
   }
 
   void Init(scoped_ptr<net::URLRequestJobFactory> factory) {
-    job_factory_ = factory.Pass();
+    job_factory_ = std::move(factory);
     default_context_->set_job_factory(job_factory_.get());
     default_context_->Init();
   }
@@ -146,16 +147,16 @@ TEST_F(DataReductionProxyInterceptorTest, TestJobFactoryChaining) {
   CountingURLRequestInterceptor* interceptor2 =
       new CountingURLRequestInterceptor();
   scoped_ptr<net::URLRequestJobFactory> factory2(
-      new net::URLRequestInterceptingJobFactory(
-          impl.Pass(), make_scoped_ptr(interceptor2)));
+      new net::URLRequestInterceptingJobFactory(std::move(impl),
+                                                make_scoped_ptr(interceptor2)));
 
   CountingURLRequestInterceptor* interceptor1 =
       new CountingURLRequestInterceptor();
   scoped_ptr<net::URLRequestJobFactory> factory1(
-      new net::URLRequestInterceptingJobFactory(
-          factory2.Pass(), make_scoped_ptr(interceptor1)));
+      new net::URLRequestInterceptingJobFactory(std::move(factory2),
+                                                make_scoped_ptr(interceptor1)));
 
-  Init(factory1.Pass());
+  Init(std::move(factory1));
 
   net::TestDelegate d;
   scoped_ptr<net::URLRequest> req(default_context_->CreateRequest(
@@ -218,7 +219,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
     job_factory_.reset(new net::URLRequestInterceptingJobFactory(
-        job_factory_impl.Pass(),
+        std::move(job_factory_impl),
         test_context_->io_data()->CreateInterceptor()));
     context_.set_job_factory(job_factory_.get());
     context_.Init();
@@ -304,7 +305,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
         context_.CreateRequest(url, net::IDLE, &delegate_));
     request->Start();
     drp_test_context_->RunUntilIdle();
-    return request.Pass();
+    return request;
   }
 
   const net::TestDelegate& delegate() const {

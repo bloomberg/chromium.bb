@@ -4,6 +4,8 @@
 
 #include "components/feedback/feedback_data.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
@@ -60,7 +62,7 @@ void FeedbackData::SetAndCompressSystemInfo(
 
   if (sys_info.get()) {
     ++pending_op_count_;
-    AddLogs(sys_info.Pass());
+    AddLogs(std::move(sys_info));
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&FeedbackCommon::CompressLogs, this),
@@ -115,7 +117,7 @@ void FeedbackData::OnGetTraceData(
   scoped_ptr<std::string> data(new std::string);
   data->swap(trace_data->data());
 
-  AddFile(kTraceFilename, data.Pass());
+  AddFile(kTraceFilename, std::move(data));
 
   set_category_tag(kPerformanceCategoryTag);
   --pending_op_count_;

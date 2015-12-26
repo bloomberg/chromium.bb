@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_account_mapper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -293,7 +295,7 @@ void GCMAccountMapperTest::Restart() {
   account_mapper_.reset(new GCMAccountMapper(&gcm_driver_));
   scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
   clock_ = clock.get();
-  account_mapper_->SetClockForTesting(clock.Pass());
+  account_mapper_->SetClockForTesting(std::move(clock));
 }
 
 void GCMAccountMapperTest::Initialize(

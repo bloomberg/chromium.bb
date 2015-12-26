@@ -4,6 +4,8 @@
 
 #include "components/filesystem/file_system_app.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -32,7 +34,7 @@ void FileSystemApp::RegisterDirectoryToClient(DirectoryImpl* directory,
       base::Bind(&FileSystemApp::OnDirectoryConnectionError,
                  base::Unretained(this),
                  directory));
-  client_mapping_.emplace_back(directory, client.Pass());
+  client_mapping_.emplace_back(directory, std::move(client));
 }
 
 bool FileSystemApp::OnShellConnectionError() {
@@ -56,7 +58,7 @@ bool FileSystemApp::OnShellConnectionError() {
 // |InterfaceFactory<Files>| implementation:
 void FileSystemApp::Create(mojo::ApplicationConnection* connection,
                            mojo::InterfaceRequest<FileSystem> request) {
-  new FileSystemImpl(this, connection, request.Pass());
+  new FileSystemImpl(this, connection, std::move(request));
 }
 
 void FileSystemApp::OnDirectoryConnectionError(DirectoryImpl* directory) {
@@ -78,21 +80,17 @@ void FileSystemApp::OnDirectoryConnectionError(DirectoryImpl* directory) {
 
 FileSystemApp::Client::Client(DirectoryImpl* directory,
                               FileSystemClientPtr fs_client)
-    : directory_(directory),
-      fs_client_(fs_client.Pass()) {
-}
+    : directory_(directory), fs_client_(std::move(fs_client)) {}
 
 FileSystemApp::Client::Client(Client&& rhs)
-    : directory_(rhs.directory_),
-      fs_client_(rhs.fs_client_.Pass()) {
-}
+    : directory_(rhs.directory_), fs_client_(std::move(rhs.fs_client_)) {}
 
 FileSystemApp::Client::~Client() {}
 
 FileSystemApp::Client& FileSystemApp::Client::operator=(
     FileSystemApp::Client&& rhs) {
   directory_ = rhs.directory_;
-  fs_client_ = rhs.fs_client_.Pass();
+  fs_client_ = std::move(rhs.fs_client_);
   return *this;
 }
 

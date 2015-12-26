@@ -5,9 +5,9 @@
 #include "components/drive/resource_metadata_storage.h"
 
 #include <stddef.h>
-
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
@@ -192,7 +192,7 @@ void RecordCheckValidityFailure(CheckValidityFailureReason reason) {
 }  // namespace
 
 ResourceMetadataStorage::Iterator::Iterator(scoped_ptr<leveldb::Iterator> it)
-  : it_(it.Pass()) {
+    : it_(std::move(it)) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(it_);
 
@@ -823,7 +823,7 @@ ResourceMetadataStorage::GetIterator() {
 
   scoped_ptr<leveldb::Iterator> it(
       resource_map_->NewIterator(leveldb::ReadOptions()));
-  return make_scoped_ptr(new Iterator(it.Pass()));
+  return make_scoped_ptr(new Iterator(std::move(it)));
 }
 
 FileError ResourceMetadataStorage::GetChild(const std::string& parent_id,

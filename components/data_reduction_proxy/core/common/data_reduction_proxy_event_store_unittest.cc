@@ -5,8 +5,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -260,10 +260,10 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
   bypass_params->SetString("url", "http://www.foo.com/bar?baz=1234");
   sanitized_event->SetString("url", "http://www.foo.com/bar");
 
-  bypass_event->Set("params", bypass_params.Pass());
+  bypass_event->Set("params", std::move(bypass_params));
   std::string sanitized_output;
   base::JSONWriter::Write(*sanitized_event.get(), &sanitized_output);
-  event_store()->AddAndSetLastBypassEvent(bypass_event.Pass(), 0);
+  event_store()->AddAndSetLastBypassEvent(std::move(bypass_event), 0);
   EXPECT_EQ(sanitized_output, event_store()->SanitizedLastBypassEvent());
 }
 
@@ -290,10 +290,10 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
   bypass_params->SetString("url", "http://www.foo.com/bar?baz=1234");
   sanitized_event->SetString("url", "www.foo.com");
 
-  bypass_event->Set("params", bypass_params.Pass());
+  bypass_event->Set("params", std::move(bypass_params));
   std::string sanitized_output;
   base::JSONWriter::Write(*sanitized_event.get(), &sanitized_output);
-  event_store()->AddAndSetLastBypassEvent(bypass_event.Pass(), 0);
+  event_store()->AddAndSetLastBypassEvent(std::move(bypass_event), 0);
   EXPECT_EQ(sanitized_output, event_store()->SanitizedLastBypassEvent());
 }
 

@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_account_mapper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/time/clock.h"
@@ -385,7 +387,7 @@ GCMAccountMapper::FindMappingByMessageId(const std::string& message_id) {
 }
 
 void GCMAccountMapper::SetClockForTesting(scoped_ptr<base::Clock> clock) {
-  clock_ = clock.Pass();
+  clock_ = std::move(clock);
 }
 
 }  // namespace gcm

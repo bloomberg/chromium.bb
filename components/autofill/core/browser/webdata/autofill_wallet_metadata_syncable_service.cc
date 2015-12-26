@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -217,8 +218,8 @@ AutofillWalletMetadataSyncableService::MergeDataAndStartSyncing(
   DCHECK(!sync_error_factory_);
   DCHECK_EQ(syncer::AUTOFILL_WALLET_METADATA, type);
 
-  sync_processor_ = sync_processor.Pass();
-  sync_error_factory_ = sync_error_factory.Pass();
+  sync_processor_ = std::move(sync_processor);
+  sync_error_factory_ = std::move(sync_error_factory);
 
   cache_ = initial_sync_data;
 

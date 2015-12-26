@@ -236,9 +236,8 @@ void GCMDriverTest::CreateDriver() {
       new net::TestURLRequestContextGetter(io_thread_.task_runner());
   // TODO(johnme): Need equivalent test coverage of GCMDriverAndroid.
   driver_.reset(new GCMDriverDesktop(
-      scoped_ptr<GCMClientFactory>(
-          new FakeGCMClientFactory(base::ThreadTaskRunnerHandle::Get(),
-                                   io_thread_.task_runner())).Pass(),
+      scoped_ptr<GCMClientFactory>(new FakeGCMClientFactory(
+          base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner())),
       GCMClient::ChromeBuildInfo(), "http://channel.status.request.url",
       "user-agent-string", &prefs_, temp_dir_.path(), request_context,
       base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner(),

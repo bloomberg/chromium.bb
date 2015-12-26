@@ -166,7 +166,7 @@ class ThumbnailDatabaseTest : public testing::Test {
     EXPECT_EQ(sql::INIT_OK, db->Init(file_name_));
     db->BeginTransaction();
 
-    return db.Pass();
+    return db;
   }
 
  protected:

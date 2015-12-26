@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -123,8 +124,8 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   void SendReport(scoped_ptr<ReportRequest> request,
                   const std::string& app_id,
                   const std::string& auth_token) {
-    rpc_handler_.SendReportRequest(
-      request.Pass(), app_id, auth_token, StatusCallback());
+    rpc_handler_.SendReportRequest(std::move(request), app_id, auth_token,
+                                   StatusCallback());
   }
 
   void SendReportResponse(int status_code,
@@ -320,7 +321,7 @@ TEST_F(RpcHandlerTest, ReportResponseHandler) {
   // Fail on HTTP status != 200.
   scoped_ptr<ReportResponse> response(new ReportResponse);
   status_ = SUCCESS;
-  SendReportResponse(net::HTTP_BAD_REQUEST, response.Pass());
+  SendReportResponse(net::HTTP_BAD_REQUEST, std::move(response));
   EXPECT_EQ(FAIL, status_);
 
   // Construct a test ReportResponse.
@@ -337,7 +338,7 @@ TEST_F(RpcHandlerTest, ReportResponseHandler) {
 
   // Check processing.
   status_ = FAIL;
-  SendReportResponse(net::HTTP_OK, response.Pass());
+  SendReportResponse(net::HTTP_OK, std::move(response));
   EXPECT_EQ(SUCCESS, status_);
   EXPECT_TRUE(TokenIsInvalid("bad token"));
   EXPECT_THAT(directive_handler_.added_directives(),

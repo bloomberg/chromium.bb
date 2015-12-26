@@ -4,6 +4,8 @@
 
 #include "components/data_usage/core/data_use_aggregator.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "build/build_config.h"
@@ -20,8 +22,8 @@ namespace data_usage {
 
 DataUseAggregator::DataUseAggregator(scoped_ptr<DataUseAnnotator> annotator,
                                      scoped_ptr<DataUseAmortizer> amortizer)
-    : annotator_(annotator.Pass()),
-      amortizer_(amortizer.Pass()),
+    : annotator_(std::move(annotator)),
+      amortizer_(std::move(amortizer)),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
       weak_ptr_factory_(this) {
 #if defined(OS_ANDROID)
@@ -58,7 +60,7 @@ void DataUseAggregator::ReportDataUse(net::URLRequest* request,
                   connection_type_, mcc_mnc_, tx_bytes, rx_bytes));
 
   if (!annotator_) {
-    PassDataUseToAmortizer(data_use.Pass());
+    PassDataUseToAmortizer(std::move(data_use));
     return;
   }
 
@@ -69,7 +71,7 @@ void DataUseAggregator::ReportDataUse(net::URLRequest* request,
     annotation_callback_ =
         base::Bind(&DataUseAggregator::PassDataUseToAmortizer, GetWeakPtr());
   }
-  annotator_->Annotate(request, data_use.Pass(), annotation_callback_);
+  annotator_->Annotate(request, std::move(data_use), annotation_callback_);
 }
 
 void DataUseAggregator::ReportOffTheRecordDataUse(int64_t tx_bytes,
@@ -106,7 +108,7 @@ void DataUseAggregator::PassDataUseToAmortizer(scoped_ptr<DataUse> data_use) {
   DCHECK(data_use);
 
   if (!amortizer_) {
-    OnAmortizationComplete(data_use.Pass());
+    OnAmortizationComplete(std::move(data_use));
     return;
   }
 
@@ -117,7 +119,7 @@ void DataUseAggregator::PassDataUseToAmortizer(scoped_ptr<DataUse> data_use) {
     amortization_callback_ =
         base::Bind(&DataUseAggregator::OnAmortizationComplete, GetWeakPtr());
   }
-  amortizer_->AmortizeDataUse(data_use.Pass(), amortization_callback_);
+  amortizer_->AmortizeDataUse(std::move(data_use), amortization_callback_);
 }
 
 void DataUseAggregator::OnAmortizationComplete(

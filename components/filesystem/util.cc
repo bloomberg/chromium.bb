@@ -141,7 +141,7 @@ FileInformationPtr MakeFileInformation(const base::File::Info& info) {
   file_info->mtime = info.last_modified.ToDoubleT();
   file_info->ctime = info.creation_time.ToDoubleT();
 
-  return file_info.Pass();
+  return file_info;
 }
 
 FileError ValidatePath(const mojo::String& raw_path,

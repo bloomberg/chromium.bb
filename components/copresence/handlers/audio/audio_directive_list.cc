@@ -62,7 +62,7 @@ scoped_ptr<AudioDirective> AudioDirectiveList::GetActiveDirective() {
   if (active_directives_.empty() ||
       active_directives_.front().end_time < clock_->NowTicks()) {
     active_directives_.clear();
-    return scoped_ptr<AudioDirective>().Pass();
+    return scoped_ptr<AudioDirective>();
   }
 
   return make_scoped_ptr(new AudioDirective(active_directives_.front()));

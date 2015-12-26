@@ -4,13 +4,15 @@
 
 #include "components/bubble/bubble_controller.h"
 
+#include <utility>
+
 #include "components/bubble/bubble_delegate.h"
 #include "components/bubble/bubble_manager.h"
 #include "components/bubble/bubble_ui.h"
 
 BubbleController::BubbleController(BubbleManager* manager,
                                    scoped_ptr<BubbleDelegate> delegate)
-    : manager_(manager), delegate_(delegate.Pass()) {
+    : manager_(manager), delegate_(std::move(delegate)) {
   DCHECK(manager_);
   DCHECK(delegate_);
 }

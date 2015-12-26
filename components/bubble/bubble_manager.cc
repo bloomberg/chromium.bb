@@ -4,6 +4,7 @@
 
 #include "components/bubble/bubble_manager.h"
 
+#include <utility>
 #include <vector>
 
 #include "components/bubble/bubble_controller.h"
@@ -21,14 +22,14 @@ BubbleReference BubbleManager::ShowBubble(scoped_ptr<BubbleDelegate> bubble) {
   DCHECK(bubble);
 
   scoped_ptr<BubbleController> controller(
-      new BubbleController(this, bubble.Pass()));
+      new BubbleController(this, std::move(bubble)));
 
   BubbleReference bubble_ref = controller->AsWeakPtr();
 
   switch (manager_state_) {
     case SHOW_BUBBLES:
       controller->Show();
-      controllers_.push_back(controller.Pass());
+      controllers_.push_back(std::move(controller));
       break;
     case NO_MORE_BUBBLES:
       FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,

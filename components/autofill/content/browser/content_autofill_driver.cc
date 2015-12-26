@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/browser/content_autofill_driver.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/autofill/content/common/autofill_messages.h"
@@ -202,7 +204,7 @@ void ContentAutofillDriver::DidNavigateFrame(
 
 void ContentAutofillDriver::SetAutofillManager(
     scoped_ptr<AutofillManager> manager) {
-  autofill_manager_ = manager.Pass();
+  autofill_manager_ = std::move(manager);
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
 }
 

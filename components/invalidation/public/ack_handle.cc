@@ -39,7 +39,7 @@ scoped_ptr<base::DictionaryValue> AckHandle::ToValue() const {
   value->SetString("state", state_);
   value->SetString("timestamp",
                    base::Int64ToString(timestamp_.ToInternalValue()));
-  return value.Pass();
+  return value;
 }
 
 bool AckHandle::ResetFromValue(const base::DictionaryValue& value) {

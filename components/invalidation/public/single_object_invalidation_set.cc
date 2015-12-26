@@ -91,7 +91,7 @@ scoped_ptr<base::ListValue> SingleObjectInvalidationSet::ToValue() const {
        it != invalidations_.end(); ++it) {
     value->Append(it->ToValue().release());
   }
-  return value.Pass();
+  return value;
 }
 
 bool SingleObjectInvalidationSet::ResetFromValue(

@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/document_resource_waiter.h"
 
+#include <utility>
+
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
@@ -18,7 +20,7 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
                                                HTMLDocument* document)
     : global_state_(global_state),
       document_(document),
-      response_(response.Pass()),
+      response_(std::move(response)),
       root_(nullptr),
       change_id_(0u),
       window_id_(0u),
@@ -44,9 +46,9 @@ void DocumentResourceWaiter::Release(
     WindowConnectType* window_connect_type,
     OnConnectCallback* on_connect_callback) {
   DCHECK(is_ready_);
-  *frame_client_request = frame_client_request_.Pass();
-  *frame = frame_.Pass();
-  *frame_data = frame_data_.Pass();
+  *frame_client_request = std::move(frame_client_request_);
+  *frame = std::move(frame_);
+  *frame_data = std::move(frame_data_);
   *change_id = change_id_;
   *window_id = window_id_;
   *window_connect_type = window_connect_type_;
@@ -54,7 +56,7 @@ void DocumentResourceWaiter::Release(
 }
 
 mojo::URLResponsePtr DocumentResourceWaiter::ReleaseURLResponse() {
-  return response_.Pass();
+  return std::move(response_);
 }
 
 void DocumentResourceWaiter::SetRoot(mus::Window* root) {
@@ -70,7 +72,7 @@ void DocumentResourceWaiter::Bind(
     DVLOG(1) << "Request for FrameClient after already supplied one";
     return;
   }
-  frame_client_binding_.Bind(request.Pass());
+  frame_client_binding_.Bind(std::move(request));
 }
 
 void DocumentResourceWaiter::UpdateIsReady() {
@@ -133,8 +135,8 @@ void DocumentResourceWaiter::OnConnect(
   change_id_ = change_id;
   window_id_ = window_id;
   window_connect_type_ = window_connect_type;
-  frame_ = frame.Pass();
-  frame_data_ = frame_data.Pass();
+  frame_ = std::move(frame);
+  frame_data_ = std::move(frame_data);
   navigation_start_time_ =
       base::TimeTicks::FromInternalValue(navigation_start_time_ticks);
   on_connect_callback_ = callback;

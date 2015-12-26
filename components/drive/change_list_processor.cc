@@ -5,6 +5,7 @@
 #include "components/drive/change_list_processor.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -180,7 +181,8 @@ FileError ChangeListProcessor::Apply(
     }
   }
 
-  FileError error = ApplyEntryMap(largest_changestamp, about_resource.Pass());
+  FileError error =
+      ApplyEntryMap(largest_changestamp, std::move(about_resource));
   if (error != FILE_ERROR_OK) {
     DLOG(ERROR) << "ApplyEntryMap failed: " << FileErrorToString(error);
     return error;

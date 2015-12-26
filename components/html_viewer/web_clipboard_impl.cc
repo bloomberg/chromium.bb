@@ -5,6 +5,7 @@
 #include "components/html_viewer/web_clipboard_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "components/html_viewer/blink_basic_type_converters.h"
@@ -57,8 +58,7 @@ const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 }  // namespace
 
 WebClipboardImpl::WebClipboardImpl(mojo::ClipboardPtr clipboard)
-    : clipboard_(clipboard.Pass()) {
-}
+    : clipboard_(std::move(clipboard)) {}
 
 WebClipboardImpl::~WebClipboardImpl() {
 }
@@ -176,7 +176,7 @@ void WebClipboardImpl::writePlainText(const blink::WebString& plain_text) {
   Map<String, Array<uint8_t>> data;
   data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(plain_text);
 
-  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, data.Pass());
+  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, std::move(data));
 }
 
 void WebClipboardImpl::writeHTML(const blink::WebString& html_text,
@@ -191,7 +191,7 @@ void WebClipboardImpl::writeHTML(const blink::WebString& html_text,
   if (writeSmartPaste)
     data[kMimeTypeWebkitSmartPaste] = Array<uint8_t>::From(blink::WebString());
 
-  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, data.Pass());
+  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, std::move(data));
 }
 
 Clipboard::Type WebClipboardImpl::ConvertBufferType(Buffer buffer) {

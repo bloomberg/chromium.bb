@@ -5,6 +5,7 @@
 #include "components/invalidation/impl/ticl_invalidation_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -62,8 +63,8 @@ TiclInvalidationService::TiclInvalidationService(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : OAuth2TokenService::Consumer("ticl_invalidation"),
       user_agent_(user_agent),
-      identity_provider_(identity_provider.Pass()),
-      settings_provider_(settings_provider.Pass()),
+      identity_provider_(std::move(identity_provider)),
+      settings_provider_(std::move(settings_provider)),
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       network_channel_type_(GCM_NETWORK_CHANNEL),
@@ -86,7 +87,7 @@ TiclInvalidationService::~TiclInvalidationService() {
 void TiclInvalidationService::Init(
     scoped_ptr<syncer::InvalidationStateTracker> invalidation_state_tracker) {
   DCHECK(CalledOnValidThread());
-  invalidation_state_tracker_ = invalidation_state_tracker.Pass();
+  invalidation_state_tracker_ = std::move(invalidation_state_tracker);
 
   if (invalidation_state_tracker_->GetInvalidatorClientId().empty()) {
     invalidation_state_tracker_->ClearAndSetNewClientId(
@@ -109,7 +110,7 @@ void TiclInvalidationService::InitForTest(
   // Here we perform the equivalent of Init() and StartInvalidator(), but with
   // some minor changes to account for the fact that we're injecting the
   // invalidator.
-  invalidation_state_tracker_ = invalidation_state_tracker.Pass();
+  invalidation_state_tracker_ = std::move(invalidation_state_tracker);
   invalidator_.reset(invalidator);
 
   invalidator_->RegisterHandler(this);
@@ -383,8 +384,7 @@ void TiclInvalidationService::StartInvalidator(
           gcm_driver_, identity_provider_.get()));
       network_channel_creator =
           syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
-              request_context_,
-              gcm_invalidation_bridge_->CreateDelegate().Pass());
+              request_context_, gcm_invalidation_bridge_->CreateDelegate());
       break;
     }
     default: {

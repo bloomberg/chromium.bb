@@ -4,6 +4,8 @@
 
 #include "components/google/core/browser/google_url_tracker.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -29,10 +31,10 @@ const char GoogleURLTracker::kSearchDomainCheckURL[] =
 
 GoogleURLTracker::GoogleURLTracker(scoped_ptr<GoogleURLTrackerClient> client,
                                    Mode mode)
-    : client_(client.Pass()),
-      google_url_(mode == UNIT_TEST_MODE ?
-          kDefaultGoogleHomepage :
-          client_->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
+    : client_(std::move(client)),
+      google_url_(mode == UNIT_TEST_MODE ? kDefaultGoogleHomepage
+                                         : client_->GetPrefs()->GetString(
+                                               prefs::kLastKnownGoogleURL)),
       fetcher_id_(0),
       in_startup_sleep_(true),
       already_fetched_(false),

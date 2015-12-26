@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/mock_web_blob_registry_impl.h"
 
+#include <utility>
+
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -34,7 +36,7 @@ void MockWebBlobRegistryImpl::registerBlobData(const WebString& uuid,
     data.itemAt(i, *item);
     items->push_back(item.release());
   }
-  blob_data_items_map_.set(uuid_str, items.Pass());
+  blob_data_items_map_.set(uuid_str, std::move(items));
 }
 
 void MockWebBlobRegistryImpl::addBlobDataRef(const WebString& uuid) {

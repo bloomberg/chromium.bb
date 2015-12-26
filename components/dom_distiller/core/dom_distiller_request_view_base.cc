@@ -6,6 +6,7 @@
 
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -114,7 +115,7 @@ void DomDistillerRequestViewBase::OnChangeFontScaling(float scaling) {
 
 void DomDistillerRequestViewBase::TakeViewerHandle(
     scoped_ptr<ViewerHandle> viewer_handle) {
-  viewer_handle_ = viewer_handle.Pass();
+  viewer_handle_ = std::move(viewer_handle);
   // Getting the viewer handle means this is not an error page, send
   // the viewer JavaScript and show the loading indicator.
   SendCommonJavaScript();

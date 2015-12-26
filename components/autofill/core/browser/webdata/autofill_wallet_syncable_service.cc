@@ -5,8 +5,8 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -196,7 +196,7 @@ AutofillWalletSyncableService::MergeDataAndStartSyncing(
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  sync_processor_ = sync_processor.Pass();
+  sync_processor_ = std::move(sync_processor);
   return SetSyncData(initial_sync_data);
 }
 

@@ -137,7 +137,7 @@ scoped_ptr<base::DictionaryValue> UnackedInvalidationSet::ToValue() const {
   }
   value->Set(kInvalidationListKey, list_value.release());
 
-  return value.Pass();
+  return value;
 }
 
 bool UnackedInvalidationSet::ResetFromValue(

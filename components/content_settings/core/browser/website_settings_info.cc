@@ -4,6 +4,8 @@
 
 #include "components/content_settings/core/browser/website_settings_info.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/prefs/pref_registry.h"
 #include "base/strings/string_util.h"
@@ -36,7 +38,7 @@ WebsiteSettingsInfo::WebsiteSettingsInfo(
       name_(name),
       pref_name_(GetPrefName(name, kPrefPrefix)),
       default_value_pref_name_(GetPrefName(name, kDefaultPrefPrefix)),
-      initial_default_value_(initial_default_value.Pass()),
+      initial_default_value_(std::move(initial_default_value)),
       sync_status_(sync_status),
       lossy_status_(lossy_status),
       scoping_type_(scoping_type) {

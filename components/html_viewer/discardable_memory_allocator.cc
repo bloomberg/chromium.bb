@@ -5,6 +5,7 @@
 #include "components/html_viewer/discardable_memory_allocator.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
@@ -127,7 +128,7 @@ DiscardableMemoryAllocator::AllocateLockedDiscardableMemory(size_t size) {
     it = live_unlocked_chunks_.erase(it);
   }
 
-  return chunk.Pass();
+  return std::move(chunk);
 }
 
 std::list<DiscardableMemoryAllocator::DiscardableMemoryChunkImpl*>::iterator

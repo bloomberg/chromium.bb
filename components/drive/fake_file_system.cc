@@ -5,6 +5,7 @@
 #include "components/drive/fake_file_system.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -320,12 +321,12 @@ void FakeFileSystem::GetFileContentAfterGetFileResource(
   }
   if (base::PathExists(cache_path)) {
     // Cache file is found.
-    initialized_callback.Run(FILE_ERROR_OK, cache_path, entry.Pass());
+    initialized_callback.Run(FILE_ERROR_OK, cache_path, std::move(entry));
     completion_callback.Run(FILE_ERROR_OK);
     return;
   }
 
-  initialized_callback.Run(FILE_ERROR_OK, base::FilePath(), entry.Pass());
+  initialized_callback.Run(FILE_ERROR_OK, base::FilePath(), std::move(entry));
   drive_service_->DownloadFile(
       cache_path,
       gdata_entry->file_id(),
@@ -362,7 +363,7 @@ void FakeFileSystem::GetResourceEntryAfterGetAboutResource(
   root->mutable_file_info()->set_is_directory(true);
   root->set_resource_id(about_resource->root_folder_id());
   root->set_title(util::kDriveMyDriveRootDirName);
-  callback.Run(error, root.Pass());
+  callback.Run(error, std::move(root));
 }
 
 void FakeFileSystem::GetResourceEntryAfterGetParentEntryInfo(
@@ -410,7 +411,7 @@ void FakeFileSystem::GetResourceEntryAfterGetFileList(
 
     if (entry->base_name() == base_name.AsUTF8Unsafe()) {
       // Found the target entry.
-      callback.Run(FILE_ERROR_OK, entry.Pass());
+      callback.Run(FILE_ERROR_OK, std::move(entry));
       return;
     }
   }

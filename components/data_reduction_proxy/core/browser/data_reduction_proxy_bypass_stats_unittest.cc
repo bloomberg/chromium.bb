@@ -96,7 +96,7 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
     test_context_->RunUntilIdle();
 
     EXPECT_TRUE(fake_request->response_headers() != NULL);
-    return fake_request.Pass();
+    return fake_request;
   }
 
   bool IsUnreachable() const {

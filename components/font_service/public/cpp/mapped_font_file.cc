@@ -4,6 +4,8 @@
 
 #include "components/font_service/public/cpp/mapped_font_file.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "skia/ext/refptr.h"
@@ -19,7 +21,7 @@ MappedFontFile::MappedFontFile(uint32_t font_id)
 
 bool MappedFontFile::Initialize(base::File file) {
   base::ThreadRestrictions::ScopedAllowIO allow_mmap;
-  return mapped_font_file_.Initialize(file.Pass());
+  return mapped_font_file_.Initialize(std::move(file));
 }
 
 SkMemoryStream* MappedFontFile::CreateMemoryStream() {

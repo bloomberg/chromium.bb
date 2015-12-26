@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -918,7 +919,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
       observers_,
       BookmarkNodeRemoved(this, parent, index, node.get(), removed_urls));
 
-  undo_delegate()->OnBookmarkNodeRemoved(this, parent, index, node.Pass());
+  undo_delegate()->OnBookmarkNodeRemoved(this, parent, index, std::move(node));
 }
 
 void BookmarkModel::RemoveNodeFromInternalMaps(BookmarkNode* node) {

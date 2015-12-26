@@ -52,7 +52,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
     monitor_ = monitor->MakeWeakPtr();
     network_task_runner_ = network_task_runner;
 
-    return monitor.Pass();
+    return monitor;
   }
 
   void ClearBrowsingData(DomainReliabilityClearMode clear_mode,

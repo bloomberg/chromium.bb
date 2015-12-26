@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_MANAGER_MOCKS_H_
 #define COMPONENTS_BUBBLE_BUBBLE_MANAGER_MOCKS_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "components/bubble/bubble_delegate.h"
 #include "components/bubble/bubble_reference.h"
@@ -42,7 +44,9 @@ class MockBubbleDelegate : public BubbleDelegate {
   MOCK_METHOD0(DidClose, void());
 
   // A scoped_ptr can't be returned in MOCK_METHOD.
-  scoped_ptr<BubbleUi> BuildBubbleUi() override { return bubble_ui_.Pass(); }
+  scoped_ptr<BubbleUi> BuildBubbleUi() override {
+    return std::move(bubble_ui_);
+  }
 
   MOCK_METHOD1(UpdateBubbleUi, bool(BubbleUi*));
 

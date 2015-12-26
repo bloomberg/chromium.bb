@@ -4,6 +4,8 @@
 
 #include "components/font_service/font_service_app.h"
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -45,7 +47,7 @@ mojo::ScopedHandle GetHandleForPath(const base::FilePath& path) {
     return mojo::ScopedHandle();
   }
 
-  return mojo::ScopedHandle(mojo::Handle(mojo_handle)).Pass();
+  return mojo::ScopedHandle(mojo::Handle(mojo_handle));
 }
 
 }  // namespace
@@ -68,7 +70,7 @@ bool FontServiceApp::ConfigureIncomingConnection(
 
 void FontServiceApp::Create(mojo::ApplicationConnection* connection,
                             mojo::InterfaceRequest<FontService> request) {
-  bindings_.AddBinding(this, request.Pass());
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void FontServiceApp::MatchFamilyName(const mojo::String& family_name,
@@ -97,7 +99,7 @@ void FontServiceApp::MatchFamilyName(const mojo::String& family_name,
   identity->ttc_index = result_identity.fTTCIndex;
   identity->str_representation = result_identity.fString.c_str();
 
-  callback.Run(identity.Pass(), result_family.c_str(),
+  callback.Run(std::move(identity), result_family.c_str(),
                static_cast<TypefaceStyle>(result_style));
 }
 
@@ -105,11 +107,10 @@ void FontServiceApp::OpenStream(uint32_t id_number,
                                 const OpenStreamCallback& callback) {
   mojo::ScopedHandle handle;
   if (id_number < static_cast<uint32_t>(paths_.count())) {
-    handle =
-        GetHandleForPath(base::FilePath(paths_[id_number]->c_str())).Pass();
+    handle = GetHandleForPath(base::FilePath(paths_[id_number]->c_str()));
   }
 
-  callback.Run(handle.Pass());
+  callback.Run(std::move(handle));
 }
 
 int FontServiceApp::FindOrAddPath(const SkString& path) {

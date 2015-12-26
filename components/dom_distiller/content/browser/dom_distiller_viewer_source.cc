@@ -5,6 +5,7 @@
 #include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ref_counted_memory.h"
@@ -171,8 +172,7 @@ DomDistillerViewerSource::DomDistillerViewerSource(
     scoped_ptr<DistillerUIHandle> ui_handle)
     : scheme_(scheme),
       dom_distiller_service_(dom_distiller_service),
-      distiller_ui_handle_(ui_handle.Pass()) {
-}
+      distiller_ui_handle_(std::move(ui_handle)) {}
 
 DomDistillerViewerSource::~DomDistillerViewerSource() {
 }
@@ -250,7 +250,7 @@ void DomDistillerViewerSource::StartDataRequest(
     // the |RequestViewerHandle|, so passing ownership to it, to ensure the
     // request is not cancelled. The |RequestViewerHandle| will delete itself
     // after receiving the callback.
-    request_viewer_handle->TakeViewerHandle(viewer_handle.Pass());
+    request_viewer_handle->TakeViewerHandle(std::move(viewer_handle));
   } else {
     request_viewer_handle->FlagAsErrorPage();
   }

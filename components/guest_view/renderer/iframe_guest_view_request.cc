@@ -4,6 +4,8 @@
 
 #include "components/guest_view/renderer/iframe_guest_view_request.h"
 
+#include <utility>
+
 #include "components/guest_view/common/guest_view_messages.h"
 #include "components/guest_view/renderer/guest_view_container.h"
 #include "content/public/renderer/render_frame.h"
@@ -20,8 +22,7 @@ GuestViewAttachIframeRequest::GuestViewAttachIframeRequest(
     : GuestViewRequest(container, callback, isolate),
       render_frame_routing_id_(render_frame_routing_id),
       guest_instance_id_(guest_instance_id),
-      params_(params.Pass()) {
-}
+      params_(std::move(params)) {}
 
 GuestViewAttachIframeRequest::~GuestViewAttachIframeRequest() {
 }

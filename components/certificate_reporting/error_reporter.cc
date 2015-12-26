@@ -5,8 +5,8 @@
 #include "components/certificate_reporting/error_reporter.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
@@ -121,7 +121,7 @@ ErrorReporter::ErrorReporter(
     const uint8_t server_public_key[/* 32 */],
     const uint32_t server_public_key_version,
     scoped_ptr<net::CertificateReportSender> certificate_report_sender)
-    : certificate_report_sender_(certificate_report_sender.Pass()),
+    : certificate_report_sender_(std::move(certificate_report_sender)),
       upload_url_(upload_url),
       server_public_key_(server_public_key),
       server_public_key_version_(server_public_key_version) {

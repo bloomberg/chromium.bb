@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -121,7 +122,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     DataReductionProxyEventCreator* event_creator,
     net::NetLog* net_log,
     ConfigStorer config_storer)
-    : params_(params.Pass()),
+    : params_(std::move(params)),
       request_options_(request_options),
       config_values_(config_values),
       config_(config),
@@ -292,7 +293,7 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
     return;
   }
 
-  fetcher_ = fetcher.Pass();
+  fetcher_ = std::move(fetcher);
   fetcher_->Start();
 }
 
@@ -320,7 +321,7 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
   static const int kMaxRetries = 5;
   fetcher->SetMaxRetriesOn5xx(kMaxRetries);
   fetcher->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
-  return fetcher.Pass();
+  return fetcher;
 }
 
 void DataReductionProxyConfigServiceClient::HandleResponse(

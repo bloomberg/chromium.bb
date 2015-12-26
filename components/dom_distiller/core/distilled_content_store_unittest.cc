@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/dom_distiller/core/distilled_content_store.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/dom_distiller/core/article_entry.h"
-#include "components/dom_distiller/core/distilled_content_store.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,7 +55,7 @@ class InMemoryContentStoreTest : public testing::Test {
  public:
   void OnLoadCallback(bool success, scoped_ptr<DistilledArticleProto> proto) {
     load_success_ = success;
-    loaded_proto_ = proto.Pass();
+    loaded_proto_ = std::move(proto);
   }
 
   void OnSaveCallback(bool success) { save_success_ = success; }

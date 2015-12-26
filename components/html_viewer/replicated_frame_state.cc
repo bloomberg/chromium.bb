@@ -36,16 +36,14 @@ void SetReplicatedFrameStateFromClientProperties(
 void ClientPropertiesFromReplicatedFrameState(
     const ReplicatedFrameState& state,
     mojo::Map<mojo::String, mojo::Array<uint8_t>>* properties) {
-  AddToClientPropertiesIfValid(kPropertyFrameName,
-                               FrameNameToClientProperty(state.name).Pass(),
+  AddToClientPropertiesIfValid(
+      kPropertyFrameName, FrameNameToClientProperty(state.name), properties);
+  AddToClientPropertiesIfValid(kPropertyFrameTreeScope,
+                               FrameTreeScopeToClientProperty(state.tree_scope),
                                properties);
   AddToClientPropertiesIfValid(
-      kPropertyFrameTreeScope,
-      FrameTreeScopeToClientProperty(state.tree_scope).Pass(), properties);
-  AddToClientPropertiesIfValid(
       kPropertyFrameSandboxFlags,
-      FrameSandboxFlagsToClientProperty(state.sandbox_flags).Pass(),
-      properties);
+      FrameSandboxFlagsToClientProperty(state.sandbox_flags), properties);
 }
 
 }  // namespace html_viewer

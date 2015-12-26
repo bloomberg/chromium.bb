@@ -5,8 +5,8 @@
 #include "components/drive/service/fake_drive_service.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
@@ -121,7 +121,7 @@ void FileListCallbackAdapter(const FileListCallback& callback,
                              scoped_ptr<ChangeList> change_list) {
   scoped_ptr<FileList> file_list;
   if (!change_list) {
-    callback.Run(error, file_list.Pass());
+    callback.Run(error, std::move(file_list));
     return;
   }
 
@@ -132,7 +132,7 @@ void FileListCallbackAdapter(const FileListCallback& callback,
     if (entry.file())
       file_list->mutable_items()->push_back(new FileResource(*entry.file()));
   }
-  callback.Run(error, file_list.Pass());
+  callback.Run(error, std::move(file_list));
 }
 
 bool UserHasWriteAccess(google_apis::drive::PermissionRole user_permission) {
@@ -150,7 +150,7 @@ bool UserHasWriteAccess(google_apis::drive::PermissionRole user_permission) {
 void CallFileResouceCallback(const FileResourceCallback& callback,
                              const UploadRangeResponse& response,
                              scoped_ptr<FileResource> entry) {
-  callback.Run(response.code, entry.Pass());
+  callback.Run(response.code, std::move(entry));
 }
 
 struct CallResumeUpload {
@@ -1782,7 +1782,7 @@ void FakeDriveService::GetChangeListInternal(
 
     change_list->set_next_link(next_url);
   }
-  *change_list->mutable_items() = entries.Pass();
+  *change_list->mutable_items() = std::move(entries);
 
   if (load_counter)
     *load_counter += 1;

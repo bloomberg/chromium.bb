@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -169,14 +170,14 @@ scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreatePushClientChannel(
   scoped_ptr<notifier::PushClient> push_client(
       notifier::PushClient::CreateDefaultOnIOThread(notifier_options));
   return scoped_ptr<SyncNetworkChannel>(
-      new PushClientChannel(push_client.Pass()));
+      new PushClientChannel(std::move(push_client)));
 }
 
 scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_ptr<GCMNetworkChannelDelegate> delegate) {
-  return scoped_ptr<SyncNetworkChannel>(new GCMNetworkChannel(
-      request_context_getter, delegate.Pass()));
+  return scoped_ptr<SyncNetworkChannel>(
+      new GCMNetworkChannel(request_context_getter, std::move(delegate)));
 }
 
 void SyncNetworkChannel::NotifyNetworkStatusChange(bool online) {

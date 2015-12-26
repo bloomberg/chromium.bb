@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -97,9 +98,9 @@ void WebURLLoaderImpl::loadSynchronously(
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
   url_request->auto_follow_redirects = true;
   URLResponsePtr url_response;
-  url_loader_->Start(url_request.Pass(),
+  url_loader_->Start(std::move(url_request),
                      [&url_response](URLResponsePtr url_response_result) {
-                        url_response = url_response_result.Pass();
+                       url_response = std::move(url_response_result);
                      });
   url_loader_.WaitForIncomingResponse();
   if (url_response->error) {
@@ -111,7 +112,7 @@ void WebURLLoaderImpl::loadSynchronously(
 
   response = ToWebURLResponse(url_response);
   std::string body;
-  mojo::common::BlockingCopyToString(url_response->body.Pass(), &body);
+  mojo::common::BlockingCopyToString(std::move(url_response->body), &body);
   data.assign(body.data(), body.length());
 }
 
@@ -148,7 +149,7 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
     }
   }
 
-  url_loader_->Start(url_request.Pass(),
+  url_loader_->Start(std::move(url_request),
                      base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
                                 weak_factory_.GetWeakPtr(), request));
 }
@@ -179,9 +180,9 @@ void WebURLLoaderImpl::OnReceivedResponse(const blink::WebURLRequest& request,
   url_ = GURL(url_response->url);
 
   if (url_response->error) {
-    OnReceivedError(url_response.Pass());
+    OnReceivedError(std::move(url_response));
   } else if (url_response->redirect_url) {
-    OnReceivedRedirect(request, url_response.Pass());
+    OnReceivedRedirect(request, std::move(url_response));
   } else {
     base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
     client_->didReceiveResponse(this, ToWebURLResponse(url_response));
@@ -191,7 +192,7 @@ void WebURLLoaderImpl::OnReceivedResponse(const blink::WebURLRequest& request,
       return;
 
     // Start streaming data
-    response_body_stream_ = url_response->body.Pass();
+    response_body_stream_ = std::move(url_response->body);
     ReadMore();
   }
 }

@@ -268,7 +268,7 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
                   language_code));
   address->set_is_complete_address(address_state == kFullAddress);
 
-  return address.Pass();
+  return address;
 }
 
 scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithID() const {
@@ -279,7 +279,7 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithID() const {
   dict->SetString("phone_number", phone_number_);
   dict->Set("postal_address", ToDictionaryWithoutID().release());
 
-  return dict.Pass();
+  return dict;
 }
 
 scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
@@ -299,7 +299,7 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
   dict->SetString("sorting_code", sorting_code_);
   dict->SetString("language_code", language_code_);
 
-  return dict.Pass();
+  return dict;
 }
 
 base::string16 Address::DisplayName() const {

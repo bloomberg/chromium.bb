@@ -5,6 +5,7 @@
 #include "components/history/core/browser/delete_directive_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/rand_util.h"
@@ -296,7 +297,7 @@ void DeleteDirectiveHandler::Start(
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  sync_processor_ = sync_processor.Pass();
+  sync_processor_ = std::move(sync_processor);
   if (!initial_sync_data.empty()) {
     // Drop processed delete directives during startup.
     history_service->ScheduleDBTask(

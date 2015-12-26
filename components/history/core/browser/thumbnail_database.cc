@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/debug/alias.h"
@@ -302,7 +302,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     // creating the recover virtual table for corrupt.meta.  The table
     // may not exist, or the database may be too far gone.  Either
     // way, unclear how to resolve.
-    sql::Recovery::Rollback(recovery.Pass());
+    sql::Recovery::Rollback(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_VERSION);
     return;
   }
@@ -314,14 +314,14 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // the code simple.  http://crbug.com/327485 for numbers.
   DCHECK_LE(kDeprecatedVersionNumber, 6);
   if (version <= 6) {
-    sql::Recovery::Unrecoverable(recovery.Pass());
+    sql::Recovery::Unrecoverable(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_DEPRECATED);
     return;
   }
 
   // Earlier versions have been handled or deprecated.
   if (version < 7) {
-    sql::Recovery::Unrecoverable(recovery.Pass());
+    sql::Recovery::Unrecoverable(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION);
     return;
   }
@@ -330,7 +330,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   sql::MetaTable recover_meta_table;
   if (!recover_meta_table.Init(recovery->db(), kCurrentVersionNumber,
                                kCompatibleVersionNumber)) {
-    sql::Recovery::Rollback(recovery.Pass());
+    sql::Recovery::Rollback(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_INIT);
     return;
   }
@@ -347,25 +347,25 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     // could be opened as in-memory.  If the temp database had a
     // filesystem problem and the temp filesystem differs from the
     // main database, then that could fix it.
-    sql::Recovery::Rollback(recovery.Pass());
+    sql::Recovery::Rollback(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_INIT);
     return;
   }
 
   if (!recovery->AutoRecoverTable("favicons", 0, &favicons_rows_recovered)) {
-    sql::Recovery::Rollback(recovery.Pass());
+    sql::Recovery::Rollback(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICONS);
     return;
   }
   if (!recovery->AutoRecoverTable("favicon_bitmaps", 0,
                                   &favicon_bitmaps_rows_recovered)) {
-    sql::Recovery::Rollback(recovery.Pass());
+    sql::Recovery::Rollback(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICON_BITMAPS);
     return;
   }
   if (!recovery->AutoRecoverTable("icon_mapping", 0,
                                   &icon_mapping_rows_recovered)) {
-    sql::Recovery::Rollback(recovery.Pass());
+    sql::Recovery::Rollback(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_ICON_MAPPING);
     return;
   }
@@ -380,7 +380,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // and sequence the statements, as it is basically a form of garbage
   // collection.
 
-  if (!sql::Recovery::Recovered(recovery.Pass())) {
+  if (!sql::Recovery::Recovered(std::move(recovery))) {
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_COMMIT);
     return;
   }

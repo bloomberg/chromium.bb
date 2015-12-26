@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -243,7 +243,7 @@ void MergeMetadata(MockService* local, MockService* remote) {
                remote->GetAllSyncData(syncer::AUTOFILL_WALLET_METADATA),
                scoped_ptr<syncer::SyncChangeProcessor>(
                    new syncer::SyncChangeProcessorWrapperForTest(remote)),
-               errors.Pass())
+               std::move(errors))
           .error()
           .IsSet());
 }

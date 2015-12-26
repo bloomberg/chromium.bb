@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/html_viewer.h"
 
+#include <utility>
+
 #include "components/html_viewer/content_handler_impl.h"
 #include "components/html_viewer/global_state.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -30,7 +32,7 @@ bool HTMLViewer::ConfigureIncomingConnection(
 void HTMLViewer::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ContentHandler> request) {
-  new ContentHandlerImpl(global_state_.get(), app_, request.Pass());
+  new ContentHandlerImpl(global_state_.get(), app_, std::move(request));
 }
 
 }  // namespace html_viewer

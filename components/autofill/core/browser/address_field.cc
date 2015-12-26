@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/address_field.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -105,7 +106,7 @@ scoped_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
     if (has_trailing_non_labeled_fields)
       scanner->RewindTo(begin_trailing_non_labeled_fields);
 
-    return address_field.Pass();
+    return std::move(address_field);
   }
 
   scanner->RewindTo(saved_cursor);

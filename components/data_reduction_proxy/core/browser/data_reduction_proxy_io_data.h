@@ -6,8 +6,8 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -167,13 +167,13 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   void set_debug_ui_service(
       scoped_ptr<DataReductionProxyDebugUIService> ui_service) const {
-    debug_ui_service_= ui_service.Pass();
+    debug_ui_service_ = std::move(ui_service);
   }
 
   LoFiDecider* lofi_decider() const { return lofi_decider_.get(); }
 
   void set_lofi_decider(scoped_ptr<LoFiDecider> lofi_decider) const {
-    lofi_decider_ = lofi_decider.Pass();
+    lofi_decider_ = std::move(lofi_decider);
   }
 
  private:

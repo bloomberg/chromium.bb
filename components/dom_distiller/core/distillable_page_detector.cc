@@ -5,6 +5,7 @@
 #include "components/dom_distiller/core/distillable_page_detector.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "grit/components_resources.h"
@@ -21,7 +22,7 @@ const DistillablePageDetector* DistillablePageDetector::GetDefault() {
             .as_string();
     scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
     CHECK(proto->ParseFromString(serialized_proto));
-    detector = new DistillablePageDetector(proto.Pass());
+    detector = new DistillablePageDetector(std::move(proto));
   }
   return detector;
 }
@@ -35,14 +36,14 @@ const DistillablePageDetector* DistillablePageDetector::GetNewModel() {
             .as_string();
     scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
     CHECK(proto->ParseFromString(serialized_proto));
-    detector = new DistillablePageDetector(proto.Pass());
+    detector = new DistillablePageDetector(std::move(proto));
   }
   return detector;
 }
 
 DistillablePageDetector::DistillablePageDetector(
     scoped_ptr<AdaBoostProto> proto)
-    : proto_(proto.Pass()), threshold_(0.0) {
+    : proto_(std::move(proto)), threshold_(0.0) {
   CHECK(proto_->num_stumps() == proto_->stump_size());
   for (int i = 0; i < proto_->num_stumps(); ++i) {
     const StumpProto& stump = proto_->stump(i);

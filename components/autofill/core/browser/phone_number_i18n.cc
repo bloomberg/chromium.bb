@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/phone_number_i18n.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -248,7 +250,7 @@ PhoneObject::PhoneObject(const base::string16& number,
     // The phone number was successfully parsed, so store the parsed version.
     // The formatted and normalized versions will be set on the first call to
     // the coresponding methods.
-    i18n_number_ = i18n_number.Pass();
+    i18n_number_ = std::move(i18n_number);
   } else {
     // Parsing failed. Store passed phone "as is" into |whole_number_|.
     whole_number_ = number;

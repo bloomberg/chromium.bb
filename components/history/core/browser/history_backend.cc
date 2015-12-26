@@ -9,6 +9,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -152,7 +153,9 @@ QueuedHistoryDBTask::QueuedHistoryDBTask(
     scoped_ptr<HistoryDBTask> task,
     scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled)
-    : task_(task.Pass()), origin_loop_(origin_loop), is_canceled_(is_canceled) {
+    : task_(std::move(task)),
+      origin_loop_(origin_loop),
+      is_canceled_(is_canceled) {
   DCHECK(task_);
   DCHECK(origin_loop_);
   DCHECK(!is_canceled_.is_null());
@@ -208,9 +211,8 @@ HistoryBackend::HistoryBackend(
       recent_redirects_(kMaxRedirectCount),
       backend_destroy_message_loop_(nullptr),
       segment_queried_(false),
-      backend_client_(backend_client.Pass()),
-      task_runner_(task_runner) {
-}
+      backend_client_(std::move(backend_client)),
+      task_runner_(task_runner) {}
 
 HistoryBackend::~HistoryBackend() {
   DCHECK(!scheduled_commit_) << "Deleting without cleanup";
@@ -680,7 +682,7 @@ void HistoryBackend::InitImpl(
   {
     scoped_ptr<InMemoryHistoryBackend> mem_backend(new InMemoryHistoryBackend);
     if (mem_backend->Init(history_name))
-      delegate_->SetInMemoryBackend(mem_backend.Pass());
+      delegate_->SetInMemoryBackend(std::move(mem_backend));
   }
   db_->BeginExclusiveMode();  // Must be after the mem backend read the data.
 
@@ -2536,7 +2538,7 @@ void HistoryBackend::ProcessDBTask(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
   bool scheduled = !queued_history_db_tasks_.empty();
   queued_history_db_tasks_.push_back(
-      new QueuedHistoryDBTask(task.Pass(), origin_loop, is_canceled));
+      new QueuedHistoryDBTask(std::move(task), origin_loop, is_canceled));
   if (!scheduled)
     ProcessDBTaskImpl();
 }

@@ -6,6 +6,7 @@
 #define COMPONENTS_LEVELDB_PROTO_TESTING_FAKE_DB_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -138,7 +139,7 @@ void FakeDB<T>::RunLoadCallback(
     const typename ProtoDatabase<T>::LoadCallback& callback,
     scoped_ptr<typename std::vector<T>> entries,
     bool success) {
-  callback.Run(success, entries.Pass());
+  callback.Run(success, std::move(entries));
 }
 
 // static

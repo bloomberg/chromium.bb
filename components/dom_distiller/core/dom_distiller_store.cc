@@ -5,6 +5,7 @@
 #include "components/dom_distiller/core/dom_distiller_store.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -38,9 +39,9 @@ const char kDatabaseUMAClientName[] = "DomDistillerStore";
 namespace dom_distiller {
 
 DomDistillerStore::DomDistillerStore(
-    scoped_ptr<ProtoDatabase<ArticleEntry> > database,
+    scoped_ptr<ProtoDatabase<ArticleEntry>> database,
     const base::FilePath& database_dir)
-    : database_(database.Pass()),
+    : database_(std::move(database)),
       database_loaded_(false),
       attachment_store_(syncer::AttachmentStore::CreateInMemoryStore()),
       weak_ptr_factory_(this) {
@@ -50,10 +51,10 @@ DomDistillerStore::DomDistillerStore(
 }
 
 DomDistillerStore::DomDistillerStore(
-    scoped_ptr<ProtoDatabase<ArticleEntry> > database,
+    scoped_ptr<ProtoDatabase<ArticleEntry>> database,
     const std::vector<ArticleEntry>& initial_data,
     const base::FilePath& database_dir)
-    : database_(database.Pass()),
+    : database_(std::move(database)),
       database_loaded_(false),
       attachment_store_(syncer::AttachmentStore::CreateInMemoryStore()),
       model_(initial_data),
@@ -438,7 +439,8 @@ bool DomDistillerStore::ApplyChangesToDatabase(
       entries_to_save->push_back(std::make_pair(entry.entry_id(), entry));
     }
   }
-  database_->UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(),
+  database_->UpdateEntries(std::move(entries_to_save),
+                           std::move(keys_to_remove),
                            base::Bind(&DomDistillerStore::OnDatabaseSave,
                                       weak_ptr_factory_.GetWeakPtr()));
   return true;

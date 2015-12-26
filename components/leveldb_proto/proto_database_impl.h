@@ -6,6 +6,7 @@
 #define COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_IMPL_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -90,7 +91,7 @@ template <typename T>
 void RunLoadCallback(const typename ProtoDatabase<T>::LoadCallback& callback,
                      const bool* success,
                      scoped_ptr<std::vector<T>> entries) {
-  callback.Run(*success, entries.Pass());
+  callback.Run(*success, std::move(entries));
 }
 
 template <typename T>

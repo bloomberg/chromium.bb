@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_HTML_VIEWER_BLINK_BASIC_TYPE_CONVERTERS_H_
 #define COMPONENTS_HTML_VIEWER_BLINK_BASIC_TYPE_CONVERTERS_H_
 
-#include "mojo/public/cpp/bindings/type_converter.h"
-
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
@@ -50,7 +50,7 @@ struct TypeConverter<Array<T>, blink::WebVector<U> > {
     Array<T> array(vector.size());
     for (size_t i = 0; i < vector.size(); ++i)
       array[i] = TypeConverter<T, U>::Convert(vector[i]);
-    return array.Pass();
+    return std::move(array);
   }
 };
 

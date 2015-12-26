@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "components/autofill/content/browser/content_autofill_driver.h"
 
+#include <stdint.h>
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -54,7 +55,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
       : ContentAutofillDriver(rfh, client, kAppLocale, kDownloadState) {
     scoped_ptr<AutofillManager> autofill_manager(
         new MockAutofillManager(this, client));
-    SetAutofillManager(autofill_manager.Pass());
+    SetAutofillManager(std::move(autofill_manager));
   }
   ~TestContentAutofillDriver() override {}
 

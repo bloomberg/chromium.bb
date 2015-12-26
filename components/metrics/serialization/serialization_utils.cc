@@ -7,8 +7,8 @@
 #include <errno.h>
 #include <stdint.h>
 #include <sys/file.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -161,7 +161,7 @@ void SerializationUtils::ReadAndTruncateMetricsFromFile(
 
     scoped_ptr<MetricSample> sample = ParseSample(message);
     if (sample)
-      metrics->push_back(sample.Pass());
+      metrics->push_back(std::move(sample));
   }
 
   result = ftruncate(fd.get(), 0);

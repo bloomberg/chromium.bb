@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/beacon.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/net_errors.h"
@@ -47,7 +49,7 @@ scoped_ptr<Value> DomainReliabilityBeacon::ToValue(
   bool network_changed = last_network_change_time > start_time;
   beacon_value->SetBoolean("network_changed", network_changed);
   beacon_value->SetDouble("sample_rate", sample_rate);
-  return beacon_value.Pass();
+  return std::move(beacon_value);
 }
 
 }  // namespace domain_reliability

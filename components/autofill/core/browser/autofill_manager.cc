@@ -850,7 +850,7 @@ void AutofillManager::OnDidGetUploadDetails(
     client_->ConfirmSaveCreditCardToCloud(
         base::Bind(&AutofillManager::OnUserDidAcceptUpload,
                    weak_ptr_factory_.GetWeakPtr()),
-        legal_message.Pass());
+        std::move(legal_message));
     client_->LoadRiskData(base::Bind(&AutofillManager::OnDidGetUploadRiskData,
                                      weak_ptr_factory_.GetWeakPtr()));
     AutofillMetrics::LogCardUploadDecisionMetric(
@@ -1541,7 +1541,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     // Ownership is transferred to |form_structures_| which maintains it until
     // the manager is Reset() or destroyed. It is safe to use references below
     // as long as receivers don't take ownership.
-    form_structures_.push_back(form_structure.Pass());
+    form_structures_.push_back(std::move(form_structure));
 
     if (form_structures_.back()->ShouldBeCrowdsourced())
       queryable_forms.push_back(form_structures_.back());

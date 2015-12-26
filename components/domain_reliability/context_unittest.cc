@@ -5,9 +5,9 @@
 #include "components/domain_reliability/context.h"
 
 #include <stddef.h>
-
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -48,7 +48,7 @@ scoped_ptr<DomainReliabilityBeacon> MakeCustomizedBeacon(
   beacon->start_time = time->NowTicks() - beacon->elapsed;
   beacon->upload_depth = 0;
   beacon->sample_rate = 1.0;
-  return beacon.Pass();
+  return beacon;
 }
 
 scoped_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
@@ -105,13 +105,8 @@ class DomainReliabilityContextTest : public testing::Test {
 
   void InitContext(scoped_ptr<const DomainReliabilityConfig> config) {
     context_.reset(new DomainReliabilityContext(
-        &time_,
-        params_,
-        upload_reporter_string_,
-        &last_network_change_time_,
-        &dispatcher_,
-        &uploader_,
-        config.Pass()));
+        &time_, params_, upload_reporter_string_, &last_network_change_time_,
+        &dispatcher_, &uploader_, std::move(config)));
   }
 
   TimeDelta min_delay() const { return params_.minimum_upload_delay; }
@@ -196,7 +191,7 @@ TEST_F(DomainReliabilityContextTest, MaxNestedBeaconSchedules) {
   GURL url("http://example/always_report");
   scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
   beacon->upload_depth = DomainReliabilityContext::kMaxUploadDepthToSchedule;
-  context_->OnBeacon(beacon.Pass());
+  context_->OnBeacon(std::move(beacon));
 
   BeaconVector beacons;
   context_->GetQueuedBeaconsForTesting(&beacons);
@@ -212,7 +207,7 @@ TEST_F(DomainReliabilityContextTest, OverlyNestedBeaconDoesNotSchedule) {
   scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
   beacon->upload_depth =
       DomainReliabilityContext::kMaxUploadDepthToSchedule + 1;
-  context_->OnBeacon(beacon.Pass());
+  context_->OnBeacon(std::move(beacon));
 
   BeaconVector beacons;
   context_->GetQueuedBeaconsForTesting(&beacons);
@@ -229,7 +224,7 @@ TEST_F(DomainReliabilityContextTest,
   scoped_ptr<DomainReliabilityBeacon> beacon = MakeBeacon(&time_);
   beacon->upload_depth =
       DomainReliabilityContext::kMaxUploadDepthToSchedule + 1;
-  context_->OnBeacon(beacon.Pass());
+  context_->OnBeacon(std::move(beacon));
 
   BeaconVector beacons;
   context_->GetQueuedBeaconsForTesting(&beacons);
@@ -242,7 +237,7 @@ TEST_F(DomainReliabilityContextTest,
   // doesn't schedule until the deadline.
   beacon = MakeBeacon(&time_);
   beacon->upload_depth = DomainReliabilityContext::kMaxUploadDepthToSchedule;
-  context_->OnBeacon(beacon.Pass());
+  context_->OnBeacon(std::move(beacon));
 
   context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(2u, beacons.size());
@@ -417,7 +412,7 @@ TEST_F(DomainReliabilityContextTest,
 TEST_F(DomainReliabilityContextTest, ZeroSampleRate) {
   scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
   config->failure_sample_rate = 0.0;
-  InitContext(config.Pass());
+  InitContext(std::move(config));
 
   BeaconVector beacons;
   for (int i = 0; i < 100; i++) {
@@ -429,7 +424,7 @@ TEST_F(DomainReliabilityContextTest, ZeroSampleRate) {
 TEST_F(DomainReliabilityContextTest, FractionalSampleRate) {
   scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
   config->failure_sample_rate = 0.5;
-  InitContext(config.Pass());
+  InitContext(std::move(config));
 
   BeaconVector beacons;
   do {
@@ -459,7 +454,7 @@ TEST_F(DomainReliabilityContextTest, FailureSampleOnly) {
   scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
   config->success_sample_rate = 0.0;
   config->failure_sample_rate = 1.0;
-  InitContext(config.Pass());
+  InitContext(std::move(config));
 
   BeaconVector beacons;
 
@@ -470,7 +465,7 @@ TEST_F(DomainReliabilityContextTest, FailureSampleOnly) {
   scoped_ptr<DomainReliabilityBeacon> beacon(MakeBeacon(&time_));
   beacon->status = "ok";
   beacon->chrome_error = net::OK;
-  context_->OnBeacon(beacon.Pass());
+  context_->OnBeacon(std::move(beacon));
   context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 }
@@ -479,7 +474,7 @@ TEST_F(DomainReliabilityContextTest, SuccessSampleOnly) {
   scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
   config->success_sample_rate = 1.0;
   config->failure_sample_rate = 0.0;
-  InitContext(config.Pass());
+  InitContext(std::move(config));
 
   BeaconVector beacons;
 
@@ -490,7 +485,7 @@ TEST_F(DomainReliabilityContextTest, SuccessSampleOnly) {
   scoped_ptr<DomainReliabilityBeacon> beacon(MakeBeacon(&time_));
   beacon->status = "ok";
   beacon->chrome_error = net::OK;
-  context_->OnBeacon(beacon.Pass());
+  context_->OnBeacon(std::move(beacon));
   context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(1u, beacons.size());
 }
@@ -499,7 +494,7 @@ TEST_F(DomainReliabilityContextTest, SampleAllBeacons) {
   scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
   config->success_sample_rate = 1.0;
   config->failure_sample_rate = 1.0;
-  InitContext(config.Pass());
+  InitContext(std::move(config));
 
   BeaconVector beacons;
 
@@ -510,7 +505,7 @@ TEST_F(DomainReliabilityContextTest, SampleAllBeacons) {
   scoped_ptr<DomainReliabilityBeacon> beacon(MakeBeacon(&time_));
   beacon->status = "ok";
   beacon->chrome_error = net::OK;
-  context_->OnBeacon(beacon.Pass());
+  context_->OnBeacon(std::move(beacon));
   context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(2u, beacons.size());
 }
@@ -519,7 +514,7 @@ TEST_F(DomainReliabilityContextTest, SampleNoBeacons) {
   scoped_ptr<DomainReliabilityConfig> config(MakeTestConfig());
   config->success_sample_rate = 0.0;
   config->failure_sample_rate = 0.0;
-  InitContext(config.Pass());
+  InitContext(std::move(config));
 
   BeaconVector beacons;
 
@@ -530,7 +525,7 @@ TEST_F(DomainReliabilityContextTest, SampleNoBeacons) {
   scoped_ptr<DomainReliabilityBeacon> beacon(MakeBeacon(&time_));
   beacon->status = "ok";
   beacon->chrome_error = net::OK;
-  context_->OnBeacon(beacon.Pass());
+  context_->OnBeacon(std::move(beacon));
   context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_EQ(0u, beacons.size());
 }

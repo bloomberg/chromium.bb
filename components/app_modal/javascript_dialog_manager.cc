@@ -4,6 +4,8 @@
 
 #include "components/app_modal/javascript_dialog_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -59,12 +61,12 @@ JavaScriptDialogManager* JavaScriptDialogManager::GetInstance() {
 
 void JavaScriptDialogManager::SetNativeDialogFactory(
     scoped_ptr<JavaScriptNativeDialogFactory> factory) {
-  native_dialog_factory_ = factory.Pass();
+  native_dialog_factory_ = std::move(factory);
 }
 
 void JavaScriptDialogManager::SetExtensionsClient(
     scoped_ptr<JavaScriptDialogExtensionsClient> extensions_client) {
-  extensions_client_ = extensions_client.Pass();
+  extensions_client_ = std::move(extensions_client);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

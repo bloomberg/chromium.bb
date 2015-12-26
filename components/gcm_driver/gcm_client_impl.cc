@@ -5,6 +5,7 @@
 #include "components/gcm_driver/gcm_client_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -295,7 +296,7 @@ void GCMClientImpl::CheckinInfo::Reset() {
 }
 
 GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
-    : internals_builder_(internals_builder.Pass()),
+    : internals_builder_(std::move(internals_builder)),
       state_(UNINITIALIZED),
       delegate_(NULL),
       start_mode_(DELAYED_START),
@@ -304,8 +305,7 @@ GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
       url_request_context_getter_(NULL),
       periodic_checkin_ptr_factory_(this),
       destroying_gcm_store_ptr_factory_(this),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 GCMClientImpl::~GCMClientImpl() {
 }
@@ -332,7 +332,7 @@ void GCMClientImpl::Initialize(
   chrome_build_info_ = chrome_build_info;
 
   gcm_store_.reset(
-      new GCMStoreImpl(path, blocking_task_runner, encryptor.Pass()));
+      new GCMStoreImpl(path, blocking_task_runner, std::move(encryptor)));
 
   delegate_ = delegate;
 
@@ -436,7 +436,7 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
       instance_id_data_[iter->first] = std::make_pair(instance_id, extra_data);
   }
 
-  load_result_ = result.Pass();
+  load_result_ = std::move(result);
   state_ = LOADED;
 
   // Don't initiate the GCM connection when GCM is in delayed start mode and
@@ -493,11 +493,8 @@ void GCMClientImpl::InitializeMCSClient() {
       &recorder_);
   connection_factory_->SetConnectionListener(this);
   mcs_client_ = internals_builder_->BuildMCSClient(
-      chrome_build_info_.version,
-      clock_.get(),
-      connection_factory_.get(),
-      gcm_store_.get(),
-      &recorder_).Pass();
+      chrome_build_info_.version, clock_.get(), connection_factory_.get(),
+      gcm_store_.get(), &recorder_);
 
   mcs_client_->Initialize(
       base::Bind(&GCMClientImpl::OnMCSError, weak_ptr_factory_.GetWeakPtr()),
@@ -505,7 +502,7 @@ void GCMClientImpl::InitializeMCSClient() {
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&GCMClientImpl::OnMessageSentToMCS,
                  weak_ptr_factory_.GetWeakPtr()),
-      load_result_.Pass());
+      std::move(load_result_));
 }
 
 void GCMClientImpl::OnFirstTimeDeviceCheckinCompleted(
@@ -634,7 +631,7 @@ void GCMClientImpl::SetLastTokenFetchTime(const base::Time& time) {
 
 void GCMClientImpl::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
   DCHECK(mcs_client_);
-  mcs_client_->UpdateHeartbeatTimer(timer.Pass());
+  mcs_client_->UpdateHeartbeatTimer(std::move(timer));
 }
 
 void GCMClientImpl::AddInstanceIDData(const std::string& app_id,
@@ -926,7 +923,7 @@ void GCMClientImpl::Register(
 
   scoped_ptr<RegistrationRequest> registration_request(new RegistrationRequest(
       gservices_settings_.GetRegistrationURL(), request_info,
-      request_handler.Pass(), GetGCMBackoffPolicy(),
+      std::move(request_handler), GetGCMBackoffPolicy(),
       base::Bind(&GCMClientImpl::OnRegisterCompleted,
                  weak_ptr_factory_.GetWeakPtr(), registration_info),
       kMaxRegistrationRetries, url_request_context_getter_, &recorder_,
@@ -1067,7 +1064,7 @@ void GCMClientImpl::Unregister(
   scoped_ptr<UnregistrationRequest> unregistration_request(
       new UnregistrationRequest(
           gservices_settings_.GetRegistrationURL(), request_info,
-          request_handler.Pass(), GetGCMBackoffPolicy(),
+          std::move(request_handler), GetGCMBackoffPolicy(),
           base::Bind(&GCMClientImpl::OnUnregisterCompleted,
                      weak_ptr_factory_.GetWeakPtr(), registration_info),
           kMaxUnregistrationRetries, url_request_context_getter_, &recorder_,

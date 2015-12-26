@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/devtools_agent_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -33,7 +35,7 @@ DevToolsAgentImpl::~DevToolsAgentImpl() {
 
 void DevToolsAgentImpl::BindToRequest(
     mojo::InterfaceRequest<DevToolsAgent> request) {
-  binding_.Bind(request.Pass());
+  binding_.Bind(std::move(request));
 }
 
 void DevToolsAgentImpl::SetClient(
@@ -41,7 +43,7 @@ void DevToolsAgentImpl::SetClient(
   if (client_)
     frame_->devToolsAgent()->detach();
 
-  client_ = client.Pass();
+  client_ = std::move(client);
   client_.set_connection_error_handler(base::Bind(
       &DevToolsAgentImpl::OnConnectionError, base::Unretained(this)));
 

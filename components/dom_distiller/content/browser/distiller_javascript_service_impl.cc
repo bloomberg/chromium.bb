@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
+
+#include <utility>
+
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
 #include "content/public/browser/user_metrics.h"
@@ -14,7 +17,7 @@ DistillerJavaScriptServiceImpl::DistillerJavaScriptServiceImpl(
     content::RenderFrameHost* render_frame_host,
     DistillerUIHandle* distiller_ui_handle,
     mojo::InterfaceRequest<DistillerJavaScriptService> request)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       render_frame_host_(render_frame_host),
       distiller_ui_handle_(distiller_ui_handle) {}
 
@@ -65,7 +68,7 @@ void CreateDistillerJavaScriptService(
     mojo::InterfaceRequest<DistillerJavaScriptService> request) {
   // This is strongly bound and owned by the pipe.
   new DistillerJavaScriptServiceImpl(render_frame_host, distiller_ui_handle,
-      request.Pass());
+                                     std::move(request));
 }
 
 }  // namespace dom_distiller

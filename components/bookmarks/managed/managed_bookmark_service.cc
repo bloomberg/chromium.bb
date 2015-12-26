@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -31,8 +32,8 @@ class BookmarkPermanentNodeLoader {
   BookmarkPermanentNodeLoader(scoped_ptr<BookmarkPermanentNode> node,
                               scoped_ptr<base::ListValue> initial_bookmarks,
                               int title_id)
-      : node_(node.Pass()),
-        initial_bookmarks_(initial_bookmarks.Pass()),
+      : node_(std::move(node)),
+        initial_bookmarks_(std::move(initial_bookmarks)),
         title_id_(title_id) {
     DCHECK(node_);
   }
@@ -48,7 +49,7 @@ class BookmarkPermanentNodeLoader {
         node_.get(), initial_bookmarks_.get(), node_->id() + 1);
     node_->set_visible(!node_->empty());
     node_->SetTitle(l10n_util::GetStringUTF16(title_id_));
-    return node_.Pass();
+    return std::move(node_);
   }
 
  private:
@@ -68,7 +69,7 @@ BookmarkPermanentNodeList LoadExtraNodes(
   BookmarkPermanentNodeList extra_nodes;
   for (const auto& loader : loaders)
     extra_nodes.push_back(loader->Load(next_node_id).release());
-  return extra_nodes.Pass();
+  return extra_nodes;
 }
 
 }  // namespace
@@ -114,10 +115,11 @@ LoadExtraCallback ManagedBookmarkService::GetLoadExtraNodesCallback() {
 
   ScopedVector<BookmarkPermanentNodeLoader> loaders;
   loaders.push_back(new BookmarkPermanentNodeLoader(
-      managed.Pass(), managed_bookmarks_tracker_->GetInitialManagedBookmarks(),
+      std::move(managed),
+      managed_bookmarks_tracker_->GetInitialManagedBookmarks(),
       IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
   loaders.push_back(new BookmarkPermanentNodeLoader(
-      supervised.Pass(),
+      std::move(supervised),
       supervised_bookmarks_tracker_->GetInitialManagedBookmarks(),
       IDS_BOOKMARK_BAR_SUPERVISED_FOLDER_DEFAULT_NAME));
 

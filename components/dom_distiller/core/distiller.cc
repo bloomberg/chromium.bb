@@ -5,6 +5,7 @@
 #include "components/dom_distiller/core/distiller.h"
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -31,9 +32,8 @@ namespace dom_distiller {
 DistillerFactoryImpl::DistillerFactoryImpl(
     scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
     const dom_distiller::proto::DomDistillerOptions& dom_distiller_options)
-    : distiller_url_fetcher_factory_(distiller_url_fetcher_factory.Pass()),
-      dom_distiller_options_(dom_distiller_options) {
-}
+    : distiller_url_fetcher_factory_(std::move(distiller_url_fetcher_factory)),
+      dom_distiller_options_(dom_distiller_options) {}
 
 DistillerFactoryImpl::~DistillerFactoryImpl() {}
 
@@ -42,7 +42,7 @@ scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistillerForUrl(
   // This default implementation has the same behavior for all URLs.
   scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
       *distiller_url_fetcher_factory_, dom_distiller_options_));
-  return distiller.Pass();
+  return std::move(distiller);
 }
 
 DistillerImpl::DistilledPageData::DistilledPageData() {}
@@ -103,7 +103,7 @@ void DistillerImpl::DistillPage(const GURL& url,
                                 const DistillationFinishedCallback& finished_cb,
                                 const DistillationUpdateCallback& update_cb) {
   DCHECK(AreAllPagesFinished());
-  distiller_page_ = distiller_page.Pass();
+  distiller_page_ = std::move(distiller_page);
   finished_cb_ = finished_cb;
   update_cb_ = update_cb;
 
@@ -378,7 +378,7 @@ void DistillerImpl::RunDistillerCallbackIfDone() {
 
     base::AutoReset<bool> dont_delete_this_in_callback(&destruction_allowed_,
                                                        false);
-    finished_cb_.Run(article_proto.Pass());
+    finished_cb_.Run(std::move(article_proto));
     finished_cb_.Reset();
   }
 }

@@ -5,7 +5,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -429,7 +429,7 @@ TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
   BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
   BookmarkPermanentNodeList extra_nodes;
   extra_nodes.push_back(extra_node);
-  client.SetExtraNodesToLoad(extra_nodes.Pass());
+  client.SetExtraNodesToLoad(std::move(extra_nodes));
 
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
@@ -583,7 +583,7 @@ TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
   BookmarkPermanentNodeList extra_nodes;
   extra_nodes.push_back(extra_node);
-  client.SetExtraNodesToLoad(extra_nodes.Pass());
+  client.SetExtraNodesToLoad(std::move(extra_nodes));
 
   scoped_ptr<BookmarkModel> model(client.CreateModel());
   EXPECT_TRUE(model->bookmark_bar_node()->empty());

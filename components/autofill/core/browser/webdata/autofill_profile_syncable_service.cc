@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/guid.h"
 #include "base/location.h"
@@ -97,7 +98,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
   DVLOG(1) << "Associating Autofill: MergeDataAndStartSyncing";
 
   syncer::SyncMergeResult merge_result(type);
-  sync_error_factory_ = sync_error_factory.Pass();
+  sync_error_factory_ = std::move(sync_error_factory);
   if (!LoadAutofillData(&profiles_.get())) {
     merge_result.set_error(sync_error_factory_->CreateAndUploadError(
         FROM_HERE, "Could not get the autofill data from WebDatabase."));
@@ -116,7 +117,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
     }
   }
 
-  sync_processor_ = sync_processor.Pass();
+  sync_processor_ = std::move(sync_processor);
 
   GUIDToProfileMap remaining_profiles;
   CreateGUIDToProfileMap(profiles_.get(), &remaining_profiles);

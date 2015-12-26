@@ -5,9 +5,9 @@
 #include "components/history/core/browser/top_sites_impl.h"
 
 #include <stdint.h>
-
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -334,7 +334,7 @@ void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
   {
     DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
     base::DictionaryValue* blacklist = update.Get();
-    blacklist->SetWithoutPathExpansion(GetURLHash(url), dummy.Pass());
+    blacklist->SetWithoutPathExpansion(GetURLHash(url), std::move(dummy));
   }
 
   ResetThreadSafeCache();

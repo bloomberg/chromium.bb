@@ -4,6 +4,7 @@
 
 #include "components/html_viewer/web_socket_handle_impl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -76,7 +77,7 @@ class WebSocketClientImpl : public mojo::WebSocketClient {
   WebSocketClientImpl(WebSocketHandleImpl* handle,
                       blink::WebSocketHandleClient* client,
                       mojo::InterfaceRequest<mojo::WebSocketClient> request)
-      : handle_(handle), client_(client), binding_(this, request.Pass()) {}
+      : handle_(handle), client_(client), binding_(this, std::move(request)) {}
   ~WebSocketClientImpl() override {}
 
  private:
@@ -86,7 +87,7 @@ class WebSocketClientImpl : public mojo::WebSocketClient {
                   mojo::ScopedDataPipeConsumerHandle receive_stream) override {
     blink::WebSocketHandleClient* client = client_;
     WebSocketHandleImpl* handle = handle_;
-    receive_stream_ = receive_stream.Pass();
+    receive_stream_ = std::move(receive_stream);
     read_queue_.reset(new WebSocketReadQueue(receive_stream_.get()));
     client->didConnect(handle,
                        selected_subprotocol.To<WebString>(),
@@ -167,19 +168,19 @@ void WebSocketHandleImpl::connect(const WebURL& url,
   // |client_|?
   mojo::WebSocketClientPtr client_ptr;
   mojo::MessagePipe pipe;
-  client_ptr.Bind(
-      mojo::InterfacePtrInfo<mojo::WebSocketClient>(pipe.handle0.Pass(), 0u));
+  client_ptr.Bind(mojo::InterfacePtrInfo<mojo::WebSocketClient>(
+      std::move(pipe.handle0), 0u));
   mojo::InterfaceRequest<mojo::WebSocketClient> request;
-  request.Bind(pipe.handle1.Pass());
-  client_.reset(new WebSocketClientImpl(this, client, request.Pass()));
+  request.Bind(std::move(pipe.handle1));
+  client_.reset(new WebSocketClientImpl(this, client, std::move(request)));
 
   mojo::DataPipe data_pipe;
-  send_stream_ = data_pipe.producer_handle.Pass();
+  send_stream_ = std::move(data_pipe.producer_handle);
   write_queue_.reset(new mojo::WebSocketWriteQueue(send_stream_.get()));
-  web_socket_->Connect(url.string().utf8(),
-                       mojo::Array<String>::From(protocols),
-                       origin.toString().utf8(),
-                       data_pipe.consumer_handle.Pass(), client_ptr.Pass());
+  web_socket_->Connect(
+      url.string().utf8(), mojo::Array<String>::From(protocols),
+      origin.toString().utf8(), std::move(data_pipe.consumer_handle),
+      std::move(client_ptr));
 }
 
 void WebSocketHandleImpl::send(bool fin,

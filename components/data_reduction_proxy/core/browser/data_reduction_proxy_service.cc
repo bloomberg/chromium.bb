@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -35,7 +37,7 @@ DataReductionProxyService::DataReductionProxyService(
     : url_request_context_getter_(request_context_getter),
       settings_(settings),
       prefs_(prefs),
-      db_data_owner_(new DBDataOwner(store.Pass())),
+      db_data_owner_(new DBDataOwner(std::move(store))),
       io_task_runner_(io_task_runner),
       db_task_runner_(db_task_runner),
       initialized_(false),
@@ -113,27 +115,27 @@ void DataReductionProxyService::UpdateContentLengths(
 
 void DataReductionProxyService::AddEvent(scoped_ptr<base::Value> event) {
   DCHECK(CalledOnValidThread());
-  event_store_->AddEvent(event.Pass());
+  event_store_->AddEvent(std::move(event));
 }
 
 void DataReductionProxyService::AddEnabledEvent(scoped_ptr<base::Value> event,
                                                 bool enabled) {
   DCHECK(CalledOnValidThread());
-  event_store_->AddEnabledEvent(event.Pass(), enabled);
+  event_store_->AddEnabledEvent(std::move(event), enabled);
 }
 
 void DataReductionProxyService::AddEventAndSecureProxyCheckState(
     scoped_ptr<base::Value> event,
     SecureProxyCheckState state) {
   DCHECK(CalledOnValidThread());
-  event_store_->AddEventAndSecureProxyCheckState(event.Pass(), state);
+  event_store_->AddEventAndSecureProxyCheckState(std::move(event), state);
 }
 
 void DataReductionProxyService::AddAndSetLastBypassEvent(
     scoped_ptr<base::Value> event,
     int64_t expiration_ticks) {
   DCHECK(CalledOnValidThread());
-  event_store_->AddAndSetLastBypassEvent(event.Pass(), expiration_ticks);
+  event_store_->AddAndSetLastBypassEvent(std::move(event), expiration_ticks);
 }
 
 void DataReductionProxyService::SetUnreachable(bool unreachable) {

@@ -5,6 +5,7 @@
 #include "components/html_viewer/html_frame_properties.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -28,7 +29,7 @@ namespace {
 mojo::Array<uint8_t> IntToClientPropertyArray(int value) {
   mojo::Array<uint8_t> value_array(sizeof(value));
   memcpy(&(value_array.front()), &value, sizeof(value));
-  return value_array.Pass();
+  return value_array;
 }
 
 bool IntFromClientPropertyArray(const mojo::Array<uint8_t>& value_array,
@@ -60,7 +61,7 @@ blink::WebString FrameNameFromClientProperty(
 
 mojo::Array<uint8_t> FrameTreeScopeToClientProperty(
     blink::WebTreeScopeType scope_type) {
-  return IntToClientPropertyArray(static_cast<int>(scope_type)).Pass();
+  return IntToClientPropertyArray(static_cast<int>(scope_type));
 }
 
 bool FrameTreeScopeFromClientProperty(const mojo::Array<uint8_t>& new_data,
@@ -78,7 +79,7 @@ bool FrameTreeScopeFromClientProperty(const mojo::Array<uint8_t>& new_data,
 
 mojo::Array<uint8_t> FrameSandboxFlagsToClientProperty(
     blink::WebSandboxFlags flags) {
-  return IntToClientPropertyArray(static_cast<int>(flags)).Pass();
+  return IntToClientPropertyArray(static_cast<int>(flags));
 }
 
 bool FrameSandboxFlagsFromClientProperty(const mojo::Array<uint8_t>& new_data,
@@ -111,7 +112,7 @@ mojo::Array<uint8_t> FrameOriginToClientProperty(blink::WebFrame* frame) {
   pickle.WriteUInt16(origin.port());
   mojo::Array<uint8_t> origin_array(pickle.size());
   memcpy(&(origin_array.front()), pickle.data(), pickle.size());
-  return origin_array.Pass();
+  return origin_array;
 }
 
 url::Origin FrameOriginFromClientProperty(const mojo::Array<uint8_t>& data) {
@@ -150,7 +151,7 @@ void AddToClientPropertiesIfValid(
     mojo::Array<uint8_t> value,
     mojo::Map<mojo::String, mojo::Array<uint8_t>>* client_properties) {
   if (!value.is_null())
-    (*client_properties)[name] = value.Pass();
+    (*client_properties)[name] = std::move(value);
 }
 
 mojo::Array<uint8_t> GetValueFromClientProperties(
@@ -158,7 +159,7 @@ mojo::Array<uint8_t> GetValueFromClientProperties(
     const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
   auto iter = properties.find(name);
   return iter == properties.end() ? mojo::Array<uint8_t>()
-                                  : iter.GetValue().Clone().Pass();
+                                  : iter.GetValue().Clone();
 }
 
 }  // namespace html_viewer

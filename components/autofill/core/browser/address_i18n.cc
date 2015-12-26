@@ -52,7 +52,7 @@ scoped_ptr<AddressData> CreateAddressData(
       base::UTF16ToUTF8(
           get_info.Run(AutofillType(ADDRESS_HOME_STREET_ADDRESS))),
       "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  return address_data.Pass();
+  return address_data;
 }
 
 scoped_ptr< ::i18n::addressinput::AddressData>
@@ -61,7 +61,7 @@ scoped_ptr< ::i18n::addressinput::AddressData>
   scoped_ptr< ::i18n::addressinput::AddressData> address_data =
       i18n::CreateAddressData(base::Bind(&GetInfoHelper, profile, app_locale));
   address_data->language_code = profile.language_code();
-  return address_data.Pass();
+  return address_data;
 }
 
 ServerFieldType TypeForField(AddressField address_field, bool billing) {

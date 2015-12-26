@@ -5,9 +5,9 @@
 #include "components/error_page/renderer/net_error_helper_core.h"
 
 #include <stddef.h>
-
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -229,7 +229,7 @@ std::string CreateFixUrlRequestBody(
   scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetString("urlQuery", PrepareUrlForUpload(error.unreachableURL));
   return CreateRequestBody("linkdoctor.fixurl.fixurl", error_param,
-                           correction_params, params.Pass());
+                           correction_params, std::move(params));
 }
 
 std::string CreateClickTrackingUrlRequestBody(
@@ -254,7 +254,7 @@ std::string CreateClickTrackingUrlRequestBody(
   params->SetString("fingerprint", response.fingerprint);
 
   return CreateRequestBody("linkdoctor.fixurl.clicktracking", error_param,
-                           correction_params, params.Pass());
+                           correction_params, std::move(params));
 }
 
 base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl,
@@ -278,7 +278,7 @@ scoped_ptr<NavigationCorrectionResponse> ParseNavigationCorrectionResponse(
   base::JSONValueConverter<NavigationCorrectionResponse> converter;
   if (!parsed || !converter.Convert(*parsed, response.get()))
     response.reset();
-  return response.Pass();
+  return response;
 }
 
 void LogCorrectionTypeShown(int type_id) {
@@ -361,7 +361,7 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
 
   if (params->override_suggestions->empty() && !params->search_url.is_valid())
     params.reset();
-  return params.Pass();
+  return params;
 }
 
 void ReportAutoReloadSuccess(const blink::WebURLError& error, size_t count) {
@@ -851,10 +851,8 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
     delegate_->GenerateLocalizedErrorPage(
         pending_error_page_info_->error,
         pending_error_page_info_->was_failed_post,
-        can_show_network_diagnostics_dialog_,
-        GetOfflinePageStatus(),
-        params.Pass(),
-        &pending_error_page_info_->reload_button_in_page,
+        can_show_network_diagnostics_dialog_, GetOfflinePageStatus(),
+        std::move(params), &pending_error_page_info_->reload_button_in_page,
         &pending_error_page_info_->show_saved_copy_button_in_page,
         &pending_error_page_info_->show_cached_copy_button_in_page,
         &pending_error_page_info_->show_offline_pages_button_in_page,

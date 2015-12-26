@@ -5,9 +5,9 @@
 #include "components/html_viewer/html_frame.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
@@ -355,8 +355,9 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   child_frame->frame_client_binding_.reset(
       new mojo::Binding<web_view::mojom::FrameClient>(
           child_frame, mojo::GetProxy(&client_ptr)));
-  server_->OnCreatedFrame(GetProxy(&(child_frame->server_)), client_ptr.Pass(),
-                          child_window->id(), client_properties.Pass());
+  server_->OnCreatedFrame(GetProxy(&(child_frame->server_)),
+                          std::move(client_ptr), child_window->id(),
+                          std::move(client_properties));
   return child_frame->web_frame_;
 }
 
@@ -405,7 +406,7 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
       base::TimeTicks::Now().ToInternalValue();
   server_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(info.defaultPolicy), id_,
-      url_request.Pass());
+      std::move(url_request));
 
   // TODO(yzshen): crbug.com/532556 If the server side drops the request,
   // this frame will be in permenant-loading state. We should send a
@@ -540,11 +541,11 @@ void HTMLFrame::Bind(
     web_view::mojom::FramePtr frame,
     mojo::InterfaceRequest<web_view::mojom::FrameClient> frame_client_request) {
   DCHECK(IsLocal());
-  server_ = frame.Pass();
+  server_ = std::move(frame);
   server_.set_connection_error_handler(
       base::Bind(&HTMLFrame::Close, base::Unretained(this)));
   frame_client_binding_.reset(new mojo::Binding<web_view::mojom::FrameClient>(
-      this, frame_client_request.Pass()));
+      this, std::move(frame_client_request)));
 }
 
 void HTMLFrame::SetValueFromClientProperty(const std::string& name,
@@ -820,7 +821,8 @@ void HTMLFrame::OnConnect(
 
 void HTMLFrame::OnFrameAdded(uint32_t change_id,
                              web_view::mojom::FrameDataPtr frame_data) {
-  frame_tree_manager_->ProcessOnFrameAdded(this, change_id, frame_data.Pass());
+  frame_tree_manager_->ProcessOnFrameAdded(this, change_id,
+                                           std::move(frame_data));
 }
 
 void HTMLFrame::OnFrameRemoved(uint32_t change_id, uint32_t frame_id) {
@@ -830,8 +832,8 @@ void HTMLFrame::OnFrameRemoved(uint32_t change_id, uint32_t frame_id) {
 void HTMLFrame::OnFrameClientPropertyChanged(uint32_t frame_id,
                                              const mojo::String& name,
                                              mojo::Array<uint8_t> new_value) {
-  frame_tree_manager_->ProcessOnFrameClientPropertyChanged(this, frame_id, name,
-                                                           new_value.Pass());
+  frame_tree_manager_->ProcessOnFrameClientPropertyChanged(
+      this, frame_id, name, std::move(new_value));
 }
 
 void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
@@ -997,7 +999,7 @@ void HTMLFrame::postMessageEvent(blink::WebLocalFrame* source_web_frame,
     event->target_origin = mojo::String::From(target_origin.toString());
 
   source_frame->server_->PostMessageEventToFrame(target_frame->id_,
-                                                 event.Pass());
+                                                 std::move(event));
 }
 
 void HTMLFrame::initializeChildFrame(const blink::WebRect& frame_rect,
@@ -1017,7 +1019,7 @@ void HTMLFrame::navigate(const blink::WebURLRequest& request,
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
   GetServerFrame()->RequestNavigate(
       web_view::mojom::NAVIGATION_TARGET_TYPE_EXISTING_FRAME, id_,
-      url_request.Pass());
+      std::move(url_request));
 }
 
 void HTMLFrame::reload(bool ignore_cache, bool is_client_redirect) {

@@ -5,8 +5,8 @@
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -66,8 +66,8 @@ AudioDirectiveHandlerImpl::AudioDirectiveHandlerImpl(
     scoped_ptr<base::Timer> timer,
     const scoped_refptr<TickClockRefCounted>& clock)
     : update_directives_callback_(update_directives_callback),
-      audio_modem_(audio_modem.Pass()),
-      audio_event_timer_(timer.Pass()),
+      audio_modem_(std::move(audio_modem)),
+      audio_event_timer_(std::move(timer)),
       clock_(clock) {}
 
 AudioDirectiveHandlerImpl::~AudioDirectiveHandlerImpl() {}

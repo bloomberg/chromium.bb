@@ -5,6 +5,7 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -750,7 +751,7 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
       password_form = CreatePasswordFormFromWebForm(
           element.form(), &nonscript_modified_values_, &form_predictions_);
     }
-    ProvisionallySavePassword(password_form.Pass(), RESTRICTION_NONE);
+    ProvisionallySavePassword(std::move(password_form), RESTRICTION_NONE);
 
     PasswordToLoginMap::iterator iter = password_to_username_.find(element);
     if (iter != password_to_username_.end()) {
@@ -1134,7 +1135,7 @@ void PasswordAutofillAgent::WillSendSubmitEvent(
   // already have been updated in TextDidChangeInTextField.
   scoped_ptr<PasswordForm> password_form = CreatePasswordFormFromWebForm(
       form, &nonscript_modified_values_, &form_predictions_);
-  ProvisionallySavePassword(password_form.Pass(),
+  ProvisionallySavePassword(std::move(password_form),
                             RESTRICTION_NON_EMPTY_PASSWORD);
 }
 
@@ -1496,7 +1497,7 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
                          password_form->new_password_value.empty())) {
     return;
   }
-  provisionally_saved_form_ = password_form.Pass();
+  provisionally_saved_form_ = std::move(password_form);
 }
 
 bool PasswordAutofillAgent::ProvisionallySavedPasswordIsValid() {

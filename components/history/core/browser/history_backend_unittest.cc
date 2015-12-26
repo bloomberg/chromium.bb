@@ -291,7 +291,7 @@ class HistoryBackendTestBase : public testing::Test {
 
 void HistoryBackendTestDelegate::SetInMemoryBackend(
     scoped_ptr<InMemoryHistoryBackend> backend) {
-  test_->SetInMemoryBackend(backend.Pass());
+  test_->SetInMemoryBackend(std::move(backend));
 }
 
 void HistoryBackendTestDelegate::NotifyFaviconsChanged(

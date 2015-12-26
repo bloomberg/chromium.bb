@@ -5,6 +5,7 @@
 #include "components/copresence/copresence_manager_impl.h"
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -115,8 +116,8 @@ void CopresenceManagerImpl::ExecuteReportRequest(
 
   // We'll need to modify the ReportRequest, so we make our own copy to send.
   scoped_ptr<ReportRequest> request_copy(new ReportRequest(request));
-  rpc_handler_->SendReportRequest(
-      request_copy.Pass(), app_id, auth_token, callback);
+  rpc_handler_->SendReportRequest(std::move(request_copy), app_id, auth_token,
+                                  callback);
 }
 
 

@@ -4,6 +4,8 @@
 
 #include "components/cloud_devices/common/cloud_device_description.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -29,7 +31,7 @@ bool CloudDeviceDescription::InitFromDictionary(
   if (!root)
     return false;
   Reset();
-  root_ = root.Pass();
+  root_ = std::move(root);
   std::string version;
   root_->GetString(json::kVersion, &version);
   return version == json::kVersion10;

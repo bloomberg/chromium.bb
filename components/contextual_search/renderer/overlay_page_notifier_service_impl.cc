@@ -4,6 +4,8 @@
 
 #include "components/contextual_search/renderer/overlay_page_notifier_service_impl.h"
 
+#include <utility>
+
 #include "components/contextual_search/renderer/overlay_js_render_frame_observer.h"
 
 namespace contextual_search {
@@ -11,7 +13,7 @@ namespace contextual_search {
 OverlayPageNotifierServiceImpl::OverlayPageNotifierServiceImpl(
     OverlayJsRenderFrameObserver* observer,
     mojo::InterfaceRequest<OverlayPageNotifierService> request)
-    : binding_(this, request.Pass()), overlay_js_observer_(observer) {}
+    : binding_(this, std::move(request)), overlay_js_observer_(observer) {}
 
 OverlayPageNotifierServiceImpl::~OverlayPageNotifierServiceImpl() {}
 

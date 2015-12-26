@@ -5,6 +5,7 @@
 #include "components/feedback/feedback_data.h"
 
 #include <set>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -43,7 +44,7 @@ scoped_ptr<KeyedService> CreateFeedbackUploaderService(
     content::BrowserContext* context) {
   scoped_ptr<MockUploader> uploader(new MockUploader(context));
   EXPECT_CALL(*uploader, DispatchReport(testing::_)).Times(1);
-  return uploader.Pass();
+  return std::move(uploader);
 }
 
 scoped_ptr<std::string> MakeScoped(const char* str) {
@@ -101,9 +102,9 @@ class FeedbackDataTest : public testing::Test {
 };
 
 TEST_F(FeedbackDataTest, ReportSending) {
-  data_->SetAndCompressHistograms(MakeScoped(kHistograms).Pass());
-  data_->set_image(MakeScoped(kImageData).Pass());
-  data_->AttachAndCompressFileData(MakeScoped(kFileData).Pass());
+  data_->SetAndCompressHistograms(MakeScoped(kHistograms));
+  data_->set_image(MakeScoped(kImageData));
+  data_->AttachAndCompressFileData(MakeScoped(kFileData));
   Send();
   RunMessageLoop();
   EXPECT_TRUE(data_->IsDataComplete());

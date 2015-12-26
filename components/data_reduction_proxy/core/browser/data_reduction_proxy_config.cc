@@ -5,7 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 
 #include <stddef.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -234,7 +234,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
     : secure_proxy_allowed_(params::ShouldUseSecureProxyByDefault()),
       unreachable_(false),
       enabled_by_user_(false),
-      config_values_(config_values.Pass()),
+      config_values_(std::move(config_values)),
       net_log_(net_log),
       configurator_(configurator),
       event_creator_(event_creator),

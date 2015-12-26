@@ -4,6 +4,8 @@
 
 #include "components/enhanced_bookmarks/bookmark_server_service.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -134,7 +136,7 @@ void BookmarkServerService::OnGetTokenFailure(
 // net::URLFetcherDelegate methods.
 //
 void BookmarkServerService::OnURLFetchComplete(const net::URLFetcher* source) {
-  scoped_ptr<net::URLFetcher> url_fetcher(url_fetcher_.Pass());
+  scoped_ptr<net::URLFetcher> url_fetcher(std::move(url_fetcher_));
   std::string response;
   bool should_notify = true;
 

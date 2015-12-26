@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -90,7 +92,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
       data_reduction_proxy_enabled_pref_name;
   prefs_ = prefs;
   config_ = io_data->config();
-  data_reduction_proxy_service_ = data_reduction_proxy_service.Pass();
+  data_reduction_proxy_service_ = std::move(data_reduction_proxy_service);
   data_reduction_proxy_service_->AddObserver(this);
   InitPrefMembers();
   UpdateConfigValues();

@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -72,7 +74,7 @@ BasicHTTPURLRequestContextGetter::GetURLRequestContext() {
     net::URLRequestContextBuilder builder;
     builder.set_proxy_service(net::ProxyService::CreateDirect());
     builder.SetSpdyAndQuicEnabled(false, false);
-    url_request_context_ = builder.Build().Pass();
+    url_request_context_ = builder.Build();
   }
 
   return url_request_context_.get();
@@ -119,12 +121,12 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     scoped_ptr<DataReductionProxyMutableConfigValues> mutable_config =
         DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
     raw_mutable_config = mutable_config.get();
-    config_.reset(new DataReductionProxyConfig(net_log, mutable_config.Pass(),
-                                               configurator_.get(),
-                                               event_creator_.get()));
+    config_.reset(new DataReductionProxyConfig(
+        net_log, std::move(mutable_config), configurator_.get(),
+        event_creator_.get()));
   } else {
     config_.reset(new DataReductionProxyConfig(
-        net_log, params.Pass(), configurator_.get(), event_creator_.get()));
+        net_log, std::move(params), configurator_.get(), event_creator_.get()));
   }
 
   // It is safe to use base::Unretained here, since it gets executed
@@ -141,7 +143,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     // synchronously on the IO thread, and |this| outlives the caller (since the
     // caller is owned by |this|.
     config_client_.reset(new DataReductionProxyConfigServiceClient(
-        params.Pass(), GetBackoffPolicy(), request_options_.get(),
+        std::move(params), GetBackoffPolicy(), request_options_.get(),
         raw_mutable_config, config_.get(), event_creator_.get(), net_log_,
         base::Bind(&DataReductionProxyIOData::StoreSerializedConfig,
                    base::Unretained(this))));
@@ -224,12 +226,12 @@ DataReductionProxyIOData::CreateNetworkDelegate(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
-          wrapped_network_delegate.Pass(), config_.get(),
+          std::move(wrapped_network_delegate), config_.get(),
           request_options_.get(), configurator_.get(), experiments_stats_.get(),
           net_log_, event_creator_.get()));
   if (track_proxy_bypass_statistics)
     network_delegate->InitIODataAndUMA(this, bypass_stats_.get());
-  return network_delegate.Pass();
+  return network_delegate;
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.

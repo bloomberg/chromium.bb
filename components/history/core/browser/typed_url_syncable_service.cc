@@ -5,6 +5,7 @@
 #include "components/history/core/browser/typed_url_syncable_service.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -87,8 +88,8 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
   DCHECK_EQ(type, syncer::TYPED_URLS);
 
   syncer::SyncMergeResult merge_result(type);
-  sync_processor_ = sync_processor.Pass();
-  sync_error_handler_ = error_handler.Pass();
+  sync_processor_ = std::move(sync_processor);
+  sync_error_handler_ = std::move(error_handler);
 
   ClearErrorStats();
 

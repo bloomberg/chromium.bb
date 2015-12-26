@@ -5,6 +5,7 @@
 #include "components/html_viewer/blink_url_request_type_converters.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -31,7 +32,7 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
     HttpHeaderPtr header = HttpHeader::New();
     header->name = name_latin1;
     header->value = value_latin1;
-    buffer_.push_back(header.Pass());
+    buffer_.push_back(std::move(header));
   }
 
   Array<HttpHeaderPtr> GetBuffer() {
@@ -41,10 +42,10 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
       HttpHeaderPtr header = HttpHeader::New();
       header->name = "Accept";
       header->value = "*/*";
-      buffer_.push_back(header.Pass());
+      buffer_.push_back(std::move(header));
       has_accept_header_ = true;
     }
-    return buffer_.Pass();
+    return std::move(buffer_);
   }
 
  private:
@@ -72,8 +73,7 @@ void AddRequestBody(URLRequest* url_request,
           options.element_num_bytes = 1;
           options.capacity_num_bytes = num_bytes;
           DataPipe data_pipe(options);
-          url_request->body.push_back(
-              data_pipe.consumer_handle.Pass());
+          url_request->body.push_back(std::move(data_pipe.consumer_handle));
           WriteDataRaw(data_pipe.producer_handle.get(),
                        element.data.data(),
                        &num_bytes,
@@ -102,11 +102,11 @@ URLRequestPtr TypeConverter<URLRequestPtr, blink::WebURLRequest>::Convert(
 
   HeaderFlattener flattener;
   request.visitHTTPHeaderFields(&flattener);
-  url_request->headers = flattener.GetBuffer().Pass();
+  url_request->headers = flattener.GetBuffer();
 
   AddRequestBody(url_request.get(), request);
 
-  return url_request.Pass();
+  return url_request;
 }
 
 }  // namespace mojo

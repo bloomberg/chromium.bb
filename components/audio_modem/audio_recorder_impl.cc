@@ -5,6 +5,7 @@
 #include "components/audio_modem/audio_recorder_impl.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -42,7 +43,7 @@ void ProcessSamples(
     scoped_ptr<media::AudioBus> bus,
     const AudioRecorderImpl::RecordedSamplesCallback& callback) {
   std::string samples;
-  AudioBusToString(bus.Pass(), &samples);
+  AudioBusToString(std::move(bus), &samples);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE, base::Bind(callback, samples));
 }
@@ -177,7 +178,7 @@ void AudioRecorderImpl::OnData(media::AudioInputStream* stream,
 
   // Buffer full, send it for processing.
   if (buffer_->frames() == buffer_frame_index_) {
-    ProcessSamples(buffer_.Pass(), decode_callback_);
+    ProcessSamples(std::move(buffer_), decode_callback_);
     buffer_ = media::AudioBus::Create(source->channels(), total_buffer_frames_);
     buffer_frame_index_ = 0;
 

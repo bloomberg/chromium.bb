@@ -4,6 +4,8 @@
 
 #include "components/font_service/public/cpp/font_service_thread.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/synchronization/waitable_event.h"
@@ -20,7 +22,7 @@ const char kFontThreadName[] = "Font_Proxy_Thread";
 
 FontServiceThread::FontServiceThread(FontServicePtr font_service)
     : base::Thread(kFontThreadName),
-      font_service_info_(font_service.PassInterface().Pass()) {
+      font_service_info_(font_service.PassInterface()) {
   base::Thread::Options options;
   options.message_pump_factory =
       base::Bind(&mojo::common::MessagePumpMojo::Create);
@@ -70,7 +72,7 @@ scoped_refptr<MappedFontFile> FontServiceThread::OpenStream(
   // Converts the file to out internal type.
   scoped_refptr<MappedFontFile> mapped_font_file =
       new MappedFontFile(identity.fID);
-  if (!mapped_font_file->Initialize(stream_file.Pass()))
+  if (!mapped_font_file->Initialize(std::move(stream_file)))
     return nullptr;
 
   return mapped_font_file;
@@ -140,14 +142,14 @@ void FontServiceThread::OnOpenStreamComplete(base::WaitableEvent* done_event,
     MojoPlatformHandle platform_handle;
     CHECK(MojoExtractPlatformHandle(handle.release().value(),
                                     &platform_handle) == MOJO_RESULT_OK);
-    *output_file = base::File(platform_handle).Pass();
+    *output_file = base::File(platform_handle);
   }
 
   done_event->Signal();
 }
 
 void FontServiceThread::Init() {
-  font_service_.Bind(font_service_info_.Pass());
+  font_service_.Bind(std::move(font_service_info_));
 }
 
 void FontServiceThread::CleanUp() {

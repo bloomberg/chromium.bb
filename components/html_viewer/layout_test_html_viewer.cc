@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/layout_test_html_viewer.h"
 
+#include <utility>
+
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/layout_test_content_handler_impl.h"
 #include "components/test_runner/web_test_interfaces.h"
@@ -44,9 +46,8 @@ void LayoutTestHTMLViewer::TestFinished() {
 void LayoutTestHTMLViewer::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ContentHandler> request) {
-  new LayoutTestContentHandlerImpl(global_state(), app(), request.Pass(),
-                                   test_interfaces_.get(),
-                                   &test_delegate_);
+  new LayoutTestContentHandlerImpl(global_state(), app(), std::move(request),
+                                   test_interfaces_.get(), &test_delegate_);
 }
 
 }  // namespace html_viewer

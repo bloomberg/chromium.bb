@@ -5,6 +5,7 @@
 #include "components/html_viewer/web_test_delegate_impl.h"
 
 #include <iostream>
+#include <utility>
 
 #include "base/time/time.h"
 #include "cc/layers/texture_layer.h"
@@ -26,7 +27,7 @@ namespace {
 class InvokeTaskHelper : public blink::WebTaskRunner::Task {
  public:
   InvokeTaskHelper(scoped_ptr<test_runner::WebTask> task)
-      : task_(task.Pass()) {}
+      : task_(std::move(task)) {}
 
   // WebThread::Task implementation:
   void run() override { task_->run(); }

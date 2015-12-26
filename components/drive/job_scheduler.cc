@@ -5,8 +5,8 @@
 #include "components/drive/job_scheduler.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
@@ -936,7 +936,7 @@ void JobScheduler::OnGetFileListJobDone(
   DCHECK(!callback.is_null());
 
   if (OnJobDone(job_id, error))
-    callback.Run(error, file_list.Pass());
+    callback.Run(error, std::move(file_list));
 }
 
 void JobScheduler::OnGetChangeListJobDone(
@@ -948,7 +948,7 @@ void JobScheduler::OnGetChangeListJobDone(
   DCHECK(!callback.is_null());
 
   if (OnJobDone(job_id, error))
-    callback.Run(error, change_list.Pass());
+    callback.Run(error, std::move(change_list));
 }
 
 void JobScheduler::OnGetFileResourceJobDone(
@@ -960,7 +960,7 @@ void JobScheduler::OnGetFileResourceJobDone(
   DCHECK(!callback.is_null());
 
   if (OnJobDone(job_id, error))
-    callback.Run(error, entry.Pass());
+    callback.Run(error, std::move(entry));
 }
 
 void JobScheduler::OnGetAboutResourceJobDone(
@@ -972,7 +972,7 @@ void JobScheduler::OnGetAboutResourceJobDone(
   DCHECK(!callback.is_null());
 
   if (OnJobDone(job_id, error))
-    callback.Run(error, about_resource.Pass());
+    callback.Run(error, std::move(about_resource));
 }
 
 void JobScheduler::OnGetShareUrlJobDone(
@@ -996,7 +996,7 @@ void JobScheduler::OnGetAppListJobDone(
   DCHECK(!callback.is_null());
 
   if (OnJobDone(job_id, error))
-    callback.Run(error, app_list.Pass());
+    callback.Run(error, std::move(app_list));
 }
 
 void JobScheduler::OnEntryActionJobDone(
@@ -1056,7 +1056,7 @@ void JobScheduler::OnUploadCompletionJobDone(
   }
 
   if (OnJobDone(job_id, error))
-    callback.Run(error, entry.Pass());
+    callback.Run(error, std::move(entry));
 }
 
 void JobScheduler::OnResumeUploadFileDone(
@@ -1079,7 +1079,7 @@ void JobScheduler::OnResumeUploadFileDone(
   }
 
   if (OnJobDone(job_id, error))
-    callback.Run(error, entry.Pass());
+    callback.Run(error, std::move(entry));
 }
 
 void JobScheduler::UpdateProgress(JobID job_id,

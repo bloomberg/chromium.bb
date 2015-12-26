@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/dispatcher.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
@@ -32,7 +34,7 @@ DomainReliabilityDispatcher::Task::Task(const base::Closure& closure,
                                         base::TimeDelta min_delay,
                                         base::TimeDelta max_delay)
     : closure(closure),
-      timer(timer.Pass()),
+      timer(std::move(timer)),
       min_delay(min_delay),
       max_delay(max_delay),
       eligible(false) {}

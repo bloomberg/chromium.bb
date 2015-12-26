@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -138,7 +139,7 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
 P2PInvalidator::P2PInvalidator(scoped_ptr<notifier::PushClient> push_client,
                                const std::string& invalidator_client_id,
                                P2PNotificationTarget send_notification_target)
-    : push_client_(push_client.Pass()),
+    : push_client_(std::move(push_client)),
       invalidator_client_id_(invalidator_client_id),
       logged_in_(false),
       notifications_enabled_(false),

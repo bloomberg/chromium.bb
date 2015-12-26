@@ -5,6 +5,7 @@
 #include "components/clipboard/clipboard_standalone_impl.h"
 
 #include <string.h>
+#include <utility>
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -30,10 +31,12 @@ class ClipboardStandaloneImpl::ClipboardData {
     for (auto it = data_types_.begin(); it != data_types_.end(); ++it, ++i)
       types[i] = it.GetKey();
 
-    return types.Pass();
+    return types;
   }
 
-  void SetData(Map<String, Array<uint8_t>> data) { data_types_ = data.Pass(); }
+  void SetData(Map<String, Array<uint8_t>> data) {
+    data_types_ = std::move(data);
+  }
 
   void GetData(const String& mime_type, Array<uint8_t>* data) const {
     auto it = data_types_.find(mime_type);
@@ -49,7 +52,7 @@ class ClipboardStandaloneImpl::ClipboardData {
 
 ClipboardStandaloneImpl::ClipboardStandaloneImpl(
     mojo::InterfaceRequest<mojo::Clipboard> request)
-    : binding_(this, request.Pass()) {
+    : binding_(this, std::move(request)) {
   for (int i = 0; i < kNumClipboards; ++i) {
     sequence_number_[i] = 0;
     clipboard_state_[i].reset(new ClipboardData);
@@ -68,7 +71,7 @@ void ClipboardStandaloneImpl::GetSequenceNumber(
 void ClipboardStandaloneImpl::GetAvailableMimeTypes(
     Clipboard::Type clipboard_type,
     const mojo::Callback<void(Array<String>)>& callback) {
-  callback.Run(clipboard_state_[clipboard_type]->GetMimeTypes().Pass());
+  callback.Run(clipboard_state_[clipboard_type]->GetMimeTypes());
 }
 
 void ClipboardStandaloneImpl::ReadMimeType(
@@ -77,14 +80,14 @@ void ClipboardStandaloneImpl::ReadMimeType(
     const mojo::Callback<void(Array<uint8_t>)>& callback) {
   Array<uint8_t> mime_data;
   clipboard_state_[clipboard_type]->GetData(mime_type, &mime_data);
-  callback.Run(mime_data.Pass());
+  callback.Run(std::move(mime_data));
 }
 
 void ClipboardStandaloneImpl::WriteClipboardData(
     Clipboard::Type clipboard_type,
     Map<String, Array<uint8_t>> data) {
   sequence_number_[clipboard_type]++;
-  clipboard_state_[clipboard_type]->SetData(data.Pass());
+  clipboard_state_[clipboard_type]->SetData(std::move(data));
 }
 
 }  // namespace clipboard

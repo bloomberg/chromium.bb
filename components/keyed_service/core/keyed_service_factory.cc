@@ -4,6 +4,8 @@
 
 #include "components/keyed_service/core/keyed_service_factory.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -89,7 +91,7 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(
     service = BuildServiceInstanceFor(context);
   }
 
-  Associate(context, service.Pass());
+  Associate(context, std::move(service));
   return mapping_[context];
 }
 

@@ -5,6 +5,7 @@
 #include "components/bitmap_uploader/bitmap_uploader.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -57,7 +58,7 @@ void BitmapUploader::Init(mojo::Shell* shell) {
   mojo::ServiceProviderPtr gpu_service_provider;
   mojo::URLRequestPtr request2(mojo::URLRequest::New());
   request2->url = mojo::String::From("mojo:mus");
-  shell->ConnectToApplication(request2.Pass(),
+  shell->ConnectToApplication(std::move(request2),
                               mojo::GetProxy(&gpu_service_provider), nullptr,
                               mojo::CreatePermissiveCapabilityFilter(),
                               base::Bind(&OnGotContentHandlerID));
@@ -88,7 +89,7 @@ void BitmapUploader::SetBitmap(int width,
                                Format format) {
   width_ = width;
   height_ = height;
-  bitmap_ = data.Pass();
+  bitmap_ = std::move(data);
   format_ = format;
   if (surface_)
     Upload();
@@ -103,7 +104,7 @@ void BitmapUploader::Upload() {
   mus::mojom::CompositorFrameMetadataPtr meta =
       mus::mojom::CompositorFrameMetadata::New();
   meta->device_scale_factor = 1.0f;
-  frame->metadata = meta.Pass();
+  frame->metadata = std::move(meta);
 
   frame->resources.resize(0u);
 
@@ -147,7 +148,7 @@ void BitmapUploader::Upload() {
     mailbox_holder->texture_target = GL_TEXTURE_2D;
     mailbox_holder->sync_token =
         mus::mojom::SyncToken::From<gpu::SyncToken>(sync_token);
-    resource->mailbox_holder = mailbox_holder.Pass();
+    resource->mailbox_holder = std::move(mailbox_holder);
     resource->is_repeated = false;
     resource->is_software = false;
 
@@ -191,9 +192,9 @@ void BitmapUploader::Upload() {
       texture_state->vertex_opacity.push_back(1.f);
     texture_state->y_flipped = false;
 
-    frame->resources.push_back(resource.Pass());
-    quad->texture_quad_state = texture_state.Pass();
-    pass->quads.push_back(quad.Pass());
+    frame->resources.push_back(std::move(resource));
+    quad->texture_quad_state = std::move(texture_state);
+    pass->quads.push_back(std::move(quad));
   }
 
   if (color_ != g_transparent_color) {
@@ -211,14 +212,14 @@ void BitmapUploader::Upload() {
     color_state->color->rgba = color_;
     color_state->force_anti_aliasing_off = false;
 
-    quad->solid_color_quad_state = color_state.Pass();
-    pass->quads.push_back(quad.Pass());
+    quad->solid_color_quad_state = std::move(color_state);
+    pass->quads.push_back(std::move(quad));
   }
 
-  frame->passes.push_back(pass.Pass());
+  frame->passes.push_back(std::move(pass));
 
   // TODO(rjkroege, fsamuel): We should throttle frames.
-  surface_->SubmitCompositorFrame(frame.Pass(), mojo::Closure());
+  surface_->SubmitCompositorFrame(std::move(frame), mojo::Closure());
 }
 
 uint32_t BitmapUploader::BindTextureForSize(const mojo::Size size) {
@@ -250,7 +251,7 @@ void BitmapUploader::ReturnResources(
   MojoGLES2MakeCurrent(gles2_context_);
   // TODO(jamesr): Recycle.
   for (size_t i = 0; i < resources.size(); ++i) {
-    mus::mojom::ReturnedResourcePtr resource = resources[i].Pass();
+    mus::mojom::ReturnedResourcePtr resource = std::move(resources[i]);
     DCHECK_EQ(1, resource->count);
     glWaitSyncTokenCHROMIUM(
         resource->sync_token.To<gpu::SyncToken>().GetConstData());

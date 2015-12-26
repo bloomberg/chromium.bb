@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -130,8 +130,8 @@ class DataReductionProxyConfigTest : public testing::Test {
       scoped_ptr<DataReductionProxyParams> params) {
     params->EnableQuic(false);
     return make_scoped_ptr(new DataReductionProxyConfig(
-        test_context_->net_log(), params.Pass(), test_context_->configurator(),
-        test_context_->event_creator()));
+        test_context_->net_log(), std::move(params),
+        test_context_->configurator(), test_context_->event_creator()));
   }
 
   MockDataReductionProxyConfig* config() {
@@ -475,7 +475,8 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
         ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN;
     scoped_ptr<TestDataReductionProxyParams> params(
         new TestDataReductionProxyParams(flags, has_definitions));
-    scoped_ptr<DataReductionProxyConfig> config = BuildConfig(params.Pass());
+    scoped_ptr<DataReductionProxyConfig> config =
+        BuildConfig(std::move(params));
 
     net::ProxyRetryInfoMap retry_map;
     net::ProxyRetryInfo retry_info;
@@ -523,7 +524,7 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassedRetryDelay) {
       ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN;
   scoped_ptr<TestDataReductionProxyParams> params(
       new TestDataReductionProxyParams(flags, has_definitions));
-  scoped_ptr<DataReductionProxyConfig> config = BuildConfig(params.Pass());
+  scoped_ptr<DataReductionProxyConfig> config = BuildConfig(std::move(params));
 
   net::ProxyRetryInfoMap retry_map;
   net::ProxyRetryInfo retry_info;
@@ -669,7 +670,7 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
         new TestDataReductionProxyParams(flags, has_definitions));
     DataReductionProxyTypeInfo proxy_type_info;
     scoped_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-        net_log(), params.Pass(), configurator(), event_creator()));
+        net_log(), std::move(params), configurator(), event_creator()));
     EXPECT_EQ(
         tests[i].expected_result,
         config->IsDataReductionProxy(tests[i].host_port_pair, &proxy_type_info))
@@ -766,7 +767,7 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
       DataReductionProxyMutableConfigValues::CreateFromParams(params());
   config_values->UpdateValues(proxies_for_http);
   scoped_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-      net_log(), config_values.Pass(), configurator(), event_creator()));
+      net_log(), std::move(config_values), configurator(), event_creator()));
   for (size_t i = 0; i < arraysize(tests); ++i) {
     DataReductionProxyTypeInfo proxy_type_info;
     EXPECT_EQ(tests[i].expected_result,

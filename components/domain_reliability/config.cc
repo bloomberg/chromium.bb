@@ -10,6 +10,7 @@
 #include "components/domain_reliability/config.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
@@ -57,7 +58,7 @@ scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
 
   // If we can parse and convert the JSON into a valid config, return that.
   if (value && converter.Convert(*value, config.get()) && config->IsValid())
-    return config.Pass();
+    return std::move(config);
   return scoped_ptr<const DomainReliabilityConfig>();
 }
 

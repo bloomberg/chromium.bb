@@ -4,6 +4,8 @@
 
 #include "components/infobars/core/infobar_manager.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobars_switches.h"
@@ -68,7 +70,7 @@ InfoBar* InfoBarManager::ReplaceInfoBar(InfoBar* old_infobar,
                                         scoped_ptr<InfoBar> new_infobar) {
   DCHECK(old_infobar);
   if (!infobars_enabled_)
-    return AddInfoBar(new_infobar.Pass());  // Deletes the infobar.
+    return AddInfoBar(std::move(new_infobar));  // Deletes the infobar.
   DCHECK(new_infobar);
 
   InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(),

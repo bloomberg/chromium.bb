@@ -292,12 +292,12 @@ scoped_ptr<ViewerHandle> CreateViewRequest(
     return dom_distiller_service->ViewEntry(
         view_request_delegate,
         dom_distiller_service->CreateDefaultDistillerPage(render_view_size),
-        entry_id).Pass();
+        entry_id);
   } else if (has_valid_url) {
     return dom_distiller_service->ViewUrl(
         view_request_delegate,
         dom_distiller_service->CreateDefaultDistillerPage(render_view_size),
-        requested_url).Pass();
+        requested_url);
   }
 
   // It is invalid to not specify a query param for |kEntryIdKey| or |kUrlKey|.

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/invalidation/impl/gcm_network_channel.h"
+
+#include <utility>
+
 #include "base/base64url.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/invalidation/impl/gcm_network_channel.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -83,7 +86,7 @@ class TestGCMNetworkChannel : public GCMNetworkChannel {
   TestGCMNetworkChannel(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_ptr<GCMNetworkChannelDelegate> delegate)
-      :  GCMNetworkChannel(request_context_getter, delegate.Pass()) {
+      : GCMNetworkChannel(request_context_getter, std::move(delegate)) {
     ResetRegisterBackoffEntryForTest(&kTestBackoffPolicy);
   }
 
@@ -139,8 +142,7 @@ class GCMNetworkChannelTest
     delegate_ = new TestGCMNetworkChannelDelegate();
     scoped_ptr<GCMNetworkChannelDelegate> delegate(delegate_);
     gcm_network_channel_.reset(new TestGCMNetworkChannel(
-        request_context_getter_,
-        delegate.Pass()));
+        request_context_getter_, std::move(delegate)));
     gcm_network_channel_->AddObserver(this);
     gcm_network_channel_->SetMessageReceiver(
         invalidation::NewPermanentCallback(

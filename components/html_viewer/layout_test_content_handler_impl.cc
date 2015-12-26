@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/layout_test_content_handler_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "components/html_viewer/global_state.h"
@@ -50,7 +52,7 @@ LayoutTestContentHandlerImpl::LayoutTestContentHandlerImpl(
     mojo::InterfaceRequest<mojo::ContentHandler> request,
     test_runner::WebTestInterfaces* test_interfaces,
     WebTestDelegateImpl* test_delegate)
-    : ContentHandlerImpl(global_state, app, request.Pass()),
+    : ContentHandlerImpl(global_state, app, std::move(request)),
       test_interfaces_(test_interfaces),
       test_delegate_(test_delegate),
       web_widget_proxy_(nullptr),
@@ -69,9 +71,8 @@ void LayoutTestContentHandlerImpl::StartApplication(
   // HTMLDocumentApplicationDelegate deletes itself.
   HTMLDocumentApplicationDelegate* delegate =
       new HTMLDocumentApplicationDelegate(
-          request.Pass(), response.Pass(), global_state(),
-          app()->app_lifetime_helper()->CreateAppRefCount(),
-          destruct_callback);
+          std::move(request), std::move(response), global_state(),
+          app()->app_lifetime_helper()->CreateAppRefCount(), destruct_callback);
 
   delegate->set_html_factory(this);
 }

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -37,7 +38,7 @@ class MetricsStateManagerTest : public testing::Test {
         base::Bind(&MetricsStateManagerTest::MockStoreClientInfoBackup,
                    base::Unretained(this)),
         base::Bind(&MetricsStateManagerTest::LoadFakeClientInfoBackup,
-                   base::Unretained(this))).Pass();
+                   base::Unretained(this)));
   }
 
   // Sets metrics reporting as enabled for testing.
@@ -89,7 +90,7 @@ class MetricsStateManagerTest : public testing::Test {
         fake_client_info_backup_->installation_date;
     backup_copy->reporting_enabled_date =
         fake_client_info_backup_->reporting_enabled_date;
-    return backup_copy.Pass();
+    return backup_copy;
   }
 
   bool is_metrics_reporting_enabled_;
@@ -253,7 +254,7 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
     EXPECT_EQ(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
               stored_client_info_backup_->reporting_enabled_date);
 
-    previous_client_info = stored_client_info_backup_.Pass();
+    previous_client_info = std::move(stored_client_info_backup_);
   }
 
   EnableMetricsReporting();
@@ -353,7 +354,7 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
               test_begin_time);
 
     EXPECT_TRUE(stored_client_info_backup_);
-    previous_client_info = stored_client_info_backup_.Pass();
+    previous_client_info = std::move(stored_client_info_backup_);
   }
 
   prefs_.SetBoolean(prefs::kMetricsResetIds, true);

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/component_updater/default_component_installer.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_enumerator.h"
@@ -15,7 +19,6 @@
 #include "base/version.h"
 // TODO(ddorwin): Find a better place for ReadManifest.
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/default_component_installer.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/utils.h"
 
@@ -38,7 +41,7 @@ DefaultComponentInstaller::DefaultComponentInstaller(
     scoped_ptr<ComponentInstallerTraits> installer_traits)
     : current_version_(kNullVersion),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  installer_traits_ = installer_traits.Pass();
+  installer_traits_ = std::move(installer_traits);
 }
 
 DefaultComponentInstaller::~DefaultComponentInstaller() {
@@ -186,12 +189,12 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
 
     latest_path = path;
     latest_version = version;
-    latest_manifest = manifest.Pass();
+    latest_manifest = std::move(manifest);
   }
 
   if (latest_manifest) {
     current_version_ = latest_version;
-    current_manifest_ = latest_manifest.Pass();
+    current_manifest_ = std::move(latest_manifest);
     // TODO(ddorwin): Remove these members and pass them directly to
     // FinishRegistration().
     base::ReadFileToString(latest_path.AppendASCII("manifest.fingerprint"),
@@ -262,13 +265,13 @@ void DefaultComponentInstaller::FinishRegistration(
 
   scoped_ptr<base::DictionaryValue> manifest_copy(
       current_manifest_->DeepCopy());
-  ComponentReady(manifest_copy.Pass());
+  ComponentReady(std::move(manifest_copy));
 }
 
 void DefaultComponentInstaller::ComponentReady(
     scoped_ptr<base::DictionaryValue> manifest) {
-  installer_traits_->ComponentReady(
-      current_version_, GetInstallDirectory(), manifest.Pass());
+  installer_traits_->ComponentReady(current_version_, GetInstallDirectory(),
+                                    std::move(manifest));
 }
 
 }  // namespace component_updater

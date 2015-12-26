@@ -5,8 +5,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 
 #include <stdint.h>
-
 #include <map>
+#include <utility>
 
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
@@ -127,7 +127,7 @@ TEST_F(DataReductionProxyExperimentsStatsTest, CheckConfigHistograms) {
       new DataReductionProxyExperimentsStats(
           base::Bind(&DataReductionProxyExperimentsStatsTest::SetPrefValue,
                      base::Unretained(this))));
-  experiments_stats->InitializeOnUIThread(config_params.Pass());
+  experiments_stats->InitializeOnUIThread(std::move(config_params));
   for (const auto& test_case : test_cases) {
     base::HistogramTester histogram_tester;
     experiments_stats->RecordBytes(

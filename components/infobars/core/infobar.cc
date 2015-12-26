@@ -5,6 +5,7 @@
 #include "components/infobars/core/infobar.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -17,7 +18,7 @@ namespace infobars {
 
 InfoBar::InfoBar(scoped_ptr<InfoBarDelegate> delegate)
     : owner_(NULL),
-      delegate_(delegate.Pass()),
+      delegate_(std::move(delegate)),
       container_(NULL),
       animation_(this),
       arrow_height_(0),

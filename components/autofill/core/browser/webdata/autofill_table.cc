@@ -121,7 +121,7 @@ scoped_ptr<AutofillProfile> AutofillProfileFromStatement(
   profile->set_origin(s.ColumnString(index++));
   profile->set_language_code(s.ColumnString(index++));
 
-  return profile.Pass();
+  return profile;
 }
 
 void BindEncryptedCardToColumn(sql::Statement* s,
@@ -184,7 +184,7 @@ scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
   credit_card->set_modification_date(Time::FromTimeT(s.ColumnInt64(index++)));
   credit_card->set_origin(s.ColumnString(index++));
 
-  return credit_card.Pass();
+  return credit_card;
 }
 
 bool AddAutofillProfileNamesToProfile(sql::Connection* db,

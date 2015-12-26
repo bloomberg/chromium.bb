@@ -607,7 +607,7 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromWebForm(
                        nonscript_modified_values, form_predictions))
     return scoped_ptr<PasswordForm>();
 
-  return password_form.Pass();
+  return password_form;
 }
 
 scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
@@ -634,7 +634,7 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
   // No actual action on the form, so use the the origin as the action.
   password_form->action = password_form->origin;
 
-  return password_form.Pass();
+  return password_form;
 }
 
 bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,

@@ -153,7 +153,7 @@ scoped_ptr<base::DictionaryValue> Invalidation::ToValue() const {
     value->SetString(kVersionKey, base::Int64ToString(version_));
     value->SetString(kPayloadKey, payload_);
   }
-  return value.Pass();
+  return value;
 }
 
 std::string Invalidation::ToString() const {

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -82,7 +83,7 @@ scoped_ptr<base::Value> ExecuteScript(ApplicationConnection* connection,
   });
   if (!WindowServerTestBase::DoRunLoopWithTimeout())
     ADD_FAILURE() << "Timed out waiting for execute to complete";
-  return result.Pass();
+  return result;
 }
 
 // FrameTreeDelegate that can block waiting for navigation to start.
@@ -215,7 +216,7 @@ class HTMLFrameTest : public WindowServerTestBase {
   mojo::URLRequestPtr BuildRequestForURL(const std::string& url_string) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(AddPortToString(url_string));
-    return request.Pass();
+    return request;
   }
 
   FrameConnection* InitFrameTree(mus::Window* view,
@@ -234,8 +235,8 @@ class HTMLFrameTest : public WindowServerTestBase {
     FrameClient* frame_client = frame_connection->frame_client();
     WindowTreeClientPtr tree_client = frame_connection->GetWindowTreeClient();
     frame_tree_.reset(new FrameTree(
-        result->GetContentHandlerID(), view, tree_client.Pass(),
-        frame_tree_delegate_.get(), frame_client, frame_connection.Pass(),
+        result->GetContentHandlerID(), view, std::move(tree_client),
+        frame_tree_delegate_.get(), frame_client, std::move(frame_connection),
         Frame::ClientPropertyMap(), base::TimeTicks::Now()));
     frame_tree_delegate_->set_frame_tree(frame_tree_.get());
     return result;

@@ -5,8 +5,8 @@
 #include "components/drive/file_system/search_operation.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -137,7 +137,7 @@ void SearchOperation::SearchAfterGetFileList(
   if (file_list->items().empty()) {
     // Short cut. If the resource entry is empty, we don't need to refresh
     // the resource metadata.
-    callback.Run(FILE_ERROR_OK, next_url, result.Pass());
+    callback.Run(FILE_ERROR_OK, next_url, std::move(result));
     return;
   }
 
@@ -175,7 +175,7 @@ void SearchOperation::SearchAfterResolveSearchResult(
     return;
   }
 
-  callback.Run(error, next_link, result.Pass());
+  callback.Run(error, next_link, std::move(result));
 }
 
 }  // namespace file_system

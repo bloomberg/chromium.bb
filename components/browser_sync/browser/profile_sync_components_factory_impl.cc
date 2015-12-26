@@ -4,6 +4,8 @@
 
 #include "components/browser_sync/browser/profile_sync_components_factory_impl.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
@@ -350,10 +352,10 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   const base::TimeDelta max_backoff_delay = base::TimeDelta::FromHours(4);
   scoped_ptr<syncer::AttachmentService> attachment_service(
       new syncer::AttachmentServiceImpl(
-          attachment_store.Pass(), attachment_uploader.Pass(),
-          attachment_downloader.Pass(), delegate, initial_backoff_delay,
+          std::move(attachment_store), std::move(attachment_uploader),
+          std::move(attachment_downloader), delegate, initial_backoff_delay,
           max_backoff_delay));
-  return attachment_service.Pass();
+  return attachment_service;
 }
 
 sync_driver::SyncApiComponentFactory::SyncComponents

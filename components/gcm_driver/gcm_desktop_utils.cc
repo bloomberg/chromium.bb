@@ -4,6 +4,8 @@
 
 #include "components/gcm_driver/gcm_desktop_utils.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -90,17 +92,10 @@ scoped_ptr<GCMDriver> CreateGCMDriverDesktop(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
-
   return scoped_ptr<GCMDriver>(new GCMDriverDesktop(
-      gcm_client_factory.Pass(),
-      GetChromeBuildInfo(channel),
-      GetChannelStatusRequestUrl(channel),
-      GetUserAgent(channel),
-      prefs,
-      store_path,
-      request_context,
-      ui_task_runner,
-      io_task_runner,
+      std::move(gcm_client_factory), GetChromeBuildInfo(channel),
+      GetChannelStatusRequestUrl(channel), GetUserAgent(channel), prefs,
+      store_path, request_context, ui_task_runner, io_task_runner,
       blocking_task_runner));
 }
 

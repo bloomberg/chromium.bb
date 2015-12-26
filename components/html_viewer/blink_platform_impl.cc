@@ -5,6 +5,7 @@
 #include "components/html_viewer/blink_platform_impl.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -84,11 +85,11 @@ BlinkPlatformImpl::BlinkPlatformImpl(
 
     mojo::CookieStorePtr cookie_store;
     connection->ConnectToService(&cookie_store);
-    cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
+    cookie_jar_.reset(new WebCookieJarImpl(std::move(cookie_store)));
 
     mojo::ClipboardPtr clipboard;
     app->ConnectToService("mojo:clipboard", &clipboard);
-    clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
+    clipboard_.reset(new WebClipboardImpl(std::move(clipboard)));
   }
 }
 

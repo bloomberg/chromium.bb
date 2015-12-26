@@ -4,6 +4,8 @@
 
 #include "components/clipboard/clipboard_application_delegate.h"
 
+#include <utility>
+
 #include "components/clipboard/clipboard_standalone_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 
@@ -28,7 +30,7 @@ void ClipboardApplicationDelegate::Create(
     mojo::InterfaceRequest<mojo::Clipboard> request) {
   // TODO(erg): Write native implementations of the clipboard. For now, we
   // just build a clipboard which doesn't interact with the system.
-  new clipboard::ClipboardStandaloneImpl(request.Pass());
+  new clipboard::ClipboardStandaloneImpl(std::move(request));
 }
 
 }  // namespace clipboard

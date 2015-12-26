@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -141,7 +141,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
     scoped_ptr<TestLoFiDecider> lofi_decider(new TestLoFiDecider());
     lofi_decider_ = lofi_decider.get();
-    io_data()->set_lofi_decider(lofi_decider.Pass());
+    io_data()->set_lofi_decider(std::move(lofi_decider));
   }
 
   const net::ProxyConfig& GetProxyConfig() const { return config_; }
@@ -206,7 +206,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     if (!response_headers.empty())
       EXPECT_TRUE(request->response_headers() != NULL);
 
-    return request.Pass();
+    return request;
   }
 
   void set_network_delegate(net::NetworkDelegate* delegate) {

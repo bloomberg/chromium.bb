@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -29,12 +30,10 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     DataReductionProxyEventCreator* event_creator)
     : TestDataReductionProxyConfig(
           make_scoped_ptr(new TestDataReductionProxyParams(params_flags,
-                                                           params_definitions))
-              .Pass(),
+                                                           params_definitions)),
           net_log,
           configurator,
-          event_creator) {
-}
+          event_creator) {}
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     scoped_ptr<DataReductionProxyConfigValues> config_values,
@@ -42,7 +41,7 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : DataReductionProxyConfig(net_log,
-                               config_values.Pass(),
+                               std::move(config_values),
                                configurator,
                                event_creator),
       network_quality_prohibitively_slow_(false) {
@@ -69,15 +68,11 @@ void TestDataReductionProxyConfig::EnableQuic(bool enable) {
 }
 
 void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
-  config_values_ =
-      make_scoped_ptr(
-          new TestDataReductionProxyParams(
-              flags,
-              TestDataReductionProxyParams::HAS_EVERYTHING &
-                  ~TestDataReductionProxyParams::HAS_SSL_ORIGIN &
-                  ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                  ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN))
-          .Pass();
+  config_values_ = make_scoped_ptr(new TestDataReductionProxyParams(
+      flags, TestDataReductionProxyParams::HAS_EVERYTHING &
+                 ~TestDataReductionProxyParams::HAS_SSL_ORIGIN &
+                 ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                 ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
 }
 
 TestDataReductionProxyParams* TestDataReductionProxyConfig::test_params() {
@@ -109,11 +104,10 @@ MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
-    : TestDataReductionProxyConfig(config_values.Pass(),
+    : TestDataReductionProxyConfig(std::move(config_values),
                                    net_log,
                                    configurator,
-                                   event_creator) {
-}
+                                   event_creator) {}
 
 MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
 }

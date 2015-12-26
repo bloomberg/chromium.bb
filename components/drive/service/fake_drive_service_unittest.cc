@@ -66,7 +66,7 @@ class FakeDriveServiceTest : public testing::Test {
     fake_service_.GetFileResource(
         resource_id, test_util::CreateCopyResultCallback(&error, &entry));
     base::RunLoop().RunUntilIdle();
-    return entry.Pass();
+    return entry;
   }
 
   // Returns true if the resource identified by |resource_id| exists.

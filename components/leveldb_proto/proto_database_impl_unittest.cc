@@ -5,8 +5,8 @@
 #include "components/leveldb_proto/proto_database_impl.h"
 
 #include <stddef.h>
-
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -242,7 +242,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBSaveSuccess) {
   EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(VerifyUpdateEntries(model));
   EXPECT_CALL(caller, SaveCallback(true));
   db_->UpdateEntries(
-      entries.Pass(), keys_to_remove.Pass(),
+      std::move(entries), std::move(keys_to_remove),
       base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
@@ -266,7 +266,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBSaveFailure) {
   EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, SaveCallback(false));
   db_->UpdateEntries(
-      entries.Pass(), keys_to_remove.Pass(),
+      std::move(entries), std::move(keys_to_remove),
       base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
@@ -298,7 +298,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBRemoveSuccess) {
   EXPECT_CALL(*mock_db, Save(_, keys_copy)).WillOnce(Return(true));
   EXPECT_CALL(caller, SaveCallback(true));
   db_->UpdateEntries(
-      entries.Pass(), keys_to_remove.Pass(),
+      std::move(entries), std::move(keys_to_remove),
       base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
@@ -322,7 +322,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBRemoveFailure) {
   EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, SaveCallback(false));
   db_->UpdateEntries(
-      entries.Pass(), keys_to_remove.Pass(),
+      std::move(entries), std::move(keys_to_remove),
       base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();

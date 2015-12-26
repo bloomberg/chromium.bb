@@ -5,6 +5,7 @@
 #include "components/dom_distiller/core/task_tracker.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/location.h"
@@ -55,8 +56,7 @@ void TaskTracker::StartDistiller(DistillerFactory* factory,
   DCHECK(url.is_valid());
 
   distiller_ = factory->CreateDistillerForUrl(url);
-  distiller_->DistillPage(url,
-                          distiller_page.Pass(),
+  distiller_->DistillPage(url, std::move(distiller_page),
                           base::Bind(&TaskTracker::OnDistillerFinished,
                                      weak_ptr_factory_.GetWeakPtr()),
                           base::Bind(&TaskTracker::OnArticleDistillationUpdated,
@@ -145,7 +145,7 @@ void TaskTracker::OnDistillerFinished(
     return;
   }
 
-  DistilledArticleReady(distilled_article.Pass());
+  DistilledArticleReady(std::move(distilled_article));
   if (content_ready_) {
     AddDistilledContentToStore(*distilled_article_);
   }
@@ -172,7 +172,7 @@ void TaskTracker::OnBlobFetched(
     return;
   }
 
-  DistilledArticleReady(distilled_article.Pass());
+  DistilledArticleReady(std::move(distilled_article));
 
   ContentSourceFinished();
 }
@@ -200,7 +200,7 @@ void TaskTracker::DistilledArticleReady(
 
   content_ready_ = true;
 
-  distilled_article_ = distilled_article.Pass();
+  distilled_article_ = std::move(distilled_article);
   entry_.set_title(distilled_article_->title());
   entry_.clear_pages();
   for (int i = 0; i < distilled_article_->pages_size(); ++i) {

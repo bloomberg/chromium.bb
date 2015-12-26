@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/context_manager.h"
 
+#include <utility>
+
 namespace domain_reliability {
 
 DomainReliabilityContextManager::DomainReliabilityContextManager(
@@ -21,7 +23,7 @@ void DomainReliabilityContextManager::RouteBeacon(
   if (!context)
     return;
 
-  context->OnBeacon(beacon.Pass());
+  context->OnBeacon(std::move(beacon));
 }
 
 void DomainReliabilityContextManager::ClearBeaconsInAllContexts() {
@@ -39,7 +41,7 @@ DomainReliabilityContext* DomainReliabilityContextManager::AddContextForConfig(
 
   std::string domain = wildcard_prefix + config->origin.host();
   scoped_ptr<DomainReliabilityContext> context =
-      context_factory_->CreateContextForConfig(config.Pass());
+      context_factory_->CreateContextForConfig(std::move(config));
   DomainReliabilityContext** entry = &contexts_[domain];
   if (*entry)
     delete *entry;
@@ -57,7 +59,7 @@ scoped_ptr<base::Value> DomainReliabilityContextManager::GetWebUIData() const {
   scoped_ptr<base::ListValue> contexts_value(new base::ListValue());
   for (const auto& context_entry : contexts_)
     contexts_value->Append(context_entry.second->GetWebUIData().release());
-  return contexts_value.Pass();
+  return std::move(contexts_value);
 }
 
 DomainReliabilityContext* DomainReliabilityContextManager::GetContextForHost(

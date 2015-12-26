@@ -77,7 +77,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
   DataReductionProxyProtocolTest() : http_user_agent_settings_("", "") {
     simple_interceptor_.reset(new SimpleURLRequestInterceptor());
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "http", "www.google.com", simple_interceptor_.Pass());
+        "http", "www.google.com", std::move(simple_interceptor_));
   }
 
   ~DataReductionProxyProtocolTest() override {
@@ -99,7 +99,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     // Create a context with delayed initialization.
     context_.reset(new TestURLRequestContext(true));
 
-    proxy_service_ = proxy_service.Pass();
+    proxy_service_ = std::move(proxy_service);
     context_->set_client_socket_factory(&mock_socket_factory_);
     context_->set_proxy_service(proxy_service_.get());
     network_delegate_.reset(new net::TestNetworkDelegate());
@@ -118,7 +118,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
     job_factory_.reset(new net::URLRequestInterceptingJobFactory(
-        job_factory_impl.Pass(), make_scoped_ptr(interceptor)));
+        std::move(job_factory_impl), make_scoped_ptr(interceptor)));
 
     context_->set_job_factory(job_factory_.get());
     context_->Init();

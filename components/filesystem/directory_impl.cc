@@ -4,6 +4,8 @@
 
 #include "components/filesystem/directory_impl.h"
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -19,10 +21,9 @@ namespace filesystem {
 DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                              base::FilePath directory_path,
                              scoped_ptr<base::ScopedTempDir> temp_dir)
-    : binding_(this, request.Pass()),
+    : binding_(this, std::move(request)),
       directory_path_(directory_path),
-      temp_dir_(temp_dir.Pass()) {
-}
+      temp_dir_(std::move(temp_dir)) {}
 
 DirectoryImpl::~DirectoryImpl() {
 }
@@ -39,10 +40,10 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
     entry->type = info.IsDirectory()
                   ? FS_FILE_TYPE_DIRECTORY : FS_FILE_TYPE_REGULAR_FILE;
     entry->name = info.GetName().AsUTF8Unsafe();
-    entries.push_back(entry.Pass());
+    entries.push_back(std::move(entry));
   }
 
-  callback.Run(FILE_ERROR_OK, entries.Pass());
+  callback.Run(FILE_ERROR_OK, std::move(entries));
 }
 
 // TODO(erg): Consider adding an implementation of Stat()/Touch() to the
@@ -87,7 +88,7 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
   }
 
   if (file.is_pending()) {
-    new FileImpl(file.Pass(), base_file.Pass());
+    new FileImpl(std::move(file), std::move(base_file));
   }
   callback.Run(FILE_ERROR_OK);
 }
@@ -123,7 +124,7 @@ void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
   }
 
   if (directory.is_pending())
-    new DirectoryImpl(directory.Pass(), path,
+    new DirectoryImpl(std::move(directory), path,
                       scoped_ptr<base::ScopedTempDir>());
   callback.Run(FILE_ERROR_OK);
 }

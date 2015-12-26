@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
@@ -101,7 +103,7 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     DataReductionProxyExperimentsStats* experiments_stats,
     net::NetLog* net_log,
     DataReductionProxyEventCreator* event_creator)
-    : LayeredNetworkDelegate(network_delegate.Pass()),
+    : LayeredNetworkDelegate(std::move(network_delegate)),
       total_received_bytes_(0),
       total_original_received_bytes_(0),
       data_reduction_proxy_config_(config),

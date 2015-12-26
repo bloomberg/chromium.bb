@@ -5,6 +5,7 @@
 #include "components/metrics/metrics_log_manager.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "components/metrics/metrics_log.h"
@@ -54,7 +55,7 @@ MetricsLogManager::~MetricsLogManager() {}
 
 void MetricsLogManager::BeginLoggingWithLog(scoped_ptr<MetricsLog> log) {
   DCHECK(!current_log_);
-  current_log_ = log.Pass();
+  current_log_ = std::move(log);
 }
 
 void MetricsLogManager::FinishCurrentLog() {

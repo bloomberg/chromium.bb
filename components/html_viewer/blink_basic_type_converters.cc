@@ -41,7 +41,7 @@ RectPtr TypeConverter<RectPtr, WebRect>::Convert(const WebRect& input) {
   result->y = input.y;
   result->width = input.width;
   result->height = input.height;
-  return result.Pass();
+  return result;
 };
 
 // static
@@ -54,7 +54,7 @@ Array<uint8_t> TypeConverter<Array<uint8_t>, WebString>::Convert(
   static_assert(sizeof(uint8_t) == sizeof(char),
                 "uint8_t must be the same size as an unsigned char");
   memcpy(&result.front(), utf8.data(), utf8.size());
-  return result.Pass();
+  return result;
 }
 
 }  // namespace mojo

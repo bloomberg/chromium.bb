@@ -12,6 +12,8 @@
 
 #include "components/autofill/content/browser/risk/fingerprint.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/cpu.h"
@@ -422,7 +424,7 @@ void FingerprintDataLoader::FillFingerprint() {
   metadata->set_obfuscated_gaia_id(obfuscated_gaia_id_);
   metadata->set_fingerprinter_version(kFingerprinterVersion);
 
-  callback_.Run(fingerprint.Pass());
+  callback_.Run(std::move(fingerprint));
 }
 
 }  // namespace

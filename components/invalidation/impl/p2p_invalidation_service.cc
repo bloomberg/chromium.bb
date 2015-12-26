@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/p2p_invalidation_service.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
 #include "components/invalidation/impl/p2p_invalidator.h"
@@ -22,7 +24,7 @@ P2PInvalidationService::P2PInvalidationService(
     scoped_ptr<IdentityProvider> identity_provider,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     syncer::P2PNotificationTarget notification_target)
-    : identity_provider_(identity_provider.Pass()) {
+    : identity_provider_(std::move(identity_provider)) {
   notifier::NotifierOptions notifier_options =
       ParseNotifierOptions(*base::CommandLine::ForCurrentProcess());
   notifier_options.request_context_getter = request_context;

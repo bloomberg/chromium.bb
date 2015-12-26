@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -13,7 +15,7 @@
 namespace data_reduction_proxy {
 
 DBDataOwner::DBDataOwner(scoped_ptr<DataStore> store)
-    : store_(store.Pass()),
+    : store_(std::move(store)),
       data_usage_(new DataUsageStore(store_.get())),
       weak_factory_(this) {
   sequence_checker_.DetachFromSequence();

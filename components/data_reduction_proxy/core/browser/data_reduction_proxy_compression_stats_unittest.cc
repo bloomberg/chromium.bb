@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
+
 #include <stddef.h>
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
@@ -18,7 +20,6 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -47,7 +48,7 @@ class DataUsageLoadVerifier {
  public:
   DataUsageLoadVerifier(
       scoped_ptr<std::vector<data_reduction_proxy::DataUsageBucket>> expected) {
-    expected_ = expected.Pass();
+    expected_ = std::move(expected);
   }
 
   void OnLoadDataUsage(
@@ -1084,7 +1085,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageSingleSite) {
   site_usage->set_data_used(1000);
   site_usage->set_original_size(1250);
 
-  DataUsageLoadVerifier verifier(expected_data_usage.Pass());
+  DataUsageLoadVerifier verifier(std::move(expected_data_usage));
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier)),
@@ -1106,14 +1107,14 @@ TEST_F(DataReductionProxyCompressionStatsTest, DisableDataUsageRecording) {
   auto expected_data_usage1 =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
           kNumExpectedBuckets));
-  DataUsageLoadVerifier verifier1(expected_data_usage1.Pass());
+  DataUsageLoadVerifier verifier1(std::move(expected_data_usage1));
   LoadHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                      base::Unretained(&verifier1)));
 
   // Public API must return an empty array.
   auto expected_data_usage2 =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>());
-  DataUsageLoadVerifier verifier2(expected_data_usage2.Pass());
+  DataUsageLoadVerifier verifier2(std::move(expected_data_usage2));
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier2)),
                          now);
@@ -1150,7 +1151,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, RecordDataUsageMultipleSites) {
   site_usage->set_data_used(1002);
   site_usage->set_original_size(1252);
 
-  DataUsageLoadVerifier verifier(expected_data_usage.Pass());
+  DataUsageLoadVerifier verifier(std::move(expected_data_usage));
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier)),
@@ -1188,7 +1189,7 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   site_usage->set_data_used(1001);
   site_usage->set_original_size(1251);
 
-  DataUsageLoadVerifier verifier(expected_data_usage.Pass());
+  DataUsageLoadVerifier verifier(std::move(expected_data_usage));
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier)),
@@ -1219,7 +1220,7 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   site_usage->set_data_used(1000);
   site_usage->set_original_size(1250);
 
-  DataUsageLoadVerifier verifier(expected_data_usage.Pass());
+  DataUsageLoadVerifier verifier(std::move(expected_data_usage));
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier)),
@@ -1244,7 +1245,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteHistoricalDataUsage) {
   auto expected_data_usage =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
           kNumExpectedBuckets));
-  DataUsageLoadVerifier verifier(expected_data_usage.Pass());
+  DataUsageLoadVerifier verifier(std::move(expected_data_usage));
 
   GetHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                     base::Unretained(&verifier)),
@@ -1281,7 +1282,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteBrowsingHistory) {
   site_usage->set_hostname("www.bar.com");
   site_usage->set_data_used(900);
   site_usage->set_original_size(1100);
-  DataUsageLoadVerifier verifier1(expected_data_usage.Pass());
+  DataUsageLoadVerifier verifier1(std::move(expected_data_usage));
 
   LoadHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                      base::Unretained(&verifier1)));
@@ -1294,7 +1295,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteBrowsingHistory) {
   expected_data_usage =
       make_scoped_ptr(new std::vector<data_reduction_proxy::DataUsageBucket>(
           kNumExpectedBuckets));
-  DataUsageLoadVerifier verifier2(expected_data_usage.Pass());
+  DataUsageLoadVerifier verifier2(std::move(expected_data_usage));
   LoadHistoricalDataUsage(base::Bind(&DataUsageLoadVerifier::OnLoadDataUsage,
                                      base::Unretained(&verifier2)));
   base::RunLoop().RunUntilIdle();

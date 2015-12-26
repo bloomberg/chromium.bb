@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/metrics/profiler/tracking_synchronizer.h"
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/tracked_objects.h"
-#include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/profiler/tracking_synchronizer_delegate.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,7 +105,8 @@ class TestObserver : public TrackingSynchronizerObserver {
 class TestTrackingSynchronizer : public TrackingSynchronizer {
  public:
   explicit TestTrackingSynchronizer(scoped_ptr<base::TickClock> clock)
-      : TrackingSynchronizer(clock.Pass(), base::Bind(&TestDelegate::Create)) {}
+      : TrackingSynchronizer(std::move(clock),
+                             base::Bind(&TestDelegate::Create)) {}
 
   using TrackingSynchronizer::RegisterPhaseCompletion;
   using TrackingSynchronizer::SendData;

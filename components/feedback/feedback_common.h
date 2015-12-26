@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -89,7 +89,7 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   void set_user_email(const std::string& user_email) {
     user_email_ = user_email;
   }
-  void set_image(scoped_ptr<std::string> image) { image_ = image.Pass(); }
+  void set_image(scoped_ptr<std::string> image) { image_ = std::move(image); }
   void set_product_id(int32_t product_id) { product_id_ = product_id; }
   void set_user_agent(const std::string& user_agent) {
     user_agent_ = user_agent;

@@ -5,6 +5,7 @@
 #include "components/drive/file_system.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -93,7 +94,7 @@ void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
 
   if (error != FILE_ERROR_OK)
     entry.reset();
-  callback.Run(error, entry.Pass());
+  callback.Run(error, std::move(entry));
 }
 
 // Used to implement Pin().
@@ -230,7 +231,7 @@ void FilterHostedDocuments(const ReadDirectoryEntriesCallback& callback,
     }
     entries.swap(filtered);
   }
-  callback.Run(entries.Pass());
+  callback.Run(std::move(entries));
 }
 
 // Adapter for using FileOperationCallback as google_apis::EntryActionCallback.

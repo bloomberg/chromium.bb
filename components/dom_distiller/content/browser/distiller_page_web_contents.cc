@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/content/browser/distiller_page_web_contents.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -52,7 +54,7 @@ DistillerPageWebContentsFactory::CreateDistillerPageWithHandle(
       scoped_ptr<SourcePageHandleWebContents>(
           static_cast<SourcePageHandleWebContents*>(handle.release()));
   return scoped_ptr<DistillerPage>(new DistillerPageWebContents(
-      browser_context_, gfx::Size(), web_contents_handle.Pass()));
+      browser_context_, gfx::Size(), std::move(web_contents_handle)));
 }
 
 DistillerPageWebContents::DistillerPageWebContents(
@@ -65,7 +67,7 @@ DistillerPageWebContents::DistillerPageWebContents(
       render_view_size_(render_view_size),
       weak_factory_(this) {
   if (optional_web_contents_handle) {
-    source_page_handle_ = optional_web_contents_handle.Pass();
+    source_page_handle_ = std::move(optional_web_contents_handle);
     if (render_view_size.IsEmpty())
       render_view_size_ =
           source_page_handle_->web_contents()->GetContainerBounds().size();

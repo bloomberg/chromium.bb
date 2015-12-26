@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/test_html_viewer_impl.h"
 
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -65,7 +67,7 @@ class TestHTMLViewerImpl::ExecutionCallbackImpl
 TestHTMLViewerImpl::TestHTMLViewerImpl(
     blink::WebLocalFrame* web_frame,
     mojo::InterfaceRequest<TestHTMLViewer> request)
-    : web_frame_(web_frame), binding_(this, request.Pass()) {}
+    : web_frame_(web_frame), binding_(this, std::move(request)) {}
 
 TestHTMLViewerImpl::~TestHTMLViewerImpl() {
   STLDeleteElements(&callbacks_);

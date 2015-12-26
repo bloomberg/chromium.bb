@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <limits>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
@@ -28,12 +29,12 @@ const size_t kMaxReadSize = 1 * 1024 * 1024;  // 1 MB.
 FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
                    const base::FilePath& path,
                    uint32_t flags)
-    : binding_(this, request.Pass()), file_(path, flags) {
+    : binding_(this, std::move(request)), file_(path, flags) {
   DCHECK(file_.IsValid());
 }
 
 FileImpl::FileImpl(mojo::InterfaceRequest<File> request, base::File file)
-    : binding_(this, request.Pass()), file_(file.Pass()) {
+    : binding_(this, std::move(request)), file_(std::move(file)) {
   DCHECK(file_.IsValid());
 }
 
@@ -87,7 +88,7 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
 
   DCHECK_LE(static_cast<size_t>(num_bytes_read), num_bytes_to_read);
   bytes_read.resize(static_cast<size_t>(num_bytes_read));
-  callback.Run(FILE_ERROR_OK, bytes_read.Pass());
+  callback.Run(FILE_ERROR_OK, std::move(bytes_read));
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
@@ -182,7 +183,7 @@ void FileImpl::Stat(const StatCallback& callback) {
     return;
   }
 
-  callback.Run(FILE_ERROR_OK, MakeFileInformation(info).Pass());
+  callback.Run(FILE_ERROR_OK, MakeFileInformation(info));
 }
 
 void FileImpl::Truncate(int64_t size, const TruncateCallback& callback) {
@@ -259,7 +260,7 @@ void FileImpl::Dup(mojo::InterfaceRequest<File> file,
   }
 
   if (file.is_pending())
-    new FileImpl(file.Pass(), new_file.Pass());
+    new FileImpl(std::move(file), std::move(new_file));
   callback.Run(FILE_ERROR_OK);
 }
 
@@ -308,7 +309,7 @@ void FileImpl::AsHandle(const AsHandleCallback& callback) {
     return;
   }
 
-  callback.Run(FILE_ERROR_OK, ScopedHandle(mojo::Handle(mojo_handle)).Pass());
+  callback.Run(FILE_ERROR_OK, ScopedHandle(mojo::Handle(mojo_handle)));
 }
 
 }  // namespace filesystem

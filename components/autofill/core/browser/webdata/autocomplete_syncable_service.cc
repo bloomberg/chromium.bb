@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -108,7 +109,7 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
   DCHECK(error_handler);
 
   syncer::SyncMergeResult merge_result(type);
-  error_handler_ = error_handler.Pass();
+  error_handler_ = std::move(error_handler);
   std::vector<AutofillEntry> entries;
   if (!LoadAutofillData(&entries)) {
     merge_result.set_error(error_handler_->CreateAndUploadError(
@@ -123,7 +124,7 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
         std::make_pair(syncer::SyncChange::ACTION_ADD, it);
   }
 
-  sync_processor_ = sync_processor.Pass();
+  sync_processor_ = std::move(sync_processor);
 
   std::vector<AutofillEntry> new_synced_entries;
   // Go through and check for all the entries that sync already knows about.

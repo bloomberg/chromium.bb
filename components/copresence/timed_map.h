@@ -67,7 +67,7 @@ class TimedMap {
   }
 
   void set_clock_for_testing(scoped_ptr<base::TickClock> clock) {
-    clock_ = clock.Pass();
+    clock_ = std::move(clock);
   }
 
  private:

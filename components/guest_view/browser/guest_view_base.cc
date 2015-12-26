@@ -4,6 +4,8 @@
 
 #include "components/guest_view/browser/guest_view_base.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -256,7 +258,7 @@ void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
   args->SetInteger(kOldHeight, old_size.height());
   args->SetInteger(kNewWidth, new_size.width());
   args->SetInteger(kNewHeight, new_size.height());
-  DispatchEventToGuestProxy(new GuestViewEvent(kEventResize, args.Pass()));
+  DispatchEventToGuestProxy(new GuestViewEvent(kEventResize, std::move(args)));
 }
 
 gfx::Size GuestViewBase::GetDefaultSize() const {

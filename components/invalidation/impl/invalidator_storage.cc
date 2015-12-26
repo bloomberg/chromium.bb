@@ -48,7 +48,7 @@ scoped_ptr<base::ListValue> UnackedInvalidationStorageMapToValue(
        it != map.end(); ++it) {
     value->Append(it->second.ToValue().release());
   }
-  return value.Pass();
+  return value;
 }
 
 }  // namespace

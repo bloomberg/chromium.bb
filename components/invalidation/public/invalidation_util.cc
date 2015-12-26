@@ -45,7 +45,7 @@ scoped_ptr<base::DictionaryValue> ObjectIdToValue(
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("source", object_id.source());
   value->SetString("name", object_id.name());
-  return value.Pass();
+  return value;
 }
 
 bool ObjectIdFromValue(const base::DictionaryValue& value,

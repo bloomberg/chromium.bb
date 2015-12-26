@@ -5,9 +5,9 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 
 #include <stddef.h>
-
 #include <cstddef>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -284,7 +284,7 @@ void ProfileSyncService::Initialize() {
       browser_sync::SyncStoppedReporter::ResultCallback()));
   sessions_sync_manager_.reset(new SessionsSyncManager(
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
-      router.Pass(),
+      std::move(router),
       base::Bind(&ProfileSyncService::NotifyForeignSessionUpdated,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ProfileSyncService::TriggerRefresh,
@@ -549,14 +549,14 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
                      network_time_update_callback_);
 
   backend_->Initialize(
-      this, sync_thread_.Pass(), db_thread_, file_thread_, GetJsEventHandler(),
-      sync_service_url_, local_device_->GetSyncUserAgent(), credentials,
-      delete_stale_data, scoped_ptr<syncer::SyncManagerFactory>(
-                             new syncer::SyncManagerFactory(GetManagerType()))
-                             .Pass(),
+      this, std::move(sync_thread_), db_thread_, file_thread_,
+      GetJsEventHandler(), sync_service_url_, local_device_->GetSyncUserAgent(),
+      credentials, delete_stale_data,
+      scoped_ptr<syncer::SyncManagerFactory>(
+          new syncer::SyncManagerFactory(GetManagerType())),
       MakeWeakHandle(weak_factory_.GetWeakPtr()),
       base::Bind(browser_sync::ChromeReportUnrecoverableError, channel_),
-      http_post_provider_factory_getter, saved_nigori_state_.Pass());
+      http_post_provider_factory_getter, std::move(saved_nigori_state_));
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
@@ -1437,7 +1437,7 @@ void ProfileSyncService::BeginConfigureCatchUpBeforeClear() {
   DCHECK(data_type_manager_);
   DCHECK(!saved_nigori_state_);
   saved_nigori_state_ =
-      sync_prefs_.GetSavedNigoriStateForPassphraseEncryptionTransition().Pass();
+      sync_prefs_.GetSavedNigoriStateForPassphraseEncryptionTransition();
   const syncer::ModelTypeSet types = GetActiveDataTypes();
   catch_up_configure_in_progress_ = true;
   data_type_manager_->Configure(types, syncer::CONFIGURE_REASON_CATCH_UP);
@@ -2398,7 +2398,7 @@ void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
   }
 
   if (awaiting_types_.Empty()) {
-    callback_.Run(result_accumulator_.Pass());
+    callback_.Run(std::move(result_accumulator_));
     callback_.Reset();
   }
 }
@@ -2421,7 +2421,7 @@ void ProfileSyncService::GetAllNodes(
       type_vector.push_back(it.Get());
       empty_results.push_back(new base::ListValue());
     }
-    helper->OnReceivedNodesForTypes(type_vector, empty_results.Pass());
+    helper->OnReceivedNodesForTypes(type_vector, std::move(empty_results));
   } else {
     backend_->GetAllNodesForTypes(
         all_types,
@@ -2578,7 +2578,7 @@ ProfileSyncService::GetSyncTokenStatus() const {
 
 void ProfileSyncService::OverrideNetworkResourcesForTest(
     scoped_ptr<syncer::NetworkResources> network_resources) {
-  network_resources_ = network_resources.Pass();
+  network_resources_ = std::move(network_resources);
 }
 
 bool ProfileSyncService::HasSyncingBackend() const {

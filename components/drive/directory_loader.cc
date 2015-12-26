@@ -5,6 +5,7 @@
 #include "components/drive/directory_loader.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -482,7 +483,7 @@ void DirectoryLoader::SendEntries(const std::string& local_id,
         entries_to_send->push_back(entry);
       }
     }
-    callback_state->entries_callback.Run(entries_to_send.Pass());
+    callback_state->entries_callback.Run(std::move(entries_to_send));
   }
 }
 

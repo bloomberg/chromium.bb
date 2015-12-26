@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/dom_distiller_service.h"
 
+#include <utility>
+
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -44,12 +46,11 @@ DomDistillerService::DomDistillerService(
     scoped_ptr<DistillerFactory> distiller_factory,
     scoped_ptr<DistillerPageFactory> distiller_page_factory,
     scoped_ptr<DistilledPagePrefs> distilled_page_prefs)
-    : store_(store.Pass()),
+    : store_(std::move(store)),
       content_store_(new InMemoryContentStore(kDefaultMaxNumCachedEntries)),
-      distiller_factory_(distiller_factory.Pass()),
-      distiller_page_factory_(distiller_page_factory.Pass()),
-      distilled_page_prefs_(distilled_page_prefs.Pass()) {
-}
+      distiller_factory_(std::move(distiller_factory)),
+      distiller_page_factory_(std::move(distiller_page_factory)),
+      distilled_page_prefs_(std::move(distilled_page_prefs)) {}
 
 DomDistillerService::~DomDistillerService() {
 }
@@ -60,14 +61,14 @@ syncer::SyncableService* DomDistillerService::GetSyncableService() const {
 
 scoped_ptr<DistillerPage> DomDistillerService::CreateDefaultDistillerPage(
     const gfx::Size& render_view_size) {
-  return distiller_page_factory_->CreateDistillerPage(render_view_size).Pass();
+  return distiller_page_factory_->CreateDistillerPage(render_view_size);
 }
 
 scoped_ptr<DistillerPage>
 DomDistillerService::CreateDefaultDistillerPageWithHandle(
     scoped_ptr<SourcePageHandle> handle) {
-  return distiller_page_factory_->CreateDistillerPageWithHandle(handle.Pass())
-      .Pass();
+  return distiller_page_factory_->CreateDistillerPageWithHandle(
+      std::move(handle));
 }
 
 const std::string DomDistillerService::AddToList(
@@ -104,7 +105,7 @@ const std::string DomDistillerService::AddToList(
     task_tracker->AddSaveCallback(base::Bind(
         &DomDistillerService::AddDistilledPageToList, base::Unretained(this)));
     task_tracker->StartDistiller(distiller_factory_.get(),
-                                 distiller_page.Pass());
+                                 std::move(distiller_page));
     task_tracker->StartBlobFetcher();
   }
 
@@ -141,7 +142,7 @@ scoped_ptr<ArticleEntry> DomDistillerService::RemoveEntry(
   }
 
   if (store_->RemoveEntry(*entry)) {
-    return entry.Pass();
+    return entry;
   }
   return scoped_ptr<ArticleEntry>();
 }
@@ -160,11 +161,11 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
   scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
   if (was_created) {
     task_tracker->StartDistiller(distiller_factory_.get(),
-                                 distiller_page.Pass());
+                                 std::move(distiller_page));
     task_tracker->StartBlobFetcher();
   }
 
-  return viewer_handle.Pass();
+  return viewer_handle;
 }
 
 scoped_ptr<ViewerHandle> DomDistillerService::ViewUrl(
@@ -181,11 +182,11 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewUrl(
   // If a distiller is already running for one URL, don't start another.
   if (was_created) {
     task_tracker->StartDistiller(distiller_factory_.get(),
-                                 distiller_page.Pass());
+                                 std::move(distiller_page));
     task_tracker->StartBlobFetcher();
   }
 
-  return viewer_handle.Pass();
+  return viewer_handle;
 }
 
 bool DomDistillerService::GetOrCreateTaskTrackerForUrl(

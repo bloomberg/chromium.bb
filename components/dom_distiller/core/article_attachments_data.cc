@@ -28,7 +28,7 @@ scoped_ptr<ArticleAttachmentsData> ArticleAttachmentsData::GetFromAttachmentMap(
       iter->second.GetData();
   data->distilled_article_.ParseFromArray(attachment_bytes->front(),
                                           attachment_bytes->size());
-  return data.Pass();
+  return data;
 }
 
 void ArticleAttachmentsData::CreateSyncAttachments(

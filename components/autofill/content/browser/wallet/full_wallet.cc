@@ -5,6 +5,7 @@
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -35,8 +36,8 @@ FullWallet::FullWallet(int expiration_month,
       expiration_year_(expiration_year),
       iin_(iin),
       encrypted_rest_(encrypted_rest),
-      billing_address_(billing_address.Pass()),
-      shipping_address_(shipping_address.Pass()) {
+      billing_address_(std::move(billing_address)),
+      shipping_address_(std::move(shipping_address)) {
   DCHECK(billing_address_.get());
 }
 
@@ -59,10 +60,10 @@ scoped_ptr<FullWallet>
       expiration_month, expiration_year,
       std::string(),  // no iin -- clear text pan/cvn are set below.
       std::string(),  // no encrypted_rest -- clear text pan/cvn are set below.
-      billing_address.Pass(), shipping_address.Pass()));
+      std::move(billing_address), std::move(shipping_address)));
   wallet->pan_ = pan;
   wallet->cvn_ = cvn;
-  return wallet.Pass();
+  return wallet;
 }
 
 base::string16 FullWallet::GetInfo(const std::string& app_locale,

@@ -351,7 +351,7 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
 scoped_ptr<base::Value> DefaultProvider::ReadFromPref(
     ContentSettingsType content_type) {
   int int_value = prefs_->GetInteger(GetPrefName(content_type));
-  return ContentSettingToValue(IntToContentSetting(int_value)).Pass();
+  return ContentSettingToValue(IntToContentSetting(int_value));
 }
 
 void DefaultProvider::DiscardObsoletePreferences() {

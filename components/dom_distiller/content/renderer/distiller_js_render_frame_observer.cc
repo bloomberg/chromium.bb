@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
@@ -57,7 +59,7 @@ void DistillerJsRenderFrameObserver::RegisterMojoService() {
 void DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService(
     mojo::InterfaceRequest<DistillerPageNotifierService> request) {
   // This is strongly bound to and owned by the pipe.
-  new DistillerPageNotifierServiceImpl(this, request.Pass());
+  new DistillerPageNotifierServiceImpl(this, std::move(request));
 }
 
 void DistillerJsRenderFrameObserver::SetIsDistillerPage() {

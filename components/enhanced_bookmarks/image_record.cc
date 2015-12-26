@@ -4,19 +4,17 @@
 
 #include "components/enhanced_bookmarks/image_record.h"
 
+#include <utility>
+
 namespace enhanced_bookmarks {
 
 ImageRecord::ImageRecord(scoped_ptr<gfx::Image> image,
                          const GURL& url,
                          SkColor dominant_color)
-    : image(image.Pass()),
-      url(url),
-      dominant_color(dominant_color) {
-}
+    : image(std::move(image)), url(url), dominant_color(dominant_color) {}
 
 ImageRecord::ImageRecord(scoped_ptr<gfx::Image> image, const GURL& url)
-    : ImageRecord(image.Pass(), url, SK_ColorBLACK) {
-}
+    : ImageRecord(std::move(image), url, SK_ColorBLACK) {}
 
 ImageRecord::ImageRecord()
     : ImageRecord(scoped_ptr<gfx::Image>(new gfx::Image()), GURL()) {

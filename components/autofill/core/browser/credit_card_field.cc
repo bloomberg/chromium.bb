@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/credit_card_field.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -180,7 +181,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   // For that case, allow only just the cardholder name field.  The remaining
   // CC fields will be picked up in a following CreditCardField.
   if (credit_card_field->cardholder_)
-    return credit_card_field.Pass();
+    return std::move(credit_card_field);
 
   // On some pages, the user selects a card type using radio buttons
   // (e.g. test page Apple Store Billing.html).  We can't handle that yet,
@@ -195,7 +196,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
                             (credit_card_field->expiration_month_ &&
                              credit_card_field->expiration_year_));
   if (has_cc_number_or_verification && has_date_or_mm_yy)
-    return credit_card_field.Pass();
+    return std::move(credit_card_field);
 
   scanner->RewindTo(saved_cursor);
   return nullptr;

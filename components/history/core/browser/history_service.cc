@@ -18,6 +18,8 @@
 
 #include "components/history/core/browser/history_service.h"
 
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -191,11 +193,10 @@ HistoryService::HistoryService()
 HistoryService::HistoryService(scoped_ptr<HistoryClient> history_client,
                                scoped_ptr<VisitDelegate> visit_delegate)
     : thread_(new base::Thread(kHistoryThreadName)),
-      history_client_(history_client.Pass()),
-      visit_delegate_(visit_delegate.Pass()),
+      history_client_(std::move(history_client)),
+      visit_delegate_(std::move(visit_delegate)),
       backend_loaded_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 HistoryService::~HistoryService() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -967,7 +968,7 @@ syncer::SyncMergeResult HistoryService::MergeDataAndStartSyncing(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
   delete_directive_handler_.Start(this, initial_sync_data,
-                                  sync_processor.Pass());
+                                  std::move(sync_processor));
   return syncer::SyncMergeResult(type);
 }
 

@@ -5,6 +5,7 @@
 #include "components/html_viewer/media_factory.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -112,9 +113,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     url_index_.reset(new media::UrlIndex(frame));
   }
 
-  return new media::WebMediaPlayerImpl(frame, client, encrypted_client,
-                                       delegate, media_renderer_factory.Pass(),
-                                       GetCdmFactory(), url_index_, params);
+  return new media::WebMediaPlayerImpl(
+      frame, client, encrypted_client, delegate,
+      std::move(media_renderer_factory), GetCdmFactory(), url_index_, params);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -132,8 +133,8 @@ media::interfaces::ServiceFactory* MediaFactory::GetMediaServiceFactory() {
     mojo::ServiceProviderPtr service_provider;
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:media");
-    shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
-                                 nullptr, nullptr,
+    shell_->ConnectToApplication(std::move(request),
+                                 GetProxy(&service_provider), nullptr, nullptr,
                                  base::Bind(&OnGotContentHandlerID));
     mojo::ConnectToService(service_provider.get(), &media_service_factory_);
   }

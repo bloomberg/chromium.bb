@@ -56,7 +56,7 @@ scoped_ptr<Address> GetTestAddress() {
 scoped_ptr<Address> GetTestMinimalAddress() {
   scoped_ptr<Address> address = GetTestAddress();
   address->set_is_complete_address(false);
-  return address.Pass();
+  return address;
 }
 
 scoped_ptr<FullWallet> GetTestFullWallet() {
@@ -66,7 +66,7 @@ scoped_ptr<FullWallet> GetTestFullWallet() {
   std::vector<uint8_t> one_time_pad;
   base::HexStringToBytes("5F04A8704183", &one_time_pad);
   wallet->set_one_time_pad(one_time_pad);
-  return wallet.Pass();
+  return wallet;
 }
 
 scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly() {
@@ -76,7 +76,7 @@ scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly() {
   std::vector<uint8_t> one_time_pad;
   base::HexStringToBytes("5F04A8704183", &one_time_pad);
   wallet->set_one_time_pad(one_time_pad);
-  return wallet.Pass();
+  return wallet;
 }
 
 scoped_ptr<Address> GetTestSaveableAddress() {
@@ -112,7 +112,7 @@ scoped_ptr<Address> GetTestShippingAddress() {
 scoped_ptr<Address> GetTestNonDefaultShippingAddress() {
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("address_id");
-  return address.Pass();
+  return address;
 }
 
 }  // namespace wallet

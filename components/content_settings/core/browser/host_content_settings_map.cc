@@ -251,7 +251,7 @@ void HostContentSettingsMap::SetDefaultContentSetting(
   }
   SetWebsiteSettingCustomScope(ContentSettingsPattern::Wildcard(),
                                ContentSettingsPattern::Wildcard(), content_type,
-                               std::string(), value.Pass());
+                               std::string(), std::move(value));
 }
 
 void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
@@ -407,7 +407,7 @@ void HostContentSettingsMap::SetContentSetting(
     value.reset(new base::FundamentalValue(setting));
   }
   SetWebsiteSettingCustomScope(primary_pattern, secondary_pattern, content_type,
-                               resource_identifier, value.Pass());
+                               resource_identifier, std::move(value));
 }
 
 ContentSetting HostContentSettingsMap::GetContentSettingAndMaybeUpdateLastUsage(
@@ -489,7 +489,7 @@ void HostContentSettingsMap::SetPrefClockForTesting(
     scoped_ptr<base::Clock> clock) {
   UsedContentSettingsProviders();
 
-  GetPrefProvider()->SetClockForTesting(clock.Pass());
+  GetPrefProvider()->SetClockForTesting(std::move(clock));
 }
 
 void HostContentSettingsMap::ClearSettingsForOneType(
@@ -685,7 +685,7 @@ scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
     if (value) {
       if (info)
         info->source = kProviderNamesSourceMap[provider->first].provider_source;
-      return value.Pass();
+      return value;
     }
   }
 
@@ -729,7 +729,7 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
       rule_iterator.get(), primary_url, secondary_url, primary_pattern,
       secondary_pattern);
   if (value && include_incognito)
-    value = CoerceSettingInheritedToIncognito(content_type, value.Pass());
+    value = CoerceSettingInheritedToIncognito(content_type, std::move(value));
   return value;
 }
 

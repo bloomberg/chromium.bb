@@ -5,8 +5,8 @@
 #include "components/html_viewer/html_frame_tree_manager.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -154,7 +154,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
 
   HTMLFrame* frame = frame_tree->root_->FindFrame(window_id);
   DCHECK(frame);
-  frame->Bind(server_frame.Pass(), frame_client_request.Pass());
+  frame->Bind(std::move(server_frame), std::move(frame_client_request));
   return frame;
 }
 
@@ -379,7 +379,7 @@ void HTMLFrameTreeManager::ProcessOnFrameClientPropertyChanged(
 
   HTMLFrame* frame = root_->FindFrame(frame_id);
   if (frame)
-    frame->SetValueFromClientProperty(name, new_data.Pass());
+    frame->SetValueFromClientProperty(name, std::move(new_data));
 }
 
 HTMLFrame* HTMLFrameTreeManager::FindNewLocalFrame() {

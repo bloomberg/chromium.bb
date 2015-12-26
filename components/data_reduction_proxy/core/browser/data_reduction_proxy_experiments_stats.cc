@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_retrieval_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -23,7 +25,7 @@ DataReductionProxyExperimentsStats::~DataReductionProxyExperimentsStats() {
 void DataReductionProxyExperimentsStats::InitializeOnUIThread(scoped_ptr<
     DataReductionProxyConfigRetrievalParams> config_retrieval_params) {
   DCHECK(!initialized_);
-  config_retrieval_params_ = config_retrieval_params.Pass();
+  config_retrieval_params_ = std::move(config_retrieval_params);
 
   // This method may be called from the UI thread, but should be checked on the
   // IO thread.

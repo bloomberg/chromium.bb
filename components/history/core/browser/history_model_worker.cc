@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/history_model_worker.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -70,7 +72,7 @@ void PostWorkerTask(
     syncer::SyncerError* error) {
   if (history_service.get()) {
     scoped_ptr<history::HistoryDBTask> task(new WorkerTask(work, done, error));
-    history_service->ScheduleDBTask(task.Pass(), cancelable_tracker);
+    history_service->ScheduleDBTask(std::move(task), cancelable_tracker);
   } else {
     *error = syncer::CANNOT_DO_WORK;
     done->Signal();

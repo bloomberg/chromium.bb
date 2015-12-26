@@ -6,18 +6,18 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
-
 // TODO(ckehoe): time.h includes windows.h, which #defines DeviceCapabilities
 // to DeviceCapabilitiesW. This breaks the pb.h headers below. For now,
 // we fix this with an #undef.
 #include "base/time/time.h"
+#include "build/build_config.h"
 #if defined(OS_WIN)
 #undef DeviceCapabilities
 #endif
@@ -137,7 +137,7 @@ scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
   audible->add_instruction_type(TRANSMIT);
   audible->add_instruction_type(RECEIVE);
 
-  return state.Pass();
+  return state;
 }
 
 // TODO(ckehoe): We're keeping this code in a separate function for now
@@ -244,7 +244,7 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
   // We're not registered, or registration is in progress.
   if (queue_request) {
     pending_requests_queue_.push_back(new PendingRequest(
-        request.Pass(), app_id, authenticated, status_callback));
+        std::move(request), app_id, authenticated, status_callback));
     return;
   }
 
@@ -282,7 +282,7 @@ void RpcHandler::ReportTokens(const std::vector<AudioToken>& tokens) {
     AddTokenToRequest(token, request.get());
   }
 
-  ReportOnAllDevices(request.Pass());
+  ReportOnAllDevices(std::move(request));
 }
 
 
@@ -292,7 +292,7 @@ RpcHandler::PendingRequest::PendingRequest(scoped_ptr<ReportRequest> report,
                                            const std::string& app_id,
                                            bool authenticated,
                                            const StatusCallback& callback)
-    : report(report.Pass()),
+    : report(std::move(report)),
       app_id(app_id),
       authenticated(authenticated),
       callback(callback) {}
@@ -364,8 +364,7 @@ void RpcHandler::ProcessQueuedRequests(const bool authenticated) {
       } else {
         if (request->authenticated)
           DCHECK(!auth_token_.empty());
-        SendReportRequest(request->report.Pass(),
-                          request->app_id,
+        SendReportRequest(std::move(request->report), request->app_id,
                           request->authenticated ? auth_token_ : std::string(),
                           request->callback);
       }
@@ -379,7 +378,7 @@ void RpcHandler::ProcessQueuedRequests(const bool authenticated) {
   // Only keep the requests that weren't processed.
   // All the pointers in the queue are now spoken for.
   pending_requests_queue_.weak_clear();
-  pending_requests_queue_ = still_pending_requests.Pass();
+  pending_requests_queue_ = std::move(still_pending_requests);
 }
 
 void RpcHandler::ReportOnAllDevices(scoped_ptr<ReportRequest> request) {

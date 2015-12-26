@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
+
 #include <stddef.h>
+#include <utility>
 
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
-#include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
@@ -162,7 +164,7 @@ scoped_ptr<AutofillProfile> ConstructCompleteProfile() {
   profile->SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                       ASCIIToUTF16("Santa Clara"));
   profile->set_language_code("en");
-  return profile.Pass();
+  return profile;
 }
 
 // Returns SyncData with all Autofill profile fields set.  Contains identical
@@ -238,9 +240,7 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
 
     // Takes ownership of sync_processor_.
     autofill_syncable_service_.MergeDataAndStartSyncing(
-        syncer::AUTOFILL_PROFILE,
-        data_list,
-        sync_processor_.Pass(),
+        syncer::AUTOFILL_PROFILE, data_list, std::move(sync_processor_),
         scoped_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock()));
   }

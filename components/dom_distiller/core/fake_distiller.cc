@@ -4,6 +4,8 @@
 
 #include "components/dom_distiller/core/fake_distiller.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -52,7 +54,7 @@ void FakeDistiller::DistillPage(
   if (execute_callback_) {
     scoped_ptr<DistilledArticleProto> proto(new DistilledArticleProto);
     proto->add_pages()->set_url(url_.spec());
-    PostDistillerCallback(proto.Pass());
+    PostDistillerCallback(std::move(proto));
   }
 }
 
@@ -61,7 +63,7 @@ void FakeDistiller::RunDistillerCallback(
   ASSERT_FALSE(execute_callback_) << "Cannot explicitly run the distiller "
                                      "callback for a fake distiller created "
                                      "with automatic callback execution.";
-  PostDistillerCallback(proto.Pass());
+  PostDistillerCallback(std::move(proto));
 }
 
 void FakeDistiller::RunDistillerUpdateCallback(
@@ -83,7 +85,7 @@ void FakeDistiller::RunDistillerCallbackInternal(
 
   base::AutoReset<bool> dont_delete_this_in_callback(&destruction_allowed_,
                                                      false);
-  article_callback_.Run(proto.Pass());
+  article_callback_.Run(std::move(proto));
   article_callback_.Reset();
 }
 

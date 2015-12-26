@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/content_handler_impl.h"
 
+#include <utility>
+
 #include "components/html_viewer/html_document_application_delegate.h"
 
 namespace html_viewer {
@@ -14,9 +16,8 @@ ContentHandlerImpl::ContentHandlerImpl(
     mojo::InterfaceRequest<mojo::ContentHandler> request)
     : global_state_(global_state),
       app_(app),
-      binding_(this, request.Pass()),
-      app_refcount_(app_->app_lifetime_helper()->CreateAppRefCount()) {
-}
+      binding_(this, std::move(request)),
+      app_refcount_(app_->app_lifetime_helper()->CreateAppRefCount()) {}
 
 ContentHandlerImpl::~ContentHandlerImpl() {
 }
@@ -27,7 +28,7 @@ void ContentHandlerImpl::StartApplication(
     const mojo::Callback<void()>& destruct_callback) {
   // HTMLDocumentApplicationDelegate deletes itself.
   new HTMLDocumentApplicationDelegate(
-      request.Pass(), response.Pass(), global_state_,
+      std::move(request), std::move(response), global_state_,
       app_->app_lifetime_helper()->CreateAppRefCount(), destruct_callback);
 }
 

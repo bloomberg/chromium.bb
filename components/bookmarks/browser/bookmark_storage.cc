@@ -5,8 +5,8 @@
 #include "components/bookmarks/browser/bookmark_storage.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -214,7 +214,7 @@ void BookmarkStorage::OnLoadFinished(scoped_ptr<BookmarkLoadDetails> details) {
   if (!model_)
     return;
 
-  model_->DoneLoading(details.Pass());
+  model_->DoneLoading(std::move(details));
 }
 
 bool BookmarkStorage::SaveNow() {
@@ -228,7 +228,7 @@ bool BookmarkStorage::SaveNow() {
   scoped_ptr<std::string> data(new std::string);
   if (!SerializeData(data.get()))
     return false;
-  writer_.WriteNow(data.Pass());
+  writer_.WriteNow(std::move(data));
   return true;
 }
 

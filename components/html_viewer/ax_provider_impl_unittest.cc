@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -75,7 +76,7 @@ class AxProviderImplTest : public testing::Test {
 };
 
 struct NodeCatcher {
-  void OnNodes(Array<AxNodePtr> nodes) { this->nodes = nodes.Pass(); }
+  void OnNodes(Array<AxNodePtr> nodes) { this->nodes = std::move(nodes); }
   Array<AxNodePtr> nodes;
 };
 
@@ -99,7 +100,7 @@ AxNodePtr CreateNode(int id,
     node->text = mojo::AxText::New();
     node->text->content = text;
   }
-  return node.Pass();
+  return node;
 }
 
 }  // namespace

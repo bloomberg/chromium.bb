@@ -5,6 +5,7 @@
 #include "components/html_viewer/html_widget.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/command_line.h"
 #include "components/html_viewer/blink_settings.h"
@@ -39,7 +40,7 @@ void InitializeWebLayerTreeView(WebLayerTreeViewImpl* web_layer_tree_view,
   DCHECK(window);
   mus::mojom::GpuPtr gpu_service;
   app->ConnectToService("mojo:mus", &gpu_service);
-  web_layer_tree_view->Initialize(gpu_service.Pass(), window, widget);
+  web_layer_tree_view->Initialize(std::move(gpu_service), window, widget);
 }
 
 void UpdateWebViewSizeFromViewSize(mus::Window* window,

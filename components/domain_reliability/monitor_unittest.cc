@@ -5,9 +5,9 @@
 #include "components/domain_reliability/monitor.h"
 
 #include <stddef.h>
-
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -95,7 +95,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
     scoped_ptr<DomainReliabilityConfig> config(
         MakeTestConfigWithOrigin(origin));
     config->include_subdomains = wildcard;
-    return monitor_.AddContextForTesting(config.Pass());
+    return monitor_.AddContextForTesting(std::move(config));
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> pref_task_runner_;
@@ -207,7 +207,7 @@ TEST_F(DomainReliabilityMonitorTest,
   scoped_ptr<DomainReliabilityConfig> config = MakeTestConfig();
   config->success_sample_rate = 1.0;
   DomainReliabilityContext* context =
-      monitor_.AddContextForTesting(config.Pass());
+      monitor_.AddContextForTesting(std::move(config));
 
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/");

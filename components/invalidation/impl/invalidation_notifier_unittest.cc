@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/invalidation_notifier.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
@@ -38,9 +40,9 @@ class InvalidationNotifierTestDelegate {
     scoped_ptr<notifier::PushClient> push_client(
         new notifier::FakePushClient());
     scoped_ptr<SyncNetworkChannel> network_channel(
-        new PushClientChannel(push_client.Pass()));
+        new PushClientChannel(std::move(push_client)));
     invalidator_.reset(new InvalidationNotifier(
-        network_channel.Pass(), invalidator_client_id,
+        std::move(network_channel), invalidator_client_id,
         UnackedInvalidationsMap(), initial_state, invalidation_state_tracker,
         base::ThreadTaskRunnerHandle::Get(), "fake_client_info"));
   }

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/json/json_writer.h"
@@ -80,7 +80,7 @@ void DataReductionProxyEventStore::AddConstants(
                      kDataReductionProxyBypassEventTypeTable[i].constant);
   }
 
-  constants_dict->Set("dataReductionProxyBypassEventType", dict.Pass());
+  constants_dict->Set("dataReductionProxyBypassEventType", std::move(dict));
 
   dict.reset(new base::DictionaryValue());
   for (size_t i = 0; i < arraysize(kDataReductionProxyBypassActionTypeTable);
@@ -89,7 +89,7 @@ void DataReductionProxyEventStore::AddConstants(
                      kDataReductionProxyBypassActionTypeTable[i].constant);
   }
 
-  constants_dict->Set("dataReductionProxyBypassActionType", dict.Pass());
+  constants_dict->Set("dataReductionProxyBypassActionType", std::move(dict));
 }
 
 DataReductionProxyEventStore::DataReductionProxyEventStore()
@@ -169,7 +169,7 @@ void DataReductionProxyEventStore::AddEnabledEvent(
     current_configuration_.reset(event->DeepCopy());
   else
     current_configuration_.reset();
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 void DataReductionProxyEventStore::AddEventAndSecureProxyCheckState(
@@ -177,7 +177,7 @@ void DataReductionProxyEventStore::AddEventAndSecureProxyCheckState(
     SecureProxyCheckState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   secure_proxy_check_state_ = state;
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 void DataReductionProxyEventStore::AddAndSetLastBypassEvent(
@@ -186,7 +186,7 @@ void DataReductionProxyEventStore::AddAndSetLastBypassEvent(
   DCHECK(thread_checker_.CalledOnValidThread());
   last_bypass_event_.reset(event->DeepCopy());
   expiration_ticks_ = expiration_ticks;
-  AddEvent(event.Pass());
+  AddEvent(std::move(event));
 }
 
 std::string DataReductionProxyEventStore::GetHttpProxyList() const {

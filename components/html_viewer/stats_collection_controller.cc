@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/stats_collection_controller.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -89,12 +91,13 @@ tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
   connection->ConnectToService(&collector_for_caller);
 
   gin::Handle<StatsCollectionController> controller = gin::CreateHandle(
-      isolate, new StatsCollectionController(collector_for_controller.Pass()));
+      isolate,
+      new StatsCollectionController(std::move(collector_for_controller)));
   DCHECK(!controller.IsEmpty());
   v8::Local<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "statsCollectionController"),
               controller.ToV8());
-  return collector_for_caller.Pass();
+  return collector_for_caller;
 }
 
 // static
@@ -109,12 +112,12 @@ StatsCollectionController::ConnectToDataCollector(mojo::ApplicationImpl* app) {
 
   tracing::StartupPerformanceDataCollectorPtr collector;
   app->ConnectToService("mojo:tracing", &collector);
-  return collector.Pass();
+  return collector;
 }
 
 StatsCollectionController::StatsCollectionController(
     tracing::StartupPerformanceDataCollectorPtr collector)
-    : startup_performance_data_collector_(collector.Pass()) {}
+    : startup_performance_data_collector_(std::move(collector)) {}
 
 StatsCollectionController::~StatsCollectionController() {}
 

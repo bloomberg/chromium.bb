@@ -193,7 +193,7 @@ scoped_ptr<MetricsStateManager> MetricsStateManager::Create(
                                          store_client_info,
                                          retrieve_client_info));
   }
-  return result.Pass();
+  return result;
 }
 
 // static
@@ -247,7 +247,7 @@ scoped_ptr<ClientInfo> MetricsStateManager::LoadClientInfoAndMaybeMigrate() {
   // retrieval failed.
   DCHECK(!client_info || base::IsValidGUID(client_info->client_id));
 
-  return client_info.Pass();
+  return client_info;
 }
 
 int MetricsStateManager::GetLowEntropySource() {

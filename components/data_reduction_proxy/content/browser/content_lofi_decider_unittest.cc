@@ -5,8 +5,8 @@
 #include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -91,7 +91,7 @@ class ContentLoFiDeciderTest : public testing::Test {
         data_reduction_proxy_lofi_decider(
             new data_reduction_proxy::ContentLoFiDecider());
     test_context_->io_data()->set_lofi_decider(
-        data_reduction_proxy_lofi_decider.Pass());
+        std::move(data_reduction_proxy_lofi_decider));
   }
 
   scoped_ptr<net::URLRequest> CreateRequest(bool is_using_lofi) {
@@ -106,7 +106,7 @@ class ContentLoFiDeciderTest : public testing::Test {
         false,  // is_async
         is_using_lofi);
 
-    return request.Pass();
+    return request;
   }
 
   void NotifyBeforeSendProxyHeaders(net::HttpRequestHeaders* headers,

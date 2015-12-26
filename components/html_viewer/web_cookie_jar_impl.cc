@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/web_cookie_jar_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
@@ -23,8 +25,7 @@ void CopyString(String* output, const String& input) {
 }  // namespace
 
 WebCookieJarImpl::WebCookieJarImpl(mojo::CookieStorePtr store)
-    : store_(store.Pass()) {
-}
+    : store_(std::move(store)) {}
 
 WebCookieJarImpl::~WebCookieJarImpl() {
 }

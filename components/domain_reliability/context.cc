@@ -5,6 +5,7 @@
 #include "components/domain_reliability/context.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
@@ -48,7 +49,7 @@ DomainReliabilityContext::DomainReliabilityContext(
     DomainReliabilityDispatcher* dispatcher,
     DomainReliabilityUploader* uploader,
     scoped_ptr<const DomainReliabilityConfig> config)
-    : config_(config.Pass()),
+    : config_(std::move(config)),
       time_(time),
       upload_reporter_string_(upload_reporter_string),
       scheduler_(time,
@@ -60,8 +61,7 @@ DomainReliabilityContext::DomainReliabilityContext(
       uploader_(uploader),
       uploading_beacons_size_(0),
       last_network_change_time_(last_network_change_time),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 DomainReliabilityContext::~DomainReliabilityContext() {
   ClearBeacons();
@@ -216,7 +216,7 @@ scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
   report_value->Set("entries", beacons_value.release());
 
   *max_upload_depth_out = max_upload_depth;
-  return report_value.Pass();
+  return std::move(report_value);
 }
 
 void DomainReliabilityContext::MarkUpload() {

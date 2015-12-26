@@ -4,6 +4,8 @@
 
 #include "components/drive/file_system/get_file_for_saving_operation.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -181,7 +183,7 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
     return;
   }
 
-  callback.Run(FILE_ERROR_OK, cache_path, entry.Pass());
+  callback.Run(FILE_ERROR_OK, cache_path, std::move(entry));
 }
 
 void GetFileForSavingOperation::OnWriteEvent(

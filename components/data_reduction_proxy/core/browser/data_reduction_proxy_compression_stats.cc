@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -495,7 +496,7 @@ void DataReductionProxyCompressionStats::InitInt64Pref(const char* pref) {
 void DataReductionProxyCompressionStats::InitListPref(const char* pref) {
   scoped_ptr<base::ListValue> pref_value = scoped_ptr<base::ListValue>(
       pref_service_->GetList(pref)->DeepCopy());
-  list_pref_map_.add(pref, pref_value.Pass());
+  list_pref_map_.add(pref, std::move(pref_value));
 }
 
 int64_t DataReductionProxyCompressionStats::GetInt64(const char* pref_path) {
@@ -1160,7 +1161,7 @@ void DataReductionProxyCompressionStats::PersistDataUsage() {
         PerSiteDataUsage* per_site_usage = connection_usage->add_site_usage();
         per_site_usage->CopyFrom(*(i->second));
     }
-    service_->StoreCurrentDataUsageBucket(data_usage_bucket.Pass());
+    service_->StoreCurrentDataUsageBucket(std::move(data_usage_bucket));
   }
 
   data_usage_map_is_dirty_ = false;
@@ -1206,7 +1207,7 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     // Force the last bucket to be for the current interval.
     scoped_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
     data_usage_bucket->set_last_updated_timestamp(now.ToInternalValue());
-    service_->StoreCurrentDataUsageBucket(data_usage_bucket.Pass());
+    service_->StoreCurrentDataUsageBucket(std::move(data_usage_bucket));
   }
 
   service_->LoadHistoricalDataUsage(get_data_usage_callback);

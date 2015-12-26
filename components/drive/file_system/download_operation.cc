@@ -5,6 +5,7 @@
 #include "components/drive/file_system/download_operation.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
@@ -260,15 +261,14 @@ FileError UpdateLocalStateForDownloadFile(
 
 class DownloadOperation::DownloadParams {
  public:
-  DownloadParams(
-      const GetFileContentInitializedCallback initialized_callback,
-      const google_apis::GetContentCallback get_content_callback,
-      const GetFileCallback completion_callback,
-      scoped_ptr<ResourceEntry> entry)
+  DownloadParams(const GetFileContentInitializedCallback initialized_callback,
+                 const google_apis::GetContentCallback get_content_callback,
+                 const GetFileCallback completion_callback,
+                 scoped_ptr<ResourceEntry> entry)
       : initialized_callback_(initialized_callback),
         get_content_callback_(get_content_callback),
         completion_callback_(completion_callback),
-        entry_(entry.Pass()),
+        entry_(std::move(entry)),
         was_cancelled_(false),
         weak_ptr_factory_(this) {
     DCHECK(!completion_callback_.is_null());
@@ -284,7 +284,7 @@ class DownloadOperation::DownloadParams {
       initialized_callback_.Run(FILE_ERROR_OK, cache_file_path,
                                 make_scoped_ptr(new ResourceEntry(*entry_)));
     }
-    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, entry_.Pass());
+    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, std::move(entry_));
   }
 
   void OnStartDownloading(const base::Closure& cancel_download_closure) {
@@ -305,7 +305,7 @@ class DownloadOperation::DownloadParams {
 
   void OnDownloadCompleted(const base::FilePath& cache_file_path,
                            scoped_ptr<ResourceEntry> entry) const {
-    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, entry.Pass());
+    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, std::move(entry));
   }
 
   const google_apis::GetContentCallback& get_content_callback() const {
@@ -532,7 +532,7 @@ void DownloadOperation::EnsureFileDownloadedAfterUpdateLocalState(
                        FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
   // Storing to cache changes the "offline available" status, hence notify.
   delegate_->OnFileChangedByOperation(changed_files);
-  params->OnDownloadCompleted(*cache_file_path, entry_after_update.Pass());
+  params->OnDownloadCompleted(*cache_file_path, std::move(entry_after_update));
 }
 
 void DownloadOperation::CancelJob(JobID job_id) {

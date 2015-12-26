@@ -177,7 +177,7 @@ GCMInvalidationBridge::CreateDelegate() {
   DCHECK(CalledOnValidThread());
   scoped_ptr<syncer::GCMNetworkChannelDelegate> core(new Core(
       weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
-  return core.Pass();
+  return core;
 }
 
 void GCMInvalidationBridge::CoreInitializationDone(

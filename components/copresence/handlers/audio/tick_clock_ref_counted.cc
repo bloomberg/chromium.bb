@@ -4,12 +4,14 @@
 
 #include "components/copresence/handlers/audio/tick_clock_ref_counted.h"
 
+#include <utility>
+
 #include "base/time/tick_clock.h"
 
 namespace copresence {
 
 TickClockRefCounted::TickClockRefCounted(scoped_ptr<base::TickClock> clock)
-    : clock_(clock.Pass()) {}
+    : clock_(std::move(clock)) {}
 
 TickClockRefCounted::TickClockRefCounted(base::TickClock* clock)
     : clock_(make_scoped_ptr(clock)) {}

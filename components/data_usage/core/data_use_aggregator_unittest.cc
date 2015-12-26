@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -43,7 +43,7 @@ class TestDataUseAggregator : public DataUseAggregator {
  public:
   TestDataUseAggregator(scoped_ptr<DataUseAnnotator> annotator,
                         scoped_ptr<DataUseAmortizer> amortizer)
-      : DataUseAggregator(annotator.Pass(), amortizer.Pass()) {}
+      : DataUseAggregator(std::move(annotator), std::move(amortizer)) {}
 
   ~TestDataUseAggregator() override {}
 
@@ -95,7 +95,7 @@ class FakeDataUseAnnotator : public DataUseAnnotator {
       scoped_ptr<DataUse> data_use,
       const base::Callback<void(scoped_ptr<DataUse>)>& callback) override {
     data_use->tab_id = tab_id_;
-    callback.Run(data_use.Pass());
+    callback.Run(std::move(data_use));
   }
 
   void set_tab_id(int32_t tab_id) { tab_id_ = tab_id; }
@@ -116,7 +116,7 @@ class DoublingAmortizer : public DataUseAmortizer {
                        const AmortizationCompleteCallback& callback) override {
     data_use->tx_bytes *= 2;
     data_use->rx_bytes *= 2;
-    callback.Run(data_use.Pass());
+    callback.Run(std::move(data_use));
   }
 
   void OnExtraBytes(int64_t extra_tx_bytes, int64_t extra_rx_bytes) override {}
@@ -247,7 +247,7 @@ class DataUseAggregatorTest : public testing::Test {
     // Initialize testing objects.
     FakeDataUseAnnotator* fake_data_use_annotator = annotator.get();
     data_use_aggregator_.reset(
-        new TestDataUseAggregator(annotator.Pass(), amortizer.Pass()));
+        new TestDataUseAggregator(std::move(annotator), std::move(amortizer)));
     test_observer_.reset(new TestObserver(data_use_aggregator_.get()));
     test_network_change_notifier_.reset(
         new TestNetworkChangeNotifier(data_use_aggregator_.get()));
@@ -289,7 +289,7 @@ class DataUseAggregatorTest : public testing::Test {
     request->Start();
     loop_.RunUntilIdle();
 
-    return request.Pass();
+    return request;
   }
 
   ReportingNetworkDelegate* reporting_network_delegate() {
@@ -339,7 +339,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
     scoped_ptr<DataUseAmortizer> amortizer(
         test_case.use_amortizer ? new DoublingAmortizer() : nullptr);
 
-    Initialize(annotator.Pass(), amortizer.Pass());
+    Initialize(std::move(annotator), std::move(amortizer));
 
     const int32_t kFooTabId = 10;
     const net::NetworkChangeNotifier::ConnectionType kFooConnectionType =

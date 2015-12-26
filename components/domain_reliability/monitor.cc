@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/monitor.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
@@ -63,7 +65,7 @@ scoped_ptr<DomainReliabilityBeacon> CreateBeaconFromAttempt(
     beacon->server_ip = attempt.endpoint.ToString();
   else
     beacon->server_ip = "";
-  return beacon.Pass();
+  return beacon;
 }
 
 }  // namespace
@@ -92,7 +94,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
     const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_thread,
     scoped_ptr<MockableTime> time)
-    : time_(time.Pass()),
+    : time_(std::move(time)),
       upload_reporter_string_(upload_reporter_string),
       scheduler_params_(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
@@ -162,7 +164,7 @@ void DomainReliabilityMonitor::AddBakedInConfigs() {
                     << json;
       continue;
     }
-    context_manager_.AddContextForConfig(config.Pass());
+    context_manager_.AddContextForConfig(std::move(config));
   }
 
   std::vector<DomainReliabilityConfig*> google_configs;
@@ -231,14 +233,14 @@ scoped_ptr<base::Value> DomainReliabilityMonitor::GetWebUIData() const {
 
   scoped_ptr<base::DictionaryValue> data_value(new base::DictionaryValue());
   data_value->Set("contexts", context_manager_.GetWebUIData());
-  return data_value.Pass();
+  return std::move(data_value);
 }
 
 DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(
     scoped_ptr<const DomainReliabilityConfig> config) {
   DCHECK(OnNetworkThread());
 
-  return context_manager_.AddContextForConfig(config.Pass());
+  return context_manager_.AddContextForConfig(std::move(config));
 }
 
 scoped_ptr<DomainReliabilityContext>
@@ -249,13 +251,9 @@ DomainReliabilityMonitor::CreateContextForConfig(
   DCHECK(config->IsValid());
 
   return make_scoped_ptr(new DomainReliabilityContext(
-      time_.get(),
-      scheduler_params_,
-      upload_reporter_string_,
-      &last_network_change_time_,
-      &dispatcher_,
-      uploader_.get(),
-      config.Pass()));
+      time_.get(), scheduler_params_, upload_reporter_string_,
+      &last_network_change_time_, &dispatcher_, uploader_.get(),
+      std::move(config)));
 }
 
 DomainReliabilityMonitor::RequestInfo::RequestInfo() {}
@@ -339,7 +337,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
     scoped_ptr<DomainReliabilityBeacon> beacon =
         CreateBeaconFromAttempt(beacon_template, attempt);
     if (beacon)
-      context_manager_.RouteBeacon(beacon.Pass());
+      context_manager_.RouteBeacon(std::move(beacon));
   }
 
   if (url_request_attempt_is_duplicate)
@@ -348,7 +346,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   scoped_ptr<DomainReliabilityBeacon> beacon =
       CreateBeaconFromAttempt(beacon_template, url_request_attempt);
   if (beacon)
-    context_manager_.RouteBeacon(beacon.Pass());
+    context_manager_.RouteBeacon(std::move(beacon));
 }
 
 base::WeakPtr<DomainReliabilityMonitor>

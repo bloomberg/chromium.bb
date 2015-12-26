@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/html_document_application_delegate.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "components/html_viewer/global_state.h"
@@ -28,7 +30,7 @@ class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
     requests_.swap(requests);
     for (Request* request : requests) {
       connection->GetLocalServiceProvider()->ConnectToService(
-          request->interface_name, request->handle.Pass());
+          request->interface_name, std::move(request->handle));
     }
   }
 
@@ -44,8 +46,8 @@ class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
                         mojo::ScopedMessagePipeHandle handle) override {
     scoped_ptr<Request> request(new Request);
     request->interface_name = interface_name;
-    request->handle = handle.Pass();
-    requests_.push_back(request.Pass());
+    request->handle = std::move(handle);
+    requests_.push_back(std::move(request));
   }
 
   ScopedVector<Request> requests_;
@@ -60,12 +62,12 @@ HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
     scoped_ptr<mojo::AppRefCount> parent_app_refcount,
     const mojo::Callback<void()>& destruct_callback)
     : app_(this,
-           request.Pass(),
+           std::move(request),
            base::Bind(&HTMLDocumentApplicationDelegate::OnTerminate,
                       base::Unretained(this))),
-      parent_app_refcount_(parent_app_refcount.Pass()),
+      parent_app_refcount_(std::move(parent_app_refcount)),
       url_(response->url),
-      initial_response_(response.Pass()),
+      initial_response_(std::move(response)),
       global_state_(global_state),
       html_factory_(this),
       destruct_callback_(destruct_callback),
@@ -99,7 +101,7 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   if (initial_response_) {
     OnResponseReceived(nullptr, mojo::URLLoaderPtr(), connection, nullptr,
-                       initial_response_.Pass());
+                       std::move(initial_response_));
   } else if (url_ == "about:blank") {
     // This is a little unfortunate. At the browser side, when starting a new
     // app for "about:blank", the application manager uses
@@ -113,7 +115,7 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
     response->status_code = 200;
     response->mime_type = "text/html";
     OnResponseReceived(nullptr, mojo::URLLoaderPtr(), connection, nullptr,
-                       response.Pass());
+                       std::move(response));
   } else {
     // HTMLDocument provides services, but is created asynchronously. Queue up
     // requests until the HTMLDocument is created.
@@ -136,7 +138,7 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
     scoped_ptr<mojo::AppRefCount> app_retainer(
         app_.app_lifetime_helper()->CreateAppRefCount());
     raw_loader->Start(
-        request.Pass(),
+        std::move(request),
         base::Bind(&HTMLDocumentApplicationDelegate::OnResponseReceived,
                    weak_factory_.GetWeakPtr(), base::Passed(&app_retainer),
                    base::Passed(&loader), connection,
@@ -160,7 +162,7 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
   // HTMLDocument is destroyed when the hosting view is destroyed, or
   // explicitly from our destructor.
   HTMLDocument* document = new HTMLDocument(
-      &app_, connection, response.Pass(), global_state_,
+      &app_, connection, std::move(response), global_state_,
       base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2,
                  base::Unretained(this)),
       html_factory_);

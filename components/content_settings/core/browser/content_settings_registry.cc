@@ -4,6 +4,8 @@
 
 #include "components/content_settings/core/browser/content_settings_registry.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -297,7 +299,7 @@ void ContentSettingsRegistry::Register(
       new base::FundamentalValue(static_cast<int>(initial_default_value)));
   const WebsiteSettingsInfo* website_settings_info =
       website_settings_registry_->Register(
-          type, name, default_value.Pass(), sync_status,
+          type, name, std::move(default_value), sync_status,
           WebsiteSettingsInfo::NOT_LOSSY, scoping_type);
   DCHECK(!ContainsKey(content_settings_info_, type));
   content_settings_info_[type] = make_scoped_ptr(

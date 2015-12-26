@@ -90,7 +90,7 @@ scoped_ptr<base::ListValue> ObjectIdInvalidationMap::ToValue() const {
       value->Append(it2->ToValue().release());
     }
   }
-  return value.Pass();
+  return value;
 }
 
 bool ObjectIdInvalidationMap::ResetFromValue(const base::ListValue& value) {

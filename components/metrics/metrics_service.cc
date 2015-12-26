@@ -124,9 +124,9 @@
 
 #include "components/metrics/metrics_service.h"
 
-#include <algorithm>
-
 #include <stddef.h>
+#include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -881,7 +881,7 @@ bool MetricsService::PrepareInitialStabilityLog() {
     return false;
 
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(initial_stability_log.Pass());
+  log_manager_.BeginLoggingWithLog(std::move(initial_stability_log));
 
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
@@ -913,7 +913,7 @@ void MetricsService::PrepareInitialMetricsLog() {
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(initial_metrics_log_.Pass());
+  log_manager_.BeginLoggingWithLog(std::move(initial_metrics_log_));
 
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
@@ -1057,7 +1057,7 @@ void MetricsService::GetCurrentSyntheticFieldTrialsForTesting(
 void MetricsService::RegisterMetricsProvider(
     scoped_ptr<MetricsProvider> provider) {
   DCHECK_EQ(INITIALIZED, state_);
-  metrics_providers_.push_back(provider.Pass());
+  metrics_providers_.push_back(std::move(provider));
 }
 
 void MetricsService::CheckForClonedInstall(

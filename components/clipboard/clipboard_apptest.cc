@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -95,7 +96,7 @@ class ClipboardAppTest : public mojo::test::ApplicationTestBase {
     Map<String, Array<uint8_t>> mime_data;
     mime_data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(data);
     clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE,
-                                   mime_data.Pass());
+                                   std::move(mime_data));
   }
 
  protected:
@@ -130,7 +131,8 @@ TEST_F(ClipboardAppTest, CanSetMultipleDataTypesAtOnce) {
   mime_data[Clipboard::MIME_TYPE_HTML] =
       Array<uint8_t>::From(std::string(kHtmlData));
 
-  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, mime_data.Pass());
+  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE,
+                                 std::move(mime_data));
 
   EXPECT_EQ(1ul, GetSequenceNumber());
 
@@ -150,7 +152,8 @@ TEST_F(ClipboardAppTest, CanClearClipboardWithZeroArray) {
   EXPECT_EQ(kPlainTextData, data);
 
   Map<String, Array<uint8_t>> mime_data;
-  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, mime_data.Pass());
+  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE,
+                                 std::move(mime_data));
 
   EXPECT_EQ(2ul, GetSequenceNumber());
   EXPECT_FALSE(GetDataOfType(Clipboard::MIME_TYPE_TEXT, &data));

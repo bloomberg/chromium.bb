@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/html_document.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -86,7 +88,7 @@ HTMLDocument::TransferableState::~TransferableState() {}
 void HTMLDocument::TransferableState::Move(TransferableState* other) {
   owns_window_tree_connection = other->owns_window_tree_connection;
   root = other->root;
-  window_tree_delegate_impl = other->window_tree_delegate_impl.Pass();
+  window_tree_delegate_impl = std::move(other->window_tree_delegate_impl);
 
   other->root = nullptr;
   other->owns_window_tree_connection = false;
@@ -114,7 +116,7 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
     connection->AddService<TestHTMLViewer>(this);
 
   resource_waiter_.reset(
-      new DocumentResourceWaiter(global_state_, response.Pass(), this));
+      new DocumentResourceWaiter(global_state_, std::move(response), this));
 }
 
 void HTMLDocument::Destroy() {
@@ -161,13 +163,12 @@ void HTMLDocument::Load() {
   }
 
   scoped_ptr<WebURLRequestExtraData> extra_data(new WebURLRequestExtraData);
-  extra_data->synthetic_response =
-      resource_waiter_->ReleaseURLResponse().Pass();
+  extra_data->synthetic_response = resource_waiter_->ReleaseURLResponse();
 
   base::TimeTicks navigation_start_time =
       resource_waiter_->navigation_start_time();
   frame_ = HTMLFrameTreeManager::CreateFrameAndAttachToTree(
-      global_state_, window, resource_waiter_.Pass(), this);
+      global_state_, window, std::move(resource_waiter_), this);
 
   // If the frame wasn't created we can destroy ourself.
   if (!frame_) {
@@ -177,7 +178,8 @@ void HTMLDocument::Load() {
 
   if (devtools_agent_request_.is_pending()) {
     if (frame_->devtools_agent()) {
-      frame_->devtools_agent()->BindToRequest(devtools_agent_request_.Pass());
+      frame_->devtools_agent()->BindToRequest(
+          std::move(devtools_agent_request_));
     } else {
       devtools_agent_request_ =
           mojo::InterfaceRequest<devtools_service::DevToolsAgent>();
@@ -213,19 +215,19 @@ void HTMLDocument::OnConnectionLost(mus::WindowTreeConnection* connection) {
 void HTMLDocument::OnFrameDidFinishLoad() {
   TRACE_EVENT0("html_viewer", "HTMLDocument::OnFrameDidFinishLoad");
   did_finish_local_frame_load_ = true;
-  scoped_ptr<BeforeLoadCache> before_load_cache = before_load_cache_.Pass();
+  scoped_ptr<BeforeLoadCache> before_load_cache = std::move(before_load_cache_);
   if (!before_load_cache)
     return;
 
   // Bind any pending AxProvider and TestHTMLViewer interface requests.
   for (auto it : before_load_cache->ax_provider_requests) {
     ax_providers_.insert(new AxProviderImpl(
-        frame_->frame_tree_manager()->GetWebView(), it->Pass()));
+        frame_->frame_tree_manager()->GetWebView(), std::move(*it)));
   }
   for (auto it : before_load_cache->test_interface_requests) {
     CHECK(IsTestInterfaceEnabled());
     test_html_viewers_.push_back(new TestHTMLViewerImpl(
-        frame_->web_frame()->toWebLocalFrame(), it->Pass()));
+        frame_->web_frame()->toWebLocalFrame(), std::move(*it)));
   }
 }
 
@@ -275,11 +277,11 @@ void HTMLDocument::Create(mojo::ApplicationConnection* connection,
   if (!did_finish_local_frame_load_) {
     // Cache AxProvider interface requests until the document finishes loading.
     auto cached_request = new mojo::InterfaceRequest<AxProvider>();
-    *cached_request = request.Pass();
+    *cached_request = std::move(request);
     GetBeforeLoadCache()->ax_provider_requests.insert(cached_request);
   } else {
     ax_providers_.insert(
-        new AxProviderImpl(frame_->web_view(), request.Pass()));
+        new AxProviderImpl(frame_->web_view(), std::move(request)));
   }
 }
 
@@ -288,11 +290,11 @@ void HTMLDocument::Create(mojo::ApplicationConnection* connection,
   CHECK(IsTestInterfaceEnabled());
   if (!did_finish_local_frame_load_) {
     auto cached_request = new mojo::InterfaceRequest<TestHTMLViewer>();
-    *cached_request = request.Pass();
+    *cached_request = std::move(request);
     GetBeforeLoadCache()->test_interface_requests.insert(cached_request);
   } else {
     test_html_viewers_.push_back(new TestHTMLViewerImpl(
-        frame_->web_frame()->toWebLocalFrame(), request.Pass()));
+        frame_->web_frame()->toWebLocalFrame(), std::move(request)));
   }
 }
 
@@ -303,7 +305,7 @@ void HTMLDocument::Create(
     DVLOG(1) << "Request for FrameClient after one already vended.";
     return;
   }
-  resource_waiter_->Bind(request.Pass());
+  resource_waiter_->Bind(std::move(request));
 }
 
 void HTMLDocument::Create(
@@ -311,9 +313,9 @@ void HTMLDocument::Create(
     mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) {
   if (frame_) {
     if (frame_->devtools_agent())
-      frame_->devtools_agent()->BindToRequest(request.Pass());
+      frame_->devtools_agent()->BindToRequest(std::move(request));
   } else {
-    devtools_agent_request_ = request.Pass();
+    devtools_agent_request_ = std::move(request);
   }
 }
 
@@ -325,7 +327,7 @@ void HTMLDocument::Create(
       new WindowTreeDelegateImpl(this));
   transferable_state_.owns_window_tree_connection = true;
   mus::WindowTreeConnection::Create(
-      transferable_state_.window_tree_delegate_impl.get(), request.Pass(),
+      transferable_state_.window_tree_delegate_impl.get(), std::move(request),
       mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
 }
 

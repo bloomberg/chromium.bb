@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/ax_provider_impl.h"
 
+#include <utility>
+
 #include "components/html_viewer/blink_basic_type_converters.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
@@ -20,12 +22,9 @@ using mojo::String;
 
 namespace html_viewer {
 
-AxProviderImpl::AxProviderImpl(
-    WebView* web_view,
-    mojo::InterfaceRequest<mojo::AxProvider> request)
-    : web_view_(web_view),
-      binding_(this, request.Pass()) {
-}
+AxProviderImpl::AxProviderImpl(WebView* web_view,
+                               mojo::InterfaceRequest<mojo::AxProvider> request)
+    : web_view_(web_view), binding_(this, std::move(request)) {}
 
 AxProviderImpl::~AxProviderImpl() {
 }
@@ -37,7 +36,7 @@ void AxProviderImpl::GetTree(
 
   Array<AxNodePtr> result;
   Populate(web_view_->accessibilityObject(), 0, 0, &result);
-  callback.Run(result.Pass());
+  callback.Run(std::move(result));
 }
 
 int AxProviderImpl::Populate(const WebAXObject& ax_object,
@@ -49,7 +48,7 @@ int AxProviderImpl::Populate(const WebAXObject& ax_object,
   if (ax_node.is_null())
     return 0;
 
-  result->push_back(ax_node.Pass());
+  result->push_back(std::move(ax_node));
 
   unsigned num_children = ax_object.childCount();
   next_sibling_id = 0;
@@ -70,7 +69,7 @@ AxNodePtr AxProviderImpl::ConvertAxNode(const WebAXObject& ax_object,
                                         int next_sibling_id) {
   AxNodePtr result;
   if (!const_cast<WebAXObject&>(ax_object).updateLayoutAndCheckValidity())
-    return result.Pass();
+    return result;
 
   result = mojo::AxNode::New();
   result->id = static_cast<int>(ax_object.axID());
@@ -89,7 +88,7 @@ AxNodePtr AxProviderImpl::ConvertAxNode(const WebAXObject& ax_object,
     }
   }
 
-  return result.Pass();
+  return result;
 }
 
 }  // namespace html_viewer

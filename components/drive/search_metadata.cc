@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <queue>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
@@ -230,7 +231,7 @@ void RunSearchMetadataCallback(const SearchMetadataCallback& callback,
                                FileError error) {
   if (error != FILE_ERROR_OK)
     results.reset();
-  callback.Run(error, results.Pass());
+  callback.Run(error, std::move(results));
 
   UMA_HISTOGRAM_TIMES("Drive.SearchMetadataTime",
                       base::TimeTicks::Now() - start_time);

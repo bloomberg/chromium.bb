@@ -4,6 +4,8 @@
 
 #include "components/copresence/handlers/directive_handler_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -32,8 +34,7 @@ DirectiveHandlerImpl::DirectiveHandlerImpl(
 
 DirectiveHandlerImpl::DirectiveHandlerImpl(
     scoped_ptr<AudioDirectiveHandler> audio_handler)
-    : audio_handler_(audio_handler.Pass()),
-      is_started_(false) {}
+    : audio_handler_(std::move(audio_handler)), is_started_(false) {}
 
 DirectiveHandlerImpl::~DirectiveHandlerImpl() {}
 

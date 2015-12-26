@@ -5,6 +5,7 @@
 #include "components/mus/ws/window_tree_impl.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -968,7 +969,7 @@ void WindowTreeImpl::GetWindowManagerInternalClient(
     return;
   window_manager_internal_client_binding_.reset(
       new mojo::AssociatedBinding<mojom::WindowManagerInternalClient>(
-          this, internal.Pass()));
+          this, std::move(internal)));
 
   window_manager_internal_ = connection_manager_->GetClientConnection(this)
                                  ->GetWindowManagerInternal();

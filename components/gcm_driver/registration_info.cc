@@ -35,7 +35,7 @@ scoped_ptr<RegistrationInfo> RegistrationInfo::BuildFromString(
                                  registration_id)) {
     registration.reset();
   }
-  return registration.Pass();
+  return registration;
 }
 
 RegistrationInfo::RegistrationInfo() {

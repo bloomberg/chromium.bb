@@ -319,7 +319,7 @@ scoped_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
     else
       DLOG(WARNING) << "Non-JSON response received from history server.";
   }
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
@@ -333,7 +333,7 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
   GURL url = GetQueryUrl(text_query, options, server_version_info_);
   scoped_ptr<Request> request(CreateRequest(url, completion_callback));
   request->Start();
-  return request.Pass();
+  return request;
 }
 
 void WebHistoryService::ExpireHistory(

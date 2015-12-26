@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/phone_field.h"
 
 #include <string.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -195,7 +196,7 @@ scoped_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
                   kPhoneExtensionRe,
                   &phone_field->parsed_phone_fields_[FIELD_EXTENSION]);
 
-  return phone_field.Pass();
+  return std::move(phone_field);
 }
 
 bool PhoneField::ClassifyField(ServerFieldTypeMap* map) const {

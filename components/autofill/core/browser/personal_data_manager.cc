@@ -5,8 +5,8 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 
 #include <stddef.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
@@ -488,7 +488,7 @@ bool PersonalDataManager::ImportFormData(
     // We always save imported profiles.
     SaveImportedProfile(*imported_profile);
   }
-  *imported_credit_card = local_imported_credit_card.Pass();
+  *imported_credit_card = std::move(local_imported_credit_card);
 
   if (imported_profile.get() || *imported_credit_card || merged_credit_card)
     return true;

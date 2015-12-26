@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-
 #include <sstream>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
@@ -58,10 +58,10 @@ class TestDistillerFactoryImpl : public DistillerFactory {
       scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
       const dom_distiller::proto::DomDistillerOptions& dom_distiller_options,
       const FileToUrlMap& file_to_url_map)
-      : distiller_url_fetcher_factory_(distiller_url_fetcher_factory.Pass()),
+      : distiller_url_fetcher_factory_(
+            std::move(distiller_url_fetcher_factory)),
         dom_distiller_options_(dom_distiller_options),
-        file_to_url_map_(file_to_url_map) {
-  }
+        file_to_url_map_(file_to_url_map) {}
 
   ~TestDistillerFactoryImpl() override {}
 
@@ -74,7 +74,7 @@ class TestDistillerFactoryImpl : public DistillerFactory {
     }
     scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
         *distiller_url_fetcher_factory_, options));
-    return distiller.Pass();
+    return std::move(distiller);
   }
 
  private:
@@ -134,7 +134,7 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
       new leveldb_proto::ProtoDatabaseImpl<ArticleEntry>(
           background_task_runner));
   scoped_ptr<DomDistillerStore> dom_distiller_store(
-      new DomDistillerStore(db.Pass(), db_path));
+      new DomDistillerStore(std::move(db), db_path));
 
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(context));
@@ -163,10 +163,8 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
               kPaginationAlgo));
   }
 
-  scoped_ptr<DistillerFactory> distiller_factory(
-      new TestDistillerFactoryImpl(distiller_url_fetcher_factory.Pass(),
-                                   options,
-                                   file_to_url_map));
+  scoped_ptr<DistillerFactory> distiller_factory(new TestDistillerFactoryImpl(
+      std::move(distiller_url_fetcher_factory), options, file_to_url_map));
 
   // Setting up PrefService for DistilledPagePrefs.
   user_prefs::TestingPrefServiceSyncable* pref_service =
@@ -174,9 +172,8 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
   DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
 
   return scoped_ptr<DomDistillerService>(new DomDistillerService(
-      dom_distiller_store.Pass(),
-      distiller_factory.Pass(),
-      distiller_page_factory.Pass(),
+      std::move(dom_distiller_store), std::move(distiller_factory),
+      std::move(distiller_page_factory),
       scoped_ptr<DistilledPagePrefs>(new DistilledPagePrefs(pref_service))));
 }
 
@@ -295,7 +292,7 @@ class ContentExtractionRequest : public ViewRequestDelegate {
       ADD_FAILURE() << "No valid url provided";
     }
 
-    return requests.Pass();
+    return requests;
   }
 
  private:

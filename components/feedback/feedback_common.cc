@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "feedback_common.h"
+#include "components/feedback/feedback_common.h"
+
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "components/feedback/proto/common.pb.h"
@@ -89,7 +91,7 @@ void AddAttachment(userfeedback::ExtensionSubmit* feedback_data,
 
 FeedbackCommon::AttachedFile::AttachedFile(const std::string& filename,
                                            scoped_ptr<std::string> data)
-    : name(filename), data(data.Pass()) {}
+    : name(filename), data(std::move(data)) {}
 
 FeedbackCommon::AttachedFile::~AttachedFile() {}
 
@@ -130,7 +132,7 @@ void FeedbackCommon::CompressFile(const base::FilePath& filename,
 void FeedbackCommon::AddFile(const std::string& filename,
                              scoped_ptr<std::string> data) {
   base::AutoLock lock(attachments_lock_);
-  attachments_.push_back(new AttachedFile(filename, data.Pass()));
+  attachments_.push_back(new AttachedFile(filename, std::move(data)));
 }
 
 void FeedbackCommon::AddLog(const std::string& name, const std::string& value) {
@@ -143,7 +145,7 @@ void FeedbackCommon::AddLogs(scoped_ptr<SystemLogsMap> logs) {
   if (logs_) {
     logs_->insert(logs->begin(), logs->end());
   } else {
-    logs_ = logs.Pass();
+    logs_ = std::move(logs);
   }
 }
 

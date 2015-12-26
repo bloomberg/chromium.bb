@@ -29,7 +29,7 @@ scoped_ptr<DomainReliabilityConfig> MakeSampleConfig() {
   config->path_prefixes.push_back(new std::string("/css/"));
   config->path_prefixes.push_back(new std::string("/js/"));
   EXPECT_TRUE(config->IsValid());
-  return config.Pass();
+  return config;
 }
 
 class DomainReliabilityConfigTest : public testing::Test { };

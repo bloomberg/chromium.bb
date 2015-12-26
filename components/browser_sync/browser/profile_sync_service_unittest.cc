@@ -105,7 +105,7 @@ class TestSyncClient : public sync_driver::FakeSyncClient {
       : sync_driver::FakeSyncClient(),
         callback_(callback),
         pref_service_(pref_service),
-        component_factory_(component_factory.Pass()) {}
+        component_factory_(std::move(component_factory)) {}
   ~TestSyncClient() override {}
 
  private:
@@ -191,11 +191,11 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       override {
     delete_dir_param_->push_back(delete_sync_data_folder);
     SyncBackendHostMock::Initialize(
-        frontend, sync_thread.Pass(), db_thread, file_thread, event_handler,
+        frontend, std::move(sync_thread), db_thread, file_thread, event_handler,
         service_url, sync_user_agent, credentials, delete_sync_data_folder,
-        sync_manager_factory.Pass(), unrecoverable_error_handler,
+        std::move(sync_manager_factory), unrecoverable_error_handler,
         report_unrecoverable_error_function, http_post_provider_factory_getter,
-        saved_nigori_state.Pass());
+        std::move(saved_nigori_state));
   }
 
  private:
@@ -311,7 +311,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         new SyncApiComponentFactoryMock());
     components_factory_ = components_factory.get();
     scoped_ptr<sync_driver::SyncClient> sync_client(new TestSyncClient(
-        components_factory.Pass(), &pref_service_,
+        std::move(components_factory), &pref_service_,
         base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
                    base::Unretained(this))));
 

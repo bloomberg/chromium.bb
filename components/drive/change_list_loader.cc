@@ -5,8 +5,8 @@
 #include "components/drive/change_list_loader.h"
 
 #include <stddef.h>
-
 #include <set>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -93,7 +93,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
     // Note: The fetcher is managed by ChangeListLoader, and the instance
     // will be deleted in the callback. Do not touch the fields after this
     // invocation.
-    callback.Run(FILE_ERROR_OK, change_lists_.Pass());
+    callback.Run(FILE_ERROR_OK, std::move(change_lists_));
   }
 
   JobScheduler* scheduler_;
@@ -152,7 +152,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
     // Note: The fetcher is managed by ChangeListLoader, and the instance
     // will be deleted in the callback. Do not touch the fields after this
     // invocation.
-    callback.Run(FILE_ERROR_OK, change_lists_.Pass());
+    callback.Run(FILE_ERROR_OK, std::move(change_lists_));
   }
 
   JobScheduler* scheduler_;

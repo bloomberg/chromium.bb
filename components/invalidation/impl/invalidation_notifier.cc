@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/invalidation_notifier.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -31,8 +33,7 @@ InvalidationNotifier::InvalidationNotifier(
       client_info_(client_info),
       invalidator_client_id_(invalidator_client_id),
       invalidation_bootstrap_data_(invalidation_bootstrap_data),
-      invalidation_listener_(network_channel.Pass()) {
-}
+      invalidation_listener_(std::move(network_channel)) {}
 
 InvalidationNotifier::~InvalidationNotifier() {
   DCHECK(CalledOnValidThread());

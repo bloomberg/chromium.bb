@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/gcm_network_channel.h"
 
+#include <utility>
+
 #include "base/base64url.h"
 #include "base/i18n/time_formatting.h"
 #include "base/location.h"
@@ -112,7 +114,7 @@ GCMNetworkChannel::GCMNetworkChannel(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_ptr<GCMNetworkChannelDelegate> delegate)
     : request_context_getter_(request_context_getter),
-      delegate_(delegate.Pass()),
+      delegate_(std::move(delegate)),
       register_backoff_entry_(new net::BackoffEntry(&kRegisterBackoffPolicy)),
       gcm_channel_online_(false),
       http_channel_online_(false),
@@ -234,7 +236,7 @@ void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fetcher_.get(), source);
   // Free fetcher at the end of function.
-  scoped_ptr<net::URLFetcher> fetcher = fetcher_.Pass();
+  scoped_ptr<net::URLFetcher> fetcher = std::move(fetcher_);
 
   net::URLRequestStatus status = fetcher->GetStatus();
   diagnostic_info_.last_post_response_code_ =
@@ -420,7 +422,7 @@ GCMNetworkChannelDiagnostic::CollectDebugData() const {
   status->SetInteger("GCMNetworkChannel.SentMessages", sent_messages_count_);
   status->SetInteger("GCMNetworkChannel.ReceivedMessages",
                      parent_->GetReceivedMessagesCount());
-  return status.Pass();
+  return status;
 }
 
 std::string GCMNetworkChannelDiagnostic::GCMClientResultToString(

@@ -4,6 +4,8 @@
 
 #include "components/bubble/bubble_manager.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_manager_mocks.h"
@@ -22,7 +24,7 @@ class ChainShowBubbleDelegate : public MockBubbleDelegate {
                           scoped_ptr<BubbleDelegate> delegate,
                           BubbleReference* chained_bubble)
       : manager_(manager),
-        delegate_(delegate.Pass()),
+        delegate_(std::move(delegate)),
         chained_bubble_(chained_bubble),
         closed_(false) {
     EXPECT_CALL(*this, ShouldClose(testing::_)).WillOnce(testing::Return(true));
@@ -32,7 +34,7 @@ class ChainShowBubbleDelegate : public MockBubbleDelegate {
 
   void DidClose() override {
     MockBubbleDelegate::DidClose();
-    BubbleReference ref = manager_->ShowBubble(delegate_.Pass());
+    BubbleReference ref = manager_->ShowBubble(std::move(delegate_));
     if (chained_bubble_)
       *chained_bubble_ = ref;
     closed_ = true;
@@ -116,7 +118,7 @@ TEST_F(BubbleManagerTest, ManagerShowsBubbleUi) {
   EXPECT_CALL(*bubble_ui, Close());
   EXPECT_CALL(*bubble_ui, UpdateAnchorPosition()).Times(0);
 
-  manager_->ShowBubble(delegate.Pass());
+  manager_->ShowBubble(std::move(delegate));
 }
 
 TEST_F(BubbleManagerTest, ManagerUpdatesBubbleUiAnchor) {
@@ -128,7 +130,7 @@ TEST_F(BubbleManagerTest, ManagerUpdatesBubbleUiAnchor) {
   EXPECT_CALL(*bubble_ui, Close());
   EXPECT_CALL(*bubble_ui, UpdateAnchorPosition());
 
-  manager_->ShowBubble(delegate.Pass());
+  manager_->ShowBubble(std::move(delegate));
   manager_->UpdateAllBubbleAnchors();
 }
 
@@ -317,7 +319,7 @@ TEST_F(BubbleManagerTest, BubblesDoNotChainOnDestroy) {
   EXPECT_CALL(*chained_delegate, DidClose()).Times(0);
 
   manager_->ShowBubble(make_scoped_ptr(new ChainShowBubbleDelegate(
-      manager_.get(), chained_delegate.Pass(), nullptr)));
+      manager_.get(), std::move(chained_delegate), nullptr)));
   manager_.reset();
 }
 
@@ -346,7 +348,7 @@ TEST_F(BubbleManagerTest, BubbleCloseChainCloseClose) {
       manager_->ShowBubble(MockBubbleDelegate::Default());
 
   BubbleReference closing_bubble_ref =
-      manager_->ShowBubble(closing_bubble.Pass());
+      manager_->ShowBubble(std::move(closing_bubble));
 
   EXPECT_TRUE(other_bubble_ref);
   EXPECT_TRUE(closing_bubble_ref);
@@ -369,7 +371,7 @@ TEST_F(BubbleManagerTest, BubbleCloseChainCloseNoClose) {
       manager_->ShowBubble(MockBubbleDelegate::Stubborn());
 
   BubbleReference closing_bubble_ref =
-      manager_->ShowBubble(closing_bubble.Pass());
+      manager_->ShowBubble(std::move(closing_bubble));
 
   EXPECT_TRUE(other_bubble_ref);
   EXPECT_TRUE(closing_bubble_ref);
@@ -393,7 +395,7 @@ TEST_F(BubbleManagerTest, BubbleCloseChainNoCloseNoClose) {
       manager_->ShowBubble(MockBubbleDelegate::Default());
 
   BubbleReference closing_bubble_ref =
-      manager_->ShowBubble(closing_bubble.Pass());
+      manager_->ShowBubble(std::move(closing_bubble));
 
   EXPECT_TRUE(other_bubble_ref);
   EXPECT_TRUE(closing_bubble_ref);

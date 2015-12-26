@@ -4,6 +4,8 @@
 
 #include "components/metrics_services_manager/metrics_services_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_client.h"
@@ -16,7 +18,7 @@ namespace metrics_services_manager {
 
 MetricsServicesManager::MetricsServicesManager(
     scoped_ptr<MetricsServicesManagerClient> client)
-    : client_(client.Pass()), may_upload_(false), may_record_(false) {
+    : client_(std::move(client)), may_upload_(false), may_record_(false) {
   DCHECK(client_);
 }
 

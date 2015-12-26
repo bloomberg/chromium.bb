@@ -5,8 +5,8 @@
 #include "components/favicon/core/favicon_service.h"
 
 #include <stddef.h>
-
 #include <cmath>
+#include <utility>
 
 #include "base/hash.h"
 #include "base/single_thread_task_runner.h"
@@ -52,9 +52,8 @@ std::vector<int> GetPixelSizesForFaviconScales(int size_in_dip) {
 
 FaviconService::FaviconService(scoped_ptr<FaviconClient> favicon_client,
                                history::HistoryService* history_service)
-    : favicon_client_(favicon_client.Pass()),
-      history_service_(history_service) {
-}
+    : favicon_client_(std::move(favicon_client)),
+      history_service_(history_service) {}
 
 FaviconService::~FaviconService() {
 }
