@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstring>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -1231,7 +1232,7 @@ void SimpleEntryImpl::ReadOperationComplete(
         CreateNetLogReadWriteCompleteCallback(*result));
   }
 
-  EntryOperationComplete(completion_callback, *entry_stat, result.Pass());
+  EntryOperationComplete(completion_callback, *entry_stat, std::move(result));
 }
 
 void SimpleEntryImpl::WriteOperationComplete(
@@ -1252,7 +1253,7 @@ void SimpleEntryImpl::WriteOperationComplete(
     crc32s_end_offset_[stream_index] = 0;
   }
 
-  EntryOperationComplete(completion_callback, *entry_stat, result.Pass());
+  EntryOperationComplete(completion_callback, *entry_stat, std::move(result));
 }
 
 void SimpleEntryImpl::ReadSparseOperationComplete(
@@ -1265,7 +1266,7 @@ void SimpleEntryImpl::ReadSparseOperationComplete(
 
   SimpleEntryStat entry_stat(*last_used, last_modified_, data_size_,
                              sparse_data_size_);
-  EntryOperationComplete(completion_callback, entry_stat, result.Pass());
+  EntryOperationComplete(completion_callback, entry_stat, std::move(result));
 }
 
 void SimpleEntryImpl::WriteSparseOperationComplete(
@@ -1276,7 +1277,7 @@ void SimpleEntryImpl::WriteSparseOperationComplete(
   DCHECK(synchronous_entry_);
   DCHECK(result);
 
-  EntryOperationComplete(completion_callback, *entry_stat, result.Pass());
+  EntryOperationComplete(completion_callback, *entry_stat, std::move(result));
 }
 
 void SimpleEntryImpl::GetAvailableRangeOperationComplete(
@@ -1288,7 +1289,7 @@ void SimpleEntryImpl::GetAvailableRangeOperationComplete(
 
   SimpleEntryStat entry_stat(last_used_, last_modified_, data_size_,
                              sparse_data_size_);
-  EntryOperationComplete(completion_callback, entry_stat, result.Pass());
+  EntryOperationComplete(completion_callback, entry_stat, std::move(result));
 }
 
 void SimpleEntryImpl::DoomOperationComplete(
@@ -1336,7 +1337,7 @@ void SimpleEntryImpl::ChecksumOperationComplete(
 
   SimpleEntryStat entry_stat(last_used_, last_modified_, data_size_,
                              sparse_data_size_);
-  EntryOperationComplete(completion_callback, entry_stat, result.Pass());
+  EntryOperationComplete(completion_callback, entry_stat, std::move(result));
 }
 
 void SimpleEntryImpl::CloseOperationComplete() {

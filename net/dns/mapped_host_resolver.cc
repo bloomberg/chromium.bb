@@ -4,6 +4,8 @@
 
 #include "net/dns/mapped_host_resolver.h"
 
+#include <utility>
+
 #include "base/strings/string_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -12,8 +14,7 @@
 namespace net {
 
 MappedHostResolver::MappedHostResolver(scoped_ptr<HostResolver> impl)
-    : impl_(impl.Pass()) {
-}
+    : impl_(std::move(impl)) {}
 
 MappedHostResolver::~MappedHostResolver() {
 }

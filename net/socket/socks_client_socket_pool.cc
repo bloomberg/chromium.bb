@@ -4,6 +4,8 @@
 
 #include "net/socket/socks_client_socket_pool.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/time/time.h"
@@ -141,13 +143,12 @@ int SOCKSConnectJob::DoSOCKSConnect() {
 
   // Add a SOCKS connection on top of the tcp socket.
   if (socks_params_->is_socks_v5()) {
-    socket_.reset(new SOCKS5ClientSocket(transport_socket_handle_.Pass(),
+    socket_.reset(new SOCKS5ClientSocket(std::move(transport_socket_handle_),
                                          socks_params_->destination()));
   } else {
-    socket_.reset(new SOCKSClientSocket(transport_socket_handle_.Pass(),
+    socket_.reset(new SOCKSClientSocket(std::move(transport_socket_handle_),
                                         socks_params_->destination(),
-                                        priority(),
-                                        resolver_));
+                                        priority(), resolver_));
   }
   return socket_->Connect(
       base::Bind(&SOCKSConnectJob::OnIOComplete, base::Unretained(this)));
@@ -159,7 +160,7 @@ int SOCKSConnectJob::DoSOCKSConnectComplete(int result) {
     return result;
   }
 
-  SetSocket(socket_.Pass());
+  SetSocket(std::move(socket_));
   return result;
 }
 
@@ -241,7 +242,7 @@ void SOCKSClientSocketPool::CancelRequest(const std::string& group_name,
 void SOCKSClientSocketPool::ReleaseSocket(const std::string& group_name,
                                           scoped_ptr<StreamSocket> socket,
                                           int id) {
-  base_.ReleaseSocket(group_name, socket.Pass(), id);
+  base_.ReleaseSocket(group_name, std::move(socket), id);
 }
 
 void SOCKSClientSocketPool::FlushWithError(int error) {
@@ -276,9 +277,9 @@ scoped_ptr<base::DictionaryValue> SOCKSClientSocketPool::GetInfoAsValue(
     list->Append(transport_pool_->GetInfoAsValue("transport_socket_pool",
                                                  "transport_socket_pool",
                                                  false));
-    dict->Set("nested_pools", list.Pass());
+    dict->Set("nested_pools", std::move(list));
   }
-  return dict.Pass();
+  return dict;
 }
 
 base::TimeDelta SOCKSClientSocketPool::ConnectionTimeout() const {

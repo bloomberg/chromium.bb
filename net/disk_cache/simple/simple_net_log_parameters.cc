@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/simple/simple_net_log_parameters.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
@@ -21,7 +23,7 @@ scoped_ptr<base::Value> NetLogSimpleEntryConstructionCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("entry_hash",
                   base::StringPrintf("%#016" PRIx64, entry->entry_hash()));
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogSimpleEntryCreationCallback(
@@ -32,7 +34,7 @@ scoped_ptr<base::Value> NetLogSimpleEntryCreationCallback(
   dict->SetInteger("net_error", net_error);
   if (net_error == net::OK)
     dict->SetString("key", entry->key());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace

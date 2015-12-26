@@ -11,8 +11,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>  // for memcpy() and memset().
-
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/big_endian.h"
@@ -134,7 +134,7 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest {
                            CompletionCallback(),
                            &pool_,
                            bound_net_log_.bound());
-    return transport_socket.Pass();
+    return transport_socket;
   }
 
   void SetHttpReadBuffer(const char* data, size_t size) {
@@ -255,7 +255,7 @@ class WebSocketBasicStreamSocketWriteTest
     header.final = true;
     header.masked = true;
     header.payload_length = payload_size;
-    frames_.push_back(frame.Pass());
+    frames_.push_back(std::move(frame));
   }
 
   // Creates a stream that expects the listed writes.
@@ -898,7 +898,7 @@ TEST_F(WebSocketBasicStreamSocketWriteTest, WriteNullPong) {
   header.masked = true;
   header.payload_length = 0;
   std::vector<scoped_ptr<WebSocketFrame>> frames;
-  frames.push_back(frame.Pass());
+  frames.push_back(std::move(frame));
   EXPECT_EQ(OK, stream_->WriteFrames(&frames, cb_.callback()));
 }
 
@@ -922,7 +922,7 @@ TEST_F(WebSocketBasicStreamSocketTest, WriteNonNulMask) {
   header.final = true;
   header.masked = true;
   header.payload_length = payload_size;
-  frames_.push_back(frame.Pass());
+  frames_.push_back(std::move(frame));
 
   EXPECT_EQ(OK, stream_->WriteFrames(&frames_, cb_.callback()));
 }

@@ -305,14 +305,14 @@ scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
        it != params_.quic_connection_options.end(); ++it) {
     connection_options->AppendString("'" + QuicUtils::TagToString(*it) + "'");
   }
-  dict->Set("connection_options", connection_options.Pass());
+  dict->Set("connection_options", std::move(connection_options));
   dict->SetString("origin_to_force_quic_on",
                   params_.origin_to_force_quic_on.ToString());
   dict->SetDouble("alternative_service_probability_threshold",
                   params_.alternative_service_probability_threshold);
   dict->SetString("disabled_reason",
                   quic_stream_factory_.QuicDisabledReasonString());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 void HttpNetworkSession::CloseAllConnections() {

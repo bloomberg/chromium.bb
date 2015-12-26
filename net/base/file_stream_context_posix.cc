@@ -5,6 +5,7 @@
 #include "net/base/file_stream_context.h"
 
 #include <errno.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -29,11 +30,10 @@ FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
 
 FileStream::Context::Context(base::File file,
                              const scoped_refptr<base::TaskRunner>& task_runner)
-    : file_(file.Pass()),
+    : file_(std::move(file)),
       async_in_progress_(false),
       orphaned_(false),
-      task_runner_(task_runner) {
-}
+      task_runner_(task_runner) {}
 
 FileStream::Context::~Context() {
 }

@@ -5,6 +5,7 @@
 #include "net/dns/address_sorter_posix.h"
 
 #include <netinet/in.h>
+#include <utility>
 
 #if defined(OS_MACOSX) || defined(OS_BSD)
 #include <sys/socket.h>  // Must be included before ifaddrs.h.
@@ -305,7 +306,7 @@ void AddressSorterPosix::Sort(const AddressList& list,
           CommonPrefixLength(info->address, src.address()),
           info->src->prefix_length);
     }
-    sort_list.push_back(info.Pass());
+    sort_list.push_back(std::move(info));
   }
 
   std::stable_sort(sort_list.begin(), sort_list.end(), CompareDestinations);

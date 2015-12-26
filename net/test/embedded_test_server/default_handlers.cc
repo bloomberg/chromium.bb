@@ -9,6 +9,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
@@ -53,7 +54,7 @@ scoped_ptr<HttpResponse> HandleDefaultConnect(const HttpRequest& request) {
   http_response->set_content(
       "Your client has issued a malformed or illegal request.");
   http_response->set_content_type("text/html");
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /cachetime
@@ -64,7 +65,7 @@ scoped_ptr<HttpResponse> HandleCacheTime(const HttpRequest& request) {
       "<html><head><title>Cache: max-age=60</title></head></html>");
   http_response->set_content_type("text/html");
   http_response->AddCustomHeader("Cache-Control", "max-age=60");
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /echoheader | /echoheadercache
@@ -90,7 +91,7 @@ scoped_ptr<HttpResponse> HandleEchoHeader(const std::string& url,
 
   http_response->set_content_type("text/plain");
   http_response->AddCustomHeader("Cache-Control", cache_control);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /echo?status=STATUS
@@ -112,7 +113,7 @@ scoped_ptr<HttpResponse> HandleEcho(const HttpRequest& request) {
     http_response->set_content("Echo");
   else
     http_response->set_content(request.content);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /echotitle
@@ -122,7 +123,7 @@ scoped_ptr<HttpResponse> HandleEchoTitle(const HttpRequest& request) {
   http_response->set_content_type("text/html");
   http_response->set_content("<html><head><title>" + request.content +
                              "</title></head></html>");
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /echoall?QUERY
@@ -154,7 +155,7 @@ scoped_ptr<HttpResponse> HandleEchoAll(const HttpRequest& request) {
 
   http_response->set_content_type("text/html");
   http_response->set_content(body);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /set-cookie?COOKIES
@@ -174,7 +175,7 @@ scoped_ptr<HttpResponse> HandleSetCookie(const HttpRequest& request) {
   }
 
   http_response->set_content(content);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /set-many-cookies?N
@@ -195,7 +196,7 @@ scoped_ptr<HttpResponse> HandleSetManyCookies(const HttpRequest& request) {
 
   http_response->set_content(
       base::StringPrintf("%" PRIuS " cookies were sent", num));
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /expect-and-set-cookie?expect=EXPECTED&set=SET&data=DATA
@@ -239,7 +240,7 @@ scoped_ptr<HttpResponse> HandleExpectAndSetCookie(const HttpRequest& request) {
   }
 
   http_response->set_content(content);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /set-header?HEADERS
@@ -265,7 +266,7 @@ scoped_ptr<HttpResponse> HandleSetHeader(const HttpRequest& request) {
   }
 
   http_response->set_content(content);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /nocontent
@@ -273,14 +274,14 @@ scoped_ptr<HttpResponse> HandleSetHeader(const HttpRequest& request) {
 scoped_ptr<HttpResponse> HandleNoContent(const HttpRequest& request) {
   scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
   http_response->set_code(HTTP_NO_CONTENT);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /close-socket
 // Immediately closes the connection.
 scoped_ptr<HttpResponse> HandleCloseSocket(const HttpRequest& request) {
   scoped_ptr<RawHttpResponse> http_response(new RawHttpResponse("", ""));
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /auth-basic?password=PASS&realm=REALM
@@ -341,13 +342,13 @@ scoped_ptr<HttpResponse> HandleAuthBasic(const HttpRequest& request) {
         "password: %s<p>You sent:<br>%s<p></body></html>",
         error.c_str(), auth.c_str(), b64str.c_str(), username.c_str(),
         userpass.c_str(), password.c_str(), request.all_headers.c_str()));
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   if (request.headers.find("If-None-Match") != request.headers.end() &&
       request.headers.at("If-None-Match") == kEtag) {
     http_response->set_code(HTTP_NOT_MODIFIED);
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   base::FilePath file_path =
@@ -371,7 +372,7 @@ scoped_ptr<HttpResponse> HandleAuthBasic(const HttpRequest& request) {
 
   http_response->AddCustomHeader("Cache-Control", "max-age=60000");
   http_response->AddCustomHeader("Etag", kEtag);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /auth-digest
@@ -460,7 +461,7 @@ scoped_ptr<HttpResponse> HandleAuthDigest(const HttpRequest& request) {
         "You sent:<br>%s<p>We are replying:<br>%s<p></body></html>",
         error.c_str(), auth.c_str(), request.all_headers.c_str(),
         auth_header.c_str()));
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   http_response->set_content_type("text/html");
@@ -469,7 +470,7 @@ scoped_ptr<HttpResponse> HandleAuthDigest(const HttpRequest& request) {
                          "<body>auth=%s<p></body></html>",
                          username.c_str(), password.c_str(), auth.c_str()));
 
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /server-redirect?URL
@@ -486,7 +487,7 @@ scoped_ptr<HttpResponse> HandleServerRedirect(const HttpRequest& request) {
   http_response->set_content(base::StringPrintf(
       "<html><head></head><body>Redirecting to %s</body></html>",
       dest.c_str()));
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /cross-site?URL
@@ -515,7 +516,7 @@ scoped_ptr<HttpResponse> HandleCrossSiteRedirect(EmbeddedTestServer* server,
   http_response->set_content(base::StringPrintf(
       "<html><head></head><body>Redirecting to %s</body></html>",
       dest.c_str()));
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /client-redirect?URL
@@ -531,7 +532,7 @@ scoped_ptr<HttpResponse> HandleClientRedirect(const HttpRequest& request) {
       "<html><head><meta http-equiv=\"refresh\" content=\"0;url=%s\"></head>"
       "<body>Redirecting to %s</body></html>",
       dest.c_str(), dest.c_str()));
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // /defaultresponse
@@ -541,7 +542,7 @@ scoped_ptr<HttpResponse> HandleDefaultResponse(const HttpRequest& request) {
   http_response->set_content_type("text/html");
   http_response->set_content("Default response given for path: " +
                              request.relative_url);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 // Delays |delay| seconds before sending a response to the client.
@@ -574,7 +575,7 @@ scoped_ptr<HttpResponse> HandleSlowServer(const HttpRequest& request) {
   scoped_ptr<BasicHttpResponse> http_response(new DelayedHttpResponse(delay));
   http_response->set_content_type("text/plain");
   http_response->set_content(base::StringPrintf("waited %.1f seconds", delay));
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // namespace anonymous

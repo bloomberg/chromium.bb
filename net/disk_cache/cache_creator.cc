@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -122,7 +124,7 @@ int CacheCreator::Run() {
 void CacheCreator::DoCallback(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
   if (result == net::OK) {
-    *backend_ = created_cache_.Pass();
+    *backend_ = std::move(created_cache_);
   } else {
     LOG(ERROR) << "Unable to create cache";
     created_cache_.reset();

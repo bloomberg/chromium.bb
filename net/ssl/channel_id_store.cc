@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "crypto/ec_private_key.h"
 #include "net/ssl/channel_id_store.h"
+
+#include <utility>
+
+#include "crypto/ec_private_key.h"
 
 namespace net {
 
@@ -15,8 +18,7 @@ ChannelIDStore::ChannelID::ChannelID(const std::string& server_identifier,
                                      scoped_ptr<crypto::ECPrivateKey> key)
     : server_identifier_(server_identifier),
       creation_time_(creation_time),
-      key_(key.Pass()) {
-}
+      key_(std::move(key)) {}
 
 ChannelIDStore::ChannelID::ChannelID(const ChannelID& other)
     : server_identifier_(other.server_identifier_),

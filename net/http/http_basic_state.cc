@@ -4,6 +4,8 @@
 
 #include "net/http/http_basic_state.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_info.h"
@@ -35,7 +37,7 @@ int HttpBasicState::Initialize(const HttpRequestInfo* request_info,
 }
 
 scoped_ptr<ClientSocketHandle> HttpBasicState::ReleaseConnection() {
-  return connection_.Pass();
+  return std::move(connection_);
 }
 
 scoped_refptr<GrowableIOBuffer> HttpBasicState::read_buf() const {

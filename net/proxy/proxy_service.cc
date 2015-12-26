@@ -5,6 +5,7 @@
 #include "net/proxy/proxy_service.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -303,7 +304,7 @@ scoped_ptr<base::Value> NetLogProxyConfigChangedCallback(
   if (old_config->is_valid())
     dict->Set("old_config", old_config->ToValue());
   dict->Set("new_config", new_config->ToValue());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogBadProxyListCallback(
@@ -317,7 +318,7 @@ scoped_ptr<base::Value> NetLogBadProxyListCallback(
     list->Append(new base::StringValue(iter->first));
   }
   dict->Set("bad_proxy_list", list);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // Returns NetLog parameters on a successfuly proxy resolution.
@@ -326,7 +327,7 @@ scoped_ptr<base::Value> NetLogFinishedResolvingProxyCallback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("pac_string", result->ToPacString());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 #if defined(OS_CHROMEOS)
@@ -923,7 +924,7 @@ class ProxyService::PacRequest
 ProxyService::ProxyService(scoped_ptr<ProxyConfigService> config_service,
                            scoped_ptr<ProxyResolverFactory> resolver_factory,
                            NetLog* net_log)
-    : resolver_factory_(resolver_factory.Pass()),
+    : resolver_factory_(std::move(resolver_factory)),
       next_config_id_(1),
       current_state_(STATE_NONE),
       net_log_(net_log),
@@ -932,7 +933,7 @@ ProxyService::ProxyService(scoped_ptr<ProxyConfigService> config_service,
       quick_check_enabled_(true) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
-  ResetConfigService(config_service.Pass());
+  ResetConfigService(std::move(config_service));
 }
 
 // static
@@ -944,14 +945,14 @@ scoped_ptr<ProxyService> ProxyService::CreateUsingSystemProxyResolver(
 
   if (!ProxyResolverFactoryForSystem::IsSupported()) {
     VLOG(1) << "PAC support disabled because there is no system implementation";
-    return CreateWithoutProxyResolver(proxy_config_service.Pass(), net_log);
+    return CreateWithoutProxyResolver(std::move(proxy_config_service), net_log);
   }
 
   if (num_pac_threads == 0)
     num_pac_threads = kDefaultNumPacThreads;
 
   return make_scoped_ptr(new ProxyService(
-      proxy_config_service.Pass(),
+      std::move(proxy_config_service),
       make_scoped_ptr(new ProxyResolverFactoryForSystem(num_pac_threads)),
       net_log));
 }
@@ -961,7 +962,7 @@ scoped_ptr<ProxyService> ProxyService::CreateWithoutProxyResolver(
     scoped_ptr<ProxyConfigService> proxy_config_service,
     NetLog* net_log) {
   return make_scoped_ptr(new ProxyService(
-      proxy_config_service.Pass(),
+      std::move(proxy_config_service),
       make_scoped_ptr(new ProxyResolverFactoryForNullResolver), net_log));
 }
 
@@ -1001,7 +1002,7 @@ scoped_ptr<ProxyService> ProxyService::CreateFixedFromPacResult(
       new ProxyConfigServiceFixed(ProxyConfig::CreateAutoDetect()));
 
   return make_scoped_ptr(new ProxyService(
-      proxy_config_service.Pass(),
+      std::move(proxy_config_service),
       make_scoped_ptr(new ProxyResolverFactoryForPacResult(pac_string)), NULL));
 }
 
@@ -1446,7 +1447,7 @@ void ProxyService::SetProxyScriptFetchers(
   DCHECK(CalledOnValidThread());
   State previous_state = ResetProxyConfig(false);
   proxy_script_fetcher_.reset(proxy_script_fetcher);
-  dhcp_proxy_script_fetcher_ = dhcp_proxy_script_fetcher.Pass();
+  dhcp_proxy_script_fetcher_ = std::move(dhcp_proxy_script_fetcher);
   if (previous_state != STATE_NONE)
     ApplyProxyConfigIfAvailable();
 }
@@ -1484,7 +1485,7 @@ void ProxyService::ResetConfigService(
     config_service_->RemoveObserver(this);
 
   // Set the new configuration service.
-  config_service_ = new_proxy_config_service.Pass();
+  config_service_ = std::move(new_proxy_config_service);
   config_service_->AddObserver(this);
 
   if (previous_state != STATE_NONE)
@@ -1529,7 +1530,7 @@ scoped_ptr<ProxyConfigService> ProxyService::CreateSystemProxyConfigService(
   linux_config_service->SetupAndFetchInitialConfig(
       glib_thread_task_runner, io_task_runner, file_task_runner);
 
-  return linux_config_service.Pass();
+  return std::move(linux_config_service);
 #elif defined(OS_ANDROID)
   return make_scoped_ptr(new ProxyConfigServiceAndroid(
       io_task_runner, base::ThreadTaskRunnerHandle::Get()));

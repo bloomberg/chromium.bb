@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_fetcher_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "net/base/upload_data_stream.h"
@@ -139,7 +141,7 @@ void URLFetcherImpl::SaveResponseToTemporaryFile(
 
 void URLFetcherImpl::SaveResponseWithWriter(
     scoped_ptr<URLFetcherResponseWriter> response_writer) {
-  core_->SaveResponseWithWriter(response_writer.Pass());
+  core_->SaveResponseWithWriter(std::move(response_writer));
 }
 
 HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {

@@ -5,6 +5,7 @@
 #include "net/http/http_proxy_client_socket_pool.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
@@ -141,7 +142,7 @@ int HttpProxyConnectJob::HandleConnectResult(int result) {
 
   if (result == OK || result == ERR_PROXY_AUTH_REQUESTED ||
       result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE) {
-    SetSocket(client_socket_.Pass());
+    SetSocket(std::move(client_socket_));
   }
   return result;
 }
@@ -247,7 +248,7 @@ void HttpProxyClientSocketPool::CancelRequest(
 void HttpProxyClientSocketPool::ReleaseSocket(const std::string& group_name,
                                               scoped_ptr<StreamSocket> socket,
                                               int id) {
-  base_.ReleaseSocket(group_name, socket.Pass(), id);
+  base_.ReleaseSocket(group_name, std::move(socket), id);
 }
 
 void HttpProxyClientSocketPool::FlushWithError(int error) {
@@ -291,7 +292,7 @@ scoped_ptr<base::DictionaryValue> HttpProxyClientSocketPool::GetInfoAsValue(
     }
     dict->Set("nested_pools", list);
   }
-  return dict.Pass();
+  return dict;
 }
 
 base::TimeDelta HttpProxyClientSocketPool::ConnectionTimeout() const {

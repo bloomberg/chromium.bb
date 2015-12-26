@@ -4,6 +4,8 @@
 
 #include "net/base/keygen_handler.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "crypto/nss_util.h"
@@ -20,7 +22,7 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
 
   crypto::ScopedPK11Slot slot;
   if (crypto_module_delegate_) {
-    slot = crypto_module_delegate_->RequestSlot().Pass();
+    slot = crypto_module_delegate_->RequestSlot();
   } else {
     LOG(ERROR) << "Could not get an NSS key slot.";
     return std::string();
@@ -40,7 +42,7 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
 
 void KeygenHandler::set_crypto_module_delegate(
       scoped_ptr<crypto::NSSCryptoModuleDelegate> delegate) {
-  crypto_module_delegate_ = delegate.Pass();
+  crypto_module_delegate_ = std::move(delegate);
 }
 
 }  // namespace net

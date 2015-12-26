@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
@@ -826,7 +827,7 @@ class ProxyResolverV8::Context {
 // ProxyResolverV8 ------------------------------------------------------------
 
 ProxyResolverV8::ProxyResolverV8(scoped_ptr<Context> context)
-    : context_(context.Pass()) {
+    : context_(std::move(context)) {
   DCHECK(context_);
 }
 
@@ -854,7 +855,7 @@ int ProxyResolverV8::Create(
       new Context(g_isolate_factory.Get().GetSharedIsolate()));
   int rv = context->InitV8(script_data, js_bindings);
   if (rv == OK)
-    resolver->reset(new ProxyResolverV8(context.Pass()));
+    resolver->reset(new ProxyResolverV8(std::move(context)));
   return rv;
 }
 

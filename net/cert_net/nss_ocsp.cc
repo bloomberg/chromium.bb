@@ -6,14 +6,14 @@
 
 #include <certt.h>
 #include <certdb.h>
-#include <ocsp.h>
 #include <nspr.h>
 #include <nss.h>
+#include <ocsp.h>
 #include <pthread.h>
 #include <secerr.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -410,7 +410,7 @@ class OCSPRequestSession
       scoped_ptr<UploadElementReader> reader(new UploadBytesElementReader(
           upload_content_.data(), upload_content_.size()));
       request_->set_upload(
-          ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+          ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
     }
     if (!extra_request_headers_.IsEmpty())
       request_->SetExtraRequestHeaders(extra_request_headers_);

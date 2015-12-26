@@ -39,7 +39,7 @@ scoped_ptr<SrvRecordRdata> SrvRecordRdata::Create(
                        &rdata->target_))
     return scoped_ptr<SrvRecordRdata>();
 
-  return rdata.Pass();
+  return rdata;
 }
 
 uint16_t SrvRecordRdata::Type() const {
@@ -75,7 +75,7 @@ scoped_ptr<ARecordRdata> ARecordRdata::Create(
     rdata->address_[i] = data[i];
   }
 
-  return rdata.Pass();
+  return rdata;
 }
 
 uint16_t ARecordRdata::Type() const {
@@ -108,7 +108,7 @@ scoped_ptr<AAAARecordRdata> AAAARecordRdata::Create(
     rdata->address_[i] = data[i];
   }
 
-  return rdata.Pass();
+  return rdata;
 }
 
 uint16_t AAAARecordRdata::Type() const {
@@ -136,7 +136,7 @@ scoped_ptr<CnameRecordRdata> CnameRecordRdata::Create(
   if (!parser.ReadName(data.begin(), &rdata->cname_))
     return scoped_ptr<CnameRecordRdata>();
 
-  return rdata.Pass();
+  return rdata;
 }
 
 uint16_t CnameRecordRdata::Type() const {
@@ -165,7 +165,7 @@ scoped_ptr<PtrRecordRdata> PtrRecordRdata::Create(
   if (!parser.ReadName(data.begin(), &rdata->ptrdomain_))
     return scoped_ptr<PtrRecordRdata>();
 
-  return rdata.Pass();
+  return rdata;
 }
 
 uint16_t PtrRecordRdata::Type() const {
@@ -202,7 +202,7 @@ scoped_ptr<TxtRecordRdata> TxtRecordRdata::Create(
     i += length + 1;
   }
 
-  return rdata.Pass();
+  return rdata;
 }
 
 uint16_t TxtRecordRdata::Type() const {
@@ -260,7 +260,7 @@ scoped_ptr<NsecRecordRdata> NsecRecordRdata::Create(
                         bitmap_data.begin(),
                         bitmap_data.end());
 
-  return rdata.Pass();
+  return rdata;
 }
 
 uint16_t NsecRecordRdata::Type() const {

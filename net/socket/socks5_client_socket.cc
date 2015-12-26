@@ -4,6 +4,8 @@
 
 #include "net/socket/socks5_client_socket.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
@@ -32,7 +34,7 @@ SOCKS5ClientSocket::SOCKS5ClientSocket(
     const HostResolver::RequestInfo& req_info)
     : io_callback_(base::Bind(&SOCKS5ClientSocket::OnIOComplete,
                               base::Unretained(this))),
-      transport_(transport_socket.Pass()),
+      transport_(std::move(transport_socket)),
       next_state_(STATE_NONE),
       completed_handshake_(false),
       bytes_sent_(0),
@@ -40,8 +42,7 @@ SOCKS5ClientSocket::SOCKS5ClientSocket(
       read_header_size(kReadHeaderSize),
       was_ever_used_(false),
       host_request_info_(req_info),
-      net_log_(transport_->socket()->NetLog()) {
-}
+      net_log_(transport_->socket()->NetLog()) {}
 
 SOCKS5ClientSocket::~SOCKS5ClientSocket() {
   Disconnect();

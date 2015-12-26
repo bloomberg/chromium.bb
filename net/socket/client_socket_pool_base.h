@@ -24,13 +24,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <cstddef>
 #include <deque>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -757,7 +757,7 @@ class ClientSocketPoolBase {
                     internal::ClientSocketPoolBaseHelper::NORMAL,
                     params->ignore_limits(),
                     params, net_log));
-    return helper_.RequestSocket(group_name, request.Pass());
+    return helper_.RequestSocket(group_name, std::move(request));
   }
 
   // RequestSockets bundles up the parameters into a Request and then forwards
@@ -781,7 +781,7 @@ class ClientSocketPoolBase {
   void ReleaseSocket(const std::string& group_name,
                      scoped_ptr<StreamSocket> socket,
                      int id) {
-    return helper_.ReleaseSocket(group_name, socket.Pass(), id);
+    return helper_.ReleaseSocket(group_name, std::move(socket), id);
   }
 
   void FlushWithError(int error) { helper_.FlushWithError(error); }

@@ -148,7 +148,7 @@ BuildURLRequestContext(net::NetLog* net_log) {
 #endif
   scoped_ptr<net::URLRequestContext> context(builder.Build());
   context->set_net_log(net_log);
-  return context.Pass();
+  return context;
 }
 
 // Assuming that the time |server_time| was received from a server,

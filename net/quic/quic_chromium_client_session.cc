@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_chromium_client_session.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -110,7 +112,7 @@ scoped_ptr<base::Value> NetLogQuicClientSessionCallback(
                    server_id->privacy_mode() == PRIVACY_MODE_ENABLED);
   dict->SetBoolean("require_confirmation", require_confirmation);
   dict->SetInteger("cert_verify_flags", cert_verify_flags);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace
@@ -178,9 +180,9 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       server_id_(server_id),
       require_confirmation_(false),
       stream_factory_(stream_factory),
-      socket_(socket.Pass()),
+      socket_(std::move(socket)),
       transport_security_state_(transport_security_state),
-      server_info_(server_info.Pass()),
+      server_info_(std::move(server_info)),
       num_total_streams_(0),
       task_runner_(task_runner),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
@@ -193,7 +195,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       dns_resolution_end_time_(dns_resolution_end_time),
       logger_(new QuicConnectionLogger(this,
                                        connection_description,
-                                       socket_performance_watcher.Pass(),
+                                       std::move(socket_performance_watcher),
                                        net_log_)),
       going_away_(false),
       disabled_reason_(QUIC_DISABLED_NOT),
@@ -814,7 +816,7 @@ void QuicChromiumClientSession::OnProofVerifyDetailsAvailable(
   pinning_failure_log_ = verify_details_chromium->pinning_failure_log;
   scoped_ptr<ct::CTVerifyResult> ct_verify_result_copy(
       new ct::CTVerifyResult(verify_details_chromium->ct_verify_result));
-  ct_verify_result_ = ct_verify_result_copy.Pass();
+  ct_verify_result_ = std::move(ct_verify_result_copy);
   logger_->OnCertificateVerified(*cert_verify_result_);
 }
 
@@ -887,7 +889,7 @@ scoped_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
     stream_list->Append(
         new base::StringValue(base::UintToString(it->second->id())));
   }
-  dict->Set("active_streams", stream_list.Pass());
+  dict->Set("active_streams", std::move(stream_list));
 
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
@@ -905,9 +907,9 @@ scoped_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
        it != aliases.end(); it++) {
     alias_list->Append(new base::StringValue(it->ToString()));
   }
-  dict->Set("aliases", alias_list.Pass());
+  dict->Set("aliases", std::move(alias_list));
 
-  return dict.Pass();
+  return std::move(dict);
 }
 
 base::WeakPtr<QuicChromiumClientSession>

@@ -6,6 +6,7 @@
 
 #include <nss.h>
 #include <ssl.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -117,7 +118,7 @@ void ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread(
     const SSLCertRequestInfo* request,
     CertificateList* selected_certs) {
   CertificateList platform_certs;
-  GetPlatformCertsOnWorkerThread(password_delegate.Pass(), &platform_certs);
+  GetPlatformCertsOnWorkerThread(std::move(password_delegate), &platform_certs);
   FilterCertsOnWorkerThread(platform_certs, *request, true, selected_certs);
 }
 

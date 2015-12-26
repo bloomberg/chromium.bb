@@ -10,6 +10,7 @@
 #include "net/http/http_response_headers.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -1407,7 +1408,7 @@ scoped_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
                              escaped_value.c_str())));
   }
   dict->Set("headers", headers);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // static

@@ -4,12 +4,13 @@
 
 #include "net/base/layered_network_delegate.h"
 
+#include <utility>
+
 namespace net {
 
 LayeredNetworkDelegate::LayeredNetworkDelegate(
     scoped_ptr<NetworkDelegate> nested_network_delegate)
-    : nested_network_delegate_(nested_network_delegate.Pass()) {
-}
+    : nested_network_delegate_(std::move(nested_network_delegate)) {}
 
 LayeredNetworkDelegate::~LayeredNetworkDelegate() {
 }

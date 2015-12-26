@@ -4,6 +4,8 @@
 
 #include "net/socket/socks_client_socket.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
@@ -60,7 +62,7 @@ SOCKSClientSocket::SOCKSClientSocket(
     const HostResolver::RequestInfo& req_info,
     RequestPriority priority,
     HostResolver* host_resolver)
-    : transport_(transport_socket.Pass()),
+    : transport_(std::move(transport_socket)),
       next_state_(STATE_NONE),
       completed_handshake_(false),
       bytes_sent_(0),

@@ -5,9 +5,9 @@
 #include "net/ssl/openssl_ssl_util.h"
 
 #include <errno.h>
-
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -132,7 +132,7 @@ scoped_ptr<base::Value> NetLogOpenSSLErrorCallback(
     dict->SetString("file", error_info.file);
   if (error_info.line != 0)
     dict->SetInteger("line", error_info.line);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace

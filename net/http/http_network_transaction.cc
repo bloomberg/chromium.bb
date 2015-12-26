@@ -5,6 +5,7 @@
 #include "net/http/http_network_transaction.h"
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -118,7 +119,7 @@ scoped_ptr<base::Value> NetLogSSLVersionFallbackCallback(
   dict->SetInteger("ssl_failure_state", ssl_failure_state);
   dict->SetInteger("version_before", version_before);
   dict->SetInteger("version_after", version_after);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogSSLCipherFallbackCallback(
@@ -128,7 +129,7 @@ scoped_ptr<base::Value> NetLogSSLCipherFallbackCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace

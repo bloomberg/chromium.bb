@@ -4,6 +4,8 @@
 
 #include "net/base/mock_file_stream.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -25,12 +27,11 @@ MockFileStream::MockFileStream(
 MockFileStream::MockFileStream(
     base::File file,
     const scoped_refptr<base::TaskRunner>& task_runner)
-    : FileStream(file.Pass(), task_runner),
+    : FileStream(std::move(file), task_runner),
       forced_error_(OK),
       async_error_(false),
       throttled_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 MockFileStream::~MockFileStream() {
 }

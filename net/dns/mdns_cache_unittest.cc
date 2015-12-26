@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/dns/mdns_cache.h"
+
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_test_util.h"
-#include "net/dns/mdns_cache.h"
 #include "net/dns/record_parsed.h"
 #include "net/dns/record_rdata.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -127,9 +129,9 @@ TEST_F(MDnsCacheTest, InsertLookupSingle) {
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
   record2 = RecordParsed::CreateFrom(&parser, default_time_);
 
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record1.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record1)));
 
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record2.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record2)));
 
   cache_.FindDnsRecords(ARecordRdata::kType, "ghs.l.google.com", &results,
                         default_time_);
@@ -164,8 +166,8 @@ TEST_F(MDnsCacheTest, Expiration) {
   base::TimeDelta ttl2 = base::TimeDelta::FromSeconds(record2->ttl());
   record_to_be_deleted = record2.get();
 
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record1.Pass()));
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record2.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record1)));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record2)));
 
   cache_.FindDnsRecords(ARecordRdata::kType, "ghs.l.google.com", &results,
                         default_time_);
@@ -209,9 +211,9 @@ TEST_F(MDnsCacheTest, RecordChange) {
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
   record2 = RecordParsed::CreateFrom(&parser, default_time_);
 
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record1.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record1)));
   EXPECT_EQ(MDnsCache::RecordChanged,
-            cache_.UpdateDnsRecord(record2.Pass()));
+            cache_.UpdateDnsRecord(std::move(record2)));
 }
 
 // Test that a new record replacing an otherwise identical one already in the
@@ -229,8 +231,8 @@ TEST_F(MDnsCacheTest, RecordNoChange) {
   record2 = RecordParsed::CreateFrom(&parser, default_time_ +
                                      base::TimeDelta::FromSeconds(1));
 
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record1.Pass()));
-  EXPECT_EQ(MDnsCache::NoChange, cache_.UpdateDnsRecord(record2.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record1)));
+  EXPECT_EQ(MDnsCache::NoChange, cache_.UpdateDnsRecord(std::move(record2)));
 }
 
 // Test that the next expiration time of the cache is updated properly on record
@@ -250,9 +252,9 @@ TEST_F(MDnsCacheTest, RecordPreemptExpirationTime) {
   base::TimeDelta ttl2 = base::TimeDelta::FromSeconds(record2->ttl());
 
   EXPECT_EQ(base::Time(), cache_.next_expiration());
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record2.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record2)));
   EXPECT_EQ(default_time_ + ttl2, cache_.next_expiration());
-  EXPECT_EQ(MDnsCache::NoChange, cache_.UpdateDnsRecord(record1.Pass()));
+  EXPECT_EQ(MDnsCache::NoChange, cache_.UpdateDnsRecord(std::move(record1)));
   EXPECT_EQ(default_time_ + ttl1, cache_.next_expiration());
 }
 
@@ -279,13 +281,14 @@ TEST_F(MDnsCacheTest, GoodbyePacket) {
   base::TimeDelta ttl = base::TimeDelta::FromSeconds(record_hello->ttl());
 
   EXPECT_EQ(base::Time(), cache_.next_expiration());
-  EXPECT_EQ(MDnsCache::NoChange, cache_.UpdateDnsRecord(record_goodbye.Pass()));
+  EXPECT_EQ(MDnsCache::NoChange,
+            cache_.UpdateDnsRecord(std::move(record_goodbye)));
   EXPECT_EQ(base::Time(), cache_.next_expiration());
   EXPECT_EQ(MDnsCache::RecordAdded,
-            cache_.UpdateDnsRecord(record_hello.Pass()));
+            cache_.UpdateDnsRecord(std::move(record_hello)));
   EXPECT_EQ(default_time_ + ttl, cache_.next_expiration());
   EXPECT_EQ(MDnsCache::NoChange,
-            cache_.UpdateDnsRecord(record_goodbye2.Pass()));
+            cache_.UpdateDnsRecord(std::move(record_goodbye2)));
   EXPECT_EQ(default_time_ + base::TimeDelta::FromSeconds(1),
             cache_.next_expiration());
 }
@@ -301,8 +304,8 @@ TEST_F(MDnsCacheTest, AnyRRType) {
 
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
   record2 = RecordParsed::CreateFrom(&parser, default_time_);
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record1.Pass()));
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record2.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record1)));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record2)));
 
   cache_.FindDnsRecords(0, "ghs.l.google.com", &results, default_time_);
 
@@ -326,7 +329,7 @@ TEST_F(MDnsCacheTest, RemoveRecord) {
   std::vector<const RecordParsed*> results;
 
   record1 = RecordParsed::CreateFrom(&parser, default_time_);
-  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(record1.Pass()));
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record1)));
 
   cache_.FindDnsRecords(dns_protocol::kTypeCNAME, "codereview.chromium.org",
                         &results, default_time_);

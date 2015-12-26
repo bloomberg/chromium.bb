@@ -5,6 +5,7 @@
 #include "net/dns/host_resolver_mojo.h"
 
 #include <string>
+#include <utility>
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
@@ -36,7 +37,7 @@ class MockMojoHostResolverRequest {
 MockMojoHostResolverRequest::MockMojoHostResolverRequest(
     interfaces::HostResolverRequestClientPtr client,
     const base::Closure& error_callback)
-    : client_(client.Pass()), error_callback_(error_callback) {
+    : client_(std::move(client)), error_callback_(error_callback) {
   client_.set_connection_error_handler(base::Bind(
       &MockMojoHostResolverRequest::OnConnectionError, base::Unretained(this)));
 }
@@ -55,26 +56,26 @@ struct HostResolverAction {
   static scoped_ptr<HostResolverAction> ReturnError(Error error) {
     scoped_ptr<HostResolverAction> result(new HostResolverAction);
     result->error = error;
-    return result.Pass();
+    return result;
   }
 
   static scoped_ptr<HostResolverAction> ReturnResult(
       const AddressList& address_list) {
     scoped_ptr<HostResolverAction> result(new HostResolverAction);
     result->addresses = interfaces::AddressList::From(address_list);
-    return result.Pass();
+    return result;
   }
 
   static scoped_ptr<HostResolverAction> DropRequest() {
     scoped_ptr<HostResolverAction> result(new HostResolverAction);
     result->action = DROP;
-    return result.Pass();
+    return result;
   }
 
   static scoped_ptr<HostResolverAction> RetainRequest() {
     scoped_ptr<HostResolverAction> result(new HostResolverAction);
     result->action = RETAIN;
-    return result.Pass();
+    return result;
   }
 
   Action action = COMPLETE;
@@ -115,22 +116,22 @@ MockMojoHostResolver::~MockMojoHostResolver() {
 }
 
 void MockMojoHostResolver::AddAction(scoped_ptr<HostResolverAction> action) {
-  actions_.push_back(action.Pass());
+  actions_.push_back(std::move(action));
 }
 
 void MockMojoHostResolver::ResolveDns(
     interfaces::HostResolverRequestInfoPtr request_info,
     interfaces::HostResolverRequestClientPtr client) {
-  requests_received_.push_back(request_info.Pass());
+  requests_received_.push_back(std::move(request_info));
   ASSERT_LE(results_returned_, actions_.size());
   switch (actions_[results_returned_]->action) {
     case HostResolverAction::COMPLETE:
       client->ReportResult(actions_[results_returned_]->error,
-                           actions_[results_returned_]->addresses.Pass());
+                           std::move(actions_[results_returned_]->addresses));
       break;
     case HostResolverAction::RETAIN:
       requests_.push_back(make_scoped_ptr(new MockMojoHostResolverRequest(
-          client.Pass(), request_connection_error_callback_)));
+          std::move(client), request_connection_error_callback_)));
       break;
     case HostResolverAction::DROP:
       client.reset();

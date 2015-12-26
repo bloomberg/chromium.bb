@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_request_netlog_params.h"
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "url/gurl.h"
@@ -24,7 +26,7 @@ scoped_ptr<base::Value> NetLogURLRequestStartCallback(
   dict->SetString("priority", RequestPriorityToString(priority));
   if (upload_id > -1)
     dict->SetString("upload_id", base::Int64ToString(upload_id));
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace net

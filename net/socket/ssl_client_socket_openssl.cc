@@ -150,7 +150,7 @@ ScopedX509Stack OSCertHandlesToOpenSSL(
       return ScopedX509Stack();
     sk_X509_push(stack.get(), x509.release());
   }
-  return stack.Pass();
+  return stack;
 }
 
 bool EVP_MDToPrivateKeyHash(const EVP_MD* md, SSLPrivateKey::Hash* hash) {
@@ -528,7 +528,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       tb_negotiated_param_(TB_PARAM_ECDSAP256),
       ssl_(NULL),
       transport_bio_(NULL),
-      transport_(transport_socket.Pass()),
+      transport_(std::move(transport_socket)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       ssl_session_cache_shard_(context.ssl_session_cache_shard),

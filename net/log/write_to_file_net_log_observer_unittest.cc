@@ -4,6 +4,8 @@
 
 #include "net/log/write_to_file_net_log_observer.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -40,7 +42,7 @@ TEST_F(WriteToFileNetLogObserverTest, GeneratesValidJSONForNoEvents) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
   scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
-  logger->StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
+  logger->StartObserving(&net_log_, std::move(file), nullptr, nullptr);
   logger->StopObserving(nullptr);
   logger.reset();
 
@@ -65,14 +67,14 @@ TEST_F(WriteToFileNetLogObserverTest, CaptureMode) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
   WriteToFileNetLogObserver logger;
-  logger.StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
+  logger.StartObserving(&net_log_, std::move(file), nullptr, nullptr);
   EXPECT_EQ(NetLogCaptureMode::Default(), logger.capture_mode());
   logger.StopObserving(nullptr);
 
   file.reset(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
   logger.set_capture_mode(NetLogCaptureMode::IncludeCookiesAndCredentials());
-  logger.StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
+  logger.StartObserving(&net_log_, std::move(file), nullptr, nullptr);
   EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
             logger.capture_mode());
   logger.StopObserving(nullptr);
@@ -82,7 +84,7 @@ TEST_F(WriteToFileNetLogObserverTest, GeneratesValidJSONWithOneEvent) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
   scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
-  logger->StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
+  logger->StartObserving(&net_log_, std::move(file), nullptr, nullptr);
 
   const int kDummyId = 1;
   NetLog::Source source(NetLog::SOURCE_HTTP2_SESSION, kDummyId);
@@ -112,7 +114,7 @@ TEST_F(WriteToFileNetLogObserverTest, GeneratesValidJSONWithMultipleEvents) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
   scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
-  logger->StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
+  logger->StartObserving(&net_log_, std::move(file), nullptr, nullptr);
 
   const int kDummyId = 1;
   NetLog::Source source(NetLog::SOURCE_HTTP2_SESSION, kDummyId);
@@ -147,7 +149,7 @@ TEST_F(WriteToFileNetLogObserverTest, CustomConstants) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
   scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
-  logger->StartObserving(&net_log_, file.Pass(), constants.get(), nullptr);
+  logger->StartObserving(&net_log_, std::move(file), constants.get(), nullptr);
   logger->StopObserving(nullptr);
   logger.reset();
 
@@ -175,7 +177,7 @@ TEST_F(WriteToFileNetLogObserverTest, GeneratesValidJSONWithContext) {
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
   scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
-  logger->StartObserving(&net_log_, file.Pass(), nullptr, &context);
+  logger->StartObserving(&net_log_, std::move(file), nullptr, &context);
   logger->StopObserving(&context);
   logger.reset();
 
@@ -214,7 +216,7 @@ TEST_F(WriteToFileNetLogObserverTest,
   base::ScopedFILE file(base::OpenFile(log_path_, "w"));
   ASSERT_TRUE(file);
   scoped_ptr<WriteToFileNetLogObserver> logger(new WriteToFileNetLogObserver());
-  logger->StartObserving(&net_log_, file.Pass(), nullptr, &context);
+  logger->StartObserving(&net_log_, std::move(file), nullptr, &context);
   logger->StopObserving(&context);
   logger.reset();
 

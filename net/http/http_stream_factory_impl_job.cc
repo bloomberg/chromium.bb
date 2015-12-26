@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -72,7 +73,7 @@ scoped_ptr<base::Value> NetLogHttpStreamJobCallback(
   dict->SetString("url", url->GetOrigin().spec());
   dict->SetString("alternative_service", alternative_service->ToString());
   dict->SetString("priority", RequestPriorityToString(priority));
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // Returns parameters associated with the Proto (with NPN negotiation) of a HTTP
@@ -86,7 +87,7 @@ scoped_ptr<base::Value> NetLogHttpStreamProtoCallback(
   dict->SetString("next_proto_status",
                   SSLClientSocket::NextProtoStatusToString(status));
   dict->SetString("proto", *proto);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
@@ -1259,7 +1260,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
       DCHECK(request_->websocket_handshake_stream_create_helper());
       websocket_stream_.reset(
           request_->websocket_handshake_stream_create_helper()
-              ->CreateBasicStream(connection_.Pass(), using_proxy));
+              ->CreateBasicStream(std::move(connection_), using_proxy));
     } else {
       stream_.reset(new HttpBasicStream(connection_.release(), using_proxy));
     }
@@ -1293,8 +1294,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   }
 
   result = valid_spdy_session_pool_->CreateAvailableSessionFromSocket(
-      spdy_session_key, connection_.Pass(), net_log_, spdy_certificate_error_,
-      using_ssl_, &spdy_session);
+      spdy_session_key, std::move(connection_), net_log_,
+      spdy_certificate_error_, using_ssl_, &spdy_session);
   if (result != OK) {
     return result;
   }
@@ -1647,7 +1648,7 @@ int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::
                                      bool is_secure,
                                      base::WeakPtr<SpdySession>* spdy_session) {
   *spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocket(
-      key, connection.Pass(), net_log, certificate_error_code, is_secure);
+      key, std::move(connection), net_log, certificate_error_code, is_secure);
   return CheckAlternativeServiceValidityForOrigin(*spdy_session);
 }
 

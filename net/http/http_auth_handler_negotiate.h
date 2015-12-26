@@ -6,6 +6,7 @@
 #define NET_HTTP_HTTP_AUTH_HANDLER_NEGOTIATE_H_
 
 #include <string>
+#include <utility>
 
 #include "build/build_config.h"
 #include "net/base/address_list.h"
@@ -55,7 +56,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
     // Sets the system library to use, thereby assuming ownership of
     // |auth_library|.
     void set_library(scoped_ptr<AuthLibrary> auth_provider) {
-      auth_library_ = auth_provider.Pass();
+      auth_library_ = std::move(auth_provider);
     }
 #endif
 

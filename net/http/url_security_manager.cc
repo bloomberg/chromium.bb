@@ -4,6 +4,8 @@
 
 #include "net/http/url_security_manager.h"
 
+#include <utility>
+
 #include "net/http/http_auth_filter.h"
 
 namespace net {
@@ -27,12 +29,12 @@ bool URLSecurityManagerWhitelist::CanDelegate(const GURL& auth_origin) const {
 
 void URLSecurityManagerWhitelist::SetDefaultWhitelist(
     scoped_ptr<HttpAuthFilter> whitelist_default) {
-  whitelist_default_ = whitelist_default.Pass();
+  whitelist_default_ = std::move(whitelist_default);
 }
 
 void URLSecurityManagerWhitelist::SetDelegateWhitelist(
     scoped_ptr<HttpAuthFilter> whitelist_delegate) {
-  whitelist_delegate_ = whitelist_delegate.Pass();
+  whitelist_delegate_ = std::move(whitelist_delegate);
 }
 
 bool URLSecurityManagerWhitelist::HasDefaultWhitelist() const {

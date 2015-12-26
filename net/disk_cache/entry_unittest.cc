@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
@@ -2184,8 +2186,7 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyDoomSparseEntry) {
 class SparseTestCompletionCallback: public net::TestCompletionCallback {
  public:
   explicit SparseTestCompletionCallback(scoped_ptr<disk_cache::Backend> cache)
-      : cache_(cache.Pass()) {
-  }
+      : cache_(std::move(cache)) {}
 
  private:
   void SetResult(int result) override {
@@ -2222,7 +2223,7 @@ TEST_F(DiskCacheEntryTest, DoomSparseEntry2) {
 
   entry->Close();
   disk_cache::Backend* cache = cache_.get();
-  SparseTestCompletionCallback cb(cache_.Pass());
+  SparseTestCompletionCallback cb(std::move(cache_));
   int rv = cache->DoomEntry(key, cb.callback());
   EXPECT_EQ(net::ERR_IO_PENDING, rv);
   EXPECT_EQ(net::OK, cb.WaitForResult());

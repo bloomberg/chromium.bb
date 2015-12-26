@@ -4,6 +4,8 @@
 
 #include "net/quic/crypto/proof_verifier_chromium.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -176,7 +178,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to create certificate chain. Certs are empty.";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    *verify_details = verify_details_.Pass();
+    *verify_details = std::move(verify_details_);
     return QUIC_FAILURE;
   }
 
@@ -190,7 +192,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to create certificate chain";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    *verify_details = verify_details_.Pass();
+    *verify_details = std::move(verify_details_);
     return QUIC_FAILURE;
   }
 
@@ -209,7 +211,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     *error_details = "Failed to verify signature of server config";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
-    *verify_details = verify_details_.Pass();
+    *verify_details = std::move(verify_details_);
     return QUIC_FAILURE;
   }
 
@@ -218,14 +220,14 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
   next_state_ = STATE_VERIFY_CERT;
   switch (DoLoop(OK)) {
     case OK:
-      *verify_details = verify_details_.Pass();
+      *verify_details = std::move(verify_details_);
       return QUIC_SUCCESS;
     case ERR_IO_PENDING:
       callback_.reset(callback);
       return QUIC_PENDING;
     default:
       *error_details = error_details_;
-      *verify_details = verify_details_.Pass();
+      *verify_details = std::move(verify_details_);
       return QUIC_FAILURE;
   }
 }
@@ -256,9 +258,9 @@ int ProofVerifierChromium::Job::DoLoop(int last_result) {
 void ProofVerifierChromium::Job::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
-    scoped_ptr<ProofVerifierCallback> callback(callback_.Pass());
+    scoped_ptr<ProofVerifierCallback> callback(std::move(callback_));
     // Callback expects ProofVerifyDetails not ProofVerifyDetailsChromium.
-    scoped_ptr<ProofVerifyDetails> verify_details(verify_details_.Pass());
+    scoped_ptr<ProofVerifyDetails> verify_details(std::move(verify_details_));
     callback->Run(rv == OK, error_details_, &verify_details);
     // Will delete |this|.
     proof_verifier_->OnJobComplete(this);

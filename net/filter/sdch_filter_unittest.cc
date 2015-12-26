@@ -82,8 +82,7 @@ class SdchFilterTest : public testing::Test {
   // Sets both the GURL and the SDCH response for a filter context.
   void SetupFilterContextWithGURL(GURL url) {
     filter_context_->SetURL(url);
-    filter_context_->SetSdchResponse(
-        sdch_manager_->GetDictionarySet(url).Pass());
+    filter_context_->SetSdchResponse(sdch_manager_->GetDictionarySet(url));
   }
 
   std::string NewSdchCompressedData(const std::string& dictionary) {
@@ -1214,8 +1213,7 @@ TEST_F(SdchFilterTest, UnexpectedDictionary) {
 
   SdchProblemCode problem_code;
   scoped_ptr<SdchManager::DictionarySet> hash_set(
-      sdch_manager_->GetDictionarySetByHash(
-          url, server_hash, &problem_code).Pass());
+      sdch_manager_->GetDictionarySetByHash(url, server_hash, &problem_code));
   ASSERT_TRUE(hash_set);
   ASSERT_EQ(SDCH_OK, problem_code);
 

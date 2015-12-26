@@ -4,6 +4,8 @@
 
 #include "net/base/address_list.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -25,8 +27,8 @@ scoped_ptr<base::Value> NetLogAddressListCallback(
     list->Append(new base::StringValue(it->ToString()));
   }
 
-  dict->Set("address_list", list.Pass());
-  return dict.Pass();
+  dict->Set("address_list", std::move(list));
+  return std::move(dict);
 }
 
 }  // namespace

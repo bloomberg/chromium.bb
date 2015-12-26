@@ -214,7 +214,7 @@ class SimpleBackendImpl::ActiveEntryProxy
       SimpleBackendImpl* backend) {
     scoped_ptr<SimpleEntryImpl::ActiveEntryProxy>
         proxy(new ActiveEntryProxy(entry_hash, backend));
-    return proxy.Pass();
+    return proxy;
   }
 
  private:
@@ -492,7 +492,7 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
       return;
     }
     if (!hashes_to_enumerate_)
-      hashes_to_enumerate_ = backend_->index()->GetAllHashes().Pass();
+      hashes_to_enumerate_ = backend_->index()->GetAllHashes();
 
     while (!hashes_to_enumerate_->empty()) {
       uint64_t entry_hash = hashes_to_enumerate_->back();

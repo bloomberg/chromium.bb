@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -121,7 +122,7 @@ const int32_t NetworkQualityEstimator::kInvalidThroughput = 0;
 NetworkQualityEstimator::NetworkQualityEstimator(
     scoped_ptr<ExternalEstimateProvider> external_estimates_provider,
     const std::map<std::string, std::string>& variation_params)
-    : NetworkQualityEstimator(external_estimates_provider.Pass(),
+    : NetworkQualityEstimator(std::move(external_estimates_provider),
                               variation_params,
                               false,
                               false) {}
@@ -140,7 +141,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       downstream_throughput_kbps_observations_(
           GetWeightMultiplierPerSecond(variation_params)),
       rtt_msec_observations_(GetWeightMultiplierPerSecond(variation_params)),
-      external_estimate_provider_(external_estimates_provider.Pass()) {
+      external_estimate_provider_(std::move(external_estimates_provider)) {
   static_assert(kMinRequestDurationMicroseconds > 0,
                 "Minimum request duration must be > 0");
   static_assert(kDefaultHalfLifeSeconds > 0,

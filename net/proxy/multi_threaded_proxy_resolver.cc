@@ -65,7 +65,7 @@ class Executor : public base::RefCountedThreadSafe<Executor> {
   int thread_number() const { return thread_number_; }
 
   void set_resolver(scoped_ptr<ProxyResolver> resolver) {
-    resolver_ = resolver.Pass();
+    resolver_ = std::move(resolver);
   }
 
   void set_coordinator(Coordinator* coordinator) {
@@ -262,7 +262,7 @@ class CreateResolverJob : public Job {
     // The task may have been cancelled after it was started.
     if (!was_cancelled()) {
       DCHECK(executor());
-      executor()->set_resolver(resolver_.Pass());
+      executor()->set_resolver(std::move(resolver_));
     }
     OnJobCompleted();
   }
@@ -423,7 +423,7 @@ MultiThreadedProxyResolver::MultiThreadedProxyResolver(
     size_t max_num_threads,
     const scoped_refptr<ProxyResolverScriptData>& script_data,
     scoped_refptr<Executor> executor)
-    : resolver_factory_(resolver_factory.Pass()),
+    : resolver_factory_(std::move(resolver_factory)),
       max_num_threads_(max_num_threads),
       script_data_(script_data) {
   DCHECK(script_data_);
@@ -550,7 +550,7 @@ class MultiThreadedProxyResolverFactory::Job
       const CompletionCallback& callback)
       : factory_(factory),
         resolver_out_(resolver),
-        resolver_factory_(resolver_factory.Pass()),
+        resolver_factory_(std::move(resolver_factory)),
         max_num_threads_(max_num_threads),
         script_data_(script_data),
         executor_(new Executor(this, 0)),
@@ -620,7 +620,7 @@ int MultiThreadedProxyResolverFactory::CreateProxyResolver(
                               CreateProxyResolverFactory(), max_num_threads_,
                               callback));
   jobs_.insert(job.get());
-  *request = job.Pass();
+  *request = std::move(job);
   return ERR_IO_PENDING;
 }
 

@@ -5,6 +5,7 @@
 #include "net/cert/cert_policy_enforcer.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/build_time.h"
@@ -223,7 +224,7 @@ scoped_ptr<base::Value> NetLogComplianceCheckResultCallback(
                         details->whitelist_version.GetString());
     }
   }
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // Returns true if all SCTs in |verified_scts| were issued on, or after, the

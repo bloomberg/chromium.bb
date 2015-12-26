@@ -4,6 +4,8 @@
 
 #include "net/socket/client_socket_factory.h"
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "net/cert/cert_database.h"
@@ -70,9 +72,8 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) override {
 #if defined(USE_OPENSSL)
-    return scoped_ptr<SSLClientSocket>(
-        new SSLClientSocketOpenSSL(transport_socket.Pass(), host_and_port,
-                                   ssl_config, context));
+    return scoped_ptr<SSLClientSocket>(new SSLClientSocketOpenSSL(
+        std::move(transport_socket), host_and_port, ssl_config, context));
 #else
     return scoped_ptr<SSLClientSocket>(new SSLClientSocketNSS(
         transport_socket.Pass(), host_and_port, ssl_config, context));

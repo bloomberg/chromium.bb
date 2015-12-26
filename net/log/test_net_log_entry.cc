@@ -4,6 +4,8 @@
 
 #include "net/log/test_net_log_entry.h"
 
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -19,7 +21,7 @@ TestNetLogEntry::TestNetLogEntry(NetLog::EventType type,
       time(time),
       source(source),
       phase(phase),
-      params(params.Pass()) {
+      params(std::move(params)) {
   // Only entries without a NetLog should have an invalid source.
   CHECK(source.IsValid());
 }

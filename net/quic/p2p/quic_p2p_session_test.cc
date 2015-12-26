@@ -4,6 +4,8 @@
 
 #include "net/quic/p2p/quic_p2p_session.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -230,10 +232,10 @@ class QuicP2PSessionTest : public ::testing::Test {
 
     QuicP2PCryptoConfig crypto_config(kTestSharedKey);
 
-    session1_ =
-        CreateP2PSession(socket1.Pass(), crypto_config, Perspective::IS_SERVER);
-    session2_ =
-        CreateP2PSession(socket2.Pass(), crypto_config, Perspective::IS_CLIENT);
+    session1_ = CreateP2PSession(std::move(socket1), crypto_config,
+                                 Perspective::IS_SERVER);
+    session2_ = CreateP2PSession(std::move(socket2), crypto_config,
+                                 Perspective::IS_CLIENT);
   }
 
   scoped_ptr<QuicP2PSession> CreateP2PSession(scoped_ptr<Socket> socket,
@@ -245,10 +247,11 @@ class QuicP2PSessionTest : public ::testing::Test {
         0, net::IPEndPoint(ip, 0), &quic_helper_, writer_factory,
         true /* owns_writer */, perspective, QuicSupportedVersions()));
 
-    scoped_ptr<QuicP2PSession> result(new QuicP2PSession(
-        config_, crypto_config, quic_connection1.Pass(), socket.Pass()));
+    scoped_ptr<QuicP2PSession> result(
+        new QuicP2PSession(config_, crypto_config, std::move(quic_connection1),
+                           std::move(socket)));
     result->Initialize();
-    return result.Pass();
+    return result;
   }
 
   void TestStreamConnection(QuicP2PSession* from_session,

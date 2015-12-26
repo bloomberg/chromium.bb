@@ -4,6 +4,8 @@
 
 #include "net/dns/dns_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/rand_util.h"
 #include "net/dns/address_sorter.h"
@@ -32,10 +34,8 @@ class DnsClientImpl : public DnsClient {
       scoped_ptr<DnsSocketPool> socket_pool(
           config.randomize_ports ? DnsSocketPool::CreateDefault(factory)
                                  : DnsSocketPool::CreateNull(factory));
-      session_ = new DnsSession(config,
-                                socket_pool.Pass(),
-                                base::Bind(&base::RandInt),
-                                net_log_);
+      session_ = new DnsSession(config, std::move(socket_pool),
+                                base::Bind(&base::RandInt), net_log_);
       factory_ = DnsTransactionFactory::CreateFactory(session_.get());
     }
   }

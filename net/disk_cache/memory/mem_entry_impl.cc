@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/memory/mem_entry_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -52,7 +54,7 @@ scoped_ptr<base::Value> NetLogChildEntryCreationCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("key", GenerateChildName(parent->GetKey(), child_id));
   dict->SetBoolean("created", true);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace

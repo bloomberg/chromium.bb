@@ -5,6 +5,7 @@
 #include "net/dns/dns_session.h"
 
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -190,7 +191,7 @@ TestClientSocketFactory::CreateDatagramClientSocket(
   data_providers_.push_back(data_provider);
   scoped_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
-  return socket.Pass();
+  return std::move(socket);
 }
 
 TestClientSocketFactory::~TestClientSocketFactory() {

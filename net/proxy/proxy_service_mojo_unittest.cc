@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
@@ -138,7 +139,7 @@ class ProxyServiceMojoTest : public testing::Test,
       mojo::InterfaceRequest<interfaces::ProxyResolver> req,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override {
     InProcessMojoProxyResolverFactory::GetInstance()->CreateResolver(
-        pac_script, req.Pass(), client.Pass());
+        pac_script, std::move(req), std::move(client));
     return make_scoped_ptr(
         new base::ScopedClosureRunner(on_delete_closure_.closure()));
   }

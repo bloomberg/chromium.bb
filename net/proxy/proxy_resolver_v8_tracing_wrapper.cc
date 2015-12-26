@@ -5,6 +5,7 @@
 #include "net/proxy/proxy_resolver_v8_tracing_wrapper.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -24,7 +25,7 @@ scoped_ptr<base::Value> NetLogErrorCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("line_number", line_number);
   dict->SetString("message", *message);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 class BindingsImpl : public ProxyResolverV8Tracing::Bindings {
@@ -108,11 +109,10 @@ ProxyResolverV8TracingWrapper::ProxyResolverV8TracingWrapper(
     NetLog* net_log,
     HostResolver* host_resolver,
     scoped_ptr<ProxyResolverErrorObserver> error_observer)
-    : resolver_impl_(resolver_impl.Pass()),
+    : resolver_impl_(std::move(resolver_impl)),
       net_log_(net_log),
       host_resolver_(host_resolver),
-      error_observer_(error_observer.Pass()) {
-}
+      error_observer_(std::move(error_observer)) {}
 
 int ProxyResolverV8TracingWrapper::GetProxyForURL(
     const GURL& url,
@@ -186,7 +186,8 @@ void ProxyResolverFactoryV8TracingWrapper::OnProxyResolverCreated(
     int error) {
   if (error == OK) {
     resolver->reset(new ProxyResolverV8TracingWrapper(
-        v8_resolver->Pass(), net_log_, host_resolver_, error_observer.Pass()));
+        std::move(*v8_resolver), net_log_, host_resolver_,
+        std::move(error_observer)));
   }
   callback.Run(error);
 }

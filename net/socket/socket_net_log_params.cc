@@ -4,6 +4,8 @@
 
 #include "net/socket/socket_net_log_params.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
@@ -21,7 +23,7 @@ scoped_ptr<base::Value> NetLogSocketErrorCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("os_error", os_error);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogHostPortPairCallback(
@@ -29,7 +31,7 @@ scoped_ptr<base::Value> NetLogHostPortPairCallback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host_and_port", host_and_port->ToString());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogIPEndPointCallback(
@@ -37,7 +39,7 @@ scoped_ptr<base::Value> NetLogIPEndPointCallback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("address", address->ToString());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogSourceAddressCallback(
@@ -49,7 +51,7 @@ scoped_ptr<base::Value> NetLogSourceAddressCallback(
   bool result = ipe.FromSockAddr(net_address, address_len);
   DCHECK(result);
   dict->SetString("source_address", ipe.ToString());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace

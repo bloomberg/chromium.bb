@@ -5,14 +5,15 @@
 #include "net/base/keygen_handler.h"
 
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/threading/worker_pool.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +31,7 @@ namespace {
 class StubCryptoModuleDelegate : public crypto::NSSCryptoModuleDelegate {
   public:
    explicit StubCryptoModuleDelegate(crypto::ScopedPK11Slot slot)
-       : slot_(slot.Pass()) {}
+       : slot_(std::move(slot)) {}
 
    std::string RequestPassword(const std::string& slot_name,
                                bool retry,
@@ -61,7 +62,7 @@ class KeygenHandlerTest : public ::testing::Test {
             new StubCryptoModuleDelegate(crypto::ScopedPK11Slot(
                 PK11_ReferenceSlot(test_nss_db_.slot())))));
 #endif
-    return handler.Pass();
+    return handler;
   }
 
  private:

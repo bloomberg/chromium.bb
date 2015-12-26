@@ -54,7 +54,7 @@ class QuicChromiumClientSessionTest
                                                SupportedVersions(GetParam()))),
         session_(
             connection_,
-            GetSocket().Pass(),
+            GetSocket(),
             /*stream_factory=*/nullptr,
             /*crypto_client_stream_factory=*/nullptr,
             &clock_,

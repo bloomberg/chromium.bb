@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/sdch/sdch_owner.h"
+
+#include <utility>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -15,7 +19,6 @@
 #include "base/values.h"
 #include "net/base/sdch_manager.h"
 #include "net/log/net_log.h"
-#include "net/sdch/sdch_owner.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
@@ -788,7 +791,7 @@ TEST_F(SdchOwnerPersistenceTest, Persistent_EmptyDict) {
 TEST_F(SdchOwnerPersistenceTest, Persistent_BadVersion) {
   scoped_ptr<base::DictionaryValue> sdch_dict(new base::DictionaryValue());
   sdch_dict->SetInteger("version", 2);
-  pref_store_->SetValue("SDCH", sdch_dict.Pass(),
+  pref_store_->SetValue("SDCH", std::move(sdch_dict),
                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   ResetOwner(false);
@@ -800,8 +803,8 @@ TEST_F(SdchOwnerPersistenceTest, Persistent_EmptyDictList) {
   scoped_ptr<base::DictionaryValue> sdch_dict(new base::DictionaryValue());
   scoped_ptr<base::DictionaryValue> dicts(new base::DictionaryValue());
   sdch_dict->SetInteger("version", 1);
-  sdch_dict->Set("dictionaries", dicts.Pass());
-  pref_store_->SetValue("SDCH", sdch_dict.Pass(),
+  sdch_dict->Set("dictionaries", std::move(dicts));
+  pref_store_->SetValue("SDCH", std::move(sdch_dict),
                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   ResetOwner(false);

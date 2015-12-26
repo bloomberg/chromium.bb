@@ -4,6 +4,7 @@
 
 #include "net/disk_cache/simple/simple_index_file.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/files/file.h"
@@ -354,7 +355,7 @@ void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
     return;
 
   base::MemoryMappedFile index_file_map;
-  if (!index_file_map.Initialize(file.Pass())) {
+  if (!index_file_map.Initialize(std::move(file))) {
     simple_util::SimpleCacheDeleteFile(index_filename);
     return;
   }
@@ -382,7 +383,7 @@ scoped_ptr<base::Pickle> SimpleIndexFile::Serialize(
     pickle->WriteUInt64(it->first);
     it->second.Serialize(pickle.get());
   }
-  return pickle.Pass();
+  return pickle;
 }
 
 // static

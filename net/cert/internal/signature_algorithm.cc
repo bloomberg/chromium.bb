@@ -4,6 +4,8 @@
 
 #include "net/cert/internal/signature_algorithm.h"
 
+#include <utility>
+
 #include "base/numerics/safe_math.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
@@ -617,7 +619,6 @@ SignatureAlgorithm::SignatureAlgorithm(
     SignatureAlgorithmId algorithm,
     DigestAlgorithm digest,
     scoped_ptr<SignatureAlgorithmParameters> params)
-    : algorithm_(algorithm), digest_(digest), params_(params.Pass()) {
-}
+    : algorithm_(algorithm), digest_(digest), params_(std::move(params)) {}
 
 }  // namespace net

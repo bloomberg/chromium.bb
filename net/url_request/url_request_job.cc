@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_request_job.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -37,7 +39,7 @@ scoped_ptr<base::Value> FiltersSetCallback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   event_params->SetString("filters", filter->OrderedFilterList());
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 std::string ComputeMethodForRedirect(const std::string& method,

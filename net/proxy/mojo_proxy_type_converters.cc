@@ -70,7 +70,7 @@ TypeConverter<net::interfaces::ProxyServerPtr, net::ProxyServer>::Convert(
     server->host = obj.host_port_pair().host();
     server->port = obj.host_port_pair().port();
   }
-  return server.Pass();
+  return server;
 }
 
 // static

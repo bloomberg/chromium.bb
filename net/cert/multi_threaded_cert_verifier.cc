@@ -5,6 +5,7 @@
 #include "net/cert/multi_threaded_cert_verifier.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -106,9 +107,9 @@ scoped_ptr<base::Value> CertVerifyResultCallback(
        ++it) {
     hashes->AppendString(it->ToString());
   }
-  results->Set("public_key_hashes", hashes.Pass());
+  results->Set("public_key_hashes", std::move(hashes));
 
-  return results.Pass();
+  return std::move(results);
 }
 
 }  // namespace
@@ -329,7 +330,7 @@ class CertVerifierJob {
         net_log_.source().ToEventParametersCallback());
 
     requests_.Append(request.get());
-    return request.Pass();
+    return request;
   }
 
  private:
@@ -468,7 +469,7 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
 
   scoped_ptr<CertVerifierRequest> request =
       job->CreateRequest(callback, verify_result, net_log);
-  *out_req = request.Pass();
+  *out_req = std::move(request);
   return ERR_IO_PENDING;
 }
 

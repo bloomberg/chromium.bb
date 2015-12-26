@@ -5,6 +5,7 @@
 #include "net/proxy/mojo_proxy_resolver_factory_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -38,8 +39,8 @@ class MojoProxyResolverHolder {
 MojoProxyResolverHolder::MojoProxyResolverHolder(
     scoped_ptr<ProxyResolverV8Tracing> proxy_resolver_impl,
     mojo::InterfaceRequest<interfaces::ProxyResolver> request)
-    : mojo_proxy_resolver_(proxy_resolver_impl.Pass()),
-      binding_(&mojo_proxy_resolver_, request.Pass()) {
+    : mojo_proxy_resolver_(std::move(proxy_resolver_impl)),
+      binding_(&mojo_proxy_resolver_, std::move(request)) {
   binding_.set_connection_error_handler(base::Bind(
       &MojoProxyResolverHolder::OnConnectionError, base::Unretained(this)));
 }
@@ -82,9 +83,9 @@ MojoProxyResolverFactoryImpl::Job::Job(
     mojo::InterfaceRequest<interfaces::ProxyResolver> request,
     interfaces::ProxyResolverFactoryRequestClientPtr client)
     : parent_(factory),
-      proxy_request_(request.Pass()),
+      proxy_request_(std::move(request)),
       factory_(proxy_resolver_factory),
-      client_ptr_(client.Pass()) {
+      client_ptr_(std::move(client)) {
   client_ptr_.set_connection_error_handler(
       base::Bind(&MojoProxyResolverFactoryImpl::Job::OnConnectionError,
                  base::Unretained(this)));
@@ -110,8 +111,8 @@ void MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated(int error) {
   if (error == OK) {
     // The MojoProxyResolverHolder will delete itself if |proxy_request_|
     // encounters a connection error.
-    new MojoProxyResolverHolder(proxy_resolver_impl_.Pass(),
-                                proxy_request_.Pass());
+    new MojoProxyResolverHolder(std::move(proxy_resolver_impl_),
+                                std::move(proxy_request_));
   }
   client_ptr_->ReportResult(error);
   parent_->RemoveJob(this);
@@ -120,15 +121,13 @@ void MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated(int error) {
 MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl(
     scoped_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory,
     mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request)
-    : proxy_resolver_impl_factory_(proxy_resolver_factory.Pass()),
-      binding_(this, request.Pass()) {
-}
+    : proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)),
+      binding_(this, std::move(request)) {}
 
 MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl(
     mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request)
     : MojoProxyResolverFactoryImpl(ProxyResolverV8TracingFactory::Create(),
-                                   request.Pass()) {
-}
+                                   std::move(request)) {}
 
 MojoProxyResolverFactoryImpl::~MojoProxyResolverFactoryImpl() {
   STLDeleteElements(&jobs_);
@@ -142,7 +141,8 @@ void MojoProxyResolverFactoryImpl::CreateResolver(
   // finishes or |request| or |client| encounters a connection error.
   jobs_.insert(new Job(
       this, ProxyResolverScriptData::FromUTF8(pac_script.To<std::string>()),
-      proxy_resolver_impl_factory_.get(), request.Pass(), client.Pass()));
+      proxy_resolver_impl_factory_.get(), std::move(request),
+      std::move(client)));
 }
 
 void MojoProxyResolverFactoryImpl::RemoveJob(Job* job) {

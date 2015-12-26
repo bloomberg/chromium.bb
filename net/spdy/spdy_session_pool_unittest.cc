@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <string>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -555,7 +556,7 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util.ConstructGetHeaderBlock(urlA.spec()));
-  spdy_streamA->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
+  spdy_streamA->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_streamA->HasUrlFromHeaders());
 
   base::MessageLoop::current()->RunUntilIdle();  // Allow headers to write.

@@ -5,6 +5,7 @@
 #include "net/cert_net/cert_net_fetcher_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
@@ -102,7 +103,7 @@ class TestFetchCallback {
       run_loop.Run();
       quit_closure_.Reset();
     }
-    return result_.Pass();
+    return std::move(result_);
   }
 
   bool HasResult() const { return result_.get(); }

@@ -5,6 +5,7 @@
 #include "net/http/transport_security_state.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/build_time.h"
@@ -58,7 +59,7 @@ scoped_ptr<base::ListValue> GetPEMEncodedChainAsList(
   for (const std::string& cert : pem_encoded_chain)
     result->Append(make_scoped_ptr(new base::StringValue(cert)));
 
-  return result.Pass();
+  return result;
 }
 
 bool HashReportForCache(const base::DictionaryValue& report,
@@ -96,9 +97,10 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
       GetPEMEncodedChainAsList(served_certificate_chain);
   scoped_ptr<base::ListValue> validated_certificate_chain_list =
       GetPEMEncodedChainAsList(validated_certificate_chain);
-  report.Set("served-certificate-chain", served_certificate_chain_list.Pass());
+  report.Set("served-certificate-chain",
+             std::move(served_certificate_chain_list));
   report.Set("validated-certificate-chain",
-             validated_certificate_chain_list.Pass());
+             std::move(validated_certificate_chain_list));
 
   scoped_ptr<base::ListValue> known_pin_list(new base::ListValue());
   for (const auto& hash_value : pkp_state.spki_hashes) {
@@ -124,7 +126,7 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
         scoped_ptr<base::Value>(new base::StringValue(known_pin)));
   }
 
-  report.Set("known-pins", known_pin_list.Pass());
+  report.Set("known-pins", std::move(known_pin_list));
 
   // For the sent reports cache, do not include the effective expiration
   // date. The expiration date will likely change every time the user

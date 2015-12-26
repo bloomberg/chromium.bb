@@ -5,6 +5,7 @@
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -47,7 +48,7 @@ class MockClientSocketHandleFactory {
         CompletionCallback(),
         &pool_,
         BoundNetLog());
-    return socket_handle.Pass();
+    return socket_handle;
   }
 
  private:
@@ -93,7 +94,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
             WebSocketStandardResponse(extra_response_headers));
 
     scoped_ptr<WebSocketHandshakeStreamBase> handshake(
-        create_helper.CreateBasicStream(socket_handle.Pass(), false));
+        create_helper.CreateBasicStream(std::move(socket_handle), false));
 
     // If in future the implementation type returned by CreateBasicStream()
     // changes, this static_cast will be wrong. However, in that case the test

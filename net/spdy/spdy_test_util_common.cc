@@ -5,8 +5,8 @@
 #include "net/spdy/spdy_test_util_common.h"
 
 #include <stdint.h>
-
 #include <cstddef>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -373,7 +373,7 @@ SpdySessionDependencies::SpdySessionDependencies(
     : host_resolver(new MockHostResolver),
       cert_verifier(new MockCertVerifier),
       transport_security_state(new TransportSecurityState),
-      proxy_service(proxy_service.Pass()),
+      proxy_service(std::move(proxy_service)),
       ssl_config_service(new SSLConfigServiceDefaults),
       socket_factory(new MockClientSocketFactory),
       http_auth_handler_factory(
@@ -404,7 +404,7 @@ scoped_ptr<HttpNetworkSession> SpdySessionDependencies::SpdyCreateSession(
   scoped_ptr<HttpNetworkSession> http_session(new HttpNetworkSession(params));
   SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
   pool_peer.SetEnableSendingInitialData(false);
-  return http_session.Pass();
+  return http_session;
 }
 
 // static
@@ -542,7 +542,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 
   base::WeakPtr<SpdySession> spdy_session =
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          key, connection.Pass(), net_log, OK, is_secure);
+          key, std::move(connection), net_log, OK, is_secure);
   // Failure is reported asynchronously.
   EXPECT_TRUE(spdy_session != NULL);
   EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
@@ -649,7 +649,7 @@ base::WeakPtr<SpdySession> CreateFakeSpdySessionHelper(
       expected_status == OK ? ERR_IO_PENDING : expected_status)));
   base::WeakPtr<SpdySession> spdy_session =
       pool->CreateAvailableSessionFromSocket(
-          key, handle.Pass(), BoundNetLog(), OK, true /* is_secure */);
+          key, std::move(handle), BoundNetLog(), OK, true /* is_secure */);
   // Failure is reported asynchronously.
   EXPECT_TRUE(spdy_session != NULL);
   EXPECT_TRUE(HasSpdySession(pool, key));
@@ -721,7 +721,7 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlock(
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlockForProxy(
     base::StringPiece url) const {
   scoped_ptr<SpdyHeaderBlock> headers(ConstructGetHeaderBlock(url));
-  return headers.Pass();
+  return headers;
 }
 
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructHeadHeaderBlock(
@@ -789,7 +789,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyFrame(const SpdyHeaderInfo& header_info,
   AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
   if (tail_headers && tail_header_count)
     AppendToHeaderBlock(tail_headers, tail_header_count, headers.get());
-  return ConstructSpdyFrame(header_info, headers.Pass());
+  return ConstructSpdyFrame(header_info, std::move(headers));
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
@@ -814,7 +814,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
     0,  // length
     DATA_FLAG_NONE
   };
-  return ConstructSpdyFrame(header_info, headers.Pass());
+  return ConstructSpdyFrame(header_info, std::move(headers));
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
@@ -832,9 +832,9 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyControlFrame(
   AppendToHeaderBlock(extra_headers, extra_header_count, headers.get());
   if (tail_headers && tail_header_size)
     AppendToHeaderBlock(tail_headers, tail_header_size / 2, headers.get());
-  return ConstructSpdyControlFrame(
-      headers.Pass(), compressed, stream_id,
-      request_priority, type, flags, associated_stream_id);
+  return ConstructSpdyControlFrame(std::move(headers), compressed, stream_id,
+                                   request_priority, type, flags,
+                                   associated_stream_id);
 }
 
 std::string SpdyTestUtil::ConstructSpdyReplyString(
@@ -1277,7 +1277,7 @@ void SpdyTestUtil::UpdateWithStreamDestruction(int stream_id) {
 scoped_ptr<SpdyFramer> SpdyTestUtil::CreateFramer(bool compressed) const {
   scoped_ptr<SpdyFramer> framer(new SpdyFramer(spdy_version_));
   framer->set_enable_compression(compressed);
-  return framer.Pass();
+  return framer;
 }
 
 const char* SpdyTestUtil::GetMethodKey() const {
@@ -1325,7 +1325,7 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructHeaderBlock(
     std::string length_str = base::Int64ToString(*content_length);
     (*headers)["content-length"] = length_str;
   }
-  return headers.Pass();
+  return headers;
 }
 
 void SpdyTestUtil::MaybeAddVersionHeader(

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/strings/string_number_conversions.h"
@@ -139,7 +140,7 @@ scoped_ptr<base::Value> NetLogSignedCertificateTimestampCallback(
   dict->Set("unknown_logs_scts",
             SCTListToPrintableValues(ct_result->unknown_logs_scts));
 
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogRawSignedCertificateTimestampCallback(
@@ -154,7 +155,7 @@ scoped_ptr<base::Value> NetLogRawSignedCertificateTimestampCallback(
   SetBinaryData("scts_from_tls_extension", *sct_list_from_tls_extension,
                 dict.get());
 
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace net

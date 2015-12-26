@@ -5,6 +5,7 @@
 #include "net/base/directory_lister.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -121,9 +122,9 @@ void DirectoryLister::Core::Start() {
 
   if (!base::DirectoryExists(dir_)) {
     origin_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&Core::DoneOnOriginThread, this,
-                   base::Passed(directory_list.Pass()), ERR_FILE_NOT_FOUND));
+        FROM_HERE, base::Bind(&Core::DoneOnOriginThread, this,
+                              base::Passed(std::move(directory_list)),
+                              ERR_FILE_NOT_FOUND));
     return;
   }
 
@@ -169,7 +170,7 @@ void DirectoryLister::Core::Start() {
 
   origin_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Core::DoneOnOriginThread, this,
-                            base::Passed(directory_list.Pass()), OK));
+                            base::Passed(std::move(directory_list)), OK));
 }
 
 bool DirectoryLister::Core::IsCancelled() const {

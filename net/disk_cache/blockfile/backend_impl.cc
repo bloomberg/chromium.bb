@@ -5,6 +5,7 @@
 #include "net/disk_cache/blockfile/backend_impl.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -402,7 +403,7 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
       if (next)
         next->Release();
       next = NULL;
-      SyncEndEnumeration(iterator.Pass());
+      SyncEndEnumeration(std::move(iterator));
     }
 
     node->Release();
@@ -435,13 +436,14 @@ int BackendImpl::SyncDoomEntriesSince(const base::Time initial_time) {
 
     if (initial_time > entry->GetLastUsed()) {
       entry->Release();
-      SyncEndEnumeration(iterator.Pass());
+      SyncEndEnumeration(std::move(iterator));
       return net::OK;
     }
 
     entry->DoomImpl();
     entry->Release();
-    SyncEndEnumeration(iterator.Pass());  // The doom invalidated the iterator.
+    SyncEndEnumeration(
+        std::move(iterator));  // The doom invalidated the iterator.
   }
 }
 
@@ -1281,7 +1283,7 @@ class BackendImpl::IteratorImpl : public Backend::Iterator {
 
   ~IteratorImpl() override {
     if (background_queue_)
-      background_queue_->EndEnumeration(iterator_.Pass());
+      background_queue_->EndEnumeration(std::move(iterator_));
   }
 
   int OpenNextEntry(Entry** next_entry,
@@ -1371,7 +1373,8 @@ bool BackendImpl::InitBackingStore(bool* file_created) {
   bool ret = true;
   *file_created = base_file.created();
 
-  scoped_refptr<disk_cache::File> file(new disk_cache::File(base_file.Pass()));
+  scoped_refptr<disk_cache::File> file(
+      new disk_cache::File(std::move(base_file)));
   if (*file_created)
     ret = CreateBackingStore(file.get());
 

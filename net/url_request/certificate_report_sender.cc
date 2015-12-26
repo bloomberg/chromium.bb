@@ -4,6 +4,8 @@
 
 #include "net/url_request/certificate_report_sender.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
@@ -42,7 +44,7 @@ void CertificateReportSender::Send(const GURL& report_uri,
   scoped_ptr<UploadElementReader> reader(
       UploadOwnedBytesElementReader::CreateWithString(report));
   url_request->set_upload(
-      ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+      ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
 
   URLRequest* raw_url_request = url_request.get();
   inflight_requests_.insert(url_request.release());

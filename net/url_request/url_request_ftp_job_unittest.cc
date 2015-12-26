@@ -4,6 +4,7 @@
 
 #include "net/url_request/url_request_ftp_job.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -46,7 +47,7 @@ class MockProxyResolverFactory : public ProxyResolverFactory {
     scoped_ptr<MockAsyncProxyResolver> owned_resolver(
         new MockAsyncProxyResolver());
     resolver_ = owned_resolver.get();
-    *resolver = owned_resolver.Pass();
+    *resolver = std::move(owned_resolver);
     return OK;
   }
 
@@ -67,13 +68,13 @@ class FtpTestURLRequestContext : public TestURLRequestContext {
       : TestURLRequestContext(true),
         ftp_protocol_handler_(new FtpProtocolHandler(ftp_transaction_factory)) {
     set_client_socket_factory(socket_factory);
-    context_storage_.set_proxy_service(proxy_service.Pass());
+    context_storage_.set_proxy_service(std::move(proxy_service));
     set_network_delegate(network_delegate);
     scoped_ptr<URLRequestJobFactoryImpl> job_factory =
         make_scoped_ptr(new URLRequestJobFactoryImpl);
     job_factory->SetProtocolHandler("ftp",
                                     make_scoped_ptr(ftp_protocol_handler_));
-    context_storage_.set_job_factory(job_factory.Pass());
+    context_storage_.set_job_factory(std::move(job_factory));
     Init();
   }
 
@@ -82,7 +83,7 @@ class FtpTestURLRequestContext : public TestURLRequestContext {
   }
 
   void set_proxy_service(scoped_ptr<ProxyService> proxy_service) {
-    context_storage_.set_proxy_service(proxy_service.Pass());
+    context_storage_.set_proxy_service(std::move(proxy_service));
   }
 
  private:
@@ -321,7 +322,7 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestOrphanJob) {
   request_context()->set_proxy_service(make_scoped_ptr(new ProxyService(
       make_scoped_ptr(new ProxyConfigServiceFixed(
           ProxyConfig::CreateFromCustomPacURL(GURL("http://foo")))),
-      owned_resolver_factory.Pass(), nullptr)));
+      std::move(owned_resolver_factory), nullptr)));
 
   TestDelegate request_delegate;
   scoped_ptr<URLRequest> url_request(request_context()->CreateRequest(
@@ -352,7 +353,7 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestCancelRequest) {
   request_context()->set_proxy_service(make_scoped_ptr(new ProxyService(
       make_scoped_ptr(new ProxyConfigServiceFixed(
           ProxyConfig::CreateFromCustomPacURL(GURL("http://foo")))),
-      owned_resolver_factory.Pass(), nullptr)));
+      std::move(owned_resolver_factory), nullptr)));
 
   TestDelegate request_delegate;
   scoped_ptr<URLRequest> url_request(request_context()->CreateRequest(

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/strings/stringprintf.h"
@@ -127,19 +128,19 @@ void WebSocketMockClientSocketFactoryMaker::SetExpectations(
   scoped_ptr<SequencedSocketData> socket_data(new SequencedSocketData(
       detail_->reads.data(), detail_->reads.size(), &detail_->write, 1));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  AddRawExpectations(socket_data.Pass());
+  AddRawExpectations(std::move(socket_data));
 }
 
 void WebSocketMockClientSocketFactoryMaker::AddRawExpectations(
     scoped_ptr<SequencedSocketData> socket_data) {
   detail_->factory.AddSocketDataProvider(socket_data.get());
-  detail_->socket_data_vector.push_back(socket_data.Pass());
+  detail_->socket_data_vector.push_back(std::move(socket_data));
 }
 
 void WebSocketMockClientSocketFactoryMaker::AddSSLSocketDataProvider(
     scoped_ptr<SSLSocketDataProvider> ssl_socket_data) {
   detail_->factory.AddSSLSocketDataProvider(ssl_socket_data.get());
-  detail_->ssl_socket_data_vector.push_back(ssl_socket_data.Pass());
+  detail_->ssl_socket_data_vector.push_back(std::move(ssl_socket_data));
 }
 
 WebSocketTestURLRequestContextHost::WebSocketTestURLRequestContextHost()
@@ -151,12 +152,12 @@ WebSocketTestURLRequestContextHost::~WebSocketTestURLRequestContextHost() {}
 
 void WebSocketTestURLRequestContextHost::AddRawExpectations(
     scoped_ptr<SequencedSocketData> socket_data) {
-  maker_.AddRawExpectations(socket_data.Pass());
+  maker_.AddRawExpectations(std::move(socket_data));
 }
 
 void WebSocketTestURLRequestContextHost::AddSSLSocketDataProvider(
     scoped_ptr<SSLSocketDataProvider> ssl_socket_data) {
-  maker_.AddSSLSocketDataProvider(ssl_socket_data.Pass());
+  maker_.AddSSLSocketDataProvider(std::move(ssl_socket_data));
 }
 
 void WebSocketTestURLRequestContextHost::SetProxyConfig(

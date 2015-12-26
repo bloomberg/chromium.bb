@@ -6,6 +6,7 @@
 #define NET_SOCKET_WEBSOCKET_TRANSPORT_CONNECT_SUB_JOB_H_
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -46,7 +47,7 @@ class WebSocketTransportConnectSubJob
 
   SubJobType type() const { return type_; }
 
-  scoped_ptr<StreamSocket> PassSocket() { return transport_socket_.Pass(); }
+  scoped_ptr<StreamSocket> PassSocket() { return std::move(transport_socket_); }
 
   // Implementation of WebSocketEndpointLockManager::EndpointWaiter.
   void GotEndpointLock() override;

@@ -5,6 +5,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -179,7 +180,7 @@ void TestURLFetcher::SaveResponseWithWriter(
   // to be done in SaveResponseToFileAtPath(), and this method supports only
   // URLFetcherStringWriter (for testing of this method only).
   if (fake_response_destination_ == STRING) {
-    response_writer_ = response_writer.Pass();
+    response_writer_ = std::move(response_writer);
     int response = response_writer_->Initialize(CompletionCallback());
     // The TestURLFetcher doesn't handle asynchronous writes.
     DCHECK_EQ(OK, response);

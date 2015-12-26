@@ -52,9 +52,7 @@ FileStream::Context::OpenResult::OpenResult() {
 
 FileStream::Context::OpenResult::OpenResult(base::File file,
                                             IOResult error_code)
-    : file(file.Pass()),
-      error_code(error_code) {
-}
+    : file(std::move(file)), error_code(error_code) {}
 
 FileStream::Context::OpenResult::OpenResult(OpenResult&& other)
     : file(std::move(other.file)), error_code(other.error_code) {}
@@ -174,7 +172,7 @@ FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
     return OpenResult(base::File(),
                       IOResult::FromOSError(logging::GetLastSystemErrorCode()));
 
-  return OpenResult(file.Pass(), IOResult(OK, 0));
+  return OpenResult(std::move(file), IOResult(OK, 0));
 }
 
 FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
@@ -191,7 +189,7 @@ FileStream::Context::IOResult FileStream::Context::FlushFileImpl() {
 
 void FileStream::Context::OnOpenCompleted(const CompletionCallback& callback,
                                           OpenResult open_result) {
-  file_ = open_result.file.Pass();
+  file_ = std::move(open_result.file);
   if (file_.IsValid() && !orphaned_)
     OnFileOpened();
 

@@ -5,6 +5,7 @@
 #include "net/socket/transport_client_socket_pool.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
@@ -382,7 +383,7 @@ int TransportConnectJob::DoTransportConnectComplete(int result) {
         break;
     }
 
-    SetSocket(transport_socket_.Pass());
+    SetSocket(std::move(transport_socket_));
   } else {
     // Failure will be returned via |GetAdditionalErrorState|, so save
     // connection attempts from both sockets for use there.
@@ -452,7 +453,7 @@ void TransportConnectJob::DoIPv6FallbackTransportConnectComplete(int result) {
     connect_timing_.connect_start = fallback_connect_start_time_;
     helper_.HistogramDuration(
         TransportConnectJobHelper::CONNECTION_LATENCY_IPV4_WINS_RACE);
-    SetSocket(fallback_transport_socket_.Pass());
+    SetSocket(std::move(fallback_transport_socket_));
     helper_.set_next_state(TransportConnectJobHelper::STATE_NONE);
   } else {
     // Failure will be returned via |GetAdditionalErrorState|, so save
@@ -579,7 +580,7 @@ void TransportClientSocketPool::ReleaseSocket(
     const std::string& group_name,
     scoped_ptr<StreamSocket> socket,
     int id) {
-  base_.ReleaseSocket(group_name, socket.Pass(), id);
+  base_.ReleaseSocket(group_name, std::move(socket), id);
 }
 
 void TransportClientSocketPool::FlushWithError(int error) {

@@ -4,6 +4,8 @@
 
 #include "net/quic/test_tools/crypto_test_utils.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -53,9 +55,9 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
                               nullptr,
                               transport_security_state.get(),
                               cert_transparency_verifier.get()),
-        cert_verifier_(cert_verifier.Pass()),
-        transport_security_state_(transport_security_state.Pass()),
-        cert_transparency_verifier_(cert_transparency_verifier.Pass()) {
+        cert_verifier_(std::move(cert_verifier)),
+        transport_security_state_(std::move(transport_security_state)),
+        cert_transparency_verifier_(std::move(cert_transparency_verifier)) {
     // Load and install the root for the validated chain.
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), cert_file);
@@ -136,9 +138,9 @@ class FakeProofVerifier : public TestProofVerifierChromium {
                     scoped_ptr<TransportSecurityState> transport_security_state,
                     scoped_ptr<CTVerifier> cert_transparency_verifier,
                     const std::string& cert_file)
-      : TestProofVerifierChromium(cert_verifier.Pass(),
-                                  transport_security_state.Pass(),
-                                  cert_transparency_verifier.Pass(),
+      : TestProofVerifierChromium(std::move(cert_verifier),
+                                  std::move(transport_security_state),
+                                  std::move(cert_transparency_verifier),
                                   cert_file) {}
   ~FakeProofVerifier() override {}
 
@@ -168,7 +170,7 @@ class FakeProofVerifier : public TestProofVerifierChromium {
       *error_details = "Failed to create certificate chain";
       verify_details_chromium->cert_verify_result.cert_status =
           CERT_STATUS_INVALID;
-      *verify_details = verify_details_chromium.Pass();
+      *verify_details = std::move(verify_details_chromium);
       return QUIC_FAILURE;
     }
 
@@ -188,17 +190,17 @@ class FakeProofVerifier : public TestProofVerifierChromium {
                                     error_string.c_str());
       verify_details_chromium->cert_verify_result.cert_status =
           CERT_STATUS_INVALID;
-      *verify_details = verify_details_chromium.Pass();
+      *verify_details = std::move(verify_details_chromium);
       return QUIC_FAILURE;
     }
     if (signature != kSignature) {
       *error_details = "Invalid proof";
       verify_details_chromium->cert_verify_result.cert_status =
           CERT_STATUS_INVALID;
-      *verify_details = verify_details_chromium.Pass();
+      *verify_details = std::move(verify_details_chromium);
       return QUIC_FAILURE;
     }
-    *verify_details = verify_details_chromium.Pass();
+    *verify_details = std::move(verify_details_chromium);
     return QUIC_SUCCESS;
   }
 
@@ -238,12 +240,12 @@ ProofVerifier* ProofVerifierForTestingInternal(bool use_real_proof_verifier) {
                                          "test.example.com", verify_result, OK);
   if (use_real_proof_verifier) {
     return new TestProofVerifierChromium(
-        cert_verifier.Pass(), make_scoped_ptr(new TransportSecurityState),
+        std::move(cert_verifier), make_scoped_ptr(new TransportSecurityState),
         make_scoped_ptr(new MultiLogCTVerifier), "quic_root.crt");
   }
 #if defined(USE_OPENSSL)
   return new TestProofVerifierChromium(
-      cert_verifier.Pass(), make_scoped_ptr(new TransportSecurityState),
+      std::move(cert_verifier), make_scoped_ptr(new TransportSecurityState),
       make_scoped_ptr(new MultiLogCTVerifier), "quic_root.crt");
 #else
   return new FakeProofVerifier(

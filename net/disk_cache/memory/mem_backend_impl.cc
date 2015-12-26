@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/memory/mem_backend_impl.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "net/base/net_errors.h"
@@ -47,7 +49,7 @@ scoped_ptr<Backend> MemBackendImpl::CreateBackend(int max_bytes,
   scoped_ptr<MemBackendImpl> cache(new MemBackendImpl(net_log));
   cache->SetMaxSize(max_bytes);
   if (cache->Init())
-    return cache.Pass();
+    return std::move(cache);
 
   LOG(ERROR) << "Unable to create cache";
   return nullptr;

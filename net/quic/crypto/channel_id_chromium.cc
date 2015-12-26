@@ -5,6 +5,7 @@
 #include "net/quic/crypto/channel_id_chromium.h"
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -195,7 +196,7 @@ int ChannelIDSourceChromium::Job::DoGetChannelIDKeyComplete(int result) {
     return ERR_UNEXPECTED;
   }
   channel_id_key_.reset(
-      new ChannelIDKeyChromium(channel_id_crypto_key_.Pass()));
+      new ChannelIDKeyChromium(std::move(channel_id_crypto_key_)));
 
   return result;
 }

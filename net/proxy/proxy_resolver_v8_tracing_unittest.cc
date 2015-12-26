@@ -5,6 +5,7 @@
 #include "net/proxy/proxy_resolver_v8_tracing.h"
 
 #include <string>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -142,11 +143,11 @@ scoped_ptr<ProxyResolverV8Tracing> CreateResolver(
   TestCompletionCallback callback;
   scoped_ptr<ProxyResolverFactory::Request> request;
   factory->CreateProxyResolverV8Tracing(LoadScriptData(filename),
-                                        bindings.Pass(), &resolver,
+                                        std::move(bindings), &resolver,
                                         callback.callback(), &request);
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_TRUE(resolver);
-  return resolver.Pass();
+  return resolver;
 }
 
 TEST_F(ProxyResolverV8TracingTest, Simple) {

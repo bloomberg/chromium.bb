@@ -4,6 +4,8 @@
 
 #include "net/base/sdch_manager.h"
 
+#include <utility>
+
 #include "base/base64url.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -247,7 +249,7 @@ SdchManager::GetDictionarySet(const GURL& target_url) {
 
   UMA_HISTOGRAM_COUNTS("Sdch3.Advertisement_Count", count);
 
-  return result.Pass();
+  return result;
 }
 
 scoped_ptr<SdchManager::DictionarySet>
@@ -260,15 +262,15 @@ SdchManager::GetDictionarySetByHash(
   *problem_code = SDCH_DICTIONARY_HASH_NOT_FOUND;
   const auto& it = dictionaries_.find(server_hash);
   if (it == dictionaries_.end())
-    return result.Pass();
+    return result;
 
   *problem_code = it->second->data.CanUse(target_url);
   if (*problem_code != SDCH_OK)
-    return result.Pass();
+    return result;
 
   result.reset(new DictionarySet);
   result->AddDictionary(it->first, it->second);
-  return result.Pass();
+  return result;
 }
 
 // static
@@ -431,7 +433,7 @@ SdchProblemCode SdchManager::RemoveSdchDictionary(
 // static
 scoped_ptr<SdchManager::DictionarySet>
 SdchManager::CreateEmptyDictionarySetForTesting() {
-  return scoped_ptr<DictionarySet>(new DictionarySet).Pass();
+  return scoped_ptr<DictionarySet>(new DictionarySet);
 }
 
 scoped_ptr<base::Value> SdchManager::SdchInfoToValue() const {
@@ -452,11 +454,11 @@ scoped_ptr<base::Value> SdchManager::SdchInfoToValue() const {
          port_it != entry.second->data.ports().end(); ++port_it) {
       port_list->AppendInteger(*port_it);
     }
-    entry_dict->Set("ports", port_list.Pass());
+    entry_dict->Set("ports", std::move(port_list));
     entry_dict->SetString("server_hash", entry.first);
-    entry_list->Append(entry_dict.Pass());
+    entry_list->Append(std::move(entry_dict));
   }
-  value->Set("dictionaries", entry_list.Pass());
+  value->Set("dictionaries", std::move(entry_list));
 
   entry_list.reset(new base::ListValue());
   for (DomainBlacklistInfo::const_iterator it = blacklisted_domains_.begin();
@@ -468,11 +470,11 @@ scoped_ptr<base::Value> SdchManager::SdchInfoToValue() const {
     if (it->second.count != INT_MAX)
       entry_dict->SetInteger("tries", it->second.count);
     entry_dict->SetInteger("reason", it->second.reason);
-    entry_list->Append(entry_dict.Pass());
+    entry_list->Append(std::move(entry_dict));
   }
-  value->Set("blacklisted", entry_list.Pass());
+  value->Set("blacklisted", std::move(entry_list));
 
-  return value.Pass();
+  return std::move(value);
 }
 
 }  // namespace net

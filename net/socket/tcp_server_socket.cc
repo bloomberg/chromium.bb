@@ -4,6 +4,8 @@
 
 #include "net/socket/tcp_server_socket.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -87,12 +89,12 @@ int TCPServerSocket::ConvertAcceptedSocket(
     int result,
     scoped_ptr<StreamSocket>* output_accepted_socket) {
   // Make sure the TCPSocket object is destroyed in any case.
-  scoped_ptr<TCPSocket> temp_accepted_socket(accepted_socket_.Pass());
+  scoped_ptr<TCPSocket> temp_accepted_socket(std::move(accepted_socket_));
   if (result != OK)
     return result;
 
-  output_accepted_socket->reset(new TCPClientSocket(
-      temp_accepted_socket.Pass(), accepted_address_));
+  output_accepted_socket->reset(
+      new TCPClientSocket(std::move(temp_accepted_socket), accepted_address_));
 
   return OK;
 }

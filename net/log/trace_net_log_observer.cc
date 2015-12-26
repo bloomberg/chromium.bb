@@ -5,8 +5,8 @@
 #include "net/log/trace_net_log_observer.h"
 
 #include <stdio.h>
-
 #include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -24,7 +24,8 @@ const char kNetLogTracingCategory[] = "netlog";
 
 class TracedValue : public base::trace_event::ConvertableToTraceFormat {
  public:
-  explicit TracedValue(scoped_ptr<base::Value> value) : value_(value.Pass()) {}
+  explicit TracedValue(scoped_ptr<base::Value> value)
+      : value_(std::move(value)) {}
 
  private:
   ~TracedValue() override {}
@@ -62,7 +63,7 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
           scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
-              new TracedValue(params.Pass())));
+              new TracedValue(std::move(params))));
       break;
     case NetLog::PHASE_END:
       TRACE_EVENT_NESTABLE_ASYNC_END2(
@@ -70,7 +71,7 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
           scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
-              new TracedValue(params.Pass())));
+              new TracedValue(std::move(params))));
       break;
     case NetLog::PHASE_NONE:
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
@@ -78,7 +79,7 @@ void TraceNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
           entry.source().id, "source_type",
           NetLog::SourceTypeToString(entry.source().type), "params",
           scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
-              new TracedValue(params.Pass())));
+              new TracedValue(std::move(params))));
       break;
   }
 }

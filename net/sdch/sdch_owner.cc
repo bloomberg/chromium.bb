@@ -4,6 +4,8 @@
 
 #include "net/sdch/sdch_owner.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
@@ -103,7 +105,7 @@ void InitializePrefStore(WriteablePrefStore* store) {
   empty_store->SetInteger(kVersionKey, kVersion);
   empty_store->Set(kDictionariesKey,
                    make_scoped_ptr(new base::DictionaryValue));
-  store->SetValue(kPreferenceName, empty_store.Pass(),
+  store->SetValue(kPreferenceName, std::move(empty_store),
                   WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
@@ -444,7 +446,7 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
   dictionary_description->SetInteger(kDictionaryUseCountKey, use_count);
   dictionary_description->SetInteger(kDictionarySizeKey,
                                      dictionary_text.size());
-  pref_dictionary_map->Set(server_hash, dictionary_description.Pass());
+  pref_dictionary_map->Set(server_hash, std::move(dictionary_description));
   load_times_[server_hash] = clock_->Now();
 }
 
@@ -620,7 +622,7 @@ void SdchOwner::OnInitializationCompleted(bool succeeded) {
 }
 
 void SdchOwner::SetClockForTesting(scoped_ptr<base::Clock> clock) {
-  clock_ = clock.Pass();
+  clock_ = std::move(clock);
 }
 
 int SdchOwner::GetDictionaryCountForTesting() const {

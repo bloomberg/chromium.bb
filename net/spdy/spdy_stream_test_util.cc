@@ -5,6 +5,7 @@
 #include "net/spdy/spdy_stream_test_util.h"
 
 #include <cstddef>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "net/base/completion_callback.h"
@@ -66,7 +67,7 @@ SpdyResponseHeadersStatus StreamDelegateBase::OnResponseHeadersUpdated(
 
 void StreamDelegateBase::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (buffer)
-    received_data_queue_.Enqueue(buffer.Pass());
+    received_data_queue_.Enqueue(std::move(buffer));
 }
 
 void StreamDelegateBase::OnDataSent() {}

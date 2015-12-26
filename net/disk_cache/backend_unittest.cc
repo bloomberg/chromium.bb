@@ -64,7 +64,7 @@ scoped_ptr<disk_cache::BackendImpl> CreateExistingEntryCache(
     return scoped_ptr<disk_cache::BackendImpl>();
   entry->Close();
 
-  return cache.Pass();
+  return cache;
 }
 
 }  // namespace

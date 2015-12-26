@@ -189,7 +189,7 @@ class HttpServerTest : public testing::Test,
     scoped_ptr<ServerSocket> server_socket(
         new TCPServerSocket(NULL, NetLog::Source()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
-    server_.reset(new HttpServer(server_socket.Pass(), this));
+    server_.reset(new HttpServer(std::move(server_socket), this));
     ASSERT_EQ(OK, server_->GetLocalAddress(&server_address_));
   }
 

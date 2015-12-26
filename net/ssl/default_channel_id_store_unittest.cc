@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -45,7 +46,7 @@ class AsyncGetChannelIDHelper {
                 scoped_ptr<crypto::ECPrivateKey> key_result) {
     err_ = err;
     server_identifier_ = server_identifier;
-    key_ = key_result.Pass();
+    key_ = std::move(key_result);
     called_ = true;
   }
 

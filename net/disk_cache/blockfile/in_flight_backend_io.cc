@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/blockfile/in_flight_backend_io.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -128,7 +130,7 @@ void BackendIO::OpenNextEntry(Rankings::Iterator* iterator,
 
 void BackendIO::EndEnumeration(scoped_ptr<Rankings::Iterator> iterator) {
   operation_ = OP_END_ENUMERATION;
-  scoped_iterator_ = iterator.Pass();
+  scoped_iterator_ = std::move(iterator);
 }
 
 void BackendIO::OnExternalCacheHit(const std::string& key) {
@@ -261,7 +263,7 @@ void BackendIO::ExecuteBackendOperation() {
       result_ = backend_->SyncOpenNextEntry(iterator_, entry_ptr_);
       break;
     case OP_END_ENUMERATION:
-      backend_->SyncEndEnumeration(scoped_iterator_.Pass());
+      backend_->SyncEndEnumeration(std::move(scoped_iterator_));
       result_ = net::OK;
       break;
     case OP_ON_EXTERNAL_CACHE_HIT:
@@ -414,7 +416,7 @@ void InFlightBackendIO::EndEnumeration(
     scoped_ptr<Rankings::Iterator> iterator) {
   scoped_refptr<BackendIO> operation(
       new BackendIO(this, backend_, net::CompletionCallback()));
-  operation->EndEnumeration(iterator.Pass());
+  operation->EndEnumeration(std::move(iterator));
   PostOperation(operation.get());
 }
 

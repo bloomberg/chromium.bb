@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <ctime>
 #include <sstream>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/files/file_util.h"
@@ -139,19 +140,19 @@ scoped_ptr<HttpResponse> HandleFileRequest(const base::FilePath& server_root,
   if (query.find("expected_body") != query.end()) {
     if (request.content.find(query["expected_body"].front()) ==
         std::string::npos) {
-      return failed_response.Pass();
+      return std::move(failed_response);
     }
   }
 
   if (query.find("expected_headers") != query.end()) {
     for (const auto& header : query["expected_headers"]) {
       if (header.find(":") == std::string::npos)
-        return failed_response.Pass();
+        return std::move(failed_response);
       std::string key = header.substr(0, header.find(":"));
       std::string value = header.substr(header.find(":") + 1);
       if (request.headers.find(key) == request.headers.end() ||
           request.headers.at(key) != value) {
-        return failed_response.Pass();
+        return std::move(failed_response);
       }
     }
   }
@@ -173,7 +174,7 @@ scoped_ptr<HttpResponse> HandleFileRequest(const base::FilePath& server_root,
   if (query.find("replace_text") != query.end()) {
     for (const auto& replacement : query["replace_text"]) {
       if (replacement.find(":") == std::string::npos)
-        return failed_response.Pass();
+        return std::move(failed_response);
       std::string find;
       std::string with;
       base::Base64Decode(replacement.substr(0, replacement.find(":")), &find);
@@ -221,7 +222,7 @@ scoped_ptr<HttpResponse> HandleFileRequest(const base::FilePath& server_root,
   http_response->AddCustomHeader("Accept-Ranges", "bytes");
   http_response->AddCustomHeader("ETag", "'" + file_path.MaybeAsASCII() + "'");
   http_response->set_content(file_contents);
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // namespace test_server

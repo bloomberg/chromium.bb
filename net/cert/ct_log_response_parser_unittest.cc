@@ -23,7 +23,7 @@ namespace ct {
 namespace {
 scoped_ptr<base::Value> ParseJson(const std::string& json) {
   base::JSONReader json_reader;
-  return json_reader.Read(json).Pass();
+  return json_reader.Read(json);
 }
 }
 

@@ -4,6 +4,8 @@
 
 #include "net/spdy/spdy_session_pool.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
@@ -101,8 +103,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
       stream_max_recv_window_size_, initial_max_concurrent_streams_, time_func_,
       trusted_spdy_proxy_, net_log.net_log()));
 
-  new_session->InitializeWithSocket(
-      connection.Pass(), this, is_secure, certificate_error_code);
+  new_session->InitializeWithSocket(std::move(connection), this, is_secure,
+                                    certificate_error_code);
 
   base::WeakPtr<SpdySession> available_session = new_session->GetWeakPtr();
   sessions_.insert(new_session.release());
@@ -259,7 +261,7 @@ scoped_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue() const {
     if (key.Equals(session_key))
       list->Append(it->second->GetInfoAsValue());
   }
-  return list.Pass();
+  return std::move(list);
 }
 
 void SpdySessionPool::OnIPAddressChanged() {

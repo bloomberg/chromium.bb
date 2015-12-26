@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/disk_cache/simple/simple_index.h"
+
 #include <algorithm>
 #include <functional>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/hash.h"
@@ -16,7 +19,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
-#include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_index_delegate.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_test_util.h"
@@ -106,7 +108,7 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
     scoped_ptr<MockSimpleIndexFile> index_file(new MockSimpleIndexFile());
     index_file_ = index_file->AsWeakPtr();
     index_.reset(
-        new SimpleIndex(NULL, this, net::DISK_CACHE, index_file.Pass()));
+        new SimpleIndex(NULL, this, net::DISK_CACHE, std::move(index_file)));
 
     index_->Initialize(base::Time());
   }
@@ -207,7 +209,7 @@ TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
   {
     scoped_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
     result->did_load = true;
-    index()->MergeInitializingSet(result.Pass());
+    index()->MergeInitializingSet(std::move(result));
   }
   EXPECT_EQ(9U, index()->cache_size_);
   {
@@ -219,7 +221,7 @@ TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
     const uint64_t redundant_hash_key = hashes_.at<4>();
     result->entries.insert(std::make_pair(redundant_hash_key,
                                           EntryMetadata(base::Time::Now(), 4)));
-    index()->MergeInitializingSet(result.Pass());
+    index()->MergeInitializingSet(std::move(result));
   }
   EXPECT_EQ(2U + 3U + 4U + 11U, index()->cache_size_);
 }

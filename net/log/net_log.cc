@@ -4,6 +4,8 @@
 
 #include "net/log/net_log.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
@@ -29,7 +31,7 @@ scoped_ptr<base::Value> BytesTransferredCallback(
   dict->SetInteger("byte_count", byte_count);
   if (capture_mode.include_socket_bytes() && byte_count > 0)
     dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, byte_count));
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> SourceEventParametersCallback(
@@ -39,7 +41,7 @@ scoped_ptr<base::Value> SourceEventParametersCallback(
     return scoped_ptr<base::Value>();
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   source.AddToEventParameters(event_params.get());
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 scoped_ptr<base::Value> NetLogBoolCallback(
@@ -48,7 +50,7 @@ scoped_ptr<base::Value> NetLogBoolCallback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   event_params->SetBoolean(name, value);
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 scoped_ptr<base::Value> NetLogIntCallback(
@@ -57,7 +59,7 @@ scoped_ptr<base::Value> NetLogIntCallback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   event_params->SetInteger(name, value);
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 scoped_ptr<base::Value> NetLogInt64Callback(
@@ -66,7 +68,7 @@ scoped_ptr<base::Value> NetLogInt64Callback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   event_params->SetString(name, base::Int64ToString(value));
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 scoped_ptr<base::Value> NetLogStringCallback(
@@ -75,7 +77,7 @@ scoped_ptr<base::Value> NetLogStringCallback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   event_params->SetString(name, *value);
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 scoped_ptr<base::Value> NetLogString16Callback(
@@ -84,7 +86,7 @@ scoped_ptr<base::Value> NetLogString16Callback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> event_params(new base::DictionaryValue());
   event_params->SetString(name, *value);
-  return event_params.Pass();
+  return std::move(event_params);
 }
 
 }  // namespace
@@ -106,7 +108,7 @@ void NetLog::Source::AddToEventParameters(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("type", static_cast<int>(type));
   dict->SetInteger("id", static_cast<int>(id));
-  event_params->Set("source_dependency", dict.Pass());
+  event_params->Set("source_dependency", std::move(dict));
 }
 
 NetLog::ParametersCallback NetLog::Source::ToEventParametersCallback() const {
@@ -143,7 +145,7 @@ base::Value* NetLog::Entry::ToValue() const {
   scoped_ptr<base::DictionaryValue> source_dict(new base::DictionaryValue());
   source_dict->SetInteger("id", data_->source.id);
   source_dict->SetInteger("type", static_cast<int>(data_->source.type));
-  entry_dict->Set("source", source_dict.Pass());
+  entry_dict->Set("source", std::move(source_dict));
 
   // Set the event info.
   entry_dict->SetInteger("type", static_cast<int>(data_->type));
@@ -154,7 +156,7 @@ base::Value* NetLog::Entry::ToValue() const {
     scoped_ptr<base::Value> value(
         data_->parameters_callback->Run(capture_mode_));
     if (value)
-      entry_dict->Set("params", value.Pass());
+      entry_dict->Set("params", std::move(value));
   }
 
   return entry_dict.release();

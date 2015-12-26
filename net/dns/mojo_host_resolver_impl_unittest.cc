@@ -5,6 +5,7 @@
 #include "net/dns/mojo_host_resolver_impl.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -27,7 +28,7 @@ class TestRequestClient : public interfaces::HostResolverRequestClient {
  public:
   explicit TestRequestClient(
       mojo::InterfaceRequest<interfaces::HostResolverRequestClient> req)
-      : done_(false), binding_(this, req.Pass()) {
+      : done_(false), binding_(this, std::move(req)) {
     binding_.set_connection_error_handler(base::Bind(
         &TestRequestClient::OnConnectionError, base::Unretained(this)));
   }
@@ -75,7 +76,7 @@ void TestRequestClient::ReportResult(int32_t error,
   }
   ASSERT_FALSE(done_);
   error_ = error;
-  results_ = results.Pass();
+  results_ = std::move(results);
   done_ = true;
 }
 
@@ -144,7 +145,7 @@ class MojoHostResolverImplTest : public testing::Test {
     request->port = port;
     request->address_family = interfaces::ADDRESS_FAMILY_IPV4;
     request->is_my_ip_address = is_my_ip_address;
-    return request.Pass();
+    return request;
   }
 
   // Wait until the mock resolver has received |num| resolve requests.
@@ -166,7 +167,7 @@ TEST_F(MojoHostResolverImplTest, Resolve) {
 
   interfaces::HostResolverRequestInfoPtr request =
       CreateRequest("example.com", 80, false);
-  resolver_service_->Resolve(request.Pass(), client_ptr.Pass());
+  resolver_service_->Resolve(std::move(request), std::move(client_ptr));
   client.WaitForResult();
 
   EXPECT_EQ(net::OK, client.error_);
@@ -183,7 +184,7 @@ TEST_F(MojoHostResolverImplTest, ResolveSynchronous) {
 
   interfaces::HostResolverRequestInfoPtr request =
       CreateRequest("example.com", 80, false);
-  resolver_service_->Resolve(request.Pass(), client_ptr.Pass());
+  resolver_service_->Resolve(std::move(request), std::move(client_ptr));
   client.WaitForResult();
 
   EXPECT_EQ(net::OK, client.error_);
@@ -202,10 +203,10 @@ TEST_F(MojoHostResolverImplTest, ResolveMultiple) {
 
   interfaces::HostResolverRequestInfoPtr request1 =
       CreateRequest("example.com", 80, false);
-  resolver_service_->Resolve(request1.Pass(), client1_ptr.Pass());
+  resolver_service_->Resolve(std::move(request1), std::move(client1_ptr));
   interfaces::HostResolverRequestInfoPtr request2 =
       CreateRequest("chromium.org", 80, false);
-  resolver_service_->Resolve(request2.Pass(), client2_ptr.Pass());
+  resolver_service_->Resolve(std::move(request2), std::move(client2_ptr));
   WaitForRequests(2);
   mock_host_resolver_.ResolveAllPending();
 
@@ -232,10 +233,10 @@ TEST_F(MojoHostResolverImplTest, ResolveDuplicate) {
 
   interfaces::HostResolverRequestInfoPtr request1 =
       CreateRequest("example.com", 80, false);
-  resolver_service_->Resolve(request1.Pass(), client1_ptr.Pass());
+  resolver_service_->Resolve(std::move(request1), std::move(client1_ptr));
   interfaces::HostResolverRequestInfoPtr request2 =
       CreateRequest("example.com", 80, false);
-  resolver_service_->Resolve(request2.Pass(), client2_ptr.Pass());
+  resolver_service_->Resolve(std::move(request2), std::move(client2_ptr));
   WaitForRequests(2);
   mock_host_resolver_.ResolveAllPending();
 
@@ -258,7 +259,7 @@ TEST_F(MojoHostResolverImplTest, ResolveFailure) {
 
   interfaces::HostResolverRequestInfoPtr request =
       CreateRequest("failure.fail", 80, false);
-  resolver_service_->Resolve(request.Pass(), client_ptr.Pass());
+  resolver_service_->Resolve(std::move(request), std::move(client_ptr));
   client.WaitForResult();
 
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, client.error_);
@@ -274,7 +275,7 @@ TEST_F(MojoHostResolverImplTest, DestroyClient) {
 
   interfaces::HostResolverRequestInfoPtr request =
       CreateRequest("example.com", 80, false);
-  resolver_service_->Resolve(request.Pass(), client_ptr.Pass());
+  resolver_service_->Resolve(std::move(request), std::move(client_ptr));
   WaitForRequests(1);
 
   client.reset();

@@ -5,6 +5,7 @@
 #include "net/http/http_cache.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -301,19 +302,19 @@ HttpCache::HttpCache(HttpNetworkSession* session,
                      scoped_ptr<BackendFactory> backend_factory,
                      bool set_up_quic_server_info)
     : HttpCache(make_scoped_ptr(new HttpNetworkLayer(session)),
-                backend_factory.Pass(),
+                std::move(backend_factory),
                 set_up_quic_server_info) {}
 
 HttpCache::HttpCache(scoped_ptr<HttpTransactionFactory> network_layer,
                      scoped_ptr<BackendFactory> backend_factory,
                      bool set_up_quic_server_info)
     : net_log_(nullptr),
-      backend_factory_(backend_factory.Pass()),
+      backend_factory_(std::move(backend_factory)),
       building_backend_(false),
       bypass_lock_for_test_(false),
       fail_conditionalization_for_test_(false),
       mode_(NORMAL),
-      network_layer_(network_layer.Pass()),
+      network_layer_(std::move(network_layer)),
       clock_(new base::DefaultClock()),
       weak_factory_(this) {
   HttpNetworkSession* session = network_layer_->GetSession();
@@ -480,9 +481,10 @@ HttpNetworkSession* HttpCache::GetSession() {
 scoped_ptr<HttpTransactionFactory>
 HttpCache::SetHttpNetworkTransactionFactoryForTesting(
     scoped_ptr<HttpTransactionFactory> new_network_layer) {
-  scoped_ptr<HttpTransactionFactory> old_network_layer(network_layer_.Pass());
-  network_layer_ = new_network_layer.Pass();
-  return old_network_layer.Pass();
+  scoped_ptr<HttpTransactionFactory> old_network_layer(
+      std::move(network_layer_));
+  network_layer_ = std::move(new_network_layer);
+  return old_network_layer;
 }
 
 //-----------------------------------------------------------------------------
@@ -1141,7 +1143,7 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
     // and the last call clears building_backend_.
     backend_factory_.reset();  // Reclaim memory.
     if (result == OK) {
-      disk_cache_ = pending_op->backend.Pass();
+      disk_cache_ = std::move(pending_op->backend);
       if (UseCertCache())
         cert_cache_.reset(new DiskBasedCertCache(disk_cache_.get()));
     }

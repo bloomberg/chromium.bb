@@ -87,7 +87,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
   }
 
   void EnableSdch() {
-    context_.SetSdchManager(scoped_ptr<SdchManager>(new SdchManager).Pass());
+    context_.SetSdchManager(scoped_ptr<SdchManager>(new SdchManager));
   }
 
   MockNetworkLayer network_layer_;
@@ -132,10 +132,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
   ASSERT_TRUE(request->is_pending());
@@ -163,10 +161,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
   ASSERT_TRUE(request->is_pending());
@@ -196,10 +192,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthFailedRequest) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
   ASSERT_TRUE(request->is_pending());
@@ -230,10 +224,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   delegate.set_cancel_in_received_data(true);
   request->Start();
@@ -280,10 +272,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&final_socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.redirect.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.redirect.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
   ASSERT_TRUE(request->is_pending());
@@ -314,10 +304,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   delegate.set_cancel_in_response_started(true);
   request->Start();
@@ -341,10 +329,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
   request->Cancel();
@@ -376,9 +362,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate1;
-  scoped_ptr<URLRequest> request1 =
-      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate1).Pass();
+  scoped_ptr<URLRequest> request1 = context_->CreateRequest(
+      GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate1);
 
   request1->Start();
   ASSERT_TRUE(request1->is_pending());
@@ -391,9 +376,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
 
   // Issue another request, and backoff logic should apply.
   TestDelegate delegate2;
-  scoped_ptr<URLRequest> request2 =
-      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate2).Pass();
+  scoped_ptr<URLRequest> request2 = context_->CreateRequest(
+      GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate2);
 
   request2->Start();
   ASSERT_TRUE(request2->is_pending());
@@ -441,10 +425,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate1;
-  scoped_ptr<URLRequest> request1 =
-      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate1)
-          .Pass();
+  scoped_ptr<URLRequest> request1 = context_->CreateRequest(
+      GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate1);
 
   request1->Start();
   ASSERT_TRUE(request1->is_pending());
@@ -457,10 +439,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
 
   // Issue a user-initiated request, backoff logic should not apply.
   TestDelegate delegate2;
-  scoped_ptr<URLRequest> request2 =
-      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate2)
-          .Pass();
+  scoped_ptr<URLRequest> request2 = context_->CreateRequest(
+      GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate2);
   request2->SetLoadFlags(request2->load_flags() | LOAD_MAYBE_USER_GESTURE);
 
   request2->Start();
@@ -487,9 +467,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderNotSecure) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate).Pass();
+  scoped_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
   ASSERT_TRUE(request->is_pending());
@@ -522,9 +501,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   TestDelegate delegate1;
-  scoped_ptr<URLRequest> request1 =
-      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate1).Pass();
+  scoped_ptr<URLRequest> request1 = context_->CreateRequest(
+      GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate1);
 
   request1->Start();
   ASSERT_TRUE(request1->is_pending());
@@ -538,9 +516,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
   // Backoff logic does not apply to a second request, since it is fetched
   // from cache.
   TestDelegate delegate2;
-  scoped_ptr<URLRequest> request2 =
-      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
-                              &delegate2).Pass();
+  scoped_ptr<URLRequest> request2 = context_->CreateRequest(
+      GURL("https://www.example.com"), DEFAULT_PRIORITY, &delegate2);
 
   request2->Start();
   ASSERT_TRUE(request2->is_pending());
@@ -554,10 +531,8 @@ TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
   context_.set_cookie_store(new DelayedCookieMonster());
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request =
-      context_.CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
-                             &delegate)
-          .Pass();
+  scoped_ptr<URLRequest> request = context_.CreateRequest(
+      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();
   request->Cancel();

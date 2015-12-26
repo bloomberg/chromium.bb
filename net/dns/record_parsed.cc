@@ -4,6 +4,8 @@
 
 #include "net/dns/record_parsed.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/record_rdata.h"
@@ -20,7 +22,7 @@ RecordParsed::RecordParsed(const std::string& name,
       type_(type),
       klass_(klass),
       ttl_(ttl),
-      rdata_(rdata.Pass()),
+      rdata_(std::move(rdata)),
       time_created_(time_created) {}
 
 RecordParsed::~RecordParsed() {
@@ -66,12 +68,9 @@ scoped_ptr<const RecordParsed> RecordParsed::CreateFrom(
   if (!rdata.get())
     return scoped_ptr<const RecordParsed>();
 
-  return scoped_ptr<const RecordParsed>(new RecordParsed(record.name,
-                                                         record.type,
-                                                         record.klass,
-                                                         record.ttl,
-                                                         rdata.Pass(),
-                                                         time_created));
+  return scoped_ptr<const RecordParsed>(
+      new RecordParsed(record.name, record.type, record.klass, record.ttl,
+                       std::move(rdata), time_created));
 }
 
 bool RecordParsed::IsEqual(const RecordParsed* other, bool is_mdns) const {

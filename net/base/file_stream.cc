@@ -4,6 +4,8 @@
 
 #include "net/base/file_stream.h"
 
+#include <utility>
+
 #include "base/profiler/scoped_tracker.h"
 #include "net/base/file_stream_context.h"
 #include "net/base/net_errors.h"
@@ -16,8 +18,7 @@ FileStream::FileStream(const scoped_refptr<base::TaskRunner>& task_runner)
 
 FileStream::FileStream(base::File file,
                        const scoped_refptr<base::TaskRunner>& task_runner)
-    : context_(new Context(file.Pass(), task_runner)) {
-}
+    : context_(new Context(std::move(file), task_runner)) {}
 
 FileStream::~FileStream() {
   context_.release()->Orphan();

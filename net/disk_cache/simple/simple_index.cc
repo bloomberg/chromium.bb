@@ -153,13 +153,12 @@ SimpleIndex::SimpleIndex(
       low_watermark_(0),
       eviction_in_progress_(false),
       initialized_(false),
-      index_file_(index_file.Pass()),
+      index_file_(std::move(index_file)),
       io_thread_(io_thread),
       // Creating the callback once so it is reused every time
       // write_to_disk_timer_.Start() is called.
       write_to_disk_cb_(base::Bind(&SimpleIndex::WriteToDisk, AsWeakPtr())),
-      app_on_background_(false) {
-}
+      app_on_background_(false) {}
 
 SimpleIndex::~SimpleIndex() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -229,7 +228,7 @@ scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetEntriesBetween(
     if (initial_time <= entry_time && entry_time < extended_end_time)
       ret_hashes->push_back(it->first);
   }
-  return ret_hashes.Pass();
+  return ret_hashes;
 }
 
 scoped_ptr<SimpleIndex::HashList> SimpleIndex::GetAllHashes() {

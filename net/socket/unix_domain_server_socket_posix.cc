@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "net/base/net_errors.h"
@@ -22,7 +23,7 @@ namespace {
 // Intended for use as SetterCallbacks in Accept() helper methods.
 void SetStreamSocket(scoped_ptr<StreamSocket>* socket,
                      scoped_ptr<SocketPosix> accepted_socket) {
-  socket->reset(new UnixDomainClientSocket(accepted_socket.Pass()));
+  socket->reset(new UnixDomainClientSocket(std::move(accepted_socket)));
 }
 
 void SetSocketDescriptor(SocketDescriptor* socket,
@@ -183,7 +184,7 @@ bool UnixDomainServerSocket::AuthenticateAndGetStreamSocket(
     return false;
   }
 
-  setter_callback.Run(accept_socket_.Pass());
+  setter_callback.Run(std::move(accept_socket_));
   return true;
 }
 

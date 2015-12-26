@@ -5,6 +5,7 @@
 #include "net/http/http_transaction_test_util.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -530,7 +531,7 @@ int MockNetworkLayer::CreateTransaction(RequestPriority priority,
   scoped_ptr<MockNetworkTransaction> mock_transaction(
       new MockNetworkTransaction(priority, this));
   last_transaction_ = mock_transaction->AsWeakPtr();
-  *trans = mock_transaction.Pass();
+  *trans = std::move(mock_transaction);
   return OK;
 }
 

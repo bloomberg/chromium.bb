@@ -5,6 +5,7 @@
 #include "net/proxy/proxy_resolver_factory_mojo.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -37,7 +38,7 @@ scoped_ptr<base::Value> NetLogErrorCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("line_number", line_number);
   dict->SetString("message", *message);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // A mixin that forwards logging to (Bound)NetLog and ProxyResolverErrorObserver
@@ -76,7 +77,7 @@ class ClientMixin : public ClientInterface {
 
   void ResolveDns(interfaces::HostResolverRequestInfoPtr request_info,
                   interfaces::HostResolverRequestClientPtr client) override {
-    host_resolver_.Resolve(request_info.Pass(), client.Pass());
+    host_resolver_.Resolve(std::move(request_info), std::move(client));
   }
 
  protected:
@@ -202,7 +203,7 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
   binding_.set_connection_error_handler(base::Bind(
       &ProxyResolverMojo::Job::OnConnectionError, base::Unretained(this)));
   resolver_->mojo_proxy_resolver_ptr_->GetProxyForUrl(mojo::String::From(url_),
-                                                      client_ptr.Pass());
+                                                      std::move(client_ptr));
 }
 
 ProxyResolverMojo::Job::~Job() {
@@ -251,11 +252,11 @@ ProxyResolverMojo::ProxyResolverMojo(
     scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner,
     scoped_ptr<ProxyResolverErrorObserver> error_observer,
     NetLog* net_log)
-    : mojo_proxy_resolver_ptr_(resolver_ptr.Pass()),
+    : mojo_proxy_resolver_ptr_(std::move(resolver_ptr)),
       host_resolver_(host_resolver),
-      error_observer_(error_observer.Pass()),
+      error_observer_(std::move(error_observer)),
       net_log_(net_log),
-      on_delete_callback_runner_(on_delete_callback_runner.Pass()) {
+      on_delete_callback_runner_(std::move(on_delete_callback_runner)) {
   mojo_proxy_resolver_ptr_.set_connection_error_handler(base::Bind(
       &ProxyResolverMojo::OnConnectionError, base::Unretained(this)));
 }
@@ -338,12 +339,12 @@ class ProxyResolverFactoryMojo::Job
         resolver_(resolver),
         callback_(callback),
         binding_(this),
-        error_observer_(error_observer.Pass()) {
+        error_observer_(std::move(error_observer)) {
     interfaces::ProxyResolverFactoryRequestClientPtr client_ptr;
     binding_.Bind(mojo::GetProxy(&client_ptr));
     on_delete_callback_runner_ = factory_->mojo_proxy_factory_->CreateResolver(
         mojo::String::From(pac_script->utf16()), mojo::GetProxy(&resolver_ptr_),
-        client_ptr.Pass());
+        std::move(client_ptr));
     resolver_ptr_.set_connection_error_handler(
         base::Bind(&ProxyResolverFactoryMojo::Job::OnConnectionError,
                    base::Unretained(this)));
@@ -359,10 +360,10 @@ class ProxyResolverFactoryMojo::Job
     resolver_ptr_.set_connection_error_handler(mojo::Closure());
     binding_.set_connection_error_handler(mojo::Closure());
     if (error == OK) {
-      resolver_->reset(
-          new ProxyResolverMojo(resolver_ptr_.Pass(), factory_->host_resolver_,
-                                on_delete_callback_runner_.Pass(),
-                                error_observer_.Pass(), factory_->net_log_));
+      resolver_->reset(new ProxyResolverMojo(
+          std::move(resolver_ptr_), factory_->host_resolver_,
+          std::move(on_delete_callback_runner_), std::move(error_observer_),
+          factory_->net_log_));
     }
     on_delete_callback_runner_.reset();
     callback_.Run(error);

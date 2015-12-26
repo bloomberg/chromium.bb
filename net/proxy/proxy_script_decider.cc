@@ -4,6 +4,8 @@
 
 #include "net/proxy/proxy_script_decider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -72,7 +74,7 @@ scoped_ptr<base::Value> ProxyScriptDecider::PacSource::NetLogCallback(
       break;
   }
   dict->SetString("source", source);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 ProxyScriptDecider::ProxyScriptDecider(

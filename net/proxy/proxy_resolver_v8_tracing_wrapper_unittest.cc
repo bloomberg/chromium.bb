@@ -84,7 +84,7 @@ scoped_ptr<ProxyResolver> CreateResolver(
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_TRUE(resolver);
-  return resolver.Pass();
+  return resolver;
 }
 
 class MockErrorObserver : public ProxyResolverErrorObserver {

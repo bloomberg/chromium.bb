@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "net/spdy/spdy_stream.h"
 
+#include <stdint.h>
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -24,7 +26,6 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
-#include "net/spdy/spdy_stream.h"
 #include "net/spdy/spdy_stream_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -196,7 +197,7 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
+            stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -275,7 +276,7 @@ TEST_P(SpdyStreamTest, Trailers) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
+            stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -389,7 +390,7 @@ TEST_P(SpdyStreamTest, StreamError) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
+            stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -468,7 +469,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
+            stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -527,7 +528,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
+            stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -580,8 +581,8 @@ TEST_P(SpdyStreamTest, UpperCaseHeaders) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
-  EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
+                                                       NO_MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -635,8 +636,8 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersOnPush) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
-  EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
+                                                       NO_MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -672,14 +673,9 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)["X-UpperCase"] = "yes";
-  scoped_ptr<SpdyFrame> headers_frame(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> headers_frame(spdy_util_.ConstructSpdyControlFrame(
+      std::move(late_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
   AddRead(*headers_frame);
 
   AddWritePause();
@@ -711,8 +707,8 @@ TEST_P(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
-  EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
+                                                       NO_MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -754,14 +750,9 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)[spdy_util_.GetStatusKey()] = "500 Server Error";
-  scoped_ptr<SpdyFrame> headers_frame(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> headers_frame(spdy_util_.ConstructSpdyControlFrame(
+      std::move(late_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
   AddRead(*headers_frame);
 
   AddReadPause();
@@ -793,8 +784,8 @@ TEST_P(SpdyStreamTest, DuplicateHeaders) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
-  EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
+                                                       NO_MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -856,7 +847,7 @@ TEST_P(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
+            stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -949,7 +940,7 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
+            stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -1030,7 +1021,7 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
   EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
+            stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
@@ -1113,8 +1104,8 @@ TEST_P(SpdyStreamTest, ReceivedBytes) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock(kStreamUrl));
-  EXPECT_EQ(ERR_IO_PENDING,
-            stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
+                                                       NO_MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 

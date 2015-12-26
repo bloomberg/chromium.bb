@@ -4,6 +4,8 @@
 
 #include "net/websockets/websocket_stream_create_test_base.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "net/http/http_request_headers.h"
@@ -62,14 +64,14 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
       scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
     // Can be called multiple times (in the case of HTTP auth). Last call
     // wins.
-    owner_->request_info_ = request.Pass();
+    owner_->request_info_ = std::move(request);
   }
 
   void OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
     if (owner_->response_info_)
       ADD_FAILURE();
-    owner_->response_info_ = response.Pass();
+    owner_->response_info_ = std::move(response);
   }
 
   void OnSSLCertificateError(
@@ -77,7 +79,7 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
           ssl_error_callbacks,
       const SSLInfo& ssl_info,
       bool fatal) override {
-    owner_->ssl_error_callbacks_ = ssl_error_callbacks.Pass();
+    owner_->ssl_error_callbacks_ = std::move(ssl_error_callbacks);
     owner_->ssl_info_ = ssl_info;
     owner_->ssl_fatal_ = fatal;
   }
@@ -111,10 +113,10 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
       new DeterministicKeyWebSocketHandshakeStreamCreateHelper(delegate,
                                                                sub_protocols));
   stream_request_ = CreateAndConnectStreamForTesting(
-      GURL(socket_url), create_helper.Pass(), origin,
+      GURL(socket_url), std::move(create_helper), origin,
       url_request_context_host_.GetURLRequestContext(), BoundNetLog(),
-      connect_delegate.Pass(),
-      timer ? timer.Pass()
+      std::move(connect_delegate),
+      timer ? std::move(timer)
             : scoped_ptr<base::Timer>(new base::Timer(false, false)));
 }
 

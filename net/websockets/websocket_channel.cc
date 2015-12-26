@@ -153,7 +153,7 @@ class WebSocketChannel::SendBuffer {
 
 void WebSocketChannel::SendBuffer::AddFrame(scoped_ptr<WebSocketFrame> frame) {
   total_bytes_ += frame->header.payload_length;
-  frames_.push_back(frame.Pass());
+  frames_.push_back(std::move(frame));
 }
 
 // Implementation of WebSocketStream::ConnectDelegate that simply forwards the
@@ -164,7 +164,7 @@ class WebSocketChannel::ConnectDelegate
   explicit ConnectDelegate(WebSocketChannel* creator) : creator_(creator) {}
 
   void OnSuccess(scoped_ptr<WebSocketStream> stream) override {
-    creator_->OnConnectSuccess(stream.Pass());
+    creator_->OnConnectSuccess(std::move(stream));
     // |this| may have been deleted.
   }
 
@@ -175,12 +175,12 @@ class WebSocketChannel::ConnectDelegate
 
   void OnStartOpeningHandshake(
       scoped_ptr<WebSocketHandshakeRequestInfo> request) override {
-    creator_->OnStartOpeningHandshake(request.Pass());
+    creator_->OnStartOpeningHandshake(std::move(request));
   }
 
   void OnFinishOpeningHandshake(
       scoped_ptr<WebSocketHandshakeResponseInfo> response) override {
-    creator_->OnFinishOpeningHandshake(response.Pass());
+    creator_->OnFinishOpeningHandshake(std::move(response));
   }
 
   void OnSSLCertificateError(
@@ -188,8 +188,8 @@ class WebSocketChannel::ConnectDelegate
           ssl_error_callbacks,
       const SSLInfo& ssl_info,
       bool fatal) override {
-    creator_->OnSSLCertificateError(
-        ssl_error_callbacks.Pass(), ssl_info, fatal);
+    creator_->OnSSLCertificateError(std::move(ssl_error_callbacks), ssl_info,
+                                    fatal);
   }
 
  private:
@@ -218,7 +218,7 @@ class WebSocketChannel::HandshakeNotificationSender
 
   void set_handshake_request_info(
       scoped_ptr<WebSocketHandshakeRequestInfo> request_info) {
-    handshake_request_info_ = request_info.Pass();
+    handshake_request_info_ = std::move(request_info);
   }
 
   const WebSocketHandshakeResponseInfo* handshake_response_info() const {
@@ -227,7 +227,7 @@ class WebSocketChannel::HandshakeNotificationSender
 
   void set_handshake_response_info(
       scoped_ptr<WebSocketHandshakeResponseInfo> response_info) {
-    handshake_response_info_ = response_info.Pass();
+    handshake_response_info_ = std::move(response_info);
   }
 
  private:
@@ -255,14 +255,16 @@ ChannelState WebSocketChannel::HandshakeNotificationSender::SendImmediately(
     WebSocketEventInterface* event_interface) {
 
   if (handshake_request_info_.get()) {
-    if (CHANNEL_DELETED == event_interface->OnStartOpeningHandshake(
-                               handshake_request_info_.Pass()))
+    if (CHANNEL_DELETED ==
+        event_interface->OnStartOpeningHandshake(
+            std::move(handshake_request_info_)))
       return CHANNEL_DELETED;
   }
 
   if (handshake_response_info_.get()) {
-    if (CHANNEL_DELETED == event_interface->OnFinishOpeningHandshake(
-                               handshake_response_info_.Pass()))
+    if (CHANNEL_DELETED ==
+        event_interface->OnFinishOpeningHandshake(
+            std::move(handshake_response_info_)))
       return CHANNEL_DELETED;
 
     // TODO(yhirano): We can release |this| to save memory because
@@ -300,14 +302,14 @@ void WebSocketChannel::PendingReceivedFrame::DidConsume(uint64_t bytes) {
 WebSocketChannel::WebSocketChannel(
     scoped_ptr<WebSocketEventInterface> event_interface,
     URLRequestContext* url_request_context)
-    : event_interface_(event_interface.Pass()),
+    : event_interface_(std::move(event_interface)),
       url_request_context_(url_request_context),
       send_quota_low_water_mark_(kDefaultSendQuotaLowWaterMark),
       send_quota_high_water_mark_(kDefaultSendQuotaHighWaterMark),
       current_send_quota_(0),
       current_receive_quota_(0),
-      closing_handshake_timeout_(base::TimeDelta::FromSeconds(
-          kClosingHandshakeTimeoutSeconds)),
+      closing_handshake_timeout_(
+          base::TimeDelta::FromSeconds(kClosingHandshakeTimeoutSeconds)),
       underlying_connection_close_timeout_(base::TimeDelta::FromSeconds(
           kUnderlyingConnectionCloseTimeoutSeconds)),
       has_received_close_frame_(false),
@@ -559,12 +561,9 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
   socket_url_ = socket_url;
   scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
       new ConnectDelegate(this));
-  stream_request_ = creator.Run(socket_url_,
-                                requested_subprotocols,
-                                origin,
-                                url_request_context_,
-                                BoundNetLog(),
-                                connect_delegate.Pass());
+  stream_request_ = creator.Run(socket_url_, requested_subprotocols, origin,
+                                url_request_context_, BoundNetLog(),
+                                std::move(connect_delegate));
   SetState(CONNECTING);
 }
 
@@ -572,7 +571,7 @@ void WebSocketChannel::OnConnectSuccess(scoped_ptr<WebSocketStream> stream) {
   DCHECK(stream);
   DCHECK_EQ(CONNECTING, state_);
 
-  stream_ = stream.Pass();
+  stream_ = std::move(stream);
 
   SetState(CONNECTED);
 
@@ -619,7 +618,7 @@ void WebSocketChannel::OnSSLCertificateError(
     const SSLInfo& ssl_info,
     bool fatal) {
   ignore_result(event_interface_->OnSSLCertificateError(
-      ssl_error_callbacks.Pass(), socket_url_, ssl_info, fatal));
+      std::move(ssl_error_callbacks), socket_url_, ssl_info, fatal));
 }
 
 void WebSocketChannel::OnStartOpeningHandshake(
@@ -628,7 +627,7 @@ void WebSocketChannel::OnStartOpeningHandshake(
 
   // Because it is hard to handle an IPC error synchronously is difficult,
   // we asynchronously notify the information.
-  notification_sender_->set_handshake_request_info(request.Pass());
+  notification_sender_->set_handshake_request_info(std::move(request));
   ScheduleOpeningHandshakeNotification();
 }
 
@@ -638,7 +637,7 @@ void WebSocketChannel::OnFinishOpeningHandshake(
 
   // Because it is hard to handle an IPC error synchronously is difficult,
   // we asynchronously notify the information.
-  notification_sender_->set_handshake_response_info(response.Pass());
+  notification_sender_->set_handshake_response_info(std::move(response));
   ScheduleOpeningHandshakeNotification();
 }
 
@@ -676,7 +675,7 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
   switch (result) {
     case OK:
       if (data_to_send_next_) {
-        data_being_sent_ = data_to_send_next_.Pass();
+        data_being_sent_ = std::move(data_to_send_next_);
         if (!synchronous)
           return WriteFrames();
       } else {
@@ -1018,12 +1017,12 @@ ChannelState WebSocketChannel::SendFrameFromIOBuffer(
     // quota appropriately.
     if (!data_to_send_next_)
       data_to_send_next_.reset(new SendBuffer);
-    data_to_send_next_->AddFrame(frame.Pass());
+    data_to_send_next_->AddFrame(std::move(frame));
     return CHANNEL_ALIVE;
   }
 
   data_being_sent_.reset(new SendBuffer);
-  data_being_sent_->AddFrame(frame.Pass());
+  data_being_sent_->AddFrame(std::move(frame));
   return WriteFrames();
 }
 

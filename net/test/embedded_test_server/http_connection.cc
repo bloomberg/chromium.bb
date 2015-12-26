@@ -4,6 +4,8 @@
 
 #include "net/test/embedded_test_server/http_connection.h"
 
+#include <utility>
+
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 
@@ -12,7 +14,7 @@ namespace test_server {
 
 HttpConnection::HttpConnection(scoped_ptr<StreamSocket> socket,
                                const HandleRequestCallback& callback)
-    : socket_(socket.Pass()),
+    : socket_(std::move(socket)),
       callback_(callback),
       read_buf_(new IOBufferWithSize(4096)),
       weak_factory_(this) {}

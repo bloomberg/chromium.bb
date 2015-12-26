@@ -6,6 +6,7 @@
 
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -23,7 +24,7 @@ UnixDomainClientSocket::UnixDomainClientSocket(const std::string& socket_path,
 }
 
 UnixDomainClientSocket::UnixDomainClientSocket(scoped_ptr<SocketPosix> socket)
-    : use_abstract_namespace_(false), socket_(socket.Pass()) {}
+    : use_abstract_namespace_(false), socket_(std::move(socket)) {}
 
 UnixDomainClientSocket::~UnixDomainClientSocket() {
   Disconnect();

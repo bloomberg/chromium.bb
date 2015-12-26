@@ -4,6 +4,8 @@
 
 #include "net/http/http_stream_parser.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -87,7 +89,7 @@ scoped_ptr<base::Value> NetLogSendRequestBodyCallback(
   dict->SetInteger("length", static_cast<int>(length));
   dict->SetBoolean("is_chunked", is_chunked);
   dict->SetBoolean("did_merge", did_merge);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // Returns true if |error_code| is an error for which we give the server a

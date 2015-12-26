@@ -5,6 +5,7 @@
 #include "net/socket/client_socket_pool_manager_impl.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/values.h"
@@ -358,7 +359,7 @@ scoped_ptr<base::Value> ClientSocketPoolManagerImpl::SocketPoolInfoToValue()
   // socket pools in |http_proxy_socket_pools_| and |socks_socket_pools_|.
   AddSocketPoolsToList(list.get(), ssl_socket_pools_for_proxies_,
                        "ssl_socket_pool_for_proxies", false);
-  return list.Pass();
+  return std::move(list);
 }
 
 void ClientSocketPoolManagerImpl::OnCertAdded(const X509Certificate* cert) {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -315,7 +317,7 @@ bool ContainsString(const std::string& haystack, const char* needle) {
 scoped_ptr<UploadDataStream> CreateSimpleUploadData(const char* data) {
   scoped_ptr<UploadElementReader> reader(
       new UploadBytesElementReader(data, strlen(data)));
-  return ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0);
+  return ElementsUploadDataStream::CreateWithReader(std::move(reader), 0);
 }
 
 // Verify that the SSLInfo of a successful SSL connection has valid values.
@@ -1546,7 +1548,7 @@ class URLRequestInterceptorTest : public URLRequestTest {
   void SetUpFactory() override {
     interceptor_ = new MockURLRequestInterceptor();
     job_factory_.reset(new URLRequestInterceptingJobFactory(
-        job_factory_.Pass(), make_scoped_ptr(interceptor_)));
+        std::move(job_factory_), make_scoped_ptr(interceptor_)));
   }
 
   MockURLRequestInterceptor* interceptor() const {
@@ -3331,7 +3333,7 @@ scoped_ptr<test_server::HttpResponse> HandleRedirectConnect(
   http_response->set_code(HTTP_FOUND);
   http_response->AddCustomHeader("Location",
                                  "http://www.destination.com/foo.js");
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // namespace
@@ -4196,7 +4198,7 @@ scoped_ptr<test_server::HttpResponse> HandleServerAuthConnect(
   http_response->set_code(HTTP_UNAUTHORIZED);
   http_response->AddCustomHeader("WWW-Authenticate",
                                  "Basic realm=\"WallyWorld\"");
-  return http_response.Pass();
+  return std::move(http_response);
 }
 
 }  // namespace
@@ -7394,7 +7396,7 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
       default_context_.http_transaction_factory()->GetSession()));
   network_layer->OnSuspend();
 
-  HttpCache http_cache(network_layer.Pass(),
+  HttpCache http_cache(std::move(network_layer),
                        HttpCache::DefaultBackend::InMemory(0), true);
 
   TestURLRequestContext context(true);
@@ -7540,7 +7542,7 @@ class URLRequestInterceptorTestHTTP : public URLRequestTestHTTP {
   void SetUpFactory() override {
     interceptor_ = new MockURLRequestInterceptor();
     job_factory_.reset(new URLRequestInterceptingJobFactory(
-        job_factory_.Pass(), make_scoped_ptr(interceptor_)));
+        std::move(job_factory_), make_scoped_ptr(interceptor_)));
   }
 
   MockURLRequestInterceptor* interceptor() const {

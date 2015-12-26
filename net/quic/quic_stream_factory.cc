@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/location.h"
 #include "base/macros.h"
@@ -428,7 +429,7 @@ int QuicStreamFactory::Job::DoConnect() {
   io_state_ = STATE_CONNECT_COMPLETE;
 
   int rv = factory_->CreateSession(
-      server_id_, cert_verify_flags_, server_info_.Pass(), address_list_,
+      server_id_, cert_verify_flags_, std::move(server_info_), address_list_,
       dns_resolution_end_time_, net_log_, &session_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
@@ -518,7 +519,7 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
 
 void QuicStreamRequest::set_stream(scoped_ptr<QuicHttpStream> stream) {
   DCHECK(stream);
-  stream_ = stream.Pass();
+  stream_ = std::move(stream);
 }
 
 void QuicStreamRequest::OnRequestComplete(int rv) {
@@ -535,7 +536,7 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
 
 scoped_ptr<QuicHttpStream> QuicStreamRequest::ReleaseStream() {
   DCHECK(stream_);
-  return stream_.Pass();
+  return std::move(stream_);
 }
 
 QuicStreamFactory::QuicStreamFactory(
@@ -1134,7 +1135,7 @@ scoped_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
       list->Append(session->GetInfoAsValue(hosts));
     }
   }
-  return list.Pass();
+  return std::move(list);
 }
 
 void QuicStreamFactory::ClearCachedStatesInCryptoConfig() {
@@ -1296,12 +1297,12 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   }
 
   *session = new QuicChromiumClientSession(
-      connection, socket.Pass(), this, quic_crypto_client_stream_factory_,
-      clock_.get(), transport_security_state_, server_info.Pass(), server_id,
-      yield_after_packets_, yield_after_duration_, cert_verify_flags, config,
-      &crypto_config_, network_connection_.GetDescription(),
+      connection, std::move(socket), this, quic_crypto_client_stream_factory_,
+      clock_.get(), transport_security_state_, std::move(server_info),
+      server_id, yield_after_packets_, yield_after_duration_, cert_verify_flags,
+      config, &crypto_config_, network_connection_.GetDescription(),
       dns_resolution_end_time, base::ThreadTaskRunnerHandle::Get().get(),
-      socket_performance_watcher.Pass(), net_log.net_log());
+      std::move(socket_performance_watcher), net_log.net_log());
 
   all_sessions_[*session] = server_id;  // owning pointer
 

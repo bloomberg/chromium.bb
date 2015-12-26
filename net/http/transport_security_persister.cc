@@ -4,6 +4,8 @@
 
 #include "net/http/transport_security_persister.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -162,7 +164,7 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
         continue;
     }
 
-    toplevel.Set(key, serialized.Pass());
+    toplevel.Set(key, std::move(serialized));
   }
 
   TransportSecurityState::PKPStateIterator pkp_iterator(
@@ -181,7 +183,7 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
           new base::DictionaryValue);
       serialized = serialized_scoped.get();
       PopulateEntryWithDefaults(serialized);
-      toplevel.Set(key, serialized_scoped.Pass());
+      toplevel.Set(key, std::move(serialized_scoped));
     }
 
     serialized->SetBoolean(kPkpIncludeSubdomains, pkp_state.include_subdomains);

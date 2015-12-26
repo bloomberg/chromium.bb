@@ -5,6 +5,7 @@
 #include "net/cert/x509_certificate_net_log_param.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/values.h"
@@ -21,8 +22,8 @@ scoped_ptr<base::Value> NetLogX509CertificateCallback(
   certificate->GetPEMEncodedChain(&encoded_chain);
   for (size_t i = 0; i < encoded_chain.size(); ++i)
     certs->Append(new base::StringValue(encoded_chain[i]));
-  dict->Set("certificates", certs.Pass());
-  return dict.Pass();
+  dict->Set("certificates", std::move(certs));
+  return std::move(dict);
 }
 
 }  // namespace net

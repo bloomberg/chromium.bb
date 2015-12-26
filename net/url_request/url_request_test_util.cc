@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_request_test_util.h"
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -143,7 +145,7 @@ TestURLRequestContextGetter::TestURLRequestContextGetter(
 TestURLRequestContextGetter::TestURLRequestContextGetter(
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
     scoped_ptr<TestURLRequestContext> context)
-    : network_task_runner_(network_task_runner), context_(context.Pass()) {
+    : network_task_runner_(network_task_runner), context_(std::move(context)) {
   DCHECK(network_task_runner_.get());
 }
 

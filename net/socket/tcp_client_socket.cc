@@ -4,6 +4,8 @@
 
 #include "net/socket/tcp_client_socket.h"
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -28,7 +30,7 @@ TCPClientSocket::TCPClientSocket(const AddressList& addresses,
 
 TCPClientSocket::TCPClientSocket(scoped_ptr<TCPSocket> connected_socket,
                                  const IPEndPoint& peer_address)
-    : socket_(connected_socket.Pass()),
+    : socket_(std::move(connected_socket)),
       addresses_(AddressList(peer_address)),
       current_address_index_(0),
       next_connect_state_(CONNECT_STATE_NONE),

@@ -5,7 +5,7 @@
 #include "net/socket/client_socket_pool_base.h"
 
 #include <stdint.h>
-
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -532,7 +532,7 @@ class TestClientSocketPool : public ClientSocketPool {
   void ReleaseSocket(const std::string& group_name,
                      scoped_ptr<StreamSocket> socket,
                      int id) override {
-    base_.ReleaseSocket(group_name, socket.Pass(), id);
+    base_.ReleaseSocket(group_name, std::move(socket), id);
   }
 
   void FlushWithError(int error) override { base_.FlushWithError(error); }

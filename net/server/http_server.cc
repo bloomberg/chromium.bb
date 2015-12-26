@@ -4,6 +4,8 @@
 
 #include "net/server/http_server.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -29,7 +31,7 @@ namespace net {
 
 HttpServer::HttpServer(scoped_ptr<ServerSocket> server_socket,
                        HttpServer::Delegate* delegate)
-    : server_socket_(server_socket.Pass()),
+    : server_socket_(std::move(server_socket)),
       delegate_(delegate),
       last_id_(0),
       weak_ptr_factory_(this) {
@@ -159,7 +161,7 @@ int HttpServer::HandleAcceptResult(int rv) {
   }
 
   HttpConnection* connection =
-      new HttpConnection(++last_id_, accepted_socket_.Pass());
+      new HttpConnection(++last_id_, std::move(accepted_socket_));
   id_to_connection_[connection->id()] = connection;
   delegate_->OnConnect(connection->id());
   if (!HasClosedConnection(connection))

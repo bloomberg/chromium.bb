@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -431,8 +432,8 @@ void GDig::OnDnsConfig(const DnsConfig& dns_config_const) {
   options.max_retry_attempts = 1u;
   scoped_ptr<HostResolverImpl> resolver(
       new HostResolverImpl(options, log_.get()));
-  resolver->SetDnsClient(dns_client.Pass());
-  resolver_ = resolver.Pass();
+  resolver->SetDnsClient(std::move(dns_client));
+  resolver_ = std::move(resolver);
 
   start_time_ = base::Time::Now();
 

@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/filter/filter.h"
+
+#include <utility>
+
 #include "base/macros.h"
 #include "net/base/io_buffer.h"
-#include "net/filter/filter.h"
 #include "net/filter/mock_filter_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,7 +58,7 @@ TEST(FilterTest, SdchEncoding) {
   MockFilterContext filter_context;
   // Empty handle indicates to filter that SDCH is active.
   filter_context.SetSdchResponse(
-      SdchManager::CreateEmptyDictionarySetForTesting().Pass());
+      SdchManager::CreateEmptyDictionarySetForTesting());
 
   std::vector<Filter::FilterType> encoding_types;
 
@@ -93,7 +96,7 @@ TEST(FilterTest, MissingSdchEncoding) {
   const std::string kTextHtmlMime("text/html");
   MockFilterContext filter_context;
   filter_context.SetSdchResponse(
-      SdchManager::CreateEmptyDictionarySetForTesting().Pass());
+      SdchManager::CreateEmptyDictionarySetForTesting());
 
   std::vector<Filter::FilterType> encoding_types;
 
@@ -154,8 +157,8 @@ TEST(FilterTest, ThreeFilterChain) {
   filter2->InitBuffer(32 * 1024);
   filter3->InitBuffer(32 * 1024);
 
-  filter2->next_filter_ = filter3.Pass();
-  filter1->next_filter_ = filter2.Pass();
+  filter2->next_filter_ = std::move(filter3);
+  filter1->next_filter_ = std::move(filter2);
 
   // Initialize the input array with a varying byte sequence.
   const size_t input_array_size = 64 * 1024;

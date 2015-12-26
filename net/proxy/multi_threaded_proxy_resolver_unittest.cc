@@ -4,6 +4,7 @@
 
 #include "net/proxy/multi_threaded_proxy_resolver.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
@@ -179,11 +180,11 @@ class SingleShotMultiThreadedProxyResolverFactory
       size_t max_num_threads,
       scoped_ptr<ProxyResolverFactory> factory)
       : MultiThreadedProxyResolverFactory(max_num_threads, false),
-        factory_(factory.Pass()) {}
+        factory_(std::move(factory)) {}
 
   scoped_ptr<ProxyResolverFactory> CreateProxyResolverFactory() override {
     DCHECK(factory_);
-    return factory_.Pass();
+    return std::move(factory_);
   }
 
  private:
@@ -197,7 +198,7 @@ class MultiThreadedProxyResolverTest : public testing::Test {
         new BlockableProxyResolverFactory);
     factory_ = factory_owner.get();
     resolver_factory_.reset(new SingleShotMultiThreadedProxyResolverFactory(
-        num_threads, factory_owner.Pass()));
+        num_threads, std::move(factory_owner)));
     TestCompletionCallback ready_callback;
     scoped_ptr<ProxyResolverFactory::Request> request;
     resolver_factory_->CreateProxyResolver(

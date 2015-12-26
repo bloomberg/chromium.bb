@@ -4,6 +4,8 @@
 
 #include "net/base/backoff_entry_serializer.h"
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
@@ -34,7 +36,7 @@ scoped_ptr<base::Value> BackoffEntrySerializer::SerializeToValue(
   serialized->AppendString(
       base::Int64ToString(absolute_release_time.ToInternalValue()));
 
-  return serialized.Pass();
+  return std::move(serialized);
 }
 
 scoped_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(

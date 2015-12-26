@@ -5,9 +5,9 @@
 #include "net/base/network_quality_estimator.h"
 
 #include <stdint.h>
-
 #include <limits>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -39,7 +39,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
   TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params,
       scoped_ptr<net::ExternalEstimateProvider> external_estimate_provider)
-      : NetworkQualityEstimator(external_estimate_provider.Pass(),
+      : NetworkQualityEstimator(std::move(external_estimate_provider),
                                 variation_params,
                                 true,
                                 true) {
@@ -76,7 +76,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("hello");
     http_response->set_content_type("text/plain");
-    return http_response.Pass();
+    return std::move(http_response);
   }
 
   // Returns a GURL hosted at embedded test server.
@@ -808,7 +808,7 @@ TEST(NetworkQualityEstimatorTest, InvalidExternalEstimateProvider) {
       invalid_external_estimate_provider);
 
   TestNetworkQualityEstimator estimator(std::map<std::string, std::string>(),
-                                        external_estimate_provider.Pass());
+                                        std::move(external_estimate_provider));
 
   base::TimeDelta rtt;
   int32_t kbps;
@@ -906,7 +906,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
       test_external_estimate_provider);
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params,
-                                        external_estimate_provider.Pass());
+                                        std::move(external_estimate_provider));
 
   base::TimeDelta rtt;
   int32_t kbps;
@@ -981,7 +981,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
 
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params,
-                                        external_estimate_provider.Pass());
+                                        std::move(external_estimate_provider));
 
   base::TimeDelta rtt;
   // Estimate provided by network quality estimator should match the estimate

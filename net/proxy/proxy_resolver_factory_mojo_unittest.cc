@@ -8,6 +8,7 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -238,7 +239,7 @@ void MockMojoProxyResolver::AddConnection(
     mojo::InterfaceRequest<interfaces::ProxyResolver> req) {
   if (binding_.is_bound())
     binding_.Close();
-  binding_.Bind(req.Pass());
+  binding_.Bind(std::move(req));
 }
 
 void MockMojoProxyResolver::GetProxyForUrl(
@@ -253,7 +254,7 @@ void MockMojoProxyResolver::GetProxyForUrl(
   client->OnError(12345, url);
   switch (action.action) {
     case GetProxyForUrlAction::COMPLETE: {
-      client->ReportResult(action.error, action.proxy_servers.Pass());
+      client->ReportResult(action.error, std::move(action.proxy_servers));
       break;
     }
     case GetProxyForUrlAction::DROP: {
@@ -275,7 +276,7 @@ void MockMojoProxyResolver::GetProxyForUrl(
       request->port = 12345;
       interfaces::HostResolverRequestClientPtr dns_client;
       mojo::GetProxy(&dns_client);
-      client->ResolveDns(request.Pass(), dns_client.Pass());
+      client->ResolveDns(std::move(request), std::move(dns_client));
       blocked_clients_.push_back(make_scoped_ptr(
           new interfaces::ProxyResolverRequestClientPtr(std::move(client))));
       break;
@@ -362,8 +363,7 @@ class MockMojoProxyResolverFactory : public interfaces::ProxyResolverFactory {
 MockMojoProxyResolverFactory::MockMojoProxyResolverFactory(
     MockMojoProxyResolver* resolver,
     mojo::InterfaceRequest<interfaces::ProxyResolverFactory> req)
-    : resolver_(resolver), binding_(this, req.Pass()) {
-}
+    : resolver_(resolver), binding_(this, std::move(req)) {}
 
 MockMojoProxyResolverFactory::~MockMojoProxyResolverFactory() {
   EXPECT_TRUE(create_resolver_actions_.empty())
@@ -405,7 +405,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
   switch (action.action) {
     case CreateProxyResolverAction::COMPLETE: {
       if (action.error == OK)
-        resolver_->AddConnection(request.Pass());
+        resolver_->AddConnection(std::move(request));
       client->ReportResult(action.error);
       break;
     }
@@ -438,7 +438,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
       request->port = 12345;
       interfaces::HostResolverRequestClientPtr dns_client;
       mojo::GetProxy(&dns_client);
-      client->ResolveDns(request.Pass(), std::move(dns_client));
+      client->ResolveDns(std::move(request), std::move(dns_client));
       blocked_clients_.push_back(
           make_scoped_ptr(new interfaces::ProxyResolverFactoryRequestClientPtr(
               std::move(client))));
@@ -526,7 +526,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test,
       const mojo::String& pac_script,
       mojo::InterfaceRequest<interfaces::ProxyResolver> req,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override {
-    factory_ptr_->CreateResolver(pac_script, req.Pass(), client.Pass());
+    factory_ptr_->CreateResolver(pac_script, std::move(req), std::move(client));
     return make_scoped_ptr(
         new base::ScopedClosureRunner(on_delete_callback_.closure()));
   }

@@ -6,6 +6,7 @@
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -31,8 +32,8 @@ scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
     crypto::RSAPrivateKey* key,
     const SSLServerConfig& ssl_config) {
   crypto::EnsureOpenSSLInit();
-  return scoped_ptr<SSLServerSocket>(
-      new SSLServerSocketOpenSSL(socket.Pass(), certificate, key, ssl_config));
+  return scoped_ptr<SSLServerSocket>(new SSLServerSocketOpenSSL(
+      std::move(socket), certificate, key, ssl_config));
 }
 
 SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
@@ -48,7 +49,7 @@ SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
       transport_write_error_(OK),
       ssl_(NULL),
       transport_bio_(NULL),
-      transport_socket_(transport_socket.Pass()),
+      transport_socket_(std::move(transport_socket)),
       ssl_config_(ssl_config),
       cert_(certificate),
       next_handshake_state_(STATE_NONE),

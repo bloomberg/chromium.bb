@@ -5,6 +5,7 @@
 #include "net/socket/unix_domain_client_socket_posix.h"
 
 #include <unistd.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -185,7 +186,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithSocketDescriptor) {
   ASSERT_TRUE(UnixDomainClientSocket::FillAddress(socket_path_, false, &addr));
   scoped_ptr<SocketPosix> adopter(new SocketPosix);
   adopter->AdoptConnectedSocket(client_socket_fd, addr);
-  UnixDomainClientSocket rewrapped_socket(adopter.Pass());
+  UnixDomainClientSocket rewrapped_socket(std::move(adopter));
   EXPECT_TRUE(rewrapped_socket.IsConnected());
 
   // Try to read data.

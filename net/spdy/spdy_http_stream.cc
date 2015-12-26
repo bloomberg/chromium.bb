@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -282,7 +283,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
       NetLog::TYPE_HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS,
       base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
   result = stream_->SendRequestHeaders(
-      headers.Pass(),
+      std::move(headers),
       HasUploadData() ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
 
   if (result == ERR_IO_PENDING) {
@@ -360,7 +361,7 @@ void SpdyHttpStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   DCHECK(stream_.get());
   DCHECK(!stream_->IsClosed() || stream_->type() == SPDY_PUSH_STREAM);
   if (buffer) {
-    response_body_queue_.Enqueue(buffer.Pass());
+    response_body_queue_.Enqueue(std::move(buffer));
 
     if (user_buffer_.get()) {
       // Handing small chunks of data to the caller creates measurable overhead.

@@ -4,6 +4,8 @@
 
 #include "net/http/http_network_layer.h"
 
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -34,7 +36,7 @@ class HttpNetworkLayerTest : public PlatformTest {
   void ConfigureTestDependencies(scoped_ptr<ProxyService> proxy_service) {
     cert_verifier_.reset(new MockCertVerifier);
     transport_security_state_.reset(new TransportSecurityState);
-    proxy_service_ = proxy_service.Pass();
+    proxy_service_ = std::move(proxy_service);
     HttpNetworkSession::Params session_params;
     session_params.client_socket_factory = &mock_socket_factory_;
     session_params.host_resolver = &host_resolver_;

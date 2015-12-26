@@ -4,6 +4,8 @@
 
 #include "net/dns/mojo_host_resolver_impl.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -59,7 +61,7 @@ void MojoHostResolverImpl::Resolve(
   DCHECK(thread_checker_.CalledOnValidThread());
   Job* job = new Job(this, resolver_,
                      request_info->To<net::HostResolver::RequestInfo>(),
-                     net_log_, client.Pass());
+                     net_log_, std::move(client));
   pending_jobs_.insert(job);
   job->Start();
 }
@@ -81,7 +83,7 @@ MojoHostResolverImpl::Job::Job(
       resolver_(resolver),
       request_info_(request_info),
       net_log_(net_log),
-      client_(client.Pass()),
+      client_(std::move(client)),
       handle_(nullptr) {
   client_.set_connection_error_handler(base::Bind(
       &MojoHostResolverImpl::Job::OnConnectionError, base::Unretained(this)));

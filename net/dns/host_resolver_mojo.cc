@@ -4,6 +4,8 @@
 
 #include "net/dns/host_resolver_mojo.h"
 
+#include <utility>
+
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -78,7 +80,7 @@ int HostResolverMojo::Resolve(const RequestInfo& info,
   *request_handle = new Job(key, addresses, callback, mojo::GetProxy(&handle),
                             host_cache_weak_factory_.GetWeakPtr());
   impl_->ResolveDns(interfaces::HostResolverRequestInfo::From(info),
-                    handle.Pass());
+                    std::move(handle));
   return ERR_IO_PENDING;
 }
 
@@ -125,7 +127,7 @@ HostResolverMojo::Job::Job(
     : key_(key),
       addresses_(addresses),
       callback_(callback),
-      binding_(this, request.Pass()),
+      binding_(this, std::move(request)),
       host_cache_(host_cache) {
   binding_.set_connection_error_handler(base::Bind(
       &HostResolverMojo::Job::OnConnectionError, base::Unretained(this)));

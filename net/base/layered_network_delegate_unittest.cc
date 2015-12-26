@@ -5,6 +5,7 @@
 #include "net/base/layered_network_delegate.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -174,7 +175,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
  public:
   TestLayeredNetworkDelegate(scoped_ptr<NetworkDelegate> network_delegate,
                              CountersMap* counters)
-      : LayeredNetworkDelegate(network_delegate.Pass()),
+      : LayeredNetworkDelegate(std::move(network_delegate)),
         context_(true),
         counters_(counters) {
     context_.Init();
@@ -373,9 +374,9 @@ class LayeredNetworkDelegateTest : public testing::Test {
     scoped_ptr<TestNetworkDelegateImpl> test_network_delegate(
         new TestNetworkDelegateImpl(&layered_network_delegate_counters));
     test_network_delegate_ = test_network_delegate.get();
-    layered_network_delegate_ =
-        scoped_ptr<TestLayeredNetworkDelegate>(new TestLayeredNetworkDelegate(
-            test_network_delegate.Pass(), &layered_network_delegate_counters));
+    layered_network_delegate_ = scoped_ptr<TestLayeredNetworkDelegate>(
+        new TestLayeredNetworkDelegate(std::move(test_network_delegate),
+                                       &layered_network_delegate_counters));
   }
 
   CountersMap layered_network_delegate_counters;

@@ -5,8 +5,8 @@
 #include "net/log/write_to_file_net_log_observer.h"
 
 #include <stdio.h>
-
 #include <set>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -36,7 +36,7 @@ void WriteToFileNetLogObserver::StartObserving(
     base::Value* constants,
     URLRequestContext* url_request_context) {
   DCHECK(file.get());
-  file_ = file.Pass();
+  file_ = std::move(file);
   added_events_ = false;
 
   // Write constants to the output file.  This allows loading files that have

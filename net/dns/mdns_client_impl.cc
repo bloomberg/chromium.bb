@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <queue>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -52,18 +53,17 @@ void MDnsSocketFactoryImpl::CreateSockets(
     scoped_ptr<DatagramServerSocket> socket(
         CreateAndBindMDnsSocket(interfaces[i].second, interfaces[i].first));
     if (socket)
-      sockets->push_back(socket.Pass());
+      sockets->push_back(std::move(socket));
   }
 }
 
 MDnsConnection::SocketHandler::SocketHandler(
     scoped_ptr<DatagramServerSocket> socket,
     MDnsConnection* connection)
-    : socket_(socket.Pass()),
+    : socket_(std::move(socket)),
       connection_(connection),
       response_(dns_protocol::kMaxMulticastSize),
-      send_in_progress_(false) {
-}
+      send_in_progress_(false) {}
 
 MDnsConnection::SocketHandler::~SocketHandler() {
 }
@@ -271,7 +271,7 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
     }
 
     MDnsCache::Key update_key = MDnsCache::Key::CreateFor(record.get());
-    MDnsCache::UpdateType update = cache_.UpdateDnsRecord(record.Pass());
+    MDnsCache::UpdateType update = cache_.UpdateDnsRecord(std::move(record));
 
     // Cleanup time may have changed.
     ScheduleCleanup(cache_.next_expiration());
@@ -434,8 +434,7 @@ MDnsClientImpl::MDnsClientImpl()
 
 MDnsClientImpl::MDnsClientImpl(scoped_ptr<base::Clock> clock,
                                scoped_ptr<base::Timer> timer)
-    : clock_(clock.Pass()), cleanup_timer_(timer.Pass()) {
-}
+    : clock_(std::move(clock)), cleanup_timer_(std::move(timer)) {}
 
 MDnsClientImpl::~MDnsClientImpl() {
 }

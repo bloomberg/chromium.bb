@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -153,7 +154,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     for (size_t i = 0; i < arraysize(kCertStatusFlags); i++)
       dict->SetInteger(kCertStatusFlags[i].name, kCertStatusFlags[i].constant);
 
-    constants_dict->Set("certStatusFlag", dict.Pass());
+    constants_dict->Set("certStatusFlag", std::move(dict));
   }
 
   // Add a dictionary with information about the relationship between load flag
@@ -164,7 +165,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     for (size_t i = 0; i < arraysize(kLoadFlags); i++)
       dict->SetInteger(kLoadFlags[i].name, kLoadFlags[i].constant);
 
-    constants_dict->Set("loadFlag", dict.Pass());
+    constants_dict->Set("loadFlag", std::move(dict));
   }
 
   // Add a dictionary with information about the relationship between load state
@@ -175,7 +176,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     for (size_t i = 0; i < arraysize(kLoadStateTable); i++)
       dict->SetInteger(kLoadStateTable[i].name, kLoadStateTable[i].constant);
 
-    constants_dict->Set("loadState", dict.Pass());
+    constants_dict->Set("loadState", std::move(dict));
   }
 
   {
@@ -184,7 +185,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   dict->SetInteger(string, NET_INFO_##label);
 #include "net/base/net_info_source_list.h"
 #undef NET_INFO_SOURCE
-    constants_dict->Set("netInfoSources", dict.Pass());
+    constants_dict->Set("netInfoSources", std::move(dict));
   }
 
   // Add information on the relationship between net error codes and their
@@ -195,7 +196,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     for (size_t i = 0; i < arraysize(kNetErrors); i++)
       dict->SetInteger(ErrorToShortString(kNetErrors[i]), kNetErrors[i]);
 
-    constants_dict->Set("netError", dict.Pass());
+    constants_dict->Set("netError", std::move(dict));
   }
 
   // Add information on the relationship between QUIC error codes and their
@@ -209,7 +210,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
                        static_cast<int>(error));
     }
 
-    constants_dict->Set("quicError", dict.Pass());
+    constants_dict->Set("quicError", std::move(dict));
   }
 
   // Add information on the relationship between QUIC RST_STREAM error codes
@@ -224,7 +225,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
                        static_cast<int>(error));
     }
 
-    constants_dict->Set("quicRstStreamError", dict.Pass());
+    constants_dict->Set("quicRstStreamError", std::move(dict));
   }
 
   // Add information on the relationship between SDCH problem codes and their
@@ -235,7 +236,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     for (size_t i = 0; i < arraysize(kSdchProblems); i++)
       dict->SetInteger(kSdchProblems[i].name, kSdchProblems[i].constant);
 
-    constants_dict->Set("sdchProblemCode", dict.Pass());
+    constants_dict->Set("sdchProblemCode", std::move(dict));
   }
 
   // Information about the relationship between event phase enums and their
@@ -247,7 +248,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     dict->SetInteger("PHASE_END", NetLog::PHASE_END);
     dict->SetInteger("PHASE_NONE", NetLog::PHASE_NONE);
 
-    constants_dict->Set("logEventPhase", dict.Pass());
+    constants_dict->Set("logEventPhase", std::move(dict));
   }
 
   // Information about the relationship between source type enums and
@@ -268,7 +269,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     dict->SetInteger("ADDRESS_FAMILY_IPV4", ADDRESS_FAMILY_IPV4);
     dict->SetInteger("ADDRESS_FAMILY_IPV6", ADDRESS_FAMILY_IPV6);
 
-    constants_dict->Set("addressFamily", dict.Pass());
+    constants_dict->Set("addressFamily", std::move(dict));
   }
 
   // Information about how the "time ticks" values we have given it relate to
@@ -300,7 +301,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     constants_dict->Set("activeFieldTrialGroups", field_trial_groups);
   }
 
-  return constants_dict.Pass();
+  return constants_dict;
 }
 
 NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
@@ -323,7 +324,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
       dict->Set("effective", proxy_service->config().ToValue());
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_PROXY_SETTINGS),
-                       dict.Pass());
+                       std::move(dict));
   }
 
   if (info_sources & NET_INFO_BAD_PROXIES) {
@@ -342,7 +343,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
       dict->SetString("bad_until",
                       NetLog::TickCountToString(retry_info.bad_until));
 
-      list->Append(dict.Pass());
+      list->Append(std::move(dict));
     }
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_BAD_PROXIES), list);
@@ -395,7 +396,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
       cache_info_dict->Set("entries", entry_list);
       dict->Set("cache", cache_info_dict);
       net_info_dict->Set(NetInfoSourceToString(NET_INFO_HOST_RESOLVER),
-                         dict.Pass());
+                         std::move(dict));
     }
   }
 
@@ -489,10 +490,11 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     } else {
       info_dict.reset(new base::DictionaryValue());
     }
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SDCH), info_dict.Pass());
+    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SDCH),
+                       std::move(info_dict));
   }
 
-  return net_info_dict.Pass();
+  return net_info_dict;
 }
 
 NET_EXPORT void CreateNetLogEntriesForActiveObjects(

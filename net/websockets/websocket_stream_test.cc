@@ -51,7 +51,7 @@ scoped_ptr<SequencedSocketData> BuildSocketData(
   scoped_ptr<SequencedSocketData> socket_data(
       new SequencedSocketData(reads, reads_count, writes, writes_count));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  return socket_data.Pass();
+  return socket_data;
 }
 
 // Builder for a SequencedSocketData that expects nothing. This does not
@@ -98,7 +98,7 @@ class WebSocketStreamCreateTest : public ::testing::Test,
         WebSocketStandardRequest(socket_path, socket_host, origin,
                                  extra_request_headers),
         response_body);
-    CreateAndConnectStream(socket_url, sub_protocols, origin, timer.Pass());
+    CreateAndConnectStream(socket_url, sub_protocols, origin, std::move(timer));
   }
 
   // |extra_request_headers| and |extra_response_headers| must end in "\r\n" or
@@ -115,7 +115,7 @@ class WebSocketStreamCreateTest : public ::testing::Test,
     CreateAndConnectCustomResponse(
         socket_url, socket_host, socket_path, sub_protocols, origin,
         extra_request_headers,
-        WebSocketStandardResponse(extra_response_headers), timer.Pass());
+        WebSocketStandardResponse(extra_response_headers), std::move(timer));
   }
 
   void CreateAndConnectRawExpectations(
@@ -124,13 +124,13 @@ class WebSocketStreamCreateTest : public ::testing::Test,
       const url::Origin& origin,
       scoped_ptr<SequencedSocketData> socket_data,
       scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
-    AddRawExpectations(socket_data.Pass());
-    CreateAndConnectStream(socket_url, sub_protocols, origin, timer.Pass());
+    AddRawExpectations(std::move(socket_data));
+    CreateAndConnectStream(socket_url, sub_protocols, origin, std::move(timer));
   }
 
   // Add additional raw expectations for sockets created before the final one.
   void AddRawExpectations(scoped_ptr<SequencedSocketData> socket_data) {
-    url_request_context_host_.AddRawExpectations(socket_data.Pass());
+    url_request_context_host_.AddRawExpectations(std::move(socket_data));
   }
 };
 
@@ -804,7 +804,7 @@ TEST_F(WebSocketStreamCreateTest, ConnectionFailure) {
   socket_data->set_connect_data(
       MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass());
+                                  LocalhostOrigin(), std::move(socket_data));
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_REFUSED",
@@ -819,7 +819,7 @@ TEST_F(WebSocketStreamCreateTest, ConnectionTimeout) {
   socket_data->set_connect_data(
       MockConnect(ASYNC, ERR_CONNECTION_TIMED_OUT));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass());
+                                  LocalhostOrigin(), std::move(socket_data));
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_TIMED_OUT",
@@ -833,8 +833,8 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimeout) {
   scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass(),
-                                  timer.Pass());
+                                  LocalhostOrigin(), std::move(socket_data),
+                                  std::move(timer));
   EXPECT_FALSE(has_failed());
   ASSERT_TRUE(weak_timer.get());
   EXPECT_TRUE(weak_timer->IsRunning());
@@ -855,7 +855,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
 
   CreateAndConnectStandard("ws://localhost/", "localhost", "/",
                            NoSubProtocols(), LocalhostOrigin(), "", "",
-                           timer.Pass());
+                           std::move(timer));
   ASSERT_TRUE(weak_timer);
   EXPECT_TRUE(weak_timer->IsRunning());
 
@@ -874,8 +874,8 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
   scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass(),
-                                  timer.Pass());
+                                  LocalhostOrigin(), std::move(socket_data),
+                                  std::move(timer));
   ASSERT_TRUE(weak_timer.get());
   EXPECT_TRUE(weak_timer->IsRunning());
 
@@ -892,7 +892,7 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringConnect) {
   scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass());
+                                  LocalhostOrigin(), std::move(socket_data));
   stream_request_.reset();
   // WaitUntilConnectDone doesn't work in this case.
   base::RunLoop().RunUntilIdle();
@@ -932,7 +932,7 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
   scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
   SequencedSocketData* socket_data_raw_ptr = socket_data.get();
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass());
+                                  LocalhostOrigin(), std::move(socket_data));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(socket_data_raw_ptr->AllReadDataConsumed());
   stream_request_.reset();
@@ -973,7 +973,7 @@ TEST_F(WebSocketStreamCreateTest, NoResponse) {
   scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
   SequencedSocketData* socket_data_raw_ptr = socket_data.get();
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass());
+                                  LocalhostOrigin(), std::move(socket_data));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(socket_data_raw_ptr->AllReadDataConsumed());
   EXPECT_TRUE(has_failed());
@@ -991,7 +991,8 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
   ASSERT_TRUE(ssl_data_[0]->cert.get());
   scoped_ptr<SequencedSocketData> raw_socket_data(BuildNullSocketData());
   CreateAndConnectRawExpectations("wss://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), raw_socket_data.Pass());
+                                  LocalhostOrigin(),
+                                  std::move(raw_socket_data));
   // WaitUntilConnectDone doesn't work in this case.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(has_failed());
@@ -1008,9 +1009,9 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
   ssl_data->cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   ASSERT_TRUE(ssl_data->cert.get());
-  ssl_data_.push_back(ssl_data.Pass());
+  ssl_data_.push_back(std::move(ssl_data));
   ssl_data.reset(new SSLSocketDataProvider(ASYNC, OK));
-  ssl_data_.push_back(ssl_data.Pass());
+  ssl_data_.push_back(std::move(ssl_data));
   url_request_context_host_.AddRawExpectations(BuildNullSocketData());
   CreateAndConnectStandard("wss://localhost/", "localhost", "/",
                            NoSubProtocols(), LocalhostOrigin(), "", "");
@@ -1161,7 +1162,7 @@ TEST_F(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
   scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass());
+                                  LocalhostOrigin(), std::move(socket_data));
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
 }
@@ -1186,7 +1187,7 @@ TEST_F(WebSocketStreamCreateTest, HandleErrTunnelConnectionFailed) {
   scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
   url_request_context_host_.SetProxyConfig("https=proxy:8000");
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
-                                  LocalhostOrigin(), socket_data.Pass());
+                                  LocalhostOrigin(), std::move(socket_data));
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Establishing a tunnel via proxy server failed.",

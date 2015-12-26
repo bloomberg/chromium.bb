@@ -29,7 +29,7 @@ scoped_ptr<DhcpProxyScriptFetcher> DhcpProxyScriptFetcherFactory::Create(
     ret.reset(new DhcpProxyScriptFetcherWin(context));
 #endif
     DCHECK(ret);
-    return ret.Pass();
+    return ret;
   }
 }
 

@@ -4,6 +4,8 @@
 
 #include "net/log/net_log.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
@@ -44,7 +46,7 @@ scoped_ptr<base::Value> CaptureModeToValue(NetLogCaptureMode capture_mode) {
 scoped_ptr<base::Value> NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("capture_mode", CaptureModeToValue(capture_mode));
-  return dict.Pass();
+  return std::move(dict);
 }
 
 TEST(NetLogTest, Basic) {

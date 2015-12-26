@@ -5,9 +5,9 @@
 #include "net/http/http_stream_parser.h"
 
 #include <stdint.h>
-
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -57,8 +57,8 @@ scoped_ptr<ClientSocketHandle> CreateConnectedSocketHandle(
   EXPECT_EQ(OK, socket->Connect(callback.callback()));
 
   scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-  socket_handle->SetSocket(socket.Pass());
-  return socket_handle.Pass();
+  socket_handle->SetSocket(std::move(socket));
+  return socket_handle;
 }
 
 // The empty payload is how the last chunk is encoded.

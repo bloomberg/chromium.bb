@@ -4,6 +4,8 @@
 
 #include "net/socket/socks_client_socket.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
@@ -86,9 +88,8 @@ scoped_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
   // non-owning pointer to it.
   connection->SetSocket(scoped_ptr<StreamSocket>(tcp_sock_));
   return scoped_ptr<SOCKSClientSocket>(new SOCKSClientSocket(
-      connection.Pass(),
-      HostResolver::RequestInfo(HostPortPair(hostname, port)),
-      DEFAULT_PRIORITY,
+      std::move(connection),
+      HostResolver::RequestInfo(HostPortPair(hostname, port)), DEFAULT_PRIORITY,
       host_resolver));
 }
 

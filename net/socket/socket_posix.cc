@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
@@ -377,7 +378,7 @@ int SocketPosix::DoAccept(scoped_ptr<SocketPosix>* socket) {
   if (rv != OK)
     return rv;
 
-  *socket = accepted_socket.Pass();
+  *socket = std::move(accepted_socket);
   return OK;
 }
 

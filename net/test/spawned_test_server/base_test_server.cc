@@ -5,9 +5,9 @@
 #include "net/test/spawned_test_server/base_test_server.h"
 
 #include <stdint.h>
-
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -560,7 +560,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       for (const std::string& proto : ssl_options_.npn_protocols) {
         npn_protocols->Append(new base::StringValue(proto));
       }
-      arguments->Set("npn-protocols", npn_protocols.Pass());
+      arguments->Set("npn-protocols", std::move(npn_protocols));
     }
     if (ssl_options_.alert_after_handshake)
       arguments->Set("alert-after-handshake", base::Value::CreateNullValue());

@@ -238,7 +238,7 @@ scoped_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
             capture_mode, it->first.as_string(), it->second.as_string())));
   }
   dict->Set("headers", headers_dict);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 bool SpdyHeaderBlockFromNetLogParam(

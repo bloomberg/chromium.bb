@@ -128,7 +128,7 @@ class TraceNetLogObserverTest : public testing::Test {
         continue;
       filtered_trace_events->Append(dict->DeepCopy());
     }
-    return filtered_trace_events.Pass();
+    return filtered_trace_events;
   }
 
   base::ListValue* trace_events() const { return trace_events_.get(); }

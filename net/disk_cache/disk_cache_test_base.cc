@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/disk_cache_test_base.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -54,8 +56,7 @@ void DiskCacheTest::TearDown() {
 
 DiskCacheTestWithCache::TestIterator::TestIterator(
     scoped_ptr<disk_cache::Backend::Iterator> iterator)
-    : iterator_(iterator.Pass()) {
-}
+    : iterator_(std::move(iterator)) {}
 
 DiskCacheTestWithCache::TestIterator::~TestIterator() {}
 
@@ -317,7 +318,7 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags,
     int rv = simple_backend->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     simple_cache_impl_ = simple_backend.get();
-    cache_ = simple_backend.Pass();
+    cache_ = std::move(simple_backend);
     if (simple_cache_wait_for_index_) {
       net::TestCompletionCallback wait_for_index_cb;
       rv = simple_cache_impl_->index()->ExecuteWhenReady(

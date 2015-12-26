@@ -5,12 +5,12 @@
 #include "net/ssl/ssl_platform_key.h"
 
 #include <keyhi.h>
-#include <pk11pub.h>
-#include <prerror.h>
-
 #include <openssl/bn.h>
 #include <openssl/ecdsa.h>
 #include <openssl/rsa.h>
+#include <pk11pub.h>
+#include <prerror.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -39,7 +39,7 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
  public:
   SSLPlatformKeyNSS(SSLPrivateKey::Type type,
                     crypto::ScopedSECKEYPrivateKey key)
-      : type_(type), key_(key.Pass()) {}
+      : type_(type), key_(std::move(key)) {}
   ~SSLPlatformKeyNSS() override {}
 
   SSLPrivateKey::Type GetType() override { return type_; }
@@ -182,7 +182,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
       return nullptr;
   }
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      make_scoped_ptr(new SSLPlatformKeyNSS(type, key.Pass())),
+      make_scoped_ptr(new SSLPlatformKeyNSS(type, std::move(key))),
       GetSSLPlatformKeyTaskRunner()));
 }
 

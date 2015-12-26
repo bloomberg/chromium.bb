@@ -5,6 +5,7 @@
 #include "net/socket/client_socket_pool_base.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
@@ -71,7 +72,7 @@ ConnectJob::~ConnectJob() {
 }
 
 scoped_ptr<StreamSocket> ConnectJob::PassSocket() {
-  return socket_.Pass();
+  return std::move(socket_);
 }
 
 int ConnectJob::Connect() {
@@ -97,7 +98,7 @@ void ConnectJob::SetSocket(scoped_ptr<StreamSocket> socket) {
     net_log().AddEvent(NetLog::TYPE_CONNECT_JOB_SET_SOCKET,
                        socket->NetLog().source().ToEventParametersCallback());
   }
-  socket_ = socket.Pass();
+  socket_ = std::move(socket);
 }
 
 void ConnectJob::NotifyDelegateOfCompletion(int rv) {
@@ -288,7 +289,7 @@ int ClientSocketPoolBaseHelper::RequestSocket(
     CHECK(!request->handle()->is_initialized());
     request.reset();
   } else {
-    group->InsertPendingRequest(request.Pass());
+    group->InsertPendingRequest(std::move(request));
     // Have to do this asynchronously, as closing sockets in higher level pools
     // call back in to |this|, which will cause all sorts of fun and exciting
     // re-entrancy issues if the socket pool is doing something else at the
@@ -430,7 +431,7 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
 
     connecting_socket_count_++;
 
-    group->AddJob(connect_job.Pass(), preconnecting);
+    group->AddJob(std::move(connect_job), preconnecting);
   } else {
     LogBoundConnectJobToRequest(connect_job->net_log().source(), request);
     scoped_ptr<StreamSocket> error_socket;
@@ -440,7 +441,7 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
       error_socket = connect_job->PassSocket();
     }
     if (error_socket) {
-      HandOutSocket(error_socket.Pass(), ClientSocketHandle::UNUSED,
+      HandOutSocket(std::move(error_socket), ClientSocketHandle::UNUSED,
                     connect_job->connect_timing(), handle, base::TimeDelta(),
                     group, request.net_log());
     } else if (group->IsEmpty()) {
@@ -533,7 +534,7 @@ void ClientSocketPoolBaseHelper::CancelRequest(
     if (socket) {
       if (result != OK)
         socket->Disconnect();
-      ReleaseSocket(handle->group_name(), socket.Pass(), handle->id());
+      ReleaseSocket(handle->group_name(), std::move(socket), handle->id());
     }
     return;
   }
@@ -615,7 +616,7 @@ scoped_ptr<base::DictionaryValue> ClientSocketPoolBaseHelper::GetInfoAsValue(
   dict->SetInteger("pool_generation_number", pool_generation_number_);
 
   if (group_map_.empty())
-    return dict.Pass();
+    return dict;
 
   base::DictionaryValue* all_groups_dict = new base::DictionaryValue();
   for (GroupMap::const_iterator it = group_map_.begin();
@@ -659,7 +660,7 @@ scoped_ptr<base::DictionaryValue> ClientSocketPoolBaseHelper::GetInfoAsValue(
     all_groups_dict->SetWithoutPathExpansion(it->first, group_dict);
   }
   dict->Set("groups", all_groups_dict);
-  return dict.Pass();
+  return dict;
 }
 
 bool ClientSocketPoolBaseHelper::IdleSocket::IsUsable() const {
@@ -795,7 +796,7 @@ void ClientSocketPoolBaseHelper::ReleaseSocket(const std::string& group_name,
       id == pool_generation_number_;
   if (can_reuse) {
     // Add it to the idle list.
-    AddIdleSocket(socket.Pass(), group);
+    AddIdleSocket(std::move(socket), group);
     OnAvailableSocketSlot(group_name, group);
   } else {
     socket.reset();
@@ -901,13 +902,13 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
     scoped_ptr<const Request> request = group->PopNextPendingRequest();
     if (request) {
       LogBoundConnectJobToRequest(job_log.source(), *request);
-      HandOutSocket(
-          socket.Pass(), ClientSocketHandle::UNUSED, connect_timing,
-          request->handle(), base::TimeDelta(), group, request->net_log());
+      HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
+                    connect_timing, request->handle(), base::TimeDelta(), group,
+                    request->net_log());
       request->net_log().EndEvent(NetLog::TYPE_SOCKET_POOL);
       InvokeUserCallbackLater(request->handle(), request->callback(), result);
     } else {
-      AddIdleSocket(socket.Pass(), group);
+      AddIdleSocket(std::move(socket), group);
       OnAvailableSocketSlot(group_name, group);
       CheckForStalledSocketGroups();
     }
@@ -922,7 +923,7 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
       RemoveConnectJob(job, group);
       if (socket.get()) {
         handed_out_socket = true;
-        HandOutSocket(socket.Pass(), ClientSocketHandle::UNUSED,
+        HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
                       connect_timing, request->handle(), base::TimeDelta(),
                       group, request->net_log());
       }
@@ -1003,7 +1004,7 @@ void ClientSocketPoolBaseHelper::HandOutSocket(
     Group* group,
     const BoundNetLog& net_log) {
   DCHECK(socket);
-  handle->SetSocket(socket.Pass());
+  handle->SetSocket(std::move(socket));
   handle->set_reuse_type(reuse_type);
   handle->set_idle_time(idle_time);
   handle->set_pool_id(pool_generation_number_);
@@ -1256,7 +1257,7 @@ void ClientSocketPoolBaseHelper::Group::OnBackupJobTimerFired(
   int rv = backup_job->Connect();
   pool->connecting_socket_count_++;
   ConnectJob* raw_backup_job = backup_job.get();
-  AddJob(backup_job.Pass(), false);
+  AddJob(std::move(backup_job), false);
   if (rv != ERR_IO_PENDING)
     pool->OnConnectJobComplete(rv, raw_backup_job);
 }
@@ -1327,7 +1328,7 @@ ClientSocketPoolBaseHelper::Group::FindAndRemovePendingRequest(
        pointer = pending_requests_.GetNextTowardsLastMin(pointer)) {
     if (pointer.value()->handle() == handle) {
       scoped_ptr<const Request> request = RemovePendingRequest(pointer);
-      return request.Pass();
+      return request;
     }
   }
   return scoped_ptr<const ClientSocketPoolBaseHelper::Request>();
@@ -1344,7 +1345,7 @@ ClientSocketPoolBaseHelper::Group::RemovePendingRequest(
   if (pending_requests_.empty())
     backup_job_timer_.Stop();
   request->CrashIfInvalid();
-  return request.Pass();
+  return request;
 }
 
 }  // namespace internal

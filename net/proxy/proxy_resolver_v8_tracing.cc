@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -332,7 +333,7 @@ Job::Job(const Job::Params* params,
          scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings)
     : origin_runner_(base::ThreadTaskRunnerHandle::Get()),
       params_(params),
-      bindings_(bindings.Pass()),
+      bindings_(std::move(bindings)),
       event_(true, false),
       last_num_dns_(0),
       pending_dns_(NULL) {
@@ -554,7 +555,7 @@ int Job::ExecuteProxyResolver() {
       scoped_ptr<ProxyResolverV8> resolver;
       result = ProxyResolverV8::Create(script_data_, this, &resolver);
       if (result == OK)
-        *resolver_out_ = resolver.Pass();
+        *resolver_out_ = std::move(resolver);
       break;
     }
     case GET_PROXY_FOR_URL: {
@@ -917,9 +918,9 @@ ProxyResolverV8TracingImpl::ProxyResolverV8TracingImpl(
     scoped_ptr<base::Thread> thread,
     scoped_ptr<ProxyResolverV8> resolver,
     scoped_ptr<Job::Params> job_params)
-    : thread_(thread.Pass()),
-      v8_resolver_(resolver.Pass()),
-      job_params_(job_params.Pass()),
+    : thread_(std::move(thread)),
+      v8_resolver_(std::move(resolver)),
+      job_params_(std::move(job_params)),
       num_outstanding_callbacks_(0) {
   job_params_->num_outstanding_callbacks = &num_outstanding_callbacks_;
 }
@@ -942,7 +943,7 @@ void ProxyResolverV8TracingImpl::GetProxyForURL(
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  scoped_refptr<Job> job = new Job(job_params_.get(), bindings.Pass());
+  scoped_refptr<Job> job = new Job(job_params_.get(), std::move(bindings));
 
   if (request)
     *request = job.get();
@@ -1003,7 +1004,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
     CHECK(thread_->StartWithOptions(options));
     job_params_.reset(
         new Job::Params(thread_->task_runner(), &num_outstanding_callbacks_));
-    create_resolver_job_ = new Job(job_params_.get(), bindings.Pass());
+    create_resolver_job_ = new Job(job_params_.get(), std::move(bindings));
     create_resolver_job_->StartCreateV8Resolver(
         pac_script, &v8_resolver_,
         base::Bind(
@@ -1034,7 +1035,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
     if (error == OK) {
       job_params_->v8_resolver = v8_resolver_.get();
       resolver_out_->reset(new ProxyResolverV8TracingImpl(
-          thread_.Pass(), v8_resolver_.Pass(), job_params_.Pass()));
+          std::move(thread_), std::move(v8_resolver_), std::move(job_params_)));
     } else {
       StopWorkerThread();
     }
@@ -1079,9 +1080,9 @@ void ProxyResolverV8TracingFactoryImpl::CreateProxyResolverV8Tracing(
     const CompletionCallback& callback,
     scoped_ptr<ProxyResolverFactory::Request>* request) {
   scoped_ptr<CreateJob> job(
-      new CreateJob(this, bindings.Pass(), pac_script, resolver, callback));
+      new CreateJob(this, std::move(bindings), pac_script, resolver, callback));
   jobs_.insert(job.get());
-  *request = job.Pass();
+  *request = std::move(job);
 }
 
 void ProxyResolverV8TracingFactoryImpl::RemoveJob(

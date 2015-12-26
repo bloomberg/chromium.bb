@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -94,18 +95,18 @@ scoped_ptr<ChannelIDStore::ChannelID> GenerateChannelID(
   if (!key) {
     DLOG(ERROR) << "Unable to create channel ID key pair";
     *error = ERR_KEY_GENERATION_FAILED;
-    return result.Pass();
+    return result;
   }
 
   result.reset(new ChannelIDStore::ChannelID(server_identifier, creation_time,
-                                             key.Pass()));
+                                             std::move(key)));
   UMA_HISTOGRAM_CUSTOM_TIMES("DomainBoundCerts.GenerateCertTime",
                              base::TimeTicks::Now() - start,
                              base::TimeDelta::FromMilliseconds(1),
                              base::TimeDelta::FromMinutes(5),
                              50);
   *error = OK;
-  return result.Pass();
+  return result;
 }
 
 }  // namespace
@@ -183,7 +184,7 @@ class ChannelIDServiceJob {
   }
 
   void HandleResult(int error, scoped_ptr<crypto::ECPrivateKey> key) {
-    PostAll(error, key.Pass());
+    PostAll(error, std::move(key));
   }
 
   bool CreateIfMissing() const { return create_if_missing_; }
@@ -204,7 +205,7 @@ class ChannelIDServiceJob {
       scoped_ptr<crypto::ECPrivateKey> key_copy;
       if (key)
         key_copy.reset(key->Copy());
-      (*i)->Post(error, key_copy.Pass());
+      (*i)->Post(error, std::move(key_copy));
     }
   }
 
@@ -275,7 +276,7 @@ void ChannelIDService::Request::Post(int error,
   service_ = NULL;
   DCHECK(!callback_.is_null());
   if (key)
-    *key_ = key.Pass();
+    *key_ = std::move(key);
   // Running the callback might delete |this| (e.g. the callback cleans up
   // resources created for the request), so we can't touch any of our
   // members afterwards. Reset callback_ first.
@@ -413,14 +414,14 @@ void ChannelIDService::GotChannelID(int err,
     // Async DB lookup found a valid channel ID.
     key_store_hits_++;
     // ChannelIDService::Request::Post will do the histograms and stuff.
-    HandleResult(OK, server_identifier, key.Pass());
+    HandleResult(OK, server_identifier, std::move(key));
     return;
   }
   // Async lookup failed or the channel ID was missing. Return the error
   // directly, unless the channel ID was missing and a request asked to create
   // one.
   if (err != ERR_FILE_NOT_FOUND || !j->second->CreateIfMissing()) {
-    HandleResult(err, server_identifier, key.Pass());
+    HandleResult(err, server_identifier, std::move(key));
     return;
   }
   // At least one request asked to create a channel ID => start generating a new
@@ -450,9 +451,9 @@ void ChannelIDService::GeneratedChannelID(
   scoped_ptr<crypto::ECPrivateKey> key;
   if (error == OK) {
     key.reset(channel_id->key()->Copy());
-    channel_id_store_->SetChannelID(channel_id.Pass());
+    channel_id_store_->SetChannelID(std::move(channel_id));
   }
-  HandleResult(error, server_identifier, key.Pass());
+  HandleResult(error, server_identifier, std::move(key));
 }
 
 void ChannelIDService::HandleResult(int error,
@@ -469,7 +470,7 @@ void ChannelIDService::HandleResult(int error,
   ChannelIDServiceJob* job = j->second;
   inflight_.erase(j);
 
-  job->HandleResult(error, key.Pass());
+  job->HandleResult(error, std::move(key));
   delete job;
 }
 

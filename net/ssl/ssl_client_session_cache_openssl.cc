@@ -68,7 +68,7 @@ void SSLClientSessionCacheOpenSSL::Flush() {
 
 void SSLClientSessionCacheOpenSSL::SetClockForTesting(
     scoped_ptr<base::Clock> clock) {
-  clock_ = clock.Pass();
+  clock_ = std::move(clock);
 }
 
 SSLClientSessionCacheOpenSSL::CacheEntry::CacheEntry() {

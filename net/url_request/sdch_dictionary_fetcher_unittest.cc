@@ -5,6 +5,7 @@
 #include "net/url_request/sdch_dictionary_fetcher.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -124,8 +125,8 @@ class SpecifiedResponseJobInterceptor : public URLRequestInterceptor {
         new SpecifiedResponseJobInterceptor(http_response_info,
                                             lifecycle_callback));
 
-    URLRequestFilter::GetInstance()->AddHostnameInterceptor("http", kTestDomain,
-                                                            interceptor.Pass());
+    URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", kTestDomain, std::move(interceptor));
   }
 
   static void Unregister() {

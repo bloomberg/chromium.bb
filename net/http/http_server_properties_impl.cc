@@ -5,6 +5,7 @@
 #include "net/http/http_server_properties_impl.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -560,10 +561,10 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue()
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("host_port_pair", host_port_pair.ToString());
     dict->Set("alternative_service",
-              scoped_ptr<base::Value>(alternative_service_list.Pass()));
-    dict_list->Append(dict.Pass());
+              scoped_ptr<base::Value>(std::move(alternative_service_list)));
+    dict_list->Append(std::move(dict));
   }
-  return dict_list.Pass();
+  return std::move(dict_list);
 }
 
 const SettingsMap& HttpServerPropertiesImpl::GetSpdySettings(

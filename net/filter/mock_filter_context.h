@@ -6,8 +6,8 @@
 #define NET_FILTER_MOCK_FILTER_CONTEXT_H_
 
 #include <stdint.h>
-
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,7 +31,7 @@ class MockFilterContext : public FilterContext {
   void SetCached(bool is_cached) { is_cached_content_ = is_cached; }
   void SetResponseCode(int response_code) { response_code_ = response_code; }
   void SetSdchResponse(scoped_ptr<SdchManager::DictionarySet> handle) {
-    dictionaries_handle_ = handle.Pass();
+    dictionaries_handle_ = std::move(handle);
   }
   URLRequestContext* GetModifiableURLRequestContext() const {
     return context_.get();

@@ -4,6 +4,8 @@
 
 #include "net/http/url_security_manager.h"
 
+#include <utility>
+
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +51,7 @@ TEST(URLSecurityManager, UseDefaultCredentials) {
   // The URL security manager takes ownership of |auth_filter|.
   scoped_ptr<URLSecurityManager> url_security_manager(
       URLSecurityManager::Create());
-  url_security_manager->SetDefaultWhitelist(auth_filter.Pass());
+  url_security_manager->SetDefaultWhitelist(std::move(auth_filter));
   ASSERT_TRUE(url_security_manager.get());
 
   for (size_t i = 0; i < arraysize(kTestDataList); ++i) {
@@ -69,7 +71,7 @@ TEST(URLSecurityManager, CanDelegate) {
   // The URL security manager takes ownership of |auth_filter|.
   scoped_ptr<URLSecurityManager> url_security_manager(
       URLSecurityManager::Create());
-  url_security_manager->SetDelegateWhitelist(auth_filter.Pass());
+  url_security_manager->SetDelegateWhitelist(std::move(auth_filter));
   ASSERT_TRUE(url_security_manager.get());
 
   for (size_t i = 0; i < arraysize(kTestDataList); ++i) {

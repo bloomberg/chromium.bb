@@ -4,6 +4,8 @@
 
 #include "net/udp/udp_net_log_parameters.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -24,7 +26,7 @@ scoped_ptr<base::Value> NetLogUDPDataTranferCallback(
     dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, byte_count));
   if (address)
     dict->SetString("address", address->ToString());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogUDPConnectCallback(
@@ -32,7 +34,7 @@ scoped_ptr<base::Value> NetLogUDPConnectCallback(
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("address", address->ToString());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace

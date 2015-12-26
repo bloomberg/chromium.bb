@@ -9,6 +9,7 @@
 #include <iterator>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -357,7 +358,7 @@ int WebSocketBasicHandshakeStream::SendRequest(
   scoped_ptr<WebSocketHandshakeRequestInfo> request(
       new WebSocketHandshakeRequestInfo(url_, base::Time::Now()));
   request->headers.CopyFrom(enriched_headers);
-  connect_delegate_->OnStartOpeningHandshake(request.Pass());
+  connect_delegate_->OnStartOpeningHandshake(std::move(request));
 
   return parser()->SendRequest(
       state_.GenerateRequestLine(), enriched_headers, response, callback);
@@ -481,11 +482,11 @@ scoped_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
         WebSocketDeflater::NUM_CONTEXT_TAKEOVER_MODE_TYPES);
 
     return scoped_ptr<WebSocketStream>(new WebSocketDeflateStream(
-        basic_stream.Pass(), extension_params_->deflate_parameters,
+        std::move(basic_stream), extension_params_->deflate_parameters,
         scoped_ptr<WebSocketDeflatePredictor>(
             new WebSocketDeflatePredictorImpl)));
   } else {
-    return basic_stream.Pass();
+    return basic_stream;
   }
 }
 

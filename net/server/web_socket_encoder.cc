@@ -4,6 +4,7 @@
 
 #include "net/server/web_socket_encoder.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -226,8 +227,8 @@ scoped_ptr<WebSocketEncoder> WebSocketEncoder::CreateServer(
       continue;
     }
     *deflate_parameters = response;
-    return make_scoped_ptr(
-        new WebSocketEncoder(FOR_SERVER, deflater.Pass(), inflater.Pass()));
+    return make_scoped_ptr(new WebSocketEncoder(FOR_SERVER, std::move(deflater),
+                                                std::move(inflater)));
   }
 
   // We cannot find an acceptable offer.
@@ -272,14 +273,16 @@ scoped_ptr<WebSocketEncoder> WebSocketEncoder::CreateClient(
     return make_scoped_ptr(new WebSocketEncoder(FOR_CLIENT, nullptr, nullptr));
   }
 
-  return make_scoped_ptr(
-      new WebSocketEncoder(FOR_CLIENT, deflater.Pass(), inflater.Pass()));
+  return make_scoped_ptr(new WebSocketEncoder(FOR_CLIENT, std::move(deflater),
+                                              std::move(inflater)));
 }
 
 WebSocketEncoder::WebSocketEncoder(Type type,
                                    scoped_ptr<WebSocketDeflater> deflater,
                                    scoped_ptr<WebSocketInflater> inflater)
-    : type_(type), deflater_(deflater.Pass()), inflater_(inflater.Pass()) {}
+    : type_(type),
+      deflater_(std::move(deflater)),
+      inflater_(std::move(inflater)) {}
 
 WebSocketEncoder::~WebSocketEncoder() {}
 

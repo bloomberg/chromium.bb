@@ -4,6 +4,8 @@
 
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -166,7 +168,7 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
                  << request->relative_url;
     scoped_ptr<BasicHttpResponse> not_found_response(new BasicHttpResponse);
     not_found_response->set_code(HTTP_NOT_FOUND);
-    response = not_found_response.Pass();
+    response = std::move(not_found_response);
   }
 
   response->SendResponse(
@@ -290,7 +292,7 @@ scoped_ptr<StreamSocket> EmbeddedTestServer::DoSSLUpgrade(
   scoped_ptr<crypto::RSAPrivateKey> server_key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
 
-  return CreateSSLServerSocket(connection.Pass(), GetCertificate().get(),
+  return CreateSSLServerSocket(std::move(connection), GetCertificate().get(),
                                server_key.get(), ssl_config_);
 }
 
@@ -302,13 +304,13 @@ void EmbeddedTestServer::DoAcceptLoop() {
                                       base::Unretained(this)));
     if (rv == ERR_IO_PENDING)
       return;
-    HandleAcceptResult(accepted_socket_.Pass());
+    HandleAcceptResult(std::move(accepted_socket_));
   }
 }
 
 void EmbeddedTestServer::OnAcceptCompleted(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
-  HandleAcceptResult(accepted_socket_.Pass());
+  HandleAcceptResult(std::move(accepted_socket_));
   DoAcceptLoop();
 }
 
@@ -325,10 +327,10 @@ void EmbeddedTestServer::HandleAcceptResult(scoped_ptr<StreamSocket> socket) {
     connection_listener_->AcceptedSocket(*socket);
 
   if (is_using_ssl_)
-    socket = DoSSLUpgrade(socket.Pass());
+    socket = DoSSLUpgrade(std::move(socket));
 
   HttpConnection* http_connection = new HttpConnection(
-      socket.Pass(),
+      std::move(socket),
       base::Bind(&EmbeddedTestServer::HandleRequest, base::Unretained(this)));
   connections_[http_connection->socket_.get()] = http_connection;
 

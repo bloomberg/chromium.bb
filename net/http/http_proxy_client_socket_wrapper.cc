@@ -4,6 +4,8 @@
 
 #include "net/http/http_proxy_client_socket_wrapper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -107,7 +109,7 @@ LoadState HttpProxyClientSocketWrapper::GetConnectLoadState() const {
 
 scoped_ptr<HttpResponseInfo>
 HttpProxyClientSocketWrapper::GetAdditionalErrorState() {
-  return error_response_info_.Pass();
+  return std::move(error_response_info_);
 }
 
 const HttpResponseInfo* HttpProxyClientSocketWrapper::GetConnectResponseInfo()
@@ -534,7 +536,7 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   } else {
     // Create a session direct to the proxy itself
     spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocket(
-        key, transport_socket_handle_.Pass(), net_log_, OK,
+        key, std::move(transport_socket_handle_), net_log_, OK,
         /*using_ssl_*/ true);
     DCHECK(spdy_session);
   }

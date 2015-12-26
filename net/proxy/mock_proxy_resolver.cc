@@ -4,6 +4,8 @@
 
 #include "net/proxy/mock_proxy_resolver.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 
@@ -86,7 +88,7 @@ MockAsyncProxyResolverFactory::Request::~Request() {
 void MockAsyncProxyResolverFactory::Request::CompleteNow(
     int rv,
     scoped_ptr<ProxyResolver> resolver) {
-  *resolver_ = resolver.Pass();
+  *resolver_ = std::move(resolver);
 
   // RemovePendingRequest may remove the last external reference to |this|.
   scoped_refptr<MockAsyncProxyResolverFactory::Request> keep_alive(this);

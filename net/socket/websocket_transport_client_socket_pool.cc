@@ -5,6 +5,7 @@
 #include "net/socket/websocket_transport_client_socket_pool.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -332,16 +333,14 @@ int WebSocketTransportClientSocketPool::RequestSocket(
     request_net_log.EndEvent(NetLog::TYPE_SOCKET_POOL);
   } else if (rv == ERR_IO_PENDING) {
     // TODO(ricea): Implement backup job timer?
-    AddJob(handle, connect_job.Pass());
+    AddJob(handle, std::move(connect_job));
   } else {
     scoped_ptr<StreamSocket> error_socket;
     connect_job->GetAdditionalErrorState(handle);
     error_socket = connect_job->PassSocket();
     if (error_socket) {
-      HandOutSocket(error_socket.Pass(),
-                    connect_job->connect_timing(),
-                    handle,
-                    request_net_log);
+      HandOutSocket(std::move(error_socket), connect_job->connect_timing(),
+                    handle, request_net_log);
     }
   }
 
@@ -368,7 +367,7 @@ void WebSocketTransportClientSocketPool::CancelRequest(
     return;
   scoped_ptr<StreamSocket> socket = handle->PassSocket();
   if (socket)
-    ReleaseSocket(handle->group_name(), socket.Pass(), handle->id());
+    ReleaseSocket(handle->group_name(), std::move(socket), handle->id());
   if (!DeleteJob(handle))
     pending_callbacks_.erase(handle);
   if (!ReachedMaxSocketsLimit() && !stalled_request_queue_.empty())
@@ -449,7 +448,7 @@ scoped_ptr<base::DictionaryValue>
   dict->SetInteger("max_socket_count", max_sockets_);
   dict->SetInteger("max_sockets_per_group", max_sockets_);
   dict->SetInteger("pool_generation_number", 0);
-  return dict.Pass();
+  return dict;
 }
 
 TimeDelta WebSocketTransportClientSocketPool::ConnectionTimeout() const {
@@ -483,7 +482,7 @@ void WebSocketTransportClientSocketPool::OnConnectJobComplete(
   if (result == OK) {
     DCHECK(socket.get());
     handed_out_socket = true;
-    HandOutSocket(socket.Pass(), connect_timing, handle, request_net_log);
+    HandOutSocket(std::move(socket), connect_timing, handle, request_net_log);
     request_net_log.EndEvent(NetLog::TYPE_SOCKET_POOL);
   } else {
     // If we got a socket, it must contain error information so pass that
@@ -491,7 +490,7 @@ void WebSocketTransportClientSocketPool::OnConnectJobComplete(
     job->GetAdditionalErrorState(handle);
     if (socket.get()) {
       handed_out_socket = true;
-      HandOutSocket(socket.Pass(), connect_timing, handle, request_net_log);
+      HandOutSocket(std::move(socket), connect_timing, handle, request_net_log);
     }
     request_net_log.EndEventWithNetErrorCode(NetLog::TYPE_SOCKET_POOL, result);
   }
@@ -535,7 +534,7 @@ void WebSocketTransportClientSocketPool::HandOutSocket(
     ClientSocketHandle* handle,
     const BoundNetLog& net_log) {
   DCHECK(socket);
-  handle->SetSocket(socket.Pass());
+  handle->SetSocket(std::move(socket));
   DCHECK_EQ(ClientSocketHandle::UNUSED, handle->reuse_type());
   DCHECK_EQ(0, handle->idle_time().InMicroseconds());
   handle->set_pool_id(0);

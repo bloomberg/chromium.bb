@@ -4,6 +4,8 @@
 
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -35,13 +37,9 @@ WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
   // method.
   std::vector<std::string> extensions(
       1, "permessage-deflate; client_max_window_bits");
-  WebSocketBasicHandshakeStream* stream =
-      new WebSocketBasicHandshakeStream(connection.Pass(),
-                                        connect_delegate_,
-                                        using_proxy,
-                                        requested_subprotocols_,
-                                        extensions,
-                                        failure_message_);
+  WebSocketBasicHandshakeStream* stream = new WebSocketBasicHandshakeStream(
+      std::move(connection), connect_delegate_, using_proxy,
+      requested_subprotocols_, extensions, failure_message_);
   OnStreamCreated(stream);
   stream_ = stream;
   return stream;

@@ -72,7 +72,7 @@ WebSocketBasicStream::WebSocketBasicStream(
     const std::string& sub_protocol,
     const std::string& extensions)
     : read_buffer_(new IOBufferWithSize(kReadBufferSize)),
-      connection_(connection.Pass()),
+      connection_(std::move(connection)),
       http_read_buffer_(http_read_buffer),
       sub_protocol_(sub_protocol),
       extensions_(extensions),
@@ -192,9 +192,9 @@ WebSocketBasicStream::CreateWebSocketBasicStreamForTesting(
     const std::string& extensions,
     WebSocketMaskingKeyGeneratorFunction key_generator_function) {
   scoped_ptr<WebSocketBasicStream> stream(new WebSocketBasicStream(
-      connection.Pass(), http_read_buffer, sub_protocol, extensions));
+      std::move(connection), http_read_buffer, sub_protocol, extensions));
   stream->generate_websocket_masking_key_ = key_generator_function;
-  return stream.Pass();
+  return stream;
 }
 
 int WebSocketBasicStream::WriteEverything(
@@ -262,7 +262,7 @@ int WebSocketBasicStream::ConvertChunksToFrames(
     if (result != OK)
       return result;
     if (frame)
-      frames->push_back(frame.Pass());
+      frames->push_back(std::move(frame));
   }
   frame_chunks->clear();
   if (frames->empty())
@@ -390,7 +390,7 @@ scoped_ptr<WebSocketFrame> WebSocketBasicStream::CreateFrame(
   // belong to it.
   if (is_final_chunk)
     current_frame_header_.reset();
-  return result_frame.Pass();
+  return result_frame;
 }
 
 void WebSocketBasicStream::AddToIncompleteControlFrameBody(

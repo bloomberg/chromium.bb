@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -123,8 +124,8 @@ scoped_ptr<SpdySessionDependencies> CreateSpdySessionDependencies(
 scoped_ptr<SpdySessionDependencies> CreateSpdySessionDependencies(
     SpdyNetworkTransactionTestParams test_params,
     scoped_ptr<ProxyService> proxy_service) {
-  scoped_ptr<SpdySessionDependencies> session_deps(
-      new SpdySessionDependencies(test_params.protocol, proxy_service.Pass()));
+  scoped_ptr<SpdySessionDependencies> session_deps(new SpdySessionDependencies(
+      test_params.protocol, std::move(proxy_service)));
   UpdateSpdySessionDependencies(test_params, session_deps.get());
   return session_deps;
 }
@@ -176,7 +177,7 @@ class SpdyNetworkTransactionTest
           priority_(priority),
           session_deps_(session_deps.get() == NULL
                             ? CreateSpdySessionDependencies(test_params)
-                            : session_deps.Pass()),
+                            : std::move(session_deps)),
           session_(
               SpdySessionDependencies::SpdyCreateSession(session_deps_.get())),
           log_(log),
@@ -306,7 +307,7 @@ class SpdyNetworkTransactionTest
         SocketDataProvider* data,
         scoped_ptr<SSLSocketDataProvider> ssl_provider) {
       RunPreTestSetup();
-      AddDataWithSSLSocketDataProvider(data, ssl_provider.Pass());
+      AddDataWithSSLSocketDataProvider(data, std::move(ssl_provider));
       RunDefaultTest();
       VerifyDataConsumed();
     }
@@ -316,7 +317,7 @@ class SpdyNetworkTransactionTest
           new SSLSocketDataProvider(ASYNC, OK));
       ssl_provider->cert =
           ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-      AddDataWithSSLSocketDataProvider(data, ssl_provider.Pass());
+      AddDataWithSSLSocketDataProvider(data, std::move(ssl_provider));
     }
 
     void AddDataWithSSLSocketDataProvider(
@@ -345,7 +346,7 @@ class SpdyNetworkTransactionTest
     }
 
     void SetSession(scoped_ptr<HttpNetworkSession> session) {
-      session_ = session.Pass();
+      session_ = std::move(session);
     }
     HttpNetworkTransaction* trans() { return trans_.get(); }
     void ResetTrans() { trans_.reset(); }
@@ -2976,7 +2977,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
   (*incomplete_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   (*incomplete_headers)["hello"] = "bye";
   scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
-      incomplete_headers.Pass(), 2, 1));
+      std::move(incomplete_headers), 2, 1));
   MockRead reads[] = {
       CreateMockRead(*stream1_reply, 1),
       CreateMockRead(*stream2_syn, 2),
@@ -3487,7 +3488,7 @@ TEST_P(SpdyNetworkTransactionTest, DecompressFailureOnSynReply) {
   session_deps->enable_compression = true;
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(),
-                                     session_deps.Pass());
+                                     std::move(session_deps));
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(ERR_SPDY_COMPRESSION_ERROR, out.rv);
@@ -4056,7 +4057,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
   (*reply_headers)[spdy_util_.GetStatusKey()] = "200";
   (*reply_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   scoped_ptr<SpdyFrame> reply(
-    spdy_util_.ConstructSpdyFrame(kSynReplyInfo, reply_headers.Pass()));
+      spdy_util_.ConstructSpdyFrame(kSynReplyInfo, std::move(reply_headers)));
 
   const SpdySettingsIds kSampleId1 = SETTINGS_UPLOAD_BANDWIDTH;
   unsigned int kSampleValue1 = 0x0a0a0a0a;
@@ -4207,7 +4208,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   (*reply_headers)[spdy_util_.GetStatusKey()] = "200";
   (*reply_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   scoped_ptr<SpdyFrame> reply(
-    spdy_util_.ConstructSpdyFrame(kSynReplyInfo, reply_headers.Pass()));
+      spdy_util_.ConstructSpdyFrame(kSynReplyInfo, std::move(reply_headers)));
 
   scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
@@ -4344,7 +4345,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   // Do not force SPDY so that second socket can negotiate HTTP/1.1.
   session_deps->next_protos = SpdyNextProtos();
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
-                                     GetParam(), session_deps.Pass());
+                                     GetParam(), std::move(session_deps));
 
   // First socket: HTTP/2 request rejected with HTTP_1_1_REQUIRED.
   const char* url = request.url.spec().c_str();
@@ -4366,7 +4367,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
-  helper.AddDataWithSSLSocketDataProvider(&data0, ssl_provider0.Pass());
+  helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
 
   // Second socket: falling back to HTTP/1.1.
   MockWrite writes1[] = {MockWrite(ASYNC, 0,
@@ -4386,7 +4387,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   ssl_provider1->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force HTTP/1.1.
   ssl_provider1->SetNextProto(kProtoHTTP11);
-  helper.AddDataWithSSLSocketDataProvider(&data1, ssl_provider1.Pass());
+  helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       helper.session()->spdy_session_pool()->http_server_properties();
@@ -4436,7 +4437,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   // Do not force SPDY so that second socket can negotiate HTTP/1.1.
   session_deps->next_protos = SpdyNextProtos();
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
-                                     GetParam(), session_deps.Pass());
+                                     GetParam(), std::move(session_deps));
 
   // First socket: HTTP/2 CONNECT rejected with HTTP_1_1_REQUIRED.
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyConnect(
@@ -4456,7 +4457,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
-  helper.AddDataWithSSLSocketDataProvider(&data0, ssl_provider0.Pass());
+  helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
 
   // Second socket: retry using HTTP/1.1.
   MockWrite writes1[] = {
@@ -4486,7 +4487,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   ssl_provider1->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force HTTP/1.1.
   ssl_provider1->SetNextProto(kProtoHTTP11);
-  helper.AddDataWithSSLSocketDataProvider(&data1, ssl_provider1.Pass());
+  helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
 
   // A third socket is needed for the tunnelled connection.
   scoped_ptr<SSLSocketDataProvider> ssl_provider2(
@@ -4691,7 +4692,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
   session_peer.SetProxyService(proxy_service.get());
   helper_proxy.session_deps().swap(ssd_proxy);
-  helper_proxy.SetSession(session_proxy.Pass());
+  helper_proxy.SetSession(std::move(session_proxy));
   helper_proxy.RunPreTestSetup();
   helper_proxy.AddData(data_proxy.get());
 
@@ -4963,21 +4964,16 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
   scoped_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  initial_headers.get());
-  scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(initial_headers), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)[spdy_util_.GetStatusKey()] = "200";
   (*late_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   (*late_headers)["hello"] = "bye";
-  scoped_ptr<SpdyFrame> stream2_headers(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> stream2_headers(spdy_util_.ConstructSpdyControlFrame(
+      std::move(late_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
 
   scoped_ptr<SpdyFrame>
       stream1_reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -5025,21 +5021,16 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   scoped_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  initial_headers.get());
-  scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(initial_headers), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)[spdy_util_.GetStatusKey()] = "200";
   (*late_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   (*late_headers)["hello"] = "bye";
-  scoped_ptr<SpdyFrame> stream2_headers(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> stream2_headers(spdy_util_.ConstructSpdyControlFrame(
+      std::move(late_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
 
   scoped_ptr<SpdyFrame>
       stream1_reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -5144,19 +5135,14 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   }
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  initial_headers.get());
-  scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(initial_headers), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> middle_headers(new SpdyHeaderBlock());
   (*middle_headers)["hello"] = "bye";
-  scoped_ptr<SpdyFrame> stream2_headers1(
-      spdy_util_.ConstructSpdyControlFrame(middle_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> stream2_headers1(spdy_util_.ConstructSpdyControlFrame(
+      std::move(middle_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)[spdy_util_.GetStatusKey()] = "200";
@@ -5164,14 +5150,9 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
     // HTTP/2 eliminates use of the :version header.
     (*late_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   }
-  scoped_ptr<SpdyFrame> stream2_headers2(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> stream2_headers2(spdy_util_.ConstructSpdyControlFrame(
+      std::move(late_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
 
   scoped_ptr<SpdyFrame>
       stream1_reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -5280,19 +5261,14 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
   scoped_ptr<SpdyHeaderBlock> initial_headers(new SpdyHeaderBlock());
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  initial_headers.get());
-  scoped_ptr<SpdyFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(initial_headers), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> middle_headers(new SpdyHeaderBlock());
   (*middle_headers)["hello"] = "bye";
-  scoped_ptr<SpdyFrame> stream2_headers1(
-      spdy_util_.ConstructSpdyControlFrame(middle_headers.Pass(),
-                                           false,
-                                           2,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> stream2_headers1(spdy_util_.ConstructSpdyControlFrame(
+      std::move(middle_headers), false, 2, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
 
   scoped_ptr<SpdyFrame>
       stream1_reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -5382,14 +5358,9 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithHeaders) {
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)["hello"] = "bye";
-  scoped_ptr<SpdyFrame> stream1_headers(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           1,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> stream1_headers(spdy_util_.ConstructSpdyControlFrame(
+      std::move(late_headers), false, 1, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
   scoped_ptr<SpdyFrame> stream1_body(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
@@ -5424,14 +5395,9 @@ TEST_P(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
   (*late_headers)["hello"] = "bye";
-  scoped_ptr<SpdyFrame> stream1_headers(
-      spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
-                                           false,
-                                           1,
-                                           LOWEST,
-                                           HEADERS,
-                                           CONTROL_FLAG_NONE,
-                                           0));
+  scoped_ptr<SpdyFrame> stream1_headers(spdy_util_.ConstructSpdyControlFrame(
+      std::move(late_headers), false, 1, LOWEST, HEADERS, CONTROL_FLAG_NONE,
+      0));
   scoped_ptr<SpdyFrame> stream1_body(
       spdy_util_.ConstructSpdyBodyFrame(1, false));
   scoped_ptr<SpdyFrame> stream1_body2(
@@ -5532,7 +5498,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
         CreateSpdySessionDependencies(GetParam()));
     session_deps->trusted_spdy_proxy = "123.45.67.89:8080";
     NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
-                                       GetParam(), session_deps.Pass());
+                                       GetParam(), std::move(session_deps));
     helper.RunPreTestSetup();
     helper.AddData(&data);
 
@@ -6390,7 +6356,7 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
   spdy_util_.AddUrlToHeaderBlock("http://www.example.org/a.dat",
                                  push_headers.get());
   scoped_ptr<SpdyFrame> push(
-      spdy_util_.ConstructInitialSpdyPushFrame(push_headers.Pass(), 3, 1));
+      spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_headers), 3, 1));
   MockRead reads[] = {CreateMockRead(*push, 1)};
 
   scoped_ptr<SpdyFrame> req(
@@ -6419,8 +6385,8 @@ TEST_P(SpdyNetworkTransactionTest,
   scoped_ptr<SpdyHeaderBlock> push_b_headers(new SpdyHeaderBlock);
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/b.dat"),
                                  push_b_headers.get());
-  scoped_ptr<SpdyFrame> push_b(
-      spdy_util_.ConstructInitialSpdyPushFrame(push_b_headers.Pass(), 2, 1));
+  scoped_ptr<SpdyFrame> push_b(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(push_b_headers), 2, 1));
   MockRead reads[] = {
       CreateMockRead(*push_a, 1), CreateMockRead(*push_b, 2),
   };
@@ -6507,7 +6473,7 @@ class SpdyNetworkTransactionNoTLSUsageCheckTest
     request.url = GURL("https://www.example.org/");
     NormalSpdyTransactionHelper helper(
         request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
-    helper.RunToCompletionWithSSLData(&data, ssl_provider.Pass());
+    helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
     TransactionHelperResult out = helper.output();
     EXPECT_EQ(OK, out.rv);
     EXPECT_EQ("HTTP/1.1 200", out.status_line);
@@ -6534,7 +6500,7 @@ TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSVersionTooOld) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_SSL3,
                                 &ssl_provider->connection_status);
 
-  RunNoTLSUsageCheckTest(ssl_provider.Pass());
+  RunNoTLSUsageCheckTest(std::move(ssl_provider));
 }
 
 TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSCipherSuiteSucky) {
@@ -6543,7 +6509,7 @@ TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSCipherSuiteSucky) {
   // Set to TLS_RSA_WITH_NULL_MD5
   SSLConnectionStatusSetCipherSuite(0x1, &ssl_provider->connection_status);
 
-  RunNoTLSUsageCheckTest(ssl_provider.Pass());
+  RunNoTLSUsageCheckTest(std::move(ssl_provider));
 }
 
 class SpdyNetworkTransactionTLSUsageCheckTest
@@ -6560,7 +6526,7 @@ class SpdyNetworkTransactionTLSUsageCheckTest
     request.url = GURL("https://www.example.org/");
     NormalSpdyTransactionHelper helper(
         request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
-    helper.RunToCompletionWithSSLData(&data, ssl_provider.Pass());
+    helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
     TransactionHelperResult out = helper.output();
     EXPECT_EQ(ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY, out.rv);
   }
@@ -6582,7 +6548,7 @@ TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_SSL3,
                                 &ssl_provider->connection_status);
 
-  RunTLSUsageCheckTest(ssl_provider.Pass());
+  RunTLSUsageCheckTest(std::move(ssl_provider));
 }
 
 TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSCipherSuiteSucky) {
@@ -6591,7 +6557,7 @@ TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSCipherSuiteSucky) {
   // Set to TLS_RSA_WITH_NULL_MD5
   SSLConnectionStatusSetCipherSuite(0x1, &ssl_provider->connection_status);
 
-  RunTLSUsageCheckTest(ssl_provider.Pass());
+  RunTLSUsageCheckTest(std::move(ssl_provider));
 }
 
 }  // namespace net

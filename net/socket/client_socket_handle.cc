@@ -4,6 +4,8 @@
 
 #include "net/socket/client_socket_handle.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -43,7 +45,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
         socket_->NetLog().EndEvent(NetLog::TYPE_SOCKET_IN_USE);
         // Release the socket back to the ClientSocketPool so it can be
         // deleted or reused.
-        pool_->ReleaseSocket(group_name_, socket_.Pass(), pool_id_);
+        pool_->ReleaseSocket(group_name_, std::move(socket_), pool_id_);
       } else {
         // If the handle has been initialized, we should still have a
         // socket.
@@ -134,7 +136,7 @@ bool ClientSocketHandle::GetLoadTimingInfo(
 }
 
 void ClientSocketHandle::SetSocket(scoped_ptr<StreamSocket> s) {
-  socket_ = s.Pass();
+  socket_ = std::move(s);
 }
 
 void ClientSocketHandle::OnIOComplete(int result) {
@@ -145,7 +147,7 @@ void ClientSocketHandle::OnIOComplete(int result) {
 }
 
 scoped_ptr<StreamSocket> ClientSocketHandle::PassSocket() {
-  return socket_.Pass();
+  return std::move(socket_);
 }
 
 void ClientSocketHandle::HandleInitCompletion(int result) {

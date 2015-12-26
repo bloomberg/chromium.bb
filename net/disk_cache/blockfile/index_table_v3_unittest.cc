@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/disk_cache/blockfile/index_table_v3.h"
+
 #include <stdint.h>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/disk_format_v3.h"
-#include "net/disk_cache/blockfile/index_table_v3.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using disk_cache::EntryCell;
@@ -584,7 +586,7 @@ TEST(DiskCacheIndexTable, Doubling) {
 
   // Go from 1024 to 256k cells.
   for (int resizes = 0; resizes <= 8; resizes++) {
-    scoped_ptr<TestCacheTables> old_cache(cache.Pass());
+    scoped_ptr<TestCacheTables> old_cache(std::move(cache));
     cache.reset(new TestCacheTables(size));
     cache.get()->CopyFrom(*old_cache.get());
 
@@ -639,7 +641,7 @@ TEST(DiskCacheIndexTable, BucketChains) {
   }
 
   // Double the size.
-  scoped_ptr<TestCacheTables> old_cache(cache.Pass());
+  scoped_ptr<TestCacheTables> old_cache(std::move(cache));
   cache.reset(new TestCacheTables(size * 2));
   cache.get()->CopyFrom(*old_cache.get());
 

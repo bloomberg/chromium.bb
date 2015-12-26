@@ -5,6 +5,8 @@
 #ifndef NET_PROXY_MOJO_PROXY_RESOLVER_V8_TRACING_BINDINGS_H_
 #define NET_PROXY_MOJO_PROXY_RESOLVER_V8_TRACING_BINDINGS_H_
 
+#include <utility>
+
 #include "base/threading/thread_checker.h"
 #include "mojo/common/common_type_converters.h"
 #include "net/dns/host_resolver_mojo.h"
@@ -54,7 +56,7 @@ class MojoProxyResolverV8TracingBindings
   void ResolveDns(interfaces::HostResolverRequestInfoPtr request_info,
                   interfaces::HostResolverRequestClientPtr client) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    client_->ResolveDns(request_info.Pass(), client.Pass());
+    client_->ResolveDns(std::move(request_info), std::move(client));
   }
 
   base::ThreadChecker thread_checker_;

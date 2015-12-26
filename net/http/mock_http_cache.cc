@@ -5,6 +5,7 @@
 #include "net/http/mock_http_cache.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -532,7 +533,7 @@ MockHttpCache::MockHttpCache()
 MockHttpCache::MockHttpCache(
     scoped_ptr<HttpCache::BackendFactory> disk_cache_factory)
     : http_cache_(make_scoped_ptr(new MockNetworkLayer()),
-                  disk_cache_factory.Pass(),
+                  std::move(disk_cache_factory),
                   true) {}
 
 disk_cache::Backend* MockHttpCache::backend() {

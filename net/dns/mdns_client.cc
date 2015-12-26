@@ -98,7 +98,7 @@ scoped_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
     VLOG(1) << "Bind failed, endpoint=" << multicast_addr.ToStringWithoutPort()
             << ", error=" << rv;
   }
-  return socket.Pass();
+  return socket;
 }
 
 }  // namespace net

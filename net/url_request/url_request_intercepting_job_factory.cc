@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_request_intercepting_job_factory.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "net/url_request/url_request_interceptor.h"
 
@@ -12,9 +14,8 @@ namespace net {
 URLRequestInterceptingJobFactory::URLRequestInterceptingJobFactory(
     scoped_ptr<URLRequestJobFactory> job_factory,
     scoped_ptr<URLRequestInterceptor> interceptor)
-    : job_factory_(job_factory.Pass()),
-      interceptor_(interceptor.Pass()) {
-}
+    : job_factory_(std::move(job_factory)),
+      interceptor_(std::move(interceptor)) {}
 
 URLRequestInterceptingJobFactory::~URLRequestInterceptingJobFactory() {}
 

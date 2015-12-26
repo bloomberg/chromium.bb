@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/sys_byteorder.h"
@@ -108,7 +109,7 @@ scoped_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
   // non-owning pointer to it.
   connection->SetSocket(scoped_ptr<StreamSocket>(tcp_sock_));
   return scoped_ptr<SOCKS5ClientSocket>(new SOCKS5ClientSocket(
-      connection.Pass(),
+      std::move(connection),
       HostResolver::RequestInfo(HostPortPair(hostname, port))));
 }
 

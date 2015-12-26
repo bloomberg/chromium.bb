@@ -25,8 +25,7 @@ scoped_ptr<CertVerifier> CertVerifier::CreateDefault() {
   return scoped_ptr<CertVerifier>();
 #else
   return make_scoped_ptr(
-             new MultiThreadedCertVerifier(CertVerifyProc::CreateDefault()))
-      .Pass();
+      new MultiThreadedCertVerifier(CertVerifyProc::CreateDefault()));
 #endif
 }
 

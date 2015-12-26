@@ -4,6 +4,8 @@
 
 #include "net/http/http_request_headers.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -203,7 +205,7 @@ scoped_ptr<base::Value> HttpRequestHeaders::NetLogCallback(
                            it->key.c_str(), log_value.c_str())));
   }
   dict->Set("headers", headers);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // static

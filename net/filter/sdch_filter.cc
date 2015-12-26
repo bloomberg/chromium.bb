@@ -6,8 +6,8 @@
 
 #include <ctype.h>
 #include <limits.h>
-
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,7 +16,6 @@
 #include "net/base/sdch_net_log_params.h"
 #include "net/base/sdch_problem_codes.h"
 #include "net/url_request/url_request_context.h"
-
 #include "sdch/open-vcdiff/src/google/vcdecoder.h"
 
 namespace net {
@@ -97,7 +96,7 @@ scoped_ptr<base::Value> NetLogSdchResponseCorruptionDetectionCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("cause", ResponseCorruptionDetectionCauseToString(cause));
   dict->SetBoolean("cached", cached);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace

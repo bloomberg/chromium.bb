@@ -5,8 +5,8 @@
 #include "net/http/http_cache.h"
 
 #include <stdint.h>
-
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -708,7 +708,7 @@ TEST(HttpCache, SimpleGETNoDiskCache2) {
       new MockBlockingBackendFactory());
   factory->set_fail(true);
   factory->FinishCreation();  // We'll complete synchronously.
-  MockHttpCache cache(factory.Pass());
+  MockHttpCache cache(std::move(factory));
 
   // Read from the network, and don't use the cache.
   RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
@@ -3092,7 +3092,7 @@ TEST(HttpCache, SimplePOST_NoUploadId_NoBackend) {
       new MockBlockingBackendFactory());
   factory->set_fail(true);
   factory->FinishCreation();
-  MockHttpCache cache(factory.Pass());
+  MockHttpCache cache(std::move(factory));
 
   std::vector<scoped_ptr<UploadElementReader>> element_readers;
   element_readers.push_back(
@@ -5437,7 +5437,7 @@ TEST(HttpCache, RangeGET_NoDiskCache) {
       new MockBlockingBackendFactory());
   factory->set_fail(true);
   factory->FinishCreation();  // We'll complete synchronously.
-  MockHttpCache cache(factory.Pass());
+  MockHttpCache cache(std::move(factory));
 
   AddMockTransaction(&kRangeGET_TransactionOK);
 

@@ -31,7 +31,7 @@ class ThreadedSSLPrivateKey::Core
     : public base::RefCountedThreadSafe<ThreadedSSLPrivateKey::Core> {
  public:
   Core(scoped_ptr<ThreadedSSLPrivateKey::Delegate> delegate)
-      : delegate_(delegate.Pass()) {}
+      : delegate_(std::move(delegate)) {}
 
   ThreadedSSLPrivateKey::Delegate* delegate() { return delegate_.get(); }
 

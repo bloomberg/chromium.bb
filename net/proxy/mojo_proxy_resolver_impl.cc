@@ -4,6 +4,8 @@
 
 #include "net/proxy/mojo_proxy_resolver_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "mojo/common/url_type_converters.h"
@@ -46,8 +48,7 @@ class MojoProxyResolverImpl::Job {
 
 MojoProxyResolverImpl::MojoProxyResolverImpl(
     scoped_ptr<ProxyResolverV8Tracing> resolver)
-    : resolver_(resolver.Pass()) {
-}
+    : resolver_(std::move(resolver)) {}
 
 MojoProxyResolverImpl::~MojoProxyResolverImpl() {
   STLDeleteElements(&resolve_jobs_);
@@ -57,7 +58,7 @@ void MojoProxyResolverImpl::GetProxyForUrl(
     const mojo::String& url,
     interfaces::ProxyResolverRequestClientPtr client) {
   DVLOG(1) << "GetProxyForUrl(" << url << ")";
-  Job* job = new Job(client.Pass(), this, url.To<GURL>());
+  Job* job = new Job(std::move(client), this, url.To<GURL>());
   bool inserted = resolve_jobs_.insert(job).second;
   DCHECK(inserted);
   job->Start();
@@ -74,7 +75,7 @@ MojoProxyResolverImpl::Job::Job(
     MojoProxyResolverImpl* resolver,
     const GURL& url)
     : resolver_(resolver),
-      client_(client.Pass()),
+      client_(std::move(client)),
       url_(url),
       request_handle_(nullptr),
       done_(false) {}
@@ -106,7 +107,7 @@ void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
     result = mojo::Array<interfaces::ProxyServerPtr>::From(
         result_.proxy_list().GetAll());
   }
-  client_->ReportResult(error, result.Pass());
+  client_->ReportResult(error, std::move(result));
   resolver_->DeleteJob(this);
 }
 

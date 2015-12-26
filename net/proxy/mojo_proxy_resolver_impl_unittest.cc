@@ -5,6 +5,7 @@
 #include "net/proxy/mojo_proxy_resolver_impl.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/run_loop.h"
@@ -60,7 +61,7 @@ class TestRequestClient : public interfaces::ProxyResolverRequestClient {
 
 TestRequestClient::TestRequestClient(
     mojo::InterfaceRequest<interfaces::ProxyResolverRequestClient> request)
-    : binding_(this, request.Pass()) {
+    : binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(base::Bind(
       &TestRequestClient::OnConnectionError, base::Unretained(this)));
 }
@@ -79,7 +80,7 @@ void TestRequestClient::ReportResult(
   event_waiter_.NotifyEvent(RESULT_RECEIVED);
   ASSERT_FALSE(done_);
   error_ = static_cast<Error>(error);
-  results_ = results.Pass();
+  results_ = std::move(results);
   done_ = true;
 }
 
@@ -177,7 +178,7 @@ class MojoProxyResolverImplTest : public testing::Test {
     scoped_ptr<MockProxyResolverV8Tracing> mock_resolver(
         new MockProxyResolverV8Tracing);
     mock_proxy_resolver_ = mock_resolver.get();
-    resolver_impl_.reset(new MojoProxyResolverImpl(mock_resolver.Pass()));
+    resolver_impl_.reset(new MojoProxyResolverImpl(std::move(mock_resolver)));
     resolver_ = resolver_impl_.get();
   }
 
@@ -191,7 +192,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::GetProxy(&client_ptr));
 
-  resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
+  resolver_->GetProxyForUrl("http://example.com", std::move(client_ptr));
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
   const MockProxyResolverV8Tracing::Request& request =
       mock_proxy_resolver_->pending_requests()[0];
@@ -238,7 +239,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlFailure) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::GetProxy(&client_ptr));
 
-  resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
+  resolver_->GetProxyForUrl("http://example.com", std::move(client_ptr));
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
   const MockProxyResolverV8Tracing::Request& request =
       mock_proxy_resolver_->pending_requests()[0];
@@ -258,8 +259,8 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
   interfaces::ProxyResolverRequestClientPtr client_ptr2;
   TestRequestClient client2(mojo::GetProxy(&client_ptr2));
 
-  resolver_->GetProxyForUrl("http://example.com", client_ptr1.Pass());
-  resolver_->GetProxyForUrl("https://example.com", client_ptr2.Pass());
+  resolver_->GetProxyForUrl("http://example.com", std::move(client_ptr1));
+  resolver_->GetProxyForUrl("https://example.com", std::move(client_ptr2));
   ASSERT_EQ(2u, mock_proxy_resolver_->pending_requests().size());
   const MockProxyResolverV8Tracing::Request& request1 =
       mock_proxy_resolver_->pending_requests()[0];
@@ -298,7 +299,7 @@ TEST_F(MojoProxyResolverImplTest, DestroyClient) {
   scoped_ptr<TestRequestClient> client(
       new TestRequestClient(mojo::GetProxy(&client_ptr)));
 
-  resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
+  resolver_->GetProxyForUrl("http://example.com", std::move(client_ptr));
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
   const MockProxyResolverV8Tracing::Request& request =
       mock_proxy_resolver_->pending_requests()[0];
@@ -312,7 +313,7 @@ TEST_F(MojoProxyResolverImplTest, DestroyService) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::GetProxy(&client_ptr));
 
-  resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
+  resolver_->GetProxyForUrl("http://example.com", std::move(client_ptr));
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
   resolver_impl_.reset();
   client.event_waiter().WaitForEvent(TestRequestClient::CONNECTION_ERROR);

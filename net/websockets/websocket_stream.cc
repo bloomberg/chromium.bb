@@ -4,6 +4,8 @@
 
 #include "net/websockets/websocket_stream.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -88,7 +90,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
       : delegate_(new Delegate(this)),
         url_request_(
             context->CreateRequest(url, DEFAULT_PRIORITY, delegate_.get())),
-        connect_delegate_(connect_delegate.Pass()),
+        connect_delegate_(std::move(connect_delegate)),
         create_helper_(create_helper.release()) {
     create_helper_->set_failure_message(&failure_message_);
     HttpRequestHeaders headers;
@@ -114,7 +116,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
     DCHECK(timer);
     base::TimeDelta timeout(base::TimeDelta::FromSeconds(
         kHandshakeTimeoutIntervalInSeconds));
-    timer_ = timer.Pass();
+    timer_ = std::move(timer);
     timer_->Start(FROM_HERE, timeout,
                   base::Bind(&StreamRequestImpl::OnTimeout,
                              base::Unretained(this)));
@@ -336,14 +338,11 @@ scoped_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
   scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper(
       new WebSocketHandshakeStreamCreateHelper(connect_delegate.get(),
                                                requested_subprotocols));
-  scoped_ptr<StreamRequestImpl> request(
-      new StreamRequestImpl(socket_url,
-                            url_request_context,
-                            origin,
-                            connect_delegate.Pass(),
-                            create_helper.Pass()));
+  scoped_ptr<StreamRequestImpl> request(new StreamRequestImpl(
+      socket_url, url_request_context, origin, std::move(connect_delegate),
+      std::move(create_helper)));
   request->Start(scoped_ptr<base::Timer>(new base::Timer(false, false)));
-  return request.Pass();
+  return std::move(request);
 }
 
 // This is declared in websocket_test_util.h.
@@ -355,14 +354,11 @@ scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamForTesting(
     const BoundNetLog& net_log,
     scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
     scoped_ptr<base::Timer> timer) {
-  scoped_ptr<StreamRequestImpl> request(
-      new StreamRequestImpl(socket_url,
-                            url_request_context,
-                            origin,
-                            connect_delegate.Pass(),
-                            create_helper.Pass()));
-  request->Start(timer.Pass());
-  return request.Pass();
+  scoped_ptr<StreamRequestImpl> request(new StreamRequestImpl(
+      socket_url, url_request_context, origin, std::move(connect_delegate),
+      std::move(create_helper)));
+  request->Start(std::move(timer));
+  return std::move(request);
 }
 
 void WebSocketDispatchOnFinishOpeningHandshake(

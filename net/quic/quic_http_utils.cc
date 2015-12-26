@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_http_utils.h"
 
+#include <utility>
+
 namespace net {
 
 SpdyPriority ConvertRequestPriorityToQuicPriority(
@@ -29,7 +31,7 @@ scoped_ptr<base::Value> QuicRequestNetLogCallback(
       SpdyHeaderBlockNetLogCallback(headers, capture_mode).release()));
   dict->SetInteger("quic_priority", static_cast<int>(priority));
   dict->SetInteger("quic_stream_id", static_cast<int>(stream_id));
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace net

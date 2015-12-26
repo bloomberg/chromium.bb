@@ -5,6 +5,7 @@
 #include "net/socket/socket_test_util.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -710,7 +711,7 @@ MockClientSocketFactory::CreateDatagramClientSocket(
     socket->set_source_port(
         static_cast<uint16_t>(rand_int_cb.Run(1025, 65535)));
   udp_client_socket_ports_.push_back(socket->source_port());
-  return socket.Pass();
+  return std::move(socket);
 }
 
 scoped_ptr<StreamSocket> MockClientSocketFactory::CreateTransportClientSocket(
@@ -720,7 +721,7 @@ scoped_ptr<StreamSocket> MockClientSocketFactory::CreateTransportClientSocket(
   SocketDataProvider* data_provider = mock_data_.GetNext();
   scoped_ptr<MockTCPClientSocket> socket(
       new MockTCPClientSocket(addresses, net_log, data_provider));
-  return socket.Pass();
+  return std::move(socket);
 }
 
 scoped_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
@@ -738,7 +739,7 @@ scoped_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
                    ssl_config.alpn_protos.begin()));
   }
   return scoped_ptr<SSLClientSocket>(new MockSSLClientSocket(
-      transport_socket.Pass(), host_and_port, ssl_config, next_ssl_data));
+      std::move(transport_socket), host_and_port, ssl_config, next_ssl_data));
 }
 
 void MockClientSocketFactory::ClearSSLSessionCache() {
@@ -1130,8 +1131,9 @@ MockSSLClientSocket::MockSSLClientSocket(
     : MockClientSocket(
           // Have to use the right BoundNetLog for LoadTimingInfo regression
           // tests.
-          transport_socket->socket()->NetLog()),
-      transport_(transport_socket.Pass()),
+          transport_socket->socket()
+              ->NetLog()),
+      transport_(std::move(transport_socket)),
       data_(data) {
   DCHECK(data_);
   peer_addr_ = data->connect.peer_addr;
@@ -1515,10 +1517,7 @@ MockTransportClientSocketPool::MockConnectJob::MockConnectJob(
     scoped_ptr<StreamSocket> socket,
     ClientSocketHandle* handle,
     const CompletionCallback& callback)
-    : socket_(socket.Pass()),
-      handle_(handle),
-      user_callback_(callback) {
-}
+    : socket_(std::move(socket)), handle_(handle), user_callback_(callback) {}
 
 MockTransportClientSocketPool::MockConnectJob::~MockConnectJob() {}
 
@@ -1546,7 +1545,7 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
   if (!socket_.get())
     return;
   if (rv == OK) {
-    handle_->SetSocket(socket_.Pass());
+    handle_->SetSocket(std::move(socket_));
 
     // Needed for socket pool tests that layer other sockets on top of mock
     // sockets.
@@ -1600,7 +1599,7 @@ int MockTransportClientSocketPool::RequestSocket(
   scoped_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
           AddressList(), net_log.net_log(), NetLog::Source());
-  MockConnectJob* job = new MockConnectJob(socket.Pass(), handle, callback);
+  MockConnectJob* job = new MockConnectJob(std::move(socket), handle, callback);
   job_list_.push_back(make_scoped_ptr(job));
   handle->set_pool_id(1);
   return job->Connect();
@@ -1655,7 +1654,7 @@ void MockSOCKSClientSocketPool::CancelRequest(
 void MockSOCKSClientSocketPool::ReleaseSocket(const std::string& group_name,
                                               scoped_ptr<StreamSocket> socket,
                                               int id) {
-  return transport_pool_->ReleaseSocket(group_name, socket.Pass(), id);
+  return transport_pool_->ReleaseSocket(group_name, std::move(socket), id);
 }
 
 ScopedWebSocketEndpointZeroUnlockDelay::

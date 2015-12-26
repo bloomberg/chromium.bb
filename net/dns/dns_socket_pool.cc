@@ -87,7 +87,7 @@ scoped_ptr<DatagramClientSocket> DnsSocketPool::CreateConnectedSocket(
     LOG(WARNING) << "Failed to create socket.";
   }
 
-  return socket.Pass();
+  return socket;
 }
 
 class NullDnsSocketPool : public DnsSocketPool {

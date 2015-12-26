@@ -5,6 +5,7 @@
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -230,7 +231,7 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
     scoped_ptr<DefaultChannelIDStore::ChannelID> channel_id(
         new DefaultChannelIDStore::ChannelID(
             smt.ColumnString(0),  // host
-            base::Time::FromInternalValue(smt.ColumnInt64(3)), key.Pass()));
+            base::Time::FromInternalValue(smt.ColumnInt64(3)), std::move(key)));
     channel_ids->push_back(std::move(channel_id));
   }
 

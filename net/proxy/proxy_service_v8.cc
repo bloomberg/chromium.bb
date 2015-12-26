@@ -4,6 +4,8 @@
 
 #include "net/proxy/proxy_service_v8.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
@@ -30,7 +32,7 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
   DCHECK(host_resolver);
 
   scoped_ptr<ProxyService> proxy_service(new ProxyService(
-      proxy_config_service.Pass(),
+      std::move(proxy_config_service),
       make_scoped_ptr(new ProxyResolverFactoryV8TracingWrapper(
           host_resolver, net_log,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,
@@ -39,7 +41,7 @@ scoped_ptr<ProxyService> CreateProxyServiceUsingV8ProxyResolver(
 
   // Configure fetchers to use for PAC script downloads and auto-detect.
   proxy_service->SetProxyScriptFetchers(proxy_script_fetcher,
-                                        dhcp_proxy_script_fetcher.Pass());
+                                        std::move(dhcp_proxy_script_fetcher));
 
   return proxy_service;
 }

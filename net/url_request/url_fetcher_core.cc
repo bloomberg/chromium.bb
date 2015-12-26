@@ -5,6 +5,7 @@
 #include "net/url_request/url_fetcher_core.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -301,7 +302,7 @@ void URLFetcherCore::SaveResponseToTemporaryFile(
 void URLFetcherCore::SaveResponseWithWriter(
     scoped_ptr<URLFetcherResponseWriter> response_writer) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
-  response_writer_ = response_writer.Pass();
+  response_writer_ = std::move(response_writer);
 }
 
 HttpResponseHeaders* URLFetcherCore::GetResponseHeaders() const {
@@ -583,7 +584,7 @@ void URLFetcherCore::StartURLRequest() {
         scoped_ptr<UploadElementReader> reader(new UploadBytesElementReader(
             upload_content_.data(), upload_content_.size()));
         request_->set_upload(
-            ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+            ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
       } else if (!upload_file_path_.empty()) {
         scoped_ptr<UploadElementReader> reader(
             new UploadFileElementReader(upload_file_task_runner_.get(),
@@ -592,11 +593,11 @@ void URLFetcherCore::StartURLRequest() {
                                         upload_range_length_,
                                         base::Time()));
         request_->set_upload(
-            ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+            ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
       } else if (!upload_stream_factory_.is_null()) {
         scoped_ptr<UploadDataStream> stream = upload_stream_factory_.Run();
         DCHECK(stream);
-        request_->set_upload(stream.Pass());
+        request_->set_upload(std::move(stream));
       }
 
       current_upload_bytes_ = -1;

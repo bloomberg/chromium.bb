@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/net_log_parameters.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,7 +22,7 @@ scoped_ptr<base::Value> NetLogEntryCreationCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("key", entry->GetKey());
   dict->SetBoolean("created", created);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogReadWriteDataCallback(
@@ -35,7 +37,7 @@ scoped_ptr<base::Value> NetLogReadWriteDataCallback(
   dict->SetInteger("buf_len", buf_len);
   if (truncate)
     dict->SetBoolean("truncate", truncate);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogReadWriteCompleteCallback(
@@ -48,7 +50,7 @@ scoped_ptr<base::Value> NetLogReadWriteCompleteCallback(
   } else {
     dict->SetInteger("bytes_copied", bytes_copied);
   }
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogSparseOperationCallback(
@@ -60,7 +62,7 @@ scoped_ptr<base::Value> NetLogSparseOperationCallback(
   // instead circumvents that restriction.
   dict->SetString("offset", base::Int64ToString(offset));
   dict->SetInteger("buf_len", buf_len);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogSparseReadWriteCallback(
@@ -70,7 +72,7 @@ scoped_ptr<base::Value> NetLogSparseReadWriteCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   source.AddToEventParameters(dict.get());
   dict->SetInteger("child_len", child_len);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 scoped_ptr<base::Value> NetLogGetAvailableRangeResultCallback(
@@ -84,7 +86,7 @@ scoped_ptr<base::Value> NetLogGetAvailableRangeResultCallback(
   } else {
     dict->SetInteger("net_error", result);
   }
-  return dict.Pass();
+  return std::move(dict);
 }
 
 }  // namespace

@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_request.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -208,7 +210,7 @@ void URLRequest::AppendChunkToUpload(const char* bytes,
 }
 
 void URLRequest::set_upload(scoped_ptr<UploadDataStream> upload) {
-  upload_data_stream_ = upload.Pass();
+  upload_data_stream_ = std::move(upload);
 }
 
 const UploadDataStream* URLRequest::get_upload() const {
@@ -287,7 +289,7 @@ scoped_ptr<base::Value> URLRequest::GetStateAsValue() const {
     for (const GURL& url : url_chain_) {
       list->AppendString(url.possibly_invalid_spec());
     }
-    dict->Set("url_chain", list.Pass());
+    dict->Set("url_chain", std::move(list));
   }
 
   dict->SetInteger("load_flags", load_flags_);
@@ -322,7 +324,7 @@ scoped_ptr<base::Value> URLRequest::GetStateAsValue() const {
   }
   if (status_.error() != OK)
     dict->SetInteger("net_error", status_.error());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 void URLRequest::LogBlockedBy(const char* blocked_by) {

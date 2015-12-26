@@ -17,8 +17,8 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-
 #include <queue>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -348,9 +348,10 @@ class SSLServerSocketTest : public PlatformTest {
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
     client_socket_ = socket_factory_->CreateSSLClientSocket(
-        client_connection.Pass(), host_and_pair, client_ssl_config_, context);
+        std::move(client_connection), host_and_pair, client_ssl_config_,
+        context);
     server_socket_ =
-        CreateSSLServerSocket(server_socket.Pass(), cert.get(),
+        CreateSSLServerSocket(std::move(server_socket), cert.get(),
                               private_key.get(), server_ssl_config_);
   }
 

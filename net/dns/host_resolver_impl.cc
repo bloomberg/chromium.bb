@@ -4,6 +4,8 @@
 
 #include "net/dns/host_resolver_impl.h"
 
+#include <utility>
+
 #if defined(OS_WIN)
 #include <Winsock2.h>
 #elif defined(OS_POSIX)
@@ -344,7 +346,7 @@ scoped_ptr<base::Value> NetLogProcTaskFailedCallback(
 #endif
   }
 
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // Creates NetLog parameters when the DnsTask failed.
@@ -356,7 +358,7 @@ scoped_ptr<base::Value> NetLogDnsTaskFailedCallback(
   dict->SetInteger("net_error", net_error);
   if (dns_error)
     dict->SetInteger("dns_error", dns_error);
-  return dict.Pass();
+  return std::move(dict);
 };
 
 // Creates NetLog parameters containing the information in a RequestInfo object,
@@ -371,7 +373,7 @@ scoped_ptr<base::Value> NetLogRequestInfoCallback(
                    static_cast<int>(info->address_family()));
   dict->SetBoolean("allow_cached_response", info->allow_cached_response());
   dict->SetBoolean("is_speculative", info->is_speculative());
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // Creates NetLog parameters for the creation of a HostResolverImpl::Job.
@@ -382,7 +384,7 @@ scoped_ptr<base::Value> NetLogJobCreationCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   source.AddToEventParameters(dict.get());
   dict->SetString("host", *host);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // Creates NetLog parameters for HOST_RESOLVER_IMPL_JOB_ATTACH/DETACH events.
@@ -393,7 +395,7 @@ scoped_ptr<base::Value> NetLogJobAttachCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   source.AddToEventParameters(dict.get());
   dict->SetString("priority", RequestPriorityToString(priority));
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // Creates NetLog parameters for the DNS_CONFIG_CHANGED event.
@@ -410,7 +412,7 @@ scoped_ptr<base::Value> NetLogIPv6AvailableCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean("ipv6_available", ipv6_available);
   dict->SetBoolean("cached", cached);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 // The logging routines are defined here because some requests are resolved
@@ -1337,7 +1339,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         proc_task_->set_had_non_speculative_request();
     }
 
-    requests_.push_back(req.Pass());
+    requests_.push_back(std::move(req));
 
     UpdatePriority();
   }
@@ -1955,7 +1957,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   if (out_req)
     *out_req = reinterpret_cast<RequestHandle>(req.get());
 
-  job->AddRequest(req.Pass());
+  job->AddRequest(std::move(req));
   // Completion happens during Job::CompleteRequests().
   return ERR_IO_PENDING;
 }
@@ -2418,7 +2420,7 @@ void HostResolverImpl::OnDnsTaskResolve(int net_error) {
 void HostResolverImpl::SetDnsClient(scoped_ptr<DnsClient> dns_client) {
   // DnsClient and config must be updated before aborting DnsTasks, since doing
   // so may start new jobs.
-  dns_client_ = dns_client.Pass();
+  dns_client_ = std::move(dns_client);
   if (dns_client_ && !dns_client_->GetConfig() &&
       num_dns_failures_ < kMaximumDnsFailures) {
     DnsConfig dns_config;

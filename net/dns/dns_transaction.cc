@@ -6,6 +6,7 @@
 
 #include <deque>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/big_endian.h"
@@ -67,7 +68,7 @@ scoped_ptr<base::Value> NetLogStartCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("hostname", *hostname);
   dict->SetInteger("query_type", qtype);
-  return dict.Pass();
+  return std::move(dict);
 };
 
 // ----------------------------------------------------------------------------
@@ -109,7 +110,7 @@ class DnsAttempt {
     dict->SetInteger("rcode", GetResponse()->rcode());
     dict->SetInteger("answer_count", GetResponse()->answer_count());
     GetSocketNetLog().source().AddToEventParameters(dict.get());
-    return dict.Pass();
+    return std::move(dict);
   }
 
   void set_result(int result) {
@@ -142,8 +143,8 @@ class DnsUDPAttempt : public DnsAttempt {
       : DnsAttempt(server_index),
         next_state_(STATE_NONE),
         received_malformed_response_(false),
-        socket_lease_(socket_lease.Pass()),
-        query_(query.Pass()) {}
+        socket_lease_(std::move(socket_lease)),
+        query_(std::move(query)) {}
 
   // DnsAttempt:
   int Start(const CompletionCallback& callback) override {
@@ -303,8 +304,8 @@ class DnsTCPAttempt : public DnsAttempt {
                 scoped_ptr<DnsQuery> query)
       : DnsAttempt(server_index),
         next_state_(STATE_NONE),
-        socket_(socket.Pass()),
-        query_(query.Pass()),
+        socket_(std::move(socket)),
+        query_(std::move(query)),
         length_buffer_(new IOBufferWithSize(sizeof(uint16_t))),
         response_length_(0) {}
 
@@ -724,7 +725,7 @@ class DnsTransactionImpl : public DnsTransaction,
     bool got_socket = !!lease.get();
 
     DnsUDPAttempt* attempt =
-        new DnsUDPAttempt(server_index, lease.Pass(), query.Pass());
+        new DnsUDPAttempt(server_index, std::move(lease), std::move(query));
 
     attempts_.push_back(make_scoped_ptr(attempt));
     ++attempts_count_;
@@ -768,8 +769,8 @@ class DnsTransactionImpl : public DnsTransaction,
 
     unsigned attempt_number = attempts_.size();
 
-    DnsTCPAttempt* attempt = new DnsTCPAttempt(server_index, socket.Pass(),
-                                               query.Pass());
+    DnsTCPAttempt* attempt =
+        new DnsTCPAttempt(server_index, std::move(socket), std::move(query));
 
     attempts_.push_back(make_scoped_ptr(attempt));
     ++attempts_count_;

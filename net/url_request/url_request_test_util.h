@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -71,11 +71,11 @@ class TestURLRequestContext : public URLRequestContext {
 
   void set_http_network_session_params(
       scoped_ptr<HttpNetworkSession::Params> params) {
-    http_network_session_params_ = params.Pass();
+    http_network_session_params_ = std::move(params);
   }
 
   void SetSdchManager(scoped_ptr<SdchManager> sdch_manager) {
-    context_storage_.set_sdch_manager(sdch_manager.Pass());
+    context_storage_.set_sdch_manager(std::move(sdch_manager));
   }
 
  private:

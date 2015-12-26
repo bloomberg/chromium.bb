@@ -5,6 +5,7 @@
 #include "net/cert_net/cert_net_fetcher_impl.h"
 
 #include <tuple>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/containers/linked_list.h"
@@ -231,10 +232,9 @@ CertNetFetcherImpl::RequestImpl::~RequestImpl() {
 
 CertNetFetcherImpl::Job::Job(scoped_ptr<RequestParams> request_params,
                              CertNetFetcherImpl* parent)
-    : request_params_(request_params.Pass()),
+    : request_params_(std::move(request_params)),
       result_net_error_(ERR_IO_PENDING),
-      parent_(parent) {
-}
+      parent_(parent) {}
 
 CertNetFetcherImpl::Job::~Job() {
   Cancel();
@@ -261,7 +261,7 @@ scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::Job::CreateRequest(
     const FetchCallback& callback) {
   scoped_ptr<RequestImpl> request(new RequestImpl(this, callback));
   requests_.Append(request.get());
-  return request.Pass();
+  return std::move(request);
 }
 
 void CertNetFetcherImpl::Job::DetachRequest(RequestImpl* request) {
@@ -450,7 +450,7 @@ scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCaIssuers(
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForAia);
 
-  return Fetch(request_params.Pass(), callback);
+  return Fetch(std::move(request_params), callback);
 }
 
 scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCrl(
@@ -466,7 +466,7 @@ scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchCrl(
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForCrl);
 
-  return Fetch(request_params.Pass(), callback);
+  return Fetch(std::move(request_params), callback);
 }
 
 scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchOcsp(
@@ -482,7 +482,7 @@ scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::FetchOcsp(
   request_params->max_response_bytes =
       GetMaxResponseBytes(max_response_bytes, kMaxResponseSizeInBytesForAia);
 
-  return Fetch(request_params.Pass(), callback);
+  return Fetch(std::move(request_params), callback);
 }
 
 bool CertNetFetcherImpl::JobComparator::operator()(const Job* job1,
@@ -500,7 +500,7 @@ scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::Fetch(
   Job* job = FindJob(*request_params);
 
   if (!job) {
-    job = new Job(request_params.Pass(), this);
+    job = new Job(std::move(request_params), this);
     jobs_.insert(job);
     job->StartURLRequest(context_);
   }

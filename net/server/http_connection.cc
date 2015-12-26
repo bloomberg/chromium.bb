@@ -4,6 +4,8 @@
 
 #include "net/server/http_connection.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "net/server/web_socket.h"
 #include "net/socket/stream_socket.h"
@@ -150,17 +152,16 @@ int HttpConnection::QueuedWriteIOBuffer::GetSizeToWrite() const {
 
 HttpConnection::HttpConnection(int id, scoped_ptr<StreamSocket> socket)
     : id_(id),
-      socket_(socket.Pass()),
+      socket_(std::move(socket)),
       read_buf_(new ReadIOBuffer()),
-      write_buf_(new QueuedWriteIOBuffer()) {
-}
+      write_buf_(new QueuedWriteIOBuffer()) {}
 
 HttpConnection::~HttpConnection() {
 }
 
 void HttpConnection::SetWebSocket(scoped_ptr<WebSocket> web_socket) {
   DCHECK(!web_socket_);
-  web_socket_ = web_socket.Pass();
+  web_socket_ = std::move(web_socket);
 }
 
 }  // namespace net
